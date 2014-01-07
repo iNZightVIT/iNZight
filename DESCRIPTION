@@ -8,4 +8,4 @@ Maintainer: Marco Kuper <mkup399@aucklanduni.ac.nz>
 Description: This package should hold the same functionality as the old iNZight package,
 but is build using refence classes to allow for easy extensions.
 License: GPL-2
-Depends: objectProperties, gWidgets2, gWidgets2RGTk2, iNZightPlots, cairoDevice, grid
+Depends: R (>= 3.0.0), objectProperties, gWidgets2, gWidgets2RGTk2, iNZightPlots, cairoDevice, grid
