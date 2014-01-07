@@ -46,7 +46,7 @@ iNZPlotRmveModWin <- setRefClass(
                                   !is.null(curSet$by) && ## colour coding barchart
                                   !is.numeric(curSet$x) &&
                                   is.null(curSet$y),
-                                  FALSE, ## confidence intervals
+                                  !is.null(curSet$inference.type), ## confidence intervals
                                   curSet$pch != defSet$pch, ## point filling
                                   curSet$col.pt != defSet$col.pt, ## point colour
                                   curSet$cex.pt != defSet$cex.pt, ## point size
@@ -64,7 +64,9 @@ iNZPlotRmveModWin <- setRefClass(
                                      list(join = defSet$join), ## connecting lines
                                      list(by = NULL, ## colour coding barchart
                                           varnames = list(by = NULL)),
-                                     list(), ## confidence intervals
+                                     list(inference.type = defSet$inference.type,
+                                          inference.par = defSet$inference.par,
+                                          bs.inference = defSet$bs.inference), ## confidence intervals
                                      list(pch = defSet$pch), ## point filling
                                      list(col.pt = defSet$col.pt), ## point colour
                                      list(cex.pt = defSet$cex.pt), ## point size

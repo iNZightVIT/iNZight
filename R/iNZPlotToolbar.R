@@ -46,7 +46,9 @@ iNZPlotToolbar <- setRefClass(
                 "removeAdd" = gaction(label = "Remove\nAdditions",
                     handler = function(h, ...) iNZPlotRmveModWin$new(GUI),
                     tooltip = "Remove modifications from the Plot"),
-                "inference" = gaction(label = "Inference\nInformation")
+                "inference" = gaction(label = "Inference\nInformation",
+                    handler = function(h, ...) addInf(),
+                    tooltip = "Add inference information to the Plot")
                 )
             tbarList <- c(actionList[1:4],
                           gseparator(),
@@ -86,6 +88,32 @@ iNZPlotToolbar <- setRefClass(
                 } else {
                     ## segmented bar chart (2 factor vars)
                     ## no mod window for this plot type
+                }
+            }
+        },
+        addInf = function() {
+            curSet <- GUI$getActiveDoc()$getSettings()            
+            if (is.numeric(curSet$x)) {
+                if (is.numeric(curSet$y)) {
+                    ## scatterplot
+                    
+                } else if (is.null(curSet$y)) {
+                    ## dot plot
+                    iNZDotchartInf$new(GUI)
+                } else {
+                    ## dotchart subsetted by a factor
+                    iNZDotchartInf$new(GUI)
+                }                
+            } else {
+                if (is.numeric(curSet$y)) {
+                    ## dotchart subsetted by a factor
+                    iNZDotchartInf$new(GUI)
+                } else if (is.null(curSet$y)) {
+                    ## normal bar chart
+                    iNZBarchartInf$new(GUI)
+                } else {
+                    ## segmented bar chart (2 factor vars)
+                    iNZBarchartInf$new(GUI)
                 }
             }
         })
