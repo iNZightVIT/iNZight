@@ -96,6 +96,7 @@ iNZControlWidget <- setRefClass(
                             g1 = iNZightPlots:::convert.to.factor(
                                 GUI$getActiveDoc()$getData()[h$dropdata][[1]]
                                 ),
+                            g1.level = NULL,
                             varnames = list(
                                 g1 = colnames(GUI$getActiveDoc()$getData()[h$dropdata]))
                             ))
@@ -116,6 +117,7 @@ iNZControlWidget <- setRefClass(
                             g2 = iNZightPlots:::convert.to.factor(
                                 GUI$getActiveDoc()$getData()[h$dropdata][[1]]
                                 ),
+                            g2.level = NULL,
                             varnames = list(
                                 g2 = colnames(GUI$getActiveDoc()$getData()[h$dropdata]))
                             ))
