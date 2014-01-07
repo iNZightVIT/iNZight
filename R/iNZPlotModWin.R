@@ -11,6 +11,7 @@ iNZPlotModWin <- setRefClass(
     "iNZPlotModWin",
     fields = list(
         GUI = "ANY",
+        modWin = "ANY",
         okButton = "ANY",
         ## grp that will hold the multiple choices for plot mods
         radioGrp = "ANY",
@@ -23,7 +24,6 @@ iNZPlotModWin <- setRefClass(
         initialize = function(gui=NULL) {
             initFields(GUI = gui)
             if (!is.null(GUI)) {
-                try(dispose(modWin))
                 curSet <<- GUI$getActiveDoc()$getSettings()
                 modWin <<- gwindow(title = "Add to Plot",
                                    visible = TRUE,

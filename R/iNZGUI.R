@@ -10,7 +10,11 @@ iNZGUI <- setRefClass(
                    ## the Widget containing the 2 data views
                    dataViewWidget = "ANY",
                    ## widget that handles the plot notebook
-                   plotWidget = "ANY"
+                   plotWidget = "ANY",
+                   ## every window that modifies plot/data
+                   ## this way we can ensure to only have one
+                   ## open at the time
+                   modWin = "ANY"
                    ),
                prototype = list(
                    activeDoc = 1
@@ -56,12 +60,12 @@ iNZGUI <- setRefClass(
         initializeMenu = function(cont) {
             actionList <- list(
                 import = gaction(
-                    label = "import", icon = "symbol_diamond",
+                    label = "Import Data", icon = "symbol_diamond",
                     tooltip = "Import a new Dataset",
                     handler = function(h, ...) iNZImportWin$new(.self)
                     ),
                 export = gaction(
-                    label = "export", icon = "symbol_diamond",
+                    label = "Export Data", icon = "symbol_diamond",
                     handler = function(h, ...) iNZSaveWin$new(.self,
                         type = "data",
                         data = .self$getActiveData())
@@ -70,11 +74,62 @@ iNZGUI <- setRefClass(
                     label = "Convert to Categorical",
                     icon = "symbol_diamond",
                     tooltip = "Convert a variable to a categorical type",
-                    handler = function(h, ...) {NULL}
-                    )
+                    handler = function(h, ...) iNZconToCatWin$new(.self)
+                    ),               
+                trns = gaction(
+                    label = "Transform Variables",
+                    icon = "symbol_diamond",
+                    tooltip = "Transform a variable using a function",
+                    handler = function(h, ...) NULL
+                    ),
+                clps = gaction(
+                    label = "Collapse Levels",
+                    icon = "symbol_diamond",
+                    handler = function(h, ...) NULL
+                    ),
+                reordLvl = gaction(
+                    label = "Reorder Levels",
+                    icon = "symbol_diamond",
+                    handler = function(h, ...) NULL
+                    ),
+                renmLvl = gaction(
+                    label = "Rename Levels",
+                    icon = "symbol_diamond",
+                    handler = function(h, ...) NULL
+                    ),
+                rshpDf = gaction(
+                    label = "Reshape Dataset",
+                    icon = "symbol_diamond",
+                    handler = function(h, ...) NULL
+                    ),
+                cmbnCat = gaction(
+                    label = "Combine Categorical Variables",
+                    icon = "symbol_diamond",
+                    handler = function(h, ...) NULL
+                    ),
+                create = gaction(
+                    label = "Create New Variables",
+                    icon = "symbol_diamond",
+                    handler = function(h, ...) NULL
+                    ),
+                frmInt = gaction(
+                    label = "Form Class Intervals",
+                    icon = "symbol_diamond",
+                    handler = function(h, ...) NULL
+                    ),
+                renmVar = gaction(
+                    label = "Rename Variables",
+                    icon = "symbol_diamond",
+                    handler = function(h, ...) NULL
+                    ),
+                stdVar = gaction(
+                    label = "Standardize Variables",
+                    icon = "symbol_diamond",
+                    handler = function(h, ...) NULL
+                    )                    
                 )
             menuBarList <- list(File = actionList[1:2],
-                                Manipulate = actionList[3]
+                                "Manipulate variables" = actionList[3:13]
                                 )
             gmenu(menuBarList, container = cont)
         },
@@ -91,7 +146,7 @@ iNZGUI <- setRefClass(
             ## if the dataSet changes, update the variable View
             getActiveDoc()$addDataObserver(
                 function()
-                dataViewWidget$updateVarView())
+                dataViewWidget$updateWidget())
             getActiveDoc()$addSettingsObjObserver(function() updatePlot())
         },
         ## set up the buttons used for drag and drop and control of
