@@ -12,6 +12,7 @@ iNZight()
 \arguments{
   \item{data}{
 	Optional argument to supply a data.frame used on startup
+	}
 }
 \value{
 This function is not expected to return a value.
