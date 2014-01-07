@@ -1,0 +1,109 @@
+iNZDataViewWidget <- setRefClass("iNZDataViewWidget",
+                                 fields = list(
+                                     GUI = "ANY", ## the iNZight GUI object
+                                     dataGp = "ANY", ## group containing the 2 different view groups
+                                     dfView = "ANY", ## group that contains data view
+                                     varView = "ANY" ## group that contains variable view
+                                     ),
+                                 methods = list(
+                                     initialize = function(gui) {
+                                         initFields(GUI = gui)                                        
+                                         dataGp <<- ggroup(horizontal = TRUE, expand = TRUE)
+                                         ## create the data.frame view
+                                         createDfView()
+                                         ## create the variable view
+                                         createVarView()
+                                         ## start in dataView if size is less than 200k
+                                         dataSet <- GUI$getActiveData()
+                                         if(nrow(dataSet) * ncol(dataSet) <= 200000) 
+                                             visible(dfView) <- TRUE
+                                         else
+                                             visible(varView) <- TRUE
+                                     },
+                                     ## recreate both views with active dataset
+                                     updateWidget = function() {
+                                         view <- visible(dfView)
+                                         delete(dataGp, dfView)
+                                         delete(dataGp, varView)
+                                         ## create the data.frame view
+                                         createDfView()
+                                         ## create the variable view
+                                         createVarView()
+                                         if(view)
+                                             visible(dfView) <- TRUE
+                                         else
+                                             visible(varView) <- TRUE
+                                         
+                                     },
+                                     ## only update the variable view
+                                     updateVarView = function() {
+                                         view <- visible(varView)
+                                         createVarView()
+                                         visible(varView) <- view
+                                     },
+                                     ## only update the data.frame view
+                                     updateDfView = function() {
+                                         view <- visible(dfView)
+                                         createDfView()
+                                         visible(dfView) <- view
+                                     },                                     
+                                     ## create the data.frame view (invisible)
+                                     createDfView = function() {
+                                         dataSet <- GUI$getActiveData()
+                                         dfView <<- ggroup(container = dataGp, expand = TRUE)
+                                         visible(dfView) <- FALSE
+                                         dfWidget <- gdf(dataSet, expand = TRUE)
+                                         add(dfView, dfWidget, expand = TRUE)
+                                         ## if the data.frame gets edited, update the iNZDocument
+                                         addHandlerChanged(dfWidget,
+                                                           handler = function(h, ...) {
+                                                               X1 <- dfWidget[]
+                                                               if(class(X1) != "data.frame")
+                                                                   newData <- data.frame(X1)
+                                                               GUI$getActiveDoc()$getModel()$updateData(X1)})
+                                     },
+                                     ## create variable view (invisible)
+                                     createVarView = function() {
+                                         dataSet <- GUI$getActiveData()
+                                         varView <<- ggroup(container = dataGp, expand = TRUE)
+                                         visible(varView) <- FALSE
+                                         ## if more than 19 columns are in the dataSet, split the variable
+                                         ## view into 2 tables
+                                         N <- 19
+                                         if(length(names(dataSet)) > N && length(names(dataSet)) < 80) {
+                                             varWidget <- list(
+                                                 gtable(names(dataSet)[1:floor(N/2)], expand = TRUE),
+                                                 gtable(names(dataSet)[(floor(N/2)+1):ncol(dataSet)], expand = TRUE))
+                                             names(varWidget[[1]]) <- "VARIABLES"
+                                             names(varWidget[[2]]) <- "...CONTINUED"                                      
+                                         } else {
+                                             varWidget <- list(gtable(names(dataSet), expand = TRUE))
+                                             names(varWidget[[1]]) <- "VARIABLES"
+                                         }
+                                         ## use the variable view as dropsource and add to data group
+                                         ## save in temporary variable as to prevent a function return value
+                                         tmp <- lapply(varWidget, function(x) {
+                                             add(varView, x, expand = TRUE)
+                                             addDropSource(x, handler = function(h, ...) svalue(h$obj))}) 
+                                     },
+                                     ## change the currently active View
+                                     changeView = function() {
+                                         if(visible(dfView)) {
+                                             visible(dfView) <- FALSE
+                                             visible(varView) <- TRUE
+                                         } else {
+                                             visible(varView) <- FALSE                                             
+                                             visible(dfView) <- TRUE
+                                         }
+                                     },
+                                     ## set view to data.frame view
+                                     dataView = function() {
+                                         visible(varView) <- FALSE
+                                         visible(dfView) <- TRUE
+                                     },
+                                     ## set view to list of columns
+                                     listView = function() {
+                                         visible(dfView) <- FALSE
+                                         visible(varView) <- TRUE
+                                     })
+                                 )

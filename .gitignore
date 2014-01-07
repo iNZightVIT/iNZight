@@ -1,0 +1,5 @@
+*.Rhistory
+*~
+#*#
+
+*old.R
