@@ -1,3 +1,12 @@
+library(objectProperties)
+library(iNZightPlots)
+library(gWidgets2)
+library(gWidgets2RGtk2)
+library(cairoDevice)
+options(guiToolkit="RGtk2")
+#tmp <- sapply(list.files("~/backup/backup1812/01F7-A740/Work/inZight/iNZightPlots/R", full.names = TRUE), source)
+source("classSource.R")
+
 iNZGUI <- setRefClass(
     "iNZGUI",
     properties(fields = list(
@@ -23,18 +32,23 @@ iNZGUI <- setRefClass(
             win <<- gwindow(win.title, visible = FALSE, width = 870,
                             height = 600)
             g <- gpanedgroup(container = win, expand = TRUE)
-            #w$set_borderwidth(8)
             ## Left side group
             gp1 <- ggroup(horizontal = FALSE, container = g)
             size(gp1) <- c(200, 200)
             ## Right side group
             gp2 <- ggroup(horizontal = FALSE, container = g, expand = TRUE)
             ## set up widgets in the left group
-            initializeMenu(gp1) ## set up the menu bar at the top
+            ## set up the menu bar at the top
+            initializeMenu(gp1)
+            ## set up dataViewWidget, added below
             initializeDataView()
+            ## set up buttons to switch between data/var view
             add(gp1, .self$initializeViewSwitcher()$viewGroup)
             add(gp1, dataViewWidget$dataGp, expand = TRUE)
+            ## set up the drag and drop fields
             add(gp1, initializeControlWidget()$ctrlGp, expand = FALSE)
+            ## set up the summary buttongs
+            add(gp1, initializeSummaryBtns())
             ## set up widgets in the right group
             ## set up plot notebook
             initializePlotWidget()
@@ -84,6 +98,22 @@ iNZGUI <- setRefClass(
             ## if plotSettings change, update the plot
             getActiveDoc()$addSettingsObserver(function() updatePlot())
             iNZControlWidget$new(.self)
+        },
+        ## set up the summary and inference buttons under the 
+        ## drag and drop fields
+        initializeSummaryBtns = function() {
+            sumGrp <- ggroup()
+            sumBtn <- gbutton("Get Summary")
+            infBtn <- gbutton("Get Inference")
+            font(sumBtn) <- list(weight = "bold",
+                                 family = "normal",
+                                 color = "navy")
+            font(infBtn) <- list(weight = "bold",
+                                 family = "normal",
+                                 color = "navy")
+            add(sumGrp, sumBtn, expand = TRUE)
+            add(sumGrp, infBtn, expand = TRUE)
+            sumGrp
         },
         ## set up the widget with the plot notebook
         initializePlotWidget = function() {
