@@ -85,9 +85,9 @@ iNZPlotRmveModWin <- setRefClass(
                                                      selectGrp$children,
                                                      svalue)] - 1
                                              ## update the plot settings
-                                             invisible(sapply(
-                                                 rmvAdditions[rmv],
-                                                 GUI$getActiveDoc()$setSettings))
+                                             GUI$getActiveDoc()$setSettings(
+                                                 unlist(rmvAdditions[rmv], recursive = FALSE)
+                                                 )
                                              dispose(rmvWin)
                                          })
                 rmvWin <- gwindow(title = "Remove additions",
