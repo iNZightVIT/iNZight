@@ -82,10 +82,9 @@ iNZDataViewWidget <- setRefClass(
                 names(varWidget[[1]]) <- "VARIABLES"
             }
             ## use the variable view as dropsource and add to data group
-            ## save in temporary variable as to prevent a function return value
-            tmp <- lapply(varWidget, function(x) {
+            invisible(lapply(varWidget, function(x) {
                 add(varView, x, expand = TRUE)
-                addDropSource(x, handler = function(h, ...) svalue(h$obj))}) 
+                addDropSource(x, handler = function(h, ...) svalue(h$obj))}))
         },
         ## change the currently active View
         changeView = function() {

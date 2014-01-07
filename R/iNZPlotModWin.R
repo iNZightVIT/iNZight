@@ -279,6 +279,8 @@ iNZScatterMod <- setRefClass(
                                       GUI$getActiveDoc()$setSettings(
                                           list(by = GUI$getActiveData()[[
                                                    svalue(grpVarList)]],
+                                               prop.size = GUI$getActiveData()[[
+                                                   svalue(rszVarList)]],
                                                varnames = list(
                                                    by = svalue(grpVarList)))
                                           )
