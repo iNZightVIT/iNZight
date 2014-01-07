@@ -55,15 +55,26 @@ iNZGUI <- setRefClass(
         ## set up the menu bar widget
         initializeMenu = function(cont) {
             actionList <- list(
-                import = gaction(label = "import", icon = "symbol_diamond",
+                import = gaction(
+                    label = "import", icon = "symbol_diamond",
                     tooltip = "Import a new Dataset",
-                    handler = function(h, ...) iNZImportWin$new(.self)),
-                export = gaction(label = "export", icon = "symbol_diamond",
+                    handler = function(h, ...) iNZImportWin$new(.self)
+                    ),
+                export = gaction(
+                    label = "export", icon = "symbol_diamond",
                     handler = function(h, ...) iNZSaveWin$new(.self,
                         type = "data",
-                        data = .self$getActiveData()))
+                        data = .self$getActiveData())
+                    ),
+                conToCat = gaction(
+                    label = "Convert to Categorical",
+                    icon = "symbol_diamond",
+                    tooltip = "Convert a variable to a categorical type",
+                    handler = function(h, ...) {NULL}
+                    )
                 )
-            menuBarList <- list(file = actionList[1:2]
+            menuBarList <- list(File = actionList[1:2],
+                                Manipulate = actionList[3]
                                 )
             gmenu(menuBarList, container = cont)
         },
