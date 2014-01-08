@@ -19,9 +19,9 @@ iNZPlotInfWin <- setRefClass(
             if (!is.null(GUI)) {
                 ## close modification window if one is open
                 try(dispose(GUI$modWin), silent = TRUE)
-                modWin <<- gwindow(title = "Add Inference Info",
-                                   visible = TRUE,
-                                   parent = GUI$win)
+                GUI$modWin <<- gwindow(title = "Add Inference Info",
+                                       visible = TRUE,
+                                       parent = GUI$win)
                 mainGrp <- ggroup(horizontal = FALSE,
                                   container = GUI$modWin,
                                   expand = FALSE)

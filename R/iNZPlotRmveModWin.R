@@ -92,9 +92,9 @@ iNZPlotRmveModWin <- setRefClass(
                                                  )
                                              dispose(rmvWin)
                                          })
-                GUI$modWin <- gwindow(title = "Remove additions",
-                                      visible = TRUE,
-                                      parent = GUI$win)
+                GUI$modWin <<- gwindow(title = "Remove additions",
+                                       visible = TRUE,
+                                       parent = GUI$win)
                 mainGrp <- ggroup(horizontal = FALSE,
                                   container = GUI$modWin,
                                   expand = FALSE)                
