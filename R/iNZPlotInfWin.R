@@ -90,11 +90,27 @@ iNZDotchartInf <- setRefClass(
             parm <- gradio(c("Medians",
                              "Means"))
             intType <- gradio(c("Comparison Intervals",
-                                "Confidence Intervals",
+                                ##"Confidence Intervals",
                                 "Comparison + Confidence Intervals"))
             mthd <- gradio(c("Bootstrap", "Year 12"),
                            selected = 2)            
-            addButton <- gbutton("Add Intervals")
+            addButton <- gbutton(
+                "Add Intervals",
+                handler = function(h, ...) {
+                    inf.type <- list("comp",
+                                     #"conf",
+                                     c("comp", "conf"))[[svalue(intType,
+                                                                index = TRUE)]]
+                    inf.par <- c("median", "mean")[svalue(parm, index = TRUE)]
+                    bs.inf <- svalue(mthd, index = TRUE) == 1
+                    GUI$getActiveDoc()$setSettings(
+                        list(
+                            inference.type = inf.type,
+                            inference.par = inf.par,
+                            bs.inference = bs.inf
+                            )
+                        )
+                })
             tbl[1, 2] <<- parm
             tbl[2, 2] <<- intType
             tbl[3, 2] <<- mthd
