@@ -54,7 +54,8 @@ iNZDataViewWidget <- setRefClass(
             dfView <<- ggroup(container = dataGp, expand = TRUE)
             visible(dfView) <- FALSE
             dfWidget <- gdf(dataSet, expand = TRUE)
-            add(dfView, dfWidget, expand = TRUE)
+            dfWidget$remove_popup_menu()
+            add(dfView, dfWidget, expand = TRUE)            
             ## if the data.frame gets edited, update the iNZDocument
             addHandlerChanged(dfWidget,
                               handler = function(h, ...) {
@@ -84,6 +85,7 @@ iNZDataViewWidget <- setRefClass(
             ## use the variable view as dropsource and add to data group
             invisible(lapply(varWidget, function(x) {
                 add(varView, x, expand = TRUE)
+                x$remove_popup_menu()
                 addDropSource(x, handler = function(h, ...) svalue(h$obj))}))
         },
         ## change the currently active View
