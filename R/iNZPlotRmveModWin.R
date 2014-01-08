@@ -90,7 +90,7 @@ iNZPlotRmveModWin <- setRefClass(
                                              GUI$getActiveDoc()$setSettings(
                                                  unlist(rmvAdditions[rmv], recursive = FALSE)
                                                  )
-                                             dispose(rmvWin)
+                                             dispose(GUI$modWin)
                                          })
                 GUI$modWin <<- gwindow(title = "Remove additions",
                                        visible = TRUE,
