@@ -80,7 +80,7 @@ iNZGUI <- setRefClass(
                     label = "Transform Variables",
                     icon = "symbol_diamond",
                     tooltip = "Transform a variable using a function",
-                    handler = function(h, ...) NULL
+                    handler = function(h, ...) iNZtrnsWin$new(.self)
                     ),
                 clps = gaction(
                     label = "Collapse Levels",
