@@ -10,19 +10,20 @@
 iNZPlotInfWin <- setRefClass(
     "iNZPlotInfWin",
     fields = list(
-        GUI = "ANY",
-        modWin = "ANY",        
+        GUI = "ANY",       
         tbl = "ANY"
         ),
     methods = list(
         initialize = function(gui=NULL) {
             initFields(GUI = gui)
             if (!is.null(GUI)) {
+                ## close modification window if one is open
+                try(dispose(GUI$modWin), silent = TRUE)
                 modWin <<- gwindow(title = "Add Inference Info",
                                    visible = TRUE,
                                    parent = GUI$win)
                 mainGrp <- ggroup(horizontal = FALSE,
-                                  container = modWin,
+                                  container = GUI$modWin,
                                   expand = FALSE)
                 mainGrp$set_borderwidth(15)
                 tbl <<- glayout(cont = mainGrp,

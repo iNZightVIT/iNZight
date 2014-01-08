@@ -12,6 +12,8 @@ iNZPlotRmveModWin <- setRefClass(
         initialize = function(gui=NULL) {
             initFields(GUI = gui)
             if(!is.null(GUI)) {
+                ## close a modification window if one is open
+                try(dispose(GUI$modWin), silent = TRUE)
                 curSet <<- GUI$getActiveDoc()$getSettings()
                 defSet <<- iNZightPlots:::inzPlotDefaults()
                 ## labels for all possible additions
@@ -90,11 +92,11 @@ iNZPlotRmveModWin <- setRefClass(
                                                  )
                                              dispose(rmvWin)
                                          })
-                rmvWin <- gwindow(title = "Remove additions",
-                                  visible = TRUE,
-                                  parent = GUI$win)
+                GUI$modWin <- gwindow(title = "Remove additions",
+                                      visible = TRUE,
+                                      parent = GUI$win)
                 mainGrp <- ggroup(horizontal = FALSE,
-                                  container = rmvWin,
+                                  container = GUI$modWin,
                                   expand = FALSE)                
                 selectGrp <- ggroup(horizontal = FALSE,
                                   container = mainGrp,
