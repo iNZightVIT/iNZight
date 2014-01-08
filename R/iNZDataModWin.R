@@ -16,7 +16,7 @@ iNZDataModWin <- setRefClass(
             if (!is.null(GUI)) {
                try(dispose(GUI$modWin), silent = TRUE) ## close any current mod windows
                GUI$modWin <<- gwindow(parent = GUI$win,
-                                     visible = FALSE)
+                                      visible = FALSE)
             }
         },
         ## insert a column with a certain name at specified index
@@ -49,7 +49,7 @@ iNZDataModWin <- setRefClass(
         })
     )
 
-
+## Convert variables to a categorical type
 iNZconToCatWin <- setRefClass(
     "iNZconToCatWin",
     contains = "iNZDataModWin",
@@ -121,6 +121,7 @@ iNZconToCatWin <- setRefClass(
         })
     )
 
+## transform variables using various functions
 iNZtrnsWin <- setRefClass(
     "iNZtrnsWin",
     contains = "iNZDataModWin",
@@ -173,6 +174,7 @@ iNZtrnsWin <- setRefClass(
             add(GUI$modWin, mainGroup, expand = TRUE)
             visible(GUI$modWin) <<- TRUE
         },
+        ## check whether the data is illegible for transformation
         checkData = function(varData) {
             if (all(is.factor(varData))) {
                 gmessage(title = "ERROR",
@@ -184,7 +186,8 @@ iNZtrnsWin <- setRefClass(
         },
         ## add a drop target to a transformation field
         ## obj: the glabel object to be used as dropTarget
-        ## type: the function used for transformation
+        ## fn: the function used for transformation
+        ## nameAdd: the string that is pasted on to the var name
         addTransformation = function(obj, fn, nameAdd) {
             addDropTarget(obj, handler = function(h, ...) {
                 dropData <- GUI$getActiveDoc()$getData()[h$dropdata][[1]]
@@ -201,6 +204,11 @@ iNZtrnsWin <- setRefClass(
                 }
             })
         },
+        ## transform a vector and its name
+        ## varData: the vector to be transformed
+        ## varName: the original name of the column
+        ## trnsFn: the function used for transformation
+        ## trnsName: the string added on to the varName
         trnsfrm = function(varData, varName, trnsFn, trnsName) {
             out <- round(do.call(trnsFn, list(varData)), 3)
             name <- paste(trnsName, ".", varName, sep = "")
@@ -211,5 +219,94 @@ iNZtrnsWin <- setRefClass(
         },
         recip = function(x) {
             1/x
+        })
+    )
+
+## collapse multiple factor levels into one
+iNZcllpsWin <- setRefClass(
+    "iNZcllpsWin",
+    contains = "iNZDataModWin",
+    methods = list(
+        initialize = function(gui) {
+            callSuper(gui)
+            svalue(GUI$modWin) <<- "Collapse Levels"
+            size(GUI$modWin) <<- c(100, 100)
+            mainGroup <- ggroup(expand = TRUE, horizontal = FALSE)
+            mainGroup$set_borderwidth(15)
+            ## instructions through glabels
+            lbl1 <- glabel("Choose a variable")
+            font(lbl1) <- list(weight = "bold",
+                               family = "normal")
+            lbl2 <- glabel("Choose two or more levels")
+            font(lbl2) <- list(weight = "bold",
+                               family = "normal")            
+            lbl3 <- glabel("(Hold Ctrl to choose many)")
+            font(lbl3) <- list(weight = "bold",
+                               family = "normal")
+            ## choose a factor column from the dataset and display
+            ## its level in a gtable
+            factorIndices <- sapply(GUI$getActiveData(), is.factor)
+            factorMenu <- gcombobox(names(GUI$getActiveData())[factorIndices],
+                                    selected = 0)
+            addHandlerChanged(factorMenu, handler = function(h, ...) {
+                factorLvls[] <- levels(GUI$getActiveData()[svalue(factorMenu)][[1]])
+            })
+            factorLvls <- gtable("", multiple = TRUE, expand = TRUE)
+            names(factorLvls) <- "Levels"
+            cllpsButton <- gbutton(
+                " - COLLAPSE -",
+                handler = function(h, ...) {
+                    if (checkLevels(svalue(factorLvls))) {
+                        print(svalue(factorLvls))
+                        cnf <- gconfirm(
+                            parent = GUI$modWin,
+                            msg = paste("Collapse the levels\n",
+                                paste(svalue(factorLvls), collapse = " + "),
+                                "\ninto one level with the name\n'",
+                                paste(svalue(factorLvls), collapse = "_"),
+                                "'?")
+                            )
+                        if (cnf) {
+                            insertData(
+                                data = collapse(GUI$getActiveData()[
+                                    svalue(factorMenu)][[1]],
+                                    svalue(factorLvls)),
+                                name = paste(
+                                    svalue(factorMenu),
+                                    ".coll", sep = ""),
+                                index = which(names(
+                                    GUI$getActiveData()) == svalue(factorMenu)),
+                                closeAfter = TRUE)
+                        }
+                    }
+                })
+            add(mainGroup, lbl1)
+            add(mainGroup, factorMenu)
+            add(mainGroup, lbl2)
+            add(mainGroup, lbl3)            
+            add(mainGroup, factorLvls, expand = TRUE)
+            add(mainGroup, cllpsButton)
+            add(GUI$modWin, mainGroup, expand = TRUE, fill = TRUE)
+            visible(GUI$modWin) <<- TRUE
+        },
+        checkLevels = function(levels) {
+            if (is.null(levels) || length(levels) < 2) {
+                gmessage(title = "ALERT",
+                         icon = "warning",
+                         msg = "Need to select at least two levels to collapse",
+                         parent = GUI$modWin)
+                FALSE
+            } else
+                TRUE
+        },
+        ## collapse two or more levels into one, return the new factor
+        ## varData: the original vector
+        ## levels: the levels to collapse
+        collapse = function(varData, levels) {
+            newLevel <- paste(levels, collapse = "_")
+            newFactor <- as.character(varData)
+            newFactor[varData %in% levels] <- newLevel
+            newFactor <- as.factor(newFactor)
+            newFactor
         })
     )

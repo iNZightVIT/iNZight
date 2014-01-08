@@ -85,7 +85,7 @@ iNZGUI <- setRefClass(
                 clps = gaction(
                     label = "Collapse Levels",
                     icon = "symbol_diamond",
-                    handler = function(h, ...) NULL
+                    handler = function(h, ...) iNZcllpsWin$new(.self)
                     ),
                 reordLvl = gaction(
                     label = "Reorder Levels",
