@@ -31,10 +31,13 @@ iNZDataModWin <- setRefClass(
                         data,
                         GUI$getActiveData()[, (index+1):ncol(GUI$getActiveData())]
                         )
-                    names(newData)[(index+1):ncol(newData)] <- c(
+                    newNames <- c(
+                        names(GUI$getActiveData())[1:index],
                         name,
-                        names(GUI$getActiveData()[, (index+1):ncol(GUI$getActiveData())])
+                        names(GUI$getActiveData())[(index+1):ncol(GUI$getActiveData())]
                         )
+                    newNames <- make.names(newNames, unique = TRUE)
+                    names(newData) <- newNames
                 } else {
                     newData <- data.frame(GUI$getActiveData(), data)
                     names(newData)[ncol(newData)] <- name
@@ -116,7 +119,7 @@ iNZconToCatWin <- setRefClass(
                                 "in the dataset"),
                             icon = "info",
                             parent = GUI$modWin)
-                insertData(out, name, index, msg)
+                insertData(out, name, index, msg, closeAfter = FALSE)
             }
         })
     )
@@ -257,7 +260,6 @@ iNZcllpsWin <- setRefClass(
                 " - COLLAPSE -",
                 handler = function(h, ...) {
                     if (checkLevels(svalue(factorLvls))) {
-                        print(svalue(factorLvls))
                         cnf <- gconfirm(
                             parent = GUI$modWin,
                             msg = paste("Collapse the levels\n",
@@ -289,6 +291,8 @@ iNZcllpsWin <- setRefClass(
             add(GUI$modWin, mainGroup, expand = TRUE, fill = TRUE)
             visible(GUI$modWin) <<- TRUE
         },
+        ## check whether the specified levels are illegible
+        ## for collapsing
         checkLevels = function(levels) {
             if (is.null(levels) || length(levels) < 2) {
                 gmessage(title = "ALERT",
@@ -310,3 +314,147 @@ iNZcllpsWin <- setRefClass(
             newFactor
         })
     )
+
+## reorder factor levels
+iNZreorderWin <- setRefClass(
+    "iNZreorderWin",
+    contains = "iNZDataModWin",
+    methods = list(
+        initialize = function(gui) {
+            callSuper(gui)
+            svalue(GUI$modWin) <<- "Reorder Factor Levels"
+            mainGroup <- ggroup(expand = TRUE, horizontal = FALSE)
+            mainGroup$set_borderwidth(15)
+            ## instructions through glabels
+            lbl1 <- glabel("Variable to reorder:")
+            font(lbl1) <- list(weight = "bold",
+                               family = "normal")
+            lbl2 <- glabel("Name of the new variable:")
+            font(lbl2) <- list(weight = "bold",
+                               family = "normal")
+            ## choose a factor column from the dataset and display
+            ## its levels together with their order
+            factorIndices <- sapply(GUI$getActiveData(), is.factor)
+            factorMenu <- gcombobox(names(GUI$getActiveData())[factorIndices],
+                                    selected = 0)
+            addHandlerChanged(factorMenu, handler = function(h, ...) {
+                svalue(factorName) <- paste(svalue(factorMenu),
+                                            ".reord", sep = "")
+                displayLevels(tbl,
+                              GUI$getActiveData()[svalue(factorMenu)][[1]])
+                ## block the handlers before changing the sortby dropdown
+                ## because the signal order is messed up, which causes
+                ## the wrong signal to be emitted first
+                blockHandlers(sortMenu)
+                svalue(sortMenu, index = TRUE) <- 1
+                unblockHandlers(sortMenu)
+            })
+            factorName <- gedit("")
+            reorderButton <- gbutton("-REORDER-", handler = function(h, ...) {
+                newFactor <- changeLevels(
+                    tbl,
+                    GUI$getActiveData()[svalue(factorMenu)][[1]])
+                ## newFactor will be FALSE, if the user input was wrong
+                if (newFactor) 
+                    insertData(data = newFactor,
+                               name = svalue(factorName),
+                               index = which(names(
+                                   GUI$getActiveData()) == svalue(factorMenu)),
+                               msg = list(
+                                   msg = paste("The new factor can be found under the name '",
+                                       svalue(factorName), "'", sep = ""),
+                                   icon = "info"),
+                               closeAfter = FALSE
+                               )
+            })
+            tbl <- glayout()
+            tbl[1, 1, expand = TRUE, anchor = c(-1, 0)] <- lbl1
+            tbl[1, 2, expand = TRUE, anchor = c(1, 0)] <- factorMenu
+            tbl[2, 1:2, expand = TRUE, anchor = c(-1, 0)] <- lbl2
+            tbl[3, 1:2, expand = TRUE] <- factorName
+            sortGrp <- ggroup()
+            sortLbl <- glabel("Sort by:", cont = sortGrp, expand = TRUE)
+            sortMenu <- gcombobox(c("Manual", "Frequency"),
+                                  selected = 1, cont = sortGrp, expand = TRUE)
+            addHandlerChanged(sortMenu, handler = function(h, ...) {
+                print(svalue(sortMenu, index = TRUE))
+                if (length(tbl$children) > 4) {
+                    if (svalue(sortMenu, index = TRUE) == 2) {
+                        sortByFreq(tbl,
+                                   GUI$getActiveData()[svalue(factorMenu)][[1]])
+                    } 
+                }
+            })
+            add(mainGroup, tbl, expand = TRUE)
+            add(mainGroup, sortGrp)
+            add(mainGroup, reorderButton)
+            add(GUI$modWin, mainGroup, expand = TRUE, fill = TRUE)
+            visible(GUI$modWin) <<- TRUE
+        },
+        displayLevels = function(tbl, factorData) {
+            ## try to delete currently displayed levels
+            ## the first 4 children of tbl refer to the permanent ones
+            ## i.e. everything up to and including the gedit to rename
+            ## the factor
+            if (length(tbl$children) > 4) {
+                try(invisible(
+                    sapply(tbl$children[5:length(tbl$children)],
+                           tbl$remove_child)))
+            }
+            
+            lbl3 <- glabel("Levels")
+            font(lbl3) <- list(weight = "bold",
+                               family = "normal")
+            lbl4 <- glabel("Order")
+            font(lbl4) <- list(weight = "bold",
+                               family = "normal")
+            tbl[4, 1, expand = TRUE, anchor = c(-1, 0)] <- lbl3
+            tbl[4, 2, expand = TRUE, anchor = c(-1, 0)] <- lbl4
+            invisible(sapply(levels(factorData), function(x) {
+                pos <- which(levels(factorData) == x)
+                tbl[4 + pos, 1, expand = TRUE, anchor = c(-1, 0)] <- glabel(x)
+                tbl[4 + pos, 2] <- gedit(pos)
+            }))
+        },
+        changeLevels = function(tbl, factorData) {
+            if (length(tbl$children) < 5) {
+                gmessage(msg = "Please choose a factor to reorder",
+                         icon = "error",
+                         parent = GUI$modWin)
+                return(FALSE)
+            }
+            ## the first 4 children dont refer to the factor levels
+            ## each factor lvl has 2 entries in the glayout
+            ## the 5th entry refers to the glabels "Levels" and "Order"
+            nrLevels <- (length(tbl$children) - 4)/2 - 1
+            facLevels <- sapply(tbl[5:(5+nrLevels-1), 1], svalue)
+            facOrder <- as.numeric(sapply(tbl[5:(5+nrLevels-1), 2], svalue))
+            ## check if all order numbers are unique            
+            if (anyDuplicated(facOrder) > 0) {
+                gmessage(msg = "Please choose a unique order for the levels",
+                         icon = "error",
+                         parent = GUI$modWin)
+                FALSE
+            }
+            else if (max(facOrder) > length(facOrder)) {
+                gmessage(msg = "Please remove holes from the order sequence",
+                         icon = "error",
+                         parent = GUI$modWin)
+                FALSE
+            }
+            else {
+                newFactor <- factor(factorData, levels = facLevels[facOrder])
+                newFactor
+            }
+        },
+        sortByFreq = function(tbl, factorData) {
+            tb <- table(factorData)
+            tb <- names(tb[order(tb, decreasing = TRUE)])
+            newOrder <- sapply(levels(factorData),
+                               function(x) which(x == tb))
+            invisible(sapply(1:length(tb),
+                             function(i) svalue(tbl[4 + i, 2]) <- newOrder[i]))
+        })
+    )
+            
+            

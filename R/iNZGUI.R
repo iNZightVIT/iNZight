@@ -90,7 +90,7 @@ iNZGUI <- setRefClass(
                 reordLvl = gaction(
                     label = "Reorder Levels",
                     icon = "symbol_diamond",
-                    handler = function(h, ...) NULL
+                    handler = function(h, ...) iNZreorderWin$new(.self)
                     ),
                 renmLvl = gaction(
                     label = "Rename Levels",
