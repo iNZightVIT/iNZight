@@ -178,7 +178,24 @@ iNZGUI <- setRefClass(
                                                parent = win)
                                   }
                               })
-            infBtn <- gbutton("Get Inference")
+            infBtn <- gbutton("Get Inference",
+                              handler = function(h, ...) {
+                                  curSet <- getActiveDoc()$getSettings()
+                                  if (!is.null(curSet$x)) {
+                                      w <- gwindow("Summary", width = 600, height = 400,
+                                                   visible = FALSE, parent = win)
+                                      g <- gtext(text = paste(do.call(
+                                                     iNZightPlots:::getPlotInference,
+                                                     curSet),
+                                                     collapse = "\n"),
+                                                 expand = TRUE, cont = w, wrap = FALSE,
+                                                 font.attr = c(family = "monospace"))
+                                      visible(w) <- TRUE
+                                  } else {
+                                      gmessage("Please select at least one variable",
+                                               parent = win)
+                                  }
+                              })
             font(sumBtn) <- list(weight = "bold",
                                  family = "normal",
                                  color = "navy")
