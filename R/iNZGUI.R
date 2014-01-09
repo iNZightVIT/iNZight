@@ -95,7 +95,7 @@ iNZGUI <- setRefClass(
                 renmLvl = gaction(
                     label = "Rename Levels",
                     icon = "symbol_diamond",
-                    handler = function(h, ...) NULL
+                    handler = function(h, ...) iNZrenameWin$new(.self)
                     ),
                 rshpDf = gaction(
                     label = "Reshape Dataset",

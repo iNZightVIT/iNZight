@@ -315,6 +315,123 @@ iNZcllpsWin <- setRefClass(
         })
     )
 
+## rename factor levels
+iNZrenameWin <- setRefClass(
+    "iNZrenameWin",
+    contains = "iNZDataModWin",
+    methods = list(
+        initialize = function(gui) {
+            callSuper(gui)
+            svalue(GUI$modWin) <<- "Rename Factor Levels"
+            mainGroup <- ggroup(expand = TRUE, horizontal = FALSE)
+            mainGroup$set_borderwidth(15)
+            ## instructions through glabels
+            lbl1 <- glabel("Variable to rename:")
+            font(lbl1) <- list(weight = "bold",
+                               family = "normal")
+            lbl2 <- glabel("Name of the new variable:")
+            font(lbl2) <- list(weight = "bold",
+                               family = "normal")
+            ## choose a factor column from the dataset and display
+            ## its levels together with their order
+            factorIndices <- sapply(GUI$getActiveData(), is.factor)
+            factorMenu <- gcombobox(names(GUI$getActiveData())[factorIndices],
+                                    selected = 0)
+            addHandlerChanged(factorMenu, handler = function(h, ...) {
+                svalue(factorName) <- paste(svalue(factorMenu),
+                                            ".rename", sep = "")
+                displayLevels(tbl,
+                              GUI$getActiveData()[svalue(factorMenu)][[1]])
+            })
+            factorName <- gedit("")
+            reorderButton <- gbutton("-REORDER-", handler = function(h, ...) {
+                newFactor <- changeLevels(
+                    tbl,
+                    GUI$getActiveData()[svalue(factorMenu)][[1]])
+                ## newFactor will be FALSE, if the user input was wrong
+                if (newFactor) 
+                    insertData(data = newFactor,
+                               name = svalue(factorName),
+                               index = which(names(
+                                   GUI$getActiveData()) == svalue(factorMenu)),
+                               msg = list(
+                                   msg = paste("The new factor can be found under the name '",
+                                       svalue(factorName), "'", sep = ""),
+                                   icon = "info"),
+                               closeAfter = FALSE
+                               )
+            })
+            tbl <- glayout()
+            tbl[1, 1, expand = TRUE, anchor = c(-1, 0)] <- lbl1
+            tbl[1, 2, expand = TRUE, anchor = c(1, 0)] <- factorMenu
+            tbl[2, 1:2, expand = TRUE, anchor = c(-1, 0)] <- lbl2
+            tbl[3, 1:2, expand = TRUE] <- factorName
+            add(mainGroup, tbl, expand = TRUE)
+            add(mainGroup, reorderButton)
+            add(GUI$modWin, mainGroup, expand = TRUE, fill = TRUE)
+            visible(GUI$modWin) <<- TRUE
+        },
+        displayLevels = function(tbl, factorData) {
+            ## try to delete currently displayed levels
+            ## the first 4 children of tbl refer to the permanent ones
+            ## i.e. everything up to and including the gedit to rename
+            ## the factor
+            if (length(tbl$children) > 4) {
+                try(invisible(
+                    sapply(tbl$children[5:length(tbl$children)],
+                           tbl$remove_child)))
+            }
+            
+            lbl3 <- glabel("Levels")
+            font(lbl3) <- list(weight = "bold",
+                               family = "normal")
+            lbl4 <- glabel("Order")
+            font(lbl4) <- list(weight = "bold",
+                               family = "normal")
+            tbl[4, 1, expand = TRUE, anchor = c(-1, 0)] <- lbl3
+            tbl[4, 2, expand = TRUE, anchor = c(-1, 0)] <- lbl4
+            invisible(sapply(levels(factorData), function(x) {
+                pos <- which(levels(factorData) == x)
+                tbl[4 + pos, 1, expand = TRUE, anchor = c(-1, 0)] <- glabel(x)
+                tbl[4 + pos, 2] <- gedit(x)
+            }))
+        },
+        changeLevels = function(tbl, factorData) {
+            if (length(tbl$children) < 5) {
+                gmessage(msg = "Please choose a factor to reorder",
+                         icon = "error",
+                         parent = GUI$modWin)
+                return(FALSE)
+            }
+            ## the first 4 children dont refer to the factor levels
+            ## each factor lvl has 2 entries in the glayout
+            ## the 5th entry refers to the glabels "Levels" and "Order"
+            nrLevels <- (length(tbl$children) - 4)/2 - 1
+            facLevels <- sapply(tbl[5:(5+nrLevels-1), 1], svalue)
+            newFacLevels <- sapply(tbl[5:(5+nrLevels-1), 2], svalue)
+            names(facLevels) <- newFacLevels
+            ## check if all order numbers are unique            
+            if (anyDuplicated(newFacLevels) > 0) {
+                gmessage(msg = "Please choose unique names for the levels",
+                         icon = "error",
+                         parent = GUI$modWin)
+                FALSE
+            }
+            else {
+                levels(factorData) <- as.list(facLevels)
+                factorData
+            }
+        },
+        sortByFreq = function(tbl, factorData) {
+            tb <- table(factorData)
+            tb <- names(tb[order(tb, decreasing = TRUE)])
+            newOrder <- sapply(levels(factorData),
+                               function(x) which(x == tb))
+            invisible(sapply(1:length(tb),
+                             function(i) svalue(tbl[4 + i, 2]) <- newOrder[i]))
+        })
+    )
+            
 ## reorder factor levels
 iNZreorderWin <- setRefClass(
     "iNZreorderWin",
@@ -377,7 +494,6 @@ iNZreorderWin <- setRefClass(
             sortMenu <- gcombobox(c("Manual", "Frequency"),
                                   selected = 1, cont = sortGrp, expand = TRUE)
             addHandlerChanged(sortMenu, handler = function(h, ...) {
-                print(svalue(sortMenu, index = TRUE))
                 if (length(tbl$children) > 4) {
                     if (svalue(sortMenu, index = TRUE) == 2) {
                         sortByFreq(tbl,
@@ -456,5 +572,3 @@ iNZreorderWin <- setRefClass(
                              function(i) svalue(tbl[4 + i, 2]) <- newOrder[i]))
         })
     )
-            
-            
