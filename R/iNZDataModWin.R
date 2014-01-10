@@ -668,3 +668,66 @@ iNZcmbCatWin <- setRefClass(
                                     FUN = paste, sep = ".")))
         })
     )
+
+## create new variables using an expression
+iNZcrteVarWin <- setRefClass(
+    "iNZcrteVarWin",
+    contains = "iNZDataModWin",
+    methods = list(
+        initialize = function(gui) {
+            callSuper(gui)
+            svalue(GUI$modWin) <<- "Create New Variables"
+            size(GUI$modWin) <<- c(450, 200)
+            mainGroup <- ggroup(expand = TRUE, horizontal = FALSE)
+            mainGroup$set_borderwidth(15)
+            lbl1 = glabel("Type in an expression to compute a new variable") 
+            font(lbl1) <- list(weight="bold", family = "normal")
+            lbl2 = glabel("EXAMPLES")
+            font(lbl2) <- list(weight="bold", family = "normal")
+            newVarName = gedit("new.variable", width = 15) ## name of the new variable
+            newVarExp = gedit("  ") ## expression used to create new var
+            submitButton = gbutton(" - SUBMIT -", handler = function(h,...) {
+                newValues = try(eval(parse(
+                    text = paste("with(tag(e$obj, \"dataSet\"),",
+                        gsub(pattern = '\\n+', "", svalue(newVarExp), perl = TRUE),
+                        ")"))))
+                if(class(newValues)[1] == "try-error")
+                    gmessage(title = "ERROR",
+                             msg = "Error in expression!",
+                             icon = "error", parent = GUI$modWin)
+                else {
+                    newName = gsub(
+                        pattern = '\\n+', "",
+                        svalue(newVarText), perl = TRUE)
+                    insertData(
+                        data = newValues,
+                        name = newName,
+                        index = ncol(GUI$getActiveData()),
+                        msg = list(
+                            msg = paste("The new variable",
+                                newName,
+                                "will be inserted as the last column of the dataset"),
+                            icon = "info",
+                            parent = GUI$modWin
+                            ),
+                        closeAfter = TRUE)                        
+                }
+            })
+            tbl <- glayout()
+            tbl[1,2, anchor = c(-1,1)] = "av.height"
+            tbl[1,3, anchor = c(-1,1)] = " = "
+            tbl[1,4, anchor = c(-1,1), expand = TRUE] = "(m.height + f.height)/2"
+            tbl[2,2, anchor = c(-1,1)] = "wgt.diff"
+            tbl[2,3, anchor = c(-1,1)] = " = "
+            tbl[2,4, anchor = c(-1,1), expand = TRUE] = "wgt.After - wgt.Before"
+            tbl[4,2,anchor = c(-1,1)] = newVarName
+            tbl[4,3,anchor = c(-1,1)] = " = "          
+            tbl[4,4, expand = TRUE, anchor = c(-1,1)] = newVarExp
+            add(mainGroup, lbl1)
+            add(mainGroup, lbl2)
+            add(mainGroup, tbl)
+            add(mainGroup, submitButton)
+            add(GUI$modWin, mainGroup, expand = TRUE, fill = TRUE)
+            visible(GUI$modWin) <<- TRUE
+        })
+    )

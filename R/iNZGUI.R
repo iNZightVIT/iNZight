@@ -105,7 +105,7 @@ iNZGUI <- setRefClass(
                 create = gaction(
                     label = "Create New Variables",
                     icon = "symbol_diamond",
-                    handler = function(h, ...) NULL
+                    handler = function(h, ...) iNZcrteVarWin$new(.self)
                     ),
                 frmInt = gaction(
                     label = "Form Class Intervals",
