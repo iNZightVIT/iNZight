@@ -97,15 +97,10 @@ iNZGUI <- setRefClass(
                     icon = "symbol_diamond",
                     handler = function(h, ...) iNZrenameWin$new(.self)
                     ),
-                rshpDf = gaction(
-                    label = "Reshape Dataset",
-                    icon = "symbol_diamond",
-                    handler = function(h, ...) NULL
-                    ),
                 cmbnCat = gaction(
                     label = "Combine Categorical Variables",
                     icon = "symbol_diamond",
-                    handler = function(h, ...) NULL
+                    handler = function(h, ...) iNZcmbCatWin$new(.self)
                     ),
                 create = gaction(
                     label = "Create New Variables",
@@ -126,10 +121,32 @@ iNZGUI <- setRefClass(
                     label = "Standardize Variables",
                     icon = "symbol_diamond",
                     handler = function(h, ...) NULL
-                    )                    
+                    ),
+                slctCases = gaction(
+                    label = "Select Cases",
+                    icon = "symbol_diamond",
+                    handler = function(h, ...) NULL
+                    ),
+                rshpData = gaction(
+                    label = "Reshape Dataset",
+                    icon = "symbol_diamond",
+                    handler = function(h, ...) NULL
+                    ),
+                rstrData = gaction(
+                    label = "Restore Dataset",
+                    icon = "symbol_diamond",
+                    handler = function(h, ...) NULL
+                    ),
+                tsMod = gaction(
+                    label = "Time Series",
+                    icon = "symbol_diamond",
+                    handler = function(h, ...) NULL
+                    )                      
                 )
             menuBarList <- list(File = actionList[1:2],
-                                "Manipulate variables" = actionList[3:13]
+                                "Change Dataset" = actionList[13:15],
+                                "Manipulate variables" = actionList[3:12],
+                                "Advanced" = actionList[16]
                                 )
             gmenu(menuBarList, container = cont)
         },

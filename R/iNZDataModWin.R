@@ -572,3 +572,99 @@ iNZreorderWin <- setRefClass(
                              function(i) svalue(tbl[4 + i, 2]) <- newOrder[i]))
         })
     )
+
+
+## combine categorical variables
+iNZcmbCatWin <- setRefClass(
+    "iNZcmbCatWin",
+    contains = "iNZDataModWin",
+    methods = list(
+        initialize = function(gui) {
+            callSuper(gui)
+            svalue(GUI$modWin) <<- "Combine Categorical Variables"
+            size(GUI$modWin) <<- c(250, 450)
+            mainGroup <- ggroup(expand = TRUE, horizontal = FALSE)
+            mainGroup$set_borderwidth(15)
+            ## instructions through glabels
+            lbl1 <- glabel("Choose a variables you want to combine")
+            font(lbl1) <- list(weight = "bold",
+                               family = "normal")
+            lbl2 <- glabel("(Hold Ctrl to choose many)")
+            font(lbl2) <- list(weight = "bold",
+                               family = "normal")
+            lbl3 <- glabel("New Variable Name")
+            font(lbl3) <- list(weight = "bold",
+                               family = "normal")            
+            ## choose a factor column from the dataset and display
+            ## its level in a gtable
+            factorIndices <- sapply(GUI$getActiveData(), is.factor)
+            factorNames <- gtable(names(GUI$getActiveData())[factorIndices],
+                                  multiple = TRUE, expand = TRUE)
+            names(factorNames) <- "Categorical Variables"
+            newName <- gedit()
+            ## automatically fill the name field when variables are selected
+            addHandlerSelectionChanged(factorNames, handler = function(h, ...) {
+                if (length(svalue(factorNames)) > 0)
+                    svalue(newName) <- paste(svalue(factorNames), collapse = ".")
+            })
+            cmbButton <- gbutton(
+                " - COMBINE-",
+                handler = function(h, ...) {
+                    if (checkSelection(svalue(factorNames),
+                                       svalue(newName))) {
+                        cnf <- gconfirm(
+                            parent = GUI$modWin,
+                            msg = paste("Combine the variables\n",
+                                paste(svalue(factorNames), collapse = " + "),
+                                "\ninto one variable with the name\n'",
+                                svalue(newName),
+                                "'?", sep = "")
+                            )
+                        if (cnf) {
+                            insertData(
+                                data = combine(svalue(factorNames)),
+                                name = svalue(newName),
+                                index = ncol(GUI$getActiveData()),
+                                msg = list(
+                                    msg = "The new factor was added to the end of the data",
+                                    icon = "info",
+                                    parent = GUI$modWin
+                                    ),
+                                closeAfter = TRUE)
+                        }
+                    }
+                })
+            add(mainGroup, lbl1)
+            add(mainGroup, lbl2)
+            add(mainGroup, factorNames, expand = TRUE)            
+            add(mainGroup, lbl3)            
+            add(mainGroup, newName)
+            add(mainGroup, cmbButton)
+            add(GUI$modWin, mainGroup, expand = TRUE, fill = TRUE)
+            visible(GUI$modWin) <<- TRUE
+        },
+        ## check whether the specified variables are illegible
+        ## for combining
+        checkSelection = function(levels, name) {
+            if (is.null(levels) || length(levels) < 2) {
+                gmessage(title = "ALERT",
+                         icon = "warning",
+                         msg = "Need to select at least two variables to combine",
+                         parent = GUI$modWin)
+                FALSE
+            } else if (length(name) == 0) {
+                gmessage(title = "ALERT",
+                         icon = "warning",
+                         msg = "Please specify a non-empty name for the new variable",
+                         parent = GUI$modWin)                
+                FALSE
+            } else
+                TRUE
+        },
+        ## combine two or more factors into one, return the new factor
+        ## facNames: the original factor names
+        combine = function(facNames) {
+            factor(do.call(mapply, c(as.list(GUI$getActiveData()[facNames]),
+                                    FUN = paste, sep = ".")))
+        })
+    )
