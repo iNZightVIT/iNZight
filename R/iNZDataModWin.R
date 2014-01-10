@@ -731,3 +731,39 @@ iNZcrteVarWin <- setRefClass(
             visible(GUI$modWin) <<- TRUE
         })
     )
+
+
+## form class intervals for a numeric variable
+iNZfrmIntWin <- setRefClass(
+    "iNZfrmIntWin",
+    contains = "iNZDataModWin",
+    methods = list(
+        initialize = function(gui) {
+            callSuper(gui)
+            svalue(GUI$modWin) <<- "Form Class Intervals"
+            size(GUI$modWin) <<- c(450, 200)
+            mainGroup <- ggroup(expand = TRUE, horizontal = FALSE)
+            mainGroup$set_borderwidth(15)
+            lbl1 = glabel("Choose variable :")
+            font(lbl1) = list(weight = "bold", style = "normal")
+            lbl2 = glabel("New variable    :")
+            font(lbl2) = list(weight = "bold", style = "normal")
+            lbl3 = glabel("New level names :")
+            font(lbl3) = list(weight = "bold", style = "normal")
+            lbl4 = glabel("Method :")
+            font(lbl4) = list(weight = "bold", style = "normal")
+            lbl5 = glabel("Number of intervals :")
+            font(lbl5) = list(weight = "bold", style = "normal")
+            newVarName = gtext(" ", height = 20, width = 30)
+            NumericListMenu = gdroplist(numericList, selected = 0,
+                handler = function(h,...) {
+                    svalue(newVarName) = paste(svalue(h$obj),"f", sep = ".")
+            })
+            binSlider = gslider(from = 2, to = 20, by = 1)
+            levelNameChoices = gradio(c("Ranges", "Specify names", "Numbers"),
+                horizontal = FALSE, selected = 1)
+            binningChoices = gradio(c("Equal width intervals",
+                "Equal count intervals", "Specified intervals"),
+                horizontal = FALSE, selected = 1)            
+        })
+    )
