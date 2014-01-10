@@ -96,7 +96,11 @@ iNZPlotToolbar <- setRefClass(
             if (is.numeric(curSet$x)) {
                 if (is.numeric(curSet$y)) {
                     ## scatterplot
-                    
+                    if (is.null(curSet$trend) && curSet$smooth == 0)
+                        gmessage(msg = "Specify a trend or a smoother")
+                    else
+                        GUI$getActiveDoc()$setSettings(
+                            list(bs.inference = TRUE))
                 } else if (is.null(curSet$y)) {
                     ## dot plot
                     iNZDotchartInf$new(GUI)
