@@ -247,7 +247,8 @@ iNZGUI <- setRefClass(
             ## if the dataSet changes, update the variable View
             getActiveDoc()$addDataObserver(
                 function()
-                dataViewWidget$updateVarView())
+                dataViewWidget$updateVarView()
+                )
             ## if plotSettings change, update the plot
             getActiveDoc()$addSettingsObserver(function() updatePlot())
         },

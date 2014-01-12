@@ -282,7 +282,8 @@ iNZScatterMod <- setRefClass(
                                                prop.size = GUI$getActiveData()[[
                                                    svalue(rszVarList)]],
                                                varnames = list(
-                                                   by = svalue(grpVarList)))
+                                                   by = svalue(grpVarList),
+                                                   prop.size = svalue(rszVarList)))
                                           )
                                   })
             tbl[3, 1:2, anchor = c(-1, -1), expand = TRUE] <- lbl1
@@ -470,8 +471,8 @@ iNZScatterMod <- setRefClass(
                                       ## build string to show which jitter opt
                                       ## was selected
                                       rug <- ""
-                                      if (svalue(xRug)) jit <- paste(rug, "x", sep = "")
-                                      if (svalue(yRug)) jit <- paste(rug, "y", sep = "")
+                                      if (svalue(xRug)) rug <- paste(rug, "x", sep = "")
+                                      if (svalue(yRug)) rug <- paste(rug, "y", sep = "")
                                       ## update plot settings
                                       GUI$getActiveDoc()$setSettings(
                                           list(rugs = rug)

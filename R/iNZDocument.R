@@ -58,12 +58,19 @@ iNZPlotSettings <- setRefClass(
         getSettings = function() {
             settings
         },
-        setSettings = function(setList) {
-            ##settings <<- modifyList(settings,
-            ##                       structure(list(value),
-            ##                                .Names = field))
-            ##settings[[field]] <<- value
+        ## change the plot settings
+        ## reset: if TRUE, the default plot settings are loaded
+        ##        for the additions to the plot
+        setSettings = function(setList, reset = FALSE) {
+            if (reset) 
+                setList <- modifyList(setList,
+                                      iNZightPlots:::inzPlotDefaults(),
+                                      keep.null = TRUE)
             settings <<- modifyList(settings, setList)
+        },
+        ## reset the plot settings (except the data fields)
+        resetSettings = function() {
+            setSettings(iNZightPlots:::inzPlotDefaults())
         },
         addSettingsObserver = function(FUN, ...) {
             .self$settingsChanged$connect(FUN, ...)
@@ -99,8 +106,8 @@ iNZDocument <- setRefClass(
         getRowData = function() {
             dataModel$getRowData()
         },
-        setSettings = function(setList) {
-            plotSettings$setSettings(setList)
+        setSettings = function(setList, reset = FALSE) {
+            plotSettings$setSettings(setList, reset)
         },
         addDataObserver = function(FUN, ...) {
             dataModel$addDataObserver(FUN, ...)

@@ -2,17 +2,13 @@ iNZControlWidget <- setRefClass(
     "iNZControlWidget",
     fields = list(
         GUI = "ANY",
-        ctrlGp = "ANY",
-        sliderGp1 = "ANY",
-        sliderGp2 = "ANY"
+        ctrlGp = "ANY"
         ),
     methods = list(
         initialize = function(gui) {
             ctrlGp <<- ggroup(horizontal = FALSE)
             initFields(GUI = gui)
-            ## The format is: glayout -> ggroup -> glayout -> ggroup
-            ## buttons in glayouts, sliders in ggroups
-            ## set up first glayout
+            ## set up glayout
             tbl <- glayout(expand = FALSE, cont = ctrlGp)
             tbl[3,1, anchor = c(0,0)] <- glabel(" Variable 1 :")
             tbl[5,1, anchor = c(0,0)] <- glabel(" Variable 2 :")
@@ -40,7 +36,7 @@ iNZControlWidget <- setRefClass(
                                                      g1.level = NULL,
                                                      varnames = list(
                                                          g1 = NULL)
-                                                     ))
+                                                     ), reset = TRUE)
                          })
             tbl[9,7, anchor = c(0,0)] <- gbutton("clear",
                          handler=function(h,...) {
@@ -50,16 +46,13 @@ iNZControlWidget <- setRefClass(
                                                      g2.level = NULL,
                                                      varnames = list(
                                                          g2 = NULL)
-                                                     ))
+                                                     ), reset = TRUE)
                          })
             ## change the font
             font(tbl[3,3]) <- list(weight="bold", family = "normal")
             font(tbl[5,3]) <- list(weight="bold", family = "normal")
             font(tbl[7,3]) <- list(weight="bold", family = "normal")
             font(tbl[9,3]) <- list(weight="bold", family = "normal")
-            ## set up first slider
-            sliderGp1 <<- ggroup(horizontal = FALSE, cont = ctrlGp)
-            visible(sliderGp1) <<- FALSE
             ## add drop functionality to the fields
             addDropTarget(
                 tbl[3,3],
@@ -69,7 +62,7 @@ iNZControlWidget <- setRefClass(
                         x = GUI$getActiveDoc()$getData()[h$dropdata][[1]],
                         varnames = list(
                             x = colnames(GUI$getActiveDoc()$getData()[h$dropdata]))
-                        ))
+                        ), reset = TRUE)
                 })
             addDropTarget(
                 tbl[5,3],
@@ -79,7 +72,7 @@ iNZControlWidget <- setRefClass(
                         y = GUI$getActiveDoc()$getData()[h$dropdata][[1]],
                         varnames = list(
                             y = colnames(GUI$getActiveDoc()$getData()[h$dropdata]))
-                        ))
+                        ), reset = TRUE)
                 })
             ## slider 1
             addDropTarget(
@@ -125,8 +118,8 @@ iNZControlWidget <- setRefClass(
                 })
         },
         ## change the plotSettings
-        changePlotSettings = function(setList) {
-            GUI$getActiveDoc()$setSettings(setList)
+        changePlotSettings = function(setList, reset = FALSE) {
+            GUI$getActiveDoc()$setSettings(setList, reset)
         },
         createSlider = function(pos, dropdata) {
             ## create a ggroup for the slider at the specified

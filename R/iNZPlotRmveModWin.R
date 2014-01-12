@@ -19,7 +19,7 @@ iNZPlotRmveModWin <- setRefClass(
                 ## labels for all possible additions
                 additions <- c("Remove all additions",
                                paste("Remove colour coding by", curSet$varnames$by),
-                               ##paste("Remove resizing by",e$sixthVarName),
+                               paste("Remove resizing by",curSet$varnames$prop.size),
                                "Remove trend curves",
                                "Remove y = x line",
                                "Remove smoothers",
@@ -38,7 +38,7 @@ iNZPlotRmveModWin <- setRefClass(
                                   !is.null(curSet$by) && ## colour coding dotplots
                                   (is.numeric(curSet$x) ||
                                    is.numeric(curSet$y)),
-                                  ## resize
+                                  !is.null(curSet$prop.size), ## resize
                                   !is.null(curSet$trend), ## trend
                                   curSet$LOE, ## x=y line
                                   curSet$smooth != 0, ## smoother
@@ -56,41 +56,20 @@ iNZPlotRmveModWin <- setRefClass(
                                   curSet$bg != defSet$bg, ## bg colour
                                   curSet$lwd.pt != defSet$lwd.pt ## point line thickness
                                   )
-                ## list with entries to remove additions (set to default)
-                rmvAdditions <- list(list(by = NULL, ## colour coding dotplots
-                                          varnames = list(by = NULL)), 
-                                     list(trend = defSet$trend), ## trend
-                                     list(LOE = defSet$LOE), ## x=y line
-                                     list(smooth = defSet$smooth), ## smoother
-                                     list(jitter = defSet$jitter), ## jitter
-                                     list(rugs = ""), ## rugs
-                                     list(join = defSet$join), ## connecting lines
-                                     list(by = NULL, ## colour coding barchart
-                                          varnames = list(by = NULL)),
-                                     list(inference.type = defSet$inference.type,
-                                          inference.par = defSet$inference.par,
-                                          bs.inference = defSet$bs.inference), ## confidence intervals
-                                     list(pch = defSet$pch), ## point filling
-                                     list(col.pt = defSet$col.pt), ## point colour
-                                     list(cex.pt = defSet$cex.pt), ## point size
-                                     list(bg = defSet$bg), ## bg colour
-                                     list(lwd.pt = defSet$lwd.pt) ## point line thickness
-                                     )
+
                 proceedButton <- gbutton("-Proceed-",
                                          handler = function(h, ...) {
                                              ## the checkboxes are accessed as
                                              ## children of the selectGrp
                                              ## first child refers to remove all adds
                                              if (svalue(selectGrp$children[[1]]))
-                                                 rmv <- rep(TRUE, length(rmvAdditions))
+                                                 rmv <- TRUE
                                              else
                                                  rmv <- which(curAdditions)[sapply(
                                                      selectGrp$children,
                                                      svalue)] - 1
                                              ## update the plot settings
-                                             GUI$getActiveDoc()$setSettings(
-                                                 unlist(rmvAdditions[rmv], recursive = FALSE)
-                                                 )
+                                             removeAdditions(rmv)
                                              dispose(GUI$modWin)
                                          })
                 GUI$modWin <<- gwindow(title = "Remove additions",
@@ -108,6 +87,42 @@ iNZPlotRmveModWin <- setRefClass(
                                                                       cont = selectGrp))
                 addSpring(btnGrp)
                 add(btnGrp, proceedButton)
+                ## add observer to the data
+                ## if it changes, remove all current additions
+                GUI$getActiveDoc()$addDataObserver(
+                    function() removeAdditions(TRUE)
+                    )
             }
+        },
+        ## remove plot additions from the plot settings
+        ## additions: logical vector representing which
+        ##            addition to remove
+        removeAdditions = function(additions) {
+            ## list with entries to remove additions (set to default)
+            rmvAdditions <- list(list(by = NULL, ## colour coding dotplots
+                                      varnames = list(by = NULL)),
+                                 list(prop.size = NULL, ## resize proportional
+                                      varnames = list(prop.size = NULL)), 
+                                 list(trend = defSet$trend), ## trend
+                                 list(LOE = defSet$LOE), ## x=y line
+                                 list(smooth = defSet$smooth), ## smoother
+                                 list(jitter = defSet$jitter), ## jitter
+                                 list(rugs = ""), ## rugs
+                                 list(join = defSet$join), ## connecting lines
+                                 list(by = NULL, ## colour coding barchart
+                                      varnames = list(by = NULL)),
+                                 list(inference.type = defSet$inference.type,
+                                      inference.par = defSet$inference.par,
+                                      bs.inference = defSet$bs.inference), ## confidence intervals
+                                 list(pch = defSet$pch), ## point filling
+                                 list(col.pt = defSet$col.pt), ## point colour
+                                 list(cex.pt = defSet$cex.pt), ## point size
+                                 list(bg = defSet$bg), ## bg colour
+                                 list(lwd.pt = defSet$lwd.pt) ## point line thickness
+                                 )
+
+            GUI$getActiveDoc()$setSettings(
+                unlist(rmvAdditions[additions], recursive = FALSE)
+                )
         })
     )
