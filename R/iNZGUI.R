@@ -124,7 +124,7 @@ iNZGUI <- setRefClass(
                 renmVar = gaction(
                     label = "Rename Variables",
                     icon = "symbol_diamond",
-                    handler = function(h, ...) NULL
+                    handler = function(h, ...) iNZrnmVarWin$new(.self)
                     ),
                 stdVar = gaction(
                     label = "Standardize Variables",

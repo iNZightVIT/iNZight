@@ -344,7 +344,7 @@ iNZrenameWin <- setRefClass(
                               GUI$getActiveData()[svalue(factorMenu)][[1]])
             })
             factorName <- gedit("")
-            reorderButton <- gbutton("-REORDER-", handler = function(h, ...) {
+            renameButton <- gbutton("-RENAME-", handler = function(h, ...) {
                 newFactor <- changeLevels(
                     tbl,
                     GUI$getActiveData()[svalue(factorMenu)][[1]])
@@ -367,7 +367,7 @@ iNZrenameWin <- setRefClass(
             tbl[2, 1:2, expand = TRUE, anchor = c(-1, 0)] <- lbl2
             tbl[3, 1:2, expand = TRUE] <- factorName
             add(mainGroup, tbl, expand = TRUE)
-            add(mainGroup, reorderButton)
+            add(mainGroup, renameButton)
             add(GUI$modWin, mainGroup, expand = TRUE, fill = TRUE)
             visible(GUI$modWin) <<- TRUE
         },
@@ -786,3 +786,40 @@ iNZfrmIntWin <- setRefClass(
             visible(GUI$modWin) <<- TRUE
         })
     )
+    
+
+
+## create new variables using an expression
+iNZrnmVarWin <- setRefClass(
+    "iNZrnmVarWin",
+    contains = "iNZDataModWin",
+    methods = list(
+        initialize = function(gui) {
+            callSuper(gui)
+            svalue(GUI$modWin) <<- "Rename Variables"
+            size(GUI$modWin) <<- c(450, 200)
+            mainGroup <- ggroup(expand = TRUE, horizontal = FALSE)
+            mainGroup$set_borderwidth(15)
+            lbl1 <- glabel("Old Variables")
+            lbl2 <- glabel("New Variables")            
+            oldNames <- names(GUI$getActiveData())
+            tbl <- glayout()
+            tbl[1, 1, expand = TRUE, anchor = c(-1, -1)] <- lbl1
+            tbl[1, 2, expand = TRUE, anchor = c(-1, -1)] <- lbl2
+            invisible(sapply(1:length(oldNames), function(pos) {
+                tbl[1 + pos, 1] <- glabel(oldNames[pos])
+                tbl[1 + pos, 2] <- gedit(oldNames[pos])
+            }))
+            renameButton <- gbutton('- RENAME -',
+                                    handler = function(h, ...) {
+                newNames <- sapply(tbl[, 2], svalue)
+                GUI$getActiveDoc()$getModel()$setNames(newNames[-1])
+                dispose(GUI$modWin)
+            })
+            add(mainGroup, tbl)
+            add(mainGroup, renameButton)
+            add(GUI$modWin, mainGroup, expand = TRUE, fill = TRUE)
+            visible(GUI$modWin) <<- TRUE
+        })
+    )
+            
