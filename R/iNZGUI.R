@@ -123,9 +123,9 @@ iNZGUI <- setRefClass(
                     handler = function(h, ...) iNZstdVarWin$new(.self)
                     ),
                 slctCases = gaction(
-                    label = "Select Cases",
+                    label = "Filter Dataset",
                     icon = "symbol_diamond",
-                    handler = function(h, ...) NULL
+                    handler = function(h, ...) iNZFilterWin$new(.self)
                     ),
                 rshpData = gaction(
                     label = "Reshape Dataset",
@@ -135,7 +135,10 @@ iNZGUI <- setRefClass(
                 rstrData = gaction(
                     label = "Restore Dataset",
                     icon = "symbol_diamond",
-                    handler = function(h, ...) NULL
+                    handler = function(h, ...) {
+                        getActiveDoc()$getModel()$updateData(
+                            getActiveDoc()$getModel()$origDataSet)
+                    }
                     ),
                 tsMod = gaction(
                     label = "Time Series",
