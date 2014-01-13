@@ -125,9 +125,31 @@ iNZFilterWin <- setRefClass(
             numIndices <- sapply(GUI$getActiveData(), function(x) !is.factor(x))
             numMenu <- gcombobox(names(GUI$getActiveData())[numIndices],
                                  selected = 0)
-            operator <- gedit("", width = 2)
-            expr <- gedit("")
-            submitButton <- gbutton("Submit", handler = function(h, ...) NULL)
+            operator <- gedit("", width = 2) 
+            expr <- gedit("") ## the expression specified by the user
+            submitButton <- gbutton(
+                "Submit",
+                handler = function(h, ...) {
+                    subsetExpression <- paste(svalue(numMenu),
+                                              svalue(operator),
+                                              gsub(pattern = '\\n+', "",
+                                                   svalue(expr),
+                                                   perl = TRUE))
+                    subsetData <- try(
+                        subset(GUI$getActiveData(),
+                               eval(parse(text = eval(subsetExpression))))
+                        )
+                    if(class(subsetData)[1] == "try-error"){
+                        gmessage(title = "ERROR",
+                                 msg = "Error in expression!",
+                                 icon = "error",
+                                 parent = GUI$modWin)
+                    } else {
+                        GUI$getActiveDoc()$getModel()$updateData(
+                            subsetData)
+                        dispose(GUI$modWin)                        
+                    }
+                })
             tbl <- glayout()
             tbl[1, 1:7, expand = TRUE, anchor = c(-1, 0)] <- lbl1
             tbl[2, 1:7, expand = TRUE, anchor = c(-1, 0)] <- lbl2
@@ -146,5 +168,37 @@ iNZFilterWin <- setRefClass(
         ## Window for filtering by row numbers
         opt3 = function() {
             
+        },
+        ## insert a column with a certain name at specified index
+        ## success msg is optional
+        insertData = function(data, name, index, msg = NULL, closeAfter = TRUE) {
+                ## insert the new variable in the column after the old variable
+                ## or at the end if the old variable is the last column in the
+                ## data
+                if (index != length(names(GUI$getActiveData()))) {
+                    newData <- data.frame(
+                        GUI$getActiveData()[, 1:index],
+                        data,
+                        GUI$getActiveData()[, (index+1):ncol(GUI$getActiveData())]
+                        )
+                    newNames <- c(
+                        names(GUI$getActiveData())[1:index],
+                        name,
+                        names(GUI$getActiveData())[(index+1):ncol(GUI$getActiveData())]
+                        )
+                    newNames <- make.names(newNames, unique = TRUE)
+                    names(newData) <- newNames
+                } else {
+                    newData <- data.frame(GUI$getActiveData(), data)
+                    names(newData) <- c(names(GUI$getActiveData()),
+                                        name)
+                }
+
+                if (!is.null(msg)) 
+                    do.call(gmessage, msg)
+
+                GUI$getActiveDoc()$getModel()$updateData(newData)
+                if (closeAfter)
+                    dispose(GUI$modWin)            
         })
     )
