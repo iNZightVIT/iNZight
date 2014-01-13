@@ -1,3 +1,12 @@
+library(objectProperties)
+library(iNZightPlots)
+library(gWidgets2)
+library(gWidgets2RGtk2)
+library(cairoDevice)
+options(guiToolkit="RGtk2")
+#tmp <- sapply(list.files("~/backup/backup1812/01F7-A740/Work/inZight/iNZightPlots/R", full.names = TRUE), source)
+source("classSource.R")
+
 iNZGUI <- setRefClass(
     "iNZGUI",
     properties(fields = list(
@@ -146,8 +155,8 @@ iNZGUI <- setRefClass(
                     label = "Home",
                     icon = "symbold_diamond",
                     handler = function(h, ...) {
-                        iNZightVIT()
                         dispose(win)
+                        iNZightVIT()                        
                     })
                 )
             ## home button is disabled if package 'vit' is not loaded
