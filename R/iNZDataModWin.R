@@ -741,7 +741,7 @@ iNZfrmIntWin <- setRefClass(
         initialize = function(gui) {
             callSuper(gui)
             svalue(GUI$modWin) <<- "Form Class Intervals"
-            size(GUI$modWin) <<- c(450, 200)
+            size(GUI$modWin) <<- c(400, 400)
             mainGroup <- ggroup(expand = TRUE, horizontal = FALSE)
             mainGroup$set_borderwidth(15)
             lbl1 = glabel("Choose variable :")
@@ -754,16 +754,35 @@ iNZfrmIntWin <- setRefClass(
             font(lbl4) = list(weight = "bold", style = "normal")
             lbl5 = glabel("Number of intervals :")
             font(lbl5) = list(weight = "bold", style = "normal")
-            newVarName = gtext(" ", height = 20, width = 30)
-            NumericListMenu = gdroplist(numericList, selected = 0,
-                handler = function(h,...) {
+            newVarName = gedit("")
+            ## choose a numeric column from the dataset 
+            numIndices <- sapply(GUI$getActiveData(), function(x) !is.factor(x))          
+            NumericListMenu = gcombobox(names(GUI$getActiveData())[numIndices],
+                selected = 0, handler = function(h,...) {
                     svalue(newVarName) = paste(svalue(h$obj),"f", sep = ".")
-            })
+                })
             binSlider = gslider(from = 2, to = 20, by = 1)
             levelNameChoices = gradio(c("Ranges", "Specify names", "Numbers"),
                 horizontal = FALSE, selected = 1)
             binningChoices = gradio(c("Equal width intervals",
                 "Equal count intervals", "Specified intervals"),
-                horizontal = FALSE, selected = 1)            
+                horizontal = FALSE, selected = 1)
+            proceedButton <- gbutton("- Proceed -", handler = function(h, ...) {
+            })
+            tbl <- glayout()
+            tbl[1, 1] <- lbl1
+            tbl[1, 2] <- NumericListMenu
+            tbl[2, 1] <- lbl2
+            tbl[2, 2] <- newVarName
+            tbl[3, 1] <- lbl5
+            tbl[4, 1:2] <- binSlider
+            tbl[5, 1] <- lbl3
+            tbl[5, 2] <- lbl4
+            tbl[6, 1] <- levelNameChoices
+            tbl[6, 2] <- binningChoices
+            tbl[7, 2] <- proceedButton
+            add(mainGroup, tbl)
+            add(GUI$modWin, mainGroup, expand = TRUE, fill = TRUE)
+            visible(GUI$modWin) <<- TRUE
         })
     )

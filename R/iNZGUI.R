@@ -110,7 +110,7 @@ iNZGUI <- setRefClass(
                 frmInt = gaction(
                     label = "Form Class Intervals",
                     icon = "symbol_diamond",
-                    handler = function(h, ...) NULL
+                    handler = function(h, ...) iNZfrmIntWin$new(.self)
                     ),
                 renmVar = gaction(
                     label = "Rename Variables",
@@ -141,14 +141,25 @@ iNZGUI <- setRefClass(
                     label = "Time Series",
                     icon = "symbol_diamond",
                     handler = function(h, ...) NULL
-                    )                      
+                    ),
+                home = gaction(
+                    label = "Home",
+                    icon = "symbold_diamond",
+                    handler = function(h, ...) {
+                        iNZightVIT()
+                        dispose(win)
+                    })
                 )
-            menuBarList <- list(File = actionList[1:2],
+            ## home button is disabled if package 'vit' is not loaded
+            if (!'package:vit' %in% search())
+                enabled(actionList[[17]]) <- FALSE
+            menuBarList <- list(File = actionList[c(17, 1:2)],
                                 "Change Dataset" = actionList[13:15],
                                 "Manipulate variables" = actionList[3:12],
                                 "Advanced" = actionList[16]
                                 )
             gmenu(menuBarList, container = cont)
+
         },
         ## set up buttons to switch between data and variable view
         initializeViewSwitcher = function() {
@@ -199,15 +210,35 @@ iNZGUI <- setRefClass(
                               handler = function(h, ...) {
                                   curSet <- getActiveDoc()$getSettings()
                                   if (!is.null(curSet$x)) {
-                                      w <- gwindow("Summary", width = 600, height = 400,
-                                                   visible = FALSE, parent = win)
-                                      g <- gtext(text = paste(do.call(
-                                                     iNZightPlots:::getPlotInference,
-                                                     curSet),
-                                                     collapse = "\n"),
-                                                 expand = TRUE, cont = w, wrap = FALSE,
-                                                 font.attr = c(family = "monospace"))
-                                      visible(w) <- TRUE
+                                      w <- gwindow("Choose Method", width = 100,
+                                                   height = 100, parent = win)
+                                      g <- ggroup(cont = w, horizontal = FALSE)
+                                      lbl <- glabel("Choose Method to \nGenerate Inference:",
+                                                    cont = g)
+                                      rd <- gradio(c("Normal", "Bootstrap"), cont = g)
+                                      btn <- gbutton("ok", handler = function(h, ...) {
+                                          sets <- curSet
+                                          sets <- modifyList(
+                                              sets,
+                                              list(bs.inference = (svalue(rd, index = TRUE) == 2))
+                                              )
+                                          if (svalue(rd, index = TRUE) == 2)
+                                              gm <- gmessage("Perform Bootstrap Simulations...",
+                                                             icon = "info")
+                                          try(dispose(gm), silent = TRUE)
+                                          w2 <- gwindow("Summary", width = 600, height = 400,
+                                                       visible = TRUE, parent = win)
+                                          g2 <- gtext(
+                                              paste(
+                                                  do.call(
+                                                      iNZightPlots:::getPlotInference,
+                                                      sets),
+                                                  collapse = "\n"),
+                                              expand = TRUE, cont = w2, wrap = FALSE,
+                                              font.attr = c(family = "monospace"))
+                                          dispose(w)
+                                      }, cont = g)
+                                      
                                   } else {
                                       gmessage("Please select at least one variable",
                                                parent = win)
