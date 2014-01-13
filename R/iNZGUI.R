@@ -176,8 +176,10 @@ iNZGUI <- setRefClass(
             addActDocObs(function() dataViewWidget$updateWidget())
             ## if the dataSet changes, update the variable View
             getActiveDoc()$addDataObserver(
-                function()
-                dataViewWidget$updateWidget())
+                function() {
+                    dataViewWidget$updateWidget()
+                }
+                )
             getActiveDoc()$addSettingsObjObserver(function() updatePlot())
         },
         ## set up the buttons used for drag and drop and control of
@@ -281,7 +283,7 @@ iNZGUI <- setRefClass(
             ## if the dataSet changes, update the variable View
             getActiveDoc()$addDataObserver(
                 function()
-                dataViewWidget$updateVarView()
+                dataViewWidget$updateWidget()
                 )
             ## if plotSettings change, update the plot
             getActiveDoc()$addSettingsObserver(function() updatePlot())

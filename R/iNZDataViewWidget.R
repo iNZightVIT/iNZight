@@ -24,8 +24,10 @@ iNZDataViewWidget <- setRefClass(
         ## recreate both views with active dataset
         updateWidget = function() {
             view <- visible(dfView)
-            delete(dataGp, dfView)
-            delete(dataGp, varView)
+            ## delete the currently displayed views
+            try(invisible(sapply(dataGp$children,
+                                 function(x) delete(dataGp, x))),
+                silent = TRUE)
             ## create the data.frame view
             createDfView()
             ## create the variable view
