@@ -120,7 +120,7 @@ iNZGUI <- setRefClass(
                 stdVar = gaction(
                     label = "Standardize Variables",
                     icon = "symbol_diamond",
-                    handler = function(h, ...) NULL
+                    handler = function(h, ...) iNZstdVarWin$new(.self)
                     ),
                 slctCases = gaction(
                     label = "Select Cases",
