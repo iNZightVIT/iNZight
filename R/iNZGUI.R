@@ -23,7 +23,9 @@ iNZGUI <- setRefClass(
     methods = list(
         initializeGui = function(data = NULL) {
             iNZDocuments <<- list(iNZDocument$new(data = data))
-            win.title <- "iNZight"
+            win.title <- paste("iNZight (v. ",
+                               packageDescription("iNZightRef")$Version,
+                               ")", sep = "")                               
             win <<- gwindow(win.title, visible = FALSE, width = 870,
                             height = 600)
             g <- gpanedgroup(container = win, expand = TRUE)
@@ -140,26 +142,39 @@ iNZGUI <- setRefClass(
                             getActiveDoc()$getModel()$origDataSet)
                     }
                     ),
-                tsMod = gaction(
-                    label = "Time Series",
-                    icon = "symbol_diamond",
-                    handler = function(h, ...) NULL
-                    ),
                 home = gaction(
                     label = "Home",
                     icon = "symbold_diamond",
                     handler = function(h, ...) {
                         dispose(win)
                         iNZightVIT()                        
-                    })
+                    }),
+                tsMod = gaction(
+                    label = "Time Series",
+                    icon = "symbol_diamond",
+                    handler = function(h, ...) NULL
+                    ),
+                modelFit = gaction(
+                    label = "Model Fitting",
+                    icon = "symbol_diamond",
+                    handler = function(h, ...) {
+                        ign <- gwindow("...", visible = FALSE)
+                        tag(ign, "dataSet") <- getActiveData()
+                        e <- list(obj = ign)
+                        modelFitting(e)
+                    }
+                    )
                 )
             ## home button is disabled if package 'vit' is not loaded
             if (!'package:vit' %in% search())
-                enabled(actionList[[17]]) <- FALSE
-            menuBarList <- list(File = actionList[c(17, 1:2)],
+                enabled(actionList[[16]]) <- FALSE
+            ## disable modules if packages are not loaded
+            if (!'package:iNZightModules' %in% search())
+                enabled(actionList[[18]]) <- FALSE
+            menuBarList <- list(File = actionList[c(16, 1:2)],
                                 "Change Dataset" = actionList[13:15],
                                 "Manipulate variables" = actionList[3:12],
-                                "Advanced" = actionList[16]
+                                "Advanced" = actionList[17:18]
                                 )
             gmenu(menuBarList, container = cont)
 
