@@ -51,7 +51,7 @@ iNZGUI <- setRefClass(
             initializePlotWidget()
             add(gp2, plotWidget$plotNb, expand = TRUE)
             initializePlotToolbar(gp2)
-            visible(win) <- TRUE
+            visible(win) <<- TRUE
             ## ensures that all plot control btns are visible on startup
             svalue(g) <- 0.375
             ## first plot(empty) needs to be added after window is drawn
@@ -152,7 +152,9 @@ iNZGUI <- setRefClass(
                 tsMod = gaction(
                     label = "Time Series",
                     icon = "symbol_diamond",
-                    handler = function(h, ...) NULL
+                    handler = function(h, ...) {
+                        NULL
+                    }
                     ),
                 modelFit = gaction(
                     label = "Model Fitting",
@@ -161,7 +163,30 @@ iNZGUI <- setRefClass(
                         ign <- gwindow("...", visible = FALSE)
                         tag(ign, "dataSet") <- getActiveData()
                         e <- list(obj = ign)
+                        e$win <- win
                         modelFitting(e)
+                    }
+                    ),
+                threeDPlot = gaction(
+                    label = "3D Plot",
+                    icon = "symbold_diamond",
+                    handler = function(h, ...) {
+                        ign <- gwindow("...", visible = FALSE)
+                        tag(ign, "dataSet") <- getActiveData()
+                        e <- list(obj = ign)
+                        e$win <- win
+                        plot3D(e)                                  
+                    }
+                    ),
+                scatterMatrix = gaction(
+                    label = "Scatterplot Matrix",
+                    icon = "symbold_diamond",
+                    handler = function(h, ...) {
+                        ign <- gwindow("...", visible = FALSE)
+                        tag(ign, "dataSet") <- getActiveData()
+                        e <- list(obj = ign)
+                        e$win <- win
+                        scatterPlotMatrix(e)                                  
                     }
                     )
                 )
@@ -170,11 +195,12 @@ iNZGUI <- setRefClass(
                 enabled(actionList[[16]]) <- FALSE
             ## disable modules if packages are not loaded
             if (!'package:iNZightModules' %in% search())
-                enabled(actionList[[18]]) <- FALSE
+                invisible(sapply(actionList[18:19], function(x) {
+                    enabled(x) <- FALSE}))
             menuBarList <- list(File = actionList[c(16, 1:2)],
                                 "Change Dataset" = actionList[13:15],
                                 "Manipulate variables" = actionList[3:12],
-                                "Advanced" = actionList[17:18]
+                                "Advanced" = actionList[17:20]
                                 )
             gmenu(menuBarList, container = cont)
 
