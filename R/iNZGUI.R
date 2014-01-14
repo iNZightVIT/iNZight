@@ -23,7 +23,7 @@ iNZGUI <- setRefClass(
     methods = list(
         initializeGui = function(data = NULL) {
             iNZDocuments <<- list(iNZDocument$new(data = data))
-            win.title <- paste("iNZight (v. ",
+            win.title <- paste("iNZight (v",
                                packageDescription("iNZightRef")$Version,
                                ")", sep = "")                               
             win <<- gwindow(win.title, visible = FALSE, width = 870,
