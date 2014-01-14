@@ -117,3 +117,4 @@ iNZDotchartInf <- setRefClass(
             tbl[4, 2, expand = TRUE, anchor = c(1, -1)] <<- addButton
         })
     )
+

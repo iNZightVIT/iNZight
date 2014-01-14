@@ -17,9 +17,9 @@ iNZDataViewWidget <- setRefClass(
             ## start in dataView if size is less than 200k
             dataSet <- GUI$getActiveData()
             if(nrow(dataSet) * ncol(dataSet) <= 200000) 
-                visible(dfView) <- TRUE
+                visible(dfView) <<- TRUE
             else
-                visible(varView) <- TRUE
+                visible(varView) <<- TRUE
         },
         ## recreate both views with active dataset
         updateWidget = function() {
@@ -33,28 +33,28 @@ iNZDataViewWidget <- setRefClass(
             ## create the variable view
             createVarView()
             if(view)
-                visible(dfView) <- TRUE
+                visible(dfView) <<- TRUE
             else
-                visible(varView) <- TRUE
+                visible(varView) <<- TRUE
             
         },
         ## only update the variable view
         updateVarView = function() {
             view <- visible(varView)
             createVarView()
-            visible(varView) <- view
+            visible(varView) <<- view
         },
         ## only update the data.frame view
         updateDfView = function() {
             view <- visible(dfView)
             createDfView()
-            visible(dfView) <- view
+            visible(dfView) <<- view
         },                                     
         ## create the data.frame view (invisible)
         createDfView = function() {
             dataSet <- GUI$getActiveData()
             dfView <<- ggroup(container = dataGp, expand = TRUE)
-            visible(dfView) <- FALSE
+            visible(dfView) <<- FALSE
             dfWidget <- gdf(dataSet, expand = TRUE)
             dfWidget$remove_popup_menu()
             add(dfView, dfWidget, expand = TRUE)            
@@ -70,7 +70,7 @@ iNZDataViewWidget <- setRefClass(
         createVarView = function() {
             dataSet <- GUI$getActiveData()
             varView <<- ggroup(container = dataGp, expand = TRUE)
-            visible(varView) <- FALSE
+            visible(varView) <<- FALSE
             ## if more than 19 columns are in the dataSet, split the variable
             ## view into 2 tables
             N <- 19
@@ -93,21 +93,21 @@ iNZDataViewWidget <- setRefClass(
         ## change the currently active View
         changeView = function() {
             if(visible(dfView)) {
-                visible(dfView) <- FALSE
-                visible(varView) <- TRUE
+                visible(dfView) <<- FALSE
+                visible(varView) <<- TRUE
             } else {
-                visible(varView) <- FALSE                                             
-                visible(dfView) <- TRUE
+                visible(varView) <<- FALSE                                             
+                visible(dfView) <<- TRUE
             }
         },
         ## set view to data.frame view
         dataView = function() {
-            visible(varView) <- FALSE
-            visible(dfView) <- TRUE
+            visible(varView) <<- FALSE
+            visible(dfView) <<- TRUE
         },
         ## set view to list of columns
         listView = function() {
-            visible(dfView) <- FALSE
-            visible(varView) <- TRUE
+            visible(dfView) <<- FALSE
+            visible(varView) <<- TRUE
         })
     )
