@@ -14,7 +14,7 @@ iNZFilterWin <- setRefClass(
     methods = list(
         initialize = function(gui = NULL) {
             initFields(GUI = gui)
-            usingMethods(opt1, opt2, opt3)
+            usingMethods(opt1, opt2, opt3, opt4)
             if (!is.null(GUI)) {
                 ## close any current mod windows
                try(dispose(GUI$modWin), silent = TRUE) 
@@ -167,38 +167,100 @@ iNZFilterWin <- setRefClass(
         },
         ## Window for filtering by row numbers
         opt3 = function() {
-            
+            GUI$modWin <<- gwindow("Filter data by specified row number",
+                                   parent = GUI$win, visible = FALSE,
+                                   width = 300, height = 300)
+            mainGrp <- ggroup(cont = GUI$modWin, horizontal = FALSE,
+                              expand = TRUE)
+            mainGrp$set_borderwidth(15)
+            btnGrp <- ggroup(horizontal = TRUE)
+            lbl1 <- glabel("Type in the Row.names of observations\nthat need to be excluded")
+            font(lbl1) <- list(weight = "bold", style = "normal")
+            lbl2 <- glabel("(separate each value by a comma)")            
+            lbl3 <- glabel("EXAMPLE")
+            font(lbl3) <- list(weight = "bold", style = "normal")
+            lbl4 <- glabel("1,5,99,45,3")
+            unwantedObs <- gedit("")
+            submitButton <- gbutton(
+                "Submit",
+                handler = function(h, ...) {
+                    rowNumbers <- try(
+                        as.numeric(strsplit(gsub(pattern = '\\s+',
+                                                 replacement = "",
+                                                 svalue(unwantedObs),
+                                                 perl = TRUE),
+                                            ",", fixed = TRUE)[[1]])
+                        )
+                    if (inherits(rowNumbers,"try-error") ||
+                        is.na(rowNumbers)) {
+                        gmessage(title = "ERROR",
+                                 msg = "Error in typed values.\nCheck for missing commas or non-existing Row.names",
+                                 icon = "error",
+                                 parent = GUI$modWin)
+                    } else {
+                        if(!all(rowNumbers %in%
+                                as.numeric(row.names(GUI$getActiveData()))))
+                            gmessage(title = "ERROR",
+                                     msg = "You have entered one or more non-existing Row.names",
+                                     icon = "error",
+                                     parent = GUI$modWin)
+                        else {
+                            GUI$getActiveDoc()$getModel()$updateData(
+                                GUI$getActiveData()[-rowNumbers, ])
+                            dispose(GUI$modWin)                                 
+                        }
+                    }
+                })
+            add(mainGrp, lbl1)
+            add(mainGrp, lbl2)
+            add(mainGrp, lbl3)
+            add(mainGrp, lbl4)
+            add(mainGrp, unwantedObs, expand = TRUE)
+            add(mainGrp, btnGrp)
+            addSpring(btnGrp)
+            add(btnGrp, submitButton)
+            visible(GUI$modWin) <<- TRUE
         },
-        ## insert a column with a certain name at specified index
-        ## success msg is optional
-        insertData = function(data, name, index, msg = NULL, closeAfter = TRUE) {
-                ## insert the new variable in the column after the old variable
-                ## or at the end if the old variable is the last column in the
-                ## data
-                if (index != length(names(GUI$getActiveData()))) {
-                    newData <- data.frame(
-                        GUI$getActiveData()[, 1:index],
-                        data,
-                        GUI$getActiveData()[, (index+1):ncol(GUI$getActiveData())]
-                        )
-                    newNames <- c(
-                        names(GUI$getActiveData())[1:index],
-                        name,
-                        names(GUI$getActiveData())[(index+1):ncol(GUI$getActiveData())]
-                        )
-                    newNames <- make.names(newNames, unique = TRUE)
-                    names(newData) <- newNames
-                } else {
-                    newData <- data.frame(GUI$getActiveData(), data)
-                    names(newData) <- c(names(GUI$getActiveData()),
-                                        name)
-                }
-
-                if (!is.null(msg)) 
-                    do.call(gmessage, msg)
-
-                GUI$getActiveDoc()$getModel()$updateData(newData)
-                if (closeAfter)
-                    dispose(GUI$modWin)            
+        ## Window for filtering by random sample
+        opt4 = function() {
+            GUI$modWin <<- gwindow("Filter data by random sample",
+                                   parent = GUI$win, visible = FALSE,
+                                   width = 200, height = 100)
+            mainGrp <- ggroup(cont = GUI$modWin, horizontal = FALSE,
+                              expand = TRUE)
+            mainGrp$set_borderwidth(15)
+            btnGrp <- ggroup(horizontal = TRUE)
+            lbl1 <- glabel("Specify the size of your sample")
+            font(lbl1) <- list(weight = "bold", style = "normal")
+            sampleSize <- gedit("", width = 4)
+            submitButton <- gbutton(
+                "Submit",
+                handler = function(h, ...) {
+                    sSize <- as.numeric(svalue(sampleSize))
+                    if (is.na(sSize) || sSize > nrow(GUI$getActiveData()))
+                        gmessage(title = "ERROR",
+                                 msg = "Please specify a valid number for the sample size",
+                                 icon = "error",
+                                 parent = GUI$modWin)
+                    else {
+                        rdmSample <- sample(1:nrow(GUI$getActiveData()),
+                                            size = sSize)
+                        GUI$getActiveDoc()$getModel()$updateData(
+                            GUI$getActiveData()[rdmSample, ])
+                        dispose(GUI$modWin)                              
+                    }
+                })            
+            tbl <- glayout()
+            tbl[1,1:2] <- lbl1
+            tbl[2, 1] <- "Total number of rows:"
+            tbl[2, 2] <- glabel(nrow(GUI$getActiveData()))
+            tbl[3, 1] <- "Sample Size:"
+            tbl[3, 2] <- sampleSize
+            add(mainGrp, lbl1)
+            add(mainGrp, tbl)
+            add(mainGrp, btnGrp)
+            addSpring(btnGrp)
+            add(btnGrp, submitButton)
+            visible(GUI$modWin) <<- TRUE
         })
     )

@@ -178,8 +178,10 @@ iNZGUI <- setRefClass(
             getActiveDoc()$addDataObserver(
                 function() {
                     dataViewWidget$updateWidget()
+                    getActiveDoc()$updateSettings()
                 }
                 )
+            ## if the settings change, redraw the plot
             getActiveDoc()$addSettingsObjObserver(function() updatePlot())
         },
         ## set up the buttons used for drag and drop and control of
@@ -281,9 +283,13 @@ iNZGUI <- setRefClass(
             ## set the active document to the one we added
             activeDoc <<- length(iNZDocuments)
             ## if the dataSet changes, update the variable View
+            ## and the settings to take into account possible
+            ## change of currently selected data
             getActiveDoc()$addDataObserver(
-                function()
-                dataViewWidget$updateWidget()
+                function() {
+                    dataViewWidget$updateWidget()
+                    getActiveDoc()$updateSettings()
+                }
                 )
             ## if plotSettings change, update the plot
             getActiveDoc()$addSettingsObserver(function() updatePlot())

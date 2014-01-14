@@ -26,6 +26,10 @@ iNZDataModel <- setRefClass(
         updateData = function(data) {
             dataSet <<- data
         },
+        setNames = function(newNames) {
+            newNames <- make.names(newNames, unique = TRUE)
+            names(dataSet) <<- newNames
+        },
         getData = function() {
             dataSet
         },
@@ -108,6 +112,18 @@ iNZDocument <- setRefClass(
         },
         setSettings = function(setList, reset = FALSE) {
             plotSettings$setSettings(setList, reset)
+        },
+        ## update the settings to take in current x,y values
+        ## from the dataset
+        updateSettings = function() {
+            settings <- plotSettings$settings
+            if (!is.null(settings$x) && !is.null(settings$varnames$x)) {
+                settings$x <- getData()[[settings$varnames$x]]
+            }
+            if (!is.null(settings$y) && !is.null(settings$varnames$y)) {
+                settings$y <- getData()[[settings$varnames$y]]
+            }
+            setSettings(settings)
         },
         addDataObserver = function(FUN, ...) {
             dataModel$addDataObserver(FUN, ...)
