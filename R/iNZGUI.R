@@ -130,7 +130,7 @@ iNZGUI <- setRefClass(
                 rshpData = gaction(
                     label = "Reshape Dataset",
                     icon = "symbol_diamond",
-                    handler = function(h, ...) NULL
+                    handler = function(h, ...) iNZReshapeDataWin$new(.self)
                     ),
                 rstrData = gaction(
                     label = "Restore Dataset",
