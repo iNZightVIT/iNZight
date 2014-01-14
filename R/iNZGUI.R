@@ -195,62 +195,64 @@ iNZGUI <- setRefClass(
         ## drag and drop fields
         initializeSummaryBtns = function() {
             sumGrp <- ggroup()
-            sumBtn <- gbutton("Get Summary",
-                              handler = function(h, ...) {
-                                  curSet <- getActiveDoc()$getSettings()
-                                  if (!is.null(curSet$x)) {
-                                      w <- gwindow("Summary", width = 600, height = 400,
-                                                   visible = FALSE, parent = win)
-                                      g <- gtext(text = paste(do.call(
-                                                     iNZightPlots:::getPlotSummary,
-                                                     curSet),
-                                                     collapse = "\n"),
-                                                 expand = TRUE, cont = w, wrap = FALSE,
-                                                 font.attr = c(family = "monospace"))
-                                      visible(w) <- TRUE
-                                  } else {
-                                      gmessage("Please select at least one variable",
-                                               parent = win)
-                                  }
-                              })
-            infBtn <- gbutton("Get Inference",
-                              handler = function(h, ...) {
-                                  curSet <- getActiveDoc()$getSettings()
-                                  if (!is.null(curSet$x)) {
-                                      w <- gwindow("Choose Method", width = 100,
-                                                   height = 100, parent = win)
-                                      g <- ggroup(cont = w, horizontal = FALSE)
-                                      lbl <- glabel("Choose Method to \nGenerate Inference:",
-                                                    cont = g)
-                                      rd <- gradio(c("Normal", "Bootstrap"), cont = g)
-                                      btn <- gbutton("ok", handler = function(h, ...) {
-                                          sets <- curSet
-                                          sets <- modifyList(
-                                              sets,
-                                              list(bs.inference = (svalue(rd, index = TRUE) == 2))
-                                              )
-                                          if (svalue(rd, index = TRUE) == 2)
-                                              gm <- gmessage("Perform Bootstrap Simulations...",
-                                                             icon = "info")
-                                          try(dispose(gm), silent = TRUE)
-                                          w2 <- gwindow("Summary", width = 600, height = 400,
-                                                       visible = TRUE, parent = win)
-                                          g2 <- gtext(
-                                              paste(
-                                                  do.call(
-                                                      iNZightPlots:::getPlotInference,
-                                                      sets),
-                                                  collapse = "\n"),
-                                              expand = TRUE, cont = w2, wrap = FALSE,
-                                              font.attr = c(family = "monospace"))
-                                          dispose(w)
-                                      }, cont = g)
-                                      
-                                  } else {
-                                      gmessage("Please select at least one variable",
-                                               parent = win)
-                                  }
-                              })
+            sumBtn <- gbutton(
+                "Get Summary",
+                handler = function(h, ...) {
+                    curSet <- getActiveDoc()$getSettings()
+                    if (!is.null(curSet$x)) {
+                        w <- gwindow("Summary", width = 600, height = 400,
+                                     visible = FALSE, parent = win)
+                        g <- gtext(text = paste(do.call(
+                                       iNZightPlots:::getPlotSummary,
+                                       curSet),
+                                       collapse = "\n"),
+                                   expand = TRUE, cont = w, wrap = FALSE,
+                                   font.attr = c(family = "monospace"))
+                        visible(w) <- TRUE
+                    } else {
+                        gmessage("Please select at least one variable",
+                                 parent = win)
+                    }
+                })
+            infBtn <- gbutton(
+                "Get Inference",
+                handler = function(h, ...) {
+                    curSet <- getActiveDoc()$getSettings()
+                    if (!is.null(curSet$x)) {
+                        w <- gwindow("Choose Method", width = 100,
+                                     height = 100, parent = win)
+                        g <- ggroup(cont = w, horizontal = FALSE)
+                        lbl <- glabel("Choose Method to \nGenerate Inference:",
+                                      cont = g)
+                        rd <- gradio(c("Normal", "Bootstrap"), cont = g)
+                        btn <- gbutton("ok", handler = function(h, ...) {
+                            sets <- curSet
+                            sets <- modifyList(
+                                sets,
+                                list(bs.inference = (svalue(rd, index = TRUE) == 2))
+                                )
+                            ## if (svalue(rd, index = TRUE) == 2)
+                            ##     gm <- gmessage("Perform Bootstrap Simulations...",
+                            ##                    icon = "info")
+                            ## try(dispose(gm), silent = TRUE)
+                            w2 <- gwindow("Summary", width = 600, height = 400,
+                                          visible = TRUE, parent = win)
+                            g2 <- gtext(
+                                paste(
+                                    do.call(
+                                        iNZightPlots:::getPlotInference,
+                                        sets),
+                                    collapse = "\n"),
+                                expand = TRUE, cont = w2, wrap = FALSE,
+                                font.attr = c(family = "monospace"))
+                            dispose(w)
+                        }, cont = g)
+                        
+                    } else {
+                        gmessage("Please select at least one variable",
+                                 parent = win)
+                    }
+                })
             font(sumBtn) <- list(weight = "bold",
                                  family = "normal",
                                  color = "navy")
