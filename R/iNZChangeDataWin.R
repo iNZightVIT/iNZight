@@ -287,7 +287,7 @@ iNZReshapeDataWin <- setRefClass(
             btnGrp <- ggroup(horizontal = TRUE)
             lbl1 <- glabel("Reshape your dataset so that groups\nas columns are transformed to cases by variables")
             conv.image <- gimage(system.file("images/groups-wide-to-tall.png",
-                                             package = "iNZightRef"))
+                                             package = "iNZight"))
             reshapeButton <- gbutton(
                 "Reshape",
                 handler = function(h, ...) {

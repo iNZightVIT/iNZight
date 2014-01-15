@@ -2,4 +2,3 @@ import(gWidgets2RGtk2)
 importClassesFrom(gWidgets2RGtk2)
 
 export(iNZight)
-

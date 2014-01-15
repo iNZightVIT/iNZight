@@ -17,6 +17,11 @@
     packageStartupMessage(parwrap("iNZight()"))
     packageStartupMessage("")
     packageStartupMessage(header)
+
+    ## try to load extension packages
+    require("iNZightModules", quietly = FALSE)
+    require("iNZightTS", quietly = FALSE)
+    require("iNZightMR", quietly = FALSE)
 }
 
 updateiNZight <- function() {
@@ -210,3 +215,33 @@ iNZSaveFile <- function(theFile, ext, ...) {
 }
 
 
+####################################
+## modifyList is defined again here
+## because R 3.0.1 does not support the
+## keep.null argument. R 3.0.2 does, so
+## this can be deleted once the R version
+## of the release is updated accordingly
+####################################
+modifyList <- function (x, val, keep.null = FALSE) 
+{
+    stopifnot(is.list(x), is.list(val))
+    xnames <- names(x)
+    vnames <- names(val)
+    vnames <- vnames[vnames != ""]
+    if (keep.null) {
+        for (v in vnames) {
+            x[v] <- if (v %in% xnames && is.list(x[[v]]) && is.list(val[[v]])) 
+                list(modifyList(x[[v]], val[[v]], keep.null = keep.null))
+            else val[v]
+        }
+    }
+    else {
+        for (v in vnames) {
+            x[[v]] <- if (v %in% xnames && is.list(x[[v]]) && 
+                is.list(val[[v]])) 
+                modifyList(x[[v]], val[[v]], keep.null = keep.null)
+            else val[[v]]
+        }
+    }
+    x
+}
