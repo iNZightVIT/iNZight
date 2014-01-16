@@ -768,6 +768,7 @@ iNZfrmIntWin <- setRefClass(
                 "Equal count intervals", "Specified intervals"),
                 horizontal = FALSE, selected = 1)
             proceedButton <- gbutton("- Proceed -", handler = function(h, ...) {
+
             })
             tbl <- glayout()
             tbl[1, 1] <- lbl1

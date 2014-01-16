@@ -122,6 +122,8 @@ iNZControlWidget <- setRefClass(
             GUI$getActiveDoc()$setSettings(setList, reset)
         },
         createSlider = function(pos, dropdata) {
+            ## make sure there is no slider at the pos            
+            deleteSlider(pos)
             ## create a ggroup for the slider at the specified
             ## pos in the glayout
             tbl <- ctrlGp$children[[1]]

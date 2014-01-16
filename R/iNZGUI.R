@@ -280,13 +280,16 @@ iNZGUI <- setRefClass(
                             sets <- modifyList(
                                 sets,
                                 list(bs.inference = (svalue(rd, index = TRUE) == 2))
-                                )
-                            ## if (svalue(rd, index = TRUE) == 2)
-                            ##     gm <- gmessage("Perform Bootstrap Simulations...",
-                            ##                    icon = "info")
-                            ## try(dispose(gm), silent = TRUE)
+                                )                            
+                            if (svalue(rd, index = TRUE) == 2) {
+                                wBoots <- gwindow("Performing Bootstrap Simulations...Please Wait",
+                                               parent = win, width=600, height=400)
+                                gBoots <- gtext("Currently performing bootstrap simulations. Depending on the size of your data, this may take a while.\nPlease wait...",
+                                                cont = wBoots, expand = TRUE)
+                            }
+                            dispose(w)
                             w2 <- gwindow("Summary", width = 600, height = 400,
-                                          visible = TRUE, parent = win)
+                                          visible = FALSE, parent = win)
                             g2 <- gtext(
                                 paste(
                                     do.call(
@@ -295,7 +298,8 @@ iNZGUI <- setRefClass(
                                     collapse = "\n"),
                                 expand = TRUE, cont = w2, wrap = FALSE,
                                 font.attr = list(family = "monospace"))
-                            dispose(w)
+                            try(dispose(wBoots), silent = TRUE)
+                            visible(w2) <- TRUE
                         }, cont = g)
                         
                     } else {
