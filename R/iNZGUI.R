@@ -294,7 +294,7 @@ iNZGUI <- setRefClass(
                                         sets),
                                     collapse = "\n"),
                                 expand = TRUE, cont = w2, wrap = FALSE,
-                                font.attr = c(family = "monospace"))
+                                font.attr = list(family = "monospace"))
                             dispose(w)
                         }, cont = g)
                         
