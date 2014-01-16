@@ -173,7 +173,7 @@ iNZControlWidget <- setRefClass(
             ## delete all the current children of sliderGrp
             try(
                 ctrlGp$children[[1]]$remove_child(
-                    ctrlGp$children[[1]]$child_positons[[childPos]]$child,
+                    ctrlGp$children[[1]]$child_positons[[childPos]]$child),
                 silent = TRUE)
         },
         ## reset the widget to its original state
