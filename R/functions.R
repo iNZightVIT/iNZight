@@ -20,8 +20,8 @@
 
     ## try to load extension packages
     require("iNZightModules", quietly = FALSE)
-    require("iNZightTS", quietly = FALSE)
-    require("iNZightMR", quietly = FALSE)
+    #require("iNZightTS", quietly = FALSE)
+    #require("iNZightMR", quietly = FALSE)
 }
 
 updateiNZight <- function() {
