@@ -167,15 +167,21 @@ iNZControlWidget <- setRefClass(
             add(sliderGrp, glabel(paste(lbl, collapse = "   ")))
         },
         deleteSlider = function(pos) {
+            ## get the child that is at the specified positions
+            childPos <- which(sapply(ctrlGp$children[[1]]$child_positions,
+                                     function(x) x$x == pos))            
             ## delete all the current children of sliderGrp
             try(
                 ctrlGp$children[[1]]$remove_child(
-                    ctrlGp$children[[1]][pos, 1]),
+                    ctrlGp$children[[1]]$child_positons[[childPos]]$child,
                 silent = TRUE)
         },
         ## reset the widget to its original state
         ## (same as triggering all 4 clear buttons)
         resetWidget = function() {
+            ##deleteSlider(10)
+            ##deleteSlider(8)
+            
             invisible(sapply(c(9,7,5,3), function(x) {
                 ctrlGp$children[[1]][x, 7]$invoke_change_handler()
             }))
