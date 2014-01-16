@@ -285,7 +285,8 @@ iNZGUI <- setRefClass(
                                 wBoots <- gwindow("Performing Bootstrap Simulations...Please Wait",
                                                parent = win, width=600, height=400)
                                 gBoots <- gtext("Currently performing bootstrap simulations. Depending on the size of your data, this may take a while.\nPlease wait...",
-                                                cont = wBoots, expand = TRUE)
+                                                cont = wBoots, expand = TRUE,
+                                                font.attr = list(family = "monospace"))
                             }
                             dispose(w)
                             w2 <- gwindow("Summary", width = 600, height = 400,
