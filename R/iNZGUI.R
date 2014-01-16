@@ -1,3 +1,9 @@
+#' main class that builds the iNZight GUI
+#'
+#' @param data an optional data.frame that is loaded
+#' upon initialisation of the GUI window
+#' 
+
 iNZGUI <- setRefClass(
     "iNZGUI",
     properties(fields = list(
@@ -14,7 +20,8 @@ iNZGUI <- setRefClass(
                    ## every window that modifies plot/data
                    ## this way we can ensure to only have one
                    ## open at the time
-                   modWin = "ANY"
+                   modWin = "ANY",
+                   testWidget = "ANY"
                    ),
                prototype = list(
                    activeDoc = 1
@@ -230,7 +237,7 @@ iNZGUI <- setRefClass(
         initializeControlWidget = function() {
             ## if plotSettings change, update the plot
             getActiveDoc()$addSettingsObserver(function() updatePlot())
-            iNZControlWidget$new(.self)
+            testWidget <<- iNZControlWidget$new(.self)
         },
         ## set up the summary and inference buttons under the 
         ## drag and drop fields

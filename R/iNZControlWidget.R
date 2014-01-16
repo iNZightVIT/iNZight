@@ -14,24 +14,24 @@ iNZControlWidget <- setRefClass(
             tbl[5,1, anchor = c(0,0)] <- glabel(" Variable 2 :")
             tbl[7,1, anchor = c(0,0)] <- glabel(" subset by  :")
             tbl[9,1, anchor = c(0,0)] <- glabel(" subset by  :")
-            tbl[3,3, anchor = c(0,0)] <- glabel("Drop name here")
-            tbl[5,3, anchor = c(0,0)] <- glabel("Drop name here")
-            tbl[7,3, anchor = c(0,0)] <- glabel("Drop name here")
-            tbl[9,3, anchor = c(0,0)] <- glabel("Drop name here")
+            tbl[3,3, anchor = c(0,0)] <- (xlbl <- glabel("Drop name here"))
+            tbl[5,3, anchor = c(0,0)] <- (ylbl <- glabel("Drop name here"))
+            tbl[7,3, anchor = c(0,0)] <- (g1lbl <- glabel("Drop name here"))
+            tbl[9,3, anchor = c(0,0)] <- (g2lbl <- glabel("Drop name here"))
             tbl[3,7, anchor = c(0,0)] <- gbutton("clear",
                          handler = function(h,...) {
-                             svalue(tbl[3,3]) <- "Drop name here"
+                             svalue(xlbl) <- "Drop name here"
                              changePlotSettings(list(x = NULL))
                          })
             tbl[5,7, anchor = c(0,0)] <- gbutton("clear",
                          handler=function(h,...) {
-                             svalue(tbl[5,3]) <- "Drop name here"
+                             svalue(ylbl) <- "Drop name here"
                              changePlotSettings(list(y = NULL))
                          })
             tbl[7,7, anchor = c(0,0)] <- gbutton("clear",
                          handler=function(h,...) {
                              deleteSlider(8) # delete a slider in row 8 of the glayout
-                             svalue(tbl[7,3]) <- "Drop name here"
+                             svalue(g1lbl) <- "Drop name here"
                              changePlotSettings(list(g1 = NULL,
                                                      g1.level = NULL,
                                                      varnames = list(
@@ -41,7 +41,7 @@ iNZControlWidget <- setRefClass(
             tbl[9,7, anchor = c(0,0)] <- gbutton("clear",
                          handler=function(h,...) {
                              deleteSlider(10) # delete a slider in row 10 of the glayout
-                             svalue(tbl[9,3]) <- "Drop name here"
+                             svalue(g2lbl) <- "Drop name here"
                              changePlotSettings(list(g2 = NULL,
                                                      g2.level = NULL,
                                                      varnames = list(
@@ -49,13 +49,13 @@ iNZControlWidget <- setRefClass(
                                                      ), reset = TRUE)
                          })
             ## change the font
-            font(tbl[3,3]) <- list(weight="bold", family = "normal")
-            font(tbl[5,3]) <- list(weight="bold", family = "normal")
-            font(tbl[7,3]) <- list(weight="bold", family = "normal")
-            font(tbl[9,3]) <- list(weight="bold", family = "normal")
+            font(xlbl) <- list(weight="bold", family = "normal")
+            font(ylbl) <- list(weight="bold", family = "normal")
+            font(g1lbl) <- list(weight="bold", family = "normal")
+            font(g2lbl) <- list(weight="bold", family = "normal")
             ## add drop functionality to the fields
             addDropTarget(
-                tbl[3,3],
+                xlbl,
                 handler = function(h, ...) {
                     svalue(h$obj) <- h$dropdata
                     changePlotSettings(list(
@@ -65,7 +65,7 @@ iNZControlWidget <- setRefClass(
                         ), reset = TRUE)
                 })
             addDropTarget(
-                tbl[5,3],
+                ylbl,
                 handler = function(h, ...) {
                     svalue(h$obj) <- h$dropdata
                     changePlotSettings(list(
@@ -76,9 +76,9 @@ iNZControlWidget <- setRefClass(
                 })
             ## slider 1
             addDropTarget(
-                tbl[7,3],
+                g1lbl,
                 handler = function(h, ...) {
-                    if (h$dropdata == svalue(tbl[9, 3]))
+                    if (h$dropdata == svalue(g2lbl))
                         gmessage("STOP! You are trying to use the same variable in both subsetting slots",
                                  parent = GUI$win)
                     else {
@@ -97,9 +97,9 @@ iNZControlWidget <- setRefClass(
                 })
             ## slider 2
             addDropTarget(
-                tbl[9,3],
+                g2lbl,
                 handler = function(h, ...) {
-                    if (h$dropdata == svalue(tbl[7, 3]))
+                    if (h$dropdata == svalue(g1lbl))
                         gmessage("STOP! You are trying to use the same variable in both subsetting slots",
                                  parent = GUI$win)
                     else {
@@ -166,10 +166,9 @@ iNZControlWidget <- setRefClass(
         },
         deleteSlider = function(pos) {
             ## delete all the current children of sliderGrp
-            if(ctrlGp$children[[1]]$get_dim()[1] >= pos &&
-               class(ctrlGp$children[[1]][pos, 1]) == "GGroup")
-                try(delete(ctrlGp$children[[1]],
-                           ctrlGp$children[[1]][pos, 1]),
-                    silent = TRUE)
+            try(
+                ctrlGp$children[[1]]$remove_child(
+                    ctrlGp$children[[1]][pos, 1]),
+                silent = TRUE)
         })
     )
