@@ -124,6 +124,24 @@ iNZControlWidget <- setRefClass(
         createSlider = function(pos, dropdata) {
             ## make sure there is no slider at the pos            
             deleteSlider(pos)
+            
+            ##################################
+            ## This is a workaround for the current bug in
+            ## gWidgets2RGtk2. Remove this code once the bug
+            ## is fixed! Comes in 2 parts
+            ##################################
+            if (pos == 8) {
+                childPos <- which(sapply(ctrlGp$children[[1]]$child_positions,
+                                     function(x) x$x == 10))
+                if (length(childPos) > 0) {
+                    g2Data <- svalue(ctrlGp$children[[1]][9, 3])
+                    deleteSlider(10)                    
+                }
+            }
+            ##################################
+            ## End of woraround part1
+            ##################################
+            
             ## create a ggroup for the slider at the specified
             ## pos in the glayout
             tbl <- ctrlGp$children[[1]]
@@ -165,6 +183,16 @@ iNZControlWidget <- setRefClass(
             else
                 lbl <- c("_ALL", lbl)
             add(sliderGrp, glabel(paste(lbl, collapse = "   ")))
+            
+            ##################################
+            ## start of workaround part2
+            ##################################
+            if (exists("g2Data")) {
+                createSlider(10, g2Data)
+            }
+            ##################################
+            ## end of workaround part2
+            ##################################
         },
         deleteSlider = function(pos) {
             ## get the child that is at the specified positions
