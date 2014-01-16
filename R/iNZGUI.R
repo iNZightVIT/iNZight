@@ -326,6 +326,8 @@ iNZGUI <- setRefClass(
             curPlSet <- getActiveDoc()$getSettings()
             if(!is.null(curPlSet$x)){
                 do.call(iNZightPlot, curPlSet)
+            } else {                
+                resetPlot()
             }
         },
         ## set a new iNZDocument and make it the active one
