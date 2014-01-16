@@ -3,7 +3,6 @@
 ## When a new data modification window is opened,
 ## a current one is closed if it exists
 ## --------------------------------------------
-
 iNZDataModWin <- setRefClass(
     "iNZDataModWin",
     fields = list(

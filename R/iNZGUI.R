@@ -17,11 +17,13 @@ iNZGUI <- setRefClass(
                    dataViewWidget = "ANY",
                    ## widget that handles the plot notebook
                    plotWidget = "ANY",
+                   ## widget that handles the drag/drop buttons
+                   ## under the dataViewWidget
+                   ctrlWidget = "ANY",
                    ## every window that modifies plot/data
                    ## this way we can ensure to only have one
                    ## open at the time
-                   modWin = "ANY",
-                   testWidget = "ANY"
+                   modWin = "ANY"                   
                    ),
                prototype = list(
                    activeDoc = 1
@@ -237,7 +239,7 @@ iNZGUI <- setRefClass(
         initializeControlWidget = function() {
             ## if plotSettings change, update the plot
             getActiveDoc()$addSettingsObserver(function() updatePlot())
-            testWidget <<- iNZControlWidget$new(.self)
+            ctrlWidget <<- iNZControlWidget$new(.self)
         },
         ## set up the summary and inference buttons under the 
         ## drag and drop fields
@@ -328,6 +330,8 @@ iNZGUI <- setRefClass(
         },
         ## set a new iNZDocument and make it the active one
         setDocument = function(document) {
+            ## reset control widget
+            ctrlWidget$resetWidget()
             ## add a iNZDocument to the end of the doc list
             iNZDocuments <<- c(iNZDocuments, list(document))
             ## set the active document to the one we added

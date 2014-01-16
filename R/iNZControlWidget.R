@@ -170,5 +170,12 @@ iNZControlWidget <- setRefClass(
                 ctrlGp$children[[1]]$remove_child(
                     ctrlGp$children[[1]][pos, 1]),
                 silent = TRUE)
+        },
+        ## reset the widget to its original state
+        ## (same as triggering all 4 clear buttons)
+        resetWidget = function() {
+            invisible(sapply(c(9,7,5,3), function(x) {
+                ctrlGp$children[[1]][x, 7]$invoke_change_handler()
+            }))
         })
     )
