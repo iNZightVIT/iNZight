@@ -27,7 +27,7 @@ iNZPlotRmveModWin <- setRefClass(
                                "Remove rugs",
                                "Remove connecting lines",
                                "Remove segmentation in bar charts",
-                               "Remove all confidence intervals",
+                               "Remove all inference information",  # "confidence intervals",
                                "Remove symbol interior colouring",
                                "Restore default symbol colours",
                                "Restore default plotting symbol sizes",
