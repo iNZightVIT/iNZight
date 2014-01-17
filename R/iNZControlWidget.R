@@ -182,7 +182,9 @@ iNZControlWidget <- setRefClass(
                 lbl <- c("_MULTI", lbl)
             else
                 lbl <- c("_ALL", lbl)
-            add(sliderGrp, glabel(paste(lbl, collapse = "   ")))
+            ## only add label if it is short enough
+            if (sum(nchar(lbl)) < 60)
+                add(sliderGrp, glabel(paste(lbl, collapse = "   ")))
             
             ## ##################################
             ## ## start of workaround part2
