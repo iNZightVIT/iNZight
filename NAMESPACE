@@ -1,4 +1,4 @@
-import(gWidgets2RGtk2)
+import(grid, RGtk2, RODBC, gdata, gWidgets2RGtk2, cairoDevice, iNZightPlots)
 importClassesFrom(gWidgets2RGtk2)
 
 export(iNZight)

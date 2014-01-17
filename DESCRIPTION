@@ -10,8 +10,8 @@ Authors@R: 	c(person("Dineika", "Chandrananda", role = "ctb"),
 		person("David", "Banks", role = "ctb"))
 Description: An interactive GUI for easy visual exploration of datasets.
 License: GPL-2
-Depends: R (>= 3.0.1), objectProperties, gWidgets2
-Imports: grid, RGtk2, RODBC, gdata, gWidgets2RGtk2, cairoDevice, iNZightPlots
+Depends: R (>= 3.0.1), objectProperties, gWidgets2, cairoDevice
+Imports: grid, RGtk2, RODBC, gdata, gWidgets2RGtk2, iNZightPlots
 Suggests: rgl, gpairs, iNZightTS, iNZightMR, iNZightModules
 
 
