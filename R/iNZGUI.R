@@ -118,11 +118,14 @@ iNZGUI <- setRefClass(
                     icon = "symbol_diamond",
                     handler = function(h, ...) iNZcrteVarWin$new(.self)
                     ),
-                frmInt = gaction(
-                    label = "Form Class Intervals",
-                    icon = "symbol_diamond",
-                    handler = function(h, ...) iNZfrmIntWin$new(.self)
-                    ),
+                ## The code for displaying this window is already there
+                ## just the functionality of forming the intervals is
+                ## left to be implemented
+                ## frmInt = gaction(
+                ##     label = "Form Class Intervals",
+                ##     icon = "symbol_diamond",
+                ##     handler = function(h, ...) iNZfrmIntWin$new(.self)
+                ##     ),
                 renmVar = gaction(
                     label = "Rename Variables",
                     icon = "symbol_diamond",
@@ -206,10 +209,10 @@ iNZGUI <- setRefClass(
             if (!'package:iNZightModules' %in% search())
                 invisible(sapply(actionList[18:19], function(x) {
                     enabled(x) <- FALSE}))
-            menuBarList <- list(File = actionList[c(16, 1:2)],
-                                "Change Dataset" = actionList[13:15],
-                                "Manipulate variables" = actionList[3:12],
-                                "Advanced" = actionList[17:20]
+            menuBarList <- list(File = actionList[c(15, 1:2)],
+                                "Change Dataset" = actionList[12:14],
+                                "Manipulate variables" = actionList[3:11],
+                                "Advanced" = actionList[16:19]
                                 )
             gmenu(menuBarList, container = cont)
 
