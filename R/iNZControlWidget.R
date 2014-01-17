@@ -125,22 +125,22 @@ iNZControlWidget <- setRefClass(
             ## make sure there is no slider at the pos            
             deleteSlider(pos)
             
-            ##################################
-            ## This is a workaround for the current bug in
-            ## gWidgets2RGtk2. Remove this code once the bug
-            ## is fixed! Comes in 2 parts
-            ##################################
-            if (pos == 8) {
-                childPos <- which(sapply(ctrlGp$children[[1]]$child_positions,
-                                     function(x) x$x == 10))
-                if (length(childPos) > 0) {
-                    g2Data <- svalue(ctrlGp$children[[1]][9, 3])
-                    deleteSlider(10)                    
-                }
-            }
-            ##################################
-            ## End of woraround part1
-            ##################################
+            ## ##################################
+            ## ## This is a workaround for the current bug in
+            ## ## gWidgets2RGtk2. Remove this code once the bug
+            ## ## is fixed! Comes in 2 parts
+            ## ##################################
+            ## if (pos == 8) {
+            ##     childPos <- which(sapply(ctrlGp$children[[1]]$child_positions,
+            ##                          function(x) x$x == 10))
+            ##     if (length(childPos) > 0) {
+            ##         g2Data <- svalue(ctrlGp$children[[1]][9, 3])
+            ##         deleteSlider(10)                    
+            ##     }
+            ## }
+            ## ##################################
+            ## ## End of woraround part1
+            ## ##################################
             
             ## create a ggroup for the slider at the specified
             ## pos in the glayout
@@ -184,22 +184,22 @@ iNZControlWidget <- setRefClass(
                 lbl <- c("_ALL", lbl)
             add(sliderGrp, glabel(paste(lbl, collapse = "   ")))
             
-            ##################################
-            ## start of workaround part2
-            ##################################
-            if (exists("g2Data")) {
-                createSlider(10, g2Data)
-            }
-            ##################################
-            ## end of workaround part2
-            ##################################
+            ## ##################################
+            ## ## start of workaround part2
+            ## ##################################
+            ## if (exists("g2Data")) {
+            ##     createSlider(10, g2Data)
+            ## }
+            ## ##################################
+            ## ## end of workaround part2
+            ## ##################################
         },
         deleteSlider = function(pos) {
             ## get the child that is at the specified positions
             childPos <- which(sapply(ctrlGp$children[[1]]$child_positions,
                                      function(x) x$x == pos))
             if(length(childPos) > 0) {
-                childPos <- names(ctrlGp$children[[1]]$child_positions)[[childPos]]
+                ##childPos <- names(ctrlGp$children[[1]]$child_positions)[[childPos]]
                 ## delete all the current children of sliderGrp
                 try(
                     ctrlGp$children[[1]]$remove_child(
