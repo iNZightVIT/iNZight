@@ -2,7 +2,35 @@
 \title{NEWS file for the iNZight package}
 \encoding{UTF-8}
 
-\section{Changes in version 0.0.2-20130306}{
+\section{Changes in version 2.0.0}{
+  \subsection{MAJOR CHANGES}{
+    \itemize{
+
+      \item The entire iNZight module has been re-written using
+      gWidgets2 and reference classes. This provides a much more
+      extensible environment for the addition of new features.
+
+      \item The plotting functionality has been rewritten using the grid
+      package, and has been self contained in its own package called
+      iNZightPlots.
+      
+    }
+  }
+
+  \subsection{MINOR CHANGES}{
+    \itemize{
+      The version number has been incremented to version 2.0, because
+      the previous release should technically have been version
+      1.x. However, this new release is completely incompatible with the
+      old system, so deserves to be version 2.
+
+      This version numbering has been updated over the entire
+      `iNZightVIT` bundle.
+    }
+  }
+}
+
+\section{Changes in version 1.0.2-20130306}{
   \subsection{MINOR CHANGES}{
     \itemize{
 
@@ -13,7 +41,7 @@
   }
 }
 
-\section{Changes in version 0.0.2-20130227}{
+\section{Changes in version 1.0.2-20130227}{
   \subsection{MINOR CHANGES}{
     \itemize{
 
@@ -25,7 +53,7 @@
   }
 }
 
-\section{Changes in version 0.0.2-20130122}{
+\section{Changes in version 1.0.2-20130122}{
   \subsection{NEW FEATURES}{
     \itemize{
 
@@ -72,7 +100,7 @@
   }
 }
 
-\section{Changes in version 0.0.2-20121109}{
+\section{Changes in version 1.0.2-20121109}{
   \subsection{BUG FIXES}{
     \itemize{
 
@@ -89,7 +117,7 @@
   }
 }
 
-\section{Changes in version 0.0.2-20121008}{
+\section{Changes in version 1.0.2-20121008}{
   \subsection{NEW FEATURES}{
     \itemize{
 
@@ -130,7 +158,7 @@
   }
 }
 
-\section{Changes in version 0.0.2-20120822}{
+\section{Changes in version 1.0.2-20120822}{
   \subsection{NEW FEATURES}{
     \itemize{
 
@@ -144,7 +172,7 @@
   }
 }
 
-\section{Changes in version 0.0.2-20120725}{
+\section{Changes in version 1.0.2-20120725}{
   \subsection{NEW FEATURES}{
     \itemize{
       \item A Time Series module added to iNZight (under Advanced).
@@ -152,7 +180,7 @@
   }
 }
 
-\section{Changes in version 0.0.2-20120417}{
+\section{Changes in version 1.0.2-20120417}{
   \subsection{BUG FIXES}{
     \itemize{
       \item Various fixes.
