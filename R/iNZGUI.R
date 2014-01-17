@@ -165,7 +165,11 @@ iNZGUI <- setRefClass(
                     label = "Time Series",
                     icon = "symbol_diamond",
                     handler = function(h, ...) {
-                        NULL
+                        ign <- gwindow("...", visible = FALSE)
+                        tag(ign, "dataSet") <- getActiveData()
+                        e <- list(obj = ign)
+                        e$win <- win
+                        timeSeries(e)                        
                     }
                     ),
                 modelFit = gaction(
