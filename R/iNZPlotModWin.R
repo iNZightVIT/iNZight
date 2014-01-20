@@ -48,7 +48,7 @@ iNZPlotModWin <- setRefClass(
                 okButton <<- gbutton("Done", expand = FALSE,
                                      cont = btnGrp,
                                      handler = function(h, ...) dispose(modWin))
-                addSpring(btnGrp)               
+                addSpring(btnGrp)
                 optGrp <<- ggroup(horizontal = FALSE, expand = TRUE)
                 add(topGrp, lbl)
                 add(topGrp, radioGrp)
@@ -159,8 +159,8 @@ iNZDotchartMod <- setRefClass(
                 editable = TRUE)
             fillColor <- gcheckbox("Colour symbol interior",
                                    checked = (curSet$pch != 1))
-            cexSlider <- gslider(from = 0.5, to = 3.5,
-                by = 0.1, value = curSet$cex.pt)
+            cexSlider <- gslider(from = 0.05, to = 3.5,
+                by = 0.05, value = curSet$cex.pt)
             showButton <- gbutton("Show Changes",
                                   handler = function(h, ...) {
                                       pch.sel <- ifelse(svalue(fillColor),
@@ -171,8 +171,8 @@ iNZDotchartMod <- setRefClass(
                                                cex.pt = svalue(cexSlider),
                                                pch = pch.sel)
                                           )
-                                  })            
-            tbl[3,2:4, anchor = c(-1,-1), expand = TRUE] <- lbl1            
+                                  })
+            tbl[3,2:4, anchor = c(-1,-1), expand = TRUE] <- lbl1
             tbl[4,2, anchor = c(-1,-1), expand = TRUE] <- lbl2
             tbl[4,3, expand = TRUE] <- symbolColList
             tbl[5,2:4] <- lbl6
@@ -290,9 +290,9 @@ iNZScatterMod <- setRefClass(
             tbl[4, 1, anchor = c(-1, -1), expand = TRUE] <- lbl2
             tbl[4, 2, expand = TRUE] <- grpVarList
             tbl[5, 1, anchor = c(-1, -1), expand = TRUE] <- lbl3
-            tbl[5, 2, expand = TRUE] <- rszVarList            
+            tbl[5, 2, expand = TRUE] <- rszVarList
             tbl[6, 1:2, expand = TRUE] <- showButton
-            add(optGrp, tbl)            
+            add(optGrp, tbl)
         },
         ## Add trend curves
         opt2 = function() {
@@ -344,7 +344,7 @@ iNZScatterMod <- setRefClass(
                                                    quadratic = trCol[2],
                                                    cubic = trCol[3])
                                                )
-                                          )                                      
+                                          )
                                   })
             tbl[1, 1:2, anchor = c(-1, -1), expand = TRUE] <- lbl1
             tbl[2, 1] <- linChk
@@ -366,30 +366,30 @@ iNZScatterMod <- setRefClass(
             xyline <- gcheckbox("Plot x=y line",
                                 checked = curSet$LOE)
             xyCols <- c("red", "black", "blue", "green4",
-                        "yellow", "pink", "grey", "orange")            
+                        "yellow", "pink", "grey", "orange")
             xyCol <- gcombobox(xyCols,
                                selected = which(
                                    curSet$col.LOE == xyCols
                                    )
-                               )            
+                               )
             showButton <- gbutton("Show Changes",
                                   handler = function(h, ...) {
                                       ## update plot settings
                                       GUI$getActiveDoc()$setSettings(
                                           list(LOE = svalue(xyline),
                                                col.LOE = svalue(xyCol))
-                                          )                                      
+                                          )
                                   })
             tbl[1, 1:2, anchor = c(-1, -1), expand = TRUE] <- lbl1
             tbl[2, 1, expand = TRUE] <- xyline
             tbl[2, 2, expand = TRUE] <- xyCol
             tbl[3, 1:2, expand = TRUE] <- showButton
-            add(optGrp, tbl)            
+            add(optGrp, tbl)
         },
         ## Add smoother
         opt4 = function() {
             tbl <- glayout()
-            lbl1 <- glabel("Choose the smoothness:")            
+            lbl1 <- glabel("Choose the smoothness:")
             font(lbl1) <- list(weight="bold",
                                family = "normal",
                                size = 9)
@@ -418,7 +418,7 @@ iNZScatterMod <- setRefClass(
                                           list(smooth = smth,
                                                col.smooth = svalue(smthCol)
                                                )
-                                          )                                      
+                                          )
                                   })
             tbl[1, 1:2, anchor = c(-1, -1), expand = TRUE] <- lbl1
             tbl[2, 1:2, anchor = c(-1, 1), expand = TRUE] <- lbl2
@@ -426,12 +426,12 @@ iNZScatterMod <- setRefClass(
             tbl[3, 2, expand = TRUE] <- smthCol
             tbl[4, 1:2, expand = TRUE] <- smthSlid
             tbl[5, 1:2, expand = TRUE] <- showButton
-            add(optGrp, tbl)            
+            add(optGrp, tbl)
         },
         ## Add jitter
         opt5 = function() {
             tbl <- glayout()
-            lbl1 <- glabel("Add jitter:")            
+            lbl1 <- glabel("Add jitter:")
             font(lbl1) <- list(weight="bold",
                                family = "normal",
                                size = 9)
@@ -449,18 +449,18 @@ iNZScatterMod <- setRefClass(
                                       ## update plot settings
                                       GUI$getActiveDoc()$setSettings(
                                           list(jitter = jit)
-                                          )                                      
+                                          )
                                   })
             tbl[1, 1:2, anchor = c(-1, -1), expand = TRUE] <- lbl1
             tbl[2, 1] <- xJit
             tbl[3, 1] <- yJit
             tbl[4, 1:2, expand = TRUE] <- showButton
-            add(optGrp, tbl)               
+            add(optGrp, tbl)
         },
         ## Add rug
         opt6 = function() {
             tbl <- glayout()
-            lbl1 <- glabel("Add rug:")            
+            lbl1 <- glabel("Add rug:")
             font(lbl1) <- list(weight="bold",
                                family = "normal",
                                size = 9)
@@ -476,13 +476,13 @@ iNZScatterMod <- setRefClass(
                                       ## update plot settings
                                       GUI$getActiveDoc()$setSettings(
                                           list(rugs = rug)
-                                          )                                      
+                                          )
                                   })
             tbl[1, 1:2, anchor = c(-1, -1), expand = TRUE] <- lbl1
             tbl[2, 1] <- xRug
             tbl[3, 1] <- yRug
             tbl[4, 1:2, expand = TRUE] <- showButton
-            add(optGrp, tbl)               
+            add(optGrp, tbl)
         },
         ## Join points by lines
         opt7 = function(){
@@ -494,25 +494,25 @@ iNZScatterMod <- setRefClass(
             joinPts <- gcheckbox("Join points",
                                  checked = curSet$join)
             joinCols <- c("red", "black", "blue", "green4",
-                          "yellow", "pink", "grey", "orange")            
+                          "yellow", "pink", "grey", "orange")
             joinCol <- gcombobox(joinCols,
                                selected = which(
                                    curSet$col.line == joinCols
                                    )
-                               )                
+                               )
             showButton <- gbutton("Show Changes",
                                   handler = function(h, ...) {
                                       ## update plot settings
                                       GUI$getActiveDoc()$setSettings(
                                           list(join = svalue(joinPts),
                                                col.line = svalue(joinCol))
-                                          )                                      
+                                          )
                                   })
             tbl[1, 1:2, anchor = c(-1, -1), expand = TRUE] <- lbl1
             tbl[2, 1, expand = TRUE] <- joinPts
             tbl[2, 2, expand = TRUE] <- joinCol
             tbl[3, 1:2, expand = TRUE] <- showButton
-            add(optGrp, tbl)            
+            add(optGrp, tbl)
         },
         opt8 = function() {
             tbl <- glayout()
@@ -554,8 +554,8 @@ iNZScatterMod <- setRefClass(
                 editable = TRUE)
             fillColor <- gcheckbox("Colour symbol interior",
                                    checked = (curSet$pch != 1))
-            cexSlider <- gslider(from = 0.5, to = 3.5,
-                by = 0.1, value = curSet$cex.pt)
+            cexSlider <- gslider(from = 0.05, to = 3.5,
+                by = 0.05, value = curSet$cex.pt)
             showButton <- gbutton("Show Changes",
                                   handler = function(h, ...) {
                                       pch.sel <- ifelse(svalue(fillColor),
@@ -566,8 +566,8 @@ iNZScatterMod <- setRefClass(
                                                cex.pt = svalue(cexSlider),
                                                pch = pch.sel)
                                           )
-                                  })            
-            tbl[3,2:4, anchor = c(-1,-1), expand = TRUE] <- lbl1            
+                                  })
+            tbl[3,2:4, anchor = c(-1,-1), expand = TRUE] <- lbl1
             tbl[4,2, anchor = c(-1,-1), expand = TRUE] <- lbl2
             tbl[4,3, expand = TRUE] <- symbolColList
             tbl[5,2:4] <- lbl6
@@ -578,5 +578,5 @@ iNZScatterMod <- setRefClass(
             tbl[9,3, expand = TRUE] <- cexSlider
             tbl[11, 2:4] <- showButton
             add(optGrp, tbl)
-        })            
+        })
     )
