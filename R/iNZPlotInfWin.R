@@ -10,7 +10,7 @@
 iNZPlotInfWin <- setRefClass(
     "iNZPlotInfWin",
     fields = list(
-        GUI = "ANY",       
+        GUI = "ANY",
         tbl = "ANY"
         ),
     methods = list(
@@ -80,7 +80,7 @@ iNZBarchartInf <- setRefClass(
             tbl[4, 2, expand = TRUE, anchor = c(1, -1)] <<- addButton
         })
     )
-            
+
 iNZDotchartInf <- setRefClass(
     "iNZDotchartInf",
     contains = "iNZPlotInfWin",
@@ -92,8 +92,8 @@ iNZDotchartInf <- setRefClass(
             intType <- gradio(c("Comparison Intervals",
                                 ##"Confidence Intervals",
                                 "Comparison + Confidence Intervals"))
-            mthd <- gradio(c("Bootstrap", "Year 12"),
-                           selected = 2)            
+            mthd <- gradio(c("Bootstrap", "Normal Theory"),
+                           selected = 2)
             addButton <- gbutton(
                 "Add Intervals",
                 handler = function(h, ...) {
