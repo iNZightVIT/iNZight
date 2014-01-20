@@ -244,11 +244,10 @@ iNZScatterMod <- setRefClass(
             callSuper(gui)
             ## need to specify the methods that we want to use in
             ## do.call later on (see changeOpts())
-            usingMethods(opt1, opt2, opt3, opt4, opt5, opt6, opt7, opt8)
+            usingMethods(opt1, opt2, opt3, opt4, opt5, opt6, opt7)
             opts <- gradio(c("Code more variables",
                              "Add trend curves",
                              "Add x=y line",
-                             "Add a smoother",
                              "Add a jitter",
                              "Add rugs",
                              "Join points by lines",
@@ -331,6 +330,11 @@ iNZScatterMod <- setRefClass(
                                 checked = trCrvs[2] %in% curSet$trend)
             cubChk <- gcheckbox(trCrvs[3],
                                 checked = trCrvs[3] %in% curSet$trend)
+            smthChk <- gcheckbox("Draw a smoother",
+                                 checked = curSet$smooth!=0)
+            trendByChk <- gcheckbox(paste("For each level of",
+                                            curSet$varnames$by),
+                                      checked = curSet$trend.by)
             linCol <- gcombobox(trCols,
                                 selected = which(
                                     curSet$col.trend$linear == trCols
@@ -346,6 +350,16 @@ iNZScatterMod <- setRefClass(
                                     curSet$col.trend$cubic == trCols
                                     )
                                 )
+            smthCols <- c("red", "black", "blue", "green", "yellow",
+                          "magenta", "grey", "orange")
+            smthCol <- gcombobox(smthCols,
+                                 selected = which(
+                                     curSet$col.smooth == smthCols)
+                                 )
+            smthSlid <- gslider(from = 0.1, to = 1,
+                                by = 0.1,
+                                value = ifelse(curSet$smooth==0,
+                                    0.7, curSet$smooth))
             showButton <- gbutton("Show Changes",
                                   handler = function(h, ...) {
                                       ## vector of selected trends
@@ -356,25 +370,50 @@ iNZScatterMod <- setRefClass(
                                       trCol <- c(svalue(linCol),
                                                  svalue(quaCol),
                                                  svalue(cubCol))
+                                      ## smoother option
+                                      smth <- ifelse(svalue(smthChk),
+                                                     svalue(smthSlid),
+                                                     0)
                                       ## update plot settings
                                       GUI$getActiveDoc()$setSettings(
                                           list(trend = trCrvs[trSel],
+                                               smooth = smth,
                                                col.trend = list(
                                                    linear = trCol[1],
                                                    quadratic = trCol[2],
-                                                   cubic = trCol[3])
+                                                   cubic = trCol[3]),
+                                               col.smooth = svalue(smthCol),
+                                               trend.by = svalue(trendByChk)
                                                )
                                           )
                                       updateSettings()
                                   })
+            ## only have the smoother slider enabled if the
+            ## smoother checkbox is ticked
+            if (!svalue(smthChk))
+                enabled(smthSlid) <- FALSE
+            addHandlerChanged(smthChk, handler = function(h, ...) {
+                if (svalue(smthChk))
+                    enabled(smthSlid) <- TRUE
+                else
+                    enabled(smthSlid) <- FALSE
+            })
+            ## only have the trend by level option enabled if
+            ## the colored by variable option is set
+            if (is.null(curSet$by))
+                enabled(trendByChk) <- FALSE
             tbl[1, 1:2, anchor = c(-1, -1), expand = TRUE] <- lbl1
             tbl[2, 1] <- linChk
             tbl[3, 1] <- quaChk
             tbl[4, 1] <- cubChk
+            tbl[5, 1] <- smthChk
             tbl[2, 2] <- linCol
             tbl[3, 2] <- quaCol
             tbl[4, 2] <- cubCol
-            tbl[5, 1:2, expand = TRUE] <- showButton
+            tbl[5, 2] <- smthCol
+            tbl[6, 1:2] <- smthSlid
+            tbl[7, 1] <- trendByChk
+            tbl[8, 1:2, expand = TRUE] <- showButton
             add(optGrp, tbl)
         },
         ## Add x=y line
@@ -408,51 +447,8 @@ iNZScatterMod <- setRefClass(
             tbl[3, 1:2, expand = TRUE] <- showButton
             add(optGrp, tbl)
         },
-        ## Add smoother
-        opt4 = function() {
-            tbl <- glayout()
-            lbl1 <- glabel("Choose the smoothness:")
-            font(lbl1) <- list(weight="bold",
-                               family = "normal",
-                               size = 9)
-            lbl2 <- glabel("(Larger values give more smoothness)")
-            font(lbl2) <- list(size = 8)
-            smthChk <- gcheckbox("Draw a smoother",
-                                 checked = curSet$smooth!=0)
-            smthSlid <- gslider(from = 0.1, to = 1,
-                                by = 0.1,
-                                value = ifelse(curSet$smooth==0,
-                                    0.7, curSet$smooth))
-            smthCols <- c("red", "black", "blue", "green", "yellow",
-                          "magenta", "grey", "orange")
-            smthCol <- gcombobox(smthCols,
-                                 selected = which(
-                                     curSet$col.smooth == smthCols)
-                                 )
-            showButton <- gbutton("Show Changes",
-                                  handler = function(h, ...) {
-                                      ## vector of selected trends
-                                      smth <- ifelse(svalue(smthChk),
-                                                     svalue(smthSlid),
-                                                     0)
-                                      ## update plot settings
-                                      GUI$getActiveDoc()$setSettings(
-                                          list(smooth = smth,
-                                               col.smooth = svalue(smthCol)
-                                               )
-                                          )
-                                      updateSettings()
-                                  })
-            tbl[1, 1:2, anchor = c(-1, -1), expand = TRUE] <- lbl1
-            tbl[2, 1:2, anchor = c(-1, 1), expand = TRUE] <- lbl2
-            tbl[3, 1, expand = TRUE] <- smthChk
-            tbl[3, 2, expand = TRUE] <- smthCol
-            tbl[4, 1:2, expand = TRUE] <- smthSlid
-            tbl[5, 1:2, expand = TRUE] <- showButton
-            add(optGrp, tbl)
-        },
         ## Add jitter
-        opt5 = function() {
+        opt4 = function() {
             tbl <- glayout()
             lbl1 <- glabel("Add jitter:")
             font(lbl1) <- list(weight="bold",
@@ -482,7 +478,7 @@ iNZScatterMod <- setRefClass(
             add(optGrp, tbl)
         },
         ## Add rug
-        opt6 = function() {
+        opt5 = function() {
             tbl <- glayout()
             lbl1 <- glabel("Add rug:")
             font(lbl1) <- list(weight="bold",
@@ -510,7 +506,7 @@ iNZScatterMod <- setRefClass(
             add(optGrp, tbl)
         },
         ## Join points by lines
-        opt7 = function(){
+        opt6 = function(){
             tbl <- glayout()
             lbl1 <- glabel("Join points by lines")
             font(lbl1) <- list(weight="bold",
@@ -541,7 +537,7 @@ iNZScatterMod <- setRefClass(
             add(optGrp, tbl)
         },
         ## change plot appearance
-        opt8 = function() {
+        opt7 = function() {
             tbl <- glayout()
             lbl1 <- glabel("Change plot appearance")
             font(lbl1) <- list(weight="bold",
