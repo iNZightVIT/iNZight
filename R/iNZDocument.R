@@ -48,9 +48,11 @@ iNZDataModel <- setRefClass(
 iNZPlotSettings <- setRefClass(
     "iNZPlotSettings",
     properties(fields = list(
-                   settings = "list"),
+                   settings = "list",
+                   defaultSettings = "list"),
                prototype = list(
-                   settings = list())),
+                   settings = list(),
+                   defaultSettings = list())),
     contains = "PropertySet", ## need this to add observer to object
     methods = list(
         initialize = function(settings = NULL) {
@@ -58,6 +60,7 @@ iNZPlotSettings <- setRefClass(
                 settings <<- settings
             else
                 settings <<- iNZightPlots:::inzPlotDefaults()
+            defaultSettings <<- iNZightPlots:::inzPlotDefaults()
         },
         getSettings = function() {
             settings
@@ -66,15 +69,25 @@ iNZPlotSettings <- setRefClass(
         ## reset: if TRUE, the default plot settings are loaded
         ##        for the additions to the plot
         setSettings = function(setList, reset = FALSE) {
-            if (reset) 
+            if (reset)
                 setList <- modifyList(setList,
                                       iNZightPlots:::inzPlotDefaults(),
                                       keep.null = TRUE)
             settings <<- modifyList(settings, setList)
+            defaultSettings <<- modifyList(
+                defaultSettings,
+                extractDefaults(settings),
+                keep.null = TRUE)
         },
         ## reset the plot settings (except the data fields)
         resetSettings = function() {
             setSettings(iNZightPlots:::inzPlotDefaults())
+        },
+        ## extract a sub-list of a settings list
+        ## than can be used to merge with defaultSettings
+        extractDefaults = function(theSettings) {
+            defaultFields <- c("cex", "bg", "col.pt")
+            theSettings[defaultFields]
         },
         addSettingsObserver = function(FUN, ...) {
             .self$settingsChanged$connect(FUN, ...)
