@@ -111,6 +111,17 @@ iNZDotchartInf <- setRefClass(
                             )
                         )
                 })
+            ## the different parameters (means/medians) have different
+            ## default interval type. On change of parameter, change
+            ## default interval type
+            addHandlerChanged(parm, handler = function(h, ...) {
+                if (svalue(parm) == "Means") {
+                    svalue(intType) <- "Comparison + Confidence Intervals"
+                } else {
+                    svalue(intType) <- "Comparison Intervals"
+                }
+            })
+
             tbl[1, 2] <<- parm
             tbl[2, 2] <<- intType
             tbl[3, 2] <<- mthd
