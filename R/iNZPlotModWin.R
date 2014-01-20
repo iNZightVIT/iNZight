@@ -24,7 +24,7 @@ iNZPlotModWin <- setRefClass(
         initialize = function(gui=NULL) {
             initFields(GUI = gui)
             if (!is.null(GUI)) {
-                curSet <<- GUI$getActiveDoc()$getSettings()
+                updateSettings()
                 modWin <<- gwindow(title = "Add to Plot",
                                    visible = TRUE,
                                    parent = GUI$win)
@@ -57,6 +57,10 @@ iNZPlotModWin <- setRefClass(
                 add(mainGrp, optGrp)
                 ##visible(modWin) <<- TRUE
             }
+        },
+        ## up the curSet class variable
+        updateSettings = function() {
+            curSet <<- GUI$getActiveDoc()$getSettings()
         })
     )
 
@@ -112,6 +116,7 @@ iNZDotchartMod <- setRefClass(
                                                varnames = list(
                                                    by = svalue(grpVarList)))
                                           )
+                                      updateSettings()
                                   })
             tbl[3, 1:2, anchor = c(-1, -1), expand = TRUE] <- lbl1
             tbl[4, 1, anchor = c(-1, -1), expand = TRUE] <- lbl2
@@ -182,6 +187,18 @@ iNZDotchartMod <- setRefClass(
             tbl[9,2, anchor = c(-1,-1), expand = TRUE] <- lbl4
             tbl[9,3, expand = TRUE] <- cexSlider
             tbl[11, 2:4] <- showButton
+
+            ## if the "by" options is set, i.e. points are colored
+            ## according to another var, disable the option to
+            ## change the color
+            if (!is.null(GUI$getActiveDoc()$getSettings()$by)) {
+                enabled(symbolColList) <- FALSE
+                svalue(lbl6) <- paste(
+                    "Changing the color of symbols is disabled since",
+                    " the symbols are\n colored by variable '",
+                    GUI$getActiveDoc()$getSettings()$varnames$by,
+                    "'", sep = "")
+            }
             add(optGrp, tbl)
         })
     )
@@ -514,6 +531,7 @@ iNZScatterMod <- setRefClass(
             tbl[3, 1:2, expand = TRUE] <- showButton
             add(optGrp, tbl)
         },
+        ## change plot appearance
         opt8 = function() {
             tbl <- glayout()
             lbl1 <- glabel("Change plot appearance")
@@ -577,6 +595,17 @@ iNZScatterMod <- setRefClass(
             tbl[9,2, anchor = c(-1,-1), expand = TRUE] <- lbl4
             tbl[9,3, expand = TRUE] <- cexSlider
             tbl[11, 2:4] <- showButton
+            ## if the "by" options is set, i.e. points are colored
+            ## according to another var, disable the option to
+            ## change the color
+            if (!is.null(GUI$getActiveDoc()$getSettings()$by)) {
+                enabled(symbolColList) <- FALSE
+                svalue(lbl6) <- paste(
+                    "Changing the color of symbols is disabled since",
+                    " the symbols are\n colored by variable '",
+                    GUI$getActiveDoc()$getSettings()$varnames$by,
+                    "'", sep = "")
+            }
             add(optGrp, tbl)
         })
     )
