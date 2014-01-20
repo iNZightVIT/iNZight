@@ -2,7 +2,7 @@
 #'
 #' @param data an optional data.frame that is loaded
 #' upon initialisation of the GUI window
-#' 
+#'
 
 iNZGUI <- setRefClass(
     "iNZGUI",
@@ -23,7 +23,7 @@ iNZGUI <- setRefClass(
                    ## every window that modifies plot/data
                    ## this way we can ensure to only have one
                    ## open at the time
-                   modWin = "ANY"                   
+                   modWin = "ANY"
                    ),
                prototype = list(
                    activeDoc = 1
@@ -34,7 +34,7 @@ iNZGUI <- setRefClass(
             iNZDocuments <<- list(iNZDocument$new(data = data))
             win.title <- paste("iNZight (v",
                                packageDescription("iNZight")$Version,
-                               ")", sep = "")                               
+                               ")", sep = "")
             win <<- gwindow(win.title, visible = FALSE, width = 870,
                             height = 600)
             g <- gpanedgroup(container = win, expand = TRUE)
@@ -86,7 +86,7 @@ iNZGUI <- setRefClass(
                     icon = "symbol_diamond",
                     tooltip = "Convert a variable to a categorical type",
                     handler = function(h, ...) iNZconToCatWin$new(.self)
-                    ),               
+                    ),
                 trns = gaction(
                     label = "Transform Variables",
                     icon = "symbol_diamond",
@@ -159,7 +159,7 @@ iNZGUI <- setRefClass(
                     icon = "symbold_diamond",
                     handler = function(h, ...) {
                         dispose(win)
-                        iNZightVIT()                        
+                        iNZightVIT()
                     }),
                 tsMod = gaction(
                     label = "Time Series",
@@ -169,7 +169,7 @@ iNZGUI <- setRefClass(
                         tag(ign, "dataSet") <- getActiveData()
                         e <- list(obj = ign)
                         e$win <- win
-                        timeSeries(e)                        
+                        timeSeries(e)
                     }
                     ),
                 modelFit = gaction(
@@ -191,7 +191,7 @@ iNZGUI <- setRefClass(
                         tag(ign, "dataSet") <- getActiveData()
                         e <- list(obj = ign)
                         e$win <- win
-                        plot3D(e)                                  
+                        plot3D(e)
                     }
                     ),
                 scatterMatrix = gaction(
@@ -202,13 +202,13 @@ iNZGUI <- setRefClass(
                         tag(ign, "dataSet") <- getActiveData()
                         e <- list(obj = ign)
                         e$win <- win
-                        scatterPlotMatrix(e)                                  
+                        scatterPlotMatrix(e)
                     }
                     )
                 )
             ## home button is disabled if package 'vit' is not loaded
             if (!'package:vit' %in% search())
-                enabled(actionList[[16]]) <- FALSE
+                enabled(actionList[[15]]) <- FALSE
             ## disable modules if packages are not loaded
             if (!'package:iNZightModules' %in% search())
                 invisible(sapply(actionList[18:19], function(x) {
@@ -248,7 +248,7 @@ iNZGUI <- setRefClass(
             getActiveDoc()$addSettingsObserver(function() updatePlot())
             ctrlWidget <<- iNZControlWidget$new(.self)
         },
-        ## set up the summary and inference buttons under the 
+        ## set up the summary and inference buttons under the
         ## drag and drop fields
         initializeSummaryBtns = function() {
             sumGrp <- ggroup()
@@ -287,7 +287,7 @@ iNZGUI <- setRefClass(
                             sets <- modifyList(
                                 sets,
                                 list(bs.inference = (svalue(rd, index = TRUE) == 2))
-                                )                            
+                                )
                             if (svalue(rd, index = TRUE) == 2) {
                                 wBoots <- gwindow("Performing Bootstrap Simulations...Please Wait",
                                                parent = win, width=600, height=400)
@@ -309,7 +309,7 @@ iNZGUI <- setRefClass(
                             try(dispose(wBoots), silent = TRUE)
                             visible(w2) <- TRUE
                         }, cont = g)
-                        
+
                     } else {
                         gmessage("Please select at least one variable",
                                  parent = win)
@@ -338,7 +338,7 @@ iNZGUI <- setRefClass(
             curPlSet <- getActiveDoc()$getSettings()
             if(!is.null(curPlSet$x)){
                 do.call(iNZightPlot, curPlSet)
-            } else {                
+            } else {
                 resetPlot()
             }
         },
