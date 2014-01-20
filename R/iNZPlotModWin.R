@@ -176,6 +176,7 @@ iNZDotchartMod <- setRefClass(
                                                cex.pt = svalue(cexSlider),
                                                pch = pch.sel)
                                           )
+                                      updateSettings()
                                   })
             tbl[3,2:4, anchor = c(-1,-1), expand = TRUE] <- lbl1
             tbl[4,2, anchor = c(-1,-1), expand = TRUE] <- lbl2
@@ -225,6 +226,7 @@ iNZBarchartMod <- setRefClass(
                                                varnames = list(
                                                    by = svalue(grpVarList)))
                                           )
+                                      updateSettings()
                                   })
             tbl[1, 1] <- lbl1
             tbl[1, 2] <- grpVarList
@@ -302,6 +304,7 @@ iNZScatterMod <- setRefClass(
                                                    by = svalue(grpVarList),
                                                    prop.size = svalue(rszVarList)))
                                           )
+                                      updateSettings()
                                   })
             tbl[3, 1:2, anchor = c(-1, -1), expand = TRUE] <- lbl1
             tbl[4, 1, anchor = c(-1, -1), expand = TRUE] <- lbl2
@@ -362,6 +365,7 @@ iNZScatterMod <- setRefClass(
                                                    cubic = trCol[3])
                                                )
                                           )
+                                      updateSettings()
                                   })
             tbl[1, 1:2, anchor = c(-1, -1), expand = TRUE] <- lbl1
             tbl[2, 1] <- linChk
@@ -396,6 +400,7 @@ iNZScatterMod <- setRefClass(
                                           list(LOE = svalue(xyline),
                                                col.LOE = svalue(xyCol))
                                           )
+                                      updateSettings()
                                   })
             tbl[1, 1:2, anchor = c(-1, -1), expand = TRUE] <- lbl1
             tbl[2, 1, expand = TRUE] <- xyline
@@ -436,6 +441,7 @@ iNZScatterMod <- setRefClass(
                                                col.smooth = svalue(smthCol)
                                                )
                                           )
+                                      updateSettings()
                                   })
             tbl[1, 1:2, anchor = c(-1, -1), expand = TRUE] <- lbl1
             tbl[2, 1:2, anchor = c(-1, 1), expand = TRUE] <- lbl2
@@ -467,6 +473,7 @@ iNZScatterMod <- setRefClass(
                                       GUI$getActiveDoc()$setSettings(
                                           list(jitter = jit)
                                           )
+                                      updateSettings()
                                   })
             tbl[1, 1:2, anchor = c(-1, -1), expand = TRUE] <- lbl1
             tbl[2, 1] <- xJit
@@ -494,6 +501,7 @@ iNZScatterMod <- setRefClass(
                                       GUI$getActiveDoc()$setSettings(
                                           list(rugs = rug)
                                           )
+                                      updateSettings()
                                   })
             tbl[1, 1:2, anchor = c(-1, -1), expand = TRUE] <- lbl1
             tbl[2, 1] <- xRug
@@ -524,6 +532,7 @@ iNZScatterMod <- setRefClass(
                                           list(join = svalue(joinPts),
                                                col.line = svalue(joinCol))
                                           )
+                                      updateSettings()
                                   })
             tbl[1, 1:2, anchor = c(-1, -1), expand = TRUE] <- lbl1
             tbl[2, 1, expand = TRUE] <- joinPts
@@ -584,6 +593,7 @@ iNZScatterMod <- setRefClass(
                                                cex.pt = svalue(cexSlider),
                                                pch = pch.sel)
                                           )
+                                      updateSettings()
                                   })
             tbl[3,2:4, anchor = c(-1,-1), expand = TRUE] <- lbl1
             tbl[4,2, anchor = c(-1,-1), expand = TRUE] <- lbl2
