@@ -327,7 +327,7 @@ iNZGUI <- setRefClass(
         },
         ## set up the widget with the plot notebook
         initializePlotWidget = function() {
-            plotWidget <<- iNZPlotWidget(.self)
+            plotWidget <<- iNZPlotWidget$new(.self)
         },
         ## set up the buttons under the plot to interact with the plot
         initializePlotToolbar = function(cont) {
