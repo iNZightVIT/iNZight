@@ -43,12 +43,12 @@ iNZDataModWin <- setRefClass(
                                         name)
                 }
 
-                if (!is.null(msg)) 
+                if (!is.null(msg))
                     do.call(gmessage, msg)
 
                 GUI$getActiveDoc()$getModel()$updateData(newData)
                 if (closeAfter)
-                    dispose(GUI$modWin)            
+                    dispose(GUI$modWin)
         })
     )
 
@@ -97,7 +97,7 @@ iNZconToCatWin <- setRefClass(
                                   svalue(name.txt) <- paste(h$dropdata, ".g", sep = "")
                                   varData <<- dropData
                               }
-                          })            
+                          })
             add(mainGroup, tbl)
             add(GUI$modWin, mainGroup, expand = TRUE)
             visible(GUI$modWin) <<- TRUE
@@ -112,14 +112,7 @@ iNZconToCatWin <- setRefClass(
                 name <- gsub('\\n+', "", name, perl = TRUE)
                 index <- which(names(GUI$getActiveData()) == orgVar)
 
-                msg <- list(title = "INFO",
-                            msg = paste("The new variable", name,
-                                "will be inserted next to",
-                                names(GUI$getActiveData()[index]),
-                                "in the dataset"),
-                            icon = "info",
-                            parent = GUI$modWin)
-                insertData(out, name, index, msg, closeAfter = FALSE)
+                insertData(out, name, index, closeAfter = FALSE)
             }
         })
     )
@@ -132,7 +125,7 @@ iNZtrnsWin <- setRefClass(
         initialize = function(gui) {
             callSuper(gui)
             ## need to specify the methods that we want to use in
-            ## do.call later on 
+            ## do.call later on
             usingMethods(trnsfrm, sqr, recip)
             svalue(GUI$modWin) <<- "Transform Variables"
             mainGroup <- ggroup(horizontal = FALSE)
@@ -162,14 +155,14 @@ iNZtrnsWin <- setRefClass(
             addTransformation(expLbl, "exp", "exp")
             addTransformation(sqrLbl, "sqr", "sqr")
             addTransformation(rootLbl, "sqrt", "root")
-            addTransformation(recLbl, "recip", "recip")            
-            
+            addTransformation(recLbl, "recip", "recip")
+
             tbl <- glayout(container = mainGroup)
             tbl[1, 1, expand = TRUE, anchor = c(-1, 0)] <- lbl1
             tbl[2, 1] <- gseparator()
             tbl[3, 1, expand = TRUE, anchor = c(0, 0)] <- lnLbl
             tbl[4, 1, expand = TRUE, anchor = c(0, 0)] <- logLbl
-            tbl[5, 1, expand = TRUE, anchor = c(0, 0)] <- expLbl            
+            tbl[5, 1, expand = TRUE, anchor = c(0, 0)] <- expLbl
             tbl[6, 1, expand = TRUE, anchor = c(0, 0)] <- sqrLbl
             tbl[7, 1, expand = TRUE, anchor = c(0, 0)] <- rootLbl
             tbl[8, 1, expand = TRUE, anchor = c(0, 0)] <- recLbl
@@ -184,7 +177,7 @@ iNZtrnsWin <- setRefClass(
                          msg = "Categorical variables cannot be transformed",
                          parent = GUI$modWin)
                 FALSE
-            } else 
+            } else
                 TRUE
         },
         ## add a drop target to a transformation field
@@ -203,7 +196,7 @@ iNZtrnsWin <- setRefClass(
                     do.call(insertData, modifyList(trnsform, list(
                         index = which(names(GUI$getActiveData()) == h$dropdata),
                         closeAfter = FALSE))
-                            )       
+                            )
                 }
             })
         },
@@ -242,7 +235,7 @@ iNZcllpsWin <- setRefClass(
                                family = "normal")
             lbl2 <- glabel("Choose two or more levels")
             font(lbl2) <- list(weight = "bold",
-                               family = "normal")            
+                               family = "normal")
             lbl3 <- glabel("(Hold Ctrl to choose many)")
             font(lbl3) <- list(weight = "bold",
                                family = "normal")
@@ -285,7 +278,7 @@ iNZcllpsWin <- setRefClass(
             add(mainGroup, lbl1)
             add(mainGroup, factorMenu)
             add(mainGroup, lbl2)
-            add(mainGroup, lbl3)            
+            add(mainGroup, lbl3)
             add(mainGroup, factorLvls, expand = TRUE)
             add(mainGroup, cllpsButton)
             add(GUI$modWin, mainGroup, expand = TRUE, fill = TRUE)
@@ -349,7 +342,7 @@ iNZrenameWin <- setRefClass(
                     tbl,
                     GUI$getActiveData()[svalue(factorMenu)][[1]])
                 ## newFactor will be FALSE, if the user input was wrong
-                if (newFactor) 
+                if (newFactor)
                     insertData(data = newFactor,
                                name = svalue(factorName),
                                index = which(names(
@@ -381,7 +374,7 @@ iNZrenameWin <- setRefClass(
                     sapply(tbl$children[5:length(tbl$children)],
                            tbl$remove_child)))
             }
-            
+
             lbl3 <- glabel("Levels")
             font(lbl3) <- list(weight = "bold",
                                family = "normal")
@@ -410,7 +403,7 @@ iNZrenameWin <- setRefClass(
             facLevels <- sapply(tbl[5:(5+nrLevels-1), 1], svalue)
             newFacLevels <- sapply(tbl[5:(5+nrLevels-1), 2], svalue)
             names(facLevels) <- newFacLevels
-            ## check if all order numbers are unique            
+            ## check if all order numbers are unique
             if (anyDuplicated(newFacLevels) > 0) {
                 gmessage(msg = "Please choose unique names for the levels",
                          icon = "error",
@@ -431,7 +424,7 @@ iNZrenameWin <- setRefClass(
                              function(i) svalue(tbl[4 + i, 2]) <- newOrder[i]))
         })
     )
-            
+
 ## reorder factor levels
 iNZreorderWin <- setRefClass(
     "iNZreorderWin",
@@ -472,7 +465,7 @@ iNZreorderWin <- setRefClass(
                     tbl,
                     GUI$getActiveData()[svalue(factorMenu)][[1]])
                 ## newFactor will be FALSE, if the user input was wrong
-                if (newFactor) 
+                if (newFactor)
                     insertData(data = newFactor,
                                name = svalue(factorName),
                                index = which(names(
@@ -498,7 +491,7 @@ iNZreorderWin <- setRefClass(
                     if (svalue(sortMenu, index = TRUE) == 2) {
                         sortByFreq(tbl,
                                    GUI$getActiveData()[svalue(factorMenu)][[1]])
-                    } 
+                    }
                 }
             })
             add(mainGroup, tbl, expand = TRUE)
@@ -517,7 +510,7 @@ iNZreorderWin <- setRefClass(
                     sapply(tbl$children[5:length(tbl$children)],
                            tbl$remove_child)))
             }
-            
+
             lbl3 <- glabel("Levels")
             font(lbl3) <- list(weight = "bold",
                                family = "normal")
@@ -545,7 +538,7 @@ iNZreorderWin <- setRefClass(
             nrLevels <- (length(tbl$children) - 4)/2 - 1
             facLevels <- sapply(tbl[5:(5+nrLevels-1), 1], svalue)
             facOrder <- as.numeric(sapply(tbl[5:(5+nrLevels-1), 2], svalue))
-            ## check if all order numbers are unique            
+            ## check if all order numbers are unique
             if (anyDuplicated(facOrder) > 0) {
                 gmessage(msg = "Please choose a unique order for the levels",
                          icon = "error",
@@ -594,7 +587,7 @@ iNZcmbCatWin <- setRefClass(
                                family = "normal")
             lbl3 <- glabel("New Variable Name")
             font(lbl3) <- list(weight = "bold",
-                               family = "normal")            
+                               family = "normal")
             ## choose a factor column from the dataset and display
             ## its level in a gtable
             factorIndices <- sapply(GUI$getActiveData(), is.factor)
@@ -636,8 +629,8 @@ iNZcmbCatWin <- setRefClass(
                 })
             add(mainGroup, lbl1)
             add(mainGroup, lbl2)
-            add(mainGroup, factorNames, expand = TRUE)            
-            add(mainGroup, lbl3)            
+            add(mainGroup, factorNames, expand = TRUE)
+            add(mainGroup, lbl3)
             add(mainGroup, newName)
             add(mainGroup, cmbButton)
             add(GUI$modWin, mainGroup, expand = TRUE, fill = TRUE)
@@ -656,7 +649,7 @@ iNZcmbCatWin <- setRefClass(
                 gmessage(title = "ALERT",
                          icon = "warning",
                          msg = "Please specify a non-empty name for the new variable",
-                         parent = GUI$modWin)                
+                         parent = GUI$modWin)
                 FALSE
             } else
                 TRUE
@@ -680,7 +673,7 @@ iNZcrteVarWin <- setRefClass(
             size(GUI$modWin) <<- c(450, 200)
             mainGroup <- ggroup(expand = TRUE, horizontal = FALSE)
             mainGroup$set_borderwidth(15)
-            lbl1 = glabel("Type in an expression to compute a new variable") 
+            lbl1 = glabel("Type in an expression to compute a new variable")
             font(lbl1) <- list(weight="bold", family = "normal")
             lbl2 = glabel("EXAMPLES")
             font(lbl2) <- list(weight="bold", family = "normal")
@@ -710,7 +703,7 @@ iNZcrteVarWin <- setRefClass(
                             icon = "info",
                             parent = GUI$modWin
                             ),
-                        closeAfter = TRUE)                        
+                        closeAfter = TRUE)
                 }
             })
             tbl <- glayout()
@@ -721,7 +714,7 @@ iNZcrteVarWin <- setRefClass(
             tbl[2,3, anchor = c(-1,1)] = " = "
             tbl[2,4, anchor = c(-1,1), expand = TRUE] = "wgt.After - wgt.Before"
             tbl[4,2,anchor = c(-1,1)] = newVarName
-            tbl[4,3,anchor = c(-1,1)] = " = "          
+            tbl[4,3,anchor = c(-1,1)] = " = "
             tbl[4,4, expand = TRUE, anchor = c(-1,1)] = newVarExp
             add(mainGroup, lbl1)
             add(mainGroup, lbl2)
@@ -755,8 +748,8 @@ iNZfrmIntWin <- setRefClass(
             lbl5 = glabel("Number of intervals :")
             font(lbl5) = list(weight = "bold", style = "normal")
             newVarName = gedit("")
-            ## choose a numeric column from the dataset 
-            numIndices <- sapply(GUI$getActiveData(), function(x) !is.factor(x))          
+            ## choose a numeric column from the dataset
+            numIndices <- sapply(GUI$getActiveData(), function(x) !is.factor(x))
             NumericListMenu = gcombobox(names(GUI$getActiveData())[numIndices],
                 selected = 0, handler = function(h,...) {
                     svalue(newVarName) = paste(svalue(h$obj),"f", sep = ".")
@@ -787,7 +780,7 @@ iNZfrmIntWin <- setRefClass(
             visible(GUI$modWin) <<- TRUE
         })
     )
-    
+
 
 
 ## create new variables using an expression
@@ -802,7 +795,7 @@ iNZrnmVarWin <- setRefClass(
             mainGroup <- ggroup(expand = TRUE, horizontal = FALSE)
             mainGroup$set_borderwidth(15)
             lbl1 <- glabel("Old Variables")
-            lbl2 <- glabel("New Variables")            
+            lbl2 <- glabel("New Variables")
             oldNames <- names(GUI$getActiveData())
             tbl <- glayout()
             tbl[1, 1, expand = TRUE, anchor = c(-1, -1)] <- lbl1
@@ -823,7 +816,7 @@ iNZrnmVarWin <- setRefClass(
             visible(GUI$modWin) <<- TRUE
         })
     )
-            
+
 ## standardise variables
 iNZstdVarWin <- setRefClass(
     "iNZstdVarWin",
@@ -843,7 +836,7 @@ iNZstdVarWin <- setRefClass(
             font(lbl2) <- list(weight = "bold",
                                family = "normal")
             ## display only numeric variables
-            numIndices <- sapply(GUI$getActiveData(), function(x) !is.factor(x))          
+            numIndices <- sapply(GUI$getActiveData(), function(x) !is.factor(x))
             numVar <- gtable(names(GUI$getActiveData())[numIndices],
                              multiple = TRUE)
             names(numVar) <- "Variables"
@@ -866,7 +859,7 @@ iNZstdVarWin <- setRefClass(
             })
             add(mainGroup, lbl1)
             add(mainGroup, lbl2)
-            add(mainGroup, numVar, expand = TRUE)            
+            add(mainGroup, numVar, expand = TRUE)
             add(mainGroup, stdButton)
             add(GUI$modWin, mainGroup, expand = TRUE, fill = TRUE)
             visible(GUI$modWin) <<- TRUE
