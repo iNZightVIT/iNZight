@@ -71,9 +71,10 @@ iNZPlotSettings <- setRefClass(
         setSettings = function(setList, reset = FALSE) {
             if (reset)
                 setList <- modifyList(setList,
-                                      iNZightPlots:::inzPlotDefaults(),
+                                      defaultSettings,
                                       keep.null = TRUE)
-            settings <<- modifyList(settings, setList)
+            settings <<- modifyList(settings, setList,
+                                    keep.null = TRUE)
             defaultSettings <<- modifyList(
                 defaultSettings,
                 extractDefaults(settings),
