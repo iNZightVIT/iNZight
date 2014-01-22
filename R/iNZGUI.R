@@ -195,7 +195,7 @@ iNZGUI <- setRefClass(
                     }
                     ),
                 scatterMatrix = gaction(
-                    label = "Scatterplot Matrix",
+                    label = "Pairs",
                     icon = "symbold_diamond",
                     handler = function(h, ...) {
                         ign <- gwindow("...", visible = FALSE)
@@ -213,11 +213,12 @@ iNZGUI <- setRefClass(
             if (!'package:iNZightModules' %in% search())
                 invisible(sapply(actionList[18:19], function(x) {
                     enabled(x) <- FALSE}))
-            menuBarList <- list(File = actionList[c(15, 1:2)],
-                                "Change Dataset" = actionList[12:14],
-                                "Manipulate variables" = actionList[3:11],
-                                "Advanced" = actionList[16:19]
-                                )
+            menuBarList <- list(
+                File = actionList[c(15, 1:2)],
+                "Filter Data" = actionList[c(12, 14)],
+                "Manipulate variables" = actionList[c(3:11, 13)],
+                "Advanced" = actionList[c(19, 18, 16, 17)]
+                )
             gmenu(menuBarList, container = cont)
 
         },
