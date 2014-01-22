@@ -225,8 +225,13 @@ iNZGUI <- setRefClass(
                 File = actionList[c(15, 1:2)],
                 "Filter Data" = actionList[c(12, 14)],
                 "Manipulate variables" = list(
-                    "test1" = actionList[3:11],
-                    "test2" = actionList[13]),
+                    actionList[[3]],
+                    "Categorical Variables" = actionList[c(6,5,7,8)],
+                    "Numeric Variables" = actionList[c(4,11)],
+                    actionList[[10]],
+                    actionList[[9]],
+                    actionList[[13]]
+                    ),
                 "Advanced" = actionList[c(19, 18, 16, 17)]
                 )
             gmenu(menuBarList, container = cont)
