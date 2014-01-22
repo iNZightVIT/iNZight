@@ -1,4 +1,4 @@
-iNZight <- function(data = NULL) {
+iNZight <- function(data = NULL, disposeR = FALSE) {
     gui <- iNZGUI$new()
-    gui$initializeGui(data)
+    gui$initializeGui(data, disposeR)
 }

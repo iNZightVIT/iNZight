@@ -30,7 +30,13 @@ iNZGUI <- setRefClass(
                    )
                ),
     methods = list(
-        initializeGui = function(data = NULL) {
+        ## Start the iNZight GUI
+        ##   data: data.frame, starts the gui with data already in it
+        ##   disposerR: logical, if true R session is closed upon
+        ##              closing the gui
+        ## This is the main method of iNZight and calls all the other
+        ## methods of the GUI class.
+        initializeGui = function(data = NULL, disposeR = FALSE) {
             iNZDocuments <<- list(iNZDocument$new(data = data))
             win.title <- paste("iNZight (v",
                                packageDescription("iNZight")$Version,
@@ -66,6 +72,8 @@ iNZGUI <- setRefClass(
             ## first plot(empty) needs to be added after window is drawn
             ## to ensure the correct device nr
             plotWidget$addPlot()
+            ## add what is done upon closing the gui
+            closerHandler(disposeR)
         },
         ## set up the menu bar widget
         initializeMenu = function(cont) {
@@ -216,7 +224,9 @@ iNZGUI <- setRefClass(
             menuBarList <- list(
                 File = actionList[c(15, 1:2)],
                 "Filter Data" = actionList[c(12, 14)],
-                "Manipulate variables" = actionList[c(3:11, 13)],
+                "Manipulate variables" = list(
+                    "test1" = actionList[3:11],
+                    "test2" = actionList[13]),
                 "Advanced" = actionList[c(19, 18, 16, 17)]
                 )
             gmenu(menuBarList, container = cont)
@@ -333,6 +343,24 @@ iNZGUI <- setRefClass(
         ## set up the buttons under the plot to interact with the plot
         initializePlotToolbar = function(cont) {
             iNZPlotToolbar$new(.self, cont)
+        },
+        ## if set upon gui startup, close the R sessions when
+        ## the gui is closed
+        closerHandler = function(disposeR) {
+            addHandlerUnrealize(win, handler = function(h, ...) {
+                if (disposeR) {
+                    confirm <- gconfirm(
+                        title = "Are you sure?",
+                        msg = "Do you wish to quit iNZightVIT?",
+                        icon = "question",
+                        parent = win)
+                    if (confirm)
+                        q(save = "no")
+                } else {
+                    dispose(win)
+                    dev.off()
+                }
+            })
         },
         ## plot with the current active plot settings
         updatePlot = function() {
