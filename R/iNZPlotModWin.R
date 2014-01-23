@@ -458,19 +458,20 @@ iNZScatterMod <- setRefClass(
                               checked = curSet$jitter %in% c("x", "xy"))
             yJit <- gcheckbox("Jitter y-variable",
                               checked = curSet$jitter %in% c("y", "xy"))
-            showButton <- gbutton("Show Changes",
-                                  handler = function(h, ...) {
-                                      ## build string to show which jitter opt
-                                      ## was selected
-                                      jit <- ""
-                                      if (svalue(xJit)) jit <- paste(jit, "x", sep = "")
-                                      if (svalue(yJit)) jit <- paste(jit, "y", sep = "")
-                                      ## update plot settings
-                                      GUI$getActiveDoc()$setSettings(
-                                          list(jitter = jit)
-                                          )
-                                      updateSettings()
-                                  })
+            showButton <- gbutton(
+                "Show Changes",
+                handler = function(h, ...) {
+                    ## build string to show which jitter opt
+                    ## was selected
+                    jit <- ""
+                    if (svalue(xJit)) jit <- paste(jit, "x", sep = "")
+                    if (svalue(yJit)) jit <- paste(jit, "y", sep = "")
+                    ## update plot settings
+                    GUI$getActiveDoc()$setSettings(
+                        list(jitter = jit)
+                        )
+                    updateSettings()
+                })
             tbl[1, 1:2, anchor = c(-1, -1), expand = TRUE] <- lbl1
             tbl[2, 1] <- xJit
             tbl[3, 1] <- yJit
@@ -486,19 +487,20 @@ iNZScatterMod <- setRefClass(
                                size = 9)
             xRug <- gcheckbox("Add x-rug")
             yRug <- gcheckbox("Add y-rug")
-            showButton <- gbutton("Show Changes",
-                                  handler = function(h, ...) {
-                                      ## build string to show which jitter opt
-                                      ## was selected
-                                      rug <- ""
-                                      if (svalue(xRug)) rug <- paste(rug, "x", sep = "")
-                                      if (svalue(yRug)) rug <- paste(rug, "y", sep = "")
-                                      ## update plot settings
-                                      GUI$getActiveDoc()$setSettings(
-                                          list(rugs = rug)
-                                          )
-                                      updateSettings()
-                                  })
+            showButton <- gbutton(
+                "Show Changes",
+                handler = function(h, ...) {
+                    ## build string to show which jitter opt
+                    ## was selected
+                    rug <- ""
+                    if (svalue(xRug)) rug <- paste(rug, "x", sep = "")
+                    if (svalue(yRug)) rug <- paste(rug, "y", sep = "")
+                    ## update plot settings
+                    GUI$getActiveDoc()$setSettings(
+                        list(rugs = rug)
+                        )
+                    updateSettings()
+                })
             tbl[1, 1:2, anchor = c(-1, -1), expand = TRUE] <- lbl1
             tbl[2, 1] <- xRug
             tbl[3, 1] <- yRug
@@ -514,6 +516,9 @@ iNZScatterMod <- setRefClass(
                                size = 9)
             joinPts <- gcheckbox("Join points",
                                  checked = curSet$join)
+            lineByChk <- gcheckbox(paste("For each level of",
+                                          curSet$varnames$by),
+                                   selected = curSet$lines.by)
             joinCols <- c("red", "black", "blue", "green4",
                           "yellow", "pink", "grey", "orange")
             joinCol <- gcombobox(joinCols,
@@ -526,14 +531,20 @@ iNZScatterMod <- setRefClass(
                                       ## update plot settings
                                       GUI$getActiveDoc()$setSettings(
                                           list(join = svalue(joinPts),
-                                               col.line = svalue(joinCol))
+                                               col.line = svalue(joinCol),
+                                               lines.by = svalue(lineByChk))
                                           )
                                       updateSettings()
                                   })
+            ## only have the lines by level option enabled if
+            ## the colored by variable option is set
+            if (is.null(curSet$by))
+                enabled(lineByChk) <- FALSE
             tbl[1, 1:2, anchor = c(-1, -1), expand = TRUE] <- lbl1
             tbl[2, 1, expand = TRUE] <- joinPts
             tbl[2, 2, expand = TRUE] <- joinCol
-            tbl[3, 1:2, expand = TRUE] <- showButton
+            tbl[3, 1] <- lineByChk
+            tbl[4, 1:2, expand = TRUE] <- showButton
             add(optGrp, tbl)
         },
         ## change plot appearance
