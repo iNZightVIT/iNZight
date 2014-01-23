@@ -51,7 +51,7 @@ iNZGUI <- setRefClass(
             gp2 <- ggroup(horizontal = FALSE, container = g, expand = TRUE)
             ## set up widgets in the left group
             ## set up the menu bar at the top
-            initializeMenu(gp1)
+            initializeMenu(gp1, disposeR)
             ## set up dataViewWidget, added below
             initializeDataView()
             ## set up buttons to switch between data/var view
@@ -76,7 +76,7 @@ iNZGUI <- setRefClass(
             closerHandler(disposeR)
         },
         ## set up the menu bar widget
-        initializeMenu = function(cont) {
+        initializeMenu = function(cont, disposeR) {
             actionList <- list(
                 import = gaction(
                     label = "Import Data", icon = "symbol_diamond",
@@ -167,7 +167,7 @@ iNZGUI <- setRefClass(
                     icon = "symbold_diamond",
                     handler = function(h, ...) {
                         dispose(win)
-                        iNZightVIT()
+                        iNZightVIT(disposeR = disposeR)
                     }),
                 tsMod = gaction(
                     label = "Time Series",
