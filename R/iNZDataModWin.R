@@ -680,8 +680,9 @@ iNZcrteVarWin <- setRefClass(
             newVarName = gedit("new.variable", width = 15) ## name of the new variable
             newVarExp = gedit("  ") ## expression used to create new var
             submitButton = gbutton(" - SUBMIT -", handler = function(h,...) {
+                dataSet <- GUI$getActiveData()
                 newValues = try(eval(parse(
-                    text = paste("with(tag(e$obj, \"dataSet\"),",
+                    text = paste("with(dataSet,",
                         gsub(pattern = '\\n+', "", svalue(newVarExp), perl = TRUE),
                         ")"))))
                 if(class(newValues)[1] == "try-error")
@@ -691,7 +692,7 @@ iNZcrteVarWin <- setRefClass(
                 else {
                     newName = gsub(
                         pattern = '\\n+', "",
-                        svalue(newVarText), perl = TRUE)
+                        svalue(newVarName), perl = TRUE)
                     insertData(
                         data = newValues,
                         name = newName,
