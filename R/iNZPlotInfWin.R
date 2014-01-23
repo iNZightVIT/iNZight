@@ -88,10 +88,12 @@ iNZDotchartInf <- setRefClass(
         initialize = function(gui) {
             callSuper(gui)
             parm <- gradio(c("Medians",
-                             "Means"))
+                             "Means"),
+                           selected = 2)
             intType <- gradio(c("Comparison Intervals",
                                 ##"Confidence Intervals",
-                                "Comparison + Confidence Intervals"))
+                                "Comparison + Confidence Intervals"),
+                              selected = 2)
             mthd <- gradio(c("Bootstrap", "Normal Theory"),
                            selected = 2)
             addButton <- gbutton(
@@ -116,12 +118,17 @@ iNZDotchartInf <- setRefClass(
             ## default interval type
             addHandlerChanged(parm, handler = function(h, ...) {
                 if (svalue(parm) == "Means") {
+                    intType$set_items(c("Comparison Intervals",
+                                        "Comparison + Confidence Intervals"))
                     svalue(intType) <- "Comparison + Confidence Intervals"
+                    mthd$set_items(c("Bootstrap", "Normal Theory"))
+                    svalue(mthd) <- "Normal Theory"
                 } else {
-                    svalue(intType) <- "Comparison Intervals"
+                    intType$set_items("Comparison Intervals")
+                    ##svalue(intType) <- "Comparison Intervals"
+                    mthd$set_items(c("Bootstrap", "Year 12"))
                 }
             })
-
             tbl[1, 2] <<- parm
             tbl[2, 2] <<- intType
             tbl[3, 2] <<- mthd
