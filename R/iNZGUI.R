@@ -15,6 +15,9 @@ iNZGUI <- setRefClass(
                    win = "ANY",
                    ## the Widget containing the 2 data views
                    dataViewWidget = "ANY",
+                   ## the widget handling the switching between the
+                   ## 2 data views
+                   viewSwitcherWidget = "ANY",
                    ## widget that handles the plot notebook
                    plotWidget = "ANY",
                    ## widget that handles the drag/drop buttons
@@ -53,9 +56,12 @@ iNZGUI <- setRefClass(
             ## set up the menu bar at the top
             initializeMenu(gp1, disposeR)
             ## set up dataViewWidget, added below
-            initializeDataView()
+            ## dataThreshold is used as maximum nr of cells
+            ## before data.frame view gets deactivated
+            dataThreshold <- 200000
+            initializeDataView(dataThreshold)
             ## set up buttons to switch between data/var view
-            add(gp1, .self$initializeViewSwitcher()$viewGroup)
+            add(gp1, .self$initializeViewSwitcher(dataThreshold)$viewGroup)
             add(gp1, dataViewWidget$dataGp, expand = TRUE)
             ## set up the drag and drop fields
             add(gp1, initializeControlWidget()$ctrlGp, expand = FALSE)
@@ -238,19 +244,24 @@ iNZGUI <- setRefClass(
 
         },
         ## set up buttons to switch between data and variable view
-        initializeViewSwitcher = function() {
-            iNZViewSwitcher$new(.self)
+        initializeViewSwitcher = function(dataThreshold) {
+            viewSwitcherWidget <<- iNZViewSwitcher$new(.self, dataThreshold)
+            .self$viewSwitcherWidget
         },
         ## set up the widget to display/edit the loaded dataSet
-        initializeDataView = function() {
+        initializeDataView = function(dataThreshold) {
             ## create the widget
-            dataViewWidget <<- iNZDataViewWidget$new(.self)
+            dataViewWidget <<- iNZDataViewWidget$new(.self, dataThreshold)
             ## if the list of active document changes, update the data view
-            addActDocObs(function() dataViewWidget$updateWidget())
+            addActDocObs(function() {
+                dataViewWidget$updateWidget()
+                viewSwitcherWidget$updateWidget()
+            })
             ## if the dataSet changes, update the variable View
             getActiveDoc()$addDataObserver(
                 function() {
                     dataViewWidget$updateWidget()
+                    viewSwitcherWidget$updateWidget()
                     getActiveDoc()$updateSettings()
                 }
                 )

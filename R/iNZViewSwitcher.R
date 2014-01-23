@@ -4,11 +4,14 @@ iNZViewSwitcher <- setRefClass(
         GUI = "ANY",
         viewGroup = "ANY",
         dataBtn = "ANY",
-        listBtn = "ANY"
+        listBtn = "ANY",
+        ## max size before dataview gets deactived
+        dataThreshold = "numeric"
         ),
     methods = list(
-        initialize = function(gui) {
-            initFields(GUI = gui)
+        initialize = function(gui, dataThreshold) {
+            initFields(GUI = gui,
+                       dataThreshold = dataThreshold)
             viewGroup <<- ggroup()
             addSpring(viewGroup)
             dataBtn <<- gbutton("View Data Set",
@@ -19,6 +22,13 @@ iNZViewSwitcher <- setRefClass(
                                    color = "navy")
             font(listBtn) <<- list(weight="bold", family = "normal",
                                    color = "navy")
+            dataSet <- GUI$getActiveData()
+            ## if the data size is below threshold, start in data view,
+            ## otherwise start don't allow view switching
+            enabled(dataBtn) <- FALSE
+            if (nrow(dataSet) * ncol(dataSet) >= dataThreshold)
+                enabled(listBtn) <- FALSE
+
             add(viewGroup, dataBtn)
             add(viewGroup, listBtn)
         },
@@ -49,6 +59,23 @@ iNZViewSwitcher <- setRefClass(
                     enabled(h$obj) = FALSE
                     GUI$dataViewWidget$listView() ## change to list of col view
                     enabled(dataBtn) <<- TRUE
+                }
+            }
+        },
+        ## check wich view is activate and the current data size
+        ## and enable the buttongs accordingly
+        updateWidget = function() {
+            dataSet <- GUI$getActiveData()
+            if (nrow(dataSet) * ncol(dataSet) >= dataThreshold) {
+                enabled(listBtn) <- FALSE
+                enabled(dataBtn) <- FALSE
+            } else {
+                if (visible(GUI$dataViewWidget$dfView)) {
+                    enabled(listBtn) <- TRUE
+                    enabled(dataBtn) <- FALSE
+                } else {
+                    enabled(listBtn) <- FALSE
+                    enabled(dataBtn) <- TRUE
                 }
             }
         })

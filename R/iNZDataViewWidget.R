@@ -4,19 +4,22 @@ iNZDataViewWidget <- setRefClass(
         GUI = "ANY", ## the iNZight GUI object
         dataGp = "ANY", ## group containing the 2 different view groups
         dfView = "ANY", ## group that contains data view
-        varView = "ANY" ## group that contains variable view
+        varView = "ANY", ## group that contains variable view
+        ## max size before dataview gets deactived
+        dataThreshold = "numeric"
         ),
     methods = list(
-        initialize = function(gui) {
-            initFields(GUI = gui)                                        
+        initialize = function(gui, dataThreshold) {
+            initFields(GUI = gui,
+                       dataThreshold = dataThreshold)
             dataGp <<- ggroup(horizontal = TRUE, expand = TRUE)
+            dataSet <- GUI$getActiveData()
             ## create the data.frame view
             createDfView()
             ## create the variable view
             createVarView()
             ## start in dataView if size is less than 200k
-            dataSet <- GUI$getActiveData()
-            if(nrow(dataSet) * ncol(dataSet) <= 200000) 
+            if (nrow(dataSet) * ncol(dataSet) <= dataThreshold)
                 visible(dfView) <<- TRUE
             else
                 visible(varView) <<- TRUE
@@ -36,7 +39,7 @@ iNZDataViewWidget <- setRefClass(
                 visible(dfView) <<- TRUE
             else
                 visible(varView) <<- TRUE
-            
+
         },
         ## only update the variable view
         updateVarView = function() {
@@ -49,22 +52,30 @@ iNZDataViewWidget <- setRefClass(
             view <- visible(dfView)
             createDfView()
             visible(dfView) <<- view
-        },                                     
+        },
         ## create the data.frame view (invisible)
         createDfView = function() {
             dataSet <- GUI$getActiveData()
             dfView <<- ggroup(container = dataGp, expand = TRUE)
-            visible(dfView) <<- FALSE
-            dfWidget <- gdf(dataSet, expand = TRUE)
-            dfWidget$remove_popup_menu()
-            add(dfView, dfWidget, expand = TRUE)            
-            ## if the data.frame gets edited, update the iNZDocument
-            addHandlerChanged(dfWidget,
-                              handler = function(h, ...) {
-                                  X1 <- dfWidget[]
-                                  if(class(X1) != "data.frame")
-                                      newData <- data.frame(X1)
-                                  GUI$getActiveDoc()$getModel()$updateData(X1)})
+            ## only create the gdf if the dataset is small enough
+            if (nrow(dataSet) * ncol(dataSet) <= dataThreshold) {
+                visible(dfView) <<- FALSE
+                dfWidget <- gdf(dataSet, expand = TRUE)
+                dfWidget$remove_popup_menu()
+                add(dfView, dfWidget, expand = TRUE)
+                ## if the data.frame gets edited, update the iNZDocument
+                addHandlerChanged(
+                    dfWidget,
+                    handler = function(h, ...) {
+                        X1 <- dfWidget[]
+                        if(class(X1) != "data.frame")
+                            newData <- data.frame(X1)
+                        GUI$getActiveDoc()$getModel()$updateData(X1)})
+            } else {
+                visible(dfView) <<- FALSE
+                ##dfWidget <- gdf(expand = TRUE)
+                ##add(dfView, dfWidget, expand = TRUE)
+            }
         },
         ## create variable view (invisible)
         createVarView = function() {
@@ -77,9 +88,10 @@ iNZDataViewWidget <- setRefClass(
             if(length(names(dataSet)) > N && length(names(dataSet)) < 80) {
                 varWidget <- list(
                     gtable(names(dataSet)[1:floor(N/2)], expand = TRUE),
-                    gtable(names(dataSet)[(floor(N/2)+1):ncol(dataSet)], expand = TRUE))
+                    gtable(names(dataSet)[(floor(N/2)+1):ncol(dataSet)],
+                           expand = TRUE))
                 names(varWidget[[1]]) <- "VARIABLES"
-                names(varWidget[[2]]) <- "...CONTINUED"                                      
+                names(varWidget[[2]]) <- "...CONTINUED"
             } else {
                 varWidget <- list(gtable(names(dataSet), expand = TRUE))
                 names(varWidget[[1]]) <- "VARIABLES"
@@ -96,7 +108,7 @@ iNZDataViewWidget <- setRefClass(
                 visible(dfView) <<- FALSE
                 visible(varView) <<- TRUE
             } else {
-                visible(varView) <<- FALSE                                             
+                visible(varView) <<- FALSE
                 visible(dfView) <<- TRUE
             }
         },
