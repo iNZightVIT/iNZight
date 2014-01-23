@@ -199,7 +199,7 @@ iNZGUI <- setRefClass(
                     ),
                 threeDPlot = gaction(
                     label = "3D Plot",
-                    icon = "symbold_diamond",
+                    icon = "symbol_diamond",
                     handler = function(h, ...) {
                         ign <- gwindow("...", visible = FALSE)
                         tag(ign, "dataSet") <- getActiveData()
@@ -210,13 +210,20 @@ iNZGUI <- setRefClass(
                     ),
                 scatterMatrix = gaction(
                     label = "Pairs",
-                    icon = "symbold_diamond",
+                    icon = "symbol_diamond",
                     handler = function(h, ...) {
                         ign <- gwindow("...", visible = FALSE)
                         tag(ign, "dataSet") <- getActiveData()
                         e <- list(obj = ign)
                         e$win <- win
                         scatterPlotMatrix(e)
+                    }
+                    ),
+                deleteVariables = gaction(
+                    label = "Delete Variables",
+                    icon = "symbol_diamond",
+                    handler = function(h, ...) {
+                        iNZdeleteVarWin$new(.self)
                     }
                     )
                 )
@@ -236,7 +243,8 @@ iNZGUI <- setRefClass(
                     "Numeric Variables" = actionList[c(4,11)],
                     actionList[[10]],
                     actionList[[9]],
-                    actionList[[13]]
+                    actionList[[13]],
+                    actionList[[20]]
                     ),
                 "Advanced" = actionList[c(19, 18, 16, 17)]
                 )

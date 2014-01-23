@@ -866,3 +866,53 @@ iNZstdVarWin <- setRefClass(
             visible(GUI$modWin) <<- TRUE
         })
     )
+
+## delete variables
+iNZdeleteVarWin <- setRefClass(
+    "iNZdeleteVarWin",
+    contains = "iNZDataModWin",
+    methods = list(
+        initialize = function(gui) {
+            callSuper(gui)
+            svalue(GUI$modWin) <<- "Delete Variables"
+            mainGroup <- ggroup(expand = TRUE, horizontal = FALSE)
+            mainGroup$set_borderwidth(15)
+            ## instructions through glabels
+            lbl1 = glabel("Select Variables to delete")
+            font(lbl1) <- list(weight="bold", family = "normal")
+            lbl2 = glabel("(Hold Ctrl to choose many)")
+            font(lbl2) <- list(weight="bold", family = "normal")
+            listOfVars = gtable(names(GUI$getActiveData()),
+                multiple = TRUE, expand = TRUE)
+            names(listOfVars) = "Variables"
+            deleteButton = gbutton(
+                "- Delete -",
+                handler = function(h,...) {
+                    if (length(svalue(listOfVars)) > 0) {
+                        confirmDel <- gconfirm(
+                            title = "Are you sure?",
+                            msg = paste(
+                                "Do you want to delete the",
+                                "following variables:\n",
+                                paste(svalue(listOfVars),
+                                      collapse = "\n")
+                                ),
+                            icon = "question")
+                        if (confirmDel) {
+                            dataSet <- GUI$getActiveData()
+                            dataSet <- dataSet[, !(names(dataSet) %in%
+                                                   svalue(listOfVars)),
+                                               drop = FALSE]
+                            GUI$getActiveDoc()$getModel()$updateData(dataSet)
+                            dispose(GUI$modWin)
+                        }
+                    }
+            })
+            add(mainGroup, lbl1)
+            add(mainGroup, lbl2)
+            add(mainGroup, listOfVars, expand = TRUE)
+            add(mainGroup, deleteButton)
+            add(GUI$modWin, mainGroup, expand = TRUE, fill = TRUE)
+            visible(GUI$modWin) <<- TRUE
+        })
+    )
