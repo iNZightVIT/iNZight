@@ -25,9 +25,9 @@ iNZViewSwitcher <- setRefClass(
             dataSet <- GUI$getActiveData()
             ## if the data size is below threshold, start in data view,
             ## otherwise start don't allow view switching
-            enabled(dataBtn) <- FALSE
+            enabled(dataBtn) <<- FALSE
             if (nrow(dataSet) * ncol(dataSet) >= dataThreshold)
-                enabled(listBtn) <- FALSE
+                enabled(listBtn) <<- FALSE
 
             add(viewGroup, dataBtn)
             add(viewGroup, listBtn)
@@ -67,15 +67,15 @@ iNZViewSwitcher <- setRefClass(
         updateWidget = function() {
             dataSet <- GUI$getActiveData()
             if (nrow(dataSet) * ncol(dataSet) >= dataThreshold) {
-                enabled(listBtn) <- FALSE
-                enabled(dataBtn) <- FALSE
+                enabled(listBtn) <<- FALSE
+                enabled(dataBtn) <<- FALSE
             } else {
                 if (visible(GUI$dataViewWidget$dfView)) {
-                    enabled(listBtn) <- TRUE
-                    enabled(dataBtn) <- FALSE
+                    enabled(listBtn) <<- TRUE
+                    enabled(dataBtn) <<- FALSE
                 } else {
-                    enabled(listBtn) <- FALSE
-                    enabled(dataBtn) <- TRUE
+                    enabled(listBtn) <<- FALSE
+                    enabled(dataBtn) <<- TRUE
                 }
             }
         })

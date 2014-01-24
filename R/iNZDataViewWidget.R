@@ -35,10 +35,11 @@ iNZDataViewWidget <- setRefClass(
             createDfView()
             ## create the variable view
             createVarView()
-            if(view)
-                visible(dfView) <<- TRUE
-            else
+            dataSet <- GUI$getActiveData()
+            if(!view || (nrow(dataSet) * ncol(dataSet) > dataThreshold))
                 visible(varView) <<- TRUE
+            else
+                visible(dfView) <<- TRUE
 
         },
         ## only update the variable view
