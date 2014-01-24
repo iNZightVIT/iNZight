@@ -126,7 +126,9 @@ iNZDotchartInf <- setRefClass(
                 } else {
                     intType$set_items("Comparison Intervals")
                     ##svalue(intType) <- "Comparison Intervals"
+                    selectedMthd <- svalue(mthd, index = TRUE)
                     mthd$set_items(c("Bootstrap", "Year 12"))
+                    svalue(mthd, index = TRUE) <- selectedMthd
                 }
             })
             tbl[1, 2] <<- parm
