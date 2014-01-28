@@ -17,74 +17,79 @@ iNZPlotRmveModWin <- setRefClass(
                 curSet <<- GUI$getActiveDoc()$getSettings()
                 defSet <<- iNZightPlots:::inzPlotDefaults()
                 ## labels for all possible additions
-                additions <- c("Remove all additions",
-                               paste("Remove colour coding by", curSet$varnames$by),
-                               paste("Remove resizing by",curSet$varnames$prop.size),
-                               "Remove trend curves",
-                               "Remove y = x line",
-                               "Remove smoothers",
-                               "Remove jitter",
-                               "Remove rugs",
-                               "Remove connecting lines",
-                               "Remove segmentation in bar charts",
-                               "Remove all inference information",  # "confidence intervals",
-                               "Remove symbol interior colouring",
-                               "Restore default symbol colours",
-                               "Restore default plotting symbol sizes",
-                               "Restore default background colour",
-                               "Restore default line thickness")
+                additions <- c(
+                    "Remove all additions",
+                    paste("Remove colour coding by", curSet$varnames$by),
+                    paste("Remove resizing by",curSet$varnames$prop.size),
+                    "Remove trend curves",
+                    "Remove y = x line",
+                    "Remove smoothers",
+                    "Remove jitter",
+                    "Remove rugs",
+                    "Remove connecting lines",
+                    "Remove segmentation in bar charts",
+                    "Remove all inference information",  # "confidence intervals",
+                    "Remove symbol interior colouring",
+                    "Restore default symbol colours",
+                    "Restore default plotting symbol sizes",
+                    "Restore default symbol transparency",
+                    "Restore default background colour",
+                    "Restore default line thickness")
                 ## check for presence of all additions
-                curAdditions <- c(TRUE, ## all additiions
-                                  !is.null(curSet$by) && ## colour coding dotplots
-                                  (is.numeric(curSet$x) ||
-                                   is.numeric(curSet$y)),
-                                  !is.null(curSet$prop.size), ## resize
-                                  !is.null(curSet$trend), ## trend
-                                  curSet$LOE, ## x=y line
-                                  curSet$smooth != 0, ## smoother
-                                  curSet$jitter != "", ## jitter
-                                  FALSE, #curSet$rugs != "", ## rugs
-                                  curSet$join, ## connecting lines
-                                  !is.null(curSet$by) && ## colour coding barchart
-                                  !is.numeric(curSet$x) &&
-                                  is.null(curSet$y),
-                                  !is.null(curSet$inference.type) ||
-                                  curSet$bs.inference, ## confidence intervals
-                                  curSet$pch != defSet$pch, ## point filling
-                                  curSet$col.pt != defSet$col.pt, ## point colour
-                                  curSet$cex.pt != defSet$cex.pt, ## point size
-                                  curSet$bg != defSet$bg, ## bg colour
-                                  curSet$lwd.pt != defSet$lwd.pt ## point line thickness
-                                  )
+                curAdditions <- c(
+                    TRUE, ## all additiions
+                    !is.null(curSet$by) && ## colour coding dotplots
+                    (is.numeric(curSet$x) ||
+                     is.numeric(curSet$y)),
+                    !is.null(curSet$prop.size), ## resize
+                    !is.null(curSet$trend), ## trend
+                    curSet$LOE, ## x=y line
+                    curSet$smooth != 0, ## smoother
+                    curSet$jitter != "", ## jitter
+                    curSet$rugs != "", ## rugs
+                    curSet$join, ## connecting lines
+                    !is.null(curSet$by) && ## colour coding barchart
+                    !is.numeric(curSet$x) &&
+                    is.null(curSet$y),
+                    !is.null(curSet$inference.type) ||
+                    curSet$bs.inference, ## confidence intervals
+                    curSet$pch != defSet$pch, ## point filling
+                    curSet$col.pt != defSet$col.pt, ## point colour
+                    (all.equal(curSet$cex.pt, defSet$cex.pt) != TRUE), ## point size
+                    (all.equal(curSet$alpha, defSet$alpha) != TRUE), ## transparency
+                    curSet$bg != defSet$bg, ## bg colour
+                    curSet$lwd.pt != defSet$lwd.pt ## point line thickness
+                    )
 
-                proceedButton <- gbutton("-Proceed-",
-                                         handler = function(h, ...) {
-                                             ## the checkboxes are accessed as
-                                             ## children of the selectGrp
-                                             ## first child refers to remove all adds
-                                             if (svalue(selectGrp$children[[1]]))
-                                                 rmv <- TRUE
-                                             else
-                                                 rmv <- which(curAdditions)[sapply(
-                                                     selectGrp$children,
-                                                     svalue)] - 1
-                                             ## update the plot settings
-                                             removeAdditions(rmv)
-                                             dispose(GUI$modWin)
-                                         })
+                proceedButton <- gbutton(
+                    "-Proceed-",
+                    handler = function(h, ...) {
+                        ## the checkboxes are accessed as
+                        ## children of the selectGrp
+                        ## first child refers to remove all adds
+                        if (svalue(selectGrp$children[[1]]))
+                            rmv <- TRUE
+                        else
+                            rmv <- which(curAdditions)[sapply(
+                                selectGrp$children,
+                                svalue)] - 1
+                        ## update the plot settings
+                        removeAdditions(rmv)
+                        dispose(GUI$modWin)
+                    })
                 GUI$modWin <<- gwindow(title = "Remove additions",
                                        visible = TRUE,
                                        parent = GUI$win)
                 mainGrp <- ggroup(horizontal = FALSE,
                                   container = GUI$modWin,
-                                  expand = FALSE)                
+                                  expand = FALSE)
                 selectGrp <- ggroup(horizontal = FALSE,
                                   container = mainGrp,
                                   expand = FALSE)
-                btnGrp <- ggroup(container = mainGrp)                
+                btnGrp <- ggroup(container = mainGrp)
                 mainGrp$set_borderwidth(15)
-                sapply(additions[curAdditions], function(x) gcheckbox(x,
-                                                                      cont = selectGrp))
+                sapply(additions[curAdditions], function(x) {
+                    gcheckbox(x, cont = selectGrp)})
                 addSpring(btnGrp)
                 add(btnGrp, proceedButton)
                 ## add observer to the data
@@ -102,7 +107,7 @@ iNZPlotRmveModWin <- setRefClass(
             rmvAdditions <- list(list(by = NULL, ## colour coding dotplots
                                       varnames = list(by = NULL)),
                                  list(prop.size = NULL, ## resize proportional
-                                      varnames = list(prop.size = NULL)), 
+                                      varnames = list(prop.size = NULL)),
                                  list(trend = defSet$trend), ## trend
                                  list(LOE = defSet$LOE), ## x=y line
                                  list(smooth = defSet$smooth), ## smoother
@@ -117,6 +122,7 @@ iNZPlotRmveModWin <- setRefClass(
                                  list(pch = defSet$pch), ## point filling
                                  list(col.pt = defSet$col.pt), ## point colour
                                  list(cex.pt = defSet$cex.pt), ## point size
+                                 list(alpha = defSet$alpha), ## transparency
                                  list(bg = defSet$bg), ## bg colour
                                  list(lwd.pt = defSet$lwd.pt) ## point line thickness
                                  )

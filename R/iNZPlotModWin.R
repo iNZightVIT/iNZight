@@ -559,6 +559,7 @@ iNZScatterMod <- setRefClass(
             lbl4 = glabel("Size of symbols  :")
             lbl5 = glabel("Thickness of symbols :")
             lbl6 = glabel("(Use drop down list or type in if desired color is unavailable)")
+            lbl7 = glabel("Transparency of symbols  :")
             font(lbl6) <- list(family = "normal",
                                size = 8)
             ## default settings
@@ -590,6 +591,8 @@ iNZScatterMod <- setRefClass(
                                    checked = (curSet$pch != 1))
             cexSlider <- gslider(from = 0.05, to = 3.5,
                 by = 0.05, value = curSet$cex.pt)
+            transpSlider <- gslider(from = 0.01, to = 1,
+                                    by = 0.01, value = curSet$alpha)
             showButton <- gbutton("Show Changes",
                                   handler = function(h, ...) {
                                       pch.sel <- ifelse(svalue(fillColor),
@@ -598,7 +601,9 @@ iNZScatterMod <- setRefClass(
                                           list(col.pt = svalue(symbolColList),
                                                bg = svalue(backgroundColList),
                                                cex.pt = svalue(cexSlider),
-                                               pch = pch.sel)
+                                               pch = pch.sel,
+                                               alpha = svalue(transpSlider)
+                                               )
                                           )
                                       updateSettings()
                                   })
@@ -611,6 +616,8 @@ iNZScatterMod <- setRefClass(
             tbl[7,3, expand = TRUE] <- backgroundColList
             tbl[9,2, anchor = c(-1,-1), expand = TRUE] <- lbl4
             tbl[9,3, expand = TRUE] <- cexSlider
+            tbl[10,2, anchor = c(-1,-1), expand = TRUE] <- lbl7
+            tbl[10,3, expand = TRUE] <- transpSlider
             tbl[11, 2:4] <- showButton
             ## if the "by" options is set, i.e. points are colored
             ## according to another var, disable the option to
