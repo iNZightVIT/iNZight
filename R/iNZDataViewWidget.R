@@ -63,6 +63,7 @@ iNZDataViewWidget <- setRefClass(
                 visible(dfView) <<- FALSE
                 dfWidget <- gdf(dataSet, expand = TRUE)
                 dfWidget$remove_popup_menu()
+                dfWidget$add_dnd_columns()
                 add(dfView, dfWidget, expand = TRUE)
                 ## if the data.frame gets edited, update the iNZDocument
                 addHandlerChanged(
