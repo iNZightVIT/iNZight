@@ -70,11 +70,12 @@ iNZDataImportExport <- setRefClass(
                         setError("Please ensure that the Excel worksheet containing the data is named as Sheet1\n\nIf the error persists, please save the dataset as a CSV (comma separated) file")
                     } else {
                         ## convert character to factor
-                        out <- apply(out, 2, function(x) {
+                        out <- lapply(out, function(x) {
                             if(all(is.na(x)))
                                 as.factor(as.character(x))
                             else
                                 x})
+                        out <- as.data.frame(out)
                         
                         attr(out, "name") <- dataset.name ## associate a name with dataSet
                         dataSet <<- out                       
