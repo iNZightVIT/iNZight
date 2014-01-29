@@ -390,6 +390,17 @@ iNZGUI <- setRefClass(
         updatePlot = function() {
             curPlSet <- getActiveDoc()$getSettings()
             if(!is.null(curPlSet$x)){
+              # Switch x and y:
+                if (is.numeric(curPlSet$x) & is.numeric(curPlSet$y)) {
+                    x.tmp <- curPlSet$y
+                    curPlSet$y <- curPlSet$x
+                    curPlSet$x <- x.tmp
+
+                    x.tmp <- curPlSet$varnames$y
+                    curPlSet$varnames$y <- curPlSet$varnames$x
+                    curPlSet$varnames$x <- x.tmp
+                }
+                
                 do.call(iNZightPlot, curPlSet)
             } else {
                 resetPlot()
