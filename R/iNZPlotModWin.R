@@ -73,9 +73,10 @@ iNZDotchartMod <- setRefClass(
             callSuper(gui)
             ## need to specify the methods that we want to use in
             ## do.call later on (see changeOpts())
-            usingMethods(opt1, opt2)
+            usingMethods(opt1, opt2, opt3)
             opts <- gradio(c("Code more variables",
-                             "Change plot appearance"),
+                             "Change plot appearance",
+                             "Customize Labels"),
                            selected = 1,
                            horizontal = FALSE)
             add(radioGrp, opts)
@@ -201,6 +202,47 @@ iNZDotchartMod <- setRefClass(
                     "'", sep = "")
             }
             add(optGrp, tbl)
+        },
+        opt3 = function() {
+            tbl <- glayout()
+            lbl1 <- glabel("Customize Labels")
+            font(lbl1) <- list(weight="bold",
+                               family = "normal",
+                               size = 9)
+
+            curPlSet <- GUI$getActiveDoc()$getSettings()
+            oldMain <- curPlSet$main
+            oldX <- curPlSet$xlab
+            if (is.null(oldMain)) oldMain <- ''
+            if (is.null(oldX)) oldX <- ''
+
+            lbl2    <- glabel("Main title :")
+            labMain <- gedit(oldMain)
+            lbl3    <- glabel("x-axis label :")
+            labX    <- gedit(oldX)
+
+            lbl4 <- glabel("(Enter a single space to print no title)")
+            font(lbl4) <- list(family = "normal",
+                               size = 8)
+            
+            showButton <- gbutton("Show Changes",
+                                  handler = function(h, ...) {
+                                      mlab <- svalue(labMain)
+                                      xlab <- svalue(labX)
+                                      GUI$getActiveDoc()$setSettings(
+                                          list(main = if (mlab != '') mlab else NULL,
+                                               xlab = if (xlab != '') xlab else NULL)
+                                          )
+                                      updateSettings()
+                                  })
+            tbl[3, 1:2, anchor = c(-1, -1), expand = TRUE] <- lbl1
+            tbl[4, 1, anchor = c(-1, -1), expand = TRUE] <- lbl2
+            tbl[4, 2, expand = TRUE] <- labMain
+            tbl[5, 1, anchor = c(-1, -1), expand = TRUE] <- lbl3
+            tbl[5, 2, expand = TRUE] <- labX
+            tbl[6, 1:2, anchor = c(-1, -1), expand = TRUE] <- lbl4
+            tbl[7, 1:2, expand = TRUE] <- showButton
+            add(optGrp, tbl)
         })
     )
 
@@ -210,13 +252,32 @@ iNZBarchartMod <- setRefClass(
     methods = list(
         initialize = function(gui) {
             callSuper(gui)
-            opts <- glabel("segment bar chart(s)")
-            addSpring(radioGrp)
+            ## need to specify the methods that we want to use in
+            ## do.call later on (see changeOpts())
+            usingMethods(opt1, opt2)
+            opts <- gradio(c("Code more variables",
+                             "Customize Labels"),
+                           selected = 1,
+                           horizontal = FALSE)
             add(radioGrp, opts)
-            addSpring(radioGrp)
-            radioGrp$set_borderwidth(10)
+            opt1()
+            addHandlerChanged(opts,
+                              handler = function(h, ...) {
+                                  changeOpts(svalue(h$obj,
+                                                    index = TRUE))
+                              })
+        },
+        changeOpts = function(index) {
+            ## delete current displayed options
+            invisible(sapply(optGrp$children, function(x) delete(optGrp, x)))
+            do.call(paste("opt", index, sep=""),
+                    args = list())
+        },
+        ## Following are the different views for the indices of the
+        ## gradio
+        opt1 = function() {
             tbl <- glayout()
-            lbl1 <- glabel("segment by levels of :")
+            lbl1 <- glabel("Segment by levels of :")
             grpVarList <- gcombobox(c("", names(GUI$getActiveData())))
             showButton <- gbutton("Show Changes",
                                   handler = function(h, ...) {
@@ -232,6 +293,47 @@ iNZBarchartMod <- setRefClass(
             tbl[1, 2] <- grpVarList
             tbl[2, 1:3, expand = TRUE] <- showButton
             add(optGrp, tbl)
+        },
+        opt2 = function() {
+            tbl <- glayout()
+            lbl1 <- glabel("Customize Labels")
+            font(lbl1) <- list(weight="bold",
+                               family = "normal",
+                               size = 9)
+
+            curPlSet <- GUI$getActiveDoc()$getSettings()
+            oldMain <- curPlSet$main
+            oldX <- curPlSet$xlab
+            if (is.null(oldMain)) oldMain <- ''
+            if (is.null(oldX)) oldX <- ''
+
+            lbl2    <- glabel("Main title :")
+            labMain <- gedit(oldMain)
+            lbl3    <- glabel("x-axis label :")
+            labX    <- gedit(oldX)
+
+            lbl4 <- glabel("(Enter a single space to print no title)")
+            font(lbl4) <- list(family = "normal",
+                               size = 8)
+            
+            showButton <- gbutton("Show Changes",
+                                  handler = function(h, ...) {
+                                      mlab <- svalue(labMain)
+                                      xlab <- svalue(labX)
+                                      GUI$getActiveDoc()$setSettings(
+                                          list(main = if (mlab != '') mlab else NULL,
+                                               xlab = if (xlab != '') xlab else NULL)
+                                          )
+                                      updateSettings()
+                                  })
+            tbl[3, 1:2, anchor = c(-1, -1), expand = TRUE] <- lbl1
+            tbl[4, 1, anchor = c(-1, -1), expand = TRUE] <- lbl2
+            tbl[4, 2, expand = TRUE] <- labMain
+            tbl[5, 1, anchor = c(-1, -1), expand = TRUE] <- lbl3
+            tbl[5, 2, expand = TRUE] <- labX
+            tbl[6, 1:2, anchor = c(-1, -1), expand = TRUE] <- lbl4
+            tbl[7, 1:2, expand = TRUE] <- showButton
+            add(optGrp, tbl)
         })
     )
 
@@ -244,14 +346,15 @@ iNZScatterMod <- setRefClass(
             callSuper(gui)
             ## need to specify the methods that we want to use in
             ## do.call later on (see changeOpts())
-            usingMethods(opt1, opt2, opt3, opt4, opt5, opt6, opt7)
+            usingMethods(opt1, opt2, opt3, opt4, opt5, opt6, opt7, opt8)
             opts <- gradio(c("Code more variables",
                              "Add trend curves",
                              "Add x=y line",
                              "Add a jitter",
                              "Add rugs",
                              "Join points by lines",
-                             "Change plot appearance"),
+                             "Change plot appearance",
+                             "Customize Labels"),
                            selected = 1,
                            horizontal = FALSE)
             add(radioGrp, opts)
@@ -630,6 +733,55 @@ iNZScatterMod <- setRefClass(
                     GUI$getActiveDoc()$getSettings()$varnames$by,
                     "'", sep = "")
             }
+            add(optGrp, tbl)
+        },
+        opt8 = function() {
+            tbl <- glayout()
+            lbl1 <- glabel("Customize Labels")
+            font(lbl1) <- list(weight="bold",
+                               family = "normal",
+                               size = 9)
+
+            curPlSet <- GUI$getActiveDoc()$getSettings()
+            oldMain <- curPlSet$main
+            oldX <- curPlSet$xlab
+            oldY <- curPlSet$ylab
+            if (is.null(oldMain)) oldMain <- ''
+            if (is.null(oldX)) oldX <- ''
+            if (is.null(oldY)) oldY <- ''
+
+            lbl2    <- glabel("Main title :")
+            labMain <- gedit(oldMain)
+            lbl3    <- glabel("x-axis label :")
+            labX    <- gedit(oldX)
+            lbl4    <- glabel("y-axis label :")
+            labY    <- gedit(oldY)
+
+            lbl5 <- glabel("(Enter a single space to print no title)")
+            font(lbl5) <- list(family = "normal",
+                               size = 8)
+            
+            showButton <- gbutton("Show Changes",
+                                  handler = function(h, ...) {
+                                      mlab <- svalue(labMain)
+                                      xlab <- svalue(labX)
+                                      ylab <- svalue(labY)
+                                      GUI$getActiveDoc()$setSettings(
+                                          list(main = if (mlab != '') mlab else NULL,
+                                               xlab = if (xlab != '') xlab else NULL,
+                                               ylab = if (ylab != '') ylab else NULL)
+                                          )
+                                      updateSettings()
+                                  })
+            tbl[3, 1:2, anchor = c(-1, -1), expand = TRUE] <- lbl1
+            tbl[4, 1, anchor = c(-1, -1), expand = TRUE] <- lbl2
+            tbl[4, 2, expand = TRUE] <- labMain
+            tbl[5, 1, anchor = c(-1, -1), expand = TRUE] <- lbl3
+            tbl[5, 2, expand = TRUE] <- labX
+            tbl[6, 1, anchor = c(-1, -1), expand = TRUE] <- lbl4
+            tbl[6, 2, expand = TRUE] <- labY
+            tbl[7, 1:2, anchor = c(-1, -1), expand = TRUE] <- lbl5
+            tbl[8, 1:2, expand = TRUE] <- showButton
             add(optGrp, tbl)
         })
     )
