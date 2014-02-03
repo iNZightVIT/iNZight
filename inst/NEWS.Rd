@@ -28,6 +28,19 @@
       `iNZightVIT` bundle.
     }
   }
+
+  \subsection{CHANGES IN iNZightPlots}{
+    \itemize{
+      \item Transparency added to dot and scatterplots.
+
+      \item Matrix of all levels of each grouping variable when second
+      slider is set to `_MULTI`.
+
+      \item New plot types for large sample sizes.
+
+      \item Ability to customize the plot titles and axis labels.
+    }
+  }
 }
 
 \section{Changes in version 1.0.2-20130306}{
