@@ -152,7 +152,7 @@ iNZControlWidget <- setRefClass(
             if (pos == 8) 
                 lev <- c("_MULTI", levels(grpData))
             else
-                lev <- c("_ALL", levels(grpData))
+                lev <- c("_ALL", levels(grpData), "_MULTI")
             lev <- factor(lev, levels = lev)
             slider <- gslider(from = lev,
                               value = 1)
