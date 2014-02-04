@@ -292,6 +292,15 @@ iNZGUI <- setRefClass(
                 handler = function(h, ...) {
                     curSet <- getActiveDoc()$getSettings()
                     if (!is.null(curSet$x)) {
+                        if (is.numeric(curSet$x) & is.numeric(curSet$y)) {
+                            tmp.x <- curSet$y
+                            curSet$y <- curSet$x
+                            curSet$x <- tmp.x
+                            v <- curSet$varnames
+                            curSet$varnames$x <- v$y
+                            curSet$varnames$y <- v$x
+                        }
+                        
                         w <- gwindow("Summary", width = 700, height = 400,
                                      visible = FALSE, parent = win)
                         g <- gtext(text = paste(do.call(
@@ -311,6 +320,15 @@ iNZGUI <- setRefClass(
                 handler = function(h, ...) {
                     curSet <- getActiveDoc()$getSettings()
                     if (!is.null(curSet$x)) {
+                        if (is.numeric(curSet$x) & is.numeric(curSet$y)) {
+                            tmp.x <- curSet$y
+                            curSet$y <- curSet$x
+                            curSet$x <- tmp.x
+                            v <- curSet$varnames
+                            curSet$varnames$x <- v$y
+                            curSet$varnames$y <- v$x
+                        }
+                        
                         w <- gwindow("Choose Method", width = 100,
                                      height = 100, parent = win)
                         g <- ggroup(cont = w, horizontal = FALSE)
