@@ -465,7 +465,7 @@ iNZreorderWin <- setRefClass(
                     tbl,
                     GUI$getActiveData()[svalue(factorMenu)][[1]])
                 ## newFactor will be FALSE, if the user input was wrong
-                if (newFactor)
+                if (newFactor != FALSE)
                     insertData(data = newFactor,
                                name = svalue(factorName),
                                index = which(names(
@@ -846,7 +846,7 @@ iNZstdVarWin <- setRefClass(
                     index <- which(numIndices)[svalue(numVar, index = TRUE)]
                     newVar <- scale(GUI$getActiveData()[, index],
                                     center = TRUE, scale = TRUE)
-                    newNames <- paste(names(GUI$getActiveData()[, index]),
+                    newNames <- paste(names(GUI$getActiveData())[index],
                                       ".std", sep = "")
                     insertData(data = newVar,
                                name = newNames,
