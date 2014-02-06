@@ -94,7 +94,8 @@ iNZconToCatWin <- setRefClass(
                                            parent = GUI$win)
                               else {
                                   svalue(h$obj) <- h$dropdata
-                                  svalue(name.txt) <- paste(h$dropdata, ".g", sep = "")
+                                  svalue(name.txt) <- paste(h$dropdata, ".cat",
+                                                            sep = "")
                                   varData <<- dropData
                               }
                           })
