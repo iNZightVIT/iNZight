@@ -24,7 +24,7 @@ iNZPlotToolbar <- setRefClass(
                     tooltip = "Create a new plot tab"),
                 "new" = gaction(label = "new", icon = "new",
                     handler = function(h, ...) {
-                        dev.new()
+                        newdevice()  #dev.new()
                         GUI$updatePlot()
                     },
                     tooltip = "Detach plot from window"),
