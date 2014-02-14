@@ -39,8 +39,8 @@ iNZDataModWin <- setRefClass(
                     names(newData) <- newNames
                 } else {
                     newData <- data.frame(GUI$getActiveData(), data)
-                    names(newData) <- c(names(GUI$getActiveData()),
-                                        name)
+                    names(newData) <- make.names(c(names(GUI$getActiveData()),
+                                                   name), unique = TRUE)
                 }
 
                 if (!is.null(msg))
