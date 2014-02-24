@@ -400,7 +400,7 @@ iNZGUI <- setRefClass(
                         q(save = "no")
                 } else {
                     dispose(win)
-                    dev.off()
+                    try(dev.off(), silent = TRUE)
                 }
             })
         },
