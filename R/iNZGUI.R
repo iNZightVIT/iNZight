@@ -230,14 +230,24 @@ iNZGUI <- setRefClass(
                     label = "All 1-variable Plots",
                     icon = "symbol_diamond",
                     handler = function(h, ...) {
+                        dev.new()
                         exploreAllPlots(getActiveData())
+                        dev.off()
                     }
                     ),
                 allSummaries = gaction(
                     label = "All 1-variable Summaries",
                     icon = "symbol_diamond",
                     handler = function(h, ...) {
-                        exploreAllSummaries(getActiveData())
+                        w <- gwindow("Explore all 1-way Summaries", width = 700, height = 400,
+                                     visible = FALSE, parent = win)
+                        oldWd <- options(width = 1000)  # so it doesn't wrap
+                        TT <- iNZightPlots::exploreAllSummaries(data)
+                        g <- gtext(text = TT,
+                                   expand = TRUE, cont = w, wrap = FALSE,
+                                   font.attr = list(family = "monospace"))
+                        visible(w) <- TRUE
+                        options(width = oldWd$width)
                     }
                     ),
                 exploreMissingness = gaction(
