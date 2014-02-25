@@ -230,9 +230,16 @@ iNZGUI <- setRefClass(
                     label = "All 1-variable Plots",
                     icon = "symbol_diamond",
                     handler = function(h, ...) {
-                        dev.new()
-                        exploreAllPlots(getActiveData())
-                        dev.off()
+                       # dev.new()
+                       # exploreAllPlots(getActiveData())
+                       # dev.off()
+
+                       # Instead, we will make a gui that cycles through them ...
+                        ign <- gwindow("...", visible = FALSE)
+                        tag(ign, "dataSet") <- getActiveData()
+                        e <- list(obj = ign)
+                        e$win <- win
+                        allUniPlots(e)
                     }
                     ),
                 allSummaries = gaction(
@@ -242,8 +249,7 @@ iNZGUI <- setRefClass(
                         w <- gwindow("Explore all 1-way Summaries", width = 700, height = 400,
                                      visible = FALSE, parent = win)
                         oldWd <- options(width = 1000)  # so it doesn't wrap
-                        TT <- iNZightPlots::exploreAllSummaries(data)
-                        g <- gtext(text = TT,
+                        g <- gtext(text = iNZightPlots::exploreAllSummaries(getActiveData()),
                                    expand = TRUE, cont = w, wrap = FALSE,
                                    font.attr = list(family = "monospace"))
                         visible(w) <- TRUE
