@@ -441,6 +441,8 @@ iNZScatterMod <- setRefClass(
                                 checked = trCrvs[3] %in% curSet$trend)
             smthChk <- gcheckbox("Draw a smoother",
                                  checked = curSet$smooth!=0)
+            quantSmthChk <- gcheckbox("Use Quantiles",
+                                      checked = !is.null(curSet$quant.smooth))
             trendByChk <- gcheckbox(paste("For each level of",
                                             curSet$varnames$by),
                                       checked = curSet$trend.by)
@@ -480,13 +482,16 @@ iNZScatterMod <- setRefClass(
                                                  svalue(quaCol),
                                                  svalue(cubCol))
                                       ## smoother option
-                                      smth <- ifelse(svalue(smthChk),
+                                      qsmth <- if (svalue(quantSmthChk)) "default"
+                                               else NULL
+                                      smth <- ifelse(svalue(smthChk) & is.null(qsmth),
                                                      svalue(smthSlid),
                                                      0)
                                       ## update plot settings
                                       GUI$getActiveDoc()$setSettings(
                                           list(trend = trCrvs[trSel],
                                                smooth = smth,
+                                               quant.smooth = qsmth,
                                                col.trend = list(
                                                    linear = trCol[1],
                                                    quadratic = trCol[2],
@@ -499,14 +504,33 @@ iNZScatterMod <- setRefClass(
                                   })
             ## only have the smoother slider enabled if the
             ## smoother checkbox is ticked
-            if (!svalue(smthChk))
+            if (!svalue(smthChk)) {
                 enabled(smthSlid) <- FALSE
+                enabled(quantSmthChk) <- FALSE
+            }
+            
             addHandlerChanged(smthChk, handler = function(h, ...) {
-                if (svalue(smthChk))
-                    enabled(smthSlid) <- TRUE
-                else
+                if (svalue(smthChk)) {
+                    if (!svalue(quantSmthChk))
+                        enabled(smthSlid) <- TRUE
+                    else
+                        enabled(smthSlid) <- FALSE
+                    
+                    enabled(quantSmthChk) <- TRUE
+                } else {
                     enabled(smthSlid) <- FALSE
+                    enabled(quantSmthChk) <- FALSE
+                }
             })
+            ## if quantiles are used, disable slider
+            addHandlerChanged(quantSmthChk,
+                              handler = function(h, ...) {
+                                  if (svalue(quantSmthChk))
+                                      enabled(smthSlid) <- FALSE
+                                  else
+                                      enabled(smthSlid) <- TRUE
+                              })
+                        
             ## only have the trend by level option enabled if
             ## the colored by variable option is set
             if (is.null(curSet$by))
@@ -520,9 +544,10 @@ iNZScatterMod <- setRefClass(
             tbl[3, 2] <- quaCol
             tbl[4, 2] <- cubCol
             tbl[5, 2] <- smthCol
-            tbl[6, 1:2] <- smthSlid
-            tbl[7, 1] <- trendByChk
-            tbl[8, 1:2, expand = TRUE] <- showButton
+            tbl[6, 1] <- quantSmthChk
+            tbl[7, 1:2] <- smthSlid
+            tbl[8, 1] <- trendByChk
+            tbl[9, 1:2, expand = TRUE] <- showButton
             add(optGrp, tbl)
         },
         ## Add x=y line
