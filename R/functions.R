@@ -19,9 +19,10 @@
     packageStartupMessage(header)
 
     ## try to load extension packages
-    require("iNZightModules", quietly = FALSE)
-    #require("iNZightTS", quietly = FALSE)
-    #require("iNZightMR", quietly = FALSE)
+    for (lib in c("iNZightModules", "iNZightTS", "iNZightMR")) {
+        if (lib %in% installed.packages())
+            eval(parse(text = paste0("require(", lib, ", quietly = TRUE)")))
+    }
 }
 
 updateiNZight <- function() {

@@ -225,6 +225,43 @@ iNZGUI <- setRefClass(
                     handler = function(h, ...) {
                         iNZdeleteVarWin$new(.self)
                     }
+                    ),
+                allPlots = gaction(
+                    label = "All 1-variable Plots",
+                    icon = "symbol_diamond",
+                    handler = function(h, ...) {
+                        exploreAllPlots(getActiveData())
+                    }
+                    ),
+                allSummaries = gaction(
+                    label = "All 1-variable Summaries",
+                    icon = "symbol_diamond",
+                    handler = function(h, ...) {
+                        exploreAllSummaries(getActiveData())
+                    }
+                    ),
+                exploreMissingness = gaction(
+                    label = "Missing Values",
+                    icon = "symbol_diamond",
+                    handler = function(h, ...) {
+                        dd <- getActiveData()
+
+                        w <- gwindow("Explore Missing Values", width = 700, height = 400,
+                                     visible = FALSE, parent = win)
+                        oldWd <- options(width = 1000)  # so it doesn't wrap
+                        g <- gtext(text =
+                                   paste(iNZightMR::calcmissing.data.frame(dd, print = FALSE,
+                                                                           final = FALSE),
+                                         collapse = "\n"),
+                                   expand = TRUE, cont = w, wrap = FALSE,
+                                   font.attr = list(family = "monospace"))
+                        visible(w) <- TRUE
+                        
+                        dev.new()
+                        iNZightMR::plotcombn(dd)
+
+                        options(width = oldWd$width)
+                    }
                     )
                 )
             ## home button is disabled if package 'vit' is not loaded
@@ -234,6 +271,8 @@ iNZGUI <- setRefClass(
             if (!'package:iNZightModules' %in% search())
                 invisible(sapply(actionList[18:19], function(x) {
                     enabled(x) <- FALSE}))
+            if (!'package:iNZightMR' %in% search())
+                enabled(actionList[[23]]) <- FALSE
             menuBarList <- list(
                 File = actionList[c(15, 1:2)],
                 "Filter Data" = actionList[c(12, 14)],
@@ -246,7 +285,13 @@ iNZGUI <- setRefClass(
                     actionList[[13]],
                     actionList[[20]]
                     ),
-                "Advanced" = actionList[c(19, 18, 16, 17)]
+                "Advanced" = list(
+                    "Quick Explore" = actionList[c(23, 21, 22, 19)],
+                    actionList[[18]],
+                    actionList[[16]],
+                    actionList[[17]]
+                    )
+               # "Advanced" = actionList[c(19, 18, 16, 17)]
                 )
             gmenu(menuBarList, container = cont)
 
