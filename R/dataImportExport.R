@@ -27,6 +27,7 @@ iNZDataImportExport <- setRefClass(
                     out <- try(read.csv(theFile, header = TRUE,
                                         na.strings = c("NULL","NA","N/A",
                                             "#N/A","","<NA>"),
+                                        comment.char = "#",
                                         check.names = TRUE))
                 else if (ext == "infosharecsv")
                     out <- try(read.infoshare(theFile))
