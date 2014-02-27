@@ -507,9 +507,12 @@ iNZreorderWin <- setRefClass(
             ## i.e. everything up to and including the gedit to rename
             ## the factor
             if (length(tbl$children) > 4) {
+                childEntries <- which(sapply(
+                    tbl$child_positions, function(child) child$x) > 4)
                 try(invisible(
-                    sapply(tbl$children[5:length(tbl$children)],
-                           tbl$remove_child)))
+                    sapply(tbl$child_positions[childEntries],
+                           function(entry) tbl$remove_child(entry$child)))
+                    )
             }
 
             lbl3 <- glabel("Levels")
@@ -536,9 +539,23 @@ iNZreorderWin <- setRefClass(
             ## the first 4 children dont refer to the factor levels
             ## each factor lvl has 2 entries in the glayout
             ## the 5th entry refers to the glabels "Levels" and "Order"
-            nrLevels <- (length(tbl$children) - 4)/2 - 1
-            facLevels <- sapply(tbl[5:(5+nrLevels-1), 1], svalue)
-            facOrder <- as.numeric(sapply(tbl[5:(5+nrLevels-1), 2], svalue))
+            childEntries <- which(sapply(
+                tbl$child_positions, function(child) child$x) > 4)
+            ## gWidets2 reorders the children of glayout in some weird way,
+            ## so we find the order by x value, then y value (i.e. as entries
+            ## tbl[4,1], tbl[4,2], tbl[5,2], ...)
+            origOrder <- order(
+                sapply(tbl$child_positions[childEntries], function(child) child$x),
+                sapply(tbl$child_positions[childEntries], function(child) child$y))
+            facLevels <- sapply(
+                tbl$child_positions[childEntries][origOrder[seq(
+                    1, length(origOrder), by = 2)]],
+                function(child) svalue(child$child))
+            facOrder <- sapply(
+                tbl$child_positions[childEntries][origOrder[seq(
+                    2, length(origOrder), by = 2)]],
+                function(child) svalue(child$child))
+            facOrder <- as.integer(facOrder)
             ## check if all order numbers are unique
             if (anyDuplicated(facOrder) > 0) {
                 gmessage(msg = "Please choose a unique order for the levels",
@@ -562,8 +579,18 @@ iNZreorderWin <- setRefClass(
             tb <- names(tb[order(tb, decreasing = TRUE)])
             newOrder <- sapply(levels(factorData),
                                function(x) which(x == tb))
-            invisible(sapply(1:length(tb),
-                             function(i) svalue(tbl[4 + i, 2]) <- newOrder[i]))
+            invisible(
+                sapply(
+                    1:length(newOrder),
+                    function(i) {
+                        xEntries <- sapply(tbl$child_positions,
+                                           function(entry) entry$x) == (4 + i)
+                        yEntries <- sapply(tbl$child_positions[xEntries],
+                                           function(entry) entry$y) == 2
+                        svalue(tbl$child_positions[[which(
+                            xEntries)[yEntries]]]$child) <- newOrder[i]
+                    }
+                    ))
         })
     )
 
