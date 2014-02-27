@@ -17,7 +17,7 @@ iNZFilterWin <- setRefClass(
             usingMethods(opt1, opt2, opt3, opt4)
             if (!is.null(GUI)) {
                 ## close any current mod windows
-               try(dispose(GUI$modWin), silent = TRUE) 
+               try(dispose(GUI$modWin), silent = TRUE)
                GUI$modWin <<- gwindow("Filter Dataset", parent = GUI$win,
                                       width = 300, height = 200,
                                       visible = FALSE)
@@ -31,13 +31,13 @@ iNZFilterWin <- setRefClass(
                                      "randomly"),
                                    horizontal = FALSE, selected = 1)
                add(mainGrp, lbl1)
-               add(mainGrp, filterOpt)               
+               add(mainGrp, filterOpt)
                btnGrp <- ggroup(cont = mainGrp, horizontal = TRUE)
                addSpring(btnGrp)
                proceedButton <- gbutton(
                    "- Proceed -",
                    handler = function(h, ...) {
-                       opt <-svalue(filterOpt, index = TRUE) 
+                       opt <-svalue(filterOpt, index = TRUE)
                        dispose(GUI$modWin)
                        do.call(paste("opt", opt, sep = ""),
                                args = list())
@@ -125,7 +125,7 @@ iNZFilterWin <- setRefClass(
             numIndices <- sapply(GUI$getActiveData(), function(x) !is.factor(x))
             numMenu <- gcombobox(names(GUI$getActiveData())[numIndices],
                                  selected = 0)
-            operator <- gedit("", width = 2) 
+            operator <- gedit("", width = 2)
             expr <- gedit("") ## the expression specified by the user
             submitButton <- gbutton(
                 "Submit",
@@ -147,7 +147,7 @@ iNZFilterWin <- setRefClass(
                     } else {
                         GUI$getActiveDoc()$getModel()$updateData(
                             subsetData)
-                        dispose(GUI$modWin)                        
+                        dispose(GUI$modWin)
                     }
                 })
             tbl <- glayout()
@@ -176,7 +176,7 @@ iNZFilterWin <- setRefClass(
             btnGrp <- ggroup(horizontal = TRUE)
             lbl1 <- glabel("Type in the Row.names of observations\nthat need to be excluded")
             font(lbl1) <- list(weight = "bold", style = "normal")
-            lbl2 <- glabel("(separate each value by a comma)")            
+            lbl2 <- glabel("(separate each value by a comma)")
             lbl3 <- glabel("EXAMPLE")
             font(lbl3) <- list(weight = "bold", style = "normal")
             lbl4 <- glabel("1,5,99,45,3")
@@ -185,11 +185,11 @@ iNZFilterWin <- setRefClass(
                 "Submit",
                 handler = function(h, ...) {
                     rowNumbers <- try(
-                        as.numeric(strsplit(gsub(pattern = '\\s+',
-                                                 replacement = "",
-                                                 svalue(unwantedObs),
-                                                 perl = TRUE),
-                                            ",", fixed = TRUE)[[1]])
+                        strsplit(gsub(pattern = '\\s+',
+                                      replacement = "",
+                                      svalue(unwantedObs),
+                                      perl = TRUE),
+                                 ",", fixed = TRUE)[[1]]
                         )
                     if (inherits(rowNumbers,"try-error") ||
                         is.na(rowNumbers)) {
@@ -198,6 +198,14 @@ iNZFilterWin <- setRefClass(
                                  icon = "error",
                                  parent = GUI$modWin)
                     } else {
+                        ranges <- grep(":", rowNumbers)
+                        if (length(ranges) > 0) {
+                            rowRanges <- rowNumbers[ranges]
+                            rowNumbers <- as.numeric(rowNumbers[-ranges])
+                            rowRanges <- as.vector(sapply(
+                                rowRanges, function(m) eval(parse(text=m))))
+                            rowNumbers <- unique(c(rowNumbers, rowRanges))
+                        }
                         if(!all(rowNumbers %in%
                                 as.numeric(row.names(GUI$getActiveData()))))
                             gmessage(title = "ERROR",
@@ -207,7 +215,7 @@ iNZFilterWin <- setRefClass(
                         else {
                             GUI$getActiveDoc()$getModel()$updateData(
                                 GUI$getActiveData()[-rowNumbers, ])
-                            dispose(GUI$modWin)                                 
+                            dispose(GUI$modWin)
                         }
                     }
                 })
@@ -247,9 +255,9 @@ iNZFilterWin <- setRefClass(
                                             size = sSize)
                         GUI$getActiveDoc()$getModel()$updateData(
                             GUI$getActiveData()[rdmSample, ])
-                        dispose(GUI$modWin)                              
+                        dispose(GUI$modWin)
                     }
-                })            
+                })
             tbl <- glayout()
             tbl[1,1:2] <- lbl1
             tbl[2, 1] <- "Total number of rows:"
@@ -277,7 +285,7 @@ iNZReshapeDataWin <- setRefClass(
         ),
     methods = list(
         initialize = function(gui = NULL) {
-            initFields(GUI = gui)            
+            initFields(GUI = gui)
             if (!is.null(GUI)) {
             GUI$modWin <<- gwindow("Filter data by numeric condition",
                                    parent = GUI$win, visible = FALSE)
@@ -296,9 +304,9 @@ iNZReshapeDataWin <- setRefClass(
                     else {
                         GUI$getActiveDoc()$getModel()$updateData(
                             wide.to.tall(GUI$getActiveData()))
-                        dispose(GUI$modWin)                           
+                        dispose(GUI$modWin)
                     }
-                    
+
                 })
             add(mainGrp, lbl1)
             add(mainGrp, conv.image)
