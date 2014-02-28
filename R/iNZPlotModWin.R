@@ -727,6 +727,10 @@ iNZScatterMod <- setRefClass(
                 by = 0.05, value = curSet$cex.pt)
             transpSlider <- gslider(from = 0.01, to = 1,
                                     by = 0.01, value = curSet$alpha)
+            forceDots <- gcheckbox("Force points (for large sample sizes)",
+                                   selected =
+                                   if (!is.null(curSet$largesample)) curSet$largesample
+                                   else FALSE)
             showButton <- gbutton("Show Changes",
                                   handler = function(h, ...) {
                                       pch.sel <- ifelse(svalue(fillColor),
@@ -736,7 +740,8 @@ iNZScatterMod <- setRefClass(
                                                bg = svalue(backgroundColList),
                                                cex.pt = svalue(cexSlider),
                                                pch = pch.sel,
-                                               alpha = svalue(transpSlider)
+                                               alpha = svalue(transpSlider),
+                                               largesample = !svalue(forceDots)
                                                )
                                           )
                                       updateSettings()
@@ -752,7 +757,8 @@ iNZScatterMod <- setRefClass(
             tbl[9,3, expand = TRUE] <- cexSlider
             tbl[10,2, anchor = c(-1,-1), expand = TRUE] <- lbl7
             tbl[10,3, expand = TRUE] <- transpSlider
-            tbl[11, 2:4] <- showButton
+            tbl[11,2] <- forceDots
+            tbl[12, 2:4] <- showButton
             ## if the "by" options is set, i.e. points are colored
             ## according to another var, disable the option to
             ## change the color
