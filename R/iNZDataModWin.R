@@ -859,7 +859,7 @@ iNZstdVarWin <- setRefClass(
             mainGroup <- ggroup(expand = TRUE, horizontal = FALSE)
             mainGroup$set_borderwidth(15)
             ## instructions through glabels
-            lbl1 <- glabel("Choose a variables you want to combine")
+            lbl1 <- glabel("Choose a variables you want to standardise")
             font(lbl1) <- list(weight = "bold",
                                family = "normal")
             lbl2 <- glabel("(Hold Ctrl to choose many)")
@@ -941,6 +941,76 @@ iNZdeleteVarWin <- setRefClass(
             add(mainGroup, lbl2)
             add(mainGroup, listOfVars, expand = TRUE)
             add(mainGroup, deleteButton)
+            add(GUI$modWin, mainGroup, expand = TRUE, fill = TRUE)
+            visible(GUI$modWin) <<- TRUE
+        })
+    )
+
+## Missing as Cat
+iNZmissCatWin <- setRefClass(
+    "iNZmissCatWin",
+    contains = "iNZDataModWin",
+    methods = list(
+        initialize = function(gui) {
+            callSuper(gui)
+            svalue(GUI$modWin) <<- "Missing as Categorical"
+            mainGroup <- ggroup(expand = TRUE, horizontal = FALSE)
+            mainGroup$set_borderwidth(15)
+            ## instructions through glabels
+            lbl1 = glabel("Select Variables to be transformed\nResulting Variables will be categorical with a level for missing observations")
+            font(lbl1) <- list(weight="bold", family = "normal")
+            lbl2 = glabel("(Hold Ctrl to choose many)")
+            font(lbl2) <- list(weight="bold", family = "normal")
+            listOfVars = gtable(names(GUI$getActiveData()),
+                multiple = TRUE, expand = TRUE)
+            names(listOfVars) = "Variables"
+            numIndices <- sapply(GUI$getActiveData(), function(x) !is.factor(x))
+            facIndices <- sapply(GUI$getActiveData(), function(x) is.factor(x))
+            convertButton = gbutton(
+                "- Convert -",
+                handler = function(h,...) {
+                    if (length(svalue(listOfVars)) > 0) {
+                        dataToConvert <- GUI$getActiveData()[, svalue(listOfVars,
+                                                                      index = TRUE),
+                                                             drop = FALSE]
+                        facIndices <- sapply(dataToConvert, is.factor)
+                        ## replace NA with 'missing' and 'observed' otherwise
+                        ## for non-factors
+                        dataToConvert[, !facIndices][!is.na(
+                            dataToConvert)[, !facIndices]] <- "observed"
+                        dataToConvert[,!facIndices][is.na(
+                            dataToConvert)[, !facIndices]] <- "missing"
+
+                        ## replace NA with 'missing' for factors
+                        dataToConvert[, facIndices] <- sapply(
+                            dataToConvert[, facIndices],
+                            function(x) {
+                                levels(x) <- c(levels(x), "missing")
+                                x[is.na(x)] <- "missing"
+                                x
+                            })
+                        ## convert non-factors to factors
+                        dataToConvert[, !facIndices] <- do.call(
+                            cbind.data.frame,
+                            lapply(dataToConvert[, !facIndices, drop = FALSE],
+                                   factor))
+                        newNames <- paste(names(
+                            GUI$getActiveData()[, svalue(listOfVars, index = TRUE)]),
+                                          "_miss", sep = "")
+                        insertData(data = dataToConvert,
+                                   name = newNames,
+                                   index = ncol(GUI$getActiveData()),
+                                   msg = list(
+                                       msg = "The new variables are added to the end of the dataset",
+                                       icon = "info"
+                                       ),
+                                   closeAfter = TRUE)
+                    }
+                })
+            add(mainGroup, lbl1)
+            add(mainGroup, lbl2)
+            add(mainGroup, listOfVars, expand = TRUE)
+            add(mainGroup, convertButton)
             add(GUI$modWin, mainGroup, expand = TRUE, fill = TRUE)
             visible(GUI$modWin) <<- TRUE
         })

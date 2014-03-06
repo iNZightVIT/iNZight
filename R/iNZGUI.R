@@ -272,12 +272,17 @@ iNZGUI <- setRefClass(
                                    expand = TRUE, cont = w, wrap = FALSE,
                                    font.attr = list(family = "monospace"))
                         visible(w) <- TRUE
-                        
+
                         dev.new()
                         iNZightMR::plotcombn(dd)
 
                         options(width = oldWd$width)
                     }
+                    ),
+                missToCat = gaction(
+                    label = "Missing to Categorical",
+                    icon = "symbol_diamond",
+                    handler = function(h, ...) iNZmissCatWin$new(.self)
                     )
                 )
             ## home button is disabled if package 'vit' is not loaded
@@ -298,6 +303,7 @@ iNZGUI <- setRefClass(
                     "Numeric Variables" = actionList[c(4,11)],
                     actionList[[10]],
                     actionList[[9]],
+                    actionList[[24]],
                     actionList[[13]],
                     actionList[[20]]
                     ),
@@ -361,7 +367,7 @@ iNZGUI <- setRefClass(
                             curSet$varnames$x <- v$y
                             curSet$varnames$y <- v$x
                         }
-                        
+
                         w <- gwindow("Summary", width = 700, height = 400,
                                      visible = FALSE, parent = win)
                         g <- gtext(text = paste(do.call(
@@ -389,7 +395,7 @@ iNZGUI <- setRefClass(
                             curSet$varnames$x <- v$y
                             curSet$varnames$y <- v$x
                         }
-                        
+
                         w <- gwindow("Choose Method", width = 100,
                                      height = 100, parent = win)
                         g <- ggroup(cont = w, horizontal = FALSE)
@@ -459,6 +465,8 @@ iNZGUI <- setRefClass(
                         parent = win)
                     if (confirm)
                         q(save = "no")
+                    else
+                        FALSE
                 } else {
                     dispose(win)
                     try(dev.off(), silent = TRUE)
@@ -479,7 +487,7 @@ iNZGUI <- setRefClass(
                     curPlSet$varnames$y <- curPlSet$varnames$x
                     curPlSet$varnames$x <- x.tmp
                 }
-                
+
                 do.call(iNZightPlot, curPlSet)
             } else {
                 resetPlot()
