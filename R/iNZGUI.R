@@ -278,6 +278,16 @@ iNZGUI <- setRefClass(
 
                         options(width = oldWd$width)
                     }
+                    ),
+                identifyPoints = gaction(
+                    label = "Identify Points",
+                    icon = "symbol_diamond",
+                    handler = function(h, ...) {
+                        dat <- getActiveData()
+                        w <- gwindow("Identify Points", width = 200, height = 200,
+                                     visible = FALSE, parent = win)
+                        visible(w) <- TRUE
+                    }
                     )
                 )
             ## home button is disabled if package 'vit' is not loaded
@@ -303,6 +313,7 @@ iNZGUI <- setRefClass(
                     ),
                 "Advanced" = list(
                     "Quick Explore" = actionList[c(23, 21, 22, 19)],
+                    actionList[[24]],  #### WHEN MERGING MR THIS MAY CLASH?
                     actionList[[18]],
                     actionList[[16]],
                     actionList[[17]]
