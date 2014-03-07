@@ -964,8 +964,6 @@ iNZmissCatWin <- setRefClass(
             listOfVars = gtable(names(GUI$getActiveData()),
                 multiple = TRUE, expand = TRUE)
             names(listOfVars) = "Variables"
-            numIndices <- sapply(GUI$getActiveData(), function(x) !is.factor(x))
-            facIndices <- sapply(GUI$getActiveData(), function(x) is.factor(x))
             convertButton = gbutton(
                 "- Convert -",
                 handler = function(h,...) {
