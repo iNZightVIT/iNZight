@@ -49,7 +49,7 @@ iNZGUI <- setRefClass(
             g <- gpanedgroup(container = win, expand = TRUE)
             ## Left side group
             gp1 <- ggroup(horizontal = FALSE, container = g)
-            size(gp1) <- c(200, 200)
+            size(gp1) <- c(300, 300)
             ## Right side group
             gp2 <- ggroup(horizontal = FALSE, container = g, expand = TRUE)
             ## set up widgets in the left group
