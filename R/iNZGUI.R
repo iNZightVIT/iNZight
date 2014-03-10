@@ -283,9 +283,71 @@ iNZGUI <- setRefClass(
                     label = "Identify Points",
                     icon = "symbol_diamond",
                     handler = function(h, ...) {
-                        dat <- getActiveData()
+                        curSet <- getActiveDoc()$getSettings()
+                        
                         w <- gwindow("Identify Points", width = 200, height = 200,
                                      visible = FALSE, parent = win)
+                        
+                        grp <- ggroup(horizontal = FALSE)
+                        grp$set_borderwidth(15)
+                        
+                        lbl1 <- "Select variable to identify:"
+                        font(lbl1) <- list(weight="bold", family = "normal")
+                        varmenu <- gcombobox(c("id", names(getActiveData())), selected = 1)
+                        
+                        lbl2 <- "Click \"Locate\" to locate a point"
+                        locateButton <- gbutton("Locate", handler = function(h, ...) {
+                            x <- curSet$x
+                            y <- curSet$y
+                            v <- svalue(varmenu)
+                            
+                            if (is.null(v))
+                                v <- as.character(1:length(x))
+                            else {
+                                if (v == "id")
+                                    v <- as.character(1:length(x))
+                                else
+                                    v <- as.character(getActiveData()[, v])
+                            }
+                            
+                            if (is.null(y)) {
+                                        # dotplot
+                                seekViewport("DOTPLOTVP")
+                                na <- is.na(x) | is.na(v)
+                                pd <- makePoints(x[!na], cols = v[!na])
+                                d <- data.frame(x = pd$x, y = pd$y, v = pd$cols)
+                            } else {
+                                d <- data.frame(x = x, y = y, v = v)
+                            }
+                            
+                            xy <- as.numeric(grid.locator())
+                            print(xy)
+                            
+                            dists <- apply(d[, 1:2], 1, function(c) {
+                                dist <- sqrt(sum((c - xy)^2))
+                                dist
+                            })
+
+                            o <- d[which.min(dists), ]
+                            print(o)
+                            if (is.null(y)) {
+                                grid.text(o$v, o$x, o$y, just = "left", rot = 45,
+                                          default.units = "native", gp = gpar(cex=0.5))
+                            } else {
+                                grid.text(o$v, o$x, unit(o$y, "native") + unit(2, "char"),
+                                          default.units = "native", gp = gpar(cex=0.5))
+                            }
+                        })
+                        
+                        tbl <- glayout()
+                        tbl[1, 1, expand = TRUE, anchor = c(-1, 0)] <- lbl1
+                        tbl[2, 1, expand = TRUE, anchor = c(1, 0)] <- varmenu
+                        tbl[4, 1, expand = TRUE, anchor = c(-1, 0)] <- lbl2
+                        tbl[5, 1, expand = TRUE, anchor = c(1, 0)] <- locateButton
+                        
+                        add(grp, tbl)
+                        add(w, grp)
+                        
                         visible(w) <- TRUE
                     }
                     )
