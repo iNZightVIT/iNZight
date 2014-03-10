@@ -317,11 +317,13 @@ iNZGUI <- setRefClass(
                                 pd <- makePoints(x[!na], cols = v[!na])
                                 d <- data.frame(x = pd$x, y = pd$y, v = pd$cols)
                             } else {
-                                d <- data.frame(x = x, y = y, v = v)
+                                ## The x and y are swapped because of scatter plot
+                                d <- data.frame(x = y, y = x, v = v)
                             }
-                            
+
                             xy <- as.numeric(grid.locator())
                             print(xy)
+                            print(d)
                             
                             dists <- apply(d[, 1:2], 1, function(c) {
                                 dist <- sqrt(sum((c - xy)^2))
