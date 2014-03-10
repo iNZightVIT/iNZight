@@ -822,7 +822,8 @@ iNZfrmIntWin <- setRefClass(
 
 
 
-## create new variables using an expression
+## rename variables. This overwrites the old variable name, i.e. does not
+## create a new variable
 iNZrnmVarWin <- setRefClass(
     "iNZrnmVarWin",
     contains = "iNZDataModWin",
