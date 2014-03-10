@@ -60,6 +60,8 @@ iNZControlWidget <- setRefClass(
                     svalue(h$obj) <- h$dropdata
                     changePlotSettings(list(
                         x = GUI$getActiveDoc()$getData()[h$dropdata][[1]],
+                        xlab = NULL,
+                        main = NULL,
                         varnames = list(
                             x = colnames(GUI$getActiveDoc()$getData()[h$dropdata]))
                         ), reset = TRUE)
@@ -70,6 +72,8 @@ iNZControlWidget <- setRefClass(
                     svalue(h$obj) <- h$dropdata
                     changePlotSettings(list(
                         y = GUI$getActiveDoc()$getData()[h$dropdata][[1]],
+                        ylab = NULL,
+                        main = NULL,
                         varnames = list(
                             y = colnames(GUI$getActiveDoc()$getData()[h$dropdata]))
                         ), reset = TRUE)
@@ -90,6 +94,7 @@ iNZControlWidget <- setRefClass(
                                 GUI$getActiveDoc()$getData()[h$dropdata][[1]]
                                 ),
                             g1.level = NULL,
+                            main = NULL,
                             varnames = list(
                                 g1 = colnames(GUI$getActiveDoc()$getData()[h$dropdata]))
                             ))
@@ -111,6 +116,7 @@ iNZControlWidget <- setRefClass(
                                 GUI$getActiveDoc()$getData()[h$dropdata][[1]]
                                 ),
                             g2.level = NULL,
+                            main = NULL,
                             varnames = list(
                                 g2 = colnames(GUI$getActiveDoc()$getData()[h$dropdata]))
                             ))
@@ -122,9 +128,9 @@ iNZControlWidget <- setRefClass(
             GUI$getActiveDoc()$setSettings(setList, reset)
         },
         createSlider = function(pos, dropdata) {
-            ## make sure there is no slider at the pos            
+            ## make sure there is no slider at the pos
             deleteSlider(pos)
-            
+
             ## ##################################
             ## ## This is a workaround for the current bug in
             ## ## gWidgets2RGtk2. Remove this code once the bug
@@ -135,13 +141,13 @@ iNZControlWidget <- setRefClass(
             ##                          function(x) x$x == 10))
             ##     if (length(childPos) > 0) {
             ##         g2Data <- svalue(ctrlGp$children[[1]][9, 3])
-            ##         deleteSlider(10)                    
+            ##         deleteSlider(10)
             ##     }
             ## }
             ## ##################################
             ## ## End of woraround part1
             ## ##################################
-            
+
             ## create a ggroup for the slider at the specified
             ## pos in the glayout
             tbl <- ctrlGp$children[[1]]
@@ -149,7 +155,7 @@ iNZControlWidget <- setRefClass(
             ## build the level names that are used for the slider
             grpData <- GUI$getActiveData()[dropdata][[1]]
             grpData <- iNZightPlots:::convert.to.factor(grpData)
-            if (pos == 8) 
+            if (pos == 8)
                 lev <- c("_MULTI", levels(grpData))
             else
                 lev <- c("_ALL", levels(grpData), "_MULTI")
@@ -185,7 +191,7 @@ iNZControlWidget <- setRefClass(
             ## only add label if it is short enough
             if (sum(nchar(lbl)) < 60)
                 add(sliderGrp, glabel(paste(lbl, collapse = "   ")))
-            
+
             ## ##################################
             ## ## start of workaround part2
             ## ##################################
@@ -211,7 +217,7 @@ iNZControlWidget <- setRefClass(
         },
         ## reset the widget to its original state
         ## (same as triggering all 4 clear buttons)
-        resetWidget = function() {           
+        resetWidget = function() {
             invisible(sapply(c(3,5,7,9), function(x) {
                 ctrlGp$children[[1]][x, 7]$invoke_change_handler()
             }))

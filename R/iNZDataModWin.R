@@ -317,6 +317,12 @@ iNZrenameWin <- setRefClass(
         initialize = function(gui) {
             callSuper(gui)
             svalue(GUI$modWin) <<- "Rename Factor Levels"
+            ## ggroup does not automatically add scrollbars and gWidget2 does not
+            ## have a function to do so. We therefore wrap around the RGtk2 class
+            ## gtkScrolledWindow around the ggroup
+            scrolledWindow <- gtkScrolledWindow()
+            ## setting this will only display a scrollbar if necessary
+            scrolledWindow$setPolicy("GTK_POLICY_AUTOMATIC","GTK_POLICY_AUTOMATIC")
             mainGroup <- ggroup(expand = TRUE, horizontal = FALSE)
             mainGroup$set_borderwidth(15)
             ## instructions through glabels
@@ -362,7 +368,10 @@ iNZrenameWin <- setRefClass(
             tbl[3, 1:2, expand = TRUE] <- factorName
             add(mainGroup, tbl, expand = TRUE)
             add(mainGroup, renameButton)
-            add(GUI$modWin, mainGroup, expand = TRUE, fill = TRUE)
+            ## method of gtkScrolledWindow to add a GtkWidget (not a gWidgets2 class)
+            ## as a child using a viewport
+            scrolledWindow$addWithViewport(mainGroup$widget)
+            add(GUI$modWin, scrolledWindow, expand = TRUE, fill = TRUE)
             visible(GUI$modWin) <<- TRUE
         },
         displayLevels = function(tbl, factorData) {
@@ -556,6 +565,7 @@ iNZreorderWin <- setRefClass(
                     2, length(origOrder), by = 2)]],
                 function(child) svalue(child$child))
             facOrder <- as.integer(facOrder)
+            facOrder <- sapply(1:6, function(x) which(facOrder == x))
             ## check if all order numbers are unique
             if (anyDuplicated(facOrder) > 0) {
                 gmessage(msg = "Please choose a unique order for the levels",
@@ -812,7 +822,8 @@ iNZfrmIntWin <- setRefClass(
 
 
 
-## create new variables using an expression
+## rename variables. This overwrites the old variable name, i.e. does not
+## create a new variable
 iNZrnmVarWin <- setRefClass(
     "iNZrnmVarWin",
     contains = "iNZDataModWin",
@@ -821,6 +832,12 @@ iNZrnmVarWin <- setRefClass(
             callSuper(gui)
             svalue(GUI$modWin) <<- "Rename Variables"
             size(GUI$modWin) <<- c(450, 200)
+            ## ggroup does not automatically add scrollbars and gWidget2 does not
+            ## have a function to do so. We therefore wrap the RGtk2 class
+            ## gtkScrolledWindow around the ggroup
+            scrolledWindow <- gtkScrolledWindow()
+            ## setting this will only display a scrollbar if necessary
+            scrolledWindow$setPolicy("GTK_POLICY_AUTOMATIC","GTK_POLICY_AUTOMATIC")
             mainGroup <- ggroup(expand = TRUE, horizontal = FALSE)
             mainGroup$set_borderwidth(15)
             lbl1 <- glabel("Old Variables")
@@ -841,7 +858,10 @@ iNZrnmVarWin <- setRefClass(
             })
             add(mainGroup, tbl)
             add(mainGroup, renameButton)
-            add(GUI$modWin, mainGroup, expand = TRUE, fill = TRUE)
+            ## method of gtkScrolledWindow to add a GtkWidget (not a gWidgets2 class)
+            ## as a child using a viewport
+            scrolledWindow$addWithViewport(mainGroup$widget)
+            add(GUI$modWin, scrolledWindow, expand = TRUE, fill = TRUE)
             visible(GUI$modWin) <<- TRUE
         })
     )
@@ -858,7 +878,7 @@ iNZstdVarWin <- setRefClass(
             mainGroup <- ggroup(expand = TRUE, horizontal = FALSE)
             mainGroup$set_borderwidth(15)
             ## instructions through glabels
-            lbl1 <- glabel("Choose a variables you want to combine")
+            lbl1 <- glabel("Choose a variables you want to standardise")
             font(lbl1) <- list(weight = "bold",
                                family = "normal")
             lbl2 <- glabel("(Hold Ctrl to choose many)")
@@ -940,6 +960,74 @@ iNZdeleteVarWin <- setRefClass(
             add(mainGroup, lbl2)
             add(mainGroup, listOfVars, expand = TRUE)
             add(mainGroup, deleteButton)
+            add(GUI$modWin, mainGroup, expand = TRUE, fill = TRUE)
+            visible(GUI$modWin) <<- TRUE
+        })
+    )
+
+## Missing as Cat
+iNZmissCatWin <- setRefClass(
+    "iNZmissCatWin",
+    contains = "iNZDataModWin",
+    methods = list(
+        initialize = function(gui) {
+            callSuper(gui)
+            svalue(GUI$modWin) <<- "Missing as Categorical"
+            mainGroup <- ggroup(expand = TRUE, horizontal = FALSE)
+            mainGroup$set_borderwidth(15)
+            ## instructions through glabels
+            lbl1 = glabel("Select Variables to be transformed\nResulting Variables will be categorical with a level for missing observations")
+            font(lbl1) <- list(weight="bold", family = "normal")
+            lbl2 = glabel("(Hold Ctrl to choose many)")
+            font(lbl2) <- list(weight="bold", family = "normal")
+            listOfVars = gtable(names(GUI$getActiveData()),
+                multiple = TRUE, expand = TRUE)
+            names(listOfVars) = "Variables"
+            convertButton = gbutton(
+                "- Convert -",
+                handler = function(h,...) {
+                    if (length(svalue(listOfVars)) > 0) {
+                        dataToConvert <- GUI$getActiveData()[, svalue(listOfVars,
+                                                                      index = TRUE),
+                                                             drop = FALSE]
+                        facIndices <- sapply(dataToConvert, is.factor)
+                        ## replace NA with 'missing' and 'observed' otherwise
+                        ## for non-factors
+                        dataToConvert[, !facIndices][!is.na(
+                            dataToConvert)[, !facIndices]] <- "observed"
+                        dataToConvert[,!facIndices][is.na(
+                            dataToConvert)[, !facIndices]] <- "missing"
+
+                        ## replace NA with 'missing' for factors
+                        dataToConvert[, facIndices] <- sapply(
+                            dataToConvert[, facIndices],
+                            function(x) {
+                                levels(x) <- c(levels(x), "missing")
+                                x[is.na(x)] <- "missing"
+                                x
+                            })
+                        ## convert non-factors to factors
+                        dataToConvert[, !facIndices] <- do.call(
+                            cbind.data.frame,
+                            lapply(dataToConvert[, !facIndices, drop = FALSE],
+                                   factor))
+                        newNames <- paste(names(
+                            GUI$getActiveData()[, svalue(listOfVars, index = TRUE)]),
+                                          "_miss", sep = "")
+                        insertData(data = dataToConvert,
+                                   name = newNames,
+                                   index = ncol(GUI$getActiveData()),
+                                   msg = list(
+                                       msg = "The new variables are added to the end of the dataset",
+                                       icon = "info"
+                                       ),
+                                   closeAfter = TRUE)
+                    }
+                })
+            add(mainGroup, lbl1)
+            add(mainGroup, lbl2)
+            add(mainGroup, listOfVars, expand = TRUE)
+            add(mainGroup, convertButton)
             add(GUI$modWin, mainGroup, expand = TRUE, fill = TRUE)
             visible(GUI$modWin) <<- TRUE
         })

@@ -49,7 +49,7 @@ iNZGUI <- setRefClass(
             g <- gpanedgroup(container = win, expand = TRUE)
             ## Left side group
             gp1 <- ggroup(horizontal = FALSE, container = g)
-            size(gp1) <- c(200, 200)
+            size(gp1) <- c(300, 300)
             ## Right side group
             gp2 <- ggroup(horizontal = FALSE, container = g, expand = TRUE)
             ## set up widgets in the left group
@@ -272,12 +272,17 @@ iNZGUI <- setRefClass(
                                    expand = TRUE, cont = w, wrap = FALSE,
                                    font.attr = list(family = "monospace"))
                         visible(w) <- TRUE
-                        
+
                         dev.new()
                         iNZightMR::plotcombn(dd)
 
                         options(width = oldWd$width)
                     }
+                    ),
+                missToCat = gaction(
+                    label = "Missing to Categorical",
+                    icon = "symbol_diamond",
+                    handler = function(h, ...) iNZmissCatWin$new(.self)
                     ),
                 identifyPoints = gaction(
                     label = "Identify Points",
@@ -322,8 +327,6 @@ iNZGUI <- setRefClass(
                             }
 
                             xy <- as.numeric(grid.locator())
-                            print(xy)
-                            print(d)
                             
                             dists <- apply(d[, 1:2], 1, function(c) {
                                 dist <- sqrt(sum((c - xy)^2))
@@ -331,7 +334,6 @@ iNZGUI <- setRefClass(
                             })
 
                             o <- d[which.min(dists), ]
-                            print(o)
                             if (is.null(y)) {
                                 grid.text(o$v, o$x, o$y, just = "left", rot = 45,
                                           default.units = "native", gp = gpar(cex=0.5))
@@ -372,12 +374,13 @@ iNZGUI <- setRefClass(
                     "Numeric Variables" = actionList[c(4,11)],
                     actionList[[10]],
                     actionList[[9]],
+                    actionList[[24]],
                     actionList[[13]],
                     actionList[[20]]
                     ),
                 "Advanced" = list(
                     "Quick Explore" = actionList[c(23, 21, 22, 19)],
-                    actionList[[24]],  #### WHEN MERGING MR THIS MAY CLASH?
+                    actionList[[25]],  #### WHEN MERGING MR THIS MAY CLASH?
                     actionList[[18]],
                     actionList[[16]],
                     actionList[[17]]
@@ -436,7 +439,7 @@ iNZGUI <- setRefClass(
                             curSet$varnames$x <- v$y
                             curSet$varnames$y <- v$x
                         }
-                        
+
                         w <- gwindow("Summary", width = 700, height = 400,
                                      visible = FALSE, parent = win)
                         g <- gtext(text = paste(do.call(
@@ -464,7 +467,7 @@ iNZGUI <- setRefClass(
                             curSet$varnames$x <- v$y
                             curSet$varnames$y <- v$x
                         }
-                        
+
                         w <- gwindow("Choose Method", width = 100,
                                      height = 100, parent = win)
                         g <- ggroup(cont = w, horizontal = FALSE)
@@ -534,6 +537,8 @@ iNZGUI <- setRefClass(
                         parent = win)
                     if (confirm)
                         q(save = "no")
+                    else
+                        FALSE
                 } else {
                     dispose(win)
                     try(dev.off(), silent = TRUE)
@@ -554,7 +559,7 @@ iNZGUI <- setRefClass(
                     curPlSet$varnames$y <- curPlSet$varnames$x
                     curPlSet$varnames$x <- x.tmp
                 }
-                
+
                 do.call(iNZightPlot, curPlSet)
             } else {
                 resetPlot()
