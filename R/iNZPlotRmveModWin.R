@@ -34,7 +34,8 @@ iNZPlotRmveModWin <- setRefClass(
                     "Restore default plotting symbol sizes",
                     "Restore default symbol transparency",
                     "Restore default background colour",
-                    "Restore default line thickness")
+                    "Restore default line thickness",
+                    "Restore default plot type")
                 ## check for presence of all additions
                 curAdditions <- c(
                     TRUE, ## all additiions
@@ -58,7 +59,8 @@ iNZPlotRmveModWin <- setRefClass(
                     (all.equal(curSet$cex.pt, defSet$cex.pt) != TRUE), ## point size
                     (all.equal(curSet$alpha, defSet$alpha) != TRUE), ## transparency
                     curSet$bg != defSet$bg, ## bg colour
-                    curSet$lwd.pt != defSet$lwd.pt ## point line thickness
+                    curSet$lwd.pt != defSet$lwd.pt, ## point line thickness
+                    !is.null(curSet$largesample) ## plot type
                     )
 
                 proceedButton <- gbutton(
@@ -124,7 +126,8 @@ iNZPlotRmveModWin <- setRefClass(
                                  list(cex.pt = defSet$cex.pt), ## point size
                                  list(alpha = defSet$alpha), ## transparency
                                  list(bg = defSet$bg), ## bg colour
-                                 list(lwd.pt = defSet$lwd.pt) ## point line thickness
+                                 list(lwd.pt = defSet$lwd.pt), ## point line thickness
+                                 list(largesample = defSet$largesample) ## plot type
                                  )
 
             GUI$getActiveDoc()$setSettings(
