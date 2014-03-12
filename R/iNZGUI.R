@@ -212,11 +212,7 @@ iNZGUI <- setRefClass(
                     label = "Pairs",
                     icon = "symbol_diamond",
                     handler = function(h, ...) {
-                        ign <- gwindow("...", visible = FALSE)
-                        tag(ign, "dataSet") <- getActiveData()
-                        e <- list(obj = ign)
-                        e$win <- win
-                        scatterPlotMatrix(e)
+                        iNZscatterMatrix$new(.self)
                     }
                     ),
                 deleteVariables = gaction(
@@ -230,53 +226,21 @@ iNZGUI <- setRefClass(
                     label = "All 1-variable Plots",
                     icon = "symbol_diamond",
                     handler = function(h, ...) {
-                       # dev.new()
-                       # exploreAllPlots(getActiveData())
-                       # dev.off()
-
-                       # Instead, we will make a gui that cycles through them ...
-                        ign <- gwindow("...", visible = FALSE)
-                        tag(ign, "dataSet") <- getActiveData()
-                        e <- list(obj = ign)
-                        e$win <- win
-                        allUniPlots(e)
+                       iNZallPlots$new(.self)
                     }
                     ),
                 allSummaries = gaction(
                     label = "All 1-variable Summaries",
                     icon = "symbol_diamond",
                     handler = function(h, ...) {
-                        w <- gwindow("Explore all 1-way Summaries", width = 700, height = 400,
-                                     visible = FALSE, parent = win)
-                        oldWd <- options(width = 1000)  # so it doesn't wrap
-                        g <- gtext(text = iNZightPlots::exploreAllSummaries(getActiveData()),
-                                   expand = TRUE, cont = w, wrap = FALSE,
-                                   font.attr = list(family = "monospace"))
-                        visible(w) <- TRUE
-                        options(width = oldWd$width)
+                        iNZallSummaries$new(.self)
                     }
                     ),
                 exploreMissingness = gaction(
                     label = "Missing Values",
                     icon = "symbol_diamond",
                     handler = function(h, ...) {
-                        dd <- getActiveData()
-
-                        w <- gwindow("Explore Missing Values", width = 700, height = 400,
-                                     visible = FALSE, parent = win)
-                        oldWd <- options(width = 1000)  # so it doesn't wrap
-                        g <- gtext(text =
-                                   paste(iNZightMR::calcmissing.data.frame(dd, print = FALSE,
-                                                                           final = FALSE),
-                                         collapse = "\n"),
-                                   expand = TRUE, cont = w, wrap = FALSE,
-                                   font.attr = list(family = "monospace"))
-                        visible(w) <- TRUE
-
-                        dev.new()
-                        iNZightMR::plotcombn(dd)
-
-                        options(width = oldWd$width)
+                        iNZExploreMissing$new(.self)
                     }
                     ),
                 missToCat = gaction(
@@ -288,79 +252,7 @@ iNZGUI <- setRefClass(
                     label = "Identify Points",
                     icon = "symbol_diamond",
                     handler = function(h, ...) {
-                        curSet <- getActiveDoc()$getSettings()
-                        
-                        w <- gwindow("Identify Points", width = 200, height = 200,
-                                     visible = FALSE, parent = win)
-                        
-                        grp <- ggroup(horizontal = FALSE)
-                        grp$set_borderwidth(15)
-                        
-                        lbl1 <- "Select variable to identify:"
-                        font(lbl1) <- list(weight="bold", family = "normal")
-                        varmenu <- gcombobox(c("id", names(getActiveData())), selected = 1)
-                        
-                        lbl2 <- "Click \"Locate\" to locate a point"
-                        locateButton <- gbutton("Locate", handler = function(h, ...) {
-                            x <- curSet$x
-                            y <- curSet$y
-                            v <- svalue(varmenu)
-                            
-                            if (is.null(v))
-                                v <- as.character(1:length(x))
-                            else {
-                                if (v == "id")
-                                    v <- as.character(1:length(x))
-                                else
-                                    v <- as.character(getActiveData()[, v])
-                            }
-
-                            xy <- as.numeric(grid.locator())
-
-                            if (is.null(y)) {
-                                        # dotplot
-                                seekViewport("DOTPLOTVP")
-                                na <- is.na(x) | is.na(v)
-                                pd <- iNZightPlots:::makePoints(x[!na], cols = v[!na])
-                                d <- data.frame(x = pd$x, y = pd$y, v = pd$cols)
-                            } else {
-                                ## The x and y are swapped because of scatter plot
-                                d <- data.frame(x = y, y = x, v = v)
-                            }
-
-                            na <- apply(d, 1, function(x) any(is.na(x)))
-                            d <- d[!na, ]
-
-                            ## So now, d = data.frame with x, y, and the label
-                            ## Standardise it:
-                            x.s <- (d$x - min(d$x)) / (max(d$x) - min(d$x))
-                            y.s <- (d$y - min(d$y)) / (max(d$y) - min(d$x))
-                            
-                            xy.s <- numeric(2)
-                            xy.s[1] <- (xy[1] - min(d$x)) / (max(d$x) - min(d$x))
-                            xy.s[2] <- (xy[2] - min(d$y)) / (max(d$y) - min(d$x))
-                            
-                            o <- d[which.min((x.s - xy.s[1])^2 + (y.s - xy.s[2])^2), ]
-                            
-                            if (is.null(y)) {
-                                grid.text(o$v, o$x, o$y, just = "left", rot = 45,
-                                          default.units = "native", gp = gpar(cex=0.5))
-                            } else {
-                                grid.text(o$v, o$x, unit(o$y, "native") + unit(2, "char"),
-                                          default.units = "native", gp = gpar(cex=0.5))
-                            }
-                        })
-                        
-                        tbl <- glayout()
-                        tbl[1, 1, expand = TRUE, anchor = c(-1, 0)] <- lbl1
-                        tbl[2, 1, expand = TRUE, anchor = c(1, 0)] <- varmenu
-                        tbl[4, 1, expand = TRUE, anchor = c(-1, 0)] <- lbl2
-                        tbl[5, 1, expand = TRUE, anchor = c(1, 0)] <- locateButton
-                        
-                        add(grp, tbl)
-                        add(w, grp)
-                        
-                        visible(w) <- TRUE
+                        iNZIdentifyPoints$new(.self)
                     }
                     )
                 )
