@@ -99,34 +99,40 @@ iNZIdentifyPoints <- setRefClass(
                 else {
                     if (v == "id")
                         v <- as.character(1:length(x))
-                    else
+                    else {
                         v <- as.character(GUI$getActiveData()[, v])
+                        v[is.na(v)] <- "missing"
+                    }
                 }
 
-                xy <- as.numeric(grid.locator())
+                seekViewport("MAINVP")
 
                 if (is.null(y)) {
-                                        # dotplot
-                    seekViewport("DOTPLOTVP")
-                    na <- is.na(x) | is.na(v)
-                    pd <- iNZightPlots:::makePoints(x[!na], cols = v[!na])
-                    d <- data.frame(x = pd$x, y = pd$y, v = pd$cols)
+                    ## dotplot
+                    dp <- grid.get("DOTPOINTS")
+                    d <- data.frame(x = as.numeric(dp$x),
+                                    y = as.numeric(dp$y),
+                                    v = v[!is.na(x)])
+                    seekViewport("DOTPLOTVP")  # need correct coordinate system
                 } else {
                     ## The x and y are swapped because of scatter plot
                     d <- data.frame(x = y, y = x, v = v)
                 }
 
-                na <- apply(d, 1, function(x) any(is.na(x)))
+                xy <- as.numeric(grid.locator())
+                
+                ## We only want to check X and Y for missing
+                na <- apply(d[, 1:2], 1, function(x) any(is.na(x)))
                 d <- d[!na, ]
 
                 ## So now, d = data.frame with x, y, and the label
                 ## Standardise it:
                 x.s <- (d$x - min(d$x)) / (max(d$x) - min(d$x))
-                y.s <- (d$y - min(d$y)) / (max(d$y) - min(d$x))
+                y.s <- (d$y - min(d$y)) / (max(d$y) - min(d$y))
 
                 xy.s <- numeric(2)
                 xy.s[1] <- (xy[1] - min(d$x)) / (max(d$x) - min(d$x))
-                xy.s[2] <- (xy[2] - min(d$y)) / (max(d$y) - min(d$x))
+                xy.s[2] <- (xy[2] - min(d$y)) / (max(d$y) - min(d$y))
 
                 o <- d[which.min((x.s - xy.s[1])^2 + (y.s - xy.s[2])^2), ]
 
