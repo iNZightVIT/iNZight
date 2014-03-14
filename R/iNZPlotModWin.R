@@ -125,18 +125,20 @@ iNZDotchartMod <- setRefClass(
             tbl[5, 1:2, expand = TRUE] <- showButton
             add(optGrp, tbl)
         },
+        ## Change Plot appearance
         opt2 = function() {
             tbl <- glayout()
             lbl1 <- glabel("Change plot appearance")
             font(lbl1) <- list(weight="bold",
                                family = "normal",
                                size = 9)
-            lbl2 = glabel("Colour of symbols :")
-            lbl3 = glabel("Background colour :")
-            lbl4 = glabel("Size of symbols  :")
-            lbl5 = glabel("Thickness of symbols :")
-            lbl6 = glabel("(Use drop down list or type in if desired color is unavailable)")
-            lbl7 = glabel("Transparency of symbols  :")
+            lbl2 <- glabel("Colour of symbols :")
+            lbl3 <- glabel("Background colour :")
+            lbl4 <- glabel("Size of symbols  :")
+            lbl5 <- glabel("Thickness of symbols :")
+            lbl6 <- glabel("(Use drop down list or type in if desired color is unavailable)")
+            lbl7 <- glabel("Transparency of symbols  :")
+            lbl8 <- glabel("Plot Type :")
             font(lbl6) <- list(family = "normal",
                                size = 8)
             ## default settings
@@ -150,6 +152,9 @@ iNZDotchartMod <- setRefClass(
                 "darkslategray1", "greenyellow", "lightblue1",
                 "lightpink", "rosybrown1", "slategray1", "thistle1",
                 "wheat1")
+            plotTypes <- c("default", "dot plot", "histogram")
+            ## the values used for `largesample` in the plot settings
+            plotTypeValues <- list(NULL, FALSE, TRUE)
             symbolColList <- gcombobox(
                 pointCols,
                 selected = ifelse(
@@ -164,6 +169,15 @@ iNZDotchartMod <- setRefClass(
                     1,
                     which(backgroundCols == curSet$bg)[1]),
                 editable = TRUE)
+            plotTypeList <- gcombobox(
+                plotTypes,
+                selected = ifelse(
+                    is.null(curSet$largesample),
+                    1,
+                    ifelse(
+                        curSet$largesample == FALSE,
+                        2, 3))
+                )
             fillColor <- gcheckbox("Colour symbol interior",
                                    checked = (curSet$pch != 1))
             cexSlider <- gslider(from = 0.05, to = 3.5,
@@ -179,22 +193,26 @@ iNZDotchartMod <- setRefClass(
                                                bg = svalue(backgroundColList),
                                                cex.pt = svalue(cexSlider),
                                                pch = pch.sel,
-                                               alpha = svalue(transpSlider))
+                                               alpha = svalue(transpSlider),
+                                               largesample = plotTypeValues[[svalue(
+                                                   plotTypeList, index = TRUE)]])
                                           )
                                       updateSettings()
                                   })
             tbl[3,2:4, anchor = c(-1,-1), expand = TRUE] <- lbl1
-            tbl[4,2, anchor = c(-1,-1), expand = TRUE] <- lbl2
-            tbl[4,3, expand = TRUE] <- symbolColList
-            tbl[5,2:4] <- lbl6
-            tbl[6,3, expand = TRUE] <- fillColor
-            tbl[7,2, anchor = c(-1,-1), expand = TRUE] <- lbl3
-            tbl[7,3, expand = TRUE] <- backgroundColList
-            tbl[9,2, anchor = c(-1,-1), expand = TRUE] <- lbl4
-            tbl[9,3, expand = TRUE] <- cexSlider
-            tbl[10,2, anchor = c(-1,-1), expand = TRUE] <- lbl7
-            tbl[10,3, expand = TRUE] <- transpSlider
-            tbl[11, 2:4] <- showButton
+            tbl[4,2, anchor = c(-1,-1), expand = TRUE] <- lbl8
+            tbl[4,3, expand = TRUE] <- plotTypeList
+            tbl[5,2, anchor = c(-1,-1), expand = TRUE] <- lbl2
+            tbl[5,3, expand = TRUE] <- symbolColList
+            tbl[6,2:4] <- lbl6
+            tbl[7,3, expand = TRUE] <- fillColor
+            tbl[8,2, anchor = c(-1,-1), expand = TRUE] <- lbl3
+            tbl[8,3, expand = TRUE] <- backgroundColList
+            tbl[10,2, anchor = c(-1,-1), expand = TRUE] <- lbl4
+            tbl[10,3, expand = TRUE] <- cexSlider
+            tbl[11,2, anchor = c(-1,-1), expand = TRUE] <- lbl7
+            tbl[11,3, expand = TRUE] <- transpSlider
+            tbl[12, 2:4] <- showButton
 
             ## if the "by" options is set, i.e. points are colored
             ## according to another var, disable the option to
@@ -230,7 +248,7 @@ iNZDotchartMod <- setRefClass(
             lbl4 <- glabel("(Enter a single space to print no title)")
             font(lbl4) <- list(family = "normal",
                                size = 8)
-            
+
             showButton <- gbutton("Show Changes",
                                   handler = function(h, ...) {
                                       mlab <- svalue(labMain)
@@ -321,7 +339,7 @@ iNZBarchartMod <- setRefClass(
             lbl4 <- glabel("(Enter a single space to print no title)")
             font(lbl4) <- list(family = "normal",
                                size = 8)
-            
+
             showButton <- gbutton("Show Changes",
                                   handler = function(h, ...) {
                                       mlab <- svalue(labMain)
@@ -508,14 +526,14 @@ iNZScatterMod <- setRefClass(
                 enabled(smthSlid) <- FALSE
                 enabled(quantSmthChk) <- FALSE
             }
-            
+
             addHandlerChanged(smthChk, handler = function(h, ...) {
                 if (svalue(smthChk)) {
                     if (!svalue(quantSmthChk))
                         enabled(smthSlid) <- TRUE
                     else
                         enabled(smthSlid) <- FALSE
-                    
+
                     enabled(quantSmthChk) <- TRUE
                 } else {
                     enabled(smthSlid) <- FALSE
@@ -530,7 +548,7 @@ iNZScatterMod <- setRefClass(
                                   else
                                       enabled(smthSlid) <- TRUE
                               })
-                        
+
             ## only have the trend by level option enabled if
             ## the colored by variable option is set
             if (is.null(curSet$by))
@@ -694,6 +712,7 @@ iNZScatterMod <- setRefClass(
             lbl5 = glabel("Thickness of symbols :")
             lbl6 = glabel("(Use drop down list or type in if desired color is unavailable)")
             lbl7 = glabel("Transparency of symbols  :")
+            lbl8 <- glabel("Plot Type :")
             font(lbl6) <- list(family = "normal",
                                size = 8)
             ## default settings
@@ -707,6 +726,9 @@ iNZScatterMod <- setRefClass(
                 "darkslategray1", "greenyellow", "lightblue1",
                 "lightpink", "rosybrown1", "slategray1", "thistle1",
                 "wheat1")
+            plotTypes <- c("default", "scatter plot", "grid-density plot")
+            ## the values used for `largesample` in the plot settings
+            plotTypeValues <- list(NULL, FALSE, TRUE)
             symbolColList <- gcombobox(
                 pointCols,
                 selected = ifelse(
@@ -721,6 +743,15 @@ iNZScatterMod <- setRefClass(
                     1,
                     which(backgroundCols == curSet$bg)[1]),
                 editable = TRUE)
+            plotTypeList <- gcombobox(
+                plotTypes,
+                selected = ifelse(
+                    is.null(curSet$largesample),
+                    1,
+                    ifelse(
+                        curSet$largesample == FALSE,
+                        2, 3))
+                )
             fillColor <- gcheckbox("Colour symbol interior",
                                    checked = (curSet$pch != 1))
             cexSlider <- gslider(from = 0.05, to = 3.5,
@@ -741,24 +772,27 @@ iNZScatterMod <- setRefClass(
                                                cex.pt = svalue(cexSlider),
                                                pch = pch.sel,
                                                alpha = svalue(transpSlider),
-                                               largesample = !svalue(forceDots)
+                                               largesample = plotTypeValues[[svalue(
+                                                   plotTypeList, index = TRUE)]]
                                                )
                                           )
                                       updateSettings()
                                   })
             tbl[3,2:4, anchor = c(-1,-1), expand = TRUE] <- lbl1
-            tbl[4,2, anchor = c(-1,-1), expand = TRUE] <- lbl2
-            tbl[4,3, expand = TRUE] <- symbolColList
-            tbl[5,2:4] <- lbl6
-            tbl[6,3, expand = TRUE] <- fillColor
-            tbl[7,2, anchor = c(-1,-1), expand = TRUE] <- lbl3
-            tbl[7,3, expand = TRUE] <- backgroundColList
-            tbl[9,2, anchor = c(-1,-1), expand = TRUE] <- lbl4
-            tbl[9,3, expand = TRUE] <- cexSlider
-            tbl[10,2, anchor = c(-1,-1), expand = TRUE] <- lbl7
-            tbl[10,3, expand = TRUE] <- transpSlider
-            tbl[11,2] <- forceDots
+            tbl[4,2, anchor = c(-1,-1), expand = TRUE] <- lbl8
+            tbl[4,3, expand = TRUE] <- plotTypeList
+            tbl[5,2, anchor = c(-1,-1), expand = TRUE] <- lbl2
+            tbl[5,3, expand = TRUE] <- symbolColList
+            tbl[6,2:4] <- lbl6
+            tbl[7,3, expand = TRUE] <- fillColor
+            tbl[8,2, anchor = c(-1,-1), expand = TRUE] <- lbl3
+            tbl[8,3, expand = TRUE] <- backgroundColList
+            tbl[10,2, anchor = c(-1,-1), expand = TRUE] <- lbl4
+            tbl[10,3, expand = TRUE] <- cexSlider
+            tbl[11,2, anchor = c(-1,-1), expand = TRUE] <- lbl7
+            tbl[11,3, expand = TRUE] <- transpSlider
             tbl[12, 2:4] <- showButton
+
             ## if the "by" options is set, i.e. points are colored
             ## according to another var, disable the option to
             ## change the color
@@ -797,7 +831,7 @@ iNZScatterMod <- setRefClass(
             lbl5 <- glabel("(Enter a single space to print no title)")
             font(lbl5) <- list(family = "normal",
                                size = 8)
-            
+
             showButton <- gbutton("Show Changes",
                                   handler = function(h, ...) {
                                       mlab <- svalue(labMain)
