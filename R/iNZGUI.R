@@ -279,8 +279,7 @@ iNZGUI <- setRefClass(
                     actionList[[20]]
                     ),
                 "Advanced" = list(
-                    "Quick Explore" = actionList[c(23, 21, 22, 19)],
-                    actionList[[25]],  #### WHEN MERGING MR THIS MAY CLASH?
+                    "Quick Explore" = actionList[c(23, 21, 22, 19, 25)],
                     actionList[[18]],
                     actionList[[16]],
                     actionList[[17]]

@@ -84,13 +84,36 @@ iNZIdentifyPoints <- setRefClass(
             grp <- ggroup(horizontal = FALSE)
             grp$set_borderwidth(15)
 
+            ## Do checking first
+            ## If g1 or g2 = _MULTI, then we can't identify points (yet ...)
+            cantDo <- function() {
+                gmessage("Cannot identify points when subset by = _MULTI",
+                         icon = "error", title = "Unable to identify")
+                dispose(GUI$modWin)
+                return()
+            }
+            if (!is.null(curSet$g1)) {
+                if (is.null(curSet$g1.level)) {
+                    cantDo()
+                } else if (curSet$g1.level == 0 | curSet$g1.level == "_MULTI") {
+                    cantDo()
+                }
+            }
+            if (!is.null(curSet$g2)) {
+                if (is.null(curSet$g2.level)) {
+                    cantDo()
+                } else if (curSet$g2.level == "_MULTI") {
+                    cantDo()
+                }
+            }
+
             lbl1 <- "Select variable to identify:"
             font(lbl1) <- list(weight="bold", family = "normal")
             varmenu <- gcombobox(c("id", names(GUI$getActiveData())), selected = 1)
 
             lbl2 <- "Click \"Locate\" to locate a point"
             locateButton <- gbutton("Locate", handler = function(h, ...) {
-                x <- curSet$x
+                x <- curSet$x  # used for removing missing values ...
                 y <- curSet$y
                 v <- svalue(varmenu)
 
@@ -104,7 +127,17 @@ iNZIdentifyPoints <- setRefClass(
                         v[is.na(v)] <- "missing"
                     }
                 }
-
+                
+                w <- rep(TRUE, length(v))
+                if (!is.null(curSet$g1)) {
+                    w[curSet$g1 != curSet$g1.level] <- FALSE
+                }
+                if (!is.null(curSet$g2)) {
+                    if (curSet$g2.level != "_ALL") {
+                        w[curSet$g2 != curSet$g2.level] <- FALSE
+                    }
+                }
+               
                 seekViewport("MAINVP")
 
                 if (is.null(y)) {
@@ -112,11 +145,14 @@ iNZIdentifyPoints <- setRefClass(
                     dp <- grid.get("DOTPOINTS")
                     d <- data.frame(x = as.numeric(dp$x),
                                     y = as.numeric(dp$y),
-                                    v = v[!is.na(x)])
+                                    v = v[w & !is.na(x)])
                     seekViewport("DOTPLOTVP")  # need correct coordinate system
                 } else {
-                    ## The x and y are swapped because of scatter plot
-                    d <- data.frame(x = y, y = x, v = v)
+                    dp <- grid.get("SCATTERPOINTS")
+                    d <- data.frame(x = as.numeric(dp$x),
+                                    y = as.numeric(dp$y),
+                                    v = v[w & !(is.na(x) | is.na(y))])
+                    seekViewport("SCATTERVP")
                 }
 
                 xy <- as.numeric(grid.locator())

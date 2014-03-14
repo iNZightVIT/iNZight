@@ -93,7 +93,7 @@ iNZControlWidget <- setRefClass(
                             g1 = iNZightPlots:::convert.to.factor(
                                 GUI$getActiveDoc()$getData()[h$dropdata][[1]]
                                 ),
-                            g1.level = NULL,
+                            g1.level = "_MULTI",
                             main = NULL,
                             varnames = list(
                                 g1 = colnames(GUI$getActiveDoc()$getData()[h$dropdata]))
@@ -115,7 +115,7 @@ iNZControlWidget <- setRefClass(
                             g2 = iNZightPlots:::convert.to.factor(
                                 GUI$getActiveDoc()$getData()[h$dropdata][[1]]
                                 ),
-                            g2.level = NULL,
+                            g2.level = "_ALL",
                             main = NULL,
                             varnames = list(
                                 g2 = colnames(GUI$getActiveDoc()$getData()[h$dropdata]))
@@ -187,7 +187,7 @@ iNZControlWidget <- setRefClass(
             if (pos == 8)
                 lbl <- c("_MULTI", lbl)
             else
-                lbl <- c("_ALL", lbl)
+                lbl <- c("_ALL", lbl, "_MULTI")
             ## only add label if it is short enough
             if (sum(nchar(lbl)) < 60)
                 add(sliderGrp, glabel(paste(lbl, collapse = "   ")))
