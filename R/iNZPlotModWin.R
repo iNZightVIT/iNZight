@@ -758,10 +758,6 @@ iNZScatterMod <- setRefClass(
                 by = 0.05, value = curSet$cex.pt)
             transpSlider <- gslider(from = 0.01, to = 1,
                                     by = 0.01, value = curSet$alpha)
-            forceDots <- gcheckbox("Force points (for large sample sizes)",
-                                   selected =
-                                   if (!is.null(curSet$largesample)) curSet$largesample
-                                   else FALSE)
             showButton <- gbutton("Show Changes",
                                   handler = function(h, ...) {
                                       pch.sel <- ifelse(svalue(fillColor),
