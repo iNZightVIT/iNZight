@@ -565,7 +565,7 @@ iNZreorderWin <- setRefClass(
                     2, length(origOrder), by = 2)]],
                 function(child) svalue(child$child))
             facOrder <- as.integer(facOrder)
-            facOrder <- sapply(1:6, function(x) which(facOrder == x))
+            facOrder <- sapply(1:length(facLevels), function(x) which(facOrder == x))
             ## check if all order numbers are unique
             if (anyDuplicated(facOrder) > 0) {
                 gmessage(msg = "Please choose a unique order for the levels",
