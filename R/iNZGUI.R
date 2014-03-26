@@ -247,13 +247,6 @@ iNZGUI <- setRefClass(
                     label = "Missing to Categorical",
                     icon = "symbol_diamond",
                     handler = function(h, ...) iNZmissCatWin$new(.self)
-                    ),
-                identifyPoints = gaction(
-                    label = "Identify Points",
-                    icon = "symbol_diamond",
-                    handler = function(h, ...) {
-                        iNZIdentifyPoints$new(.self)
-                    }
                     )
                 )
             ## home button is disabled if package 'vit' is not loaded
@@ -261,7 +254,7 @@ iNZGUI <- setRefClass(
                 enabled(actionList[[15]]) <- FALSE
             ## disable modules if packages are not loaded
             if (!'package:iNZightModules' %in% search())
-                invisible(sapply(actionList[18:19], function(x) {
+                invisible(sapply(actionL1ist[18:19], function(x) {
                     enabled(x) <- FALSE}))
             if (!'package:iNZightMR' %in% search())
                 enabled(actionList[[23]]) <- FALSE
@@ -279,7 +272,7 @@ iNZGUI <- setRefClass(
                     actionList[[20]]
                     ),
                 "Advanced" = list(
-                    "Quick Explore" = actionList[c(23, 21, 22, 19, 25)],
+                    "Quick Explore" = actionList[c(23, 21, 22, 19)],
                     actionList[[18]],
                     actionList[[16]],
                     actionList[[17]]

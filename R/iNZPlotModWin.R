@@ -73,9 +73,10 @@ iNZDotchartMod <- setRefClass(
             callSuper(gui)
             ## need to specify the methods that we want to use in
             ## do.call later on (see changeOpts())
-            usingMethods(opt1, opt2, opt3)
+            usingMethods(opt1, opt2, opt3, opt4)
             opts <- gradio(c("Code more variables",
                              "Change plot appearance",
+                             "Identify points",
                              "Customize Labels"),
                            selected = 1,
                            horizontal = FALSE)
@@ -228,6 +229,105 @@ iNZDotchartMod <- setRefClass(
             add(optGrp, tbl)
         },
         opt3 = function() {
+            ## Do checking first
+            ## If g1 or g2 = _MULTI, then we can't identify points (yet ...)
+            cantDo <- function() {
+                gmessage("Cannot identify points when subset by = _MULTI",
+                         icon = "error", title = "Unable to identify")
+                dispose(GUI$modWin)
+                return()
+            }
+            if (!is.null(curSet$g1)) {
+                if (is.null(curSet$g1.level)) {
+                    cantDo()
+                } else if (curSet$g1.level == 0 | curSet$g1.level == "_MULTI") {
+                    cantDo()
+                }
+            }
+            if (!is.null(curSet$g2)) {
+                if (is.null(curSet$g2.level)) {
+                    cantDo()
+                } else if (curSet$g2.level == "_MULTI") {
+                    cantDo()
+                }
+            }
+
+            lbl1 <- "Select variable to identify:"
+            font(lbl1) <- list(weight="bold", family = "normal")
+            varmenu <- gcombobox(c("id", names(GUI$getActiveData())), selected = 1)
+
+            lbl2 <- "Click \"Locate\" to locate a point"
+            locateButton <- gbutton("Locate", handler = function(h, ...) {
+                x <- curSet$x  # used for removing missing values ...
+                y <- curSet$y
+                v <- svalue(varmenu)
+
+                if (is.null(v))
+                    v <- as.character(1:length(x))
+                else {
+                    if (v == "id")
+                        v <- as.character(1:length(x))
+                    else {
+                        v <- as.character(GUI$getActiveData()[, v])
+                        v[is.na(v)] <- "missing"
+                    }
+                }
+                
+                w <- rep(TRUE, length(v))
+                if (!is.null(curSet$g1)) {
+                    w[curSet$g1 != curSet$g1.level] <- FALSE
+                }
+                if (!is.null(curSet$g2)) {
+                    if (curSet$g2.level != "_ALL") {
+                        w[curSet$g2 != curSet$g2.level] <- FALSE
+                    }
+                }
+               
+                seekViewport("MAINVP")
+
+                dp <- grid.get("DOTPOINTS")
+              # these are the points, but not in the correct order ...
+                d <- data.frame(x = as.numeric(dp$x),
+                                y = as.numeric(dp$y),
+                                v = v[w & !is.na(x)])
+                d$v <- iNZightPlots:::makePoints(x[w & !is.na(x)], v[w & !is.na(x)])$col
+                
+                seekViewport("DOTPLOTVP")  # need correct coordinate system
+
+                xy <- as.numeric(grid.locator())
+                
+                ## We only want to check X and Y for missing
+                na <- apply(d[, 1:2], 1, function(x) any(is.na(x)))
+                d <- d[!na, ]
+
+                ## So now, d = data.frame with x, y, and the label
+                ## Standardise it:
+                x.s <- (d$x - min(d$x)) / (max(d$x) - min(d$x))
+                y.s <- (d$y - min(d$y)) / (max(d$y) - min(d$y))
+
+                xy.s <- numeric(2)
+                xy.s[1] <- (xy[1] - min(d$x)) / (max(d$x) - min(d$x))
+                xy.s[2] <- (xy[2] - min(d$y)) / (max(d$y) - min(d$y))
+
+                o <- d[which.min((x.s - xy.s[1])^2 + (y.s - xy.s[2])^2), ]
+
+                grid.text(o$v,
+                          o$x + convertWidth(unit(0.5, "char"), "native", TRUE),
+                          o$y + convertWidth(unit(0.5, "char"), "native", TRUE),
+                          just = "left", rot = 45,
+                          default.units = "native", gp = gpar(cex = 0.7))
+
+            })
+
+            tbl <- glayout()
+            tbl[1, 1, expand = TRUE, anchor = c(-1, 0)] <- lbl1
+            tbl[2, 1, expand = TRUE, anchor = c(1, 0)] <- varmenu
+            tbl[4, 1, expand = TRUE, anchor = c(-1, 0)] <- lbl2
+            tbl[5, 1, expand = TRUE, anchor = c(1, 0)] <- locateButton
+            
+            add(optGrp, tbl)
+        },
+        opt4 = function() {
             tbl <- glayout()
             lbl1 <- glabel("Customize Labels")
             font(lbl1) <- list(weight="bold",
@@ -370,7 +470,7 @@ iNZScatterMod <- setRefClass(
             callSuper(gui)
             ## need to specify the methods that we want to use in
             ## do.call later on (see changeOpts())
-            usingMethods(opt1, opt2, opt3, opt4, opt5, opt6, opt7, opt8)
+            usingMethods(opt1, opt2, opt3, opt4, opt5, opt6, opt7, opt8, opt9)
             opts <- gradio(c("Code more variables",
                              "Add trend curves",
                              "Add x=y line",
@@ -378,6 +478,7 @@ iNZScatterMod <- setRefClass(
                              "Add rugs",
                              "Join points by lines",
                              "Change plot appearance",
+                             "Identify points",
                              "Customize Labels"),
                            selected = 1,
                            horizontal = FALSE)
@@ -803,6 +904,102 @@ iNZScatterMod <- setRefClass(
             add(optGrp, tbl)
         },
         opt8 = function() {
+            ## Do checking first
+            ## If g1 or g2 = _MULTI, then we can't identify points (yet ...)
+            cantDo <- function() {
+                gmessage("Cannot identify points when subset by = _MULTI",
+                         icon = "error", title = "Unable to identify")
+                dispose(GUI$modWin)
+                return()
+            }
+            if (!is.null(curSet$g1)) {
+                if (is.null(curSet$g1.level)) {
+                    cantDo()
+                } else if (curSet$g1.level == 0 | curSet$g1.level == "_MULTI") {
+                    cantDo()
+                }
+            }
+            if (!is.null(curSet$g2)) {
+                if (is.null(curSet$g2.level)) {
+                    cantDo()
+                } else if (curSet$g2.level == "_MULTI") {
+                    cantDo()
+                }
+            }
+
+            lbl1 <- "Select variable to identify:"
+            font(lbl1) <- list(weight="bold", family = "normal")
+            varmenu <- gcombobox(c("id", names(GUI$getActiveData())), selected = 1)
+
+            lbl2 <- "Click \"Locate\" to locate a point"
+            locateButton <- gbutton("Locate", handler = function(h, ...) {
+                x <- curSet$x  # used for removing missing values ...
+                y <- curSet$y
+                v <- svalue(varmenu)
+
+                if (is.null(v))
+                    v <- as.character(1:length(x))
+                else {
+                    if (v == "id")
+                        v <- as.character(1:length(x))
+                    else {
+                        v <- as.character(GUI$getActiveData()[, v])
+                        v[is.na(v)] <- "missing"
+                    }
+                }
+                
+                w <- rep(TRUE, length(v))
+                if (!is.null(curSet$g1)) {
+                    w[curSet$g1 != curSet$g1.level] <- FALSE
+                }
+                if (!is.null(curSet$g2)) {
+                    if (curSet$g2.level != "_ALL") {
+                        w[curSet$g2 != curSet$g2.level] <- FALSE
+                    }
+                }
+               
+                seekViewport("MAINVP")
+
+                dp <- grid.get("SCATTERPOINTS")
+                d <- data.frame(x = as.numeric(dp$x),
+                                y = as.numeric(dp$y),
+                                v = v[w & !(is.na(x) | is.na(y))])
+                seekViewport("SCATTERVP")
+                
+                xy <- as.numeric(grid.locator())
+                
+                ## We only want to check X and Y for missing
+                na <- apply(d[, 1:2], 1, function(x) any(is.na(x)))
+                d <- d[!na, ]
+
+                ## So now, d = data.frame with x, y, and the label
+                ## Standardise it:
+                x.s <- (d$x - min(d$x)) / (max(d$x) - min(d$x))
+                y.s <- (d$y - min(d$y)) / (max(d$y) - min(d$y))
+
+                xy.s <- numeric(2)
+                xy.s[1] <- (xy[1] - min(d$x)) / (max(d$x) - min(d$x))
+                xy.s[2] <- (xy[2] - min(d$y)) / (max(d$y) - min(d$y))
+
+                o <- d[which.min((x.s - xy.s[1])^2 + (y.s - xy.s[2])^2), ]
+
+                grid.text(o$v, o$x,
+                          o$y + ifelse(o$y < mean(d$y), 1, -1) *
+                          convertWidth(unit(0.5, "char"), "native", TRUE),
+                          just = ifelse(o$y > mean(d$y), "top", "bottom"),
+                          default.units = "native", gp = gpar(cex = 0.7))
+
+            })
+
+            tbl <- glayout()
+            tbl[1, 1, expand = TRUE, anchor = c(-1, 0)] <- lbl1
+            tbl[2, 1, expand = TRUE, anchor = c(1, 0)] <- varmenu
+            tbl[4, 1, expand = TRUE, anchor = c(-1, 0)] <- lbl2
+            tbl[5, 1, expand = TRUE, anchor = c(1, 0)] <- locateButton
+            
+            add(optGrp, tbl)
+        },
+        opt9 = function() {
             tbl <- glayout()
             lbl1 <- glabel("Customize Labels")
             font(lbl1) <- list(weight="bold",
