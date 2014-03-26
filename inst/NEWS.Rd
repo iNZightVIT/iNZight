@@ -3,6 +3,14 @@
 \encoding{UTF-8}
 
 \section{Changes in version 2.0.1}{
+  \subsection{NEW FEATURES}{
+    \itemize{
+      \item Identify feature added to the "Add To Plot" menu. This
+      allows users to interactively label points with `id` or any other
+      variable. This feature works for both dot plots and scatter plots.
+    }
+  }
+  
   \subsection{MINOR CHANGES}{
     \itemize{
       \item Users can force scatter plots when the sample size is large,
