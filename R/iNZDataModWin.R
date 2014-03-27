@@ -1011,8 +1011,9 @@ iNZmissCatWin <- setRefClass(
                             cbind.data.frame,
                             lapply(dataToConvert[, !facIndices, drop = FALSE],
                                    factor))
+
                         newNames <- paste(names(
-                            GUI$getActiveData()[, svalue(listOfVars, index = TRUE)]),
+                            GUI$getActiveData())[svalue(listOfVars, index = TRUE)],
                                           "_miss", sep = "")
                         insertData(data = dataToConvert,
                                    name = newNames,
