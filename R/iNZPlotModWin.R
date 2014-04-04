@@ -256,8 +256,23 @@ iNZDotchartMod <- setRefClass(
             font(lbl1) <- list(weight="bold", family = "normal")
             varmenu <- gcombobox(c("id", names(GUI$getActiveData())), selected = 1)
 
-            lbl2 <- "Click \"Locate\" to locate a point"
-            locateButton <- gbutton("Locate", handler = function(h, ...) {
+            
+            lbl2 <- "Select points by: "
+            selOpts <- gradio(c("By mouse click", "Min/Max n points"),
+                              selected = 1, horizontal = FALSE)
+            nPtsGrp <- ggroup(horizontal = TRUE)
+            minPts <- gcheckbox("Minimum", checked = TRUE)
+            maxPts <- gcheckbox("Maximum", checked = TRUE)
+            nPts <- gedit(width = 3, initial.msg = "5")
+            lbl4 <- " points."
+            add(minPts, nPtsGrp)
+            add(maxPts, nPtsGrp)
+            add(nPts, nPtsGrp)
+            add(lbl4, nPtsGrp)
+            
+
+            locateButton <- gbutton("Locate",
+                                    handler = function(h, ...) {
                 x <- curSet$x  # used for removing missing values ...
                 y <- curSet$y
                 v <- svalue(varmenu)
@@ -294,38 +309,83 @@ iNZDotchartMod <- setRefClass(
                 
                 seekViewport("DOTPLOTVP")  # need correct coordinate system
 
-                xy <- as.numeric(grid.locator())
+              # mmPoints = min/max points (i.e., user specified number
+                mmPoints <- FALSE
+
+              # FOR TESTING:
+                mmPoints <- TRUE
+                Npts <- 3
+                Wpts <- 3  # 1 = min, 2 = max, 3 = both
+                if (mmPoints) {
+                    if (Wpts == 3) Wpts <- c(1, 2)
+
+                    if (any(Wpts == 1)) {
+                        o <- d[order(d$x, decreasing = FALSE), ][1:Npts, ]
+                        apply(o, 1, function(r) {
+                            tt <- r[3]
+                            or <- as.numeric(r[1:2])
+                            grid.text(tt,
+                                      or[1] + convertWidth(unit(0.5, "char"), "native", TRUE),
+                                      or[2] + convertWidth(unit(0.5, "char"), "native", TRUE),
+                                      just = "left", rot = 45,
+                                      default.units = "native", gp = gpar(cex = 0.7))
+                          })
+                    }
+                    if (any(Wpts == 2)) {
+                        o <- d[order(d$x, decreasing = TRUE), ][1:Npts, ]
+                        apply(o, 1, function(r) {
+                            tt <- r[3]
+                            or <- as.numeric(r[1:2])
+                            grid.text(tt,
+                                      or[1] + convertWidth(unit(0.5, "char"), "native", TRUE),
+                                      or[2] + convertWidth(unit(0.5, "char"), "native", TRUE),
+                                      just = "left", rot = 45,
+                                      default.units = "native", gp = gpar(cex = 0.7))
+                        })
+                    }
+
+                        
+                } else {
+                    xy <- as.numeric(grid.locator())
                 
-                ## We only want to check X and Y for missing
-                na <- apply(d[, 1:2], 1, function(x) any(is.na(x)))
-                d <- d[!na, ]
-
-                ## So now, d = data.frame with x, y, and the label
-                ## Standardise it:
-                x.s <- (d$x - min(d$x)) / (max(d$x) - min(d$x))
-                y.s <- (d$y - min(d$y)) / (max(d$y) - min(d$y))
-
-                xy.s <- numeric(2)
-                xy.s[1] <- (xy[1] - min(d$x)) / (max(d$x) - min(d$x))
-                xy.s[2] <- (xy[2] - min(d$y)) / (max(d$y) - min(d$y))
-
-                o <- d[which.min((x.s - xy.s[1])^2 + (y.s - xy.s[2])^2), ]
-
-                grid.text(o$v,
-                          o$x + convertWidth(unit(0.5, "char"), "native", TRUE),
-                          o$y + convertWidth(unit(0.5, "char"), "native", TRUE),
-                          just = "left", rot = 45,
-                          default.units = "native", gp = gpar(cex = 0.7))
+                
+                    ## We only want to check X and Y for missing
+                    na <- apply(d[, 1:2], 1, function(x) any(is.na(x)))
+                    d <- d[!na, ]
+                    
+                    ## So now, d = data.frame with x, y, and the label
+                    ## Standardise it:
+                    x.s <- (d$x - min(d$x)) / (max(d$x) - min(d$x))
+                    y.s <- (d$y - min(d$y)) / (max(d$y) - min(d$y))
+                    
+                    xy.s <- numeric(2)
+                    xy.s[1] <- (xy[1] - min(d$x)) / (max(d$x) - min(d$x))
+                    xy.s[2] <- (xy[2] - min(d$y)) / (max(d$y) - min(d$y))
+                    
+                    o <- d[which.min((x.s - xy.s[1])^2 + (y.s - xy.s[2])^2), ]
+                    
+                    grid.text(o$v,
+                              o$x + convertWidth(unit(0.5, "char"), "native", TRUE),
+                              o$y + convertWidth(unit(0.5, "char"), "native", TRUE),
+                              just = "left", rot = 45,
+                              default.units = "native", gp = gpar(cex = 0.7))
+                }
 
             })
 
-            tbl <- glayout()
-            tbl[1, 1, expand = TRUE, anchor = c(-1, 0)] <- lbl1
-            tbl[2, 1, expand = TRUE, anchor = c(1, 0)] <- varmenu
-            tbl[4, 1, expand = TRUE, anchor = c(-1, 0)] <- lbl2
-            tbl[5, 1, expand = TRUE, anchor = c(1, 0)] <- locateButton
+            tbl1 <- glayout()
+            tbl2 <- glayout()
+            tbl1[1, 1:2, expand = TRUE, anchor = c(-1, 0)] <- lbl1
+            tbl1[2, 1:2, expand = TRUE, anchor = c(1, 0)] <- varmenu
+            tbl1[3, 1, expand = FALSE, anchor = c(1, 1)] <- lbl2
+            tbl1[3, 2] <- selOpts
             
-            add(optGrp, tbl)
+          #  tbl2[1, 1:2, expand = TRUE, anchor = c(-1, 0)] <- lbl3
+            tbl2[2, 2, expand = FALSE, anchor = c(1, 0)] <- locateButton
+            
+            add(optGrp, tbl1)
+            add(optGrp, nPtsGrp)
+            add(optGrp, tbl2)
         },
         opt4 = function() {
             tbl <- glayout()
