@@ -260,15 +260,14 @@ iNZDotchartMod <- setRefClass(
             lbl2 <- "Select points by: "
             selOpts <- gradio(c("By mouse click", "Min/Max n points"),
                               selected = 1, horizontal = FALSE)
-            nPtsGrp <- ggroup(horizontal = TRUE)
-            minPts <- gcheckbox("Minimum", checked = TRUE)
+            minPts <- gcheckbox("Minimum", checked = TRUE, )
+            enabled(minPts) <- FALSE
             maxPts <- gcheckbox("Maximum", checked = TRUE)
-            nPts <- gedit(width = 3, initial.msg = "5")
-            lbl4 <- " points."
-            add(minPts, nPtsGrp)
-            add(maxPts, nPtsGrp)
-            add(nPts, nPtsGrp)
-            add(lbl4, nPtsGrp)
+            enabled(maxPts) <- FALSE
+            nlbl <- "N ="
+            nPts <- gedit("5", width = 3)
+            enabled(nPts) <- FALSE
+
             
 
             locateButton <- gbutton("Locate",
@@ -313,10 +312,19 @@ iNZDotchartMod <- setRefClass(
                 mmPoints <- FALSE
 
               # FOR TESTING:
-                mmPoints <- TRUE
-                Npts <- 3
-                Wpts <- 3  # 1 = min, 2 = max, 3 = both
+                mmPoints <- svalue(selOpts, index = TRUE) == 2
                 if (mmPoints) {
+                    Npts <- as.numeric(svalue(nPts))
+                    if (is.na(Npts)) {
+                        gmessage("Please specify a numeric value for Number of Points.")
+                        return()
+                    }
+
+                    Wpts <- sum(svalue(minPts), 2 * svalue(maxPts))
+                    if (Wpts == 0) {
+                        gmessage("Please select either Minimum of Maximum points to identify.")
+                        return()
+                    }
                     if (Wpts == 3) Wpts <- c(1, 2)
 
                     if (any(Wpts == 1)) {
@@ -375,17 +383,35 @@ iNZDotchartMod <- setRefClass(
 
             tbl1 <- glayout()
             tbl2 <- glayout()
+            tbl3 <- glayout()
             tbl1[1, 1:2, expand = TRUE, anchor = c(-1, 0)] <- lbl1
             tbl1[2, 1:2, expand = TRUE, anchor = c(1, 0)] <- varmenu
             tbl1[3, 1, expand = FALSE, anchor = c(1, 1)] <- lbl2
             tbl1[3, 2] <- selOpts
+
+            tbl2[1, 1] <- minPts
+            tbl2[1, 2] <- maxPts
+            tbl2[1, 3] <- nlbl
+            tbl2[1, 4] <- nPts
             
-          #  tbl2[1, 1:2, expand = TRUE, anchor = c(-1, 0)] <- lbl3
-            tbl2[2, 2, expand = FALSE, anchor = c(1, 0)] <- locateButton
+            tbl3[2, 2, expand = FALSE, anchor = c(1, 0)] <- locateButton
             
             add(optGrp, tbl1)
-            add(optGrp, nPtsGrp)
             add(optGrp, tbl2)
+            add(optGrp, tbl3)
+
+            ## Some things to change values ...
+            addHandlerChanged(selOpts, handler = function(h, ...) {
+                if (svalue(selOpts, index = TRUE) == 1) {
+                    enabled(minPts) <- FALSE
+                    enabled(maxPts) <- FALSE
+                    enabled(nPts) <- FALSE
+                } else {
+                    enabled(minPts) <- TRUE
+                    enabled(maxPts) <- TRUE
+                    enabled(nPts) <- TRUE
+                }
+            })
         },
         opt4 = function() {
             tbl <- glayout()
