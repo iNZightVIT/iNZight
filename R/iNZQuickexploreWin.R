@@ -72,6 +72,20 @@ iNZallPlots <- setRefClass(
         })
     )
 
+iNZall2Plots <- setRefClass(
+    "iNZall2Plots",
+    contains = "iNZQuickexploreWin",
+    methods = list(
+        initialize = function(gui) {
+            ## Instead, we will make a gui that cycles through them ...
+            ign <- gwindow("...", visible = FALSE)
+            tag(ign, "dataSet") <- gui$getActiveData()
+            e <- list(obj = ign)
+            e$win <- gui$win
+            allBivarPlots(e)
+        })
+    )
+
 iNZscatterMatrix <- setRefClass(
     "iNZscatterMatrix",
     contains = "iNZQuickexploreWin",
