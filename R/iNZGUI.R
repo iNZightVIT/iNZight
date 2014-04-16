@@ -261,7 +261,7 @@ iNZGUI <- setRefClass(
                 enabled(actionList[[15]]) <- FALSE
             ## disable modules if packages are not loaded
             if (!'package:iNZightModules' %in% search())
-                invisible(sapply(actionL1ist[18:19], function(x) {
+                invisible(sapply(actionList[18:19], function(x) {
                     enabled(x) <- FALSE}))
             if (!'package:iNZightMR' %in% search())
                 enabled(actionList[[23]]) <- FALSE
