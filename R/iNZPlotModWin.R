@@ -231,101 +231,192 @@ iNZDotchartMod <- setRefClass(
         opt3 = function() {
             ## Do checking first
             ## If g1 or g2 = _MULTI, then we can't identify points (yet ...)
-            cantDo <- function() {
-                gmessage("Cannot identify points when subset by = _MULTI",
-                         icon = "error", title = "Unable to identify")
+            cantDo <- function(msg = "using subsetting variables.") {
+                gmessage(paste("Cannot identify points when", msg),
+                         icon = "error", title = "Unable to identify",
+                         parent = modWin)
                 dispose(GUI$modWin)
                 return()
             }
-            if (!is.null(curSet$g1)) {
-                if (is.null(curSet$g1.level)) {
-                    cantDo()
-                } else if (curSet$g1.level == 0 | curSet$g1.level == "_MULTI") {
-                    cantDo()
-                }
-            }
-            if (!is.null(curSet$g2)) {
-                if (is.null(curSet$g2.level)) {
-                    cantDo()
-                } else if (curSet$g2.level == "_MULTI") {
-                    cantDo()
-                }
-            }
+            
 
             lbl1 <- "Select variable to identify:"
             font(lbl1) <- list(weight="bold", family = "normal")
             varmenu <- gcombobox(c("id", names(GUI$getActiveData())), selected = 1)
 
-            lbl2 <- "Click \"Locate\" to locate a point"
-            locateButton <- gbutton("Locate", handler = function(h, ...) {
-                x <- curSet$x  # used for removing missing values ...
-                y <- curSet$y
-                v <- svalue(varmenu)
-
-                if (is.null(v))
-                    v <- as.character(1:length(x))
-                else {
-                    if (v == "id")
-                        v <- as.character(1:length(x))
-                    else {
-                        v <- as.character(GUI$getActiveData()[, v])
-                        v[is.na(v)] <- "missing"
-                    }
-                }
-                
-                w <- rep(TRUE, length(v))
-                if (!is.null(curSet$g1)) {
-                    w[curSet$g1 != curSet$g1.level] <- FALSE
-                }
-                if (!is.null(curSet$g2)) {
-                    if (curSet$g2.level != "_ALL") {
-                        w[curSet$g2 != curSet$g2.level] <- FALSE
-                    }
-                }
-               
-                seekViewport("MAINVP")
-
-                dp <- grid.get("DOTPOINTS")
-              # these are the points, but not in the correct order ...
-                d <- data.frame(x = as.numeric(dp$x),
-                                y = as.numeric(dp$y),
-                                v = v[w & !is.na(x)])
-                d$v <- iNZightPlots:::makePoints(x[w & !is.na(x)], v[w & !is.na(x)])$col
-                
-                seekViewport("DOTPLOTVP")  # need correct coordinate system
-
-                xy <- as.numeric(grid.locator())
-                
-                ## We only want to check X and Y for missing
-                na <- apply(d[, 1:2], 1, function(x) any(is.na(x)))
-                d <- d[!na, ]
-
-                ## So now, d = data.frame with x, y, and the label
-                ## Standardise it:
-                x.s <- (d$x - min(d$x)) / (max(d$x) - min(d$x))
-                y.s <- (d$y - min(d$y)) / (max(d$y) - min(d$y))
-
-                xy.s <- numeric(2)
-                xy.s[1] <- (xy[1] - min(d$x)) / (max(d$x) - min(d$x))
-                xy.s[2] <- (xy[2] - min(d$y)) / (max(d$y) - min(d$y))
-
-                o <- d[which.min((x.s - xy.s[1])^2 + (y.s - xy.s[2])^2), ]
-
-                grid.text(o$v,
-                          o$x + convertWidth(unit(0.5, "char"), "native", TRUE),
-                          o$y + convertWidth(unit(0.5, "char"), "native", TRUE),
-                          just = "left", rot = 45,
-                          default.units = "native", gp = gpar(cex = 0.7))
-
-            })
-
-            tbl <- glayout()
-            tbl[1, 1, expand = TRUE, anchor = c(-1, 0)] <- lbl1
-            tbl[2, 1, expand = TRUE, anchor = c(1, 0)] <- varmenu
-            tbl[4, 1, expand = TRUE, anchor = c(-1, 0)] <- lbl2
-            tbl[5, 1, expand = TRUE, anchor = c(1, 0)] <- locateButton
             
-            add(optGrp, tbl)
+            lbl2 <- "Select points by: "
+            selOpts <- gradio(c("By mouse click", "Min/Max n points"),
+                              selected = 1, horizontal = FALSE)
+            minPts <- gcheckbox("Minimum", checked = TRUE, )
+            enabled(minPts) <- FALSE
+            maxPts <- gcheckbox("Maximum", checked = TRUE)
+            enabled(maxPts) <- FALSE
+            nlbl <- "N ="
+            nPts <- gedit("5", width = 3)
+            enabled(nPts) <- FALSE
+
+            
+            locateButton <- gbutton("Locate",
+                                    handler = function(h, ...) {
+                                        
+                                        x <- curSet$x  # used for removing missing values ...
+                                        y <- curSet$y
+                                        v <- svalue(varmenu)
+                                    
+                                        w <- rep(TRUE, length(x))
+                                        if (!is.null(curSet$g1)) {
+                                            if (is.null(curSet$g1.level)) {
+                                                cantDo()
+                                            } else if (curSet$g1.level == "_MULTI") {
+                                                cantDo()
+                                            }
+                                            w[curSet$g1 != curSet$g1.level] <- FALSE
+                                        }
+                                        if (!is.null(curSet$g2)) {
+                                            if (curSet$g2.level == "_MULTI") {
+                                                cantDo()
+                                            } else {
+                                                if (curSet$g2.level != "_ALL")
+                                                    w[curSet$g2 != curSet$g2.level] <- FALSE
+                                            }
+                                        }
+                                        if (is.factor(y))
+                                            cantDo("when Variable 2 is a factor.")
+                                        
+                                        if (is.null(v))
+                                            v <- as.character(1:length(x))
+                                        else {
+                                            if (v == "id")
+                                                v <- as.character(1:length(x))
+                                            else {
+                                                v <- as.character(GUI$getActiveData()[, v])
+                                                v[is.na(v)] <- "missing"
+                                            }
+                                        }
+
+                                       
+                                        
+                                        seekViewport("MAINVP")
+
+                                        isNA <- is.na(x)
+                                        if (!is.null(curSet$g1))
+                                            isNA <- isNA | is.na(curSet$g1)
+                                        if (!is.null(curSet$g2))
+                                            isNA <- isNA | is.na(curSet$g2)
+
+                                            
+                                        dp <- grid.get("DOTPOINTS")
+                                        # these are the points, but not in the correct order ...
+                                        d <- data.frame(x = as.numeric(dp$x),
+                                                        y = as.numeric(dp$y),
+                                                        v = v[w & !isNA])
+                                       
+                                        d$v <- iNZightPlots:::makePoints(x[w & !isNA], v[w & !isNA])$col
+                                        
+                                        seekViewport("DOTPLOTVP")  # need correct coordinate system
+                                                                               
+                                        # FOR TESTING:
+                                        mmPoints <- svalue(selOpts, index = TRUE) == 2
+                                        if (mmPoints) {
+                                            Npts <- as.numeric(svalue(nPts))
+                                            if (is.na(Npts)) {
+                                                gmessage("Please specify a numeric value for Number of Points.")
+                                                return()
+                                            }
+                                            
+                                            Wpts <- sum(svalue(minPts), 2 * svalue(maxPts))
+                                            if (Wpts == 0) {
+                                                gmessage("Please select either Minimum of Maximum points to identify.")
+                                                return()
+                                            }
+                                            if (Wpts == 3) Wpts <- c(1, 2)
+                                            
+                                            if (any(Wpts == 1)) {
+                                                o <- d[order(d$x, decreasing = FALSE), ][1:Npts, ]
+                                                apply(o, 1, function(r) {
+                                                    tt <- r[3]
+                                                    or <- as.numeric(r[1:2])
+                                                    grid.text(tt,
+                                                              or[1] + convertWidth(unit(0.5, "char"), "native", TRUE),
+                                                              or[2] + convertWidth(unit(0.5, "char"), "native", TRUE),
+                                                              just = "left", rot = 45,
+                                                              default.units = "native", gp = gpar(cex = 0.7))
+                                                })
+                                            }
+                                            if (any(Wpts == 2)) {
+                                                o <- d[order(d$x, decreasing = TRUE), ][1:Npts, ]
+                                                apply(o, 1, function(r) {
+                                                    tt <- r[3]
+                                                    or <- as.numeric(r[1:2])
+                                                    grid.text(tt,
+                                                              or[1] + convertWidth(unit(0.5, "char"), "native", TRUE),
+                                                              or[2] + convertWidth(unit(0.5, "char"), "native", TRUE),
+                                                              just = "left", rot = 45,
+                                                              default.units = "native", gp = gpar(cex = 0.7))
+                                                })
+                                            }
+                                            
+                                            
+                                        } else {
+                                            xy <- as.numeric(grid.locator())
+                                            
+                                            
+                                            ## We only want to check X and Y for missing
+                                            na <- apply(d[, 1:2], 1, function(x) any(is.na(x)))
+                                            d <- d[!na, ]
+                                            
+                                            ## So now, d = data.frame with x, y, and the label
+                                            ## Standardise it:
+                                            x.s <- (d$x - min(d$x)) / (max(d$x) - min(d$x))
+                                            y.s <- (d$y - min(d$y)) / (max(d$y) - min(d$y))
+                                            
+                                            xy.s <- numeric(2)
+                                            xy.s[1] <- (xy[1] - min(d$x)) / (max(d$x) - min(d$x))
+                                            xy.s[2] <- (xy[2] - min(d$y)) / (max(d$y) - min(d$y))
+                                            
+                                            o <- d[which.min((x.s - xy.s[1])^2 + (y.s - xy.s[2])^2), ]
+                                            
+                                            grid.text(o$v,
+                                                      o$x + convertWidth(unit(0.5, "char"), "native", TRUE),
+                                                      o$y + convertWidth(unit(0.5, "char"), "native", TRUE),
+                                                      just = "left", rot = 45,
+                                                      default.units = "native", gp = gpar(cex = 0.7))
+                                        }
+                                        
+                                    })
+
+            tbl1 <- glayout()
+            tbl2 <- glayout()
+            tbl3 <- glayout()
+            tbl1[1, 1:2, expand = TRUE, anchor = c(-1, 0)] <- lbl1
+            tbl1[2, 1:2, expand = TRUE, anchor = c(1, 0)] <- varmenu
+            tbl1[3, 1, expand = FALSE, anchor = c(1, 1)] <- lbl2
+            tbl1[3, 2] <- selOpts
+
+            tbl2[1, 1] <- minPts
+            tbl2[1, 2] <- maxPts
+            tbl2[1, 3] <- nlbl
+            tbl2[1, 4] <- nPts
+            
+            tbl3[2, 2, expand = FALSE, anchor = c(1, 0)] <- locateButton
+            
+            add(optGrp, tbl1)
+            add(optGrp, tbl2)
+            add(optGrp, tbl3)
+
+            ## Some things to change values ...
+            addHandlerChanged(selOpts, handler = function(h, ...) {
+                if (svalue(selOpts, index = TRUE) == 1) {
+                    enabled(minPts) <- FALSE
+                    enabled(maxPts) <- FALSE
+                    enabled(nPts) <- FALSE
+                } else {
+                    enabled(minPts) <- TRUE
+                    enabled(maxPts) <- TRUE
+                    enabled(nPts) <- TRUE
+                }
+            })
         },
         opt4 = function() {
             tbl <- glayout()
@@ -906,25 +997,12 @@ iNZScatterMod <- setRefClass(
         opt8 = function() {
             ## Do checking first
             ## If g1 or g2 = _MULTI, then we can't identify points (yet ...)
-            cantDo <- function() {
-                gmessage("Cannot identify points when subset by = _MULTI",
-                         icon = "error", title = "Unable to identify")
+            cantDo <- function(msg = "using subsetting variables.") {
+                gmessage(paste("Cannot identify points when", msg),
+                         icon = "error", title = "Unable to identify",
+                         parent = modWin)
                 dispose(GUI$modWin)
                 return()
-            }
-            if (!is.null(curSet$g1)) {
-                if (is.null(curSet$g1.level)) {
-                    cantDo()
-                } else if (curSet$g1.level == 0 | curSet$g1.level == "_MULTI") {
-                    cantDo()
-                }
-            }
-            if (!is.null(curSet$g2)) {
-                if (is.null(curSet$g2.level)) {
-                    cantDo()
-                } else if (curSet$g2.level == "_MULTI") {
-                    cantDo()
-                }
             }
 
             lbl1 <- "Select variable to identify:"
@@ -936,6 +1014,24 @@ iNZScatterMod <- setRefClass(
                 x <- curSet$x  # used for removing missing values ...
                 y <- curSet$y
                 v <- svalue(varmenu)
+                
+                w <- rep(TRUE, length(x))
+                if (!is.null(curSet$g1)) {
+                    if (is.null(curSet$g1.level)) {
+                        cantDo()
+                    } else if (curSet$g1.level == "_MULTI") {
+                        cantDo()
+                    }
+                    w[curSet$g1 != curSet$g1.level] <- FALSE
+                }
+                if (!is.null(curSet$g2)) {
+                    if (curSet$g2.level == "_MULTI") {
+                        cantDo()
+                    } else {
+                        if (curSet$g2.level != "_ALL")
+                            w[curSet$g2 != curSet$g2.level] <- FALSE
+                    }
+                }                
 
                 if (is.null(v))
                     v <- as.character(1:length(x))
@@ -948,7 +1044,7 @@ iNZScatterMod <- setRefClass(
                     }
                 }
                 
-                w <- rep(TRUE, length(v))
+                
                 if (!is.null(curSet$g1)) {
                     w[curSet$g1 != curSet$g1.level] <- FALSE
                 }
@@ -960,10 +1056,16 @@ iNZScatterMod <- setRefClass(
                
                 seekViewport("MAINVP")
 
+                isNA <- is.na(x) | is.na(y)
+                if (!is.null(curSet$g1))
+                    isNA <- isNA | is.na(curSet$g1)
+                if (!is.null(curSet$g2))
+                    isNA <- isNA | is.na(curSet$g2)
+
                 dp <- grid.get("SCATTERPOINTS")
                 d <- data.frame(x = as.numeric(dp$x),
                                 y = as.numeric(dp$y),
-                                v = v[w & !(is.na(x) | is.na(y))])
+                                v = v[w & !isNA])
                 seekViewport("SCATTERVP")
                 
                 xy <- as.numeric(grid.locator())
