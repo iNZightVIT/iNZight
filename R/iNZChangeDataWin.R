@@ -77,7 +77,7 @@ iNZFilterWin <- setRefClass(
                         idx <- GUI$getActiveData()[[svalue(factorMenu)]] %in%
                         svalue(factorLvls)
                         GUI$getActiveDoc()$getModel()$updateData(
-                            GUI$getActiveData()[idx, ])
+                          droplevels(GUI$getActiveData()[idx,]))
                         dispose(GUI$modWin)
                     }
                 })
