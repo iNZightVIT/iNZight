@@ -2,7 +2,20 @@
 ## The super class for the data modification window
 ## When a new data modification window is opened,
 ## a current one is closed if it exists
-## --------------------------------------------
+## List:
+## iNZconToCatWin: Convert variables to a categorical type
+## iNZtrnsWin: transform variables using various functions
+## iNZcllpsWin: collapse multiple factor levels into one
+## iNZrenameWin: rename factor levels
+## iNZreorderWi: reorder factor levels
+## iNZcmbCatWin: combine categorical variables
+## iNZcrteVarWin: create new variables using an expression
+## iNZfrmIntWin: form class intervals for a numeric variable
+## iNZrnmVarWin: rename variables. This overwrites the old variable name, i.e. does not create a new variable
+## iNZstdVarWin: standardise variables
+## iNZdeleteVarWin: delete variables
+## iNZmissCatWin: Missing as Cat
+## -------------------------------------------
 iNZDataModWin <- setRefClass(
     "iNZDataModWin",
     fields = list(
@@ -794,13 +807,62 @@ iNZfrmIntWin <- setRefClass(
                     svalue(newVarName) = paste(svalue(h$obj),"f", sep = ".")
                 })
             binSlider = gslider(from = 2, to = 20, by = 1)
-            levelNameChoices = gradio(c("Ranges", "Specify names", "Numbers"),
+            levelNameChoices = gradio(c("Ranges", "Numbers"),
                 horizontal = FALSE, selected = 1)
             binningChoices = gradio(c("Equal width intervals",
                 "Equal count intervals", "Specified intervals"),
                 horizontal = FALSE, selected = 1)
             proceedButton <- gbutton("- Proceed -", handler = function(h, ...) {
+                 
+              bins <- svalue(binSlider)
+              levelLabels <- NULL
+              if (svalue(levelNameChoices) == "Numbers")
+                levelLabels <- FALSE
+              
+              dataSet <- GUI$getActiveData()
+              VarValues <- dataSet[, svalue(NumericListMenu)] 
+              if (svalue(binningChoices) == "Equal width intervals")
+                newVarValues <- try(cut(VarValues, bins, 
+                                        labels = levelLabels, include.lowest = TRUE))
+              else if (svalue(binningChoices) == "Equal count intervals")
+                newVarValues <- try(cut(VarValues, 
+                                        quantile(VarValues, probs=seq(0,1,1/bins),na.rm=TRUE), 
+                                        include.lowest = TRUE,
+                                        labels = levelLabels))
+              
+              else if(svalue(binningChoices) == "Specified intervals"){
+                e1 <- environment()                
+                opt(bins = bins, VarValues = VarValues, 
+                    newVarName = newVarName,
+                    dataSet = dataSet,
+                    levelLabels = levelLabels,
+                    env = e1)  # assign the value into opt() environment
+                return()
 
+                
+              }
+              ####%%%%%%%%%%%%%
+              if(class(newVarValues)[1] == "try-error")
+                gmessage(title = "ERROR",
+                         msg = "Error in cutting intervals!",
+                         icon = "error", parent = GUI$modWin)
+              else {
+                newName = gsub(
+                  pattern = '\\n+', "",
+                  svalue(newVarName), perl = TRUE)
+                insertData(
+                  data = newVarValues,
+                  name = newName,
+                  index = ncol(GUI$getActiveData()),
+                  msg = list(
+                    msg = paste("The new variable",
+                                newName,
+                                "will be inserted as the last column of the dataset"),
+                    icon = "info",
+                    parent = GUI$modWin
+                  ),
+                  closeAfter = TRUE)
+              }
             })
             tbl <- glayout()
             tbl[1, 1] <- lbl1
@@ -817,8 +879,97 @@ iNZfrmIntWin <- setRefClass(
             add(mainGroup, tbl)
             add(GUI$modWin, mainGroup, expand = TRUE, fill = TRUE)
             visible(GUI$modWin) <<- TRUE
-        })
-    )
+        }, 
+        opt = function(bins, VarValues, newVarName, levelLabels, dataSet, env) {
+          # windows for "Specified intervals"
+          textboxList =  list()
+          breaksNeeded = bins - 1
+          
+          newVarName # because R is lazy eval, we need to activate here first.
+          env # because R is lazy eval, we need to activate here first.
+          newBreaks = glayout()
+          
+          
+          GUI$modWin <<- gwindow("User Intervals", 
+                                 parent = GUI$win, width = 150, height = 200)
+          #addhandlerunrealize(levelNamesWin, handler = function(h,...){dispose(levelNamesWin)})
+          breaksMain = ggroup(horizontal = FALSE, cont = GUI$modWin)
+          
+          
+          lbl1 = glabel(paste("Specified", bins, "intervals.\nNeed", breaksNeeded, "break points"))
+          font(lbl1) = list(weight = "bold", style = "normal")
+          
+          add(breaksMain, lbl1)
+          newBreaks[1,2] = glabel(as.character(min(VarValues, na.rm = TRUE)))
+          
+          
+          for(i in 1:breaksNeeded){                                                     #,",width = 60, height = 20 )"
+            eval(parse(text=paste(c("textboxList$","lbl",i, "= gtext(\"","\"",",width = 80, height = 20)"), collapse="")))
+            newBreaks[i+1,2] = eval(parse(text = paste(c("textboxList$","lbl",i), collapse="")))
+          }
+          
+          
+          newBreaks[breaksNeeded+2,2] = glabel(as.character(max(VarValues, na.rm = TRUE)))
+          
+          
+          visible(newBreaks) = TRUE
+          add(breaksMain, newBreaks)
+          
+          out <- NULL
+          finalButton = gbutton("Submit Breaks", handler = function(h,...){
+            
+            cutOffPoints = numeric(0)
+            for(i in 1:breaksNeeded)
+              cutOffPoints= c(cutOffPoints, gsub(pattern = '\\n+', replacement = "", x = svalue(textboxList[[i]]), perl = TRUE))
+            
+            
+            cutOffPoints = c(min(VarValues, na.rm = TRUE), 
+                             gsub(pattern = '\\s+', replacement = "", x = cutOffPoints, perl = TRUE), 
+                             max(VarValues, na.rm = TRUE))
+            
+            x <- NULL
+            if(any(cutOffPoints %in% c("", " ", "", "   ", "\n", "\n\n")))
+              gmessage(title = "ERROR", message = "Fill in all text boxes", icon = "error", parent = GUI$modWin)
+            else if(length(unique(cutOffPoints[c(-1,-length(cutOffPoints))])) != length(cutOffPoints)-2)
+              gmessage(title = "ERROR", message = "Breaks must be unique values.", icon = "error", parent = GUI$modWin)
+            else{
+              
+              x <- TRUE
+              newVarValues = try(cut(VarValues, cutOffPoints, include.lowest = TRUE, labels = levelLabels))
+              if(class(newVarValues)[1] == "try-error")
+                gmessage(title = "ERROR",
+                         msg = "Error in cutting intervals!",
+                         icon = "error", parent = GUI$modWin)
+              else {
+                newName = gsub(
+                  pattern = '\\n+', "",
+                  svalue(newVarName), perl = TRUE)
+                insertData(
+                  data = as.factor(newVarValues),
+                  name = newName,
+                  index = ncol(GUI$getActiveData()),
+                  msg = list(
+                    msg = paste("The new variable",
+                                newName,
+                                "will be inserted as the last column of the dataset"),
+                    icon = "info",
+                    parent = GUI$modWin
+                  ),
+                  closeAfter = TRUE)
+              }
+              
+            }
+            
+            
+          
+          }
+          )
+          add(breaksMain, finalButton)
+          
+        }
+    )    
+)
+
 
 
 

@@ -85,49 +85,58 @@ iNZGUI <- setRefClass(
         initializeMenu = function(cont, disposeR) {
             actionList <- list(
                 import = gaction(
+                  #1
                     label = "Import Data", icon = "symbol_diamond",
                     tooltip = "Import a new Dataset",
                     handler = function(h, ...) iNZImportWin$new(.self)
                     ),
                 export = gaction(
+                  #2
                     label = "Export Data", icon = "symbol_diamond",
                     handler = function(h, ...) iNZSaveWin$new(.self,
                         type = "data",
                         data = .self$getActiveData())
                     ),
                 conToCat = gaction(
+                  #3
                     label = "Convert to Categorical",
                     icon = "symbol_diamond",
                     tooltip = "Convert a variable to a categorical type",
                     handler = function(h, ...) iNZconToCatWin$new(.self)
                     ),
                 trns = gaction(
+                  #4
                     label = "Transform Variables",
                     icon = "symbol_diamond",
                     tooltip = "Transform a variable using a function",
                     handler = function(h, ...) iNZtrnsWin$new(.self)
                     ),
                 clps = gaction(
+                  #5
                     label = "Collapse Levels",
                     icon = "symbol_diamond",
                     handler = function(h, ...) iNZcllpsWin$new(.self)
                     ),
                 reordLvl = gaction(
+                  #6
                     label = "Reorder Levels",
                     icon = "symbol_diamond",
                     handler = function(h, ...) iNZreorderWin$new(.self)
                     ),
                 renmLvl = gaction(
+                  #7
                     label = "Rename Levels",
                     icon = "symbol_diamond",
                     handler = function(h, ...) iNZrenameWin$new(.self)
                     ),
                 cmbnCat = gaction(
+                  #8
                     label = "Combine Categorical Variables",
                     icon = "symbol_diamond",
                     handler = function(h, ...) iNZcmbCatWin$new(.self)
                     ),
                 create = gaction(
+                  #9
                     label = "Create New Variables",
                     icon = "symbol_diamond",
                     handler = function(h, ...) iNZcrteVarWin$new(.self)
@@ -135,32 +144,38 @@ iNZGUI <- setRefClass(
                 ## The code for displaying this window is already there
                 ## just the functionality of forming the intervals is
                 ## left to be implemented
-                ## frmInt = gaction(
-                ##     label = "Form Class Intervals",
-                ##     icon = "symbol_diamond",
-                ##     handler = function(h, ...) iNZfrmIntWin$new(.self)
-                ##     ),
+                 frmInt = gaction(
+                   #10
+                   label = "Form Class Intervals",
+                     icon = "symbol_diamond",
+                     handler = function(h, ...) iNZfrmIntWin$new(.self)
+                     ),
                 renmVar = gaction(
+                  #11
                     label = "Rename Variables",
                     icon = "symbol_diamond",
                     handler = function(h, ...) iNZrnmVarWin$new(.self)
                     ),
                 stdVar = gaction(
+                  #12
                     label = "Standardize Variables",
                     icon = "symbol_diamond",
                     handler = function(h, ...) iNZstdVarWin$new(.self)
                     ),
                 slctCases = gaction(
+                  #13
                     label = "Filter Dataset",
                     icon = "symbol_diamond",
                     handler = function(h, ...) iNZFilterWin$new(.self)
                     ),
                 rshpData = gaction(
+                  #14
                     label = "Reshape Dataset",
                     icon = "symbol_diamond",
                     handler = function(h, ...) iNZReshapeDataWin$new(.self)
                     ),
                 rstrData = gaction(
+                  #15
                     label = "Restore Dataset",
                     icon = "symbol_diamond",
                     handler = function(h, ...) {
@@ -169,6 +184,7 @@ iNZGUI <- setRefClass(
                     }
                     ),
                 home = gaction(
+                  #16
                     label = "Home",
                     icon = "symbold_diamond",
                     handler = function(h, ...) {
@@ -176,6 +192,7 @@ iNZGUI <- setRefClass(
                         iNZightVIT(disposeR = disposeR)
                     }),
                 tsMod = gaction(
+                  #17
                     label = "Time Series",
                     icon = "symbol_diamond",
                     handler = function(h, ...) {
@@ -187,6 +204,7 @@ iNZGUI <- setRefClass(
                     }
                     ),
                 modelFit = gaction(
+                  #18
                     label = "Model Fitting",
                     icon = "symbol_diamond",
                     handler = function(h, ...) {
@@ -198,6 +216,7 @@ iNZGUI <- setRefClass(
                     }
                     ),
                 threeDPlot = gaction(
+                  #19
                     label = "3D Plot",
                     icon = "symbol_diamond",
                     handler = function(h, ...) {
@@ -209,6 +228,7 @@ iNZGUI <- setRefClass(
                     }
                     ),
                 scatterMatrix = gaction(
+                  #20
                     label = "Pairs",
                     icon = "symbol_diamond",
                     handler = function(h, ...) {
@@ -216,6 +236,7 @@ iNZGUI <- setRefClass(
                     }
                     ),
                 deleteVariables = gaction(
+                  #21
                     label = "Delete Variables",
                     icon = "symbol_diamond",
                     handler = function(h, ...) {
@@ -223,6 +244,7 @@ iNZGUI <- setRefClass(
                     }
                     ),
                 allPlots = gaction(
+                  #22
                     label = "All 1-variable Plots",
                     icon = "symbol_diamond",
                     handler = function(h, ...) {
@@ -230,6 +252,7 @@ iNZGUI <- setRefClass(
                     }
                     ),
                 allSummaries = gaction(
+                  #23
                     label = "All 1-variable Summaries",
                     icon = "symbol_diamond",
                     handler = function(h, ...) {
@@ -237,6 +260,7 @@ iNZGUI <- setRefClass(
                     }
                     ),
                 exploreMissingness = gaction(
+                  #24
                     label = "Missing Values",
                     icon = "symbol_diamond",
                     handler = function(h, ...) {
@@ -244,45 +268,52 @@ iNZGUI <- setRefClass(
                     }
                     ),
                 missToCat = gaction(
+                  #25
                     label = "Missing to Categorical",
                     icon = "symbol_diamond",
                     handler = function(h, ...) iNZmissCatWin$new(.self)
                     ),
                 all2Plots = gaction(
+                  #26
                     label = "Explore 2-variable Plots",
                     icon = "symbol_diamond",
                     handler = function(h, ...) {
                         iNZall2Plots$new(.self)
                     }
                     )
+                #####################################################
+                ###  big suggestion
+                ###  any new update function should be placing below to match the actionList[[number]]
+                ###  so next one should be #27 and placing below.
+                ###################################################
                 )
             ## home button is disabled if package 'vit' is not loaded
             if (!'package:vit' %in% search())
-                enabled(actionList[[15]]) <- FALSE
+                enabled(actionList[[16]]) <- FALSE
             ## disable modules if packages are not loaded
             if (!'package:iNZightModules' %in% search())
-                invisible(sapply(actionList[18:19], function(x) {
+                invisible(sapply(actionList[19:20], function(x) {
                     enabled(x) <- FALSE}))
             if (!'package:iNZightMR' %in% search())
-                enabled(actionList[[23]]) <- FALSE
+                enabled(actionList[[24]]) <- FALSE
             menuBarList <- list(
-                File = actionList[c(15, 1:2)],
-                "Filter Data" = actionList[c(12, 14)],
+                File = actionList[c(16, 1:2)],
+                "Filter Data" = actionList[c(13, 15)],
                 "Manipulate variables" = list(
                     actionList[[3]],
                     "Categorical Variables" = actionList[c(6,5,7,8)],
-                    "Numeric Variables" = actionList[c(4,11)],
-                    actionList[[10]],
+                    "Numeric Variables" = actionList[c(4,12,10)],
+                    actionList[[11]],
                     actionList[[9]],
-                    actionList[[24]],
-                    actionList[[13]],
-                    actionList[[20]]
+                    actionList[[25]],
+                    actionList[[14]],
+                    actionList[[21]]
                     ),
                 "Advanced" = list(
-                    "Quick Explore" = actionList[c(23, 21, 22, 25, 19)],
-                    actionList[[18]],
-                    actionList[[16]],
-                    actionList[[17]]
+                    "Quick Explore" = actionList[c(24, 22, 23, 26, 20)],
+                    actionList[[19]],
+                    actionList[[17]],
+                    actionList[[18]]
                     )
                # "Advanced" = actionList[c(19, 18, 16, 17)]
                 )
