@@ -305,21 +305,14 @@ iNZDotchartMod <- setRefClass(
                                         if (!is.null(curSet$g2))
                                             isNA <- isNA | is.na(curSet$g2)
 
-                                        print(cbind(x, curSet$g2, isNA))
                                             
                                         dp <- grid.get("DOTPOINTS")
-                                        print(length(dp$x))
-                                        print(length(dp$y))
-                                        print(length(v[!isNA]))
                                         # these are the points, but not in the correct order ...
                                         d <- data.frame(x = as.numeric(dp$x),
                                                         y = as.numeric(dp$y),
                                                         v = v[w & !isNA])
-                                        
-                                        print(d)
-
-                                        d$v <-
-                                        iNZightPlots:::makePoints(x[w & !isNA], v[w & !isNA])$col
+                                       
+                                        d$v <- iNZightPlots:::makePoints(x[w & !isNA], v[w & !isNA])$col
                                         
                                         seekViewport("DOTPLOTVP")  # need correct coordinate system
                                                                                
@@ -1004,25 +997,12 @@ iNZScatterMod <- setRefClass(
         opt8 = function() {
             ## Do checking first
             ## If g1 or g2 = _MULTI, then we can't identify points (yet ...)
-            cantDo <- function() {
-                gmessage("Cannot identify points when subset by = _MULTI",
-                         icon = "error", title = "Unable to identify")
+            cantDo <- function(msg = "using subsetting variables.") {
+                gmessage(paste("Cannot identify points when", msg),
+                         icon = "error", title = "Unable to identify",
+                         parent = modWin)
                 dispose(GUI$modWin)
                 return()
-            }
-            if (!is.null(curSet$g1)) {
-                if (is.null(curSet$g1.level)) {
-                    cantDo()
-                } else if (curSet$g1.level == 0 | curSet$g1.level == "_MULTI") {
-                    cantDo()
-                }
-            }
-            if (!is.null(curSet$g2)) {
-                if (is.null(curSet$g2.level)) {
-                    cantDo()
-                } else if (curSet$g2.level == "_MULTI") {
-                    cantDo()
-                }
             }
 
             lbl1 <- "Select variable to identify:"
@@ -1034,6 +1014,24 @@ iNZScatterMod <- setRefClass(
                 x <- curSet$x  # used for removing missing values ...
                 y <- curSet$y
                 v <- svalue(varmenu)
+                
+                w <- rep(TRUE, length(x))
+                if (!is.null(curSet$g1)) {
+                    if (is.null(curSet$g1.level)) {
+                        cantDo()
+                    } else if (curSet$g1.level == "_MULTI") {
+                        cantDo()
+                    }
+                    w[curSet$g1 != curSet$g1.level] <- FALSE
+                }
+                if (!is.null(curSet$g2)) {
+                    if (curSet$g2.level == "_MULTI") {
+                        cantDo()
+                    } else {
+                        if (curSet$g2.level != "_ALL")
+                            w[curSet$g2 != curSet$g2.level] <- FALSE
+                    }
+                }                
 
                 if (is.null(v))
                     v <- as.character(1:length(x))
@@ -1046,7 +1044,7 @@ iNZScatterMod <- setRefClass(
                     }
                 }
                 
-                w <- rep(TRUE, length(v))
+                
                 if (!is.null(curSet$g1)) {
                     w[curSet$g1 != curSet$g1.level] <- FALSE
                 }
@@ -1058,10 +1056,16 @@ iNZScatterMod <- setRefClass(
                
                 seekViewport("MAINVP")
 
+                isNA <- is.na(x) | is.na(y)
+                if (!is.null(curSet$g1))
+                    isNA <- isNA | is.na(curSet$g1)
+                if (!is.null(curSet$g2))
+                    isNA <- isNA | is.na(curSet$g2)
+
                 dp <- grid.get("SCATTERPOINTS")
                 d <- data.frame(x = as.numeric(dp$x),
                                 y = as.numeric(dp$y),
-                                v = v[w & !(is.na(x) | is.na(y))])
+                                v = v[w & !isNA])
                 seekViewport("SCATTERVP")
                 
                 xy <- as.numeric(grid.locator())
