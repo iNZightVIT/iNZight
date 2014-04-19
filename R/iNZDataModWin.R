@@ -807,7 +807,7 @@ iNZfrmIntWin <- setRefClass(
                     svalue(newVarName) = paste(svalue(h$obj),"f", sep = ".")
                 })
             binSlider = gslider(from = 2, to = 20, by = 1)
-            levelNameChoices = gradio(c("Ranges", "Numbers"),
+            levelNameChoices = gradio(c("(open left, closed right]", "[closed left, open right)"),
                 horizontal = FALSE, selected = 1)
             binningChoices = gradio(c("Equal width intervals",
                 "Equal count intervals", "Specified intervals"),
@@ -815,30 +815,35 @@ iNZfrmIntWin <- setRefClass(
             proceedButton <- gbutton("- Proceed -", handler = function(h, ...) {
                  
               bins <- svalue(binSlider)
-              levelLabels <- NULL
-              if (svalue(levelNameChoices) == "Numbers")
+              levelLabels <- TRUE
+              if (svalue(levelNameChoices) == "[closed left, open right)")
                 levelLabels <- FALSE
               
               dataSet <- GUI$getActiveData()
               VarValues <- dataSet[, svalue(NumericListMenu)] 
               if (svalue(binningChoices) == "Equal width intervals")
                 newVarValues <- try(cut(VarValues, bins, 
-                                        labels = levelLabels, include.lowest = TRUE))
+                                        right = levelLabels, include.lowest = TRUE))
               else if (svalue(binningChoices) == "Equal count intervals")
                 newVarValues <- try(cut(VarValues, 
                                         quantile(VarValues, probs=seq(0,1,1/bins),na.rm=TRUE), 
                                         include.lowest = TRUE,
-                                        labels = levelLabels))
+                                        right = levelLabels))
               
               else if(svalue(binningChoices) == "Specified intervals"){
-                e1 <- environment()                
+                bins <- bins # due to the R lazy evaluation, I active them here.
+                VarValues = VarValues
+                newVarName = newVarName
+                dataSet = dataSet
+                levelLabels = levelLabels
+                e1 <- environment()
+                e1$open <- TRUE
                 opt(bins = bins, VarValues = VarValues, 
                     newVarName = newVarName,
                     dataSet = dataSet,
                     levelLabels = levelLabels,
                     env = e1)  # assign the value into opt() environment
-                return()
-
+                  return()
                 
               }
               ####%%%%%%%%%%%%%
@@ -889,6 +894,7 @@ iNZfrmIntWin <- setRefClass(
           env # because R is lazy eval, we need to activate here first.
           newBreaks = glayout()
           
+          parentmodeWin <- GUI$modWin  # copy the previouos mod windows before we create a new one.
           
           GUI$modWin <<- gwindow("User Intervals", 
                                  parent = GUI$win, width = 150, height = 200)
@@ -935,7 +941,7 @@ iNZfrmIntWin <- setRefClass(
             else{
               
               x <- TRUE
-              newVarValues = try(cut(VarValues, cutOffPoints, include.lowest = TRUE, labels = levelLabels))
+              newVarValues = try(cut(VarValues, cutOffPoints, include.lowest = TRUE, right = levelLabels))
               if(class(newVarValues)[1] == "try-error")
                 gmessage(title = "ERROR",
                          msg = "Error in cutting intervals!",
@@ -959,9 +965,7 @@ iNZfrmIntWin <- setRefClass(
               }
               
             }
-            
-            
-          
+            dispose(parentmodeWin)
           }
           )
           add(breaksMain, finalButton)
