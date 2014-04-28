@@ -492,7 +492,7 @@ iNZBarchartMod <- setRefClass(
         ## gradio
         opt1 = function() {
             tbl <- glayout()
-            lbl1 <- glabel("Segment by levels of :")
+            lbl1 <- glabel("Colour by levels of :")
             grpVarList <- gcombobox(c("", names(GUI$getActiveData())))
             showButton <- gbutton("Show Changes",
                                   handler = function(h, ...) {
