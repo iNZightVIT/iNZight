@@ -151,7 +151,10 @@ iNZControlWidget <- setRefClass(
             ## create a ggroup for the slider at the specified
             ## pos in the glayout
             tbl <- ctrlGp$children[[1]]
-            tbl[pos, 1:7, expand = TRUE] <- (sliderGrp <- ggroup(horizontal = FALSE))
+            tbl[pos, 1:7, expand = TRUE] <- (hzGrp <- ggroup(fill = "x"))
+
+            sliderGrp <- ggroup(horizontal = FALSE)
+            
             ## build the level names that are used for the slider
             grpData <- GUI$getActiveData()[dropdata][[1]]
             grpData <- iNZightPlots:::convert.to.factor(grpData)
@@ -189,8 +192,32 @@ iNZControlWidget <- setRefClass(
             else
                 lbl <- c("_ALL", lbl, "_MULTI")
             ## only add label if it is short enough
-            if (sum(nchar(lbl)) < 60)
+            if (sum(nchar(lbl)) + 3 * length(lbl) < 50)
                 add(sliderGrp, glabel(paste(lbl, collapse = "   ")))
+
+            ## Play button
+            playBtn <- gbutton("play", expand = FALSE,
+                            handler = function(h, ...) {
+                                oldSet <- GUI$getActiveDoc()$getSettings()
+                                for (i in 1:length(levels(grpData))) {
+                                    changePlotSettings(
+                                        structure(list(i),
+                                                  .Names = paste(
+                                                      grp,
+                                                      "level",
+                                                      sep = ".")
+                                                  )
+                                        )
+                                  # This effectively freezes the R session,
+                                  # and therefore iNZight --- so increase with
+                                  # discression!!!!!
+                                    Sys.sleep(1)
+                                }
+                                changePlotSettings(oldSet)
+                            })
+            add(hzGrp, sliderGrp, expand = TRUE)
+            add(hzGrp, playBtn, expand = FALSE, anchor = c(0, 0))
+                                         
 
             ## ##################################
             ## ## start of workaround part2
