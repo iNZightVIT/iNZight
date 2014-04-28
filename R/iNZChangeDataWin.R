@@ -240,38 +240,108 @@ iNZFilterWin <- setRefClass(
             btnGrp <- ggroup(horizontal = TRUE)
             lbl1 <- glabel("Specify the size of your sample")
             font(lbl1) <- list(weight = "bold", style = "normal")
-            sampleSize <- gedit("", width = 4)
+            numSample <- gspinbutton(from = 1, t0 = 10, by = 1)
+            sampleSize <- gedit("", width =4)
             submitButton <- gbutton(
                 "Submit",
                 handler = function(h, ...) {
                     sSize <- as.numeric(svalue(sampleSize))
-                    if (is.na(sSize) || sSize > nrow(GUI$getActiveData()))
+                    if (svalue(numSample) < 2 & svalue(numSample) >0 & is.integer(svalue(numSample))){ 
+                      if (is.na(sSize) || sSize > nrow(GUI$getActiveData()))
                         gmessage(title = "ERROR",
                                  msg = "Please specify a valid number for the sample size",
                                  icon = "error",
                                  parent = GUI$modWin)
-                    else {
+                      else {
                         rdmSample <- sample(1:nrow(GUI$getActiveData()),
                                             size = sSize)
                         GUI$getActiveDoc()$getModel()$updateData(
-                            GUI$getActiveData()[rdmSample, ])
+                          GUI$getActiveData()[rdmSample, ])
                         dispose(GUI$modWin)
+                      }
                     }
+                  else{
+                    if (is.na(sSize) || sSize > nrow(GUI$getActiveData()))
+                      gmessage(title = "ERROR",
+                               msg = "Please specify a valid number for the sample size",
+                               icon = "error",
+                               parent = GUI$modWin)
+                    else {
+                      rdmSample <- numeric(0)
+                      for (i in 1: svalue(numSample)){
+                        rdmSample <- append(rdmSample, sample(1:nrow(GUI$getActiveData()),
+                                          size = sSize))
+                      }
+                      
+                      GUI$getActiveDoc()$getModel()$updateData(
+                        GUI$getActiveData()[rdmSample, ])
+                      
+                      newVar <- as.character(rep(1:svalue(numSample) , each = sSize))
+                      
+                      newNames <- "Sample Number"
+                      
+                      insertData(data = newVar,
+                                 name = newNames,
+                                 index = ncol(GUI$getActiveData()),
+                                 msg = list(
+                                   msg = "The new variables are added to the end of the dataset",
+                                   icon = "info"
+                                 ),
+                                 closeAfter = TRUE)
+                            
+                            
+                      
+                      #dispose(GUI$modWin)
+                    }
+                  }
                 })
             tbl <- glayout()
             tbl[1,1:2] <- lbl1
             tbl[2, 1] <- "Total number of rows:"
             tbl[2, 2] <- glabel(nrow(GUI$getActiveData()))
-            tbl[3, 1] <- "Sample Size:"
-            tbl[3, 2] <- sampleSize
+            tbl[3, 1] <- "Number of Sample"
+            tbl[3, 2] <- numSample
+            tbl[4, 1] <- "Sample Size:"
+            tbl[4, 2] <- sampleSize
             add(mainGrp, lbl1)
             add(mainGrp, tbl)
             add(mainGrp, btnGrp)
             addSpring(btnGrp)
             add(btnGrp, submitButton)
             visible(GUI$modWin) <<- TRUE
-        })
-    )
+        }, 
+    insertData = function(data, name, index, msg = NULL, closeAfter = TRUE) {
+      ## insert the new variable in the column after the old variable
+      ## or at the end if the old variable is the last column in the
+      ## data
+      if (index != length(names(GUI$getActiveData()))) {
+        newData <- data.frame(
+          GUI$getActiveData()[, 1:index],
+          data,
+          GUI$getActiveData()[, (index+1):ncol(GUI$getActiveData())]
+        )
+        newNames <- c(
+          names(GUI$getActiveData())[1:index],
+          name,
+          names(GUI$getActiveData())[(index+1):ncol(GUI$getActiveData())]
+        )
+        newNames <- make.names(newNames, unique = TRUE)
+        names(newData) <- newNames
+      } else {
+        newData <- data.frame(GUI$getActiveData(), data)
+        names(newData) <- make.names(c(names(GUI$getActiveData()),
+                                       name), unique = TRUE)
+      }
+      
+      if (!is.null(msg))
+        do.call(gmessage, msg)
+      
+      GUI$getActiveDoc()$getModel()$updateData(newData)
+      if (closeAfter)
+        dispose(GUI$modWin)
+    })
+)
+
 
 
 ## --------------------------------------------
@@ -287,6 +357,8 @@ iNZReshapeDataWin <- setRefClass(
         initialize = function(gui = NULL) {
             initFields(GUI = gui)
             if (!is.null(GUI)) {
+              ## close any current mod windows
+              try(dispose(GUI$modWin), silent = TRUE)
             GUI$modWin <<- gwindow("Filter data by numeric condition",
                                    parent = GUI$win, visible = FALSE)
             mainGrp <- ggroup(cont = GUI$modWin, horizontal = FALSE,
@@ -325,4 +397,179 @@ iNZReshapeDataWin <- setRefClass(
             names(data) <- c("group", "value")
             data
         })
-    )
+)
+
+
+## --------------------------------------------
+## Class that handles the sortby of a dataset
+## --------------------------------------------
+iNZSortbyDataWin <- setRefClass(
+  "iNZSortbyDataWin",
+  fields = list(
+    GUI = "ANY"
+  ),
+  methods = list(
+    initialize = function(gui = NULL) {
+      initFields(GUI = gui)
+      if (!is.null(GUI)) {
+        ## close any current mod windows
+        try(dispose(GUI$modWin), silent = TRUE)
+        GUI$modWin <<- gwindow("Sort data by variables",
+                               parent = GUI$win, visible = FALSE)
+        mainGrp <- ggroup(cont = GUI$modWin, horizontal = FALSE,
+                          expand = TRUE)
+        mainGrp$set_borderwidth(15)
+        btnGrp <- ggroup(horizontal = TRUE)
+        lbl1 <- glabel("Sort by")
+        font(lbl1) <- list(weight = "bold", style = "normal")
+        lbl2 <- glabel("Variable")
+        nameList <- names(GUI$getActiveData())
+        SortByButton <- gbutton(
+          "Sort Now",
+          handler = function(h, ...) {
+            dataSet <- GUI$getActiveData()
+            argList <- list()
+            for (i in 1:4) {
+              con <- eval(parse(text=paste(c("svalue(droplist_var",i, ")"), collapse="")))
+              con2 <- eval(parse(text=paste(c("svalue(radio_var",i, ")"), collapse="")))
+              if (con != "") {
+                datai <- dataSet[, con]
+                if (inherits(datai, "character") | inherits(datai, "factor"))
+                  datai <- xtfrm(datai)
+                if (con2 != "increasing")
+                  datai <- -datai
+                argList[[length(argList) + 1]] <- datai
+              }
+            }
+            print(names(argList))
+            idx <- do.call("order", argList)
+            GUI$getActiveDoc()$getModel()$updateData(
+              GUI$getActiveData()[idx, ])
+            dispose(GUI$modWin)
+            
+          })
+        
+        label_var1 <- glabel("1st")
+        label_var2 <- glabel("2nd")
+        label_var3 <- glabel("3rd")
+        label_var4 <- glabel("4th")
+        droplist_var1 <- gcombobox(c("",nameList), selected = 1)                  
+        droplist_var2 <- gcombobox(c("",nameList), selected= 1)
+        droplist_var3 <- gcombobox(c("",nameList), selected = 1)
+        droplist_var4 <- gcombobox(c("",nameList), selected = 1)
+        radio_var1 <- gradio(c("increasing","decreasing"), horizontal = TRUE)
+        radio_var2 <- gradio(c("increasing","decreasing"), horizontal = TRUE)
+        radio_var3 <- gradio(c("increasing","decreasing"), horizontal = TRUE)
+        radio_var4 <- gradio(c("increasing","decreasing"), horizontal = TRUE)
+        tbl <- glayout()
+        tbl[1, 1, expand = TRUE, anchor = c(-1, -1)] <- label_var1
+        tbl[1, 2, expand = TRUE, anchor = c(-1, -1)] <- droplist_var1
+        tbl[1, 3, expand = TRUE, anchor = c(-1, -1)] <- radio_var1
+        tbl[2, 1, expand = TRUE, anchor = c(-1, -1)] <- label_var2
+        tbl[2, 2, expand = TRUE, anchor = c(-1, -1)] <- droplist_var2
+        tbl[2, 3, expand = TRUE, anchor = c(-1, -1)] <- radio_var2
+        tbl[3, 1, expand = TRUE, anchor = c(-1, -1)] <- label_var3
+        tbl[3, 2, expand = TRUE, anchor = c(-1, -1)] <- droplist_var3
+        tbl[3, 3, expand = TRUE, anchor = c(-1, -1)] <- radio_var3
+        tbl[4, 1, expand = TRUE, anchor = c(-1, -1)] <- label_var4
+        tbl[4, 2, expand = TRUE, anchor = c(-1, -1)] <- droplist_var4
+        tbl[4, 3, expand = TRUE, anchor = c(-1, -1)] <- radio_var4
+        add(mainGrp, lbl1, anchor = c(-1, -1))
+        addSpring(mainGrp)
+        add(mainGrp, lbl2, anchor = c(-1, -1))
+        add(mainGrp, tbl)
+        add(mainGrp, btnGrp)
+        addSpring(btnGrp)
+        add(btnGrp, SortByButton)
+        visible(GUI$modWin) <<- TRUE
+      }
+    }
+  )
+)
+
+
+## --------------------------------------------
+## Class that handles aggregate the data set
+## --------------------------------------------
+iNZAgraDataWin <- setRefClass(
+  "iNZAgraDataWin",
+  fields = list(
+    GUI = "ANY"
+  ),
+  methods = list(
+    initialize = function(gui = NULL) {
+      initFields(GUI = gui)
+      if (!is.null(GUI)) {
+        ## close any current mod windows
+        try(dispose(GUI$modWin), silent = TRUE)
+        GUI$modWin <<- gwindow("Aggregation to the data",
+                               parent = GUI$win, visible = FALSE)
+        mainGrp <- ggroup(cont = GUI$modWin, horizontal = FALSE,
+                          expand = TRUE)
+        mainGrp$set_borderwidth(15)
+        btnGrp <- ggroup(horizontal = TRUE)
+        nameList <- names(Filter(is.factor,GUI$getActiveData()))
+        heading <- glabel("Aggregate over variables:")
+        font(heading) <- list(weight = "bold", style = "normal")
+        AgraButton <- gbutton(
+          "Aggregate Now",
+          handler = function(h, ...) {
+            dataSet <- GUI$getActiveData()
+            con <- c(svalue(droplist_var1), svalue(droplist_var2), svalue(droplist_var3))
+            if (all(con %in% ""))
+              return(gmessage("Select at leat one variable!",
+                              parent = GUI$win))
+            con <- con[which(con!="")]
+            con2 <- c("mean","median","sum","sd","IQR","length")[svalue(func.table, index=TRUE)]
+            if(length(con2) == 0)
+              return(gmessage("Select at leat one function!",
+                              parent = GUI$win))
+            
+          
+            out <- ddply(na.omit(dataSet), as.quoted(con), numcolwise(con2[1]))
+            nameVec <- c(con, paste0(names(Filter(is.numeric, dataSet)), ".", con2[1]))
+            names(out) <- nameVec 
+            
+            if (length(con2) > 1) {
+              for (i in 2:length(con2)){
+                out1 <- ddply(na.omit(dataSet), as.quoted(con), numcolwise(con2[i]))  
+                nameVec <- c(con, paste0(names(Filter(is.numeric, dataSet)), ".", con2[i]))
+                names(out1) <- nameVec 
+                out = join(out,out1, by=con)
+              }
+            }
+            id = sort(names(out)[-(1:length(con))])
+            GUI$getActiveDoc()$getModel()$updateData(out[, c(con, id)])
+            dispose(GUI$modWin)
+              
+            
+          })
+        label_var1 <- glabel("1st")
+        label_var2 <- glabel("2nd")
+        label_var3 <- glabel("3rd")
+        droplist_var1 <- gcombobox(c("",nameList), selected = 1)
+        droplist_var2 <- gcombobox(c("",nameList), selected= 1)
+        droplist_var3 <- gcombobox(c("",nameList), selected = 1)
+        func.frame <- data.frame(c("Mean", "Median", "Sum", "Sd", "IQR", "Count"))
+        names(func.frame) <- "Summeries: "
+        func.table <- gtable(func.frame, multiple=TRUE)
+        func.table$remove_popup_menu() # remove the popup menu from gtable()
+        tbl <- glayout()
+        tbl[2, 1, expand = TRUE, anchor = c(-1, -1)] <- label_var1
+        tbl[2, 2, expand = TRUE, anchor = c(-1, -1)] <- droplist_var1
+        tbl[3, 1, expand = TRUE, anchor = c(-1, -1)] <- label_var2
+        tbl[3, 2, expand = TRUE, anchor = c(-1, -1)] <- droplist_var2
+        tbl[4, 1, expand = TRUE, anchor = c(-1, -1)] <- label_var3
+        tbl[4, 2, expand = TRUE, anchor = c(-1, -1)] <- droplist_var3
+        tbl[5:25, 1:2, expand =TRUE, anchor = c(-1, -1)] <- func.table
+        add(mainGrp, heading)
+        addSpring(mainGrp)
+        add(mainGrp, tbl)
+        add(mainGrp, btnGrp)
+        #addSpring(btnGrp)
+        add(btnGrp, AgraButton)
+        visible(GUI$modWin) <<- TRUE
+      }
+    }
+  )
+)

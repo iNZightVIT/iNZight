@@ -87,7 +87,8 @@ iNZDataViewWidget <- setRefClass(
             ## if more than 19 columns are in the dataSet, split the variable
             ## view into 2 tables
             N <- 19
-            if(length(names(dataSet)) > N && length(names(dataSet)) < 80) {
+            # if(length(names(dataSet)) > N && length(names(dataSet)) < 80) {
+            if(length(dataSet) < 100000 && length(names(dataSet))>80) {
                 varWidget <- list(
                     gtable(names(dataSet)[1:floor(N/2)], expand = TRUE),
                     gtable(names(dataSet)[(floor(N/2)+1):ncol(dataSet)],

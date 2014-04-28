@@ -1,4 +1,4 @@
-import(grid, RGtk2, RODBC, gdata, gWidgets2RGtk2, cairoDevice,
+import(grid, RGtk2, RODBC, gdata, gWidgets2RGtk2, cairoDevice, plyr, 
        iNZightPlots, quantreg)
 importFrom(iNZightTools, newdevice)
 importFrom(survey, svydesign, svysmooth)

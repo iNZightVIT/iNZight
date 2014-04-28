@@ -10,7 +10,7 @@ iNZGUI <- setRefClass(
                    ## list of iNZDocuments (contain data, plotSettings)
                    iNZDocuments = "list",
                    ## the active document of the iNZDocuments list
-                   activeDoc = "numeric",
+                   activeDoc = "numeric", 
                    ## the main GUI window
                    win = "ANY",
                    ## the Widget containing the 2 data views
@@ -280,7 +280,29 @@ iNZGUI <- setRefClass(
                     handler = function(h, ...) {
                         iNZall2Plots$new(.self)
                     }
-                    )
+                    ),
+                sortBy = gaction(
+                  #27
+                  label = "Sort data by variables",
+                  icon = "symbol_diamond",
+                  handler = function(h, ...){
+                    iNZSortbyDataWin$new(.self) 
+                  }
+                ),
+                agraData = gaction(
+                  #28
+                  label = "Aggregate data",
+                  icon = "symbol_diamond",
+                  handler = function(h, ...){
+                      iNZAgraDataWin$new(.self)
+                  }
+                ),
+                rankNum = gaction(
+                  #29
+                  label = "Rank Numerical Variables",
+                  icon = "symbol_diamond",
+                  handler = function(h, ...) iNZrankNumWin$new(.self)
+                  )
                 #####################################################
                 ###  big suggestion
                 ###  any new update function should be placing below to match the actionList[[number]]
@@ -298,11 +320,11 @@ iNZGUI <- setRefClass(
                 enabled(actionList[[24]]) <- FALSE
             menuBarList <- list(
                 File = actionList[c(16, 1:2)],
-                "Filter Data" = actionList[c(13, 15)],
+                "Filter Data" = actionList[c(13, 15, 27, 28)],
                 "Manipulate variables" = list(
                     actionList[[3]],
                     "Categorical Variables" = actionList[c(6,5,7,8)],
-                    "Numeric Variables" = actionList[c(4,12,10)],
+                    "Numeric Variables" = actionList[c(4,12,10, 29)],
                     actionList[[11]],
                     actionList[[9]],
                     actionList[[25]],
