@@ -240,7 +240,7 @@ iNZFilterWin <- setRefClass(
             btnGrp <- ggroup(horizontal = TRUE)
             lbl1 <- glabel("Specify the size of your sample")
             font(lbl1) <- list(weight = "bold", style = "normal")
-            numSample <- gspinbutton(from = 1, t0 = 10, by = 1)
+            numSample <- gspinbutton(from = 0, to = 99999, by = 1)
             sampleSize <- gedit("", width =4)
             submitButton <- gbutton(
                 "Submit",
@@ -249,7 +249,8 @@ iNZFilterWin <- setRefClass(
                     if (svalue(numSample) < 2 & svalue(numSample) >0 & is.integer(svalue(numSample))){ 
                       if (is.na(sSize) || sSize > nrow(GUI$getActiveData()))
                         gmessage(title = "ERROR",
-                                 msg = "Please specify a valid number for the sample size",
+                                 msg = "Number of Samples X Sample Size cannot exceed Total 
+                                 number of rows",
                                  icon = "error",
                                  parent = GUI$modWin)
                       else {
@@ -263,17 +264,21 @@ iNZFilterWin <- setRefClass(
                   else{
                     if (is.na(sSize) || sSize > nrow(GUI$getActiveData()))
                       gmessage(title = "ERROR",
-                               msg = "Please specify a valid number for the sample size",
+                               msg = "T",
                                icon = "error",
                                parent = GUI$modWin)
                     else {
                       rdmSample <- numeric(0)
                       
                       
-                      larger = sSize*svalue(numSample) > nrow(GUI$getActiveData())
-                      rdmSample = sample(1:nrow(GUI$getActiveData()), 
-                                         size = sSize*svalue(numSample),
-                                         replace = larger)
+                      if (sSize*svalue(numSample) < nrow(GUI$getActiveData()))
+                        rdmSample = sample(1:nrow(GUI$getActiveData()), 
+                                           size = sSize*svalue(numSample))
+                      else 
+                        return(gmessage(title = "ERROR",
+                                        msg = "The total sample number is greater than the sample size",
+                                        icon = "error",
+                                        parent = GUI$modWin))
                       
                       GUI$getActiveDoc()$getModel()$updateData(
                         GUI$getActiveData()[rdmSample, ])
@@ -303,7 +308,7 @@ iNZFilterWin <- setRefClass(
             tbl[2, 2] <- glabel(nrow(GUI$getActiveData()))
             tbl[3, 1] <- "Sample Size:"
             tbl[3, 2] <- sampleSize
-            tbl[4, 1] <- "Number of Sample"
+            tbl[4, 1] <- "Number of Samples"
             tbl[4, 2] <- numSample
             add(mainGrp, lbl1)
             add(mainGrp, tbl)

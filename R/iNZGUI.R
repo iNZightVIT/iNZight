@@ -305,7 +305,7 @@ iNZGUI <- setRefClass(
                   ),
                 convert2mc = gaction(
                   #30
-                  label = "Convert Multiple Categorial Variables",
+                  label = "Convert to Categorial (Multiple)",
                   icon = "symbol_diamond",
                   handler = function(h, ...) iNZctocatmulWin$new(.self)
                   )
