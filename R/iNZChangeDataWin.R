@@ -443,7 +443,10 @@ iNZSortbyDataWin <- setRefClass(
                 argList[[length(argList) + 1]] <- datai
               }
             }
-            print(names(argList))
+            
+            if (identical(argList,list()))
+              return(gmessage("Select at leat one variable!",
+                              parent = GUI$win))
             idx <- do.call("order", argList)
             GUI$getActiveDoc()$getModel()$updateData(
               GUI$getActiveData()[idx, ])

@@ -16,6 +16,7 @@
 ## iNZdeleteVarWin: delete variables
 ## iNZmissCatWin: Missing as Cat
 ## iNZrankNumWin: Rank the numerical variables X (vector, matrix)
+## iNZctocatmulWin: Convert multiple variables to categorical type in the same time
 ## -------------------------------------------
 iNZDataModWin <- setRefClass(
     "iNZDataModWin",
@@ -1245,6 +1246,58 @@ iNZrankNumWin <- setRefClass(
       add(mainGroup, lbl2)
       add(mainGroup, numVar, expand = TRUE)
       add(mainGroup, rankButton)
+      add(GUI$modWin, mainGroup, expand = TRUE, fill = TRUE)
+      visible(GUI$modWin) <<- TRUE
+    })
+)
+
+## Convert multiple variables to categorical type in the same time
+iNZctocatmulWin <- setRefClass(
+  "iNZctocatmulWin",
+  contains = "iNZDataModWin",
+  methods = list(
+    initialize = function(gui) {
+      callSuper(gui)
+      svalue(GUI$modWin) <<- "Convert multiple Variables to categorical type"
+      size(GUI$modWin) <<- c(250, 450)
+      mainGroup <- ggroup(expand = TRUE, horizontal = FALSE)
+      mainGroup$set_borderwidth(15)
+      ## instructions through glabels
+      lbl1 <- glabel("Choose variables you want to convert")
+      font(lbl1) <- list(weight = "bold",
+                         family = "normal")
+      lbl2 <- glabel("(Hold Ctrl to choose many)")
+      font(lbl2) <- list(weight = "bold",
+                         family = "normal")
+      ## display only numeric variables
+      numIndices <- sapply(GUI$getActiveData(), function(x) !is.factor(x))
+      numVar <- gtable(names(GUI$getActiveData())[numIndices],
+                       multiple = TRUE)
+      names(numVar) <- "Variables"
+      ctmcButton <- gbutton("Convert", handler = function(h, ...) {
+        if (length(svalue(numVar)) > 0) {
+          index <- which(numIndices)[svalue(numVar, index = TRUE)]
+          
+          if (length(index) > 1)
+            newData <- sapply(GUI$getActiveData()[, index], as.factor)
+          else
+            newData <- as.factor(GUI$getActiveData()[, index])
+          newNames <- paste(names(GUI$getActiveData())[index],
+                            ".cat", sep = "")
+          insertData(data = newData,
+                     name = newNames,
+                     index = ncol(GUI$getActiveData()),
+                     msg = list(
+                       msg = "The new variables are added to the end of the dataset",
+                       icon = "info"
+                     ),
+                     closeAfter = TRUE)
+        }
+      })
+      add(mainGroup, lbl1)
+      add(mainGroup, lbl2)
+      add(mainGroup, numVar, expand = TRUE)
+      add(mainGroup, ctmcButton)
       add(GUI$modWin, mainGroup, expand = TRUE, fill = TRUE)
       visible(GUI$modWin) <<- TRUE
     })

@@ -302,6 +302,12 @@ iNZGUI <- setRefClass(
                   label = "Rank Numerical Variables",
                   icon = "symbol_diamond",
                   handler = function(h, ...) iNZrankNumWin$new(.self)
+                  ),
+                convert2mc = gaction(
+                  #30
+                  label = "Convert Multiple Categorial Variables",
+                  icon = "symbol_diamond",
+                  handler = function(h, ...) iNZctocatmulWin$new(.self)
                   )
                 #####################################################
                 ###  big suggestion
@@ -324,7 +330,7 @@ iNZGUI <- setRefClass(
                 "Manipulate variables" = list(
                     actionList[[3]],
                     "Categorical Variables" = actionList[c(6,5,7,8)],
-                    "Numeric Variables" = actionList[c(4,12,10, 29)],
+                    "Numeric Variables" = actionList[c(4,12,10, 29,30)],
                     actionList[[11]],
                     actionList[[9]],
                     actionList[[25]],
