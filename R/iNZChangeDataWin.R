@@ -268,10 +268,12 @@ iNZFilterWin <- setRefClass(
                                parent = GUI$modWin)
                     else {
                       rdmSample <- numeric(0)
-                      for (i in 1: svalue(numSample)){
-                        rdmSample <- append(rdmSample, sample(1:nrow(GUI$getActiveData()),
-                                          size = sSize))
-                      }
+                      
+                      
+                      larger = sSize*svalue(numSample) > nrow(GUI$getActiveData())
+                      rdmSample = sample(1:nrow(GUI$getActiveData()), 
+                                         size = sSize*svalue(numSample),
+                                         replace = larger)
                       
                       GUI$getActiveDoc()$getModel()$updateData(
                         GUI$getActiveData()[rdmSample, ])
@@ -299,10 +301,10 @@ iNZFilterWin <- setRefClass(
             tbl[1,1:2] <- lbl1
             tbl[2, 1] <- "Total number of rows:"
             tbl[2, 2] <- glabel(nrow(GUI$getActiveData()))
-            tbl[3, 1] <- "Number of Sample"
-            tbl[3, 2] <- numSample
-            tbl[4, 1] <- "Sample Size:"
-            tbl[4, 2] <- sampleSize
+            tbl[3, 1] <- "Sample Size:"
+            tbl[3, 2] <- sampleSize
+            tbl[4, 1] <- "Number of Sample"
+            tbl[4, 2] <- numSample
             add(mainGrp, lbl1)
             add(mainGrp, tbl)
             add(mainGrp, btnGrp)
