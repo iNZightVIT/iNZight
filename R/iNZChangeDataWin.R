@@ -524,6 +524,7 @@ iNZAgraDataWin <- setRefClass(
         AgraButton <- gbutton(
           "Aggregate Now",
           handler = function(h, ...) {
+            originalD <- GUI$getActiveDoc()$getModel()$origDataSet
             dataSet <- GUI$getActiveData()
             con <- c(svalue(droplist_var1), svalue(droplist_var2), svalue(droplist_var3))
             if (all(con %in% ""))
@@ -549,7 +550,10 @@ iNZAgraDataWin <- setRefClass(
               }
             }
             id = sort(names(out)[-(1:length(con))])
+            GUI$setDocument(iNZDocument$new(data = originalD))
             GUI$getActiveDoc()$getModel()$updateData(out[, c(con, id)])
+            
+            
             dispose(GUI$modWin)
               
             

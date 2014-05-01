@@ -179,8 +179,9 @@ iNZGUI <- setRefClass(
                     label = "Restore Dataset",
                     icon = "symbol_diamond",
                     handler = function(h, ...) {
-                        getActiveDoc()$getModel()$updateData(
-                            getActiveDoc()$getModel()$origDataSet)
+                      setDocument(iNZDocument$new(data = getActiveDoc()$getModel()$origDataSet))
+                        #getActiveDoc()$getModel()$updateData(
+                        #    getActiveDoc()$getModel()$origDataSet)
                     }
                     ),
                 home = gaction(
@@ -312,7 +313,7 @@ iNZGUI <- setRefClass(
                 #####################################################
                 ###  big suggestion
                 ###  any new update function should be placing below to match the actionList[[number]]
-                ###  so next one should be #27 and placing below.
+                ###  so next one should be #31 and placing below.
                 ###################################################
                 )
             ## home button is disabled if package 'vit' is not loaded

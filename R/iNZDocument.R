@@ -13,8 +13,15 @@ iNZDataModel <- setRefClass(
         initialize = function(data = NULL) {
             if(!is.null(data)) {
                 .self$setData(data)
+                #.self$setOriginalData(data)
             }
         },
+        #
+        #setOriginalData = function(data) {
+        #  origDataSet <<- data
+          
+        #},
+        ##
         setData = function(data) {
             names(data) <- make.names(names(data), unique = TRUE)
             dataSet <<- data
@@ -153,3 +160,5 @@ iNZDocument <- setRefClass(
         }
         )
     )
+
+
