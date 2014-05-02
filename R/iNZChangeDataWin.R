@@ -74,11 +74,13 @@ iNZFilterWin <- setRefClass(
                 "-Filter Data-",
                 handler = function(h, ...) {
                     if (length(svalue(factorLvls)) > 0) {
-                        idx <- GUI$getActiveData()[[svalue(factorMenu)]] %in%
+                      originalD <- GUI$getActiveDoc()$getModel()$origDataSet
+                      idx <- GUI$getActiveData()[[svalue(factorMenu)]] %in%
                         svalue(factorLvls)
-                        GUI$getActiveDoc()$getModel()$updateData(
-                          droplevels(GUI$getActiveData()[idx,]))
-                        dispose(GUI$modWin)
+                      GUI$setDocument(iNZDocument$new(data = originalD))
+                      GUI$getActiveDoc()$getModel()$updateData(
+                        droplevels(GUI$getActiveData()[idx,]))
+                      dispose(GUI$modWin)
                     }
                 })
             tbl <- glayout()
@@ -130,24 +132,27 @@ iNZFilterWin <- setRefClass(
             submitButton <- gbutton(
                 "Submit",
                 handler = function(h, ...) {
-                    subsetExpression <- paste(svalue(numMenu),
-                                              svalue(operator),
-                                              gsub(pattern = '\\n+', "",
-                                                   svalue(expr),
-                                                   perl = TRUE))
-                    subsetData <- try(
-                        subset(GUI$getActiveData(),
-                               eval(parse(text = eval(subsetExpression))))
-                        )
-                    if(class(subsetData)[1] == "try-error"){
-                        gmessage(title = "ERROR",
-                                 msg = "Error in expression!",
-                                 icon = "error",
-                                 parent = GUI$modWin)
-                    } else {
-                        GUI$getActiveDoc()$getModel()$updateData(
-                            subsetData)
-                        dispose(GUI$modWin)
+                  originalD <- GUI$getActiveDoc()$getModel()$origDataSet
+                  subsetExpression <- paste(svalue(numMenu),
+                                            svalue(operator),
+                                            gsub(pattern = '\\n+', "",
+                                                 svalue(expr),
+                                                 perl = TRUE))
+                  subsetData <- try(
+                    droplevels(subset(GUI$getActiveData(),
+                           eval(parse(text = eval(subsetExpression)))))
+                  )
+                  if(class(subsetData)[1] == "try-error"){
+                    gmessage(title = "ERROR",
+                             msg = "Error in expression!",
+                             icon = "error",
+                             parent = GUI$modWin)
+                  } else {
+                    
+                    GUI$setDocument(iNZDocument$new(data = originalD))
+                    GUI$getActiveDoc()$getModel()$updateData(
+                      subsetData)
+                    dispose(GUI$modWin)
                     }
                 })
             tbl <- glayout()
@@ -184,40 +189,42 @@ iNZFilterWin <- setRefClass(
             submitButton <- gbutton(
                 "Submit",
                 handler = function(h, ...) {
-                    rowNumbers <- try(
-                        strsplit(gsub(pattern = '\\s+',
-                                      replacement = "",
-                                      svalue(unwantedObs),
-                                      perl = TRUE),
-                                 ",", fixed = TRUE)[[1]]
-                        )
-                    if (inherits(rowNumbers,"try-error") ||
+                  originalD <- GUI$getActiveDoc()$getModel()$origDataSet
+                  rowNumbers <- try(
+                    strsplit(gsub(pattern = '\\s+',
+                                  replacement = "",
+                                  svalue(unwantedObs),
+                                  perl = TRUE),
+                             ",", fixed = TRUE)[[1]]
+                  )
+                  if (inherits(rowNumbers,"try-error") ||
                         is.na(rowNumbers)) {
-                        gmessage(title = "ERROR",
-                                 msg = "Error in typed values.\nCheck for missing commas or non-existing Row.names",
-                                 icon = "error",
-                                 parent = GUI$modWin)
-                    } else {
-                        ranges <- grep(":", rowNumbers)
-                        if (length(ranges) > 0) {
-                            rowRanges <- rowNumbers[ranges]
-                            rowNumbers <- as.numeric(rowNumbers[-ranges])
-                            rowRanges <- as.vector(sapply(
-                                rowRanges, function(m) eval(parse(text=m))))
-                            rowNumbers <- unique(c(rowNumbers, rowRanges))
-                        }
-                        if(!all(rowNumbers %in%
-                                as.numeric(row.names(GUI$getActiveData()))))
-                            gmessage(title = "ERROR",
-                                     msg = "You have entered one or more non-existing Row.names",
-                                     icon = "error",
-                                     parent = GUI$modWin)
-                        else {
-                            GUI$getActiveDoc()$getModel()$updateData(
-                                GUI$getActiveData()[-rowNumbers, ])
-                            dispose(GUI$modWin)
-                        }
+                    gmessage(title = "ERROR",
+                             msg = "Error in typed values.\nCheck for missing commas or non-existing Row.names",
+                             icon = "error",
+                             parent = GUI$modWin)
+                  } else {
+                    ranges <- grep(":", rowNumbers)
+                    if (length(ranges) > 0) {
+                      rowRanges <- rowNumbers[ranges]
+                      rowNumbers <- as.numeric(rowNumbers[-ranges])
+                      rowRanges <- as.vector(sapply(
+                        rowRanges, function(m) eval(parse(text=m))))
+                      rowNumbers <- unique(c(rowNumbers, rowRanges))
                     }
+                    if(!all(rowNumbers %in%
+                              as.numeric(row.names(GUI$getActiveData()))))
+                      gmessage(title = "ERROR",
+                               msg = "You have entered one or more non-existing Row.names",
+                               icon = "error",
+                               parent = GUI$modWin)
+                    else {
+                      GUI$setDocument(iNZDocument$new(data = originalD))
+                      GUI$getActiveDoc()$getModel()$updateData(
+                        droplevels(GUI$getActiveData()[-rowNumbers, ]))
+                      dispose(GUI$modWin)
+                    }
+                  }
                 })
             add(mainGrp, lbl1)
             add(mainGrp, lbl2)
@@ -240,27 +247,29 @@ iNZFilterWin <- setRefClass(
             btnGrp <- ggroup(horizontal = TRUE)
             lbl1 <- glabel("Specify the size of your sample")
             font(lbl1) <- list(weight = "bold", style = "normal")
-            numSample <- gspinbutton(from = 0, to = 99999, by = 1)
+            numSample <- gspinbutton(from = 1, to = 99999, by = 1)
             sampleSize <- gedit("", width =4)
             submitButton <- gbutton(
                 "Submit",
                 handler = function(h, ...) {
-                    sSize <- as.numeric(svalue(sampleSize))
-                    if (svalue(numSample) < 2 & svalue(numSample) >0 & is.integer(svalue(numSample))){ 
-                      if (is.na(sSize) || sSize > nrow(GUI$getActiveData()))
-                        gmessage(title = "ERROR",
-                                 msg = "Number of Samples X Sample Size cannot exceed Total 
+                  originalD <- GUI$getActiveDoc()$getModel()$origDataSet
+                  sSize <- as.numeric(svalue(sampleSize))
+                  if (svalue(numSample) == 1){ 
+                    if (is.na(sSize) || sSize > nrow(GUI$getActiveData()))
+                      gmessage(title = "ERROR",
+                               msg = "Number of Samples X Sample Size cannot exceed Total 
                                  number of rows",
-                                 icon = "error",
-                                 parent = GUI$modWin)
-                      else {
-                        rdmSample <- sample(1:nrow(GUI$getActiveData()),
-                                            size = sSize)
-                        GUI$getActiveDoc()$getModel()$updateData(
-                          GUI$getActiveData()[rdmSample, ])
-                        dispose(GUI$modWin)
-                      }
+                               icon = "error",
+                               parent = GUI$modWin)
+                    else {
+                      rdmSample <- sample(1:nrow(GUI$getActiveData()),
+                                          size = sSize)
+                      GUI$setDocument(iNZDocument$new(data = originalD))
+                      GUI$getActiveDoc()$getModel()$updateData(
+                        droplevels(GUI$getActiveData()[rdmSample, ]))
+                      dispose(GUI$modWin)
                     }
+                  }
                   else{
                     if (is.na(sSize) || sSize > nrow(GUI$getActiveData()))
                       gmessage(title = "ERROR",
@@ -280,8 +289,9 @@ iNZFilterWin <- setRefClass(
                                         icon = "error",
                                         parent = GUI$modWin))
                       
+                      GUI$setDocument(iNZDocument$new(data = originalD))
                       GUI$getActiveDoc()$getModel()$updateData(
-                        GUI$getActiveData()[rdmSample, ])
+                        droplevels(GUI$getActiveData()[rdmSample, ]))
                       
                       newVar <- as.character(rep(1:svalue(numSample) , each = sSize))
                       
@@ -295,8 +305,8 @@ iNZFilterWin <- setRefClass(
                                    icon = "info"
                                  ),
                                  closeAfter = TRUE)
-                            
-                            
+                      
+                      
                       
                       #dispose(GUI$modWin)
                     }
@@ -317,36 +327,36 @@ iNZFilterWin <- setRefClass(
             add(btnGrp, submitButton)
             visible(GUI$modWin) <<- TRUE
         }, 
-    insertData = function(data, name, index, msg = NULL, closeAfter = TRUE) {
-      ## insert the new variable in the column after the old variable
-      ## or at the end if the old variable is the last column in the
-      ## data
-      if (index != length(names(GUI$getActiveData()))) {
-        newData <- data.frame(
-          GUI$getActiveData()[, 1:index],
-          data,
-          GUI$getActiveData()[, (index+1):ncol(GUI$getActiveData())]
-        )
-        newNames <- c(
-          names(GUI$getActiveData())[1:index],
-          name,
-          names(GUI$getActiveData())[(index+1):ncol(GUI$getActiveData())]
-        )
-        newNames <- make.names(newNames, unique = TRUE)
-        names(newData) <- newNames
-      } else {
-        newData <- data.frame(GUI$getActiveData(), data)
-        names(newData) <- make.names(c(names(GUI$getActiveData()),
-                                       name), unique = TRUE)
-      }
-      
-      if (!is.null(msg))
-        do.call(gmessage, msg)
-      
-      GUI$getActiveDoc()$getModel()$updateData(newData)
-      if (closeAfter)
-        dispose(GUI$modWin)
-    })
+        insertData = function(data, name, index, msg = NULL, closeAfter = TRUE) {
+          ## insert the new variable in the column after the old variable
+          ## or at the end if the old variable is the last column in the
+          ## data
+          if (index != length(names(GUI$getActiveData()))) {
+            newData <- data.frame(
+              GUI$getActiveData()[, 1:index],
+              data,
+              GUI$getActiveData()[, (index+1):ncol(GUI$getActiveData())]
+            )
+            newNames <- c(
+              names(GUI$getActiveData())[1:index],
+              name,
+              names(GUI$getActiveData())[(index+1):ncol(GUI$getActiveData())]
+            )
+            newNames <- make.names(newNames, unique = TRUE)
+            names(newData) <- newNames
+          } else {
+            newData <- data.frame(GUI$getActiveData(), data)
+            names(newData) <- make.names(c(names(GUI$getActiveData()),
+                                           name), unique = TRUE)
+          }
+          
+          if (!is.null(msg))
+            do.call(gmessage, msg)
+          
+          GUI$getActiveDoc()$getModel()$updateData(newData)
+          if (closeAfter)
+            dispose(GUI$modWin)
+        })
 )
 
 
@@ -356,17 +366,17 @@ iNZFilterWin <- setRefClass(
 ## --------------------------------------------
 
 iNZReshapeDataWin <- setRefClass(
-    "iNZReshapeDataWin",
-    fields = list(
-        GUI = "ANY"
-        ),
-    methods = list(
-        initialize = function(gui = NULL) {
-            initFields(GUI = gui)
-            if (!is.null(GUI)) {
-              ## close any current mod windows
-              try(dispose(GUI$modWin), silent = TRUE)
-            GUI$modWin <<- gwindow("Filter data by numeric condition",
+  "iNZReshapeDataWin",
+  fields = list(
+    GUI = "ANY"
+  ),
+  methods = list(
+    initialize = function(gui = NULL) {
+      initFields(GUI = gui)
+      if (!is.null(GUI)) {
+        ## close any current mod windows
+        try(dispose(GUI$modWin), silent = TRUE)
+        GUI$modWin <<- gwindow("Filter data by numeric condition",
                                    parent = GUI$win, visible = FALSE)
             mainGrp <- ggroup(cont = GUI$modWin, horizontal = FALSE,
                               expand = TRUE)
