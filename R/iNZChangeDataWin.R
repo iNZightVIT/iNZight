@@ -75,11 +75,12 @@ iNZFilterWin <- setRefClass(
                 handler = function(h, ...) {
                     if (length(svalue(factorLvls)) > 0) {
                       originalD <- GUI$getActiveDoc()$getModel()$origDataSet
+                      ActiveData <- GUI$getActiveData()
                       idx <- GUI$getActiveData()[[svalue(factorMenu)]] %in%
                         svalue(factorLvls)
                       GUI$setDocument(iNZDocument$new(data = originalD))
                       GUI$getActiveDoc()$getModel()$updateData(
-                        droplevels(GUI$getActiveData()[idx,]))
+                        droplevels(ActiveData[idx,]))
                       dispose(GUI$modWin)
                     }
                 })
@@ -133,6 +134,7 @@ iNZFilterWin <- setRefClass(
                 "Submit",
                 handler = function(h, ...) {
                   originalD <- GUI$getActiveDoc()$getModel()$origDataSet
+                  ActiveData <- GUI$getActiveData()
                   subsetExpression <- paste(svalue(numMenu),
                                             svalue(operator),
                                             gsub(pattern = '\\n+', "",
@@ -190,6 +192,7 @@ iNZFilterWin <- setRefClass(
                 "Submit",
                 handler = function(h, ...) {
                   originalD <- GUI$getActiveDoc()$getModel()$origDataSet
+                  ActiveData <- GUI$getActiveData()
                   rowNumbers <- try(
                     strsplit(gsub(pattern = '\\s+',
                                   replacement = "",
@@ -220,8 +223,11 @@ iNZFilterWin <- setRefClass(
                                parent = GUI$modWin)
                     else {
                       GUI$setDocument(iNZDocument$new(data = originalD))
+                      idx <- !rownames(ActiveData) %in% rowNumbers
+                      ## please notice iNZdataViewWidget/createDfView to show small number of row even when the original data is large
                       GUI$getActiveDoc()$getModel()$updateData(
-                        droplevels(GUI$getActiveData()[-rowNumbers, ]))
+                        droplevels(ActiveData[idx, ]))
+                      # so after the above step, we may update the gdf panel in iNZdataViewWidget
                       dispose(GUI$modWin)
                     }
                   }
@@ -253,6 +259,7 @@ iNZFilterWin <- setRefClass(
                 "Submit",
                 handler = function(h, ...) {
                   originalD <- GUI$getActiveDoc()$getModel()$origDataSet
+                  ActiveData <- GUI$getActiveData()
                   sSize <- as.numeric(svalue(sampleSize))
                   if (svalue(numSample) == 1){ 
                     if (is.na(sSize) || sSize > nrow(GUI$getActiveData()))
@@ -266,7 +273,7 @@ iNZFilterWin <- setRefClass(
                                           size = sSize)
                       GUI$setDocument(iNZDocument$new(data = originalD))
                       GUI$getActiveDoc()$getModel()$updateData(
-                        droplevels(GUI$getActiveData()[rdmSample, ]))
+                        droplevels(ActiveData[rdmSample, ]))
                       dispose(GUI$modWin)
                     }
                   }
@@ -291,7 +298,7 @@ iNZFilterWin <- setRefClass(
                       
                       GUI$setDocument(iNZDocument$new(data = originalD))
                       GUI$getActiveDoc()$getModel()$updateData(
-                        droplevels(GUI$getActiveData()[rdmSample, ]))
+                        droplevels(ActiveData[rdmSample, ]))
                       
                       newVar <- as.character(rep(1:svalue(numSample) , each = sSize))
                       
