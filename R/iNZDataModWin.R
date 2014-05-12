@@ -490,7 +490,7 @@ iNZreorderWin <- setRefClass(
                     tbl,
                     GUI$getActiveData()[svalue(factorMenu)][[1]])
                 ## newFactor will be FALSE, if the user input was wrong
-                if (newFactor != FALSE)
+                #if (all(newFactor != FALSE))
                     insertData(data = newFactor,
                                name = svalue(factorName),
                                index = which(names(
@@ -555,10 +555,10 @@ iNZreorderWin <- setRefClass(
         },
         changeLevels = function(tbl, factorData) {
             if (length(tbl$children) < 5) {
-                gmessage(msg = "Please choose a factor to reorder",
+                return(gmessage(msg = "Please choose a factor to reorder",
                          icon = "error",
-                         parent = GUI$modWin)
-                return(FALSE)
+                         parent = GUI$modWin))
+                
             }
             ## the first 4 children dont refer to the factor levels
             ## each factor lvl has 2 entries in the glayout
@@ -583,16 +583,16 @@ iNZreorderWin <- setRefClass(
             facOrder <- sapply(1:length(facLevels), function(x) which(facOrder == x))
             ## check if all order numbers are unique
             if (anyDuplicated(facOrder) > 0) {
-                gmessage(msg = "Please choose a unique order for the levels",
+                return(gmessage(msg = "Please choose a unique order for the levels",
                          icon = "error",
-                         parent = GUI$modWin)
-                FALSE
+                         parent = GUI$modWin))
+                
             }
             else if (max(facOrder) > length(facOrder)) {
-                gmessage(msg = "Please remove holes from the order sequence",
+                return(gmessage(msg = "Please remove holes from the order sequence",
                          icon = "error",
-                         parent = GUI$modWin)
-                FALSE
+                         parent = GUI$modWin))
+                
             }
             else {
                 newFactor <- factor(factorData, levels = facLevels[facOrder])
