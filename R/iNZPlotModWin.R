@@ -183,8 +183,8 @@ iNZDotchartMod <- setRefClass(
                                    checked = (curSet$pch != 1))
             cexSlider <- gslider(from = 0.05, to = 3.5,
                 by = 0.05, value = curSet$cex.pt)
-            transpSlider <- gslider(from = 0.01, to = 1,
-                                    by = 0.01, value = curSet$alpha)
+            transpSlider <- gslider(from = 0, to = 100,
+                                    by = 1, value = 100 * (1 - curSet$alpha))
             showButton <- gbutton("Show Changes",
                                   handler = function(h, ...) {
                                       pch.sel <- ifelse(svalue(fillColor),
@@ -194,7 +194,7 @@ iNZDotchartMod <- setRefClass(
                                                bg = svalue(backgroundColList),
                                                cex.pt = svalue(cexSlider),
                                                pch = pch.sel,
-                                               alpha = svalue(transpSlider),
+                                               alpha = 1 - svalue(transpSlider) / 100,
                                                largesample = plotTypeValues[[svalue(
                                                    plotTypeList, index = TRUE)]])
                                           )
@@ -948,8 +948,8 @@ iNZScatterMod <- setRefClass(
                                    checked = (curSet$pch != 1))
             cexSlider <- gslider(from = 0.05, to = 3.5,
                 by = 0.05, value = curSet$cex.pt)
-            transpSlider <- gslider(from = 0.01, to = 1,
-                                    by = 0.01, value = curSet$alpha)
+            transpSlider <- gslider(from = 0, to = 100,
+                                    by = 1, value = 100 * (1 - curSet$alpha))
             showButton <- gbutton("Show Changes",
                                   handler = function(h, ...) {
                                       pch.sel <- ifelse(svalue(fillColor),
@@ -959,7 +959,7 @@ iNZScatterMod <- setRefClass(
                                                bg = svalue(backgroundColList),
                                                cex.pt = svalue(cexSlider),
                                                pch = pch.sel,
-                                               alpha = svalue(transpSlider),
+                                               alpha = 1 - svalue(transpSlider) / 100,
                                                largesample = plotTypeValues[[svalue(
                                                    plotTypeList, index = TRUE)]]
                                                )
