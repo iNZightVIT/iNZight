@@ -18,7 +18,7 @@ iNZFilterWin <- setRefClass(
             if (!is.null(GUI)) {
                 ## close any current mod windows
                try(dispose(GUI$modWin), silent = TRUE)
-               GUI$modWin <<- gwindow("Filter Dataset", parent = GUI$win,
+               GUI$modWin <<- gwindow("Filter Dataset...", parent = GUI$win,
                                       width = 300, height = 200,
                                       visible = FALSE)
                mainGrp <- ggroup(cont = GUI$modWin, horizontal = FALSE,

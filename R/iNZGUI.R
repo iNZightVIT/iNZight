@@ -327,7 +327,8 @@ iNZGUI <- setRefClass(
                 enabled(actionList[[24]]) <- FALSE
             menuBarList <- list(
                 File = actionList[c(16, 1:2)],
-                "Filter Data" = actionList[c(13, 27, 28, 15)],
+                "Rows Operation" = actionList[c(13, 27, 28, 15)],
+                #"Filter Data" = actionList[c(13, 27, 28, 15)],
                 "Manipulate variables" = list(
                     actionList[[3]],
                     "Categorical Variables" = actionList[c(6,5,7,8)],
