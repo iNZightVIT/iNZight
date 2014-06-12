@@ -604,3 +604,53 @@ iNZAgraDataWin <- setRefClass(
     }
   )
 )
+
+
+iNZstackVarWin <- setRefClass(
+  "iNZstackVarWin",
+  fields = list(
+    GUI = "ANY"
+  ),
+  methods = list(
+    initialize = function(gui = NULL) {
+      initFields(GUI = gui)
+      if (!is.null(GUI)) {
+        ## close any current mod windows
+        try(dispose(GUI$modWin), silent = TRUE)
+        GUI$modWin <<- gwindow("Stack data by Variables",
+                               parent = GUI$win, visible = FALSE)
+        mainGroup <- ggroup(expand = TRUE, horizontal = FALSE)
+        ## instructions through glabels
+        lbl1 <- glabel("Choose variables you want to stack over")
+        font(lbl1) <- list(weight = "bold",
+                           family = "normal")
+        lbl2 <- glabel("(Hold Ctrl to choose many)")
+        font(lbl2) <- list(weight = "bold",
+                           family = "normal")
+        ## display only numeric variables
+        numIndices <- sapply(GUI$getActiveData(), function(x) !is.factor(x))
+        numVar <- gtable(names(GUI$getActiveData())[numIndices],
+                         multiple = TRUE)
+        names(numVar) <- "Variables"
+        StackButton <- gbutton("Stack", handler = function(h, ...) {
+          if (length(svalue(numVar)) > 0) {
+            measure.vars <- svalue(numVar)
+            dat <- GUI$getActiveData()
+            out <- reshape2:::melt.data.frame(dat, measure.vars = measure.vars, 
+                                              variable.name = "stack.variable",
+                                              value.name = "stack.value")
+            GUI$getActiveDoc()$getModel()$updateData(out)
+            
+            
+            dispose(GUI$modWin)
+          }
+        })
+        add(mainGroup, lbl1)
+        add(mainGroup, lbl2)
+        add(mainGroup, numVar, expand = TRUE)
+        add(mainGroup, StackButton)
+        add(GUI$modWin, mainGroup, expand = TRUE, fill = TRUE)
+        visible(GUI$modWin) <<- TRUE
+      }
+    })
+)

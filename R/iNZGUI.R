@@ -86,58 +86,58 @@ iNZGUI <- setRefClass(
             actionList <- list(
                 import = gaction(
                   #1
-                    label = "Import Data", icon = "symbol_diamond",
+                    label = "Import Data...", icon = "symbol_diamond",
                     tooltip = "Import a new Dataset",
                     handler = function(h, ...) iNZImportWin$new(.self)
                     ),
                 export = gaction(
                   #2
-                    label = "Export Data", icon = "symbol_diamond",
+                    label = "Export Data...", icon = "symbol_diamond",
                     handler = function(h, ...) iNZSaveWin$new(.self,
                         type = "data",
                         data = .self$getActiveData())
                     ),
                 conToCat = gaction(
                   #3
-                    label = "Convert to Categorical",
+                    label = "Convert to Categorical...",
                     icon = "symbol_diamond",
                     tooltip = "Convert a variable to a categorical type",
                     handler = function(h, ...) iNZconToCatWin$new(.self)
                     ),
                 trns = gaction(
                   #4
-                    label = "Transform Variables",
+                    label = "Transform Variables...",
                     icon = "symbol_diamond",
                     tooltip = "Transform a variable using a function",
                     handler = function(h, ...) iNZtrnsWin$new(.self)
                     ),
                 clps = gaction(
                   #5
-                    label = "Collapse Levels",
+                    label = "Collapse Levels...",
                     icon = "symbol_diamond",
                     handler = function(h, ...) iNZcllpsWin$new(.self)
                     ),
                 reordLvl = gaction(
                   #6
-                    label = "Reorder Levels",
+                    label = "Reorder Levels...",
                     icon = "symbol_diamond",
                     handler = function(h, ...) iNZreorderWin$new(.self)
                     ),
                 renmLvl = gaction(
                   #7
-                    label = "Rename Levels",
+                    label = "Rename Levels...",
                     icon = "symbol_diamond",
                     handler = function(h, ...) iNZrenameWin$new(.self)
                     ),
                 cmbnCat = gaction(
                   #8
-                    label = "Combine Categorical Variables",
+                    label = "Combine Categorical Variables...",
                     icon = "symbol_diamond",
                     handler = function(h, ...) iNZcmbCatWin$new(.self)
                     ),
                 create = gaction(
                   #9
-                    label = "Create New Variables",
+                    label = "Create New Variables...",
                     icon = "symbol_diamond",
                     handler = function(h, ...) iNZcrteVarWin$new(.self)
                     ),
@@ -146,31 +146,31 @@ iNZGUI <- setRefClass(
                 ## left to be implemented
                  frmInt = gaction(
                    #10
-                   label = "Form Class Intervals",
+                   label = "Form Class Intervals...",
                      icon = "symbol_diamond",
                      handler = function(h, ...) iNZfrmIntWin$new(.self)
                      ),
                 renmVar = gaction(
                   #11
-                    label = "Rename Variables",
+                    label = "Rename Variables...",
                     icon = "symbol_diamond",
                     handler = function(h, ...) iNZrnmVarWin$new(.self)
                     ),
                 stdVar = gaction(
                   #12
-                    label = "Standardize Variables",
+                    label = "Standardize Variables...",
                     icon = "symbol_diamond",
                     handler = function(h, ...) iNZstdVarWin$new(.self)
                     ),
                 slctCases = gaction(
                   #13
-                    label = "Filter Dataset",
+                    label = "Filter Dataset...",
                     icon = "symbol_diamond",
                     handler = function(h, ...) iNZFilterWin$new(.self)
                     ),
                 rshpData = gaction(
                   #14
-                    label = "Reshape Dataset",
+                    label = "Reshape Dataset...",
                     icon = "symbol_diamond",
                     handler = function(h, ...) iNZReshapeDataWin$new(.self)
                     ),
@@ -194,7 +194,7 @@ iNZGUI <- setRefClass(
                     }),
                 tsMod = gaction(
                   #17
-                    label = "Time Series",
+                    label = "Time Series...",
                     icon = "symbol_diamond",
                     handler = function(h, ...) {
                         ign <- gwindow("...", visible = FALSE)
@@ -206,7 +206,7 @@ iNZGUI <- setRefClass(
                     ),
                 modelFit = gaction(
                   #18
-                    label = "Model Fitting",
+                    label = "Model Fitting...",
                     icon = "symbol_diamond",
                     handler = function(h, ...) {
                         ign <- gwindow("...", visible = FALSE)
@@ -218,7 +218,7 @@ iNZGUI <- setRefClass(
                     ),
                 threeDPlot = gaction(
                   #19
-                    label = "3D Plot",
+                    label = "3D Plot...",
                     icon = "symbol_diamond",
                     handler = function(h, ...) {
                         ign <- gwindow("...", visible = FALSE)
@@ -230,7 +230,7 @@ iNZGUI <- setRefClass(
                     ),
                 scatterMatrix = gaction(
                   #20
-                    label = "Pairs",
+                    label = "Pairs...",
                     icon = "symbol_diamond",
                     handler = function(h, ...) {
                         iNZscatterMatrix$new(.self)
@@ -238,7 +238,7 @@ iNZGUI <- setRefClass(
                     ),
                 deleteVariables = gaction(
                   #21
-                    label = "Delete Variables",
+                    label = "Delete Variables...",
                     icon = "symbol_diamond",
                     handler = function(h, ...) {
                         iNZdeleteVarWin$new(.self)
@@ -270,13 +270,13 @@ iNZGUI <- setRefClass(
                     ),
                 missToCat = gaction(
                   #25
-                    label = "Missing to Categorical",
+                    label = "Missing to Categorical...",
                     icon = "symbol_diamond",
                     handler = function(h, ...) iNZmissCatWin$new(.self)
                     ),
                 all2Plots = gaction(
                   #26
-                    label = "Explore 2-variable Plots",
+                    label = "Explore 2-variable Plots...",
                     icon = "symbol_diamond",
                     handler = function(h, ...) {
                         iNZall2Plots$new(.self)
@@ -284,7 +284,7 @@ iNZGUI <- setRefClass(
                     ),
                 sortBy = gaction(
                   #27
-                  label = "Sort data by variables",
+                  label = "Sort data by variables...",
                   icon = "symbol_diamond",
                   handler = function(h, ...){
                     iNZSortbyDataWin$new(.self) 
@@ -292,7 +292,7 @@ iNZGUI <- setRefClass(
                 ),
                 agraData = gaction(
                   #28
-                  label = "Aggregate data",
+                  label = "Aggregate data...",
                   icon = "symbol_diamond",
                   handler = function(h, ...){
                       iNZAgraDataWin$new(.self)
@@ -300,15 +300,21 @@ iNZGUI <- setRefClass(
                 ),
                 rankNum = gaction(
                   #29
-                  label = "Rank Numerical Variables",
+                  label = "Rank Numerical Variables...",
                   icon = "symbol_diamond",
                   handler = function(h, ...) iNZrankNumWin$new(.self)
                   ),
                 convert2mc = gaction(
                   #30
-                  label = "Convert to Categorial (Multiple)",
+                  label = "Convert to Categorial (Multiple)...",
                   icon = "symbol_diamond",
                   handler = function(h, ...) iNZctocatmulWin$new(.self)
+                  ),
+                stackVar = gaction(
+                  #31
+                  label = "Stack variables one column...",
+                  icon = "symbol_diamond",
+                  handler = function(h, ...) iNZstackVarWin$new(.self)
                   )
                 #####################################################
                 ###  big suggestion
@@ -327,7 +333,7 @@ iNZGUI <- setRefClass(
                 enabled(actionList[[24]]) <- FALSE
             menuBarList <- list(
                 File = actionList[c(16, 1:2)],
-                "Rows Operation" = actionList[c(13, 27, 28, 15)],
+                "Row Operation" = actionList[c(13, 27, 28, 31, 15)],
                 #"Filter Data" = actionList[c(13, 27, 28, 15)],
                 "Manipulate variables" = list(
                     actionList[[3]],
