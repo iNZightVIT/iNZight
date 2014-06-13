@@ -211,7 +211,7 @@ iNZControlWidget <- setRefClass(
                                   # This effectively freezes the R session,
                                   # and therefore iNZight --- so increase with
                                   # discression!!!!!
-                                    Sys.sleep(1)
+                                    Sys.sleep(0.6)
                                 }
                                 changePlotSettings(oldSet)
                             })
