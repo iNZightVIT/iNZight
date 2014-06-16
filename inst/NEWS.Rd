@@ -2,6 +2,37 @@
 \title{NEWS file for the iNZight package}
 \encoding{UTF-8}
 
+\section{Changes in version 2.0.2}{
+  \subsection{NEW FEATURES}{
+    \itemize{
+      \item can now cycle through all two-variable plots for a selected
+      Variable 1
+
+      \item "play" button for the first subset by variable
+      (automatically cycle levels)
+
+      \item data manipulation features added and modified
+    }
+  }
+  
+  \subsection{MINOR CHANGES}{
+    \itemize{
+      \item can now specify to identify min/max points in a dot plot
+
+      \item in the Add to Plot window for barcharts, reworded "segment by" to "colour by" 
+      for consistency.
+
+      \item the transparency slider now runs from 0% to 100%
+    }
+  }
+
+  \subsection{BUG FIXES}{
+    \itemize{
+      \item  identify functionality works for subsets (except when multi plots at once)
+    }
+  }
+}
+
 \section{Changes in version 2.0.1}{
   \subsection{NEW FEATURES}{
     \itemize{
