@@ -621,7 +621,7 @@ iNZstackVarWin <- setRefClass(
                                parent = GUI$win, visible = FALSE)
         mainGroup <- ggroup(expand = TRUE, horizontal = FALSE)
         ## instructions through glabels
-        lbl1 <- glabel("Choose variables you want to stack over")
+        lbl1 <- glabel("Choose variables to stack")
         font(lbl1) <- list(weight = "bold",
                            family = "normal")
         lbl2 <- glabel("(Hold Ctrl to choose many)")

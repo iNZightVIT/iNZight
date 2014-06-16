@@ -312,7 +312,7 @@ iNZGUI <- setRefClass(
                   ),
                 stackVar = gaction(
                   #31
-                  label = "Stack variables one column...",
+                  label = "Stack variables...",
                   icon = "symbol_diamond",
                   handler = function(h, ...) iNZstackVarWin$new(.self)
                   )
@@ -333,7 +333,7 @@ iNZGUI <- setRefClass(
                 enabled(actionList[[24]]) <- FALSE
             menuBarList <- list(
                 File = actionList[c(16, 1:2)],
-                "Row Operation" = actionList[c(13, 27, 28, 31, 15)],
+                "Row Operations" = actionList[c(13, 27, 28, 31, 15)],
                 #"Filter Data" = actionList[c(13, 27, 28, 15)],
                 "Manipulate variables" = list(
                     actionList[[3]],
