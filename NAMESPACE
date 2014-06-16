@@ -1,5 +1,5 @@
 import(grid, RGtk2, RODBC, gdata, gWidgets2RGtk2, cairoDevice, plyr, 
-       iNZightPlots, quantreg, survey)
+       iNZightPlots, quantreg, survey, reshape2)
 importFrom(iNZightTools, newdevice)
 importFrom(survey, svydesign, svysmooth)
 importClassesFrom(gWidgets2RGtk2)
