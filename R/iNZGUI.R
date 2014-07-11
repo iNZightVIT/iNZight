@@ -525,7 +525,6 @@ iNZGUI <- setRefClass(
                     curPlSet$varnames$y <- curPlSet$varnames$x
                     curPlSet$varnames$x <- x.tmp
                 }
-
                 do.call(iNZightPlot, curPlSet)
             } else {
                 resetPlot()
