@@ -20,7 +20,7 @@ iNZPlotRmveModWin <- setRefClass(
                 additions <- c(
                     "Remove all additions",
                     paste("Remove colour coding by", curSet$varnames$by),
-                    paste("Remove resizing by",curSet$varnames$prop.size),
+                    paste("Remove resizing by",curSet$varnames$sizeby),
                     "Remove trend curves",
                     "Remove y = x line",
                     "Remove smoothers",
@@ -39,17 +39,17 @@ iNZPlotRmveModWin <- setRefClass(
                 ## check for presence of all additions
                 curAdditions <- c(
                     TRUE, ## all additiions
-                    !is.null(curSet$by) && ## colour coding dotplots
+                    !is.null(curSet$colby) && ## colour coding dotplots
                     (is.numeric(curSet$x) ||
                      is.numeric(curSet$y)),
-                    !is.null(curSet$prop.size), ## resize
+                    !is.null(curSet$sizeby), ## resize
                     !is.null(curSet$trend), ## trend
                     curSet$LOE, ## x=y line
-                    curSet$smooth != 0, ## smoother
+                    curSet$smooth != 0 || !is.null(curSet$quant.smooth), ## smoother
                     curSet$jitter != "", ## jitter
                     curSet$rugs != "", ## rugs
                     curSet$join, ## connecting lines
-                    !is.null(curSet$by) && ## colour coding barchart
+                    !is.null(curSet$colby) && ## colour coding barchart
                     !is.numeric(curSet$x) &&
                     is.null(curSet$y),
                     !is.null(curSet$inference.type) ||
@@ -106,18 +106,18 @@ iNZPlotRmveModWin <- setRefClass(
         ##            addition to remove
         removeAdditions = function(additions) {
             ## list with entries to remove additions (set to default)
-            rmvAdditions <- list(list(by = NULL, ## colour coding dotplots
-                                      varnames = list(by = NULL)),
-                                 list(prop.size = NULL, ## resize proportional
-                                      varnames = list(prop.size = NULL)),
+            rmvAdditions <- list(list(colby = NULL, ## colour coding dotplots
+                                      varnames = list(colby = NULL)),
+                                 list(sizeby = NULL, ## resize proportional
+                                      varnames = list(sizeby = NULL)),
                                  list(trend = defSet$trend), ## trend
                                  list(LOE = defSet$LOE), ## x=y line
-                                 list(smooth = defSet$smooth), ## smoother
+                                 list(smooth = defSet$smooth, quant.smooth = defSet$quant.smooth), ## smoother
                                  list(jitter = defSet$jitter), ## jitter
                                  list(rugs = ""), ## rugs
                                  list(join = defSet$join), ## connecting lines
-                                 list(by = NULL, ## colour coding barchart
-                                      varnames = list(by = NULL)),
+                                 list(colby = NULL, ## colour coding barchart
+                                      varnames = list(colby = NULL)),
                                  list(inference.type = defSet$inference.type,
                                       inference.par = defSet$inference.par,
                                       bs.inference = defSet$bs.inference), ## confidence intervals

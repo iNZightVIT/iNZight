@@ -105,18 +105,18 @@ iNZDotchartMod <- setRefClass(
             lbl2 <- glabel("Colour by levels of :")
             grpVarList <- gcombobox(c("", names(GUI$getActiveData())),
                                     selected = ifelse(
-                                        is.null(curSet$by),
+                                        is.null(curSet$colby),
                                         1, which(names(GUI$getActiveData()) ==
-                                                 curSet$varnames$by)[1] + 1
+                                                 curSet$varnames$colby)[1] + 1
                                         )
                                     )
             showButton <- gbutton("Show Changes",
                                   handler = function(h, ...) {
                                       GUI$getActiveDoc()$setSettings(
-                                          list(by = GUI$getActiveData()[[
+                                          list(colby = GUI$getActiveData()[[
                                                    svalue(grpVarList)]],
                                                varnames = list(
-                                                   by = svalue(grpVarList)))
+                                                   colby = svalue(grpVarList)))
                                           )
                                       updateSettings()
                                   })
@@ -215,15 +215,15 @@ iNZDotchartMod <- setRefClass(
             tbl[11,3, expand = TRUE] <- transpSlider
             tbl[12, 2:4] <- showButton
 
-            ## if the "by" options is set, i.e. points are colored
+            ## if the "colby" options is set, i.e. points are colored
             ## according to another var, disable the option to
             ## change the color
-            if (!is.null(GUI$getActiveDoc()$getSettings()$by)) {
+            if (!is.null(GUI$getActiveDoc()$getSettings()$colby)) {
                 enabled(symbolColList) <- FALSE
                 svalue(lbl6) <- paste(
                     "Changing the color of symbols is disabled since",
                     " the symbols are\n colored by variable '",
-                    GUI$getActiveDoc()$getSettings()$varnames$by,
+                    GUI$getActiveDoc()$getSettings()$varnames$colby,
                     "'", sep = "")
             }
             add(optGrp, tbl)
@@ -497,10 +497,10 @@ iNZBarchartMod <- setRefClass(
             showButton <- gbutton("Show Changes",
                                   handler = function(h, ...) {
                                       GUI$getActiveDoc()$setSettings(
-                                          list(by = GUI$getActiveData()[[
+                                          list(colby = GUI$getActiveData()[[
                                                    svalue(grpVarList)]],
                                                varnames = list(
-                                                   by = svalue(grpVarList)))
+                                                   colby = svalue(grpVarList)))
                                           )
                                       updateSettings()
                                   })
@@ -599,28 +599,30 @@ iNZScatterMod <- setRefClass(
             lbl2 <- glabel("Colour by levels of:")
             grpVarList <- gcombobox(c("", names(GUI$getActiveData())),
                                     selected = ifelse(
-                                        is.null(curSet$by),
+                                        is.null(curSet$colby),
                                         1, which(names(GUI$getActiveData()) ==
-                                                 curSet$varnames$by)[1] + 1
+                                                 curSet$varnames$colby)[1] + 1
                                         )
                                     )
             lbl3 <- glabel("Resize points proportional to:")
             rszVarList <- gcombobox(
-                c("",
-                  names(GUI$getActiveData())[sapply(GUI$getActiveData(),
-                                                    is.numeric)])
+                c("", rszNames <- names(GUI$getActiveData())[sapply(GUI$getActiveData(), is.numeric)]),
+                selected = ifelse(
+                    is.null(curSet$sizeby),
+                    1, which(rszNames == curSet$varnames$sizeby)[1] + 1
+                    )
                 )
             showButton <- gbutton("Show Changes",
                                   handler = function(h, ...) {
                                       ## update plot settings
                                       GUI$getActiveDoc()$setSettings(
-                                          list(by = GUI$getActiveData()[[
+                                          list(colby = GUI$getActiveData()[[
                                                    svalue(grpVarList)]],
-                                               prop.size = GUI$getActiveData()[[
+                                               sizeby = GUI$getActiveData()[[
                                                    svalue(rszVarList)]],
                                                varnames = list(
-                                                   by = svalue(grpVarList),
-                                                   prop.size = svalue(rszVarList)))
+                                                   colby = svalue(grpVarList),
+                                                   sizeby = svalue(rszVarList)))
                                           )
                                       updateSettings()
                                   })
@@ -650,11 +652,11 @@ iNZScatterMod <- setRefClass(
             cubChk <- gcheckbox(trCrvs[3],
                                 checked = trCrvs[3] %in% curSet$trend)
             smthChk <- gcheckbox("Draw a smoother",
-                                 checked = curSet$smooth!=0)
+                                 checked = curSet$smooth!=0 | !is.null(curSet$quant.smooth))
             quantSmthChk <- gcheckbox("Use Quantiles",
                                       checked = !is.null(curSet$quant.smooth))
             trendByChk <- gcheckbox(paste("For each level of",
-                                            curSet$varnames$by),
+                                            curSet$varnames$colby),
                                       checked = curSet$trend.by)
             linCol <- gcombobox(trCols,
                                 selected = which(
@@ -717,6 +719,9 @@ iNZScatterMod <- setRefClass(
             if (!svalue(smthChk)) {
                 enabled(smthSlid) <- FALSE
                 enabled(quantSmthChk) <- FALSE
+            } else {
+                if (svalue(quantSmthChk))
+                    enabled(smthSlid) <- FALSE
             }
 
             addHandlerChanged(smthChk, handler = function(h, ...) {
@@ -735,15 +740,17 @@ iNZScatterMod <- setRefClass(
             ## if quantiles are used, disable slider
             addHandlerChanged(quantSmthChk,
                               handler = function(h, ...) {
-                                  if (svalue(quantSmthChk))
+                                  if (svalue(quantSmthChk)) {
                                       enabled(smthSlid) <- FALSE
-                                  else
+                                  }
+                                  else {
                                       enabled(smthSlid) <- TRUE
+                                  }
                               })
 
             ## only have the trend by level option enabled if
             ## the colored by variable option is set
-            if (is.null(curSet$by))
+            if (is.null(curSet$colby))
                 enabled(trendByChk) <- FALSE
             tbl[1, 1:2, anchor = c(-1, -1), expand = TRUE] <- lbl1
             tbl[2, 1] <- linChk
@@ -861,7 +868,7 @@ iNZScatterMod <- setRefClass(
             joinPts <- gcheckbox("Join points",
                                  checked = curSet$join)
             lineByChk <- gcheckbox(paste("For each level of",
-                                          curSet$varnames$by),
+                                          curSet$varnames$colby),
                                    selected = curSet$lines.by)
             joinCols <- c("red", "black", "blue", "green4",
                           "yellow", "pink", "grey", "orange")
@@ -882,7 +889,7 @@ iNZScatterMod <- setRefClass(
                                   })
             ## only have the lines by level option enabled if
             ## the colored by variable option is set
-            if (is.null(curSet$by))
+            if (is.null(curSet$colby))
                 enabled(lineByChk) <- FALSE
             tbl[1, 1:2, anchor = c(-1, -1), expand = TRUE] <- lbl1
             tbl[2, 1, expand = TRUE] <- joinPts
@@ -984,12 +991,12 @@ iNZScatterMod <- setRefClass(
             ## if the "by" options is set, i.e. points are colored
             ## according to another var, disable the option to
             ## change the color
-            if (!is.null(GUI$getActiveDoc()$getSettings()$by)) {
+            if (!is.null(GUI$getActiveDoc()$getSettings()$colby)) {
                 enabled(symbolColList) <- FALSE
                 svalue(lbl6) <- paste(
                     "Changing the color of symbols is disabled since",
                     " the symbols are\n colored by variable '",
-                    GUI$getActiveDoc()$getSettings()$varnames$by,
+                    GUI$getActiveDoc()$getSettings()$varnames$colby,
                     "'", sep = "")
             }
             add(optGrp, tbl)
