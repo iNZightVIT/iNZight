@@ -658,6 +658,8 @@ iNZScatterMod <- setRefClass(
             trendByChk <- gcheckbox(paste("For each level of",
                                             curSet$varnames$colby),
                                       checked = curSet$trend.by)
+            trendParChk <- gcheckbox("Parallel trend lines",
+                                     checked = curSet$trend.parallel)
             linCol <- gcombobox(trCols,
                                 selected = which(
                                     curSet$col.trend$linear == trCols
@@ -694,8 +696,10 @@ iNZScatterMod <- setRefClass(
                                                  svalue(quaCol),
                                                  svalue(cubCol))
                                       ## smoother option
-                                      qsmth <- if (svalue(quantSmthChk)) "default"
-                                               else NULL
+                                      qsmth <-
+                                          if (svalue(quantSmthChk))
+                                              if (svalue(smthChk))"default" else NULL
+                                          else NULL
                                       smth <- ifelse(svalue(smthChk) & is.null(qsmth),
                                                      svalue(smthSlid),
                                                      0)
@@ -709,7 +713,8 @@ iNZScatterMod <- setRefClass(
                                                    quadratic = trCol[2],
                                                    cubic = trCol[3]),
                                                col.smooth = svalue(smthCol),
-                                               trend.by = svalue(trendByChk)
+                                               trend.by = svalue(trendByChk),
+                                               trend.parallel = svalue(trendParChk)
                                                )
                                           )
                                       updateSettings()
@@ -723,6 +728,10 @@ iNZScatterMod <- setRefClass(
                 if (svalue(quantSmthChk))
                     enabled(smthSlid) <- FALSE
             }
+
+            
+            #enabled(trendParChk) <- svalue(trendByChk) & (svalue(linChk) | svalue(quaChk) | svalue(cubChk))
+            
 
             addHandlerChanged(smthChk, handler = function(h, ...) {
                 if (svalue(smthChk)) {
@@ -748,10 +757,38 @@ iNZScatterMod <- setRefClass(
                                   }
                               })
 
+            ## activate/deactive trend by check box
             ## only have the trend by level option enabled if
             ## the colored by variable option is set
-            if (is.null(curSet$colby))
-                enabled(trendByChk) <- FALSE
+            ## and if lin/quad/cub/or normal smoother is checked
+            activateTrendBy <- function() {
+                enabled(trendByChk) <-
+                    ifelse(is.null(curSet$colby), FALSE, is.factor(curSet$colby)) &
+                        (svalue(linChk) | svalue(quaChk) | svalue(cubChk) |
+                         (svalue(smthChk) & !svalue(quantSmthChk)))
+            }
+            activateTrendBy()
+            addHandlerChanged(linChk, handler = function(h, ...) activateTrendBy())
+            addHandlerChanged(quaChk, handler = function(h, ...) activateTrendBy())
+            addHandlerChanged(cubChk, handler = function(h, ...) activateTrendBy())
+            addHandlerChanged(smthChk, handler = function(h, ...) activateTrendBy())
+            addHandlerChanged(quantSmthChk, handler = function(h, ...) activateTrendBy())
+
+            
+            ## activate/deactivate trend parallel box
+            ## only have the "parallel lines" enabled if "trend by" is ticked
+            activateTrendPar <- function() {
+                enabled(trendParChk) <- svalue(trendByChk) &
+                    (svalue(linChk) | svalue(quaChk) | svalue(cubChk))
+            }
+            activateTrendPar()
+            addHandlerChanged(trendByChk, handler = function(h, ...) activateTrendPar())            
+            addHandlerChanged(linChk, handler = function(h, ...) activateTrendPar())
+            addHandlerChanged(quaChk, handler = function(h, ...) activateTrendPar())
+            addHandlerChanged(cubChk, handler = function(h, ...) activateTrendPar())     
+            
+            
+                
             tbl[1, 1:2, anchor = c(-1, -1), expand = TRUE] <- lbl1
             tbl[2, 1] <- linChk
             tbl[3, 1] <- quaChk
@@ -764,6 +801,7 @@ iNZScatterMod <- setRefClass(
             tbl[6, 1] <- quantSmthChk
             tbl[7, 1:2] <- smthSlid
             tbl[8, 1] <- trendByChk
+            tbl[8, 2] <- trendParChk
             tbl[9, 1:2, expand = TRUE] <- showButton
             add(optGrp, tbl)
         },
@@ -925,9 +963,9 @@ iNZScatterMod <- setRefClass(
                 "darkslategray1", "greenyellow", "lightblue1",
                 "lightpink", "rosybrown1", "slategray1", "thistle1",
                 "wheat1")
-            plotTypes <- c("default", "scatter plot", "grid-density plot")
+            plotTypes <- c("default", "scatter plot", "grid-density plot", "hexbin plot")
             ## the values used for `largesample` in the plot settings
-            plotTypeValues <- list(NULL, FALSE, TRUE)
+            plotTypeValues <- c("default", "scatter", "grid", "hex")
             symbolColList <- gcombobox(
                 pointCols,
                 selected = ifelse(
@@ -944,12 +982,13 @@ iNZScatterMod <- setRefClass(
                 editable = TRUE)
             plotTypeList <- gcombobox(
                 plotTypes,
-                selected = ifelse(
-                    is.null(curSet$largesample),
-                    1,
-                    ifelse(
-                        curSet$largesample == FALSE,
-                        2, 3))
+                selected = which(plotTypeValues == curSet$plottype)
+                ## selected = ifelse(
+                ##     is.null(curSet$largesample),
+                ##     1,
+                ##     ifelse(
+                ##         curSet$largesample == FALSE,
+                ##         2, 3))
                 )
             fillColor <- gcheckbox("Colour symbol interior",
                                    checked = (curSet$pch != 1))
@@ -957,6 +996,8 @@ iNZScatterMod <- setRefClass(
                 by = 0.05, value = curSet$cex.pt)
             transpSlider <- gslider(from = 0, to = 100,
                                     by = 1, value = 100 * (1 - curSet$alpha))
+            
+            
             showButton <- gbutton("Show Changes",
                                   handler = function(h, ...) {
                                       pch.sel <- ifelse(svalue(fillColor),
@@ -967,8 +1008,9 @@ iNZScatterMod <- setRefClass(
                                                cex.pt = svalue(cexSlider),
                                                pch = pch.sel,
                                                alpha = 1 - svalue(transpSlider) / 100,
-                                               largesample = plotTypeValues[[svalue(
-                                                   plotTypeList, index = TRUE)]]
+                                               plottype = plotTypeValues[
+                                                   svalue(plotTypeList, index = TRUE)
+                                                   ]
                                                )
                                           )
                                       updateSettings()
@@ -1060,8 +1102,6 @@ iNZScatterMod <- setRefClass(
                         w[curSet$g2 != curSet$g2.level] <- FALSE
                     }
                 }
-               
-                seekViewport("MAINVP")
 
                 isNA <- is.na(x) | is.na(y)
                 if (!is.null(curSet$g1))
@@ -1073,7 +1113,7 @@ iNZScatterMod <- setRefClass(
                 d <- data.frame(x = as.numeric(dp$x),
                                 y = as.numeric(dp$y),
                                 v = v[w & !isNA])
-                seekViewport("SCATTERVP")
+                seekViewport("VP:locate.these.points")
                 
                 xy <- as.numeric(grid.locator())
                 
@@ -1094,7 +1134,7 @@ iNZScatterMod <- setRefClass(
 
                 grid.text(o$v, o$x,
                           o$y + ifelse(o$y < mean(d$y), 1, -1) *
-                          convertWidth(unit(0.5, "char"), "native", TRUE),
+                          convertWidth(unit(1, "char"), "native", TRUE),
                           just = ifelse(o$y > mean(d$y), "top", "bottom"),
                           default.units = "native", gp = gpar(cex = 0.7))
 
