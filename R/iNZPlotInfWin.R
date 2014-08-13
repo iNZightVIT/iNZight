@@ -56,7 +56,7 @@ iNZBarchartInf <- setRefClass(
             intType <- gradio(c("Comparison Intervals",
                                 "Confidence Intervals",
                                 "Comparison + Confidence Intervals"),
-                              selected = 1)
+                              selected = 3)
             mthd <- gradio(c("Bootstrap", "Normal"),
                            selected = 2)
             addButton <- gbutton(
