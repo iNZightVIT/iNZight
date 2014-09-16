@@ -2,6 +2,20 @@
 \title{NEWS file for the iNZight package}
 \encoding{UTF-8}
 
+\section{Changes in version 2.0.3}{
+  \subsection{MINOR CHANGES}{
+    \itemize{
+      \item "Add to Plot" window modified for barcharts - can show only
+      CIs, and also selects comparison and confidence intervals by default
+    }
+  }
+
+  \subsection{BUG FIXES}{
+    Includes a suite of bug fixes in the iNZightPlots package - see its
+    NEWS file for these
+  }
+}
+
 \section{Changes in version 2.0.2}{
   \subsection{NEW FEATURES}{
     \itemize{
