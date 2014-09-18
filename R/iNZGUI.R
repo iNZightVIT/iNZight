@@ -315,7 +315,19 @@ iNZGUI <- setRefClass(
                   label = "Stack variables...",
                   icon = "symbol_diamond",
                   handler = function(h, ...) iNZstackVarWin$new(.self)
-                  )
+                  ),
+                modelFit = gaction(
+                  #32
+                    label = "Multiple Response...",
+                    icon = "symbol_diamond",
+                    handler = function(h, ...) {
+                        ign <- gwindow("...", visible = FALSE)
+                        tag(ign, "dataSet") <- getActiveData()
+                        e <- list(obj = ign)
+                        e$win <- win
+                        multipleResponseWindow(e)
+                    }
+                    )
                 #####################################################
                 ###  big suggestion
                 ###  any new update function should be placing below to match the actionList[[number]]
@@ -349,7 +361,8 @@ iNZGUI <- setRefClass(
                     "Quick Explore" = actionList[c(24, 22, 23, 26, 20)],
                     actionList[[19]],
                     actionList[[17]],
-                    actionList[[18]]
+                    actionList[[18]],
+                    actionList[[32]]
                     )
                # "Advanced" = actionList[c(19, 18, 16, 17)]
                 )
