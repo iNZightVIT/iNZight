@@ -3,6 +3,12 @@
 \encoding{UTF-8}
 
 \section{Changes in version 2.0.3}{
+  \subsection{MAJOR CHANGES}{
+    A new Multiple Response analysis module has been added to the
+    Advanced menu. This utilises the iNZightMR package developed by
+    Junjie Zeng.
+  }
+  
   \subsection{MINOR CHANGES}{
     \itemize{
       \item "Add to Plot" window modified for barcharts - can show only
