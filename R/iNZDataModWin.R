@@ -332,6 +332,7 @@ iNZrenameWin <- setRefClass(
         initialize = function(gui) {
             callSuper(gui)
             svalue(GUI$modWin) <<- "Rename Factor Levels"
+            size(GUI$modWin) <<- c(600, 200)
             ## ggroup does not automatically add scrollbars and gWidget2 does not
             ## have a function to do so. We therefore wrap around the RGtk2 class
             ## gtkScrolledWindow around the ggroup
@@ -458,6 +459,13 @@ iNZreorderWin <- setRefClass(
         initialize = function(gui) {
             callSuper(gui)
             svalue(GUI$modWin) <<- "Reorder Factor Levels"
+            ## ggroup does not automatically add scrollbars and gWidget2 does not
+            ## have a function to do so. We therefore wrap the RGtk2 class
+            ## gtkScrolledWindow around the ggroup
+            scrolledWindow <- gtkScrolledWindow()
+            ## setting this will only display a scrollbar if necessary
+            scrolledWindow$setPolicy("GTK_POLICY_AUTOMATIC","GTK_POLICY_AUTOMATIC")
+            
             mainGroup <- ggroup(expand = TRUE, horizontal = FALSE)
             mainGroup$set_borderwidth(15)
             ## instructions through glabels
@@ -522,7 +530,10 @@ iNZreorderWin <- setRefClass(
             add(mainGroup, tbl, expand = TRUE)
             add(mainGroup, sortGrp)
             add(mainGroup, reorderButton)
-            add(GUI$modWin, mainGroup, expand = TRUE, fill = TRUE)
+            ## method of gtkScrolledWindow to add a GtkWidget (not a gWidgets2 class)
+            ## as a child using a viewport
+            scrolledWindow$addWithViewport(mainGroup$widget)
+            add(GUI$modWin, scrolledWindow, expand = TRUE, fill = TRUE)
             visible(GUI$modWin) <<- TRUE
         },
         displayLevels = function(tbl, factorData) {
@@ -988,7 +999,7 @@ iNZrnmVarWin <- setRefClass(
         initialize = function(gui) {
             callSuper(gui)
             svalue(GUI$modWin) <<- "Rename Variables"
-            size(GUI$modWin) <<- c(450, 200)
+            size(GUI$modWin) <<- c(600, 200)
             ## ggroup does not automatically add scrollbars and gWidget2 does not
             ## have a function to do so. We therefore wrap the RGtk2 class
             ## gtkScrolledWindow around the ggroup
