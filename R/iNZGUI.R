@@ -18,6 +18,7 @@ iNZGUI <- setRefClass(
                    ## the widget handling the switching between the
                    ## 2 data views
                    viewSwitcherWidget = "ANY",
+                   dataNameWidget = "ANY",
                    ## widget that handles the plot notebook
                    plotWidget = "ANY",
                    ## widget that handles the drag/drop buttons
@@ -62,6 +63,8 @@ iNZGUI <- setRefClass(
             initializeDataView(dataThreshold)
             ## set up buttons to switch between data/var view
             add(gp1, .self$initializeViewSwitcher(dataThreshold)$viewGroup)
+           # add(gp1, .self$initializeDataNameWidget(name = "hello"))
+#            add(gp1, glabel(paste("No data loaded")))
             add(gp1, dataViewWidget$dataGp, expand = TRUE)
             ## set up the drag and drop fields
             add(gp1, initializeControlWidget()$ctrlGp, expand = FALSE)
@@ -393,6 +396,9 @@ iNZGUI <- setRefClass(
                 )
             ## if the settings change, redraw the plot
             getActiveDoc()$addSettingsObjObserver(function() updatePlot())
+        },
+        initializeDataNameWidget = function() {
+            dataNameWidget <<- iNZDataNameWidget$new(.self)
         },
         ## set up the buttons used for drag and drop and control of
         ## the plot; they update the plotSettings

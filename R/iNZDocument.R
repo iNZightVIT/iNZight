@@ -162,3 +162,18 @@ iNZDocument <- setRefClass(
     )
 
 
+iNZDataNameWidget <- setRefClass(
+    "iNZDataNameWidget",
+    fields = list(
+        gui = "ANY",  ## the iNZight GUI object
+        name = "character" ## the string for the data set name
+        ),
+    methods = list(
+        initialize = function(gui) {
+            print("ok..")
+        },
+        updateWidget = function() {
+            print("updated..")
+        }
+        )
+    )
