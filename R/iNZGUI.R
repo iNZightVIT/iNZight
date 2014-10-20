@@ -63,8 +63,10 @@ iNZGUI <- setRefClass(
             initializeDataView(dataThreshold)
             ## set up buttons to switch between data/var view
             add(gp1, .self$initializeViewSwitcher(dataThreshold)$viewGroup)
-           # add(gp1, .self$initializeDataNameWidget(name = "hello"))
-#            add(gp1, glabel(paste("No data loaded")))
+            
+            add(gp1, .self$initializeDataNameWidget()$nameLabel)
+#            add(gp1, )
+
             add(gp1, dataViewWidget$dataGp, expand = TRUE)
             ## set up the drag and drop fields
             add(gp1, initializeControlWidget()$ctrlGp, expand = FALSE)
@@ -377,6 +379,23 @@ iNZGUI <- setRefClass(
             viewSwitcherWidget <<- iNZViewSwitcher$new(.self, dataThreshold)
             .self$viewSwitcherWidget
         },
+        ## set up the display to show the name of the data set
+        initializeDataNameWidget = function() {
+            ## create the widget
+            dataNameWidget <<- iNZDataNameWidget$new(.self)
+            
+             ## if the list of active document changes, update the data set name
+            addActDocObs(function() {
+                dataNameWidget$updateWidget()
+            })
+            ## if the dataSet changes, update the data set name
+            getActiveDoc()$addDataObserver(
+                function() {
+                    dataNameWidget$updateWidget()
+                }
+            )
+            .self$dataNameWidget
+        },
         ## set up the widget to display/edit the loaded dataSet
         initializeDataView = function(dataThreshold) {
             ## create the widget
@@ -393,12 +412,9 @@ iNZGUI <- setRefClass(
                     viewSwitcherWidget$updateWidget()
                     getActiveDoc()$updateSettings()
                 }
-                )
+            )
             ## if the settings change, redraw the plot
             getActiveDoc()$addSettingsObjObserver(function() updatePlot())
-        },
-        initializeDataNameWidget = function() {
-            dataNameWidget <<- iNZDataNameWidget$new(.self)
         },
         ## set up the buttons used for drag and drop and control of
         ## the plot; they update the plotSettings
