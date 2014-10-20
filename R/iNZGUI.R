@@ -63,10 +63,9 @@ iNZGUI <- setRefClass(
             initializeDataView(dataThreshold)
             ## set up buttons to switch between data/var view
             add(gp1, .self$initializeViewSwitcher(dataThreshold)$viewGroup)
-            
+            ## display the name of the data set
             add(gp1, .self$initializeDataNameWidget()$nameLabel)
-#            add(gp1, )
-
+            ## display the data
             add(gp1, dataViewWidget$dataGp, expand = TRUE)
             ## set up the drag and drop fields
             add(gp1, initializeControlWidget()$ctrlGp, expand = FALSE)
