@@ -76,6 +76,7 @@ iNZFilterWin <- setRefClass(
                     if (length(svalue(factorLvls)) > 0) {
                       originalD <- GUI$getActiveDoc()$getModel()$origDataSet
                       ActiveData <- GUI$getActiveData()
+#                      attr(ActiveData, "tag") <- "filtered"
                       idx <- GUI$getActiveData()[[svalue(factorMenu)]] %in%
                         svalue(factorLvls)
                       GUI$setDocument(iNZDocument$new(data = originalD))

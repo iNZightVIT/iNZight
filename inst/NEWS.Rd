@@ -28,6 +28,18 @@
   \subsection{PATCH 2.0.3-2} {
     Display the data set name
   }
+  \subsection{PATCH 2.0.3-3}{
+    \itemize{
+      \item Fixed a bug in the "locate" feature that caused labels to
+      appear far above or below the selected point when the x and y
+      scales were vastly different in scale.
+
+      \item Added a simple "check for updates" function that notifies
+      users in the title bar when updates are available.
+
+      \item Fixed a bug introduced in patch 2.0.3-2 when filtering data.
+    }
+  }
 }
 
 \section{Changes in version 2.0.2}{

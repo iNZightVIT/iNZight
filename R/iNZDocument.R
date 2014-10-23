@@ -166,7 +166,7 @@ iNZDataNameWidget <- setRefClass(
     "iNZDataNameWidget",
     fields = list(
         GUI = "ANY",  ## the iNZight GUI object
-        datName = "character", ## the string for the data set name
+        datName = "ANY", ## the string for the data set name
         nameLabel = "ANY"
         ),
     methods = list(
@@ -177,6 +177,7 @@ iNZDataNameWidget <- setRefClass(
         },
         updateWidget = function() {
             dataSet <- GUI$getActiveData()
+            
             if(is.null(dataSet)){
                 datName <<- "No data loaded"
             } else {

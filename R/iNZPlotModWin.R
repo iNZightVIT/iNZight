@@ -1084,10 +1084,11 @@ iNZScatterMod <- setRefClass(
                 xy.s[2] <- (xy[2] - min(d$y)) / (max(d$y) - min(d$y))
 
                 o <- d[which.min((x.s - xy.s[1])^2 + (y.s - xy.s[2])^2), ]
+                print(o)
 
                 grid.text(o$v, o$x,
                           o$y + ifelse(o$y < mean(d$y), 1, -1) *
-                          convertWidth(unit(0.5, "char"), "native", TRUE),
+                              convertHeight(unit(0.5, "char"), "native", TRUE),
                           just = ifelse(o$y > mean(d$y), "top", "bottom"),
                           default.units = "native", gp = gpar(cex = 0.7))
 
