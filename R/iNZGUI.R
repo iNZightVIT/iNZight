@@ -45,13 +45,19 @@ iNZGUI <- setRefClass(
             win.title <- paste("iNZight (v",
                                packageDescription("iNZight")$Version,
                                ")", sep = "")
-            ## Check for updates ...
-            ap <- numeric_version(available.packages(
+            ## Check for updates ... need to use try incase it fails (no connection etc)
+            ap <- suppressWarnings(try(numeric_version(available.packages(
                 contriburl = contrib.url("http://docker.stat.auckland.ac.nz/R",
-                    getOption("pkgType")))[,"Version"])
-            ip <- numeric_version(installed.packages()[names(ap), "Version"])
-            if (any(ap > ip))
-                win.title <- paste(win.title, " [updates available]")            
+                    getOption("pkgType")))[,"Version"]), TRUE))
+            if (!inherits(ap, "try-error")) {
+                if (length(ap) > 0) {
+                    ip <- try(numeric_version(installed.packages()[names(ap), "Version"]), TRUE)
+                    if (!inherits(ip, "try-error")) {
+                        if (any(ap > ip))
+                            win.title <- paste(win.title, " [updates available]")
+                    }
+                }
+            }
             
             win <<- gwindow(win.title, visible = FALSE, width = 870,
                             height = 600)
