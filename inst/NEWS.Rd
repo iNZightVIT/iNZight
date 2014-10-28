@@ -40,6 +40,9 @@
       \item Fixed a bug introduced in patch 2.0.3-2 when filtering data.
     }
   }
+  \subsection{PATCH 2.0.3-4}{
+    Fixed a bug in the updater checker that occurs if not connected to internet.
+  }
 }
 
 \section{Changes in version 2.0.2}{
