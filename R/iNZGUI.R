@@ -61,7 +61,12 @@ iNZGUI <- setRefClass(
             
             win <<- gwindow(win.title, visible = FALSE, width = 870,
                             height = 600)
-            g <- gpanedgroup(container = win, expand = TRUE)
+            gtop <- ggroup(horizontal = FALSE, container = win)
+
+            menugrp <- ggroup(container = gtop)
+            initializeMenu(menugrp, disposeR)
+            
+            g <- gpanedgroup(container = gtop, expand = TRUE)
             ## Left side group
             gp1 <- ggroup(horizontal = FALSE, container = g)
             size(gp1) <- c(300, 300)
@@ -69,7 +74,7 @@ iNZGUI <- setRefClass(
             gp2 <- ggroup(horizontal = FALSE, container = g, expand = TRUE)
             ## set up widgets in the left group
             ## set up the menu bar at the top
-            initializeMenu(gp1, disposeR)
+#            initializeMenu(gp1, disposeR)
             ## set up dataViewWidget, added below
             ## dataThreshold is used as maximum nr of cells
             ## before data.frame view gets deactivated
@@ -330,12 +335,12 @@ iNZGUI <- setRefClass(
                   ),
                 stackVar = gaction(
                   #31
-                  label = "Stack variables...",
-                  icon = "symbol_diamond",
-                  handler = function(h, ...) iNZstackVarWin$new(.self)
-                  ),
+                    label = "Stack variables...",
+                    icon = "symbol_diamond",
+                    handler = function(h, ...) iNZstackVarWin$new(.self)
+                ),
                 modelFit = gaction(
-                  #32
+                    ## 32
                     label = "Multiple Response...",
                     icon = "symbol_diamond",
                     handler = function(h, ...) {
@@ -345,7 +350,43 @@ iNZGUI <- setRefClass(
                         e$win <- win
                         multipleResponseWindow(e)
                     }
-                    )
+                ),
+                aboutiNZight = gaction(
+                    ## 33
+                    label = "Warranty",
+                    icon = "symbol_diamond",
+                    handler = function(h, ...) {
+                        w <- gwindow("About iNZight", width = 500, height = 400, visible = TRUE)
+                        g <- gvbox(expand = FALSE, cont = w, spacing = 5)
+                        g$set_borderwidth(10)
+                        mainlbl <- glabel("iNZight", container = g)
+                        font(mainlbl) <- list(weight = "bold", family = "normal", size = 20)
+                        verlbl <- glabel(paste("Version", packageDescription("iNZight")$Version), container = g)
+                        font(verlbl) <- list(weight = "normal", family = "normal", size = 10)
+                        addSpace(g, 10)
+                        copylbl <- glabel("Copyright (C) 2014 University of Auckland", container = g)
+                        font(copylbl) <- list(weight = "normal", family = "normal", size = 8)
+                        addSpace(g, 15)
+                        gpltxt <- gtext(expand = TRUE, cont = g, wrap = TRUE)
+                        insert(gpltxt, paste("\n\nThis program is free software; you can redistribute it and/or",
+                                             "modify it under the terms of the GNU General Public License",
+                                             "as published by the Free Software Foundation; either version 2",
+                                             "of the License, or (at your option) any later version.\n"),
+                               font.attr = list(size = 9)) -> l1
+                        insert(gpltxt, paste("This program is distributed in the hope that it will be useful,",
+                                             "but WITHOUT ANY WARRANTY; without even the implied warranty of",
+                                             "MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the",
+                                             "GNU General Public License for more details.\n"),
+                               font.attr = list(size = 9)) -> l2
+                        insert(gpltxt, paste("You should have received a copy of the GNU General Public License",
+                                             "along with this program; if not, write to the Free Software",
+                                             "Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.\n"),
+                               font.attr = list(size = 9)) -> l3
+                        insert(gpltxt, paste("You can view the full licence here:\nhttp://www.gnu.org/licenses/gpl-2.0-standalone.html"),
+                               font.attr = list(size = 9)) -> l4
+                        visible(w) <- TRUE
+                    }
+                )
                 #####################################################
                 ###  big suggestion
                 ###  any new update function should be placing below to match the actionList[[number]]
@@ -381,8 +422,10 @@ iNZGUI <- setRefClass(
                     actionList[[17]],
                     actionList[[18]],
                     actionList[[32]]
+                    ),
+                "About" = list(
+                    actionList[[33]]
                     )
-               # "Advanced" = actionList[c(19, 18, 16, 17)]
                 )
             gmenu(menuBarList, container = cont)
 
