@@ -46,6 +46,8 @@
   \subsection{PATCH 2.0.3-5}{
     \itemize{
       \item removed development comment from Load Data window
+      
+      \item added restore labels to remove additions window
     }
   }
 }
