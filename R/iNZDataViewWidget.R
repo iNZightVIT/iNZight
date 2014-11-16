@@ -87,17 +87,23 @@ iNZDataViewWidget <- setRefClass(
             ## if more than 19 columns are in the dataSet, split the variable
             ## view into 2 tables
             N <- 19
+
+            ## prefix variable type to variable names
+            vnames <- names(dataSet)
+            vnames <- paste(ifelse(sapply(dataSet, is.numeric),
+                                   "(n)", "(c)"), vnames)
+                        
             # if(length(names(dataSet)) > N && length(names(dataSet)) < 80) {
             if(length(dataSet) < 100000 && length(names(dataSet))>80) {
                 varWidget <- list(
-                    gtable(names(dataSet)[1:floor(N/2)], expand = TRUE),
-                    gtable(names(dataSet)[(floor(N/2)+1):ncol(dataSet)],
+                    gtable(vnames[1:floor(N/2)], expand = TRUE),
+                    gtable(vnames[(floor(N/2)+1):ncol(dataSet)],
                            expand = TRUE))
                 names(varWidget[[1]]) <- "VARIABLES"
                 names(varWidget[[2]]) <- "...CONTINUED"
             } else {
-                varWidget <- list(gtable(names(dataSet), expand = TRUE))
-                names(varWidget[[1]]) <- "VARIABLES"
+                varWidget <- list(gtable(vnames, expand = TRUE))
+                names(varWidget[[1]]) <- "VARIABLES (n = numeric; c = categorical)"
             }
             ## use the variable view as dropsource and add to data group
             invisible(lapply(varWidget, function(x) {

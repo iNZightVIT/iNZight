@@ -27,7 +27,7 @@ iNZPlotRmveModWin <- setRefClass(
                     "Remove jitter",
                     "Remove rugs",
                     "Remove connecting lines",
-                    "Remove segmentation in bar charts",
+                    paste("Remove colour by", curSet$varnames$by),
                     "Remove all inference information",  # "confidence intervals",
                     "Remove symbol interior colouring",
                     "Restore default symbol colours",
