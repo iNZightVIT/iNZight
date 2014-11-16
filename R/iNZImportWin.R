@@ -53,8 +53,8 @@ iNZImportWin <- setRefClass("iNZImportWin",
                                     add(buttonGp, okButton)
                                     add(buttonGp, cancelButton)
                                     add(fileMainGp,
-                                        glabel("Space for extra options : to define NA string, header presence etc."))                                                                   
-                                        
+                                        #glabel("Space for extra options : to define NA string, header presence etc."))                                                                   
+                                        glabel(""))
                                     },
                                     pop = function(x) {
                                         x[-length(x)]
