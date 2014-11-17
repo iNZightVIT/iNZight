@@ -353,7 +353,7 @@ iNZGUI <- setRefClass(
                 ),
                 aboutiNZight = gaction(
                     ## 33
-                    label = "Warranty",
+                    label = "About",
                     icon = "symbol_diamond",
                     handler = function(h, ...) {
                         w <- gwindow("About iNZight", width = 500, height = 400, visible = TRUE)
@@ -384,7 +384,26 @@ iNZGUI <- setRefClass(
                                font.attr = list(size = 9)) -> l3
                         insert(gpltxt, paste("You can view the full licence here:\nhttp://www.gnu.org/licenses/gpl-2.0-standalone.html"),
                                font.attr = list(size = 9)) -> l4
+                        addSpace(g, 5)
+                        contactlbl <- glabel("For help, contact inzight_support@stat.auckland.ac.nz", container = g)
+                        font(contactlbl) <- list(weight = "normal", family = "normal", size = 8)
                         visible(w) <- TRUE
+                    }
+                ),
+                faqPage = gaction(
+                    ## 34
+                    label = "FAQ",
+                    icon  = "symbol_diamond",
+                    handler = function(h, ...) {
+                        browseURL("https://www.stat.auckland.ac.nz/~wild/iNZight/faq.php")
+                    }
+                ),
+                faqPage = gaction(
+                    ## 35
+                    label = "Contact Support/Report a Bug",
+                    icon  = "symbol_diamond",
+                    handler = function(h, ...) {
+                        browseURL("https://www.stat.auckland.ac.nz/~wild/iNZight/report.html")
                     }
                 )
                 #####################################################
@@ -423,8 +442,10 @@ iNZGUI <- setRefClass(
                     actionList[[18]],
                     actionList[[32]]
                     ),
-                "About" = list(
-                    actionList[[33]]
+                "Help" = list(
+                    actionList[[33]],
+                    actionList[[34]],
+                    actionList[[35]]
                     )
                 )
             gmenu(menuBarList, container = cont)
