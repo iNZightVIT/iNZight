@@ -43,6 +43,13 @@
   \subsection{PATCH 2.0.3-4}{
     Fixed a bug in the updater checker that occurs if not connected to internet.
   }
+  \subsection{PATCH 2.0.3-5}{
+    \itemize{
+      \item removed development comment from Load Data window
+      
+      \item added restore labels to remove additions window
+    }
+  }
 }
 
 \section{Changes in version 2.0.2}{

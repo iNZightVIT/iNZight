@@ -27,7 +27,7 @@ iNZPlotRmveModWin <- setRefClass(
                     "Remove jitter",
                     "Remove rugs",
                     "Remove connecting lines",
-                    "Remove segmentation in bar charts",
+                    paste("Remove colour by", curSet$varnames$by),
                     "Remove all inference information",  # "confidence intervals",
                     "Remove symbol interior colouring",
                     "Restore default symbol colours",
@@ -35,7 +35,8 @@ iNZPlotRmveModWin <- setRefClass(
                     "Restore default symbol transparency",
                     "Restore default background colour",
                     "Restore default line thickness",
-                    "Restore default plot type")
+                    "Restore default plot type",
+                    "Restore default plot labels")
                 ## check for presence of all additions
                 curAdditions <- c(
                     TRUE, ## all additiions
@@ -60,7 +61,8 @@ iNZPlotRmveModWin <- setRefClass(
                     (all.equal(curSet$alpha, defSet$alpha) != TRUE), ## transparency
                     curSet$bg != defSet$bg, ## bg colour
                     curSet$lwd.pt != defSet$lwd.pt, ## point line thickness
-                    !is.null(curSet$largesample) ## plot type
+                    !is.null(curSet$largesample), ## plot type
+                    !is.null(curSet$xlab) & !is.null(curSet$ylab) & !is.null(curSet$main)  ## plot labels
                     )
 
                 proceedButton <- gbutton(
@@ -127,7 +129,8 @@ iNZPlotRmveModWin <- setRefClass(
                                  list(alpha = defSet$alpha), ## transparency
                                  list(bg = defSet$bg), ## bg colour
                                  list(lwd.pt = defSet$lwd.pt), ## point line thickness
-                                 list(largesample = defSet$largesample) ## plot type
+                                 list(largesample = defSet$largesample), ## plot type
+                                 list(xlab = NULL, ylab = NULL, main = NULL)  ## labels
                                  )
 
             GUI$getActiveDoc()$setSettings(
