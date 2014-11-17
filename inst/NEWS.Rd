@@ -2,6 +2,44 @@
 \title{NEWS file for the iNZight package}
 \encoding{UTF-8}
 
+\section{Changes in version 2.0.4}{
+  \subsection{NEW FEATURES}{
+    \itemize{
+      \item The data set name is displayed above the data view
+
+      \item The variable type is now displayed as a prefix to the variable
+      names in the variable view
+      
+      \item A new "Updates Available" shows up when new versions are
+      released
+      
+      \item A new Help tab that includes Licence information, and a link
+      to the FAQ and Support pages
+    }
+  }
+  
+  \subsection{MINOR CHANGES}{
+    \itemize{
+      \item In the "Remove Additions" window, "Remove segmentation" has
+      been renamed to "Remove colour by" for bar plots, and
+      "Restore default labels" is added to remove customised plot
+      labels
+    }
+  }
+
+  \subsection{BUG FIXES}{
+    \itemize{
+      \item Removes development text from Load Data window
+      \item Fixes a bug in the Locate Points feature when the scales are
+      vastly different
+      \item Scroll bars added to Reorder Levels window
+      \item The menu has been moved above the plot tabs, so it no longer
+      gets cut off
+    }
+  }
+}
+
+
 \section{Changes in version 2.0.3}{
   \subsection{MAJOR CHANGES}{
     A new Multiple Response analysis module has been added to the
@@ -21,34 +59,27 @@
     NEWS file for these
   }
 
-  \subsection{PATCH 2.0.3-1} {
+  \subsection{PATCH 2.0.3-1}{
     Fixed an issue in the Reorder Levels window that now adds scroll
     bars to the window if it's too big.
   }
-  \subsection{PATCH 2.0.3-2} {
+  \subsection{PATCH 2.0.3-2}{
     Display the data set name
   }
   \subsection{PATCH 2.0.3-3}{
     \itemize{
       \item Fixed a bug in the "locate" feature that caused labels to
       appear far above or below the selected point when the x and y
-      scales were vastly different in scale.
+      scales were vastly different in scale
 
       \item Added a simple "check for updates" function that notifies
-      users in the title bar when updates are available.
+      users in the title bar when updates are available
 
-      \item Fixed a bug introduced in patch 2.0.3-2 when filtering data.
+      \item Fixed a bug introduced in patch 2.0.3-2 when filtering data
     }
   }
   \subsection{PATCH 2.0.3-4}{
     Fixed a bug in the updater checker that occurs if not connected to internet.
-  }
-  \subsection{PATCH 2.0.3-5}{
-    \itemize{
-      \item removed development comment from Load Data window
-      
-      \item added restore labels to remove additions window
-    }
   }
 }
 
