@@ -1,5 +1,5 @@
-\name{NEWS}
-\title{NEWS file for the iNZight package}
+\name{Change Log}
+\title{Change Log for iNZight}
 \encoding{UTF-8}
 
 \section{Changes in version 2.0.4}{
@@ -42,44 +42,25 @@
 
 \section{Changes in version 2.0.3}{
   \subsection{MAJOR CHANGES}{
-    A new Multiple Response analysis module has been added to the
-    Advanced menu. This utilises the iNZightMR package developed by
-    Junjie Zeng.
+    \itemize{
+      \item A new Multiple Response analysis module has been added to the
+      Advanced menu. This utilises the iNZightMR package developed by
+      Junjie Zeng
+    }
   }
   
   \subsection{MINOR CHANGES}{
     \itemize{
-      \item "Add to Plot" window modified for barcharts - can show only
+      \item "Add to Plot" window modified for barcharts - can show onlyake
       CIs, and also selects comparison and confidence intervals by default
     }
   }
 
   \subsection{BUG FIXES}{
-    Includes a suite of bug fixes in the iNZightPlots package - see its
-    NEWS file for these
-  }
-
-  \subsection{PATCH 2.0.3-1}{
-    Fixed an issue in the Reorder Levels window that now adds scroll
-    bars to the window if it's too big.
-  }
-  \subsection{PATCH 2.0.3-2}{
-    Display the data set name
-  }
-  \subsection{PATCH 2.0.3-3}{
     \itemize{
-      \item Fixed a bug in the "locate" feature that caused labels to
-      appear far above or below the selected point when the x and y
-      scales were vastly different in scale
-
-      \item Added a simple "check for updates" function that notifies
-      users in the title bar when updates are available
-
-      \item Fixed a bug introduced in patch 2.0.3-2 when filtering data
+      \item Includes a suite of bug fixes in the iNZightPlots package - see its
+      NEWS file for these
     }
-  }
-  \subsection{PATCH 2.0.3-4}{
-    Fixed a bug in the updater checker that occurs if not connected to internet.
   }
 }
 
