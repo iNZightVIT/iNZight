@@ -2,7 +2,7 @@
 \title{Change Log for iNZight}
 \encoding{UTF-8}
 
-\section{Changes in version 2.0.4}{
+\section{Changes in version 2.0.4 (18 November 2014)}{
   \subsection{NEW FEATURES}{
     \itemize{
       \item The data set name is displayed above the data view
@@ -40,7 +40,7 @@
 }
 
 
-\section{Changes in version 2.0.3}{
+\section{Changes in version 2.0.3 (17 September 2014)}{
   \subsection{MAJOR CHANGES}{
     \itemize{
       \item A new Multiple Response analysis module has been added to the
@@ -64,7 +64,7 @@
   }
 }
 
-\section{Changes in version 2.0.2}{
+\section{Changes in version 2.0.2 (17 June 2014)}{
   \subsection{NEW FEATURES}{
     \itemize{
       \item can now cycle through all two-variable plots for a selected
@@ -95,7 +95,7 @@
   }
 }
 
-\section{Changes in version 2.0.1}{
+\section{Changes in version 2.0.1 (27 March 2014)}{
   \subsection{NEW FEATURES}{
     \itemize{
       \item Identify feature added to the "Add To Plot" menu. This
@@ -131,7 +131,7 @@
   }
 }
 
-\section{Changes in version 2.0.0}{
+\section{Changes in version 2.0.0 (18 January 2014)}{
   \subsection{MAJOR RELEASE}{
     \itemize{
 
