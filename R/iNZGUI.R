@@ -58,6 +58,22 @@ iNZGUI <- setRefClass(
                     }
                 }
             }
+
+            ## also want to be cheeky and add users to "database" of users so we can track...
+            version = packageVersion("iNZight")
+            os = "linux"
+            try({
+                if (.Platform$OS == "windows") {
+                    os = "Windows"
+                } else if (Sys.info()["sysname"] == "Darwin") { 
+                    os = "Mac OS X"
+                    if (!inherits(osx.version, "try-error")) {
+                        os = paste("Mac OS X", osx.version)
+                    }
+                }
+                f <- try(url(paste0("http://docker.stat.auckland.ac.nz/R/tracker/index.php?track&v=",
+                                    version, "&os=", gsub(" ", "%20", os)), open = "r"), TRUE)
+            })
             
             win <<- gwindow(win.title, visible = FALSE, width = 870,
                             height = 600)
