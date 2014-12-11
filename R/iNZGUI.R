@@ -58,11 +58,13 @@ iNZGUI <- setRefClass(
                     }
                 }
             }
-
+            
+            ## we can update this part later to "count" every use ... but later
+            
             ## also want to be cheeky and add users to "database" of users so we can track...
-            version = packageVersion("iNZight")
-            os = "linux"
             try({
+                version = packageVersion("iNZight")
+                os <- "Linux"
                 if (.Platform$OS == "windows") {
                     os = "Windows"
                 } else if (Sys.info()["sysname"] == "Darwin") { 
@@ -71,8 +73,35 @@ iNZGUI <- setRefClass(
                         os = paste("Mac OS X", osx.version)
                     }
                 }
-                f <- try(url(paste0("http://docker.stat.auckland.ac.nz/R/tracker/index.php?track&v=",
-                                    version, "&os=", gsub(" ", "%20", os)), open = "r"), TRUE)
+                
+                ## have they updated before?
+                hash.id <- "new"
+                if (os == "Windows") {
+                    libp <- "."
+                } else if (os != "Linux") {
+                    ## i.e., mac
+                    libp <- "Library"
+                } else {
+                    ## linux - save in library..
+                    libp <- .libPaths()[which(sapply(.libPaths(), function(p)
+                                                     "iNZight" %in% list.files(p)))[1]]
+                }
+
+                if (file.exists(file.path(libp, "id.txt"))) {
+                    hash.id <- readLines(file.path(libp, "id.txt"))
+                }
+                           
+                ## only if not already tracking
+                if (hash.id == "new") {
+                    track.url <- paste0("http://docker.stat.auckland.ac.nz/R/tracker/index.php?track&v=",
+                                        version, "&os=", gsub(" ", "%20", os), "&hash=", hash.id)
+                    f <- try(url(track.url,  open = "r"), TRUE)
+                    
+                    ## write the hash code to their installation:
+                    hash.id <- readLines(f)
+                    
+                    writeLines(hash.id, file.path(libp, "id.txt"))
+                }
             })
             
             win <<- gwindow(win.title, visible = FALSE, width = 870,
