@@ -77,7 +77,7 @@ iNZGUI <- setRefClass(
                 ## have they updated before?
                 hash.id <- "new"
                 if (os == "Windows") {
-                    libp <- "."
+                    libp <- "prog_files"
                 } else if (os != "Linux") {
                     ## i.e., mac
                     libp <- "Library"
