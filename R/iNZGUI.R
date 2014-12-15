@@ -405,7 +405,15 @@ iNZGUI <- setRefClass(
                     handler = function(h, ...) {
                         browseURL("https://www.stat.auckland.ac.nz/~wild/iNZight/report.html")
                     }
+                ),
+                ############ MAPS ############
+                maps = gaction(
+                    ## 36
+                    label = "Maps...",
+                    icon = "symbol_diamond",
+                    handler = function(h, ...) iNZMapModWin$new(.self)
                 )
+                ############ MAPS ############
                 #####################################################
                 ###  big suggestion
                 ###  any new update function should be placing below to match the actionList[[number]]
@@ -440,7 +448,8 @@ iNZGUI <- setRefClass(
                     actionList[[19]],
                     actionList[[17]],
                     actionList[[18]],
-                    actionList[[32]]
+                    actionList[[32]],
+                    actionList[[36]]  # MAPS
                     ),
                 "Help" = list(
                     actionList[[33]],
