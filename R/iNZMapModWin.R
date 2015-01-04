@@ -35,6 +35,7 @@ iNZMapModWin <- setRefClass(
             
             topLayout = glayout(container = topWin)
             topLab1 = glabel("Location", container = topLayout)
+            tooltip(topLab1) = "type location"
             font(topLab1) = labFont
             
             loc = gedit(text = "Type location", container = topLayout)
@@ -135,6 +136,13 @@ iNZMapModWin <- setRefClass(
             midLab5 = glabel("to", container = midLayout)
             midLab6 = glabel("Type of plot", container = midLayout)
             
+            tooltip(midLab1) = "select variable of longitude"
+            tooltip(midLab2) = "select variable of latitude"
+            tooltip(midLab3) = "select variable of interest"
+            tooltip(midLab4) = "choose lower boundary (minimum by default)"
+            tooltip(midLab5) = "choose upper boundary (maximum by default)"
+            tooltip(midLab6) = "is the plot drawn as points or contours?"
+            
             font(midLab1) = labFont
             font(midLab2) = labFont
             font(midLab3) = labFont
@@ -143,7 +151,7 @@ iNZMapModWin <- setRefClass(
             font(midLab6) = labFont
             
             variables = names(GUI$getActiveData())
-            midOpt1 = gcombobox(c("", variables), container = midLayout)
+            midOpt1 = gcombobox(c("", variables), container = midLayout)            
             midOpt2 = gcombobox(c("", variables), container = midLayout)
             midOpt3 = gcombobox(c("", variables), container = midLayout)
             midOpt4 = gspinbutton(from = 0, to = 1, length.out = 10, 
@@ -151,6 +159,12 @@ iNZMapModWin <- setRefClass(
             size(midOpt4) = c(50, 20)
             midOpt5 = gspinbutton(from = 0, to = 1, length.out = 10,
                                   value = 0, container = midLayout)
+            
+            tooltip(midOpt1) = "select variable of longitude"
+            tooltip(midOpt2) = "select variable of latitude"
+            tooltip(midOpt3) = "select variable of interest"
+            tooltip(midOpt4) = "choose lower boundary (minimum by default)"
+            tooltip(midOpt5) = "choose upper boundary (maximum by default)"
             
             size(midOpt1) = c(170, 25)
             size(midOpt2) = c(170, 25)
@@ -310,12 +324,15 @@ iNZMapModWin <- setRefClass(
                     )
                     if (whichColour == 1) {
                         col = svalue(eval(parse(text = pathToTab2Opts[2])))
+                        if (col == "default" | col == "") { col = NULL }
                         low = NULL
                         high = NULL
                     } else if (whichColour == 2) {
                         col = NULL
                         low = svalue(eval(parse(text = pathToTab2Opts[3])))
                         high = svalue(eval(parse(text = pathToTab2Opts[4])))
+                        if (low == "low" | low == "") { low = NULL }
+                        if (high == "high" | high == "") { high = NULL }
                     }
                     
                     from = svalue(
@@ -330,7 +347,7 @@ iNZMapModWin <- setRefClass(
                     .self$plotButtonHandler(
                         vars, from, to, svalue(loc), svalue(topOpt3),
                         svalue(topOpt2), svalue(topOpt1),
-                        type, mode, low, high, size = NULL, col = NULL
+                        type, mode, low, high, size = NULL, col = col
                     )
                     
                 }, container = midLayout
@@ -382,15 +399,15 @@ iNZMapModWin <- setRefClass(
             library(ggmap)
             ##########################################
             
-            dat = GUI$getActiveData()
+            data = GUI$getActiveData()
             
             lon = vars[1]
             lat = vars[2]
             var = vars[3]
             
             cond = paste(
-                paste(from, "<=", paste0("dat$", var)),
-                paste(paste0("dat$", var), "<=", to),
+                paste(from, "<=", paste0("data$", var)),
+                paste(paste0("data$", var), "<=", to),
                 sep = " & "
             )
             
@@ -399,7 +416,7 @@ iNZMapModWin <- setRefClass(
             maptype = tolower(maptype)
             maptype = gsub("[*]$", "", maptype)
             
-            arg = list(data = dat, lon = lon, lat = lat, 
+            arg = list(data = data, lon = lon, lat = lat, 
                        var = var, var.cond = cond, 
                        location = location, zoom = zoom,
                        maptype = maptype, src = src, type = type, 
@@ -511,6 +528,18 @@ iNZMapModWin <- setRefClass(
             ###############
             tab3 = glayout(container = optsNB, label = "size")
             
+            tab3.lab = glabel("scale")
+            tab3.opt = gslider(from = 0.01, to = 2, by = 0.01,
+                               value = 1, container = tab3)
+            
+            tab3[2, 2] = tab3.lab
+            tab3[2, 3, expand = TRUE, fill = "both"] = tab3.opt
+            
+            ## box
+            tab3[1, 1:4] = gseparator(horizontal = TRUE)
+            tab3[3, 1:4] = gseparator(horizontal = TRUE)
+            tab3[1:3, 1] = gseparator(horizontal = FALSE)
+            tab3[1:3, 4] = gseparator(horizontal = FALSE)
             
 #             optsLab1 = glabel("Mode")
 #             optsLab2 = glabel("Colour")
@@ -632,6 +661,4 @@ iNZMapModWin <- setRefClass(
 )
 
 # iNZMapModWin()
-
-
 
