@@ -7,13 +7,13 @@ iNZMapModWin <- setRefClass(
     ),
     methods = list(
         initialize = function(GUI) {
-            # initFields(GUI = GUI)
+            initFields(GUI = GUI)
             
             ## SET UP MAIN (MAP MODULE) WINDOW.
             mapWin <<- gwindow("Map...", 
-                               ## trial & error size
-                               #width = 500,
-                               expand = FALSE) # , parent = GUI$win)
+                               width = 500, height = 250, ## trial & error size
+                               expand = FALSE, parent = GUI$win)
+            
             mainGrp = ggroup(horizontal = FALSE,
                              spacing = 10,
                              use.scrollwindow = FALSE,
@@ -24,9 +24,9 @@ iNZMapModWin <- setRefClass(
             mainFont = list(weight = "bold", family = "normal", size = 12)
             labFont = list(size = 11)
             
-            ###-------------------------------
-            ### TOP PORTION OF THE MAIN WINDOW
-            ###-------------------------------
+            #########################
+            ###  TOP MAIN WINDOW  ###
+            #########################
             topWin = ggroup(horizontal = FALSE,
                             spacing = 10, container = mainGrp)
             
@@ -116,9 +116,9 @@ iNZMapModWin <- setRefClass(
             
             add(topWin, topExpandGrp)
             
-            ###-------------------------------
-            ### MID PORTION OF THE MAIN WINDOW
-            ###-------------------------------
+            #########################
+            ###  MID MAIN WINDOW  ###
+            #########################
             addSpring(topWin)
             midWin = ggroup(horizontal = FALSE,
                             spacing = 10, container = mainGrp)
@@ -127,16 +127,14 @@ iNZMapModWin <- setRefClass(
             font(midLab) = mainFont
             addSpring(midWin)
             
-            #midLayout[1, 2] = gcombobox(c("", names(GUI$getActiveData())),
-            #                            container = tbl)
-            
-            midLayout = glayout(container = midWin)
+            midLayout = glayout(container = midWin, spacing = 10)
             midLab1 = glabel("Longitude", container = midLayout)
             midLab2 = glabel("Latitude", container = midLayout)
             midLab3 = glabel("Variable", container = midLayout)
             midLab4 = glabel("from", container = midLayout)
             midLab5 = glabel("to", container = midLayout)
             midLab6 = glabel("Type of plot", container = midLayout)
+            
             font(midLab1) = labFont
             font(midLab2) = labFont
             font(midLab3) = labFont
@@ -144,45 +142,83 @@ iNZMapModWin <- setRefClass(
             font(midLab5) = labFont
             font(midLab6) = labFont
             
-            midOpt1 = gcombobox("", container = midLayout)
-            midOpt2 = gcombobox("", container = midLayout)
-            midOpt3 = gcombobox("", container = midLayout)
-            midOpt4 = gspinbutton(from = 1, to = 2, by = 0.1, 
-                                  value = 1, container = midLayout)
-            #size(midOpt4) = c(50, 20)
-            midOpt5 = gspinbutton(from = 1, to = 2, by = 0.1,
-                                  value = 1, container = midLayout)
+            variables = names(GUI$getActiveData())
+            midOpt1 = gcombobox(c("", variables), container = midLayout)
+            midOpt2 = gcombobox(c("", variables), container = midLayout)
+            midOpt3 = gcombobox(c("", variables), container = midLayout)
+            midOpt4 = gspinbutton(from = 0, to = 1, length.out = 10, 
+                                  value = 0, container = midLayout)
+            size(midOpt4) = c(50, 20)
+            midOpt5 = gspinbutton(from = 0, to = 1, length.out = 10,
+                                  value = 0, container = midLayout)
+            
+            size(midOpt1) = c(170, 25)
+            size(midOpt2) = c(170, 25)
+            size(midOpt3) = c(170, 25)
+            size(midOpt4) = c(70, 20)
+            size(midOpt5) = c(70, 20)
+            
+            addHandlerChanged(
+                midOpt3,
+                handler = function(h,...) {
+                    var = svalue(midOpt3)
+                    if (!(var %in% names(GUI$getActiveData())))
+                        return()
+                    
+                    ## Delete the spin buttons
+                    replicate(2, delete(midLayout, midLayout$children[[10]]))
+                    ## Reset the indices
+                    midLayout$children[[12]] = midLayout$children[[10]]
+                    midLayout$children[[13]] = midLayout$children[[11]]
+                    midLayout$children[[14]] = midLayout$children[[12]]
+                    
+                    ## Find the min & max of the selected variable
+                    dat = GUI$getActiveData()[[var]]
+                    
+                    if (is.numeric(dat)) {
+                        ## Numeric variable
+                        min = min(dat, na.rm = TRUE)
+                        max = max(dat, na.rm = TRUE)
+                        # length(gregexpr("[[:digit:]]", as.character(x))[[1]])
+                        
+                        ## Create the spin buttons
+                        midOpt4 = gspinbutton(
+                            from = min, to = max, length.out = 100, 
+                            value = min, container = midLayout)
+                        
+                        midOpt5 = gspinbutton(
+                            from = min, to = max, length.out = 100, 
+                            value = max, container = midLayout)
+                    } else {
+                        ## Factor
+                        midOpt4 = glabel("")
+                        midOpt5 = glabel("")
+                        
+                        ## TO-DO
+                    }
+                    
+                    size(midOpt4) = c(70, 20)
+                    size(midOpt5) = c(70, 20)
+                    
+                    ## Add them
+                    midLayout[2, 7, expand = F] = midOpt4
+                    midLayout[2, 9, expand = F] = midOpt5
+                    
+                    ## Update the indices
+                    midLayout$children[[10]] = midOpt4
+                    midLayout$children[[11]] = midOpt5
+                }
+            )
+            
             midOpt6 = gcheckboxgroup(
-                c("points","contours"),
+                c("point","contour"),
                 checked = FALSE, horizontal = TRUE, 
                 handler = function(h,...)
                     changeOpts(svalue(h$obj, index = TRUE)),
                 container = midLayout
             )
-            usingMethods(opt, opt1, opt2, opt3)
             
-            plotButtonAction = gaction(
-                "Plot",
-                tooltip = "Click to plot with current settings",
-                icon = "gtk-apply",
-                handler = function(h, ...) {
-                    vars = c(svalue(midOpt1), 
-                             svalue(midOpt2), 
-                             svalue(midOpt3))
-                    type = svalue(midOpt6)
-                    
-                    if (any(vars == "") | length(type == 0)) {
-                        return(gmessage("All settings must be specified",
-                                        title = "Error", icon = "error"))
-                    }
-                    
-                    .self$plotButtonHandler(
-                        vars, type, svalue(midOpt4), svalue(midOpt5)
-                    )
-                    
-                }, container = midLayout
-            )
-            plotButton = gbutton(action = plotButtonAction)
+            usingMethods(opt, opt1, opt2, opt3)
             
             cancelButtonAction = gaction(
                 "Cancel",
@@ -194,20 +230,19 @@ iNZMapModWin <- setRefClass(
             )
             cancelButton = gbutton(action = cancelButtonAction)
             
-#             midLayout[1, 1:3, expand = TRUE, anchor = c(-1, 0)] = midLab1
-#             midLayout[2, 1:3, expand = TRUE, anchor = c(-1, 0)] = midLab2
-#             midLayout[3, 1:3, expand = TRUE, anchor = c(-1, 0)] = midLab3
-#             midLayout[4, 4, expand = TRUE, anchor = c(1, 0)] = midLab4
-#             midLayout[4, 6, expand = TRUE, anchor = c(1, 0)] = midLab5
-#             midLayout[5, 1:3, expand = TRUE, anchor = c(-1, 0)] = midLab6
-#             midLayout[1, 4:7, expand = TRUE] = midOpt1
-#             midLayout[2, 4:7, expand = TRUE] = midOpt2
-#             midLayout[3, 4:7, expand = TRUE] = midOpt3
-#             midLayout[4, 5, expand = TRUE] = midOpt4
-#             midLayout[4, 7, expand = TRUE] = midOpt5
-#             midLayout[5, 4:7, expand = TRUE] = midOpt6
-#             midLayout[7, 4:5, expand = TRUE] = plotButton
-#             midLayout[7, 6:7, expand = TRUE] = cancelButton
+            # midLayout[1, 1:3, expand = TRUE, anchor = c(-1, 0)] = midLab1
+            # midLayout[2, 1:3, expand = TRUE, anchor = c(-1, 0)] = midLab2
+            # midLayout[3, 1:3, expand = TRUE, anchor = c(-1, 0)] = midLab3
+            # midLayout[4, 4, expand = TRUE, anchor = c(1, 0)] = midLab4
+            # midLayout[4, 6, expand = TRUE, anchor = c(1, 0)] = midLab5
+            # midLayout[5, 1:3, expand = TRUE, anchor = c(-1, 0)] = midLab6
+            # midLayout[1, 4:7, expand = TRUE] = midOpt1
+            # midLayout[2, 4:7, expand = TRUE] = midOpt2
+            # midLayout[3, 4:7, expand = TRUE] = midOpt3
+            # midLayout[4, 5, expand = TRUE] = midOpt4
+            # midLayout[4, 7, expand = TRUE] = midOpt5
+            # midLayout[5, 4:7, expand = TRUE] = midOpt6
+            # midLayout[7, 6:7, expand = TRUE] = cancelButton
             
             midLayout[1, 1, expand = TRUE, anchor = c(-1, 0)] = midLab1
             midLayout[2, 1, expand = TRUE, anchor = c(-1, 0)] = midLab2
@@ -215,47 +250,93 @@ iNZMapModWin <- setRefClass(
             midLayout[2, 6, expand = TRUE, anchor = c(1, 0)] = midLab4
             midLayout[2, 8, expand = TRUE, anchor = c(1, 0)] = midLab5
             midLayout[3, 1, expand = TRUE, anchor = c(-1, 0)] = midLab6
+            
             midLayout[1, 2:4, expand = TRUE] = midOpt1
             midLayout[2, 2:4, expand = TRUE] = midOpt2
             midLayout[1, 7:9, expand = TRUE] = midOpt3
             midLayout[2, 7, expand = TRUE] = midOpt4
             midLayout[2, 9, expand = TRUE] = midOpt5
+            midLayout[3, 2:4, expand = TRUE] = midOpt6
+            midLayout[3, 8:9, expand = TRUE] = cancelButton
             midLayout[1:3, 5] = gseparator(horizontal = FALSE)
-            midLayout[3, 2:4, expand = TRUE] = midOpt6            
-            midLayout[3, 6:7] = plotButton
-            midLayout[3, 8:9] = cancelButton
             
             optGrp <<- ggroup()
             add(mainGrp, optGrp)
             
-#             tbl[4, 3] = gcheckbox("Is it a factor?", checked = FALSE,
-#                                   container = tbl)
-#             tbl[5, 1] = glabel("Condition")
-#             tbl[5, 2] = gedit(text = "Type condition", container = tbl)
-#             tbl[6, 1:3] = gseparator(container = tbl)
-#             ## check box
-#             usingMethods(opt, opt1, opt2, opt3)
-#             chkGrp <<- ggroup(horizontal = TRUE, expand = FALSE)
-#             opts = gcheckboxgroup(c("Simple points",
-#                                     "2D density estimation contours"),
-#                                   checked = FALSE, horizontal = TRUE,
-#                                   container = chkGrp)
-#             add(mainGrp, chkGrp)
-#             addHandlerChanged(opts,
-#                               handler = function(h, ...) {
-#                                   changeOpts(svalue(h$obj,
-#                                                     index = TRUE))
-#                               })
-#             
-#             ## options checkbox
-#             optGrp <<- ggroup(horizontal = FALSE, exapnd = TRUE)
-#             add(mainGrp, optGrp)
-#             
-#             ## Close button.
-#             cancelButton = gbutton(
-#                 "Cancel",
-#                 handler = function(h, ...) dispose(mapWin),
-#                 container = tbl)
+            ## plot button is made and assigned after adding optGrp to mainGrp
+            ## so that the options in optGrp can be accessed.
+            plotButtonAction = gaction(
+                "Plot",
+                tooltip = "Click to plot with current settings",
+                icon = "gtk-apply",
+                handler = function(h, ...) {
+                    ## checks
+                    vars = c(svalue(midOpt1), 
+                             svalue(midOpt2), 
+                             svalue(midOpt3))
+                    type = svalue(midOpt6)
+                    # if (any(vars == "") | length(type == 0)) {
+                    #     return(gmessage("All settings must be specified",
+                    #                     title = "Error", icon = "error"))
+                    # }
+                    
+                    ## create string paths to access options
+                    path = "optGrp$children[[1]]$children[[1]]"
+                    pathToTab1 = paste0(path, "$children[[1]]")
+                    pathToTab2 = paste0(path, "$children[[2]]")
+                    
+                    ## tab 1
+                    pathToTab1Opts = paste0(
+                        pathToTab1, "$children[[", 2:4, "]]"
+                    )
+                    whichMode = sapply(
+                        pathToTab1Opts, 
+                        function(x) svalue(eval(parse(text = x)))
+                    )
+                    mode = paste0(
+                        "c(", 
+                        paste(c("\"size\"",
+                                "\"colour\"",
+                                "\"alpha\"")[whichMode], collapse = ", "),
+                        ")"
+                    )
+                    
+                    ## tab 2
+                    pathToTab2Opts = paste0(
+                        pathToTab2, "$children[[", 1:4, "]]"
+                    )
+                    whichColour = svalue(
+                        eval(parse(text = pathToTab2Opts[1])), index = TRUE
+                    )
+                    if (whichColour == 1) {
+                        col = svalue(eval(parse(text = pathToTab2Opts[2])))
+                        low = NULL
+                        high = NULL
+                    } else if (whichColour == 2) {
+                        col = NULL
+                        low = svalue(eval(parse(text = pathToTab2Opts[3])))
+                        high = svalue(eval(parse(text = pathToTab2Opts[4])))
+                    }
+                    
+                    from = svalue(
+                        mapWin$children[[1]]$children[[2]]$
+                            children[[2]]$children[[10]]
+                    )
+                    to = svalue(
+                        mapWin$children[[1]]$children[[2]]$
+                            children[[2]]$children[[11]]
+                    )
+                    
+                    .self$plotButtonHandler(
+                        vars, from, to, svalue(loc), svalue(topOpt3),
+                        svalue(topOpt2), svalue(topOpt1),
+                        type, mode, low, high, size = NULL, col = NULL
+                    )
+                    
+                }, container = midLayout
+            )
+            plotButton = gbutton(action = plotButtonAction)
+            midLayout[3, 6:7, expand = TRUE] = plotButton
         },
         
         #######################################################################
@@ -267,7 +348,7 @@ iNZMapModWin <- setRefClass(
             source("../iNZightMaps/R/general.R")
             ###########################################
             
-            if (grepl("", loc))
+            if (grepl("^$", loc))
                 return(gmessage("Specify location.", 
                                 title = "Error", icon = "error"))
             
@@ -286,10 +367,47 @@ iNZMapModWin <- setRefClass(
                 plot(map)
         },
         
-        plotButtonHandler = function(vars, type, from, to) {
+        plotButtonHandler = function(vars, from, to,
+                                     location, zoom, maptype, service,
+                                     type, mode, low, high, size, col) {
+            ##########################################
+            source("../iNZightMaps/R/general.R")
+            source("../iNZightMaps/R/drawMap.R")
+            source("../iNZightMaps/R/draw.R")
+            source("../iNZightMaps/R/generateLine.R")
+            source("../iNZightMaps/R/getBB.R")
+            source("../iNZightMaps/R/isGeoData.R")
+            source("../iNZightMaps/R/varSubset.R")
+            source("../iNZightMaps/R/processFactor.R")
+            library(ggmap)
+            ##########################################
             
+            dat = GUI$getActiveData()
             
+            lon = vars[1]
+            lat = vars[2]
+            var = vars[3]
             
+            cond = paste(
+                paste(from, "<=", paste0("dat$", var)),
+                paste(paste0("dat$", var), "<=", to),
+                sep = " & "
+            )
+            
+            src = tolower(service)
+            src = gsub("^openstreetmap$", "osm", src)
+            maptype = tolower(maptype)
+            maptype = gsub("[*]$", "", maptype)
+            
+            arg = list(data = dat, lon = lon, lat = lat, 
+                       var = var, var.cond = cond, 
+                       location = location, zoom = zoom,
+                       maptype = maptype, src = src, type = type, 
+                       mode = mode, low = low, high = high, 
+                       size = size, col = col)
+            map = do.call(draw, arg)
+            
+            plot(map)
         },
         #######################################################################
         
@@ -309,12 +427,12 @@ iNZMapModWin <- setRefClass(
             #sapply(optGrp$children, function(x) delete(optGrp, x))
         },
         
-        ## "points"
+        ## "point"
         opt1 = function() {
             optsExpandGrp = gexpandgroup("Advanced settings",
                                          container = optGrp)
             optsExpandGrp$set_borderwidth(5)
-            #visible(optsExpandGrp) = FALSE
+            visible(optsExpandGrp) = FALSE
             
             optsNB = gnotebook(container = optsExpandGrp)
             
@@ -334,17 +452,17 @@ iNZMapModWin <- setRefClass(
             tooltip(tab1.opt1) = "symbols are coloured"
             tooltip(tab1.opt2) = "symbols are scaled by size of variable"
             tooltip(tab1.opt3) = "symbols are scaled with transparency"
+                        
+            tab1[2, 2:3, expand = TRUE, anchor = c(-1, 0)] = tab1.lab
+            tab1[2, 4, expand = TRUE, fill = "y"] = tab1.opt1
+            tab1[2, 5, expand = TRUE, fill = "y"] = tab1.opt2
+            tab1[2, 6, expand = TRUE, fill = "y"] = tab1.opt3
             
             ## box
             tab1[1, 1:7] = gseparator(horizontal = TRUE)
             tab1[3, 1:7] = gseparator(horizontal = TRUE)
             tab1[1:3, 1] = gseparator(horizontal = FALSE)
             tab1[1:3, 7] = gseparator(horizontal = FALSE)
-            
-            tab1[2, 2:3, expand = TRUE, anchor = c(-1, 0)] = tab1.lab
-            tab1[2, 4, expand = TRUE, fill = "y"] = tab1.opt1
-            tab1[2, 5, expand = TRUE, fill = "y"] = tab1.opt2
-            tab1[2, 6, expand = TRUE, fill = "y"] = tab1.opt3
             
             ###############
             ###  TAB 2  ###
@@ -353,8 +471,8 @@ iNZMapModWin <- setRefClass(
             tab2.opt1 = gradio(c("linear colour", "gradient colour"), 
                                selected = 1, horizontal = FALSE)
             tab2.opt2 = gcombobox("default", selected = 1, editable = TRUE)
-            tab2.opt3a = gcombobox("low gradient", selected = 1, editable = TRUE)
-            tab2.opt3b = gcombobox("high gradient", selected = 1, editable = TRUE)
+            tab2.opt3a = gcombobox("low", selected = 1, editable = TRUE)
+            tab2.opt3b = gcombobox("high", selected = 1, editable = TRUE)
             enabled(tab2.opt3a) = FALSE
             enabled(tab2.opt3b) = FALSE
             
@@ -373,24 +491,27 @@ iNZMapModWin <- setRefClass(
                 }
             )
             
-            ## box
-            tab2[1, 1:5] = gseparator(horizontal = TRUE)
-            tab2[4, 1:5] = gseparator(horizontal = TRUE)
-            tab2[1:4, 1] = gseparator(horizontal = FALSE)
-            tab2[1:4, 5] = gseparator(horizontal = FALSE)
+            size(tab2.opt2) = c(200, 23)
+            size(tab2.opt3a) = c(80, 23)
+            size(tab2.opt3b) = c(80, 23)
             
             tab2[2:3, 2, expand = TRUE] = tab2.opt1
-            tab2[2, 3:4, expand = TRUE] = tab2.opt2
-            tab2[3, 3, expand = TRUE] = tab2.opt3a
-            tab2[3, 4, expand = TRUE] = tab2.opt3b
-
+            tab2[2, 4:5, expand = TRUE] = tab2.opt2
+            tab2[3, 4, expand = TRUE] = tab2.opt3a
+            tab2[3, 5, expand = TRUE] = tab2.opt3b
+            
+            ## box
+            tab2[1, 1:6] = gseparator(horizontal = TRUE)
+            tab2[4, 1:6] = gseparator(horizontal = TRUE)
+            tab2[1:4, 1] = gseparator(horizontal = FALSE)
+            tab2[1:4, 6] = gseparator(horizontal = FALSE)
+            
+            ###############
+            ###  TAB 3  ###
+            ###############
+            tab3 = glayout(container = optsNB, label = "size")
             
             
-
-            
-            
-            
-#             
 #             optsLab1 = glabel("Mode")
 #             optsLab2 = glabel("Colour")
 #             optsLab3 = glabel("Symbol scale")
@@ -404,7 +525,7 @@ iNZMapModWin <- setRefClass(
 #             optsLayout[1, 1] = optsLab1
 #             optsLayout[1, 2:8, expand = TRUE] = opts1
 #             optsLayout[2, 1] =optsLab2
-            
+#             
 #             tbl = glayout(container = optGrp)
 #             lab1 = glabel("Select mode", container = tbl)
 #             font(lab1) = list(weight = "bold")
@@ -448,9 +569,10 @@ iNZMapModWin <- setRefClass(
 #             tbl[3, 3] = optGrp2
 #             tbl[3, 5] = optGrp3
 #             tbl[3, 7] = optGrp4
+            svalue(optsNB) = 1
         },
         
-        ## opt2 ("contours")
+        ## opt2 ("contour")
         opt2 = function() {
             tbl = glayout(container = optGrp)
             lab1 = glabel("Select mode")
@@ -509,7 +631,7 @@ iNZMapModWin <- setRefClass(
     )
 )
 
-iNZMapModWin()
+# iNZMapModWin()
 
 
 
