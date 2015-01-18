@@ -3,6 +3,7 @@ iNZViewSwitcher <- setRefClass(
     fields = list(
         GUI = "ANY",
         viewGroup = "ANY",
+        prevModBtn = "ANY",
         dataBtn = "ANY",
         listBtn = "ANY",
         ## max size before dataview gets deactived
@@ -13,7 +14,18 @@ iNZViewSwitcher <- setRefClass(
             initFields(GUI = gui,
                        dataThreshold = dataThreshold)
             viewGroup <<- ggroup()
-            addSpring(viewGroup)
+            
+            prevModBtn <<- gbutton(
+                "Maps...",
+                handler = function(h,...) {
+                    visible(GUI$moduleWindow) <<- TRUE
+                    visible(GUI$gp1) <<- FALSE
+                }
+            )
+            font(prevModBtn) <<- list(weight = "bold", family = "normal",
+                                      color = "darkgreen")
+            visible(prevModBtn) <<- FALSE
+            
             dataBtn <<- gbutton("View Data Set",
                                 handler = function(h,...) .self$viewData(h,...))
             listBtn <<- gbutton("View Variables",
@@ -28,7 +40,9 @@ iNZViewSwitcher <- setRefClass(
             enabled(dataBtn) <<- FALSE
             if (nrow(dataSet) * ncol(dataSet) >= dataThreshold)
                 enabled(listBtn) <<- FALSE
-
+            
+            add(viewGroup, prevModBtn)
+            addSpring(viewGroup)
             add(viewGroup, dataBtn)
             add(viewGroup, listBtn)
         },

@@ -13,6 +13,13 @@ iNZGUI <- setRefClass(
                    activeDoc = "numeric", 
                    ## the main GUI window
                    win = "ANY",
+                   
+                   ## left group
+                   moduleWindow = "ANY",
+                   gp1 = "ANY",
+                   ## right group
+                   gp2 = "ANY",
+                   
                    ## the Widget containing the 2 data views
                    dataViewWidget = "ANY",
                    ## the widget handling the switching between the
@@ -59,22 +66,31 @@ iNZGUI <- setRefClass(
                 }
             }
             
-            win <<- gwindow(win.title, visible = FALSE, width = 870,
-                            height = 600)
-            gtop <- ggroup(horizontal = FALSE, container = win)
-
+            win <<- gwindow(win.title, visible = FALSE, 
+                            width = 870, height = 600)
+            
+            gtop <- ggroup(horizontal = FALSE, container = win,
+                           use.scrollwindow = TRUE)
             menugrp <- ggroup(container = gtop)
             initializeMenu(menugrp, disposeR)
-            
             g <- gpanedgroup(container = gtop, expand = TRUE)
+            
             ## Left side group
-            gp1 <- ggroup(horizontal = FALSE, container = g)
-            size(gp1) <- c(300, 300)
+            leftMain = ggroup(container = g)
+            # size(leftMain) = c(300, 600)
+            
+            gp1 <<- gvbox(container = leftMain,
+                           expand = TRUE)
+            
+            moduleWindow <<- gvbox(container = leftMain,
+                                    expand = TRUE)
+            visible(moduleWindow) <<- FALSE
+            
             ## Right side group
-            gp2 <- ggroup(horizontal = FALSE, container = g, expand = TRUE)
+            gp2 <<- ggroup(horizontal = FALSE, container = g, expand = F)
             ## set up widgets in the left group
             ## set up the menu bar at the top
-#            initializeMenu(gp1, disposeR)
+            # initializeMenu(gp1, disposeR)
             ## set up dataViewWidget, added below
             ## dataThreshold is used as maximum nr of cells
             ## before data.frame view gets deactivated
@@ -103,6 +119,9 @@ iNZGUI <- setRefClass(
             plotWidget$addPlot()
             ## add what is done upon closing the gui
             closerHandler(disposeR)
+            
+#            add(g, leftMain)
+#            add(g, gp2)
         },
         ## set up the menu bar widget
         initializeMenu = function(cont, disposeR) {
@@ -411,7 +430,18 @@ iNZGUI <- setRefClass(
                     ## 36
                     label = "Maps...",
                     icon = "symbol_diamond",
-                    handler = function(h, ...) iNZMapModWin$new(.self)
+                    handler = function(h, ...) {
+                        ## delete current moduleWindow
+                        sapply(moduleWindow$children,
+                               function(x) delete(moduleWindow, x))
+                        
+                        ## make prevModBtn visible
+                        visible(viewSwitcherWidget$prevModBtn) <<- TRUE
+                        
+                        visible(gp1) <<- FALSE
+                        iNZMapModWin$new(.self)
+                        visible(moduleWindow) <<- TRUE
+                    }
                 )
                 ############ MAPS ############
                 #####################################################
@@ -419,7 +449,7 @@ iNZGUI <- setRefClass(
                 ###  any new update function should be placing below to match the actionList[[number]]
                 ###  so next one should be #31 and placing below.
                 ###################################################
-                )
+            )
             ## home button is disabled if package 'vit' is not loaded
             if (!'package:vit' %in% search())
                 enabled(actionList[[16]]) <- FALSE
@@ -449,7 +479,7 @@ iNZGUI <- setRefClass(
                     actionList[[17]],
                     actionList[[18]],
                     actionList[[32]],
-                    actionList[[36]]  # MAPS
+                    actionList[[36]]
                     ),
                 "Help" = list(
                     actionList[[33]],
