@@ -435,12 +435,12 @@ iNZGUI <- setRefClass(
                         sapply(moduleWindow$children,
                                function(x) delete(moduleWindow, x))
                         
-                        ## make prevModBtn visible
-                        visible(viewSwitcherWidget$prevModBtn) <<- TRUE
-                        
                         visible(gp1) <<- FALSE
                         iNZMapModWin$new(.self)
                         visible(moduleWindow) <<- TRUE
+                        ##TODO: grey out buttons
+                        #enabled(plotWidget[[9]]) <<- FALSE
+                        
                     }
                 )
                 ############ MAPS ############
