@@ -99,8 +99,7 @@ iNZGUI <- setRefClass(
                     
                     ## write the hash code to their installation:
                     hash.id <- readLines(f)
-                    
-                    writeLines(hash.id, file.path(libp, "id.txt"))
+                    try(writeLines(hash.id, file.path(libp, "id.txt")), silent = TRUE)
                 }
             })
             
