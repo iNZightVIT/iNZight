@@ -47,6 +47,14 @@
       \item fixed up the plot device in Time Series on Linux machines
     }
   }
+
+  \subsection{Patch 2.0.4-3}{
+    Date: 10-02-2015
+
+    \itemize{
+      \item fix a bug causing write-protected directories to crash
+    }
+  }
 }
 
 
