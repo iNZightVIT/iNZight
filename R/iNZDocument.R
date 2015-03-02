@@ -162,3 +162,33 @@ iNZDocument <- setRefClass(
     )
 
 
+iNZDataNameWidget <- setRefClass(
+    "iNZDataNameWidget",
+    fields = list(
+        GUI = "ANY",  ## the iNZight GUI object
+        datName = "ANY", ## the string for the data set name
+        nameLabel = "ANY"
+        ),
+    methods = list(
+        initialize = function(gui) {
+            initFields(GUI = gui,
+                       datName = "No data loaded")
+            nameLabel <<- glabel(.self$datName)
+        },
+        updateWidget = function() {
+            dataSet <- GUI$getActiveData()
+            
+            if(is.null(dataSet)){
+                datName <<- "No data loaded"
+            } else {
+                if((names(dataSet)[1] == "empty"))
+                    datName <<- "No data loaded"
+                else {
+                    datName <<- attr(dataSet, "name", exact = TRUE)
+                }
+            }
+
+            svalue(nameLabel) <<- .self$datName
+        }
+        )
+    )

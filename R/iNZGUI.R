@@ -18,6 +18,7 @@ iNZGUI <- setRefClass(
                    ## the widget handling the switching between the
                    ## 2 data views
                    viewSwitcherWidget = "ANY",
+                   dataNameWidget = "ANY",
                    ## widget that handles the plot notebook
                    plotWidget = "ANY",
                    ## widget that handles the drag/drop buttons
@@ -44,9 +45,72 @@ iNZGUI <- setRefClass(
             win.title <- paste("iNZight (v",
                                packageDescription("iNZight")$Version,
                                ")", sep = "")
+            ## Check for updates ... need to use try incase it fails (no connection etc)
+            ap <- suppressWarnings(try(numeric_version(available.packages(
+                contriburl = contrib.url("http://docker.stat.auckland.ac.nz/R",
+                    getOption("pkgType")))[,"Version"]), TRUE))
+            if (!inherits(ap, "try-error")) {
+                if (length(ap) > 0) {
+                    ip <- try(numeric_version(installed.packages()[names(ap), "Version"]), TRUE)
+                    if (!inherits(ip, "try-error")) {
+                        if (any(ap > ip))
+                            win.title <- paste(win.title, " [updates available]")
+                    }
+                }
+            }
+            
+            ## we can update this part later to "count" every use ... but later
+            
+            ## also want to be cheeky and add users to "database" of users so we can track...
+            try({
+                version = packageVersion("iNZight")
+                os <- "Linux"
+                if (.Platform$OS == "windows") {
+                    os = "Windows"
+                } else if (Sys.info()["sysname"] == "Darwin") { 
+                    os = "Mac OS X"
+                    if (!inherits(osx.version, "try-error")) {
+                        os = paste("Mac OS X", osx.version)
+                    }
+                }
+                
+                ## have they updated before?
+                hash.id <- "new"
+                if (os == "Windows") {
+                    libp <- "prog_files"
+                } else if (os != "Linux") {
+                    ## i.e., mac
+                    libp <- "Library"
+                } else {
+                    ## linux - save in library..
+                    libp <- .libPaths()[which(sapply(.libPaths(), function(p)
+                                                     "iNZight" %in% list.files(p)))[1]]
+                }
+
+                if (file.exists(file.path(libp, "id.txt"))) {
+                    hash.id <- readLines(file.path(libp, "id.txt"))
+                }
+                           
+                ## only if not already tracking
+                if (hash.id == "new") {
+                    track.url <- paste0("http://docker.stat.auckland.ac.nz/R/tracker/index.php?track&v=",
+                                        version, "&os=", gsub(" ", "%20", os), "&hash=", hash.id)
+                    f <- try(url(track.url,  open = "r"), TRUE)
+                    
+                    ## write the hash code to their installation:
+                    hash.id <- readLines(f)
+                    try(writeLines(hash.id, file.path(libp, "id.txt")), silent = TRUE)
+                }
+            })
+            
             win <<- gwindow(win.title, visible = FALSE, width = 870,
                             height = 600)
-            g <- gpanedgroup(container = win, expand = TRUE)
+            gtop <- ggroup(horizontal = FALSE, container = win)
+
+            menugrp <- ggroup(container = gtop)
+            initializeMenu(menugrp, disposeR)
+            
+            g <- gpanedgroup(container = gtop, expand = TRUE)
             ## Left side group
             gp1 <- ggroup(horizontal = FALSE, container = g)
             size(gp1) <- c(300, 300)
@@ -54,7 +118,7 @@ iNZGUI <- setRefClass(
             gp2 <- ggroup(horizontal = FALSE, container = g, expand = TRUE)
             ## set up widgets in the left group
             ## set up the menu bar at the top
-            initializeMenu(gp1, disposeR)
+#            initializeMenu(gp1, disposeR)
             ## set up dataViewWidget, added below
             ## dataThreshold is used as maximum nr of cells
             ## before data.frame view gets deactivated
@@ -62,6 +126,9 @@ iNZGUI <- setRefClass(
             initializeDataView(dataThreshold)
             ## set up buttons to switch between data/var view
             add(gp1, .self$initializeViewSwitcher(dataThreshold)$viewGroup)
+            ## display the name of the data set
+            add(gp1, .self$initializeDataNameWidget()$nameLabel)
+            ## display the data
             add(gp1, dataViewWidget$dataGp, expand = TRUE)
             ## set up the drag and drop fields
             add(gp1, initializeControlWidget()$ctrlGp, expand = FALSE)
@@ -312,10 +379,77 @@ iNZGUI <- setRefClass(
                   ),
                 stackVar = gaction(
                   #31
-                  label = "Stack variables...",
-                  icon = "symbol_diamond",
-                  handler = function(h, ...) iNZstackVarWin$new(.self)
-                  )
+                    label = "Stack variables...",
+                    icon = "symbol_diamond",
+                    handler = function(h, ...) iNZstackVarWin$new(.self)
+                ),
+                modelFit = gaction(
+                    ## 32
+                    label = "Multiple Response...",
+                    icon = "symbol_diamond",
+                    handler = function(h, ...) {
+                        ign <- gwindow("...", visible = FALSE)
+                        tag(ign, "dataSet") <- getActiveData()
+                        e <- list(obj = ign)
+                        e$win <- win
+                        multipleResponseWindow(e)
+                    }
+                ),
+                aboutiNZight = gaction(
+                    ## 33
+                    label = "About",
+                    icon = "symbol_diamond",
+                    handler = function(h, ...) {
+                        w <- gwindow("About iNZight", width = 500, height = 400, visible = TRUE)
+                        g <- gvbox(expand = FALSE, cont = w, spacing = 5)
+                        g$set_borderwidth(10)
+                        mainlbl <- glabel("iNZight", container = g)
+                        font(mainlbl) <- list(weight = "bold", family = "normal", size = 20)
+                        verlbl <- glabel(paste("Version", packageDescription("iNZight")$Version), container = g)
+                        font(verlbl) <- list(weight = "normal", family = "normal", size = 10)
+                        addSpace(g, 10)
+                        copylbl <- glabel("Copyright (C) 2014 University of Auckland", container = g)
+                        font(copylbl) <- list(weight = "normal", family = "normal", size = 8)
+                        addSpace(g, 15)
+                        gpltxt <- gtext(expand = TRUE, cont = g, wrap = TRUE)
+                        insert(gpltxt, paste("\n\nThis program is free software; you can redistribute it and/or",
+                                             "modify it under the terms of the GNU General Public License",
+                                             "as published by the Free Software Foundation; either version 2",
+                                             "of the License, or (at your option) any later version.\n"),
+                               font.attr = list(size = 9)) -> l1
+                        insert(gpltxt, paste("This program is distributed in the hope that it will be useful,",
+                                             "but WITHOUT ANY WARRANTY; without even the implied warranty of",
+                                             "MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the",
+                                             "GNU General Public License for more details.\n"),
+                               font.attr = list(size = 9)) -> l2
+                        insert(gpltxt, paste("You should have received a copy of the GNU General Public License",
+                                             "along with this program; if not, write to the Free Software",
+                                             "Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.\n"),
+                               font.attr = list(size = 9)) -> l3
+                        insert(gpltxt, paste("You can view the full licence here:\nhttp://www.gnu.org/licenses/gpl-2.0-standalone.html"),
+                               font.attr = list(size = 9)) -> l4
+                        addSpace(g, 5)
+                        contactlbl <- glabel("For help, contact inzight_support@stat.auckland.ac.nz", container = g)
+                        font(contactlbl) <- list(weight = "normal", family = "normal", size = 8)
+                        visible(w) <- TRUE
+                    }
+                ),
+                faqPage = gaction(
+                    ## 34
+                    label = "FAQ",
+                    icon  = "symbol_diamond",
+                    handler = function(h, ...) {
+                        browseURL("https://www.stat.auckland.ac.nz/~wild/iNZight/faq.php")
+                    }
+                ),
+                faqPage = gaction(
+                    ## 35
+                    label = "Contact Support/Report a Bug",
+                    icon  = "symbol_diamond",
+                    handler = function(h, ...) {
+                        browseURL("https://www.stat.auckland.ac.nz/~wild/iNZight/report.html")
+                    }
+                )
                 #####################################################
                 ###  big suggestion
                 ###  any new update function should be placing below to match the actionList[[number]]
@@ -349,9 +483,14 @@ iNZGUI <- setRefClass(
                     "Quick Explore" = actionList[c(24, 22, 23, 26, 20)],
                     actionList[[19]],
                     actionList[[17]],
-                    actionList[[18]]
+                    actionList[[18]],
+                    actionList[[32]]
+                    ),
+                "Help" = list(
+                    actionList[[33]],
+                    actionList[[34]],
+                    actionList[[35]]
                     )
-               # "Advanced" = actionList[c(19, 18, 16, 17)]
                 )
             gmenu(menuBarList, container = cont)
 
@@ -360,6 +499,23 @@ iNZGUI <- setRefClass(
         initializeViewSwitcher = function(dataThreshold) {
             viewSwitcherWidget <<- iNZViewSwitcher$new(.self, dataThreshold)
             .self$viewSwitcherWidget
+        },
+        ## set up the display to show the name of the data set
+        initializeDataNameWidget = function() {
+            ## create the widget
+            dataNameWidget <<- iNZDataNameWidget$new(.self)
+            
+             ## if the list of active document changes, update the data set name
+            addActDocObs(function() {
+                dataNameWidget$updateWidget()
+            })
+            ## if the dataSet changes, update the data set name
+            getActiveDoc()$addDataObserver(
+                function() {
+                    dataNameWidget$updateWidget()
+                }
+            )
+            .self$dataNameWidget
         },
         ## set up the widget to display/edit the loaded dataSet
         initializeDataView = function(dataThreshold) {
@@ -377,7 +533,7 @@ iNZGUI <- setRefClass(
                     viewSwitcherWidget$updateWidget()
                     getActiveDoc()$updateSettings()
                 }
-                )
+            )
             ## if the settings change, redraw the plot
             getActiveDoc()$addSettingsObjObserver(function() updatePlot())
         },

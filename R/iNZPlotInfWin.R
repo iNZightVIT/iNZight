@@ -56,7 +56,7 @@ iNZBarchartInf <- setRefClass(
             intType <- gradio(c("Comparison Intervals",
                                 "Confidence Intervals",
                                 "Comparison + Confidence Intervals"),
-                              selected = 1)
+                              selected = 3)
             mthd <- gradio(c("Bootstrap", "Normal"),
                            selected = 2)
             addButton <- gbutton(
@@ -91,16 +91,16 @@ iNZDotchartInf <- setRefClass(
                              "Means"),
                            selected = 2)
             intType <- gradio(c("Comparison Intervals",
-                                ##"Confidence Intervals",
+                                "Confidence Intervals",
                                 "Comparison + Confidence Intervals"),
-                              selected = 2)
+                              selected = 3)
             mthd <- gradio(c("Bootstrap", "Normal Theory"),
                            selected = 2)
             addButton <- gbutton(
                 "Add Intervals",
                 handler = function(h, ...) {
                     inf.type <- list("comp",
-                                     #"conf",
+                                     "conf",
                                      c("comp", "conf"))[[svalue(intType,
                                                                 index = TRUE)]]
                     inf.par <- c("median", "mean")[svalue(parm, index = TRUE)]
@@ -119,13 +119,14 @@ iNZDotchartInf <- setRefClass(
             addHandlerChanged(parm, handler = function(h, ...) {
                 if (svalue(parm) == "Means") {
                     intType$set_items(c("Comparison Intervals",
+                                        "Confidence Intervals",
                                         "Comparison + Confidence Intervals"))
                     svalue(intType) <- "Comparison + Confidence Intervals"
                     mthd$set_items(c("Bootstrap", "Normal Theory"))
                     svalue(mthd) <- "Normal Theory"
                 } else {
                     intType$set_items("Comparison Intervals")
-                    ##svalue(intType) <- "Comparison Intervals"
+                    svalue(intType) <- "Comparison Intervals"
                     selectedMthd <- svalue(mthd, index = TRUE)
                     mthd$set_items(c("Bootstrap", "Year 12"))
                     svalue(mthd, index = TRUE) <- selectedMthd

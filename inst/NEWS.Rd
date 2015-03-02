@@ -1,8 +1,92 @@
-\name{NEWS}
-\title{NEWS file for the iNZight package}
+\name{Change Log}
+\title{Change Log for iNZight}
 \encoding{UTF-8}
 
+\section{Changes in version 2.0.4}{
+  Release date: 18 November 2014
+  
+  \subsection{NEW FEATURES}{
+    \itemize{
+      \item The data set name is displayed above the data view
+
+      \item The variable type is now displayed as a prefix to the variable
+      names in the variable view
+      
+      \item A new "Updates Available" shows up when new versions are
+      released
+      
+      \item A new Help tab that includes Licence information, and a link
+      to the FAQ and Support pages
+    }
+  }
+  
+  \subsection{MINOR CHANGES}{
+    \itemize{
+      \item In the "Remove Additions" window, "Remove segmentation" has
+      been renamed to "Remove colour by" for bar plots, and
+      "Restore default labels" is added to remove customised plot
+      labels
+    }
+  }
+
+  \subsection{BUG FIXES}{
+    \itemize{
+      \item Removes development text from Load Data window
+      \item Fixes a bug in the Locate Points feature when the scales are
+      vastly different
+      \item Scroll bars added to Reorder Levels window
+      \item The menu has been moved above the plot tabs, so it no longer
+      gets cut off
+    }
+  }
+
+  \subsection{Patch 2.0.4-1}{
+    Date: 12-12-2014
+
+    \itemize{
+      \item fixed up the plot device in Time Series on Linux machines
+    }
+  }
+
+  \subsection{Patch 2.0.4-3}{
+    Date: 10-02-2015
+
+    \itemize{
+      \item fix a bug causing write-protected directories to crash
+    }
+  }
+}
+
+
+\section{Changes in version 2.0.3}{
+  Release date: 17 September 2014
+  
+  \subsection{MAJOR CHANGES}{
+    \itemize{
+      \item A new Multiple Response analysis module has been added to the
+      Advanced menu. This utilises the iNZightMR package developed by
+      Junjie Zeng
+    }
+  }
+  
+  \subsection{MINOR CHANGES}{
+    \itemize{
+      \item "Add to Plot" window modified for barcharts - can show onlyake
+      CIs, and also selects comparison and confidence intervals by default
+    }
+  }
+
+  \subsection{BUG FIXES}{
+    \itemize{
+      \item Includes a suite of bug fixes in the iNZightPlots package - see its
+      NEWS file for these
+    }
+  }
+}
+
 \section{Changes in version 2.0.2}{
+  Release date: 17 June 2014
+  
   \subsection{NEW FEATURES}{
     \itemize{
       \item can now cycle through all two-variable plots for a selected
@@ -34,6 +118,8 @@
 }
 
 \section{Changes in version 2.0.1}{
+  Release date: 27 March 2014
+  
   \subsection{NEW FEATURES}{
     \itemize{
       \item Identify feature added to the "Add To Plot" menu. This
@@ -70,6 +156,8 @@
 }
 
 \section{Changes in version 2.0.0}{
+  Release date: 18 January 2014
+  
   \subsection{MAJOR RELEASE}{
     \itemize{
 
