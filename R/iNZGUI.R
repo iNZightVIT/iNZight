@@ -46,62 +46,68 @@ iNZGUI <- setRefClass(
                                packageDescription("iNZight")$Version,
                                ")", sep = "")
             ## Check for updates ... need to use try incase it fails (no connection etc)
-            ap <- suppressWarnings(try(numeric_version(available.packages(
-                contriburl = contrib.url("http://docker.stat.auckland.ac.nz/R",
-                    getOption("pkgType")))[,"Version"]), TRUE))
-            if (!inherits(ap, "try-error")) {
-                if (length(ap) > 0) {
-                    ip <- try(numeric_version(installed.packages()[names(ap), "Version"]), TRUE)
-                    if (!inherits(ip, "try-error")) {
-                        if (any(ap > ip))
-                            win.title <- paste(win.title, " [updates available]")
-                    }
-                }
-            }
-            
-            ## we can update this part later to "count" every use ... but later
-            
-            ## also want to be cheeky and add users to "database" of users so we can track...
-            try({
-                version = packageVersion("iNZight")
-                os <- "Linux"
-                if (.Platform$OS == "windows") {
-                    os = "Windows"
-                } else if (Sys.info()["sysname"] == "Darwin") { 
-                    os = "Mac OS X"
-                    if (!inherits(osx.version, "try-error")) {
-                        os = paste("Mac OS X", osx.version)
+            connected <- url.exists("docker.stat.auckland.ac.nz")
+            if (connected) {
+                ap <- suppressWarnings(try(numeric_version(available.packages(
+                    contriburl = contrib.url("http://docker.stat.auckland.ac.nz/R",
+                        getOption("pkgType")))[,"Version"]), TRUE))
+                if (!inherits(ap, "try-error")) {
+                    if (length(ap) > 0) {
+                        ip <- try(numeric_version(installed.packages()[names(ap), "Version"]), TRUE)
+                        if (!inherits(ip, "try-error")) {
+                            if (any(ap > ip))
+                                win.title <- paste(win.title, " [updates available]")
+                        }
                     }
                 }
                 
-                ## have they updated before?
-                hash.id <- "new"
-                if (os == "Windows") {
-                    libp <- "prog_files"
-                } else if (os != "Linux") {
-                    ## i.e., mac
-                    libp <- "Library"
-                } else {
-                    ## linux - save in library..
-                    libp <- .libPaths()[which(sapply(.libPaths(), function(p)
-                                                     "iNZight" %in% list.files(p)))[1]]
-                }
+                ## we can update this part later to "count" every use ... but later
+                
+                ## also want to be cheeky and add users to "database" of users so we can track...
 
-                if (file.exists(file.path(libp, "id.txt"))) {
-                    hash.id <- readLines(file.path(libp, "id.txt"))
-                }
-                           
-                ## only if not already tracking
-                if (hash.id == "new") {
-                    track.url <- paste0("http://docker.stat.auckland.ac.nz/R/tracker/index.php?track&v=",
-                                        version, "&os=", gsub(" ", "%20", os), "&hash=", hash.id)
-                    f <- try(url(track.url,  open = "r"), TRUE)
+                try({
+                    version = packageVersion("iNZight")
+                    os <- "Linux"
+                    if (.Platform$OS == "windows") {
+                        os = "Windows"
+                    } else if (Sys.info()["sysname"] == "Darwin") { 
+                        os = "Mac OS X"
+                        if (!inherits(osx.version, "try-error")) {
+                            os = paste("Mac OS X", osx.version)
+                        }
+                    }
                     
-                    ## write the hash code to their installation:
-                    hash.id <- readLines(f)
-                    try(writeLines(hash.id, file.path(libp, "id.txt")), silent = TRUE)
-                }
-            })
+                    ## have they updated before?
+                    hash.id <- "new"
+                    if (os == "Windows") {
+                        libp <- "prog_files"
+                    } else if (os != "Linux") {
+                        ## i.e., mac
+                        libp <- "Library"
+                    } else {
+                        ## linux - save in library..
+                        libp <- .libPaths()[which(sapply(.libPaths(), function(p)
+                                                         "iNZight" %in% list.files(p)))[1]]
+                    }
+                    
+                    if (file.exists(file.path(libp, "id.txt"))) {
+                        hash.id <- readLines(file.path(libp, "id.txt"))
+                    }
+                    
+                    ## only if not already tracking
+                    if (hash.id == "new") {
+                        track.url <- paste0("http://docker.stat.auckland.ac.nz/R/tracker/index.php?track&v=",
+                                            version, "&os=", gsub(" ", "%20", os), "&hash=", hash.id)
+                        f <- try(url(track.url,  open = "r"), TRUE)
+                        
+                        ## write the hash code to their installation:
+                        hash.id <- readLines(f)
+                        try(writeLines(hash.id, file.path(libp, "id.txt")), silent = TRUE)
+                    }
+                })
+            } else {
+                win.title <- paste(win.title, " [could not check for updates]")
+            }
             
             win <<- gwindow(win.title, visible = FALSE, width = 870,
                             height = 600)
