@@ -46,7 +46,11 @@ iNZGUI <- setRefClass(
                                packageDescription("iNZight")$Version,
                                ")", sep = "")
             ## Check for updates ... need to use try incase it fails (no connection etc)
-            connected <- url.exists("docker.stat.auckland.ac.nz")
+            ## RCurl no longer supports R < 3, so it wont be available on Mac SL version.
+            if ("RCurl" %in% row.names(installed.packages())) {
+                connected <- RCurl::url.exists("docker.stat.auckland.ac.nz")
+            } else connected <- FALSE
+            
             if (connected) {
                 ap <- suppressWarnings(try(numeric_version(available.packages(
                     contriburl = contrib.url("http://docker.stat.auckland.ac.nz/R",
@@ -105,8 +109,6 @@ iNZGUI <- setRefClass(
                         try(writeLines(hash.id, file.path(libp, "id.txt")), silent = TRUE)
                     }
                 })
-            } else {
-                win.title <- paste(win.title, " [could not check for updates]")
             }
             
             win <<- gwindow(win.title, visible = FALSE, width = 870,

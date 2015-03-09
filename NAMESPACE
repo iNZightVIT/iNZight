@@ -3,6 +3,5 @@ import(grid, RGtk2, RODBC, gdata, gWidgets2RGtk2, cairoDevice, plyr,
 importFrom(iNZightTools, newdevice)
 importFrom(survey, svydesign, svysmooth)
 importClassesFrom(gWidgets2RGtk2)
-importFrom(RCurl, url.exists)
 
 export(iNZight)
