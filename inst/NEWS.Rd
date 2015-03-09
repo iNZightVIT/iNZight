@@ -55,6 +55,14 @@
       \item fix a bug causing write-protected directories to crash
     }
   }
+
+  \subsection{Patch 2.0.4-4}{
+    Date: 10-03-2015
+
+    \itemize{
+      \item ping for an internet connection before trying to check for updates
+    }
+  }
 }
 
 
