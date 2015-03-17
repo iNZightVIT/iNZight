@@ -182,7 +182,7 @@ iNZDotchartMod <- setRefClass(
             fillColor <- gcheckbox("Colour symbol interior",
                                    checked = (curSet$pch != 1))
             cexSlider <- gslider(from = 0.05, to = 3.5,
-                by = 0.05, value = curSet$cex.pt)
+                by = 0.05, value = curSet$cex.dotpt)
             transpSlider <- gslider(from = 0, to = 100,
                                     by = 1, value = 100 * (1 - curSet$alpha))
             showButton <- gbutton("Show Changes",
