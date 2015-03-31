@@ -610,17 +610,26 @@ iNZGUI <- setRefClass(
                                 sets,
                                 list(bs.inference = (svalue(rd, index = TRUE) == 2),
                                      summary.type = "inference",
-                                     inference.type = "conf")
+                                     inference.type = "conf",
+                                     inference.par = NULL)
                                 )
-                            if (svalue(rd, index = TRUE) == 2) {
-                                wBoots <- gwindow("Performing Bootstrap Simulations...Please Wait",
-                                               parent = win, width=850, height=400)
-                                gBoots <- gtext("Currently performing bootstrap simulations. Depending on the size of your data, this may take a while.\nPlease wait...",
+
+                            infType <- svalue(rd, index = TRUE)
+                            dispose(w)
+
+                            infTitle <- "Inference Information"
+                            if (infType == 2) {
+                                ## Not sure why this acts weird. At least on Linux, the text inside `wBoots` doesn't becoem visible until the
+                                ## function has finished.
+                                wBoots <- gwindow("Please wait while iNZight performs bootstrap simulations ...", visible = FALSE,
+                                                  parent = win, width=850, height=400)
+                                gBoots <- gtext("Currently performing bootstrap simulations.\nDepending on the size of your data, this may take a while.",
                                                 cont = wBoots, expand = TRUE,
                                                 font.attr = list(family = "monospace"))
+                                visible(wBoots) <- TRUE
                             }
-                            dispose(w)
-                            w2 <- gwindow("Summary", width = 850, height = 400,
+                            
+                            w2 <- gwindow(infTitle, width = 850, height = 400,
                                           visible = FALSE, parent = win)
                             g2 <- gtext(
                                 paste(
@@ -630,8 +639,8 @@ iNZGUI <- setRefClass(
                                     collapse = "\n"),
                                 expand = TRUE, cont = w2, wrap = FALSE,
                                 font.attr = list(family = "monospace"))
-                            try(dispose(wBoots), silent = TRUE)
                             visible(w2) <- TRUE
+                            try(dispose(wBoots), silent = TRUE)
                         }, cont = g)
 
                     } else {
