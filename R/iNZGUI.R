@@ -570,7 +570,7 @@ iNZGUI <- setRefClass(
                             curSet$varnames$y <- v$x
                         }
 
-                        w <- gwindow("Summary", width = 700, height = 400,
+                        w <- gwindow("Summary", width = 850, height = 400,
                                      visible = FALSE, parent = win)
                         g <- gtext(text = paste(do.call(
                                        iNZightPlots:::getPlotSummary,
@@ -608,22 +608,24 @@ iNZGUI <- setRefClass(
                             sets <- curSet
                             sets <- modifyList(
                                 sets,
-                                list(bs.inference = (svalue(rd, index = TRUE) == 2))
+                                list(bs.inference = (svalue(rd, index = TRUE) == 2),
+                                     summary.type = "inference",
+                                     inference.type = "conf")
                                 )
                             if (svalue(rd, index = TRUE) == 2) {
                                 wBoots <- gwindow("Performing Bootstrap Simulations...Please Wait",
-                                               parent = win, width=600, height=400)
+                                               parent = win, width=850, height=400)
                                 gBoots <- gtext("Currently performing bootstrap simulations. Depending on the size of your data, this may take a while.\nPlease wait...",
                                                 cont = wBoots, expand = TRUE,
                                                 font.attr = list(family = "monospace"))
                             }
                             dispose(w)
-                            w2 <- gwindow("Summary", width = 600, height = 400,
+                            w2 <- gwindow("Summary", width = 850, height = 400,
                                           visible = FALSE, parent = win)
                             g2 <- gtext(
                                 paste(
                                     do.call(
-                                        iNZightPlots:::getPlotInference,
+                                        iNZightPlots:::getPlotSummary,
                                         sets),
                                     collapse = "\n"),
                                 expand = TRUE, cont = w2, wrap = FALSE,
@@ -691,7 +693,7 @@ iNZGUI <- setRefClass(
                 }
                 do.call(iNZightPlot, curPlSet)
             } else {
-                resetPlot()
+                iNZightPlots:::resetPlot()
             }
         },
         ## set a new iNZDocument and make it the active one
