@@ -187,14 +187,18 @@ iNZDotchartMod <- setRefClass(
                                     by = 1, value = 100 * (1 - curSet$alpha))
             showButton <- gbutton("Show Changes",
                                   handler = function(h, ...) {
-                                      pch.sel <- ifelse(svalue(fillColor),
+                                      pch.sel <- ifelse(svalue(fillColor) | svalue(transpSlider) > 0,
                                                         19, 1)
                                       GUI$getActiveDoc()$setSettings(
                                           list(col.pt = svalue(symbolColList),
                                                bg = svalue(backgroundColList),
-                                               cex.pt = svalue(cexSlider),
+                                               cex.dotpt = svalue(cexSlider),
                                                pch = pch.sel,
                                                alpha = 1 - svalue(transpSlider) / 100,
+                                               fill.pt =
+                                               ifelse(svalue(transpSlider) == 0,
+                                                      svalue(fillColor),
+                                                      svalue(symbolColList)),
                                                largesample = plotTypeValues[[svalue(
                                                    plotTypeList, index = TRUE)]])
                                           )
