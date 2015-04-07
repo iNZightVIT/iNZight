@@ -21,7 +21,7 @@ iNZPlotModWin <- setRefClass(
         curSet = "list" ## the current plot settings
         ),
     methods = list(
-        initialize = function(gui=NULL) {
+        initialize = function(gui = NULL, which = 1) {
             initFields(GUI = gui)
             if (!is.null(GUI)) {
                 updateSettings()
@@ -69,7 +69,7 @@ iNZDotchartMod <- setRefClass(
     "iNZDotchartMod",
     contains = "iNZPlotModWin",
     methods = list(
-        initialize = function(gui) {
+        initialize = function(gui, which = 1) {
             callSuper(gui)
             ## need to specify the methods that we want to use in
             ## do.call later on (see changeOpts())
@@ -78,10 +78,10 @@ iNZDotchartMod <- setRefClass(
                              "Change plot appearance",
                              "Identify points",
                              "Customize Labels"),
-                           selected = 1,
+                           selected = which,
                            horizontal = FALSE)
             add(radioGrp, opts)
-            opt1()
+            eval(parse(text = paste0("opt", which, "()")))
             addHandlerChanged(opts,
                               handler = function(h, ...) {
                                   changeOpts(svalue(h$obj,
@@ -179,6 +179,21 @@ iNZDotchartMod <- setRefClass(
                         curSet$largesample == FALSE,
                         2, 3))
                 )
+
+            addHandlerChanged(plotTypeList, handler = function(h, ...) {
+                GUI$getActiveDoc()$setSettings(
+                    list(largesample = plotTypeValues[[svalue(plotTypeList, index = TRUE)]])
+                    )
+                updateSettings()
+
+                plType <- svalue(plotTypeList, index = TRUE)
+                if (plType == 3 | (plType == 1 & GUI$plotType == "hist")) {
+                    visible(modWin) <<- FALSE
+                    iNZHistogramMod$new(GUI, which = 1)
+                    dispose(modWin)
+                }
+            })
+            
             fillColor <- gcheckbox("Colour symbol interior",
                                    checked = (curSet$pch != 1))
             cexSlider <- gslider(from = 0.05, to = 3.5,
@@ -198,10 +213,10 @@ iNZDotchartMod <- setRefClass(
                                                fill.pt =
                                                ifelse(svalue(transpSlider) == 0,
                                                       svalue(fillColor),
-                                                      svalue(symbolColList)),
-                                               largesample = plotTypeValues[[svalue(
-                                                   plotTypeList, index = TRUE)]])
-                                          )
+                                                      svalue(symbolColList))
+                                               ##largesample = plotTypeValues[[svalue(
+                                               ##    plotTypeList, index = TRUE)]])
+                                          ))
                                       updateSettings()
                                   })
             tbl[3,2:4, anchor = c(-1,-1), expand = TRUE] <- lbl1
@@ -1200,6 +1215,188 @@ iNZScatterMod <- setRefClass(
             tbl[6, 2, expand = TRUE] <- labY
             tbl[7, 1:2, anchor = c(-1, -1), expand = TRUE] <- lbl5
             tbl[8, 1:2, expand = TRUE] <- showButton
+            add(optGrp, tbl)
+        })
+    )
+
+
+
+
+
+
+
+
+
+
+
+
+
+iNZHistogramMod <- setRefClass(
+    "iNZHistogramMod",
+    contains = "iNZPlotModWin",
+    methods = list(
+        initialize = function(gui, which = 1) {
+            callSuper(gui)
+            ## need to specify the methods that we want to use in
+            ## do.call later on (see changeOpts())
+            usingMethods(opt1, opt2)
+            opts <- gradio(c("Change plot appearance",
+                             "Customize Labels"),
+                           selected = which,
+                           horizontal = FALSE)
+            add(radioGrp, opts)
+            eval(parse(text = paste0("opt", which, "()")))
+            addHandlerChanged(opts,
+                              handler = function(h, ...) {
+                                  changeOpts(svalue(h$obj,
+                                                    index = TRUE))
+                              })
+        },
+        changeOpts = function(index) {
+            ## delete current displayed options
+            invisible(sapply(optGrp$children, function(x) delete(optGrp, x)))
+            do.call(paste("opt", index, sep=""),
+                    args = list())
+        },
+        ## Following are the different views for the indices of the
+        ## gradio
+
+        ## Change Plot appearance
+        opt1 = function() {
+            tbl <- glayout()
+            lbl1 <- glabel("Change plot appearance")
+            font(lbl1) <- list(weight="bold",
+                               family = "normal",
+                               size = 9)
+            lbl2 <- glabel("Colour of bars :")
+            lbl3 <- glabel("Background colour :")
+            adjBins <- gcheckbox("Adjust number of bins",
+                                 checked = !is.null(curSet$hist.bins))
+            lbl5 <- glabel("Number of bins  :")
+            lbl8 <- glabel("Plot Type :")
+
+            ## default settings
+            defts <- iNZightPlots:::inzPlotDefaults()
+            ## active settings
+            barCols <- c(defts$bar.fill, "darkblue", "darkgreen",
+                "darkmagenta", "darkslateblue", "hotpink4",
+                "lightsalmon2", "palegreen3", "steelblue3")
+            backgroundCols <- c(defts$bg, "antiquewhite",
+                "azure3", "bisque", "cornsilk", "darkolivegreen2",
+                "darkslategray1", "greenyellow", "lightblue1",
+                "lightpink", "rosybrown1", "slategray1", "thistle1",
+                "wheat1")
+            plotTypes <- c("default", "dot plot", "histogram")
+            ## the values used for `largesample` in the plot settings
+            plotTypeValues <- list(NULL, FALSE, TRUE)
+            barColList <- gcombobox(
+                barCols,
+                selected = ifelse(
+                    is.na(which(barCols == curSet$bar.fill)[1]),
+                    1,
+                    which(barCols == curSet$bar.fill)[1]),
+                editable = TRUE)
+            backgroundColList <- gcombobox(
+                backgroundCols,
+                selected = ifelse(
+                    is.na(which(backgroundCols == curSet$bg)[1]),
+                    1,
+                    which(backgroundCols == curSet$bg)[1]),
+                editable = TRUE)
+            plotTypeList <- gcombobox(
+                plotTypes,
+                selected = ifelse(
+                    is.null(curSet$largesample),
+                    1,
+                    ifelse(
+                        curSet$largesample == FALSE,
+                        2, 3))
+                )
+
+            addHandlerChanged(plotTypeList, handler = function(h, ...) {
+                GUI$getActiveDoc()$setSettings(
+                    list(largesample = plotTypeValues[[svalue(plotTypeList, index = TRUE)]])
+                    )
+                updateSettings()
+
+                plType <- svalue(plotTypeList, index = TRUE)
+                if (plType == 2 | (plType == 1 & GUI$plotType == "dot")) {
+                    visible(modWin) <<- FALSE
+                    iNZDotchartMod$new(GUI, which = 2)
+                    dispose(modWin)
+                }
+            })
+            
+            binSlider <- gslider(from = 10, to = 200,
+                by = 1, value = curSet$hist.bins)
+            enabled(binSlider) <- svalue(adjBins)
+
+            addHandlerChanged(adjBins, handler = function(h, ...) enabled(binSlider) <- svalue(adjBins))
+            
+            showButton <- gbutton("Show Changes",
+                                  handler = function(h, ...) {
+                                      GUI$getActiveDoc()$setSettings(
+                                          list(bar.fill = svalue(barColList),
+                                               bg = svalue(backgroundColList),
+                                               hist.bins = if (svalue(adjBins)) svalue(binSlider) else NULL
+                                               #largesample = plotTypeValues[[svalue(
+                                               #    plotTypeList, index = TRUE)]])
+                                          ))
+                                      updateSettings()
+                                  })
+            tbl[3,2:4, anchor = c(-1,-1), expand = TRUE] <- lbl1
+            tbl[4,2, anchor = c(-1,-1), expand = TRUE] <- lbl8
+            tbl[4,3, expand = TRUE] <- plotTypeList
+            tbl[5,2, anchor = c(-1,-1), expand = TRUE] <- lbl2
+            tbl[5,3, expand = TRUE] <- barColList
+            tbl[6,2, anchor = c(-1,-1), expand = TRUE] <- lbl3
+            tbl[6,3, expand = TRUE] <- backgroundColList
+            tbl[7,2, anchor = c(-1,-1), expand = TRUE] <- lbl5
+            tbl[7,3] <- adjBins
+            tbl[8,3, expand = TRUE] <- binSlider
+            tbl[9, 2:4] <- showButton
+
+            add(optGrp, tbl)
+        },
+        opt2 = function() {
+            tbl <- glayout()
+            lbl1 <- glabel("Customize Labels")
+            font(lbl1) <- list(weight="bold",
+                               family = "normal",
+                               size = 9)
+
+            curPlSet <- GUI$getActiveDoc()$getSettings()
+            oldMain <- curPlSet$main
+            oldX <- curPlSet$xlab
+            if (is.null(oldMain)) oldMain <- ''
+            if (is.null(oldX)) oldX <- ''
+
+            lbl2    <- glabel("Main title :")
+            labMain <- gedit(oldMain)
+            lbl3    <- glabel("x-axis label :")
+            labX    <- gedit(oldX)
+
+            lbl4 <- glabel("(Enter a single space to print no title)")
+            font(lbl4) <- list(family = "normal",
+                               size = 8)
+
+            showButton <- gbutton("Show Changes",
+                                  handler = function(h, ...) {
+                                      mlab <- svalue(labMain)
+                                      xlab <- svalue(labX)
+                                      GUI$getActiveDoc()$setSettings(
+                                          list(main = if (mlab != '') mlab else NULL,
+                                               xlab = if (xlab != '') xlab else NULL)
+                                          )
+                                      updateSettings()
+                                  })
+            tbl[3, 1:2, anchor = c(-1, -1), expand = TRUE] <- lbl1
+            tbl[4, 1, anchor = c(-1, -1), expand = TRUE] <- lbl2
+            tbl[4, 2, expand = TRUE] <- labMain
+            tbl[5, 1, anchor = c(-1, -1), expand = TRUE] <- lbl3
+            tbl[5, 2, expand = TRUE] <- labX
+            tbl[6, 1:2, anchor = c(-1, -1), expand = TRUE] <- lbl4
+            tbl[7, 1:2, expand = TRUE] <- showButton
             add(optGrp, tbl)
         })
     )

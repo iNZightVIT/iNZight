@@ -27,7 +27,9 @@ iNZGUI <- setRefClass(
                    ## every window that modifies plot/data
                    ## this way we can ensure to only have one
                    ## open at the time
-                   modWin = "ANY"
+                   modWin = "ANY",
+                   ## the type of plot drawn (scatter, dot, etc...)
+                   plotType = "ANY"
                    ),
                prototype = list(
                    activeDoc = 1
@@ -700,7 +702,8 @@ iNZGUI <- setRefClass(
                     curPlSet$varnames$y <- curPlSet$varnames$x
                     curPlSet$varnames$x <- x.tmp
                 }
-                do.call(iNZightPlot, curPlSet)
+                pl <- do.call(iNZightPlot, curPlSet)
+                plotType <<- attr(pl, "plottype")
             } else {
                 iNZightPlots:::resetPlot()
             }

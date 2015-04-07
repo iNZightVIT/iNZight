@@ -36,7 +36,9 @@ iNZPlotRmveModWin <- setRefClass(
                     "Restore default background colour",
                     "Restore default line thickness",
                     "Restore default plot type",
-                    "Restore default plot labels")
+                    "Restore default plot labels",
+                    "Restore default bar colours",
+                    "Restore default number of bins")
                 ## check for presence of all additions
                 curAdditions <- c(
                     TRUE, ## all additiions
@@ -62,7 +64,9 @@ iNZPlotRmveModWin <- setRefClass(
                     curSet$bg != defSet$bg, ## bg colour
                     curSet$lwd.pt != defSet$lwd.pt, ## point line thickness
                     !is.null(curSet$largesample), ## plot type
-                    !is.null(curSet$xlab) & !is.null(curSet$ylab) & !is.null(curSet$main)  ## plot labels
+                    !is.null(curSet$xlab) & !is.null(curSet$ylab) & !is.null(curSet$main),  ## plot labels
+                    curSet$bar.fill != defSet$bar.fill,  ## bar colours
+                    !is.null(curSet$hist.bins)  ## number of histogram bins
                     )
 
                 proceedButton <- gbutton(
@@ -130,7 +134,9 @@ iNZPlotRmveModWin <- setRefClass(
                                  list(bg = defSet$bg), ## bg colour
                                  list(lwd.pt = defSet$lwd.pt), ## point line thickness
                                  list(largesample = defSet$largesample), ## plot type
-                                 list(xlab = NULL, ylab = NULL, main = NULL)  ## labels
+                                 list(xlab = NULL, ylab = NULL, main = NULL),  ## labels
+                                 list(bar.fill = defSet$bar.fill), ## bar colours
+                                 list(hist.bins = NULL)  ## histogram bins
                                  )
 
             GUI$getActiveDoc()$setSettings(
