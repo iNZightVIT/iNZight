@@ -248,6 +248,13 @@ iNZDotchartMod <- setRefClass(
             add(optGrp, tbl)
         },
         opt3 = function() {
+            if (attr(gui$curPlot, "nplots") > 1 | !is.null(curSet$y)) {
+                tbl1 <- glayout()
+                tbl1[1, 1] <- glabel("Cannot identify points for this type of plot.")
+                add(optGrp, tbl1)
+                return()
+            }
+                
             ## Do checking first
             ## If g1 or g2 = _MULTI, then we can't identify points (yet ...)
             cantDo <- function(msg = "using subsetting variables.") {
@@ -316,7 +323,7 @@ iNZDotchartMod <- setRefClass(
 
                                        
                                         
-                                        seekViewport("MAINVP")
+                                        seekViewport("VP:locate.these.points")
 
                                         isNA <- is.na(x)
                                         if (!is.null(curSet$g1))
@@ -326,14 +333,16 @@ iNZDotchartMod <- setRefClass(
 
                                             
                                         dp <- grid.get("DOTPOINTS")
+
                                         # these are the points, but not in the correct order ...
                                         d <- data.frame(x = as.numeric(dp$x),
                                                         y = as.numeric(dp$y),
                                                         v = v[w & !isNA])
-                                       
-                                        d$v <- iNZightPlots:::makePoints(x[w & !isNA], v[w & !isNA])$col
+
+                                        order <- attr(gui$curPlot[[1]][[1]]$toplot[[1]], "order")
+                                        d$v <- d$v[order]
                                         
-                                        seekViewport("DOTPLOTVP")  # need correct coordinate system
+                                        seekViewport("VP:plotregion")  # need correct coordinate system
                                                                                
                                         # FOR TESTING:
                                         mmPoints <- svalue(selOpts, index = TRUE) == 2
@@ -387,13 +396,29 @@ iNZDotchartMod <- setRefClass(
                                             
                                             ## So now, d = data.frame with x, y, and the label
                                             ## Standardise it:
-                                            x.s <- (d$x - min(d$x)) / (max(d$x) - min(d$x))
-                                            y.s <- (d$y - min(d$y)) / (max(d$y) - min(d$y))
+                                            ## However, need to be careful if only one unique X or Y value:
+                                            
+                                            if (diff(range(d$x)) == 0)
+                                                x.s <- rep(0, length(d$x))
+                                            else
+                                                x.s <- (d$x - min(d$x)) / (max(d$x) - min(d$x))
+                                            
+                                            if (diff(range(d$y)) == 0)
+                                                y.s <- rep(0, length(d$y))
+                                            else
+                                                y.s <- (d$y - min(d$y)) / (max(d$y) - min(d$y))
                                             
                                             xy.s <- numeric(2)
-                                            xy.s[1] <- (xy[1] - min(d$x)) / (max(d$x) - min(d$x))
-                                            xy.s[2] <- (xy[2] - min(d$y)) / (max(d$y) - min(d$y))
+                                            if (diff(range(d$x)) == 0)
+                                                xy.s[1] <- xy[1]
+                                            else
+                                                xy.s[1] <- (xy[1] - min(d$x)) / (max(d$x) - min(d$x))
                                             
+                                            if (diff(range(d$y)) == 0)
+                                                xy.s[2] <- xy[2]
+                                            else
+                                                xy.s[2] <- (xy[2] - min(d$y)) / (max(d$y) - min(d$y))
+
                                             o <- d[which.min((x.s - xy.s[1])^2 + (y.s - xy.s[2])^2), ]
                                             
                                             grid.text(o$v,
@@ -1150,7 +1175,6 @@ iNZScatterMod <- setRefClass(
                 xy.s[2] <- (xy[2] - min(d$y)) / (max(d$y) - min(d$y))
 
                 o <- d[which.min((x.s - xy.s[1])^2 + (y.s - xy.s[2])^2), ]
-                print(o)
 
                 grid.text(o$v, o$x,
                           o$y + ifelse(o$y < mean(d$y), 1, -1) *

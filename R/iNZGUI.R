@@ -28,7 +28,8 @@ iNZGUI <- setRefClass(
                    ## this way we can ensure to only have one
                    ## open at the time
                    modWin = "ANY",
-                   ## the type of plot drawn (scatter, dot, etc...)
+                   ## the current plot and its type (scatter, dot, etc...)
+                   curPlot = "ANY",
                    plotType = "ANY"
                    ),
                prototype = list(
@@ -702,8 +703,8 @@ iNZGUI <- setRefClass(
                     curPlSet$varnames$y <- curPlSet$varnames$x
                     curPlSet$varnames$x <- x.tmp
                 }
-                pl <- do.call(iNZightPlot, curPlSet)
-                plotType <<- attr(pl, "plottype")
+                curPlot <<- unclass(do.call(iNZightPlot, curPlSet))
+                plotType <<- attr(curPlot, "plottype")
             } else {
                 iNZightPlots:::resetPlot()
             }
