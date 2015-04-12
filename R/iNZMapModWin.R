@@ -1,8 +1,7 @@
-iNZMapModWin <- setRefClass(
-    "iNZMapModWin",
+iNZightMapModWin <- setRefClass(
+    "iNZightMapModWin",
     fields = list(
         GUI = "ANY",
-        optGrp = "ANY",
         mainGrp = "ANY",
         activeData = "data.frame",
         lonVar = "character",
@@ -13,10 +12,34 @@ iNZMapModWin <- setRefClass(
         initialize = function(GUI) {
             initFields(GUI = GUI)
             
-            source("../iNZightMaps/R/isGeoData.R")
-            checkGeoData()
-            
+#             ## NOTE:
+#             ##   could be more generic by implementing this in the main GUI class
+#             ##   eg, GUI$setup("module")
+#             ##
+#             ## check if the module installed
+#             if ("iNZightMaps" %in% rownames(installed.packages())) {
+#                 lapply(c(iNZightMaps, ggmap), require)
+#                 require(iNZightMaps)
+#             } else {
+#                 install = gconfirm("The module is not found. Would you like to download it?")
+#                 if (install) {
+#                     #install.packages("iNZightMaps", repo = "http://docker..?")
+#                     devtools::install_github(repo = "iNZightVIT/iNZightMaps")
+#                     require(iNZightMaps)
+#                 } else {
+#                     return
+#                 }
+#             }
             activeData <<- GUI$getActiveData()
+
+            if (is.null(activeData)) {
+                gmessage("Please import data", icon = "info")
+                return()
+            }
+#             if (!isGeoData(activeData)) {
+#                 proceed = gconfirm("The imported data set is not geographical. Click ")
+#             }
+            
             lonVar <<- getLon(activeData)
             latVar <<- getLat(activeData)
             varNames <<- names(activeData)
@@ -245,15 +268,16 @@ iNZMapModWin <- setRefClass(
             g2_opt1c = gspinbutton(from = 0, to = 1, 
                                    length.out = 10, value = 0)
             g2_opt1d = gcheckbox("solid shapes", checked = FALSE)
+            size(g2_opt1d) = c(100, 21)
             visible(g2_opt1d) = FALSE
             
-            g2Layout[2, 1,   expand = TRUE, anchor = c(1, 0)] = g2_lab1
-            g2Layout[2, 3,   expand = TRUE, anchor = c(1, 0)] = g2_lab2
+            g2Layout[2, 1, expand = TRUE, anchor = c(1, 0)] = g2_lab1
+            g2Layout[2, 3, expand = TRUE, anchor = c(1, 0)] = g2_lab2
             
-            g2Layout[3, 4, expand = TRUE]   = g2_opt1d
+            g2Layout[3, 4, expand = FALSE]  = g2_opt1d
             g2Layout[1, 1:4, expand = TRUE] = g2_opt1a
-            g2Layout[2, 2,   expand = TRUE] = g2_opt1b
-            g2Layout[2, 4,   expand = TRUE] = g2_opt1c
+            g2Layout[2, 2, expand = TRUE]   = g2_opt1b
+            g2Layout[2, 4, expand = TRUE]   = g2_opt1c
             
             ############
             ###  g3  ###
@@ -300,7 +324,7 @@ iNZMapModWin <- setRefClass(
             gCols = c(paste("white", hiCols, sep = " & "),
                       paste("green", hiCols, sep = " & "),
                       paste("yellow", hiCols, sep = " & "),
-                      paste("oragen", hiCols, sep = " & "))
+                      paste("orange", hiCols, sep = " & "))
             lCols= c("dark red", "dark blue", "dark green", "dark magenta",
                      "dark slate blue", "hot pink 4", "light salmon 2", 
                      "pale green 3", "steel blue 3")
@@ -439,7 +463,14 @@ iNZMapModWin <- setRefClass(
                 visible(g4_opt1b) = !visible(g4_opt1a)  # for new design
                 
                 ## leave if not variable not selected
-                if (varInd == 1) { return() }
+                if (varInd == 1) {
+                    visible(g2_lab1)  = TRUE
+                    visible(g2_lab2)  = TRUE
+                    visible(g2_opt1b) = TRUE
+                    visible(g2_opt1c) = TRUE
+                    visible(g2_opt1d) = FALSE
+                    return()
+                }
                 
                 ## delete current display
                 replicate(2, delete(g2Layout, g2Layout$children[[5]]))
@@ -464,11 +495,12 @@ iNZMapModWin <- setRefClass(
                     enabled(g2_opt1c) = TRUE
                     enabled(g4_opt1a) = TRUE
                     
-                    visible(g2_lab1)  = TRUE
-                    visible(g2_lab2)  = TRUE
-                    visible(g2_opt1b) = TRUE
-                    visible(g2_opt1c) = TRUE
-                    visible(g2_opt1d) = FALSE
+                    visible(g2_lab1)   = TRUE
+                    visible(g2_lab2)   = TRUE
+                    visible(g2_opt1b)  = TRUE
+                    visible(g2_opt1c)  = TRUE
+                    visible(g2_opt1d)  = FALSE
+                    svalue(tab2_opt1c) = TRUE
                 } else {
                     ## create buttons
                     g2_opt1b = gspinbutton(0, 1, by = 0.1, value = 0)
@@ -485,6 +517,7 @@ iNZMapModWin <- setRefClass(
                     
                     ## display shape option
                     visible(g2_opt1d) = TRUE
+                    svalue(tab2_opt1c) = FALSE
                     
                     ## hide "from" and "to"
                     visible(g2_lab1) = FALSE
@@ -683,31 +716,62 @@ iNZMapModWin <- setRefClass(
             size(cancelButton) = c(270, 28)
         },
         
-        ## Function to check for a geographical data set.
-        geoData = function() {
-            if (!isGeoData(GUI$getActiveData())) {
-                checkToProceed = gconfirm(
-                    paste("Cannot find longitudes and latitudes in data set.",
-                          "Proceed?", sep = "\n"),
-                    title = "Warning", icon = "warning"
-                )
-            } else {
-                return(TRUE)
-            }
-        },
-        
-        ## Function to handle proceed or stop
-        ## if the data set is not geographical.
-        checkGeoData = function() {
-            if (!geoData()) {
-                visible(GUI$gp1) <<- TRUE
-                if (length(GUI$gp1$children[[1]]$children) == 3) {
-                    delete(GUI$gp1$children[[1]],
-                           GUI$gp1$children[[1]]$children[[1]])
-                }
-                return()
-            }
-        },
+#         chkData = function(data) {
+#             ## find the variable names
+#             lon = colnames(data)[grepl("^[Ll][Oo][Nn].*$", colnames(data))]
+#             lat = colnames(data)[grepl("^[Ll][Aa][Tt].*$", colnames(data))]
+#             
+#             if (length(lon) > 0 & length(lat) > 0) {
+#                 lon_vals = data[!is.na(data[[lon]]), lon]
+#                 lat_vals = data[!is.na(data[[lat]]), lat]
+#                 
+#                 hasLon = any(!is.finite(lon_vals)) |
+#                          any(lon_vals < -180) |
+#                          any(lon_vals > 180)
+#                 hasLat = any(!is.finite(lat_vals)) |
+#                          any(lat_vals < -90) |
+#                          any(lat_vals > 90)
+#                 
+#                 if (!hasLon | !hasLat) {
+#                     
+#                 }
+#             }
+#         }
+#         
+#         ## Function to check for a geographical data set.
+#         geoData = function() {
+#             if (!isGeoData(GUI$getActiveData())) {
+#                 checkToProceed = gconfirm(
+#                     paste("Cannot find longitudes and latitudes in data set.",
+#                           "Proceed?", sep = "\n"),
+#                     title = "Warning", icon = "warning"
+#                 )
+#             } else {
+#                 return(TRUE)
+#             }
+#         },
+#         
+#         ## Function to handle proceed or stop
+#         ## if the data set is not geographical.
+#         checkGeoData = function() {
+#             
+#             if (!isGeoData(GUI$getActiveData())) {
+#                 proceed = gconfirm(
+#                     "The imported data are not geographical. ",
+#                     title = "Warning",
+#                     icon  = "warning"
+#                 )
+#             }
+#             
+#             if (!geoData()) {
+#                 visible(GUI$gp1) <<- TRUE
+#                 if (length(GUI$gp1$children[[1]]$children) == 3) {
+#                     delete(GUI$gp1$children[[1]],
+#                            GUI$gp1$children[[1]]$children[[1]])
+#                 }
+#                 return()
+#             }
+#         },
         
         ## Wrapper.
         evalText = function(txt) {
@@ -918,16 +982,17 @@ iNZMapModWin <- setRefClass(
             return(arg)
         },
         
+        ## For the plot buttons
         plotButtonHandler = function(arg) {
             ##########################################
-            source("../iNZightMaps/R/timeCat.R")
-            source("../iNZightMaps/R/drawMap.R")
-            source("../iNZightMaps/R/draw.R")
-            source("../iNZightMaps/R/generateLine.R")
-            source("../iNZightMaps/R/getBB.R")
-            source("../iNZightMaps/R/isGeoData.R")
-            source("../iNZightMaps/R/varSubset.R")
-            source("../iNZightMaps/R/processFactor.R")
+            #source"../iNZightMaps/R/timeCat.R")
+            #source"../iNZightMaps/R/drawMap.R")
+            #source"../iNZightMaps/R/draw.R")
+            #source"../iNZightMaps/R/generateLine.R")
+            #source"../iNZightMaps/R/getBB.R")
+            #source"../iNZightMaps/R/isGeoData.R")
+            #source"../iNZightMaps/R/varSubset.R")
+            #source"../iNZightMaps/R/processFactor.R")
             library(ggmap)
             ##########################################
             map = do.call(draw, arg)
