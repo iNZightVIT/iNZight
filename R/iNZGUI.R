@@ -239,12 +239,29 @@ iNZGUI <- setRefClass(
                     label = "Time Series...",
                     icon = "symbol_diamond",
                     handler = function(h, ...) {
-                        ign <- gwindow("...", visible = FALSE)
-                        tag(ign, "dataSet") <- getActiveData()
-                        e <- list(obj = ign)
-                        e$win <- win
-                        timeSeries(e)
+                        module = "iNZightTS"
+                        setup  = modSetup(module)
+                        if (setup) {
+                            if (emptyData()) {
+                                ## if there is no imported 
+                                ## dataset, display a gmessage
+                                msg("time series")
+                                return()
+                            }
+                            updateModWin()
+                            source(paste0("../Modules/", module, ".R"))
+                            iNZightTimeSeries$new(.self)
+                            visible(moduleWindow) <<- TRUE
+                        } else {
+                            return()
+                        }
                     }
+#                         ign <- gwindow("...", visible = FALSE)
+#                         tag(ign, "dataSet") <- getActiveData()
+#                         e <- list(obj = ign)
+#                         e$win <- win
+#                         timeSeries(e)
+#                    }
                     ),
                 modelFit = gaction(
                   #18
@@ -431,16 +448,22 @@ iNZGUI <- setRefClass(
                     label = "Maps...",
                     icon = "symbol_diamond",
                     handler = function(h, ...) {
-                        ## delete current moduleWindow
-                        sapply(moduleWindow$children,
-                               function(x) delete(moduleWindow, x))
-                        
-                        visible(gp1) <<- FALSE
-                        iNZMapModWin$new(.self)
-                        visible(moduleWindow) <<- TRUE
-                        ##TODO: grey out buttons
-                        #enabled(plotWidget[[9]]) <<- FALSE
-                        
+                        module = "iNZightMaps"
+                        setup  = modSetup(module)
+                        if (setup) {
+                            if (emptyData()) {
+                                ## if there is no imported 
+                                ## dataset, display a gmessage
+                                msg("maps")
+                                return()
+                            }
+                            updateModWin()
+                            source(paste0("../Modules/", module, ".R"))
+                            iNZightMaps$new(.self)
+                            visible(moduleWindow) <<- TRUE
+                        } else {
+                            return()
+                        }
                     }
                 )
                 ############ MAPS ############
@@ -714,6 +737,48 @@ iNZGUI <- setRefClass(
         ## add observer to the activeDoc class variable
         addActDocObs = function(FUN, ...) {
             .self$activeDocChanged$connect(FUN, ...)
+        },
+        
+        ## check for any imported data
+        emptyData = function() {
+            vars = names(.self$getActiveData())
+            if(length(vars) == 1 && vars == "empty") {
+                return(TRUE)
+            } else {
+                return(FALSE)
+            }
+        },
+        
+        ## display warning message
+        msg = function(label) {
+            gmessage(msg = paste("A dataset is required to use the",
+                                 label, "module"),
+                     title = "No data", icon = "error")
+        },
+        
+        ## module setup
+        modSetup = function(mod) {
+            if (mod %in% rownames(installed.packages())) {
+                require(mod, character.only = TRUE)
+            } else {
+                install = gconfirm("The module is not found. Would you like to download it?")
+                if (install) {
+                    #install.packages("iNZightMaps", repo = "http://docker..?")
+                    repo = paste("iNZightVIT", mod)
+                    devtools::install_github(repo = repo)
+                    require(mod, character.only = TRUE)
+                }
+                return(install)
+            }
+        },
+        
+        ## update the module window
+        ## (should be run every time when a new module opens)
+        updateModWin = function() {
+            ## delete current moduleWindow
+            sapply(moduleWindow$children, function(x) delete(moduleWindow, x))
+            ## hide the data view widget
+            visible(gp1) <<- FALSE
         }
         )
     )
