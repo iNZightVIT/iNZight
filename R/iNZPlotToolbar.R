@@ -66,30 +66,18 @@ iNZPlotToolbar <- setRefClass(
         ## function to open the correct plot modification win
         ## depending on the currently selected variable types
         addToPlot = function() {
-            curSet <- GUI$getActiveDoc()$getSettings()            
-            if (is.numeric(curSet$x)) {
-                if (is.numeric(curSet$y)) {
-                    ## scatterplot
-                    iNZScatterMod$new(GUI)
-                } else if (is.null(curSet$y)) {
-                    ## dot plot
-                    iNZDotchartMod$new(GUI)                    
-                } else {
-                    ## dotchart subsetted by a factor
-                    iNZDotchartMod$new(GUI)                    
-                }                
-            } else {
-                if (is.numeric(curSet$y)) {
-                    ## dotchart subsetted by a factor
-                    iNZDotchartMod$new(GUI)
-                } else if (is.null(curSet$y)) {
-                    ## normal bar chart
-                    iNZBarchartMod$new(GUI)
-                } else {
-                    ## segmented bar chart (2 factor vars)
-                    ## no mod window for this plot type
-                }
-            }
+            curSet <- GUI$getActiveDoc()$getSettings()
+            if (is.null(GUI$plotType))
+                gmessage("Please select at least one variable.")
+            else
+                switch(GUI$plotType,
+                       "scatter" = iNZScatterMod$new(GUI),
+                       "dot" = iNZDotchartMod$new(GUI),
+                       "bar" = iNZBarchartMod$new(GUI),
+                       "hist" = iNZHistogramMod$new(GUI),
+                       "grid" = iNZGriddenMod$new(GUI),
+                       "hex" = iNZHexbinMod$new(GUI),
+                       iNZPlotModWin$new(GUI))
         },
         addInf = function() {
             curSet <- GUI$getActiveDoc()$getSettings()            

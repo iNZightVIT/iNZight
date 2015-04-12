@@ -34,7 +34,10 @@ iNZGUI <- setRefClass(
                    ## every window that modifies plot/data
                    ## this way we can ensure to only have one
                    ## open at the time
-                   modWin = "ANY"
+                   modWin = "ANY",
+                   ## the current plot and its type (scatter, dot, etc...)
+                   curPlot = "ANY",
+                   plotType = "ANY"
                    ),
                prototype = list(
                    activeDoc = 1
@@ -53,17 +56,69 @@ iNZGUI <- setRefClass(
                                packageDescription("iNZight")$Version,
                                ")", sep = "")
             ## Check for updates ... need to use try incase it fails (no connection etc)
-            ap <- suppressWarnings(try(numeric_version(available.packages(
-                contriburl = contrib.url("http://docker.stat.auckland.ac.nz/R",
-                    getOption("pkgType")))[,"Version"]), TRUE))
-            if (!inherits(ap, "try-error")) {
-                if (length(ap) > 0) {
-                    ip <- try(numeric_version(installed.packages()[names(ap), "Version"]), TRUE)
-                    if (!inherits(ip, "try-error")) {
-                        if (any(ap > ip))
-                            win.title <- paste(win.title, " [updates available]")
+            ## RCurl no longer supports R < 3, so it wont be available on Mac SL version.
+            if ("RCurl" %in% row.names(installed.packages())) {
+                connected <- RCurl::url.exists("docker.stat.auckland.ac.nz")
+            } else connected <- FALSE
+            
+            if (connected) {
+                ap <- suppressWarnings(try(numeric_version(available.packages(
+                    contriburl = contrib.url("http://docker.stat.auckland.ac.nz/R",
+                        getOption("pkgType")))[,"Version"]), TRUE))
+                if (!inherits(ap, "try-error")) {
+                    if (length(ap) > 0) {
+                        ip <- try(numeric_version(installed.packages()[names(ap), "Version"]), TRUE)
+                        if (!inherits(ip, "try-error")) {
+                            if (any(ap > ip))
+                                win.title <- paste(win.title, " [updates available]")
+                        }
                     }
                 }
+                
+                ## we can update this part later to "count" every use ... but later
+                
+                ## also want to be cheeky and add users to "database" of users so we can track...
+
+                try({
+                    version = packageVersion("iNZight")
+                    os <- "Linux"
+                    if (.Platform$OS == "windows") {
+                        os = "Windows"
+                    } else if (Sys.info()["sysname"] == "Darwin") { 
+                        os = "Mac OS X"
+                        if (!inherits(osx.version, "try-error")) {
+                            os = paste("Mac OS X", osx.version)
+                        }
+                    }
+                    
+                    ## have they updated before?
+                    hash.id <- "new"
+                    if (os == "Windows") {
+                        libp <- "prog_files"
+                    } else if (os != "Linux") {
+                        ## i.e., mac
+                        libp <- "Library"
+                    } else {
+                        ## linux - save in library..
+                        libp <- .libPaths()[which(sapply(.libPaths(), function(p)
+                                                         "iNZight" %in% list.files(p)))[1]]
+                    }
+                    
+                    if (file.exists(file.path(libp, "id.txt"))) {
+                        hash.id <- readLines(file.path(libp, "id.txt"))
+                    }
+                    
+                    ## only if not already tracking
+                    if (hash.id == "new") {
+                        track.url <- paste0("http://docker.stat.auckland.ac.nz/R/tracker/index.php?track&v=",
+                                            version, "&os=", gsub(" ", "%20", os), "&hash=", hash.id)
+                        f <- try(url(track.url,  open = "r"), TRUE)
+                        
+                        ## write the hash code to their installation:
+                        hash.id <- readLines(f)
+                        try(writeLines(hash.id, file.path(libp, "id.txt")), silent = TRUE)
+                    }
+                })
             }
             
             win <<- gwindow(win.title, visible = FALSE, 
@@ -580,7 +635,7 @@ iNZGUI <- setRefClass(
                             curSet$varnames$y <- v$x
                         }
 
-                        w <- gwindow("Summary", width = 700, height = 400,
+                        w <- gwindow("Summary", width = 850, height = 400,
                                      visible = FALSE, parent = win)
                         g <- gtext(text = paste(do.call(
                                        iNZightPlots:::getPlotSummary,
@@ -618,28 +673,39 @@ iNZGUI <- setRefClass(
                             sets <- curSet
                             sets <- modifyList(
                                 sets,
-                                list(bs.inference = (svalue(rd, index = TRUE) == 2))
+                                list(bs.inference = (svalue(rd, index = TRUE) == 2),
+                                     summary.type = "inference",
+                                     inference.type = "conf",
+                                     inference.par = NULL)
                                 )
-                            if (svalue(rd, index = TRUE) == 2) {
-                                wBoots <- gwindow("Performing Bootstrap Simulations...Please Wait",
-                                               parent = win, width=600, height=400)
-                                gBoots <- gtext("Currently performing bootstrap simulations. Depending on the size of your data, this may take a while.\nPlease wait...",
+
+                            infType <- svalue(rd, index = TRUE)
+                            dispose(w)
+
+                            infTitle <- "Inference Information"
+                            if (infType == 2) {
+                                ## Not sure why this acts weird. At least on Linux, the text inside `wBoots` doesn't becoem visible until the
+                                ## function has finished.
+                                wBoots <- gwindow("Please wait while iNZight performs bootstrap simulations ...", visible = FALSE,
+                                                  parent = win, width=850, height=400)
+                                gBoots <- gtext("Currently performing bootstrap simulations.\nDepending on the size of your data, this may take a while.",
                                                 cont = wBoots, expand = TRUE,
                                                 font.attr = list(family = "monospace"))
+                                visible(wBoots) <- TRUE
                             }
-                            dispose(w)
-                            w2 <- gwindow("Summary", width = 600, height = 400,
+                            
+                            w2 <- gwindow(infTitle, width = 850, height = 400,
                                           visible = FALSE, parent = win)
                             g2 <- gtext(
                                 paste(
                                     do.call(
-                                        iNZightPlots:::getPlotInference,
+                                        iNZightPlots:::getPlotSummary,
                                         sets),
                                     collapse = "\n"),
                                 expand = TRUE, cont = w2, wrap = FALSE,
                                 font.attr = list(family = "monospace"))
-                            try(dispose(wBoots), silent = TRUE)
                             visible(w2) <- TRUE
+                            try(dispose(wBoots), silent = TRUE)
                         }, cont = g)
 
                     } else {
@@ -699,10 +765,10 @@ iNZGUI <- setRefClass(
                     curPlSet$varnames$y <- curPlSet$varnames$x
                     curPlSet$varnames$x <- x.tmp
                 }
-
-                do.call(iNZightPlot, curPlSet)
+                curPlot <<- unclass(do.call(iNZightPlot, curPlSet))
+                plotType <<- attr(curPlot, "plottype")
             } else {
-                resetPlot()
+                iNZightPlots:::resetPlot()
             }
         },
         ## set a new iNZDocument and make it the active one
