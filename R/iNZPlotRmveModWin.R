@@ -15,7 +15,7 @@ iNZPlotRmveModWin <- setRefClass(
                 ## close a modification window if one is open
                 try(dispose(GUI$modWin), silent = TRUE)
                 curSet <<- GUI$getActiveDoc()$getSettings()
-                defSet <<- iNZightPlots:::inzPlotDefaults()
+                defSet <<- iNZightPlots:::inzpar()
                 ## labels for all possible additions
                 additions <- c(
                     "Remove all additions",
@@ -38,7 +38,9 @@ iNZPlotRmveModWin <- setRefClass(
                     "Restore default plot type",
                     "Restore default plot labels",
                     "Restore default bar colours",
-                    "Restore default number of bins")
+                    "Restore default number of bins",
+                    "Restore default number of grid bins",
+                    "Restore default number of hexs")
                 ## check for presence of all additions
                 curAdditions <- c(
                     TRUE, ## all additiions
@@ -66,7 +68,9 @@ iNZPlotRmveModWin <- setRefClass(
                     !is.null(curSet$largesample), ## plot type
                     !is.null(curSet$xlab) & !is.null(curSet$ylab) & !is.null(curSet$main),  ## plot labels
                     curSet$bar.fill != defSet$bar.fill,  ## bar colours
-                    !is.null(curSet$hist.bins)  ## number of histogram bins
+                    !is.null(curSet$hist.bins),  ## number of histogram bins
+                    curSet$scatter.grid.bins != defSet$scatter.grid.bins,  ## number of grid bins
+                    curSet$hex.bins != defSet$hex.bins  ## number of hexs
                     )
 
                 proceedButton <- gbutton(
@@ -136,7 +140,9 @@ iNZPlotRmveModWin <- setRefClass(
                                  list(largesample = defSet$largesample), ## plot type
                                  list(xlab = NULL, ylab = NULL, main = NULL),  ## labels
                                  list(bar.fill = defSet$bar.fill), ## bar colours
-                                 list(hist.bins = NULL)  ## histogram bins
+                                 list(hist.bins = NULL),  ## histogram bins
+                                 list(scatter.grid.bins = defSet$scatter.grid.bins),  ## grid bins
+                                 list(hex.bins = defSet$hex.bins)  ## n. hexs
                                  )
 
             GUI$getActiveDoc()$setSettings(

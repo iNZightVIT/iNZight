@@ -75,6 +75,8 @@ iNZPlotToolbar <- setRefClass(
                        "dot" = iNZDotchartMod$new(GUI),
                        "bar" = iNZBarchartMod$new(GUI),
                        "hist" = iNZHistogramMod$new(GUI),
+                       "grid" = iNZGriddenMod$new(GUI),
+                       "hex" = iNZHexbinMod$new(GUI),
                        iNZPlotModWin$new(GUI))
         },
         addInf = function() {

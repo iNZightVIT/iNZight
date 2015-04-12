@@ -66,8 +66,8 @@ iNZPlotSettings <- setRefClass(
             if(!is.null(settings))
                 settings <<- settings
             else
-                settings <<- unclass(iNZightPlots:::inzPlotDefaults())
-            defaultSettings <<- unclass(iNZightPlots:::inzPlotDefaults())
+                settings <<- unclass(iNZightPlots:::inzpar())
+            defaultSettings <<- unclass(iNZightPlots:::inzpar())
         },
         getSettings = function() {
             settings
@@ -89,7 +89,7 @@ iNZPlotSettings <- setRefClass(
         },
         ## reset the plot settings (except the data fields)
         resetSettings = function() {
-            setSettings(unclass(iNZightPlots:::inzPlotDefaults()))
+            setSettings(unclass(iNZightPlots:::inzpar()))
         },
         ## extract a sub-list of a settings list
         ## than can be used to merge with defaultSettings
