@@ -239,29 +239,29 @@ iNZGUI <- setRefClass(
                     label = "Time Series...",
                     icon = "symbol_diamond",
                     handler = function(h, ...) {
-                        module = "iNZightTS"
-                        setup  = modSetup(module)
-                        if (setup) {
-                            if (emptyData()) {
-                                ## if there is no imported 
-                                ## dataset, display a gmessage
-                                msg("time series")
-                                return()
-                            }
-                            updateModWin()
-                            source(paste0("../Modules/", module, ".R"))
-                            iNZightTimeSeries$new(.self)
-                            visible(moduleWindow) <<- TRUE
-                        } else {
-                            return()
-                        }
+                        ## module = "iNZightTS"
+                        ## setup  = modSetup(module)
+                        ## if (setup) {
+                        ##     if (emptyData()) {
+                        ##         ## if there is no imported 
+                        ##         ## dataset, display a gmessage
+                        ##         msg("time series")
+                        ##         return()
+                        ##     }
+                        ##     updateModWin()
+                        ##     source(paste0("../Modules/", module, ".R"))
+                        ##     iNZightTimeSeries$new(.self)
+                        ##     visible(moduleWindow) <<- TRUE
+                        ## } else {
+                        ##     return()
+                        ## }
+                        
+                        ign <- gwindow("...", visible = FALSE)
+                        tag(ign, "dataSet") <- getActiveData()
+                        e <- list(obj = ign)
+                        e$win <- win
+                        timeSeries(e)
                     }
-#                         ign <- gwindow("...", visible = FALSE)
-#                         tag(ign, "dataSet") <- getActiveData()
-#                         e <- list(obj = ign)
-#                         e$win <- win
-#                         timeSeries(e)
-#                    }
                     ),
                 modelFit = gaction(
                   #18
@@ -764,7 +764,7 @@ iNZGUI <- setRefClass(
                 install = gconfirm("The module is not found. Would you like to download it?")
                 if (install) {
                     #install.packages("iNZightMaps", repo = "http://docker..?")
-                    repo = paste("iNZightVIT", mod)
+                    repo = paste("iNZightVIT", mod, sep = "/")
                     devtools::install_github(repo = repo)
                     require(mod, character.only = TRUE)
                 }
