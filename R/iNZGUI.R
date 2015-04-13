@@ -291,30 +291,30 @@ iNZGUI <- setRefClass(
                     label = "Time Series...",
                     icon = "symbol_diamond",
                     handler = function(h, ...) {
-                        module = "iNZightTS"
-                        setup  = modSetup(module)
-                        if (setup) {
-                            if (emptyData()) {
-                                ## if there is no imported 
-                                ## dataset, display a gmessage
-                                displayMsg("time series")
-                                return()
-                            }
-                            if (length(leftMain$children) == 1) {
-                                initializeModuleWindow()
-                                source(paste0("../Modules/", module, ".R"))
-                                iNZightTimeSeries$new(.self)
-                                visible(moduleWindow) <<- TRUE
-                            } else { return() }
-                        } else {
-                            return()
-                        }
-                        # old time-series:
-                        #ign <- gwindow("...", visible = FALSE)
-                        #tag(ign, "dataSet") <- getActiveData()
-                        #e <- list(obj = ign)
-                        #e$win <- win
-                        #timeSeries(e)
+                        ## module = "iNZightTS"
+                        ## setup  = modSetup(module)
+                        ## if (setup) {
+                        ##     if (emptyData()) {
+                        ##         ## if there is no imported 
+                        ##         ## dataset, display a gmessage
+                        ##         displayMsg("time series")
+                        ##         return()
+                        ##     }
+                        ##     if (length(leftMain$children) == 1) {
+                        ##         initializeModuleWindow()
+                        ##         source(paste0("../Modules/", module, ".R"))
+                        ##         iNZightTimeSeries$new(.self)
+                        ##         visible(moduleWindow) <<- TRUE
+                        ##     } else { return() }
+                        ## } else {
+                        ##     return()
+                        ## }
+
+                        ign <- gwindow("...", visible = FALSE)
+                        tag(ign, "dataSet") <- getActiveData()
+                        e <- list(obj = ign)
+                        e$win <- win
+                        timeSeries(e)
                     }
                     ),
                 modelFit = gaction(
