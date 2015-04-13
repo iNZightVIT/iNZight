@@ -15,6 +15,7 @@ iNZGUI <- setRefClass(
                    win = "ANY",
                    
                    ## left group
+                   leftMain = "ANY",
                    moduleWindow = "ANY",
                    gp1 = "ANY",
                    ## right group
@@ -131,15 +132,11 @@ iNZGUI <- setRefClass(
             g <- gpanedgroup(container = gtop, expand = TRUE)
             
             ## Left side group
-            leftMain = ggroup(container = g)
-            size(leftMain) = c(300, 595)
+            leftMain <<- ggroup(container = g)
+            # size(leftMain) = c(300, 600)
             
             gp1 <<- gvbox(container = leftMain,
                            expand = TRUE)
-            
-            moduleWindow <<- gvbox(container = leftMain,
-                                   expand = TRUE)
-            visible(moduleWindow) <<- FALSE
             
             ## Right side group
             gp2 <<- ggroup(horizontal = FALSE, container = g, expand = F)
@@ -294,28 +291,30 @@ iNZGUI <- setRefClass(
                     label = "Time Series...",
                     icon = "symbol_diamond",
                     handler = function(h, ...) {
-                        ## module = "iNZightTS"
-                        ## setup  = modSetup(module)
-                        ## if (setup) {
-                        ##     if (emptyData()) {
-                        ##         ## if there is no imported 
-                        ##         ## dataset, display a gmessage
-                        ##         msg("time series")
-                        ##         return()
-                        ##     }
-                        ##     updateModWin()
-                        ##     source(paste0("../Modules/", module, ".R"))
-                        ##     iNZightTimeSeries$new(.self)
-                        ##     visible(moduleWindow) <<- TRUE
-                        ## } else {
-                        ##     return()
-                        ## }
-                        
-                        ign <- gwindow("...", visible = FALSE)
-                        tag(ign, "dataSet") <- getActiveData()
-                        e <- list(obj = ign)
-                        e$win <- win
-                        timeSeries(e)
+                        module = "iNZightTS"
+                        setup  = modSetup(module)
+                        if (setup) {
+                            if (emptyData()) {
+                                ## if there is no imported 
+                                ## dataset, display a gmessage
+                                displayMsg("time series")
+                                return()
+                            }
+                            if (length(leftMain$children) == 1) {
+                                initializeModuleWindow()
+                                source(paste0("../Modules/", module, ".R"))
+                                iNZightTimeSeries$new(.self)
+                                visible(moduleWindow) <<- TRUE
+                            } else { return() }
+                        } else {
+                            return()
+                        }
+                        # old time-series:
+                        #ign <- gwindow("...", visible = FALSE)
+                        #tag(ign, "dataSet") <- getActiveData()
+                        #e <- list(obj = ign)
+                        #e$win <- win
+                        #timeSeries(e)
                     }
                     ),
                 modelFit = gaction(
@@ -506,16 +505,20 @@ iNZGUI <- setRefClass(
                         module = "iNZightMaps"
                         setup  = modSetup(module)
                         if (setup) {
+                            ## if there is no imported dataset,
+                            ## display a warning message
                             if (emptyData()) {
-                                ## if there is no imported 
-                                ## dataset, display a gmessage
-                                msg("maps")
+                                displayMsg("maps")
                                 return()
                             }
-                            updateModWin()
-                            source(paste0("../Modules/", module, ".R"))
-                            iNZightMaps$new(.self)
-                            visible(moduleWindow) <<- TRUE
+                            ## if there is a module open, initialize and open
+                            ## a module window
+                            if (length(leftMain$children) == 1) {
+                                initializeModuleWindow()
+                                source(paste0("../Modules/", module, ".R"))
+                                iNZightMaps$new(.self)
+                                visible(moduleWindow) <<- TRUE
+                            } else { return() }
                         } else {
                             return()
                         }
@@ -816,7 +819,7 @@ iNZGUI <- setRefClass(
         },
         
         ## display warning message
-        msg = function(label) {
+        displayMsg = function(label) {
             gmessage(msg = paste("A dataset is required to use the",
                                  label, "module"),
                      title = "No data", icon = "error")
@@ -838,14 +841,11 @@ iNZGUI <- setRefClass(
             }
         },
         
-        ## update the module window
-        ## (should be run every time when a new module opens)
-        updateModWin = function() {
-            ## delete current moduleWindow            
-            sapply(moduleWindow$children, function(x) delete(moduleWindow, x))
-            
-            ## hide the data view widget
+        ## create a gvbox object into the module window (ie, initialize it)
+        ## NOTE: should be run every time when a new module is open
+        initializeModuleWindow = function() {
+            ## create a gvbox in moduleWindow
+            moduleWindow <<- gvbox(container = leftMain, expand = TRUE)
             visible(gp1) <<- FALSE
-        }
-        )
+        })
     )
