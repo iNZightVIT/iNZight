@@ -25,37 +25,44 @@ iNZPlotModWin <- setRefClass(
             initFields(GUI = gui)
             if (!is.null(GUI)) {
                 updateSettings()
-                modWin <<- gwindow(title = "Add to Plot",
-                                   visible = TRUE,
-                                   parent = GUI$win)
-                mainGrp <- ggroup(horizontal = FALSE,
-                                  container = modWin,
-                                  expand = FALSE,
-                                  fill = "y")
-                mainGrp$set_borderwidth(15)
+
+                GUI$updateModWin()
+                
+                mainGrp <- gvbox(container = GUI$moduleWindow, expand = TRUE)
+#                mainGrp <- ggroup(horizontal = FALSE,
+#                                  container = modWin,
+#                                  expand = FALSE,
+#                                  fill = "y")
+                mainGrp$set_borderwidth(5)
                 topGrp <- ggroup(horizontal = TRUE,
-                                 container = mainGrp,
-                                 expand = FALSE)
-                lbl <- glabel("I want to")
+                                 container = mainGrp)
+                lbl <- glabel("I want to ")
                 font(lbl) <- list(weight="bold",
                                   family = "normal",
                                   size = 11)
                 radioGrp <<- ggroup(horizontal = FALSE,
-                                    expand = FALSE)
+                                    expand = TRUE)
+                
+                optGrp <<- ggroup(horizontal = FALSE, expand = TRUE)
+                add(topGrp, lbl)
+                add(topGrp, radioGrp, expand = TRUE, fill = TRUE)
+
+                add(mainGrp, optGrp)
+
                 btnGrp <- ggroup(horizontal = FALSE,
                                  expand = FALSE)
                 addSpring(btnGrp)
-                okButton <<- gbutton("Done", expand = FALSE,
+                okButton <<- gbutton("Close", expand = FALSE,
                                      cont = btnGrp,
-                                     handler = function(h, ...) dispose(modWin))
+                                     handler = function(h, ...) {
+                                         sapply(GUI$moduleWindow$children,
+                                                function(x) delete(GUI$moduleWindow, x))
+                                         visible(GUI$gp1) <<- TRUE
+                                     })
                 addSpring(btnGrp)
-                optGrp <<- ggroup(horizontal = FALSE, expand = TRUE)
-                add(topGrp, lbl)
-                add(topGrp, radioGrp)
-                addSpring(topGrp)
-                add(topGrp, btnGrp)
-                add(mainGrp, optGrp)
-                ##visible(modWin) <<- TRUE
+                add(mainGrp, btnGrp)
+
+                visible(GUI$moduleWindow) <<- TRUE
             }
         },
         ## up the curSet class variable
@@ -74,13 +81,12 @@ iNZDotchartMod <- setRefClass(
             ## need to specify the methods that we want to use in
             ## do.call later on (see changeOpts())
             usingMethods(opt1, opt2, opt3, opt4)
-            opts <- gradio(c("Code more variables",
-                             "Change plot appearance",
-                             "Identify points",
-                             "Customize Labels"),
-                           selected = which,
-                           horizontal = FALSE)
-            add(radioGrp, opts)
+            opts <- gcombobox(c("Code more variables",
+                                "Change plot appearance",
+                                "Identify points",
+                                "Customize Labels"),
+                              selected = which)
+            add(radioGrp, opts, fill = TRUE, expand = TRUE)
             eval(parse(text = paste0("opt", which, "()")))
             addHandlerChanged(opts,
                               handler = function(h, ...) {
@@ -219,20 +225,20 @@ iNZDotchartMod <- setRefClass(
                                           ))
                                       updateSettings()
                                   })
-            tbl[3,2:4, anchor = c(-1,-1), expand = TRUE] <- lbl1
-            tbl[4,2, anchor = c(-1,-1), expand = TRUE] <- lbl8
-            tbl[4,3, expand = TRUE] <- plotTypeList
-            tbl[5,2, anchor = c(-1,-1), expand = TRUE] <- lbl2
-            tbl[5,3, expand = TRUE] <- symbolColList
-            tbl[6,2:4] <- lbl6
-            tbl[7,3, expand = TRUE] <- fillColor
-            tbl[8,2, anchor = c(-1,-1), expand = TRUE] <- lbl3
-            tbl[8,3, expand = TRUE] <- backgroundColList
-            tbl[10,2, anchor = c(-1,-1), expand = TRUE] <- lbl4
-            tbl[10,3, expand = TRUE] <- cexSlider
-            tbl[11,2, anchor = c(-1,-1), expand = TRUE] <- lbl7
-            tbl[11,3, expand = TRUE] <- transpSlider
-            tbl[12, 2:4] <- showButton
+            tbl[3,  1:2, anchor = c(-1,-1), expand = TRUE] <- lbl1
+            tbl[4,  1, anchor = c(-1,-1), expand = TRUE] <- lbl8
+            tbl[4,  2, expand = TRUE] <- plotTypeList
+            tbl[5,  1, anchor = c(-1,-1), expand = TRUE] <- lbl2
+            tbl[5,  2, expand = TRUE] <- symbolColList
+            tbl[6,  1:2] <- lbl6
+            tbl[7,  2, expand = TRUE] <- fillColor
+            tbl[8,  1, anchor = c(-1,-1), expand = TRUE] <- lbl3
+            tbl[8,  2, expand = TRUE] <- backgroundColList
+            tbl[10, 1, anchor = c(-1,-1), expand = TRUE] <- lbl4
+            tbl[10, 2, expand = TRUE] <- cexSlider
+            tbl[11, 1, anchor = c(-1,-1), expand = TRUE] <- lbl7
+            tbl[11, 2, expand = TRUE] <- transpSlider
+            tbl[12, 1:2] <- showButton
 
             ## if the "colby" options is set, i.e. points are colored
             ## according to another var, disable the option to
@@ -433,10 +439,10 @@ iNZDotchartMod <- setRefClass(
             tbl1 <- glayout()
             tbl2 <- glayout()
             tbl3 <- glayout()
-            tbl1[1, 1:2, expand = TRUE, anchor = c(-1, 0)] <- lbl1
-            tbl1[2, 1:2, expand = TRUE, anchor = c(1, 0)] <- varmenu
-            tbl1[3, 1, expand = FALSE, anchor = c(1, 1)] <- lbl2
-            tbl1[3, 2] <- selOpts
+            tbl1[1, 1, expand = TRUE, anchor = c(-1, 0)] <- lbl1
+            tbl1[1, 2, expand = TRUE, anchor = c(1, 0)] <- varmenu
+            tbl1[2, 1, expand = FALSE, anchor = c(1, 1)] <- lbl2
+            tbl1[2, 2] <- selOpts
 
             tbl2[1, 1] <- minPts
             tbl2[1, 2] <- maxPts
@@ -509,17 +515,24 @@ iNZBarchartMod <- setRefClass(
     "iNZBarchartMod",
     contains = "iNZPlotModWin",
     methods = list(
-        initialize = function(gui) {
+        initialize = function(gui, which = 1) {
             callSuper(gui)
             ## need to specify the methods that we want to use in
             ## do.call later on (see changeOpts())
-            usingMethods(opt1, opt2)
-            opts <- gradio(c("Code more variables",
-                             "Customize Labels"),
-                           selected = 1,
-                           horizontal = FALSE)
-            add(radioGrp, opts)
-            opt1()
+
+            if (is.null(curSet$y)) {
+                usingMethods(opt1, opt2)
+                opts <- gcombobox(c("Code more variables",
+                                    "Customize Labels"),
+                                  selected = which)
+            } else {
+                usingMethods(opt2)
+                opts <- gcombobox(c("Customize Labels"),
+                                  selected = 1)
+                which <- 2
+            }
+            add(radioGrp, opts, fill = TRUE, expand = TRUE)
+            eval(parse(text = paste0("opt", which, "()")))
             addHandlerChanged(opts,
                               handler = function(h, ...) {
                                   changeOpts(svalue(h$obj,
@@ -548,9 +561,9 @@ iNZBarchartMod <- setRefClass(
                                           )
                                       updateSettings()
                                   })
-            tbl[1, 1] <- lbl1
-            tbl[1, 2] <- grpVarList
-            tbl[2, 1:3, expand = TRUE] <- showButton
+            tbl[1, 1, anchor = c(-1, -1), expand = TRUE] <- lbl1
+            tbl[1, 2, anchor = c(-1, -1), expand = TRUE] <- grpVarList
+            tbl[2, 1:2, expand = TRUE] <- showButton
             add(optGrp, tbl)
         },
         opt2 = function() {
@@ -606,18 +619,17 @@ iNZScatterMod <- setRefClass(
             ## need to specify the methods that we want to use in
             ## do.call later on (see changeOpts())
             usingMethods(opt1, opt2, opt3, opt4, opt5, opt6, opt7, opt8, opt9)
-            opts <- gradio(c("Code more variables",
-                             "Add trend curves",
-                             "Add x=y line",
-                             "Add a jitter",
-                             "Add rugs",
-                             "Join points by lines",
-                             "Change plot appearance",
-                             "Identify points",
-                             "Customize Labels"),
-                           selected = which,
-                           horizontal = FALSE)
-            add(radioGrp, opts)
+            opts <- gcombobox(c("Code more variables",
+                                "Add trend curves",
+                                "Add x=y line",
+                                "Add a jitter",
+                                "Add rugs",
+                                "Join points by lines",
+                                "Change plot appearance",
+                                "Identify points",
+                                "Customize Labels"),
+                              selected = which)
+            add(radioGrp, opts, expand = TRUE, fill = TRUE)
             eval(parse(text = paste0("opt", which, "()")))
             addHandlerChanged(opts,
                               handler = function(h, ...) {
@@ -987,12 +999,12 @@ iNZScatterMod <- setRefClass(
             font(lbl1) <- list(weight="bold",
                                family = "normal",
                                size = 9)
-            lbl2 = glabel("Colour of symbols :")
+            lbl2 = glabel("Colour :")
             lbl3 = glabel("Background colour :")
-            lbl4 = glabel("Size of symbols  :")
+            lbl4 = glabel("Size  :")
             lbl5 = glabel("Thickness of symbols :")
             lbl6 = glabel("(Use drop down list or type in if desired color is unavailable)")
-            lbl7 = glabel("Transparency of symbols  :")
+            lbl7 = glabel("Transparency  :")
             lbl8 <- glabel("Plot Type :")
             font(lbl6) <- list(family = "normal",
                                size = 8)
@@ -1078,20 +1090,26 @@ iNZScatterMod <- setRefClass(
                                           )
                                       updateSettings()
                                   })
-            tbl[3,2:4, anchor = c(-1,-1), expand = TRUE] <- lbl1
-            tbl[4,2, anchor = c(-1,-1), expand = TRUE] <- lbl8
-            tbl[4,3, expand = TRUE] <- plotTypeList
-            tbl[5,2, anchor = c(-1,-1), expand = TRUE] <- lbl2
-            tbl[5,3, expand = TRUE] <- symbolColList
-            tbl[6,2:4] <- lbl6
-            tbl[7,3, expand = TRUE] <- fillColor
-            tbl[8,2, anchor = c(-1,-1), expand = TRUE] <- lbl3
-            tbl[8,3, expand = TRUE] <- backgroundColList
-            tbl[10,2, anchor = c(-1,-1), expand = TRUE] <- lbl4
-            tbl[10,3, expand = TRUE] <- cexSlider
-            tbl[11,2, anchor = c(-1,-1), expand = TRUE] <- lbl7
-            tbl[11,3, expand = TRUE] <- transpSlider
-            tbl[12, 2:4] <- showButton
+            tbl[3,1:2, anchor = c(-1,-1), expand = TRUE] <- lbl1
+            tbl[4,1, anchor = c(-1,-1), expand = TRUE] <- lbl8
+            tbl[4,2, expand = TRUE] <- plotTypeList
+            tbl[5,1, anchor = c(-1,-1), expand = TRUE] <- lbl3
+            tbl[5,2, expand = TRUE] <- backgroundColList
+
+            symHd <- glabel("Symbol appearance:")
+            font(symHd) <- list(weight = "bold",
+                                family = "normal",
+                                size = 9)
+            tbl[8, 1, anchor = c(-1, -1), expand = TRUE] <- symHd
+            tbl[9,1, anchor = c(1,-1), expand = TRUE] <- lbl2
+            tbl[9,2, expand = TRUE] <- symbolColList
+            tbl[10,1:2] <- lbl6
+            tbl[11, 2, expand = TRUE] <- fillColor            
+            tbl[12,1, anchor = c(1,-1), expand = TRUE] <- lbl4
+            tbl[12,2, expand = TRUE] <- cexSlider
+            tbl[13,1, anchor = c(1,-1), expand = TRUE] <- lbl7
+            tbl[13,2, expand = TRUE] <- transpSlider
+            tbl[14,1:2, expand = TRUE] <- showButton
 
             ## if the "by" options is set, i.e. points are colored
             ## according to another var, disable the option to
@@ -1283,11 +1301,10 @@ iNZHistogramMod <- setRefClass(
             ## need to specify the methods that we want to use in
             ## do.call later on (see changeOpts())
             usingMethods(opt1, opt2)
-            opts <- gradio(c("Change plot appearance",
-                             "Customize Labels"),
-                           selected = which,
-                           horizontal = FALSE)
-            add(radioGrp, opts)
+            opts <- gcombobox(c("Change plot appearance",
+                                "Customize Labels"),
+                              selected = which)
+            add(radioGrp, opts, expand = TRUE, fill = TRUE)
             eval(parse(text = paste0("opt", which, "()")))
             addHandlerChanged(opts,
                               handler = function(h, ...) {
@@ -1385,17 +1402,17 @@ iNZHistogramMod <- setRefClass(
                                           ))
                                       updateSettings()
                                   })
-            tbl[3,2:4, anchor = c(-1,-1), expand = TRUE] <- lbl1
-            tbl[4,2, anchor = c(-1,-1), expand = TRUE] <- lbl8
-            tbl[4,3, expand = TRUE] <- plotTypeList
-            tbl[5,2, anchor = c(-1,-1), expand = TRUE] <- lbl2
-            tbl[5,3, expand = TRUE] <- barColList
-            tbl[6,2, anchor = c(-1,-1), expand = TRUE] <- lbl3
-            tbl[6,3, expand = TRUE] <- backgroundColList
-            tbl[7,2, anchor = c(-1,-1), expand = TRUE] <- lbl5
-            tbl[7,3] <- adjBins
-            tbl[8,3, expand = TRUE] <- binSlider
-            tbl[9, 2:4] <- showButton
+            tbl[3,1:2, anchor = c(-1,-1), expand = TRUE] <- lbl1
+            tbl[4,1, anchor = c(-1,-1), expand = TRUE] <- lbl8
+            tbl[4,2, expand = TRUE] <- plotTypeList
+            tbl[5,1, anchor = c(-1,-1), expand = TRUE] <- lbl2
+            tbl[5,2, expand = TRUE] <- barColList
+            tbl[6,1, anchor = c(-1,-1), expand = TRUE] <- lbl3
+            tbl[6,2, expand = TRUE] <- backgroundColList
+            tbl[7,1, anchor = c(-1,-1), expand = TRUE] <- lbl5
+            tbl[7,2] <- adjBins
+            tbl[8,2, expand = TRUE] <- binSlider
+            tbl[9, 1:2] <- showButton
 
             add(optGrp, tbl)
         },
@@ -1460,13 +1477,12 @@ iNZGriddenMod <- setRefClass(
             ## need to specify the methods that we want to use in
             ## do.call later on (see changeOpts())
             usingMethods(opt1, opt2, opt3, opt4)
-            opts <- gradio(c("Add trend curves",
-                             "Add x=y line",
-                             "Change plot appearance",
-                             "Customize Labels"),
-                           selected = which,
-                           horizontal = FALSE)
-            add(radioGrp, opts)
+            opts <- gcombobox(c("Add trend curves",
+                                "Add x=y line",
+                                "Change plot appearance",
+                                "Customize Labels"),
+                              selected = which)
+            add(radioGrp, opts, expand = TRUE, fill = TRUE)
             eval(parse(text = paste0("opt", which, "()")))
             addHandlerChanged(opts,
                               handler = function(h, ...) {
@@ -1719,16 +1735,16 @@ iNZGriddenMod <- setRefClass(
                                           )
                                       updateSettings()
                                   })
-            tbl[3,2:4, anchor = c(-1,-1), expand = TRUE] <- lbl1
-            tbl[4,2, anchor = c(-1,-1), expand = TRUE] <- lbl8
-            tbl[4,3, expand = TRUE] <- plotTypeList
-            tbl[5,2, anchor = c(-1,-1), expand = TRUE] <- lbl3
-            tbl[5,3, expand = TRUE] <- backgroundColList
-            tbl[6,2, anchor = c(-1,-1), expand = TRUE] <- lbl4
-            tbl[6,3, expand = TRUE] <- gridSizeSlider
-            tbl[7,2, anchor = c(-1,-1), expand = TRUE] <- lbl7
-            tbl[7,3, expand = TRUE] <- minColSlider
-            tbl[8, 2:4] <- showButton
+            tbl[3,1:2, anchor = c(-1,-1), expand = TRUE] <- lbl1
+            tbl[4,1, anchor = c(-1,-1), expand = TRUE] <- lbl8
+            tbl[4,2, expand = TRUE] <- plotTypeList
+            tbl[5,1, anchor = c(-1,-1), expand = TRUE] <- lbl3
+            tbl[5,2, expand = TRUE] <- backgroundColList
+            tbl[6,1, anchor = c(-1,-1), expand = TRUE] <- lbl4
+            tbl[6,2, expand = TRUE] <- gridSizeSlider
+            tbl[7,1, anchor = c(-1,-1), expand = TRUE] <- lbl7
+            tbl[7,2, expand = TRUE] <- minColSlider
+            tbl[8, 1:2] <- showButton
 
             add(optGrp, tbl)
         },
@@ -1794,13 +1810,12 @@ iNZHexbinMod <- setRefClass(
             ## need to specify the methods that we want to use in
             ## do.call later on (see changeOpts())
             usingMethods(opt1, opt2, opt3, opt4)
-            opts <- gradio(c("Add trend curves",
-                             "Add x=y line",
-                             "Change plot appearance",
-                             "Customize Labels"),
-                           selected = which,
-                           horizontal = FALSE)
-            add(radioGrp, opts)
+            opts <- gcombobox(c("Add trend curves",
+                                "Add x=y line",
+                                "Change plot appearance",
+                                "Customize Labels"),
+                              selected = which)
+            add(radioGrp, opts, expand = TRUE, fill = TRUE)
             eval(parse(text = paste0("opt", which, "()")))
             addHandlerChanged(opts,
                               handler = function(h, ...) {
@@ -2051,16 +2066,16 @@ iNZHexbinMod <- setRefClass(
                                           )
                                       updateSettings()
                                   })
-            tbl[3,2:4, anchor = c(-1,-1), expand = TRUE] <- lbl1
-            tbl[4,2, anchor = c(-1,-1), expand = TRUE] <- lbl8
-            tbl[4,3, expand = TRUE] <- plotTypeList
-            tbl[5,2, anchor = c(-1,-1), expand = TRUE] <- lbl3
-            tbl[5,3, expand = TRUE] <- backgroundColList
-            tbl[6,2, anchor = c(-1,-1), expand = TRUE] <- lbl4
-            tbl[6,3, expand = TRUE] <- hexSlider
-#            tbl[7,2, anchor = c(-1,-1), expand = TRUE] <- lbl7
-#            tbl[7,3, expand = TRUE] <- minColSlider
-            tbl[7, 2:4] <- showButton
+            tbl[3,1:2, anchor = c(-1,-1), expand = TRUE] <- lbl1
+            tbl[4,1, anchor = c(-1,-1), expand = TRUE] <- lbl8
+            tbl[4,2, expand = TRUE] <- plotTypeList
+            tbl[5,1, anchor = c(-1,-1), expand = TRUE] <- lbl3
+            tbl[5,2, expand = TRUE] <- backgroundColList
+            tbl[6,1, anchor = c(-1,-1), expand = TRUE] <- lbl4
+            tbl[6,2, expand = TRUE] <- hexSlider
+#            tbl[7,1, anchor = c(-1,-1), expand = TRUE] <- lbl7
+#            tbl[7,2, expand = TRUE] <- minColSlider
+            tbl[7, 1:2] <- showButton
 
             add(optGrp, tbl)
         },

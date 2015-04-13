@@ -132,13 +132,13 @@ iNZGUI <- setRefClass(
             
             ## Left side group
             leftMain = ggroup(container = g)
-            # size(leftMain) = c(300, 600)
+            size(leftMain) = c(300, 595)
             
             gp1 <<- gvbox(container = leftMain,
                            expand = TRUE)
             
             moduleWindow <<- gvbox(container = leftMain,
-                                    expand = TRUE)
+                                   expand = TRUE)
             visible(moduleWindow) <<- FALSE
             
             ## Right side group
@@ -829,9 +829,9 @@ iNZGUI <- setRefClass(
             } else {
                 install = gconfirm("The module is not found. Would you like to download it?")
                 if (install) {
-                    #install.packages("iNZightMaps", repo = "http://docker..?")
-                    repo = paste("iNZightVIT", mod, sep = "/")
-                    devtools::install_github(repo = repo)
+                    install.packages("iNZightMaps", repo = "http://docker.stat.auckland.ac.nz/R")
+                    #repo = paste("iNZightVIT", mod, sep = "/")
+                    #devtools::install_github(repo = repo)
                     require(mod, character.only = TRUE)
                 }
                 return(install)
@@ -841,8 +841,9 @@ iNZGUI <- setRefClass(
         ## update the module window
         ## (should be run every time when a new module opens)
         updateModWin = function() {
-            ## delete current moduleWindow
+            ## delete current moduleWindow            
             sapply(moduleWindow$children, function(x) delete(moduleWindow, x))
+            
             ## hide the data view widget
             visible(gp1) <<- FALSE
         }
