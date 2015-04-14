@@ -495,35 +495,35 @@ iNZGUI <- setRefClass(
                     handler = function(h, ...) {
                         browseURL("https://www.stat.auckland.ac.nz/~wild/iNZight/report.html")
                     }
-                ),
+                )#,
                 ############ MAPS ############
-                maps = gaction(
-                    ## 36
-                    label = "Maps...",
-                    icon = "symbol_diamond",
-                    handler = function(h, ...) {
-                        module = "iNZightMaps"
-                        setup  = modSetup(module)
-                        if (setup) {
-                            ## if there is no imported dataset,
-                            ## display a warning message
-                            if (emptyData()) {
-                                displayMsg("maps")
-                                return()
-                            }
-                            ## if there is a module open, initialize and open
-                            ## a module window
-                            if (length(leftMain$children) == 1) {
-                                initializeModuleWindow()
-                                source(paste0("../Modules/", module, ".R"))
-                                iNZightMaps$new(.self)
-                                visible(moduleWindow) <<- TRUE
-                            } else { return() }
-                        } else {
-                            return()
-                        }
-                    }
-                )
+                ## maps = gaction(
+                ##     ## 36
+                ##     label = "Maps...",
+                ##     icon = "symbol_diamond",
+                ##     handler = function(h, ...) {
+                ##         module = "iNZightMaps"
+                ##         setup  = modSetup(module)
+                ##         if (setup) {
+                ##             ## if there is no imported dataset,
+                ##             ## display a warning message
+                ##             if (emptyData()) {
+                ##                 displayMsg("maps")
+                ##                 return()
+                ##             }
+                ##             ## if there is a module open, initialize and open
+                ##             ## a module window
+                ##             if (length(leftMain$children) == 1) {
+                ##                 initializeModuleWindow()
+                ##                 source(paste0("../Modules/", module, ".R"))
+                ##                 iNZightMaps$new(.self)
+                ##                 visible(moduleWindow) <<- TRUE
+                ##             } else { return() }
+                ##         } else {
+                ##             return()
+                ##         }
+                ##     }
+                ## )
                 ############ MAPS ############
                 #####################################################
                 ###  big suggestion
@@ -559,8 +559,8 @@ iNZGUI <- setRefClass(
                     actionList[[19]],
                     actionList[[17]],
                     actionList[[18]],
-                    actionList[[32]],
-                    actionList[[36]]
+                    actionList[[32]]#,
+#                    actionList[[36]]
                     ),
                 "Help" = list(
                     actionList[[33]],
@@ -768,7 +768,10 @@ iNZGUI <- setRefClass(
                     curPlSet$varnames$y <- curPlSet$varnames$x
                     curPlSet$varnames$x <- x.tmp
                 }
-                curPlot <<- unclass(do.call(iNZightPlot, curPlSet))
+                ## Suppress the warnings produced by iNZightPlot ...
+                suppressWarnings({
+                    curPlot <<- unclass(do.call(iNZightPlot, curPlSet))
+                })
                 plotType <<- attr(curPlot, "plottype")
             } else {
                 iNZightPlots:::resetPlot()

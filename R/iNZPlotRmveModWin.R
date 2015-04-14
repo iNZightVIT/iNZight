@@ -12,8 +12,12 @@ iNZPlotRmveModWin <- setRefClass(
         initialize = function(gui=NULL) {
             initFields(GUI = gui)
             if(!is.null(GUI)) {
-                ## close a modification window if one is open
-                try(dispose(GUI$modWin), silent = TRUE)
+                ## open in leftMain
+                if (length(GUI$leftMain$children) > 1) {
+                    delete(GUI$leftMain, GUI$leftMain$children[[2]])
+                }
+                GUI$initializeModuleWindow()
+                
                 curSet <<- GUI$getActiveDoc()$getSettings()
                 defSet <<- iNZightPlots:::inzpar()
                 ## labels for all possible additions
@@ -76,41 +80,74 @@ iNZPlotRmveModWin <- setRefClass(
                     )
 
                 proceedButton <- gbutton(
-                    "Proceed",
+                    "OK",
                     handler = function(h, ...) {
                         ## the checkboxes are accessed as
                         ## children of the selectGrp
                         ## first child refers to remove all adds
-                        if (svalue(selectGrp$children[[1]]))
-                            rmv <- TRUE
-                        else
-                            rmv <- which(curAdditions)[sapply(
-                                selectGrp$children,
-                                svalue)] - 1
-                        ## update the plot settings
-                        removeAdditions(rmv)
-                        dispose(GUI$modWin)
+                        try({
+                            if (svalue(selectGrp$children[[1]]))
+                                rmv <- TRUE
+                            else
+                                rmv <- which(curAdditions)[sapply(
+                                    selectGrp$children,
+                                    svalue)] - 1
+                            ## update the plot settings
+                            removeAdditions(rmv)
+                        }, silent = TRUE)
+                        
+                        delete(GUI$leftMain, GUI$leftMain$children[[2]])
+                        visible(GUI$gp1) <<- TRUE
                     })
-                GUI$modWin <<- gwindow(title = "Remove additions",
-                                       visible = TRUE,
-                                       parent = GUI$win)
-                mainGrp <- ggroup(horizontal = FALSE,
-                                  container = GUI$modWin,
-                                  expand = FALSE)
+
+                closeButton <- gbutton(
+                    "Close",
+                    handler = function(h, ...) {
+                        delete(GUI$leftMain, GUI$leftMain$children[[2]])
+                        visible(GUI$gp1) <<- TRUE
+                    })
+
+                mainGrp <- gvbox(container = GUI$moduleWindow, expand = TRUE)
+                
+                lbl <- glabel("Remove additions")
+                font(lbl) <- list(weight = "bold", family = "normal", size = 9)
+                add(mainGrp, lbl)
+                
                 selectGrp <- ggroup(horizontal = FALSE,
                                   container = mainGrp,
                                   expand = FALSE)
-                btnGrp <- ggroup(container = mainGrp)
-                mainGrp$set_borderwidth(15)
-                sapply(additions[curAdditions], function(x) {
-                    gcheckbox(x, cont = selectGrp)})
+                btnGrp <- ggroup(container = mainGrp, expand = FALSE)
+                mainGrp$set_borderwidth(5)
+
+                ## Action buttons:
+                btnTb <- glayout()
+                btnTb[1, 1, expand = TRUE] <- proceedButton
+                btnTb[1, 2, expand = TRUE] <- closeButton
+
+                ## Checking function:
+                checkOK <- function() {
+                    checked <- sapply(selectGrp$children, svalue)
+                    enabled(proceedButton) <- any(checked)
+                }
+                checkOK()
+
+                if (sum(curAdditions) > 1) {
+                    sapply(additions[curAdditions], function(x) {
+                        gcheckbox(x, cont = selectGrp, handler = function(h, ...) checkOK())})
+                } else {
+                    glabel("No additions to remove", container = selectGrp)
+                }
+                
                 addSpring(btnGrp)
-                add(btnGrp, proceedButton)
+                add(btnGrp, btnTb)
+                
                 ## add observer to the data
                 ## if it changes, remove all current additions
                 GUI$getActiveDoc()$addDataObserver(
                     function() removeAdditions(TRUE)
                     )
+                
+                visible(GUI$moduleWindow) <<- TRUE
             }
         },
         ## remove plot additions from the plot settings
