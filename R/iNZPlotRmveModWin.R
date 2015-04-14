@@ -40,7 +40,8 @@ iNZPlotRmveModWin <- setRefClass(
                     "Restore default bar colours",
                     "Restore default number of bins",
                     "Restore default number of grid bins",
-                    "Restore default number of hexs")
+                    "Restore default number of hexs",
+                    "Restore default plot type")
                 ## check for presence of all additions
                 curAdditions <- c(
                     TRUE, ## all additiions
@@ -59,22 +60,23 @@ iNZPlotRmveModWin <- setRefClass(
                     is.null(curSet$y),
                     !is.null(curSet$inference.type) ||
                     curSet$bs.inference, ## confidence intervals
-                    curSet$pch != defSet$pch, ## point filling
+                    curSet$fill.pt != defSet$fill.pt | curSet$pch != defSet$pch, ## point filling
                     curSet$col.pt != defSet$col.pt, ## point colour
                     (all.equal(curSet$cex.pt, defSet$cex.pt) != TRUE), ## point size
                     (all.equal(curSet$alpha, defSet$alpha) != TRUE), ## transparency
                     curSet$bg != defSet$bg, ## bg colour
                     curSet$lwd.pt != defSet$lwd.pt, ## point line thickness
                     !is.null(curSet$largesample), ## plot type
-                    !is.null(curSet$xlab) & !is.null(curSet$ylab) & !is.null(curSet$main),  ## plot labels
+                    !is.null(curSet$xlab) | !is.null(curSet$ylab) | !is.null(curSet$main),  ## plot labels
                     curSet$bar.fill != defSet$bar.fill,  ## bar colours
                     !is.null(curSet$hist.bins),  ## number of histogram bins
                     curSet$scatter.grid.bins != defSet$scatter.grid.bins,  ## number of grid bins
-                    curSet$hex.bins != defSet$hex.bins  ## number of hexs
+                    curSet$hex.bins != defSet$hex.bins,  ## number of hexs
+                    curSet$plottype != defSet$plottype   ## plot type
                     )
 
                 proceedButton <- gbutton(
-                    "-Proceed-",
+                    "Proceed",
                     handler = function(h, ...) {
                         ## the checkboxes are accessed as
                         ## children of the selectGrp
@@ -131,7 +133,7 @@ iNZPlotRmveModWin <- setRefClass(
                                  list(inference.type = defSet$inference.type,
                                       inference.par = defSet$inference.par,
                                       bs.inference = defSet$bs.inference), ## confidence intervals
-                                 list(pch = defSet$pch), ## point filling
+                                 list(pch = defSet$pch, fill.pt = defSet$fill.pt), ## point filling
                                  list(col.pt = defSet$col.pt), ## point colour
                                  list(cex.pt = defSet$cex.pt), ## point size
                                  list(alpha = defSet$alpha), ## transparency
@@ -142,7 +144,8 @@ iNZPlotRmveModWin <- setRefClass(
                                  list(bar.fill = defSet$bar.fill), ## bar colours
                                  list(hist.bins = NULL),  ## histogram bins
                                  list(scatter.grid.bins = defSet$scatter.grid.bins),  ## grid bins
-                                 list(hex.bins = defSet$hex.bins)  ## n. hexs
+                                 list(hex.bins = defSet$hex.bins),  ## n. hexs
+                                 list(plottype = defSet$plottype)  ## plot type
                                  )
 
             GUI$getActiveDoc()$setSettings(

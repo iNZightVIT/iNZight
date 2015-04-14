@@ -77,6 +77,9 @@ iNZPlotModWin <- setRefClass(
     )
 
 
+### ---------------------------------------------------------------------------------------------------
+### DOT PLOT MOD WINDOW
+
 iNZDotchartMod <- setRefClass(
     "iNZDotchartMod",
     contains = "iNZPlotModWin",
@@ -377,7 +380,6 @@ iNZDotchartMod <- setRefClass(
                 gmessage(paste("Cannot identify points when", msg),
                          icon = "error", title = "Unable to identify",
                          parent = modWin)
-                dispose(GUI$modWin)
                 return()
             }
             
@@ -585,10 +587,15 @@ iNZDotchartMod <- setRefClass(
         },
         opt4 = function() {
             tbl <- glayout()
-            lbl1 <- glabel("Customize Labels")
-            font(lbl1) <- list(weight="bold",
+            ii <- 3
+            
+            lbl <- glabel("Customize Labels")
+            font(lbl) <- list(weight="bold",
                                family = "normal",
                                size = 9)
+            tbl[ii, 1:2, anchor = c(-1, -1), expand = TRUE] <- lbl
+            ii <- ii + 1
+            
 
             curPlSet <- GUI$getActiveDoc()$getSettings()
             oldMain <- curPlSet$main
@@ -596,15 +603,31 @@ iNZDotchartMod <- setRefClass(
             if (is.null(oldMain)) oldMain <- ''
             if (is.null(oldX)) oldX <- ''
 
-            lbl2    <- glabel("Main title :")
+            lbl    <- glabel("Main title :")
             labMain <- gedit(oldMain)
-            lbl3    <- glabel("x-axis label :")
+            tbl[ii, 1, anchor = c(-1, -1), expand = TRUE] <- lbl
+            tbl[ii, 2, expand = TRUE] <- labMain
+            ii <- ii + 1
+            
+            lbl    <- glabel("x-axis label :")
             labX    <- gedit(oldX)
+            tbl[ii, 1, anchor = c(-1, -1), expand = TRUE] <- lbl
+            tbl[ii, 2, expand = TRUE] <- labX
+            ii <- ii + 1
+            
 
-            lbl4 <- glabel("Enter a single space to print no label\nLeave blank to print default label")
-            font(lbl4) <- list(family = "normal",
+            lbl <- glabel("Enter a single space to print no label\nLeave blank to print default label")
+            font(lbl) <- list(family = "normal",
                                size = 8)
+            tbl[ii, 2, anchor = c(-1, -1), expand = TRUE] <- lbl
+            ii <- ii + 1
 
+            
+            lbl <- glabel("Press ENTER/RETURN to apply changes")
+            font(lbl) <- list(family = "normal", size = 8)
+            tbl[ii, 2, anchor = c(-1, -1), expand = TRUE] <- lbl
+
+            
             updateEverything <- function() {
                 mlab <- svalue(labMain)
                 xlab <- svalue(labX)
@@ -617,22 +640,15 @@ iNZDotchartMod <- setRefClass(
             
             addHandlerChanged(labMain, handler = function(h, ...) updateEverything())
             addHandlerChanged(labX, handler = function(h, ...) updateEverything())
-            lblOK <- glabel("Press ENTER/RETURN to apply changes.")
-            font(lblOK) <- list(family = "normal", size = 8)
-            
-            tbl[3, 1:2, anchor = c(-1, -1), expand = TRUE] <- lbl1
-            tbl[4, 1, anchor = c(-1, -1), expand = TRUE] <- lbl2
-            tbl[4, 2, expand = TRUE] <- labMain
-            tbl[5, 1, anchor = c(-1, -1), expand = TRUE] <- lbl3
-            tbl[5, 2, expand = TRUE] <- labX
-            tbl[6, 2, anchor = c(-1, -1), expand = TRUE] <- lbl4
-            tbl[8, 2, anchor = c(-1, -1), expand = TRUE] <- lblOK
             
             add(optGrp, tbl)
         })
     )
 
 
+
+### ---------------------------------------------------------------------------------------------------
+### HISOGRAM MOD WINDOW
 
 iNZHistogramMod <- setRefClass(
     "iNZHistogramMod",
@@ -843,10 +859,15 @@ iNZHistogramMod <- setRefClass(
         },
         opt2 = function() {
             tbl <- glayout()
-            lbl1 <- glabel("Customize Labels")
-            font(lbl1) <- list(weight="bold",
+            ii <- 3
+            
+            lbl <- glabel("Customize Labels")
+            font(lbl) <- list(weight="bold",
                                family = "normal",
                                size = 9)
+            tbl[ii, 1:2, anchor = c(-1, -1), expand = TRUE] <- lbl
+            ii <- ii + 1
+            
 
             curPlSet <- GUI$getActiveDoc()$getSettings()
             oldMain <- curPlSet$main
@@ -854,32 +875,44 @@ iNZHistogramMod <- setRefClass(
             if (is.null(oldMain)) oldMain <- ''
             if (is.null(oldX)) oldX <- ''
 
-            lbl2    <- glabel("Main title :")
+            lbl    <- glabel("Main title :")
             labMain <- gedit(oldMain)
-            lbl3    <- glabel("x-axis label :")
+            tbl[ii, 1, anchor = c(-1, -1), expand = TRUE] <- lbl
+            tbl[ii, 2, expand = TRUE] <- labMain
+            ii <- ii + 1
+            
+            lbl    <- glabel("x-axis label :")
             labX    <- gedit(oldX)
+            tbl[ii, 1, anchor = c(-1, -1), expand = TRUE] <- lbl
+            tbl[ii, 2, expand = TRUE] <- labX
+            ii <- ii + 1
+            
 
-            lbl4 <- glabel("(Enter a single space to print no title)")
-            font(lbl4) <- list(family = "normal",
+            lbl <- glabel("Enter a single space to print no label\nLeave blank to print default label")
+            font(lbl) <- list(family = "normal",
                                size = 8)
+            tbl[ii, 2, anchor = c(-1, -1), expand = TRUE] <- lbl
+            ii <- ii + 1
 
-            showButton <- gbutton("Show Changes",
-                                  handler = function(h, ...) {
-                                      mlab <- svalue(labMain)
-                                      xlab <- svalue(labX)
-                                      GUI$getActiveDoc()$setSettings(
-                                          list(main = if (mlab != '') mlab else NULL,
-                                               xlab = if (xlab != '') xlab else NULL)
-                                          )
-                                      updateSettings()
-                                  })
-            tbl[3, 1:2, anchor = c(-1, -1), expand = TRUE] <- lbl1
-            tbl[4, 1, anchor = c(-1, -1), expand = TRUE] <- lbl2
-            tbl[4, 2, expand = TRUE] <- labMain
-            tbl[5, 1, anchor = c(-1, -1), expand = TRUE] <- lbl3
-            tbl[5, 2, expand = TRUE] <- labX
-            tbl[6, 1:2, anchor = c(-1, -1), expand = TRUE] <- lbl4
-            tbl[7, 1:2, expand = TRUE] <- showButton
+            
+            lbl <- glabel("Press ENTER/RETURN to apply changes")
+            font(lbl) <- list(family = "normal", size = 8)
+            tbl[ii, 2, anchor = c(-1, -1), expand = TRUE] <- lbl
+
+            
+            updateEverything <- function() {
+                mlab <- svalue(labMain)
+                xlab <- svalue(labX)
+                GUI$getActiveDoc()$setSettings(
+                    list(main = if (mlab != '') mlab else NULL,
+                         xlab = if (xlab != '') xlab else NULL)
+                    )
+                updateSettings()
+            }
+            
+            addHandlerChanged(labMain, handler = function(h, ...) updateEverything())
+            addHandlerChanged(labX, handler = function(h, ...) updateEverything())
+            
             add(optGrp, tbl)
         })
     )
@@ -888,16 +921,8 @@ iNZHistogramMod <- setRefClass(
 
 
 
-
-
-
-
-
-
-
-
-
-
+### ---------------------------------------------------------------------------------------------------
+### BAR PLOT MOD WINDOW
 
 iNZBarchartMod <- setRefClass(
     "iNZBarchartMod",
@@ -909,22 +934,23 @@ iNZBarchartMod <- setRefClass(
             ## do.call later on (see changeOpts())
 
             if (is.null(curSet$y)) {
-                usingMethods(opt1, opt2)
+                usingMethods(opt1, opt2, opt3)
                 opts <- gcombobox(c("Code more variables",
+                                    "Change plot appearance",
                                     "Customize Labels"),
                                   selected = which)
             } else {
-                usingMethods(opt2)
-                opts <- gcombobox(c("Customize Labels"),
-                                  selected = 1)
-                which <- 2
+                usingMethods(opt2, opt3)
+                which <- ifelse(which == 1, 2, which)
+                opts <- gcombobox(c("Change plot appearance",
+                                    "Customize Labels"),
+                                  selected = which - 1)
             }
             add(radioGrp, opts, fill = TRUE, expand = TRUE)
             eval(parse(text = paste0("opt", which, "()")))
             addHandlerChanged(opts,
                               handler = function(h, ...) {
-                                  changeOpts(svalue(h$obj,
-                                                    index = TRUE))
+                                  changeOpts(svalue(h$obj, index = TRUE) + !is.null(curSet$y))
                               })
         },
         changeOpts = function(index) {
@@ -937,29 +963,176 @@ iNZBarchartMod <- setRefClass(
         ## gradio
         opt1 = function() {
             tbl <- glayout()
-            lbl1 <- glabel("Colour by levels of :")
-            grpVarList <- gcombobox(c("", names(GUI$getActiveData())))
-            showButton <- gbutton("Show Changes",
-                                  handler = function(h, ...) {
-                                      GUI$getActiveDoc()$setSettings(
-                                          list(colby = GUI$getActiveData()[[
-                                                   svalue(grpVarList)]],
-                                               varnames = list(
-                                                   colby = svalue(grpVarList)))
-                                          )
-                                      updateSettings()
-                                  })
-            tbl[1, 1, anchor = c(-1, -1), expand = TRUE] <- lbl1
-            tbl[1, 2, anchor = c(-1, -1), expand = TRUE] <- grpVarList
-            tbl[2, 1:2, expand = TRUE] <- showButton
-            add(optGrp, tbl)
-        },
-        opt2 = function() {
-            tbl <- glayout()
-            lbl1 <- glabel("Customize Labels")
+            ii <- 3
+            
+            lbl1 <- glabel("Code More Variables")
             font(lbl1) <- list(weight="bold",
                                family = "normal",
                                size = 9)
+            tbl[ii, 1:2, anchor = c(-1, -1), expand = TRUE] <- lbl1
+            ii <- ii + 1
+            
+            lbl2 <- glabel("Colour by levels of :")
+            grpVarList <- gcombobox(c("", names(GUI$getActiveData())),
+                                    selected = ifelse(
+                                        is.null(curSet$colby),
+                                        1, which(names(GUI$getActiveData()) ==
+                                                     curSet$varnames$colby)[1] + 1
+                                        )
+                                    )
+            
+            tbl[ii, 1, anchor = c(-1, -1), expand = TRUE] <- lbl2
+            tbl[ii, 2, expand = TRUE] <- grpVarList
+            ii <- ii + 1
+
+
+            ## Maintain a single function that is called whenever anything is updated:
+            updateEverything <- function() {
+                GUI$getActiveDoc()$setSettings(
+                    list(colby = GUI$getActiveData()[[
+                             svalue(grpVarList)]],
+                         varnames = list(
+                             colby = svalue(grpVarList)))
+                    )
+                updateSettings()
+            }
+            
+            ## in this case, no point in having a separate "show" button
+            addHandlerChanged(grpVarList,
+                              handler = function(h, ...) {
+                                  updateEverything()
+                              })
+            
+            add(optGrp, tbl)
+        },
+        ## Change Plot appearance
+        opt2 = function() {
+            tbl <- glayout()
+            ii <- 3
+
+            ## Default settings
+            defts <- iNZightPlots:::inzpar()
+            
+            ## PLOT APPEARANCE
+            lbl <- glabel("Change plot appearance")
+            font(lbl) <- list(weight="bold",
+                               family = "normal",
+                               size = 9)
+            tbl[ii,  1:2, anchor = c(-1,-1), expand = TRUE] <- lbl
+            ii <- ii + 1
+
+
+            ## BACKGROUND COLOUR
+            lbl <- glabel("Background colour :")
+            
+            backgroundCols <- c(defts$bg, "antiquewhite",
+                                "azure3", "bisque", "cornsilk", "darkolivegreen2",
+                                "darkslategray1", "greenyellow", "lightblue1",
+                                "lightpink", "rosybrown1", "slategray1", "thistle1",
+                                "wheat1")
+            backgroundColList <- gcombobox(
+                backgroundCols,
+                selected = ifelse(
+                    is.na(which(backgroundCols == curSet$bg)[1]),
+                    1,
+                    which(backgroundCols == curSet$bg)[1]),
+                editable = TRUE)
+            
+            tbl[ii,  1, anchor = c(-1,-1), expand = TRUE] <- lbl
+            tbl[ii,  2, expand = TRUE] <- backgroundColList
+            ii <- ii + 1
+
+
+            ## COLOUR
+            lbl <- glabel("Bar olour :")
+            barCols <- c(defts$bar.fill, "darkblue", "darkgreen",
+                         "darkmagenta", "darkslateblue", "hotpink4",
+                         "lightsalmon2", "palegreen3", "steelblue3")
+            barColList <- gcombobox(
+                barCols,
+                selected = ifelse(
+                    is.na(which(barCols == curSet$bar.fill)[1]),
+                    1,
+                    which(barCols == curSet$bar.fill)[1]),
+                editable = TRUE)
+
+            if (is.null(curSet$y)) {
+                tbl[ii,  1, anchor = c(-1,-1), expand = TRUE] <- lbl
+                tbl[ii,  2, expand = TRUE] <- barColList
+                ii <- ii + 1
+            }
+
+            lbl <- glabel("NOTE: You can type in a colour if it is not listed.")
+
+            if (is.null(curSet$y)) {
+                ## if the "colby" options is set, i.e. points are colored
+                ## according to another var, disable the option to
+                ## change the color
+                if (!is.null(GUI$getActiveDoc()$getSettings()$colby)) {
+                    enabled(symbolColList) <- FALSE
+                    svalue(lbl) <- paste(
+                        "Changing the bar color is disabled since\n",
+                        "the bars are colored by '",
+                        GUI$getActiveDoc()$getSettings()$varnames$colby,
+                        "'", sep = "")
+                }
+                font(lbl) <- list(family = "normal", size = 8)
+                tbl[ii, 1:2, anchor = c(-1, -1), expand = TRUE] <- lbl                
+                ii <- ii + 1
+            }
+            
+            updateEverything <- function(update = auto) {
+                ## To easily diable automatic updating of plot, add this argument,
+                ## otherwise would have to block/unblock handlers
+                if (!update)
+                    return()
+                
+                GUI$getActiveDoc()$setSettings(
+                    list(bar.fill = svalue(barColList),
+                         bg = svalue(backgroundColList)
+                         ))
+                updateSettings()
+            }
+
+            ii <- ii + 1
+
+            bcoltimer <- NULL
+            addHandlerChanged(backgroundColList,
+                              handler = function(h, ...) {
+                                  if (!is.null(bcoltimer))
+                                      bcoltimer$stop_timer()
+                                  bcoltimer <- gtimer(500, function(...) {
+                                                          if (nchar(svalue(backgroundColList)) >= 3)
+                                                              updateEverything()
+                                                      }, one.shot = TRUE)
+                              })
+
+            if (is.null(curSet$y)) {
+                pcoltimer <- NULL
+                addHandlerChanged(barColList,
+                                  handler = function(h, ...) {
+                                      if (!is.null(pcoltimer))
+                                          pcoltimer$stop_timer()
+                                      pcoltimer <- gtimer(500, function(...) {
+                                                              if (nchar(svalue(barColList)) >= 3)
+                                                                  updateEverything()
+                                                          }, one.shot = TRUE)
+                                  })
+            }
+            
+            add(optGrp, tbl)
+        },
+        opt3 = function() {
+            tbl <- glayout()
+            ii <- 3
+            
+            lbl <- glabel("Customize Labels")
+            font(lbl) <- list(weight="bold",
+                               family = "normal",
+                               size = 9)
+            tbl[ii, 1:2, anchor = c(-1, -1), expand = TRUE] <- lbl
+            ii <- ii + 1
+            
 
             curPlSet <- GUI$getActiveDoc()$getSettings()
             oldMain <- curPlSet$main
@@ -967,36 +1140,52 @@ iNZBarchartMod <- setRefClass(
             if (is.null(oldMain)) oldMain <- ''
             if (is.null(oldX)) oldX <- ''
 
-            lbl2    <- glabel("Main title :")
+            lbl    <- glabel("Main title :")
             labMain <- gedit(oldMain)
-            lbl3    <- glabel("x-axis label :")
+            tbl[ii, 1, anchor = c(-1, -1), expand = TRUE] <- lbl
+            tbl[ii, 2, expand = TRUE] <- labMain
+            ii <- ii + 1
+            
+            lbl    <- glabel("x-axis label :")
             labX    <- gedit(oldX)
+            tbl[ii, 1, anchor = c(-1, -1), expand = TRUE] <- lbl
+            tbl[ii, 2, expand = TRUE] <- labX
+            ii <- ii + 1
+            
 
-            lbl4 <- glabel("(Enter a single space to print no title)")
-            font(lbl4) <- list(family = "normal",
+            lbl <- glabel("Enter a single space to print no label\nLeave blank to print default label")
+            font(lbl) <- list(family = "normal",
                                size = 8)
+            tbl[ii, 2, anchor = c(-1, -1), expand = TRUE] <- lbl
+            ii <- ii + 1
 
-            showButton <- gbutton("Show Changes",
-                                  handler = function(h, ...) {
-                                      mlab <- svalue(labMain)
-                                      xlab <- svalue(labX)
-                                      GUI$getActiveDoc()$setSettings(
-                                          list(main = if (mlab != '') mlab else NULL,
-                                               xlab = if (xlab != '') xlab else NULL)
-                                          )
-                                      updateSettings()
-                                  })
-            tbl[3, 1:2, anchor = c(-1, -1), expand = TRUE] <- lbl1
-            tbl[4, 1, anchor = c(-1, -1), expand = TRUE] <- lbl2
-            tbl[4, 2, expand = TRUE] <- labMain
-            tbl[5, 1, anchor = c(-1, -1), expand = TRUE] <- lbl3
-            tbl[5, 2, expand = TRUE] <- labX
-            tbl[6, 1:2, anchor = c(-1, -1), expand = TRUE] <- lbl4
-            tbl[7, 1:2, expand = TRUE] <- showButton
+            
+            lbl <- glabel("Press ENTER/RETURN to apply changes")
+            font(lbl) <- list(family = "normal", size = 8)
+            tbl[ii, 2, anchor = c(-1, -1), expand = TRUE] <- lbl
+
+            
+            updateEverything <- function() {
+                mlab <- svalue(labMain)
+                xlab <- svalue(labX)
+                GUI$getActiveDoc()$setSettings(
+                    list(main = if (mlab != '') mlab else NULL,
+                         xlab = if (xlab != '') xlab else NULL)
+                    )
+                updateSettings()
+            }
+            
+            addHandlerChanged(labMain, handler = function(h, ...) updateEverything())
+            addHandlerChanged(labX, handler = function(h, ...) updateEverything())
+            
             add(optGrp, tbl)
         })
     )
 
+
+
+### ---------------------------------------------------------------------------------------------------
+### SCATTER PLOT MOD WINDOW
 
 iNZScatterMod <- setRefClass(
     "iNZScatterMod",
@@ -1036,19 +1225,29 @@ iNZScatterMod <- setRefClass(
         ## Code more variables
         opt1 = function() {
             tbl <- glayout()
+            ii <- 3
+            
             lbl1 <- glabel("Code More Variables")
             font(lbl1) <- list(weight="bold",
                                family = "normal",
                                size = 9)
-            lbl2 <- glabel("Colour by levels of:")
+            tbl[ii, 1:2, anchor = c(-1, -1), expand = TRUE] <- lbl1
+            ii <- ii + 1
+            
+            lbl <- glabel("Colour by levels of :")
             grpVarList <- gcombobox(c("", names(GUI$getActiveData())),
                                     selected = ifelse(
                                         is.null(curSet$colby),
                                         1, which(names(GUI$getActiveData()) ==
-                                                 curSet$varnames$colby)[1] + 1
+                                                     curSet$varnames$colby)[1] + 1
                                         )
                                     )
-            lbl3 <- glabel("Resize points proportional to:")
+            tbl[ii, 1, anchor = c(-1, -1), expand = TRUE] <- lbl
+            tbl[ii, 2, expand = TRUE] <- grpVarList
+            ii <- ii + 1
+
+
+            lbl <- glabel("Resize points proportional to :")
             rszVarList <- gcombobox(
                 c("", rszNames <- names(GUI$getActiveData())[sapply(GUI$getActiveData(), is.numeric)]),
                 selected = ifelse(
@@ -1056,113 +1255,164 @@ iNZScatterMod <- setRefClass(
                     1, which(rszNames == curSet$varnames$sizeby)[1] + 1
                     )
                 )
-            showButton <- gbutton("Show Changes",
-                                  handler = function(h, ...) {
-                                      ## update plot settings
-                                      GUI$getActiveDoc()$setSettings(
-                                          list(colby = GUI$getActiveData()[[
-                                                   svalue(grpVarList)]],
-                                               sizeby = GUI$getActiveData()[[
-                                                   svalue(rszVarList)]],
-                                               varnames = list(
-                                                   colby = svalue(grpVarList),
-                                                   sizeby = svalue(rszVarList)))
-                                          )
-                                      updateSettings()
-                                  })
-            tbl[3, 1:2, anchor = c(-1, -1), expand = TRUE] <- lbl1
-            tbl[4, 1, anchor = c(-1, -1), expand = TRUE] <- lbl2
-            tbl[4, 2, expand = TRUE] <- grpVarList
-            tbl[5, 1, anchor = c(-1, -1), expand = TRUE] <- lbl3
-            tbl[5, 2, expand = TRUE] <- rszVarList
-            tbl[6, 1:2, expand = TRUE] <- showButton
+            tbl[ii, 1, anchor = c(-1, -1), expand = TRUE] <- lbl
+            tbl[ii, 2, expand = TRUE] <- rszVarList
+            ii <- ii + 1
+
+
+            ## Maintain a single function that is called whenever anything is updated:
+            updateEverything <- function() {
+                GUI$getActiveDoc()$setSettings(
+                    list(colby = GUI$getActiveData()[[
+                             svalue(grpVarList)]],
+                         sizeby = GUI$getActiveData()[[
+                             svalue(rszVarList)]],
+                         varnames = list(
+                             colby = svalue(grpVarList),
+                             sizeby = svalue(rszVarList)))
+                    )
+                updateSettings()
+            }
+            
+            ## in this case, no point in having a separate "show" button
+            addHandlerChanged(grpVarList, handler = function(h, ...) updateEverything())
+            addHandlerChanged(rszVarList, handler = function(h, ...) updateEverything())
+                              
             add(optGrp, tbl)
         },
         ## Add trend curves
         opt2 = function() {
             tbl <- glayout()
-            lbl1 <- glabel("Add trend curves")
-            font(lbl1) <- list(weight="bold",
-                               family = "normal",
-                               size = 9)
-            ## vector of possible trend curves
+            ii <- 3
+
+            #### TREND CURVES
+            lbl <- glabel("Add trend curves")
+            font(lbl) <- list(weight="bold", family = "normal", size = 9)
+            tbl[ii, 1:2, anchor = c(-1, -1), expand = TRUE] <- lbl
+            ii <- ii + 1
+            
+            ## Types of curves possible:
             trCrvs <- c("linear", "quadratic", "cubic")
             trCols <- c("red", "black", "blue", "green4",
                         "yellow", "pink", "grey", "orange")
+
+            ## Linear trend
             linChk <- gcheckbox(trCrvs[1],
                                 checked = trCrvs[1] %in% curSet$trend)
-            quaChk <- gcheckbox(trCrvs[2],
-                                checked = trCrvs[2] %in% curSet$trend)
-            cubChk <- gcheckbox(trCrvs[3],
-                                checked = trCrvs[3] %in% curSet$trend)
-            smthChk <- gcheckbox("Draw a smoother",
-                                 checked = curSet$smooth!=0 | !is.null(curSet$quant.smooth))
-            quantSmthChk <- gcheckbox("Use Quantiles",
-                                      checked = !is.null(curSet$quant.smooth))
-            trendByChk <- gcheckbox(paste("For each level of",
-                                            curSet$varnames$colby),
-                                      checked = curSet$trend.by)
-            trendParChk <- gcheckbox("Parallel trend lines",
-                                     checked = curSet$trend.parallel)
             linCol <- gcombobox(trCols,
                                 selected = which(
                                     curSet$col.trend$linear == trCols
                                     )
                                 )
+            tbl[ii, 1] <- linChk
+            tbl[ii, 2] <- linCol
+            ii <- ii + 1
+            
+            quaChk <- gcheckbox(trCrvs[2],
+                                checked = trCrvs[2] %in% curSet$trend)
             quaCol <- gcombobox(trCols,
                                 selected = which(
                                     curSet$col.trend$quadratic == trCols
                                     )
                                 )
+            tbl[ii, 1] <- quaChk
+            tbl[ii, 2] <- quaCol
+            ii <- ii + 1
+            
+            cubChk <- gcheckbox(trCrvs[3],
+                                checked = trCrvs[3] %in% curSet$trend)
             cubCol <- gcombobox(trCols,
                                 selected = which(
                                     curSet$col.trend$cubic == trCols
                                     )
                                 )
+            tbl[ii, 1] <- cubChk
+            tbl[ii, 2] <- cubCol
+            ii <- ii + 1
+
+
+            ii <- ii + 1
+            #### SMOOTHERS
             smthCols <- c("red", "black", "blue", "green", "yellow",
                           "magenta", "grey", "orange")
+
+            
+            smthChk <- gcheckbox("Draw a smoother",
+                                 checked = curSet$smooth!=0 | !is.null(curSet$quant.smooth))
             smthCol <- gcombobox(smthCols,
                                  selected = which(
                                      curSet$col.smooth == smthCols)
                                  )
+            tbl[ii, 1] <- smthChk
+            tbl[ii, 2] <- smthCol
+            ii <- ii + 1
+            
+            quantSmthChk <- gcheckbox("Use Quantiles",
+                                      checked = !is.null(curSet$quant.smooth))
+            tbl[ii, 1] <- quantSmthChk
+            ii <- ii + 1
+
             smthSlid <- gslider(from = 0.1, to = 1,
-                                by = 0.1,
+                                by = 0.01,
                                 value = ifelse(curSet$smooth==0,
                                     0.7, curSet$smooth))
+            tbl[ii, 1:2] <- smthSlid
+            ii <- ii + 1
+
+
+            ii <- ii + 1
+            trendByChk <- gcheckbox(paste("For each level of",
+                                            curSet$varnames$colby),
+                                      checked = curSet$trend.by)
+            trendParChk <- gcheckbox("Parallel trend lines",
+                                     checked = curSet$trend.parallel)
+            if (!is.null(curSet$colby)) {
+                tbl[ii, 1] <- trendByChk
+                tbl[ii, 2] <- trendParChk
+                ii <- ii + 1
+            }
+
+            updateEverything <- function(update = auto) {
+                if (!update)
+                    return()
+                
+                ## vector of selected trends
+                trSel <- c(svalue(linChk),
+                           svalue(quaChk),
+                           svalue(cubChk))
+                ## vector of colors chosen
+                trCol <- c(svalue(linCol),
+                           svalue(quaCol),
+                           svalue(cubCol))
+                ## smoother option
+                qsmth <-
+                    if (svalue(quantSmthChk))
+                        if (svalue(smthChk))"default" else NULL
+                    else NULL
+                smth <- ifelse(svalue(smthChk) & is.null(qsmth),
+                               svalue(smthSlid),
+                               0)
+                ## update plot settings
+                GUI$getActiveDoc()$setSettings(
+                    list(trend = trCrvs[trSel],
+                         smooth = smth,
+                         quant.smooth = qsmth,
+                         col.trend = list(
+                             linear = trCol[1],
+                             quadratic = trCol[2],
+                             cubic = trCol[3]),
+                         col.smooth = svalue(smthCol),
+                         trend.by = svalue(trendByChk),
+                         trend.parallel = svalue(trendParChk)
+                         )
+                    )
+                updateSettings()
+            }
+
+            ii <- ii + 1            
             showButton <- gbutton("Show Changes",
-                                  handler = function(h, ...) {
-                                      ## vector of selected trends
-                                      trSel <- c(svalue(linChk),
-                                                 svalue(quaChk),
-                                                 svalue(cubChk))
-                                      ## vector of colors chosen
-                                      trCol <- c(svalue(linCol),
-                                                 svalue(quaCol),
-                                                 svalue(cubCol))
-                                      ## smoother option
-                                      qsmth <-
-                                          if (svalue(quantSmthChk))
-                                              if (svalue(smthChk))"default" else NULL
-                                          else NULL
-                                      smth <- ifelse(svalue(smthChk) & is.null(qsmth),
-                                                     svalue(smthSlid),
-                                                     0)
-                                      ## update plot settings
-                                      GUI$getActiveDoc()$setSettings(
-                                          list(trend = trCrvs[trSel],
-                                               smooth = smth,
-                                               quant.smooth = qsmth,
-                                               col.trend = list(
-                                                   linear = trCol[1],
-                                                   quadratic = trCol[2],
-                                                   cubic = trCol[3]),
-                                               col.smooth = svalue(smthCol),
-                                               trend.by = svalue(trendByChk),
-                                               trend.parallel = svalue(trendParChk)
-                                               )
-                                          )
-                                      updateSettings()
-                                  })
+                                  handler = function(h, ...) updateEverything(TRUE))
+            
             ## only have the smoother slider enabled if the
             ## smoother checkbox is ticked
             if (!svalue(smthChk)) {
@@ -1172,10 +1422,6 @@ iNZScatterMod <- setRefClass(
                 if (svalue(quantSmthChk))
                     enabled(smthSlid) <- FALSE
             }
-
-            
-            #enabled(trendParChk) <- svalue(trendByChk) & (svalue(linChk) | svalue(quaChk) | svalue(cubChk))
-            
 
             addHandlerChanged(smthChk, handler = function(h, ...) {
                 if (svalue(smthChk)) {
@@ -1189,6 +1435,7 @@ iNZScatterMod <- setRefClass(
                     enabled(smthSlid) <- FALSE
                     enabled(quantSmthChk) <- FALSE
                 }
+                updateEverything()
             })
             ## if quantiles are used, disable slider
             addHandlerChanged(quantSmthChk,
@@ -1199,6 +1446,7 @@ iNZScatterMod <- setRefClass(
                                   else {
                                       enabled(smthSlid) <- TRUE
                                   }
+                                  updateEverything()
                               })
 
             ## activate/deactive trend by check box
@@ -1212,11 +1460,26 @@ iNZScatterMod <- setRefClass(
                          (svalue(smthChk) & !svalue(quantSmthChk)))
             }
             activateTrendBy()
-            addHandlerChanged(linChk, handler = function(h, ...) activateTrendBy())
-            addHandlerChanged(quaChk, handler = function(h, ...) activateTrendBy())
-            addHandlerChanged(cubChk, handler = function(h, ...) activateTrendBy())
-            addHandlerChanged(smthChk, handler = function(h, ...) activateTrendBy())
-            addHandlerChanged(quantSmthChk, handler = function(h, ...) activateTrendBy())
+            addHandlerChanged(linChk, handler = function(h, ...) {
+                                          updateEverything()
+                                          activateTrendBy()
+                                      })
+            addHandlerChanged(quaChk, handler = function(h, ...) {
+                                          updateEverything()
+                                          activateTrendBy()
+                                      })
+            addHandlerChanged(cubChk, handler = function(h, ...) {
+                                          updateEverything()
+                                          activateTrendBy()
+                                      })
+            addHandlerChanged(smthChk, handler = function(h, ...) {
+                                           updateEverything()
+                                           activateTrendBy()
+                                       })
+            addHandlerChanged(quantSmthChk, handler = function(h, ...) {
+                                                updateEverything()
+                                                activateTrendBy()
+                                            })
 
             
             ## activate/deactivate trend parallel box
@@ -1226,36 +1489,68 @@ iNZScatterMod <- setRefClass(
                     (svalue(linChk) | svalue(quaChk) | svalue(cubChk))
             }
             activateTrendPar()
-            addHandlerChanged(trendByChk, handler = function(h, ...) activateTrendPar())            
-            addHandlerChanged(linChk, handler = function(h, ...) activateTrendPar())
-            addHandlerChanged(quaChk, handler = function(h, ...) activateTrendPar())
-            addHandlerChanged(cubChk, handler = function(h, ...) activateTrendPar())     
-            
-            
+            addHandlerChanged(trendByChk, handler = function(h, ...) {
+                                              updateEverything()
+                                              activateTrendPar()
+                                          })
+            addHandlerChanged(linChk, handler = function(h, ...) {
+                                          updateEverything()
+                                          activateTrendPar()
+                                      })
+            addHandlerChanged(quaChk, handler = function(h, ...) {
+                                          updateEverything()
+                                          activateTrendPar()
+                                      })
+            addHandlerChanged(cubChk, handler = function(h, ...) {
+                                          updateEverything()
+                                          activateTrendPar()
+                                      })
+
+
+            ## Also update the colour things
+            if (auto) {
+                addHandlerChanged(linCol, handler = function(h, ...) updateEverything())
+                addHandlerChanged(quaCol, handler = function(h, ...) updateEverything())
+                addHandlerChanged(cubCol, handler = function(h, ...) updateEverything())
+                addHandlerChanged(smthCol, handler = function(h, ...) updateEverything())
+                addHandlerChanged(trendParChk, handler = function(h, ...) updateEverything())
                 
-            tbl[1, 1:2, anchor = c(-1, -1), expand = TRUE] <- lbl1
-            tbl[2, 1] <- linChk
-            tbl[3, 1] <- quaChk
-            tbl[4, 1] <- cubChk
-            tbl[5, 1] <- smthChk
-            tbl[2, 2] <- linCol
-            tbl[3, 2] <- quaCol
-            tbl[4, 2] <- cubCol
-            tbl[5, 2] <- smthCol
-            tbl[6, 1] <- quantSmthChk
-            tbl[7, 1:2] <- smthSlid
-            tbl[8, 1] <- trendByChk
-            tbl[8, 2] <- trendParChk
-            tbl[9, 1:2, expand = TRUE] <- showButton
+
+                smthtimer <- NULL
+                addHandlerChanged(smthSlid,
+                                  handler = function(h, ...) {
+                                      if (!is.null(smthtimer))
+                                          smthtimer$stop_timer()
+                                      smthtimer <- gtimer(800, function(...) updateEverything(), one.shot = TRUE)
+                                  })
+
+                autoCheck <- gcheckbox("Update automatically", checked = auto)
+                tbl[ii, 1:2, expand = TRUE] <- autoCheck
+                ii <- ii + 1
+
+                addHandlerChanged(autoCheck, handler = function(h, ...) {
+                                                 enabled(showButton) <- !svalue(autoCheck)
+                                                 auto <<- svalue(autoCheck)
+                                             })
+            }
+
+            tbl[ii, 1:2, expand = TRUE] <- showButton
+            enabled(showButton) <- !auto
+
             add(optGrp, tbl)
         },
         ## Add x=y line
         opt3 = function(){
             tbl <- glayout()
-            lbl1 <- glabel("Add x=y line")
-            font(lbl1) <- list(weight="bold",
+            ii <- 3
+            
+            lbl <- glabel("Add x=y line")
+            font(lbl) <- list(weight="bold",
                                family = "normal",
                                size = 9)
+            tbl[ii, 1:2, anchor = c(-1, -1), expand = TRUE] <- lbl
+            ii <- ii + 1
+            
             xyline <- gcheckbox("Plot x=y line",
                                 checked = curSet$LOE)
             xyCols <- c("red", "black", "blue", "green4",
@@ -1265,93 +1560,112 @@ iNZScatterMod <- setRefClass(
                                    curSet$col.LOE == xyCols
                                    )
                                )
-            showButton <- gbutton("Show Changes",
-                                  handler = function(h, ...) {
-                                      ## update plot settings
-                                      GUI$getActiveDoc()$setSettings(
-                                          list(LOE = svalue(xyline),
-                                               col.LOE = svalue(xyCol))
-                                          )
-                                      updateSettings()
-                                  })
-            tbl[1, 1:2, anchor = c(-1, -1), expand = TRUE] <- lbl1
-            tbl[2, 1, expand = TRUE] <- xyline
-            tbl[2, 2, expand = TRUE] <- xyCol
-            tbl[3, 1:2, expand = TRUE] <- showButton
+            tbl[ii, 1, expand = TRUE] <- xyline
+            tbl[ii, 2, expand = TRUE] <- xyCol
+            ii <- ii + 1
+
+            updateEverything <- function() {
+                ## update plot settings
+                GUI$getActiveDoc()$setSettings(
+                    list(LOE = svalue(xyline),
+                         col.LOE = svalue(xyCol))
+                    )
+                updateSettings()
+            }
+
+            addHandlerChanged(xyline, handler = function(h, ...) updateEverything())
+            addHandlerChanged(xyCol, handler = function(h, ...) updateEverything())
+            
             add(optGrp, tbl)
         },
         ## Add jitter
         opt4 = function() {
             tbl <- glayout()
-            lbl1 <- glabel("Add jitter:")
-            font(lbl1) <- list(weight="bold",
+            ii <- 3
+            
+            lbl <- glabel("Add a jitter")
+            font(lbl) <- list(weight="bold",
                                family = "normal",
                                size = 9)
+            tbl[ii, 1:2, anchor = c(-1, -1), expand = TRUE] <- lbl
+            ii <- ii + 1
+            
             xJit <- gcheckbox("Jitter x-variable",
                               checked = curSet$jitter %in% c("x", "xy"))
             yJit <- gcheckbox("Jitter y-variable",
                               checked = curSet$jitter %in% c("y", "xy"))
-            showButton <- gbutton(
-                "Show Changes",
-                handler = function(h, ...) {
-                    ## build string to show which jitter opt
-                    ## was selected
-                    jit <- ""
-                    if (svalue(xJit)) jit <- paste(jit, "x", sep = "")
-                    if (svalue(yJit)) jit <- paste(jit, "y", sep = "")
-                    ## update plot settings
-                    GUI$getActiveDoc()$setSettings(
-                        list(jitter = jit)
-                        )
-                    updateSettings()
-                })
-            tbl[1, 1:2, anchor = c(-1, -1), expand = TRUE] <- lbl1
-            tbl[2, 1] <- xJit
-            tbl[3, 1] <- yJit
-            tbl[4, 1:2, expand = TRUE] <- showButton
+            tbl[ii, 1, expand = TRUE] <- xJit
+            tbl[ii, 2, expand = TRUE] <- yJit
+            ii <- ii + 1
+
+            updateEverything <- function() {
+                ## build string to show which jitter opt
+                ## was selected
+                jit <- ""
+                if (svalue(xJit)) jit <- paste(jit, "x", sep = "")
+                if (svalue(yJit)) jit <- paste(jit, "y", sep = "")
+                ## update plot settings
+                GUI$getActiveDoc()$setSettings(
+                    list(jitter = jit)
+                    )
+                updateSettings()
+            }
+
+            addHandlerChanged(xJit, handler = function(h, ...) updateEverything())
+            addHandlerChanged(yJit, handler = function(h, ...) updateEverything())
+            
             add(optGrp, tbl)
         },
         ## Add rug
         opt5 = function() {
             tbl <- glayout()
-            lbl1 <- glabel("Add rug:")
-            font(lbl1) <- list(weight="bold",
+            ii <- 3
+            
+            lbl <- glabel("Add rugs")
+            font(lbl) <- list(weight="bold",
                                family = "normal",
                                size = 9)
-            xRug <- gcheckbox("Add x-rug")
-            yRug <- gcheckbox("Add y-rug")
-            showButton <- gbutton(
-                "Show Changes",
-                handler = function(h, ...) {
-                    ## build string to show which jitter opt
-                    ## was selected
-                    rug <- ""
-                    if (svalue(xRug)) rug <- paste(rug, "x", sep = "")
-                    if (svalue(yRug)) rug <- paste(rug, "y", sep = "")
-                    ## update plot settings
-                    GUI$getActiveDoc()$setSettings(
-                        list(rugs = rug)
-                        )
-                    updateSettings()
-                })
-            tbl[1, 1:2, anchor = c(-1, -1), expand = TRUE] <- lbl1
-            tbl[2, 1] <- xRug
-            tbl[3, 1] <- yRug
-            tbl[4, 1:2, expand = TRUE] <- showButton
+            tbl[ii, 1:2, anchor = c(-1, -1), expand = TRUE] <- lbl
+            ii <- ii + 1
+            
+            xRug <- gcheckbox("Add x-rug",
+                              checked = curSet$rug %in% c("x", "xy"))
+            yRug <- gcheckbox("Add y-rug",
+                              checked = curSet$rug %in% c("y", "xy"))
+            tbl[ii, 1, expand = TRUE] <- xRug
+            tbl[ii, 2, expand = TRUE] <- yRug
+            ii <- ii + 1
+
+            updateEverything <- function() {
+                ## build string to show which jitter opt
+                ## was selected
+                rug <- ""
+                if (svalue(xRug)) rug <- paste(rug, "x", sep = "")
+                if (svalue(yRug)) rug <- paste(rug, "y", sep = "")
+                ## update plot settings
+                GUI$getActiveDoc()$setSettings(
+                    list(rugs = rug)
+                    )
+                updateSettings()
+            }
+
+            addHandlerChanged(xRug, handler = function(h, ...) updateEverything())
+            addHandlerChanged(yRug, handler = function(h, ...) updateEverything())
+            
             add(optGrp, tbl)
         },
         ## Join points by lines
         opt6 = function(){
             tbl <- glayout()
-            lbl1 <- glabel("Join points by lines")
-            font(lbl1) <- list(weight="bold",
-                               family = "normal",
-                               size = 9)
+            ii <- 3
+            
+            lbl <- glabel("Join points by lines")
+            font(lbl) <- list(weight="bold", family = "normal", size = 9)
+            tbl[ii, 1:2, anchor = c(-1, -1), expand = TRUE] <- lbl
+            ii <- ii + 1
+            
             joinPts <- gcheckbox("Join points",
                                  checked = curSet$join)
-            lineByChk <- gcheckbox(paste("For each level of",
-                                          curSet$varnames$colby),
-                                   selected = curSet$lines.by)
             joinCols <- c("red", "black", "blue", "green4",
                           "yellow", "pink", "grey", "orange")
             joinCol <- gcombobox(joinCols,
@@ -1359,64 +1673,88 @@ iNZScatterMod <- setRefClass(
                                    curSet$col.line == joinCols
                                    )
                                )
-            showButton <- gbutton("Show Changes",
-                                  handler = function(h, ...) {
-                                      ## update plot settings
-                                      GUI$getActiveDoc()$setSettings(
-                                          list(join = svalue(joinPts),
-                                               col.line = svalue(joinCol),
-                                               lines.by = svalue(lineByChk))
-                                          )
-                                      updateSettings()
-                                  })
-            ## only have the lines by level option enabled if
-            ## the colored by variable option is set
-            if (is.null(curSet$colby))
-                enabled(lineByChk) <- FALSE
-            tbl[1, 1:2, anchor = c(-1, -1), expand = TRUE] <- lbl1
-            tbl[2, 1, expand = TRUE] <- joinPts
-            tbl[2, 2, expand = TRUE] <- joinCol
-            tbl[3, 1] <- lineByChk
-            tbl[4, 1:2, expand = TRUE] <- showButton
+            tbl[ii, 1, expand = TRUE] <- joinPts
+            tbl[ii, 2, expand = TRUE] <- joinCol
+            ii <- ii + 1
+
+            lineByChk <- gcheckbox(paste("For each level of",
+                                         curSet$varnames$colby),
+                                   selected = curSet$lines.by)
+            if (!is.null(curSet$colby)) {
+                tbl[ii, 1] <- lineByChk
+                ii <- 1
+            }
+
+            updateEverything <- function() {
+                ## update plot settings
+                GUI$getActiveDoc()$setSettings(
+                    list(join = svalue(joinPts),
+                         col.line = svalue(joinCol),
+                         lines.by = svalue(lineByChk))
+                    )
+                updateSettings()
+            }
+            
+            addHandlerChanged(joinPts, handler = function(h, ...) updateEverything())
+            addHandlerChanged(joinCol, handler = function(h, ...) updateEverything())
+            addHandlerChanged(lineByChk, handler = function(h, ...) updateEverything())
+            
             add(optGrp, tbl)
         },
         ## change plot appearance
         opt7 = function() {
             tbl <- glayout()
-            lbl1 <- glabel("Change plot appearance")
-            font(lbl1) <- list(weight="bold",
+            ii <- 3
+
+            ## Default settings
+            defts <- iNZightPlots:::inzpar()
+            
+            ## PLOT APPEARANCE
+            lbl <- glabel("Change plot appearance")
+            font(lbl) <- list(weight="bold",
                                family = "normal",
                                size = 9)
-            lbl2 = glabel("Colour :")
-            lbl3 = glabel("Background colour :")
-            lbl4 = glabel("Size  :")
-            lbl5 = glabel("Thickness of symbols :")
-            lbl6 = glabel("(Use drop down list or type in if desired color is unavailable)")
-            lbl7 = glabel("Transparency  :")
-            lbl8 <- glabel("Plot Type :")
-            font(lbl6) <- list(family = "normal",
-                               size = 8)
-            ## default settings
-            defts <- iNZightPlots:::inzpar()
-            ## active settings
-            pointCols <- c(defts$col.pt, "darkblue", "darkgreen",
-                "darkmagenta", "darkslateblue", "hotpink4",
-                "lightsalmon2", "palegreen3", "steelblue3")
-            backgroundCols <- c(defts$bg, "antiquewhite",
-                "azure3", "bisque", "cornsilk", "darkolivegreen2",
-                "darkslategray1", "greenyellow", "lightblue1",
-                "lightpink", "rosybrown1", "slategray1", "thistle1",
-                "wheat1")
+            tbl[ii,  1:2, anchor = c(-1,-1), expand = TRUE] <- lbl
+            ii <- ii + 1
+
+            
+            ## PLOT TYPE
+            lbl <- glabel("Plot Type :")
+            
             plotTypes <- c("default", "scatter plot", "grid-density plot", "hexbin plot")
-            ## the values used for `largesample` in the plot settings
-            plotTypeValues <- c("default", "scatter", "grid", "hex")
-            symbolColList <- gcombobox(
-                pointCols,
-                selected = ifelse(
-                    is.na(which(pointCols == curSet$col.pt)[1]),
-                    1,
-                    which(pointCols == curSet$col.pt)[1]),
-                editable = TRUE)
+            plotTypeValues <- list("default", "scatter", "grid", "hex")
+            plotTypeList <- gcombobox(
+                plotTypes,
+                selected = which(plotTypeValues == curSet$plottype)
+                )
+            
+            addHandlerChanged(plotTypeList, handler = function(h, ...) {
+                GUI$getActiveDoc()$setSettings(
+                    list(plottype = plotTypeValues[[svalue(plotTypeList, index = TRUE)]])
+                    )
+                updateSettings()
+
+                plType <- svalue(plotTypeList, index = TRUE)
+                if (plType == 3 | plType == 4 | (plType == 1 & GUI$plotType != "scatter")) {
+                    switch(GUI$plotType,
+                           "grid" = iNZGriddenMod$new(GUI, which = 3),
+                           "hex" = iNZHexbinMod$new(GUI, which = 3))
+                }
+            })
+            
+            tbl[ii,  1, anchor = c(-1,-1), expand = TRUE] <- lbl
+            tbl[ii,  2, expand = TRUE] <- plotTypeList
+            ii <- ii + 1
+
+
+            ## BACKGROUND COLOUR
+            lbl <- glabel("Background colour :")
+            
+            backgroundCols <- c(defts$bg, "antiquewhite",
+                                "azure3", "bisque", "cornsilk", "darkolivegreen2",
+                                "darkslategray1", "greenyellow", "lightblue1",
+                                "lightpink", "rosybrown1", "slategray1", "thistle1",
+                                "wheat1")
             backgroundColList <- gcombobox(
                 backgroundCols,
                 selected = ifelse(
@@ -1424,110 +1762,178 @@ iNZScatterMod <- setRefClass(
                     1,
                     which(backgroundCols == curSet$bg)[1]),
                 editable = TRUE)
-
-            plotTypes <- c("default", "scatter plot", "grid-density plot", "hexbin plot")
-            ## the values used for `largesample` in the plot settings
-            plotTypeValues <- list("default", "scatter", "grid", "hex")
-
-            plotTypeList <- gcombobox(
-                plotTypes,
-                selected = which(plotTypeValues == curSet$plottype)
-                )
-
-            addHandlerChanged(plotTypeList, handler = function(h, ...) {
-                GUI$getActiveDoc()$setSettings(
-                    list(plottype = plotTypeValues[[svalue(plotTypeList, index = TRUE)]])
-                    )
-                updateSettings()
-
-                # Go from SCATTER to default, grid, or hex:
-                plType <- svalue(plotTypeList, index = TRUE)
-                if (plType == 3 | plType == 4 | (plType == 1 & GUI$plotType != "scatter")) {
-                    visible(modWin) <<- FALSE
-                    switch(GUI$plotType,
-                           "grid" = iNZGriddenMod$new(GUI, which = 3),
-                           "hex" = iNZHexbinMod$new(GUI, which = 3))
-                    dispose(modWin)
-                }
-            })
-
             
+            tbl[ii,  1, anchor = c(-1,-1), expand = TRUE] <- lbl
+            tbl[ii,  2, expand = TRUE] <- backgroundColList
+            ii <- ii + 1
 
-            fillColor <- gcheckbox("Colour symbol interior",
-                                   checked = (curSet$pch != 1))
-            cexSlider <- gslider(from = 0.05, to = 3.5,
-                by = 0.05, value = curSet$cex.pt)
-            transpSlider <- gslider(from = 0, to = 100,
-                                    by = 1, value = 100 * (1 - curSet$alpha))
+
+            ## ## SYMBOL OPTIONS
+            ii <- ii + 1
+            lbl <- glabel("Symbol options")
+            font(lbl) <- list(weight="bold", family = "normal", size = 8)
+            tbl[ii, 1:2, anchor = c(-1,-1), expand = TRUE] <- lbl
+            ii <- ii + 1
+
+            ## COLOUR            
+            lbl <- glabel("Colour :")
+            pointCols <- c(defts$col.pt, "darkblue", "darkgreen",
+                           "darkmagenta", "darkslateblue", "hotpink4",
+                           "lightsalmon2", "palegreen3", "steelblue3")
+            symbolColList <- gcombobox(
+                pointCols,
+                selected = ifelse(
+                    is.na(which(pointCols == curSet$col.pt)[1]),
+                    1,
+                    which(pointCols == curSet$col.pt)[1]),
+                editable = TRUE)
+
+            tbl[ii,  1, anchor = c(-1,-1), expand = TRUE] <- lbl
+            tbl[ii,  2, expand = TRUE] <- symbolColList
+            ii <- ii + 1
+
+            lbl <- glabel("NOTE: You can type in a colour if it is not listed.")
             
-            
-            showButton <- gbutton("Show Changes",
-                                  handler = function(h, ...) {
-                                      pch.sel <- ifelse(svalue(fillColor),
-                                                        19, 1)
-                                      GUI$getActiveDoc()$setSettings(
-                                          list(col.pt = svalue(symbolColList),
-                                               bg = svalue(backgroundColList),
-                                               cex.pt = svalue(cexSlider),
-                                               pch = pch.sel,
-                                               alpha = 1 - svalue(transpSlider) / 100,
-                                               plottype = plotTypeValues[
-                                                   svalue(plotTypeList, index = TRUE)
-                                                   ]
-                                               )
-                                          )
-                                      updateSettings()
-                                  })
-            tbl[3,1:2, anchor = c(-1,-1), expand = TRUE] <- lbl1
-            tbl[4,1, anchor = c(-1,-1), expand = TRUE] <- lbl8
-            tbl[4,2, expand = TRUE] <- plotTypeList
-            tbl[5,1, anchor = c(-1,-1), expand = TRUE] <- lbl3
-            tbl[5,2, expand = TRUE] <- backgroundColList
-
-            symHd <- glabel("Symbol appearance:")
-            font(symHd) <- list(weight = "bold",
-                                family = "normal",
-                                size = 9)
-            tbl[8, 1, anchor = c(-1, -1), expand = TRUE] <- symHd
-            tbl[9,1, anchor = c(1,-1), expand = TRUE] <- lbl2
-            tbl[9,2, expand = TRUE] <- symbolColList
-            tbl[10,1:2] <- lbl6
-            tbl[11, 2, expand = TRUE] <- fillColor            
-            tbl[12,1, anchor = c(1,-1), expand = TRUE] <- lbl4
-            tbl[12,2, expand = TRUE] <- cexSlider
-            tbl[13,1, anchor = c(1,-1), expand = TRUE] <- lbl7
-            tbl[13,2, expand = TRUE] <- transpSlider
-            tbl[14,1:2, expand = TRUE] <- showButton
-
-            ## if the "by" options is set, i.e. points are colored
+            ## if the "colby" options is set, i.e. points are colored
             ## according to another var, disable the option to
             ## change the color
             if (!is.null(GUI$getActiveDoc()$getSettings()$colby)) {
                 enabled(symbolColList) <- FALSE
-                svalue(lbl6) <- paste(
-                    "Changing the color of symbols is disabled since",
-                    " the symbols are\n colored by variable '",
+                svalue(lbl) <- paste(
+                    "Changing the color of symbols is disabled since\n",
+                    "the symbols are colored by '",
                     GUI$getActiveDoc()$getSettings()$varnames$colby,
                     "'", sep = "")
             }
+            font(lbl) <- list(family = "normal", size = 8)
+            tbl[ii, 1:2, anchor = c(-1, -1), expand = TRUE] <- lbl                
+            ii <- ii + 1
+
+            ## FILL
+            fillColor <- gcheckbox("Colour interior",
+                                   checked = (curSet$pch != 1))
+            tbl[ii,  2, expand = TRUE] <- fillColor
+            ii <- ii + 1
+            
+            ## SIZE
+            lbl <- glabel("Size :")
+            cexSlider <- gslider(from = 0.05, to = 3.5,
+                                 by = 0.05, value = curSet$cex.pt)
+            tbl[ii, 1, anchor = c(-1,-1), expand = TRUE] <- lbl
+            tbl[ii, 2, expand = TRUE] <- cexSlider
+            ii <- ii + 1
+            
+            ## Transparency
+            lbl <- glabel("Transparency :")
+            transpSlider <- gslider(from = 0, to = 100,
+                                    by = 1, value = 100 * (1 - curSet$alpha))
+            tbl[ii, 1, anchor = c(-1,-1), expand = TRUE] <- lbl
+            tbl[ii, 2, expand = TRUE] <- transpSlider
+            ii <- ii + 1
+
+            updateEverything <- function(update = auto) {
+                ## To easily diable automatic updating of plot, add this argument,
+                ## otherwise would have to block/unblock handlers
+                if (!update)
+                    return()
+                
+                pch.sel <- ifelse(svalue(fillColor) | svalue(transpSlider) > 0,
+                                  19, 1)
+                GUI$getActiveDoc()$setSettings(
+                    list(col.pt = svalue(symbolColList),
+                         bg = svalue(backgroundColList),
+                         cex.pt = svalue(cexSlider),
+                         pch = pch.sel,
+                         alpha = 1 - svalue(transpSlider) / 100
+                         ))
+                updateSettings()
+            }
+
+            ii <- ii + 1
+            showButton <- gbutton("Show Changes",
+                                  handler = function(h, ...) updateEverything(TRUE))
+            if (auto) {
+                bcoltimer <- NULL
+                addHandlerChanged(backgroundColList,
+                                  handler = function(h, ...) {
+                                      if (!is.null(bcoltimer))
+                                          bcoltimer$stop_timer()
+                                      bcoltimer <- gtimer(500, function(...) {
+                                                               if (nchar(svalue(backgroundColList)) >= 3)
+                                                                   updateEverything()
+                                                           }, one.shot = TRUE)
+                                  })
+
+                ## This one needs to be deactivated if user is typing:
+                pcoltimer <- NULL
+                addHandlerChanged(symbolColList,
+                                  handler = function(h, ...) {
+                                      if (!is.null(pcoltimer))
+                                          pcoltimer$stop_timer()
+                                      pcoltimer <- gtimer(500, function(...) {
+                                                               if (nchar(svalue(symbolColList)) >= 3)
+                                                                   updateEverything()
+                                                           }, one.shot = TRUE)
+                                  })
+ 
+                addHandlerChanged(fillColor,
+                                  handler = function(h, ...) updateEverything())
+                
+                cextimer <- NULL
+                addHandlerChanged(cexSlider,
+                                  handler = function(h, ...) {
+                                      if (!is.null(cextimer))
+                                          cextimer$stop_timer()
+                                      cextimer <- gtimer(500, function(...) updateEverything(), one.shot = TRUE)
+                                  })
+
+                transptimer <- NULL
+                addHandlerChanged(transpSlider,
+                                  handler = function(h, ...) {
+                                      if (!is.null(transptimer))
+                                          transptimer$stop_timer()
+                                      transptimer <- gtimer(500, function(...) updateEverything(), one.shot = TRUE)
+                                  })
+
+                autoCheck <- gcheckbox("Update automatically", checked = auto)
+                tbl[ii, 1:2, expand = TRUE] <- autoCheck
+                ii <- ii + 1
+
+                addHandlerChanged(autoCheck, handler = function(h, ...) {
+                                                 enabled(showButton) <- !svalue(autoCheck)
+                                                 auto <<- svalue(autoCheck)
+                                             })
+            }
+            
+            
+            tbl[ii, 1:2, expand = TRUE] <- showButton
+            enabled(showButton) <- !auto
+            
             add(optGrp, tbl)
         },
         opt8 = function() {
+            if (attr(gui$curPlot, "nplots") > 1) {
+                tbl1 <- glayout()
+                tbl1[1, 1] <- glabel("Cannot identify points for this type of plot.")
+                add(optGrp, tbl1)
+                return()
+            }
+
+            
             ## Do checking first
             ## If g1 or g2 = _MULTI, then we can't identify points (yet ...)
             cantDo <- function(msg = "using subsetting variables.") {
                 gmessage(paste("Cannot identify points when", msg),
                          icon = "error", title = "Unable to identify",
                          parent = modWin)
-                dispose(GUI$modWin)
                 return()
             }
 
-            lbl1 <- "Select variable to identify:"
+            lbl1 <- "1. Select variable to identify:"
             font(lbl1) <- list(weight="bold", family = "normal")
             varmenu <- gcombobox(c("id", names(GUI$getActiveData())), selected = 1)
 
-            lbl2 <- "Click \"Locate\" to locate a point"
+            lbl2 <- "2. Click \"Locate\""
             locateButton <- gbutton("Locate", handler = function(h, ...) {
                 x <- curSet$x  # used for removing missing values ...
                 y <- curSet$y
@@ -1609,20 +2015,28 @@ iNZScatterMod <- setRefClass(
 
             })
 
+            lbl3 <- glabel("3. Click a point to identify it")
+
             tbl <- glayout()
-            tbl[1, 1, expand = TRUE, anchor = c(-1, 0)] <- lbl1
-            tbl[2, 1, expand = TRUE, anchor = c(1, 0)] <- varmenu
-            tbl[4, 1, expand = TRUE, anchor = c(-1, 0)] <- lbl2
-            tbl[5, 1, expand = TRUE, anchor = c(1, 0)] <- locateButton
+            tbl[3, 1, expand = TRUE, anchor = c(-1, 0)] <- lbl1
+            tbl[4, 1, expand = TRUE, anchor = c(1, 0)] <- varmenu
+            tbl[5, 1, expand = TRUE, anchor = c(-1, 0)] <- lbl2
+            tbl[6, 1, expand = TRUE, anchor = c(1, 0)] <- locateButton
+            tbl[7, 1, expand = TRUE, anchor = c(-1, 0)] <- lbl3
             
             add(optGrp, tbl)
         },
         opt9 = function() {
             tbl <- glayout()
-            lbl1 <- glabel("Customize Labels")
-            font(lbl1) <- list(weight="bold",
+            ii <- 3
+            
+            lbl <- glabel("Customize Labels")
+            font(lbl) <- list(weight="bold",
                                family = "normal",
                                size = 9)
+            tbl[ii, 1:2, anchor = c(-1, -1), expand = TRUE] <- lbl
+            ii <- ii + 1
+            
 
             curPlSet <- GUI$getActiveDoc()$getSettings()
             oldMain <- curPlSet$main
@@ -1632,38 +2046,53 @@ iNZScatterMod <- setRefClass(
             if (is.null(oldX)) oldX <- ''
             if (is.null(oldY)) oldY <- ''
 
-            lbl2    <- glabel("Main title :")
+            lbl    <- glabel("Main title :")
             labMain <- gedit(oldMain)
-            lbl3    <- glabel("x-axis label :")
+            tbl[ii, 1, anchor = c(-1, -1), expand = TRUE] <- lbl
+            tbl[ii, 2, expand = TRUE] <- labMain
+            ii <- ii + 1
+            
+            lbl    <- glabel("x-axis label :")
             labX    <- gedit(oldX)
-            lbl4    <- glabel("y-axis label :")
+            tbl[ii, 1, anchor = c(-1, -1), expand = TRUE] <- lbl
+            tbl[ii, 2, expand = TRUE] <- labX
+            ii <- ii + 1
+
+            lbl    <- glabel("y-axis label :")
             labY    <- gedit(oldY)
+            tbl[ii, 1, anchor = c(-1, -1), expand = TRUE] <- lbl
+            tbl[ii, 2, expand = TRUE] <- labY
+            ii <- ii + 1
+            
 
-            lbl5 <- glabel("(Enter a single space to print no title)")
-            font(lbl5) <- list(family = "normal",
+            lbl <- glabel("Enter a single space to print no label\nLeave blank to print default label")
+            font(lbl) <- list(family = "normal",
                                size = 8)
+            tbl[ii, 2, anchor = c(-1, -1), expand = TRUE] <- lbl
+            ii <- ii + 1
 
-            showButton <- gbutton("Show Changes",
-                                  handler = function(h, ...) {
-                                      mlab <- svalue(labMain)
-                                      xlab <- svalue(labX)
-                                      ylab <- svalue(labY)
-                                      GUI$getActiveDoc()$setSettings(
-                                          list(main = if (mlab != '') mlab else NULL,
-                                               xlab = if (xlab != '') xlab else NULL,
-                                               ylab = if (ylab != '') ylab else NULL)
-                                          )
-                                      updateSettings()
-                                  })
-            tbl[3, 1:2, anchor = c(-1, -1), expand = TRUE] <- lbl1
-            tbl[4, 1, anchor = c(-1, -1), expand = TRUE] <- lbl2
-            tbl[4, 2, expand = TRUE] <- labMain
-            tbl[5, 1, anchor = c(-1, -1), expand = TRUE] <- lbl3
-            tbl[5, 2, expand = TRUE] <- labX
-            tbl[6, 1, anchor = c(-1, -1), expand = TRUE] <- lbl4
-            tbl[6, 2, expand = TRUE] <- labY
-            tbl[7, 1:2, anchor = c(-1, -1), expand = TRUE] <- lbl5
-            tbl[8, 1:2, expand = TRUE] <- showButton
+            
+            lbl <- glabel("Press ENTER/RETURN to apply changes")
+            font(lbl) <- list(family = "normal", size = 8)
+            tbl[ii, 2, anchor = c(-1, -1), expand = TRUE] <- lbl
+
+            
+            updateEverything <- function() {
+                mlab <- svalue(labMain)
+                xlab <- svalue(labX)
+                ylab <- svalue(labY)
+                GUI$getActiveDoc()$setSettings(
+                    list(main = if (mlab != '') mlab else NULL,
+                         xlab = if (xlab != '') xlab else NULL,
+                         ylab = if (ylab != '') ylab else NULL)
+                    )
+                updateSettings()
+            }
+            
+            addHandlerChanged(labMain, handler = function(h, ...) updateEverything())
+            addHandlerChanged(labX, handler = function(h, ...) updateEverything())
+            addHandlerChanged(labY, handler = function(h, ...) updateEverything())
+            
             add(optGrp, tbl)
         })
     )
