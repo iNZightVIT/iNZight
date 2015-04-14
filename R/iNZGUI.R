@@ -133,7 +133,7 @@ iNZGUI <- setRefClass(
             
             ## Left side group
             leftMain <<- ggroup(container = g)
-            # size(leftMain) = c(300, 600)
+            size(leftMain) <<- c(300, -1)
             
             gp1 <<- gvbox(container = leftMain,
                            expand = TRUE)
@@ -833,8 +833,6 @@ iNZGUI <- setRefClass(
                 install = gconfirm("The module is not found. Would you like to download it?")
                 if (install) {
                     install.packages("iNZightMaps", repo = "http://docker.stat.auckland.ac.nz/R")
-                    #repo = paste("iNZightVIT", mod, sep = "/")
-                    #devtools::install_github(repo = repo)
                     require(mod, character.only = TRUE)
                 }
                 return(install)

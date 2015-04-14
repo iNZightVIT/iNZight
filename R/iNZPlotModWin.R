@@ -18,7 +18,8 @@ iNZPlotModWin <- setRefClass(
         ## depending on selection in radioGrp, options for mod
         ## will be displayed here
         optGrp = "ANY",
-        curSet = "list" ## the current plot settings
+        curSet = "list", ## the current plot settings
+        auto = "logical"  ## if TRUE, then changes occur automatically
         ),
     methods = list(
         initialize = function(gui = NULL, which = 1) {
@@ -26,13 +27,12 @@ iNZPlotModWin <- setRefClass(
             if (!is.null(GUI)) {
                 updateSettings()
 
-                GUI$updateModWin()
+                if (length(GUI$leftMain$children) > 1) {
+                    delete(GUI$leftMain, GUI$leftMain$children[[2]])
+                }
+                GUI$initializeModuleWindow()
                 
                 mainGrp <- gvbox(container = GUI$moduleWindow, expand = TRUE)
-#                mainGrp <- ggroup(horizontal = FALSE,
-#                                  container = modWin,
-#                                  expand = FALSE,
-#                                  fill = "y")
                 mainGrp$set_borderwidth(5)
                 topGrp <- ggroup(horizontal = TRUE,
                                  container = mainGrp)
@@ -55,12 +55,17 @@ iNZPlotModWin <- setRefClass(
                 okButton <<- gbutton("Close", expand = FALSE,
                                      cont = btnGrp,
                                      handler = function(h, ...) {
-                                         sapply(GUI$moduleWindow$children,
-                                                function(x) delete(GUI$moduleWindow, x))
+                                         ## delete the module window
+                                         delete(GUI$leftMain, GUI$leftMain$children[[2]])
+                                         ## display the default view (data, variable, etc.)
                                          visible(GUI$gp1) <<- TRUE
                                      })
                 addSpring(btnGrp)
+                addSpring(mainGrp)
                 add(mainGrp, btnGrp)
+
+                ## If sample size is too big, use a button instead of automatically apply changes
+                auto <<- nrow(GUI$getActiveData()) < 100000
 
                 visible(GUI$moduleWindow) <<- TRUE
             }
@@ -104,71 +109,100 @@ iNZDotchartMod <- setRefClass(
         ## gradio
         opt1 = function() {
             tbl <- glayout()
+            ii <- 3
+            
             lbl1 <- glabel("Code More Variables")
             font(lbl1) <- list(weight="bold",
                                family = "normal",
                                size = 9)
+            tbl[ii, 1:2, anchor = c(-1, -1), expand = TRUE] <- lbl1
+            ii <- ii + 1
+            
             lbl2 <- glabel("Colour by levels of :")
             grpVarList <- gcombobox(c("", names(GUI$getActiveData())),
                                     selected = ifelse(
                                         is.null(curSet$colby),
                                         1, which(names(GUI$getActiveData()) ==
-                                                 curSet$varnames$colby)[1] + 1
+                                                     curSet$varnames$colby)[1] + 1
                                         )
                                     )
-            showButton <- gbutton("Show Changes",
-                                  handler = function(h, ...) {
-                                      GUI$getActiveDoc()$setSettings(
-                                          list(colby = GUI$getActiveData()[[
-                                                   svalue(grpVarList)]],
-                                               varnames = list(
-                                                   colby = svalue(grpVarList)))
-                                          )
-                                      updateSettings()
-                                  })
-            tbl[3, 1:2, anchor = c(-1, -1), expand = TRUE] <- lbl1
-            tbl[4, 1, anchor = c(-1, -1), expand = TRUE] <- lbl2
-            tbl[4, 2, expand = TRUE] <- grpVarList
-            tbl[5, 1:2, expand = TRUE] <- showButton
+            
+            tbl[ii, 1, anchor = c(-1, -1), expand = TRUE] <- lbl2
+            tbl[ii, 2, expand = TRUE] <- grpVarList
+            ii <- ii + 1
+
+
+            ## Maintain a single function that is called whenever anything is updated:
+            updateEverything <- function() {
+                GUI$getActiveDoc()$setSettings(
+                    list(colby = GUI$getActiveData()[[
+                             svalue(grpVarList)]],
+                         varnames = list(
+                             colby = svalue(grpVarList)))
+                    )
+                updateSettings()
+            }
+            
+            ## in this case, no point in having a separate "show" button
+            addHandlerChanged(grpVarList,
+                              handler = function(h, ...) {
+                                  updateEverything()
+                              })
+            
             add(optGrp, tbl)
         },
         ## Change Plot appearance
         opt2 = function() {
             tbl <- glayout()
-            lbl1 <- glabel("Change plot appearance")
-            font(lbl1) <- list(weight="bold",
+            ii <- 3
+
+            ## Default settings
+            defts <- iNZightPlots:::inzpar()
+            
+            ## PLOT APPEARANCE
+            lbl <- glabel("Change plot appearance")
+            font(lbl) <- list(weight="bold",
                                family = "normal",
                                size = 9)
-            lbl2 <- glabel("Colour of symbols :")
-            lbl3 <- glabel("Background colour :")
-            lbl4 <- glabel("Size of symbols  :")
-            lbl5 <- glabel("Thickness of symbols :")
-            lbl6 <- glabel("(Use drop down list or type in if desired color is unavailable)")
-            lbl7 <- glabel("Transparency of symbols  :")
-            lbl8 <- glabel("Plot Type :")
-            font(lbl6) <- list(family = "normal",
-                               size = 8)
-            ## default settings
-            defts <- iNZightPlots:::inzpar()
-            ## active settings
-            pointCols <- c(defts$col.pt, "darkblue", "darkgreen",
-                "darkmagenta", "darkslateblue", "hotpink4",
-                "lightsalmon2", "palegreen3", "steelblue3")
-            backgroundCols <- c(defts$bg, "antiquewhite",
-                "azure3", "bisque", "cornsilk", "darkolivegreen2",
-                "darkslategray1", "greenyellow", "lightblue1",
-                "lightpink", "rosybrown1", "slategray1", "thistle1",
-                "wheat1")
+            tbl[ii,  1:2, anchor = c(-1,-1), expand = TRUE] <- lbl
+            ii <- ii + 1
+
+            
+            ## PLOT TYPE
+            lbl <- glabel("Plot Type :")
+            
             plotTypes <- c("default", "dot plot", "histogram")
-            ## the values used for `largesample` in the plot settings
-            plotTypeValues <- list(NULL, FALSE, TRUE)
-            symbolColList <- gcombobox(
-                pointCols,
-                selected = ifelse(
-                    is.na(which(pointCols == curSet$col.pt)[1]),
-                    1,
-                    which(pointCols == curSet$col.pt)[1]),
-                editable = TRUE)
+            plotTypeValues <- list("default", "dot", "hist")
+            plotTypeList <- gcombobox(
+                plotTypes,
+                selected = which(plotTypeValues == curSet$plottype)
+                )
+            
+            addHandlerChanged(plotTypeList, handler = function(h, ...) {
+                GUI$getActiveDoc()$setSettings(
+                    list(plottype = plotTypeValues[[svalue(plotTypeList, index = TRUE)]])
+                    )
+                updateSettings()
+
+                plType <- svalue(plotTypeList, index = TRUE)
+                if (plType == 3 | (plType == 1 & GUI$plotType == "hist")) {
+                    iNZHistogramMod$new(GUI, which = 1)
+                }
+            })
+            
+            tbl[ii,  1, anchor = c(-1,-1), expand = TRUE] <- lbl
+            tbl[ii,  2, expand = TRUE] <- plotTypeList
+            ii <- ii + 1
+
+
+            ## BACKGROUND COLOUR
+            lbl <- glabel("Background colour :")
+            
+            backgroundCols <- c(defts$bg, "antiquewhite",
+                                "azure3", "bisque", "cornsilk", "darkolivegreen2",
+                                "darkslategray1", "greenyellow", "lightblue1",
+                                "lightpink", "rosybrown1", "slategray1", "thistle1",
+                                "wheat1")
             backgroundColList <- gcombobox(
                 backgroundCols,
                 selected = ifelse(
@@ -176,81 +210,157 @@ iNZDotchartMod <- setRefClass(
                     1,
                     which(backgroundCols == curSet$bg)[1]),
                 editable = TRUE)
-            plotTypeList <- gcombobox(
-                plotTypes,
-                selected = ifelse(
-                    is.null(curSet$largesample),
-                    1,
-                    ifelse(
-                        curSet$largesample == FALSE,
-                        2, 3))
-                )
-
-            addHandlerChanged(plotTypeList, handler = function(h, ...) {
-                GUI$getActiveDoc()$setSettings(
-                    list(largesample = plotTypeValues[[svalue(plotTypeList, index = TRUE)]])
-                    )
-                updateSettings()
-
-                plType <- svalue(plotTypeList, index = TRUE)
-                if (plType == 3 | (plType == 1 & GUI$plotType == "hist")) {
-                    visible(modWin) <<- FALSE
-                    iNZHistogramMod$new(GUI, which = 1)
-                    dispose(modWin)
-                }
-            })
             
-            fillColor <- gcheckbox("Colour symbol interior",
-                                   checked = (curSet$pch != 1))
-            cexSlider <- gslider(from = 0.05, to = 3.5,
-                by = 0.05, value = curSet$cex.dotpt)
-            transpSlider <- gslider(from = 0, to = 100,
-                                    by = 1, value = 100 * (1 - curSet$alpha))
-            showButton <- gbutton("Show Changes",
-                                  handler = function(h, ...) {
-                                      pch.sel <- ifelse(svalue(fillColor) | svalue(transpSlider) > 0,
-                                                        19, 1)
-                                      GUI$getActiveDoc()$setSettings(
-                                          list(col.pt = svalue(symbolColList),
-                                               bg = svalue(backgroundColList),
-                                               cex.dotpt = svalue(cexSlider),
-                                               pch = pch.sel,
-                                               alpha = 1 - svalue(transpSlider) / 100,
-                                               fill.pt =
-                                               ifelse(svalue(transpSlider) == 0,
-                                                      svalue(fillColor),
-                                                      svalue(symbolColList))
-                                               ##largesample = plotTypeValues[[svalue(
-                                               ##    plotTypeList, index = TRUE)]])
-                                          ))
-                                      updateSettings()
-                                  })
-            tbl[3,  1:2, anchor = c(-1,-1), expand = TRUE] <- lbl1
-            tbl[4,  1, anchor = c(-1,-1), expand = TRUE] <- lbl8
-            tbl[4,  2, expand = TRUE] <- plotTypeList
-            tbl[5,  1, anchor = c(-1,-1), expand = TRUE] <- lbl2
-            tbl[5,  2, expand = TRUE] <- symbolColList
-            tbl[6,  1:2] <- lbl6
-            tbl[7,  2, expand = TRUE] <- fillColor
-            tbl[8,  1, anchor = c(-1,-1), expand = TRUE] <- lbl3
-            tbl[8,  2, expand = TRUE] <- backgroundColList
-            tbl[10, 1, anchor = c(-1,-1), expand = TRUE] <- lbl4
-            tbl[10, 2, expand = TRUE] <- cexSlider
-            tbl[11, 1, anchor = c(-1,-1), expand = TRUE] <- lbl7
-            tbl[11, 2, expand = TRUE] <- transpSlider
-            tbl[12, 1:2] <- showButton
+            tbl[ii,  1, anchor = c(-1,-1), expand = TRUE] <- lbl
+            tbl[ii,  2, expand = TRUE] <- backgroundColList
+            ii <- ii + 1
 
+
+            ## ## SYMBOL OPTIONS
+            ii <- ii + 1
+            lbl <- glabel("Symbol options")
+            font(lbl) <- list(weight="bold", family = "normal", size = 8)
+            tbl[ii, 1:2, anchor = c(-1,-1), expand = TRUE] <- lbl
+            ii <- ii + 1
+
+            ## COLOUR            
+            lbl <- glabel("Colour :")
+            pointCols <- c(defts$col.pt, "darkblue", "darkgreen",
+                           "darkmagenta", "darkslateblue", "hotpink4",
+                           "lightsalmon2", "palegreen3", "steelblue3")
+            symbolColList <- gcombobox(
+                pointCols,
+                selected = ifelse(
+                    is.na(which(pointCols == curSet$col.pt)[1]),
+                    1,
+                    which(pointCols == curSet$col.pt)[1]),
+                editable = TRUE)
+
+            tbl[ii,  1, anchor = c(-1,-1), expand = TRUE] <- lbl
+            tbl[ii,  2, expand = TRUE] <- symbolColList
+            ii <- ii + 1
+
+            lbl <- glabel("NOTE: You can type in a colour if it is not listed.")
+            
             ## if the "colby" options is set, i.e. points are colored
             ## according to another var, disable the option to
             ## change the color
             if (!is.null(GUI$getActiveDoc()$getSettings()$colby)) {
                 enabled(symbolColList) <- FALSE
-                svalue(lbl6) <- paste(
-                    "Changing the color of symbols is disabled since",
-                    " the symbols are\n colored by variable '",
+                svalue(lbl) <- paste(
+                    "Changing the color of symbols is disabled since\n",
+                    "the symbols are colored by '",
                     GUI$getActiveDoc()$getSettings()$varnames$colby,
                     "'", sep = "")
             }
+            font(lbl) <- list(family = "normal", size = 8)
+            tbl[ii, 1:2, anchor = c(-1, -1), expand = TRUE] <- lbl                
+            ii <- ii + 1
+
+            ## FILL
+            fillColor <- gcheckbox("Colour interior",
+                                   checked = (curSet$pch != 1))
+            tbl[ii,  2, expand = TRUE] <- fillColor
+            ii <- ii + 1
+            
+            ## SIZE
+            lbl <- glabel("Size :")
+            cexSlider <- gslider(from = 0.05, to = 3.5,
+                                 by = 0.05, value = curSet$cex.dotpt)
+            tbl[ii, 1, anchor = c(-1,-1), expand = TRUE] <- lbl
+            tbl[ii, 2, expand = TRUE] <- cexSlider
+            ii <- ii + 1
+            
+            ## Transparency
+            lbl <- glabel("Transparency :")
+            transpSlider <- gslider(from = 0, to = 100,
+                                    by = 1, value = 100 * (1 - curSet$alpha))
+            tbl[ii, 1, anchor = c(-1,-1), expand = TRUE] <- lbl
+            tbl[ii, 2, expand = TRUE] <- transpSlider
+            ii <- ii + 1
+
+            updateEverything <- function(update = auto) {
+                ## To easily diable automatic updating of plot, add this argument,
+                ## otherwise would have to block/unblock handlers
+                if (!update)
+                    return()
+                
+                pch.sel <- ifelse(svalue(fillColor) | svalue(transpSlider) > 0,
+                                  19, 1)
+                GUI$getActiveDoc()$setSettings(
+                    list(col.pt = svalue(symbolColList),
+                         bg = svalue(backgroundColList),
+                         cex.dotpt = svalue(cexSlider),
+                         pch = pch.sel,
+                         alpha = 1 - svalue(transpSlider) / 100,
+                         fill.pt =
+                             ifelse(svalue(transpSlider) == 0,
+                                    svalue(fillColor),
+                                    svalue(symbolColList))
+                         ))
+                updateSettings()
+            }
+
+            ii <- ii + 1
+            showButton <- gbutton("Show Changes",
+                                  handler = function(h, ...) updateEverything(TRUE))
+            if (auto) {
+                bcoltimer <- NULL
+                addHandlerChanged(backgroundColList,
+                                  handler = function(h, ...) {
+                                      if (!is.null(bcoltimer))
+                                          bcoltimer$stop_timer()
+                                      bcoltimer <- gtimer(500, function(...) {
+                                                               if (nchar(svalue(backgroundColList)) >= 3)
+                                                                   updateEverything()
+                                                           }, one.shot = TRUE)
+                                  })
+
+                ## This one needs to be deactivated if user is typing:
+                pcoltimer <- NULL
+                addHandlerChanged(symbolColList,
+                                  handler = function(h, ...) {
+                                      if (!is.null(pcoltimer))
+                                          pcoltimer$stop_timer()
+                                      pcoltimer <- gtimer(500, function(...) {
+                                                               if (nchar(svalue(symbolColList)) >= 3)
+                                                                   updateEverything()
+                                                           }, one.shot = TRUE)
+                                  })
+ 
+                addHandlerChanged(fillColor,
+                                  handler = function(h, ...) updateEverything())
+                
+                cextimer <- NULL
+                addHandlerChanged(cexSlider,
+                                  handler = function(h, ...) {
+                                      if (!is.null(cextimer))
+                                          cextimer$stop_timer()
+                                      cextimer <- gtimer(500, function(...) updateEverything(), one.shot = TRUE)
+                                  })
+
+                transptimer <- NULL
+                addHandlerChanged(transpSlider,
+                                  handler = function(h, ...) {
+                                      if (!is.null(transptimer))
+                                          transptimer$stop_timer()
+                                      transptimer <- gtimer(500, function(...) updateEverything(), one.shot = TRUE)
+                                  })
+
+                autoCheck <- gcheckbox("Update automatically", checked = auto)
+                tbl[ii, 1:2, expand = TRUE] <- autoCheck
+                ii <- ii + 1
+
+                addHandlerChanged(autoCheck, handler = function(h, ...) {
+                                                 enabled(showButton) <- !svalue(autoCheck)
+                                                 auto <<- svalue(autoCheck)
+                                             })
+            }
+            
+            
+            tbl[ii, 1:2, expand = TRUE] <- showButton
+            enabled(showButton) <- !auto
+            
             add(optGrp, tbl)
         },
         opt3 = function() {
@@ -278,7 +388,7 @@ iNZDotchartMod <- setRefClass(
 
             
             lbl2 <- "Select points by: "
-            selOpts <- gradio(c("By mouse click", "Min/Max n points"),
+            selOpts <- gradio(c("mouse click", "min/max N points"),
                               selected = 1, horizontal = FALSE)
             minPts <- gcheckbox("Minimum", checked = TRUE, )
             enabled(minPts) <- FALSE
@@ -439,18 +549,23 @@ iNZDotchartMod <- setRefClass(
             tbl1 <- glayout()
             tbl2 <- glayout()
             tbl3 <- glayout()
-            tbl1[1, 1, expand = TRUE, anchor = c(-1, 0)] <- lbl1
-            tbl1[1, 2, expand = TRUE, anchor = c(1, 0)] <- varmenu
-            tbl1[2, 1, expand = FALSE, anchor = c(1, 1)] <- lbl2
-            tbl1[2, 2] <- selOpts
 
-            tbl2[1, 1] <- minPts
-            tbl2[1, 2] <- maxPts
-            tbl2[1, 3] <- nlbl
-            tbl2[1, 4] <- nPts
+            lbl <- glabel("Identify Points")
+            font(lbl) <- list(weight = "bold", family = "normal", size = 9)
+            tbl1[3, 1:2, anchor = c(-1, -1), expand = TRUE] <- lbl
             
-            tbl3[2, 2, expand = FALSE, anchor = c(1, 0)] <- locateButton
+            tbl1[4, 1, expand = TRUE, anchor = c(-1, 0)] <- lbl1
+            tbl1[4, 2, expand = TRUE, anchor = c(1, 0)] <- varmenu
+            tbl1[5, 1, expand = FALSE, anchor = c(1, 1)] <- lbl2
+            tbl1[5, 2] <- selOpts
+
+            tbl2[2, 1] <- minPts
+            tbl2[2, 2] <- maxPts
+            tbl2[2, 3] <- nlbl
+            tbl2[2, 4] <- nPts
             
+            tbl3[2, 1, expand = TRUE] <- locateButton
+
             add(optGrp, tbl1)
             add(optGrp, tbl2)
             add(optGrp, tbl3)
@@ -469,6 +584,264 @@ iNZDotchartMod <- setRefClass(
             })
         },
         opt4 = function() {
+            tbl <- glayout()
+            lbl1 <- glabel("Customize Labels")
+            font(lbl1) <- list(weight="bold",
+                               family = "normal",
+                               size = 9)
+
+            curPlSet <- GUI$getActiveDoc()$getSettings()
+            oldMain <- curPlSet$main
+            oldX <- curPlSet$xlab
+            if (is.null(oldMain)) oldMain <- ''
+            if (is.null(oldX)) oldX <- ''
+
+            lbl2    <- glabel("Main title :")
+            labMain <- gedit(oldMain)
+            lbl3    <- glabel("x-axis label :")
+            labX    <- gedit(oldX)
+
+            lbl4 <- glabel("Enter a single space to print no label\nLeave blank to print default label")
+            font(lbl4) <- list(family = "normal",
+                               size = 8)
+
+            updateEverything <- function() {
+                mlab <- svalue(labMain)
+                xlab <- svalue(labX)
+                GUI$getActiveDoc()$setSettings(
+                    list(main = if (mlab != '') mlab else NULL,
+                         xlab = if (xlab != '') xlab else NULL)
+                    )
+                updateSettings()
+            }
+            
+            addHandlerChanged(labMain, handler = function(h, ...) updateEverything())
+            addHandlerChanged(labX, handler = function(h, ...) updateEverything())
+            lblOK <- glabel("Press ENTER/RETURN to apply changes.")
+            font(lblOK) <- list(family = "normal", size = 8)
+            
+            tbl[3, 1:2, anchor = c(-1, -1), expand = TRUE] <- lbl1
+            tbl[4, 1, anchor = c(-1, -1), expand = TRUE] <- lbl2
+            tbl[4, 2, expand = TRUE] <- labMain
+            tbl[5, 1, anchor = c(-1, -1), expand = TRUE] <- lbl3
+            tbl[5, 2, expand = TRUE] <- labX
+            tbl[6, 2, anchor = c(-1, -1), expand = TRUE] <- lbl4
+            tbl[8, 2, anchor = c(-1, -1), expand = TRUE] <- lblOK
+            
+            add(optGrp, tbl)
+        })
+    )
+
+
+
+iNZHistogramMod <- setRefClass(
+    "iNZHistogramMod",
+    contains = "iNZPlotModWin",
+    methods = list(
+        initialize = function(gui, which = 1) {
+            callSuper(gui)
+            ## need to specify the methods that we want to use in
+            ## do.call later on (see changeOpts())
+            usingMethods(opt1, opt2)
+            opts <- gcombobox(c("Change plot appearance",
+                                "Customize Labels"),
+                              selected = which)
+            add(radioGrp, opts, expand = TRUE, fill = TRUE)
+            eval(parse(text = paste0("opt", which, "()")))
+            addHandlerChanged(opts,
+                              handler = function(h, ...) {
+                                  changeOpts(svalue(h$obj,
+                                                    index = TRUE))
+                              })
+        },
+        changeOpts = function(index) {
+            ## delete current displayed options
+            invisible(sapply(optGrp$children, function(x) delete(optGrp, x)))
+            do.call(paste("opt", index, sep=""),
+                    args = list())
+        },
+        ## Following are the different views for the indices of the
+        ## gradio
+
+        ## Change Plot appearance
+        opt1 = function() {
+            tbl <- glayout()
+            ii <- 3
+
+            ## Default settings
+            defts <- iNZightPlots:::inzpar()
+            
+            ## PLOT APPEARANCE
+            lbl <- glabel("Change plot appearance")
+            font(lbl) <- list(weight="bold",
+                               family = "normal",
+                               size = 9)
+            tbl[ii,  1:2, anchor = c(-1,-1), expand = TRUE] <- lbl
+            ii <- ii + 1
+
+            
+            ## PLOT TYPE
+            lbl <- glabel("Plot Type :")
+            
+            plotTypes <- c("default", "dot plot", "histogram")
+            plotTypeValues <- list("default", "dot", "hist")
+            plotTypeList <- gcombobox(
+                plotTypes,
+                selected = which(plotTypeValues == curSet$plottype)
+                )
+            
+            addHandlerChanged(plotTypeList, handler = function(h, ...) {
+                GUI$getActiveDoc()$setSettings(
+                    list(plottype = plotTypeValues[[svalue(plotTypeList, index = TRUE)]])
+                    )
+                updateSettings()
+
+                plType <- svalue(plotTypeList, index = TRUE)
+                if (plType == 2 | (plType == 1 & GUI$plotType == "dot")) {
+                    iNZDotchartMod$new(GUI, which = 2)
+                }
+            })
+            
+            tbl[ii,  1, anchor = c(-1,-1), expand = TRUE] <- lbl
+            tbl[ii,  2, expand = TRUE] <- plotTypeList
+            ii <- ii + 1
+
+
+            ## BACKGROUND COLOUR
+            lbl <- glabel("Background colour :")
+            
+            backgroundCols <- c(defts$bg, "antiquewhite",
+                                "azure3", "bisque", "cornsilk", "darkolivegreen2",
+                                "darkslategray1", "greenyellow", "lightblue1",
+                                "lightpink", "rosybrown1", "slategray1", "thistle1",
+                                "wheat1")
+            backgroundColList <- gcombobox(
+                backgroundCols,
+                selected = ifelse(
+                    is.na(which(backgroundCols == curSet$bg)[1]),
+                    1,
+                    which(backgroundCols == curSet$bg)[1]),
+                editable = TRUE)
+            
+            tbl[ii,  1, anchor = c(-1,-1), expand = TRUE] <- lbl
+            tbl[ii,  2, expand = TRUE] <- backgroundColList
+            ii <- ii + 1
+            
+
+            ## COLOUR            
+            lbl <- glabel("Bar colour :")
+            barCols <- c(defts$bar.fill, "darkblue", "darkgreen",
+                           "darkmagenta", "darkslateblue", "hotpink4",
+                           "lightsalmon2", "palegreen3", "steelblue3")
+            barColList <- gcombobox(
+                barCols,
+                selected = ifelse(
+                    is.na(which(barCols == curSet$bar.fill)[1]),
+                    1,
+                    which(barCols == curSet$bar.fill)[1]),
+                editable = TRUE)
+
+            tbl[ii,  1, anchor = c(-1,-1), expand = TRUE] <- lbl
+            tbl[ii,  2, expand = TRUE] <- barColList
+            ii <- ii + 1
+
+            lbl <- glabel("NOTE: You can type in a colour if it is not listed.")
+            
+            font(lbl) <- list(family = "normal", size = 8)
+            tbl[ii, 1:2, anchor = c(-1, -1), expand = TRUE] <- lbl                
+            ii <- ii + 1
+
+            
+            ## Number of bars
+            ii <- ii + 1
+            lbl <- glabel("Number of bars :")
+
+            adjBins <- gcheckbox("Manually adjust the number of bars",
+                                 checked = !is.null(curSet$hist.bins))
+            binSlider <- gslider(from = 5, to = 200,
+                                 by = 1, value = curSet$hist.bins)
+            enabled(binSlider) <- svalue(adjBins)
+
+            tbl[ii, 1:2, anchor = c(-1, -1), expand = TRUE] <- adjBins
+            ii <- ii + 1
+            
+            tbl[ii, 1, anchor = c(-1,-1), expand = TRUE] <- lbl
+            tbl[ii, 2, expand = TRUE] <- binSlider
+            ii <- ii + 1
+            
+
+            updateEverything <- function(update = auto) {
+                ## To easily diable automatic updating of plot, add this argument,
+                ## otherwise would have to block/unblock handlers
+                if (!update)
+                    return()
+                
+                GUI$getActiveDoc()$setSettings(
+                    list(bar.fill = svalue(barColList),
+                         bg = svalue(backgroundColList),
+                         hist.bins = if (svalue(adjBins)) svalue(binSlider) else NULL
+                         ))
+                updateSettings()
+            }
+
+            ii <- ii + 1
+            showButton <- gbutton("Show Changes",
+                                  handler = function(h, ...) updateEverything(TRUE))
+            if (auto) {
+                bcoltimer <- NULL
+                addHandlerChanged(backgroundColList,
+                                  handler = function(h, ...) {
+                                      if (!is.null(bcoltimer))
+                                          bcoltimer$stop_timer()
+                                      bcoltimer <- gtimer(500, function(...) {
+                                                               if (nchar(svalue(backgroundColList)) >= 3)
+                                                                   updateEverything()
+                                                           }, one.shot = TRUE)
+                                  })
+
+                ## This one needs to be deactivated if user is typing:
+                pcoltimer <- NULL
+                addHandlerChanged(barColList,
+                                  handler = function(h, ...) {
+                                      if (!is.null(pcoltimer))
+                                          pcoltimer$stop_timer()
+                                      pcoltimer <- gtimer(500, function(...) {
+                                                               if (nchar(svalue(barColList)) >= 3)
+                                                                   updateEverything()
+                                                           }, one.shot = TRUE)
+                                  })
+
+                addHandlerChanged(adjBins,
+                                  handler = function(h, ...) {
+                                      enabled(binSlider) <- svalue(adjBins)
+                                      updateEverything()
+                                  })
+                
+                cextimer <- NULL
+                addHandlerChanged(binSlider,
+                                  handler = function(h, ...) {
+                                      if (!is.null(cextimer))
+                                          cextimer$stop_timer()
+                                      cextimer <- gtimer(500, function(...) updateEverything(), one.shot = TRUE)
+                                  })
+
+                autoCheck <- gcheckbox("Update automatically", checked = auto)
+                tbl[ii, 1:2, expand = TRUE] <- autoCheck
+                ii <- ii + 1
+
+                addHandlerChanged(autoCheck, handler = function(h, ...) {
+                                                 enabled(showButton) <- !svalue(autoCheck)
+                                                 auto <<- svalue(autoCheck)
+                                             })
+            }
+            
+            
+            tbl[ii, 1:2, expand = TRUE] <- showButton
+            enabled(showButton) <- !auto
+            
+            add(optGrp, tbl)
+        },
+        opt2 = function() {
             tbl <- glayout()
             lbl1 <- glabel("Customize Labels")
             font(lbl1) <- list(weight="bold",
@@ -510,6 +883,21 @@ iNZDotchartMod <- setRefClass(
             add(optGrp, tbl)
         })
     )
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 iNZBarchartMod <- setRefClass(
     "iNZBarchartMod",
@@ -1292,172 +1680,6 @@ iNZScatterMod <- setRefClass(
 
 
 
-iNZHistogramMod <- setRefClass(
-    "iNZHistogramMod",
-    contains = "iNZPlotModWin",
-    methods = list(
-        initialize = function(gui, which = 1) {
-            callSuper(gui)
-            ## need to specify the methods that we want to use in
-            ## do.call later on (see changeOpts())
-            usingMethods(opt1, opt2)
-            opts <- gcombobox(c("Change plot appearance",
-                                "Customize Labels"),
-                              selected = which)
-            add(radioGrp, opts, expand = TRUE, fill = TRUE)
-            eval(parse(text = paste0("opt", which, "()")))
-            addHandlerChanged(opts,
-                              handler = function(h, ...) {
-                                  changeOpts(svalue(h$obj,
-                                                    index = TRUE))
-                              })
-        },
-        changeOpts = function(index) {
-            ## delete current displayed options
-            invisible(sapply(optGrp$children, function(x) delete(optGrp, x)))
-            do.call(paste("opt", index, sep=""),
-                    args = list())
-        },
-        ## Following are the different views for the indices of the
-        ## gradio
-
-        ## Change Plot appearance
-        opt1 = function() {
-            tbl <- glayout()
-            lbl1 <- glabel("Change plot appearance")
-            font(lbl1) <- list(weight="bold",
-                               family = "normal",
-                               size = 9)
-            lbl2 <- glabel("Colour of bars :")
-            lbl3 <- glabel("Background colour :")
-            adjBins <- gcheckbox("Adjust number of bins",
-                                 checked = !is.null(curSet$hist.bins))
-            lbl5 <- glabel("Number of bins  :")
-            lbl8 <- glabel("Plot Type :")
-
-            ## default settings
-            defts <- iNZightPlots:::inzpar()
-            ## active settings
-            barCols <- c(defts$bar.fill, "darkblue", "darkgreen",
-                "darkmagenta", "darkslateblue", "hotpink4",
-                "lightsalmon2", "palegreen3", "steelblue3")
-            backgroundCols <- c(defts$bg, "antiquewhite",
-                "azure3", "bisque", "cornsilk", "darkolivegreen2",
-                "darkslategray1", "greenyellow", "lightblue1",
-                "lightpink", "rosybrown1", "slategray1", "thistle1",
-                "wheat1")
-            plotTypes <- c("default", "dot plot", "histogram")
-            ## the values used for `largesample` in the plot settings
-            plotTypeValues <- list(NULL, FALSE, TRUE)
-            barColList <- gcombobox(
-                barCols,
-                selected = ifelse(
-                    is.na(which(barCols == curSet$bar.fill)[1]),
-                    1,
-                    which(barCols == curSet$bar.fill)[1]),
-                editable = TRUE)
-            backgroundColList <- gcombobox(
-                backgroundCols,
-                selected = ifelse(
-                    is.na(which(backgroundCols == curSet$bg)[1]),
-                    1,
-                    which(backgroundCols == curSet$bg)[1]),
-                editable = TRUE)
-            plotTypeList <- gcombobox(
-                plotTypes,
-                selected = ifelse(
-                    is.null(curSet$largesample),
-                    1,
-                    ifelse(
-                        curSet$largesample == FALSE,
-                        2, 3))
-                )
-
-            addHandlerChanged(plotTypeList, handler = function(h, ...) {
-                GUI$getActiveDoc()$setSettings(
-                    list(largesample = plotTypeValues[[svalue(plotTypeList, index = TRUE)]])
-                    )
-                updateSettings()
-
-                plType <- svalue(plotTypeList, index = TRUE)
-                if (plType == 2 | (plType == 1 & GUI$plotType == "dot")) {
-                    visible(modWin) <<- FALSE
-                    iNZDotchartMod$new(GUI, which = 2)
-                    dispose(modWin)
-                }
-            })
-            
-            binSlider <- gslider(from = 10, to = 200,
-                by = 1, value = curSet$hist.bins)
-            enabled(binSlider) <- svalue(adjBins)
-
-            addHandlerChanged(adjBins, handler = function(h, ...) enabled(binSlider) <- svalue(adjBins))
-            
-            showButton <- gbutton("Show Changes",
-                                  handler = function(h, ...) {
-                                      GUI$getActiveDoc()$setSettings(
-                                          list(bar.fill = svalue(barColList),
-                                               bg = svalue(backgroundColList),
-                                               hist.bins = if (svalue(adjBins)) svalue(binSlider) else NULL
-                                          ))
-                                      updateSettings()
-                                  })
-            tbl[3,1:2, anchor = c(-1,-1), expand = TRUE] <- lbl1
-            tbl[4,1, anchor = c(-1,-1), expand = TRUE] <- lbl8
-            tbl[4,2, expand = TRUE] <- plotTypeList
-            tbl[5,1, anchor = c(-1,-1), expand = TRUE] <- lbl2
-            tbl[5,2, expand = TRUE] <- barColList
-            tbl[6,1, anchor = c(-1,-1), expand = TRUE] <- lbl3
-            tbl[6,2, expand = TRUE] <- backgroundColList
-            tbl[7,1, anchor = c(-1,-1), expand = TRUE] <- lbl5
-            tbl[7,2] <- adjBins
-            tbl[8,2, expand = TRUE] <- binSlider
-            tbl[9, 1:2] <- showButton
-
-            add(optGrp, tbl)
-        },
-        opt2 = function() {
-            tbl <- glayout()
-            lbl1 <- glabel("Customize Labels")
-            font(lbl1) <- list(weight="bold",
-                               family = "normal",
-                               size = 9)
-
-            curPlSet <- GUI$getActiveDoc()$getSettings()
-            oldMain <- curPlSet$main
-            oldX <- curPlSet$xlab
-            if (is.null(oldMain)) oldMain <- ''
-            if (is.null(oldX)) oldX <- ''
-
-            lbl2    <- glabel("Main title :")
-            labMain <- gedit(oldMain)
-            lbl3    <- glabel("x-axis label :")
-            labX    <- gedit(oldX)
-
-            lbl4 <- glabel("(Enter a single space to print no title)")
-            font(lbl4) <- list(family = "normal",
-                               size = 8)
-
-            showButton <- gbutton("Show Changes",
-                                  handler = function(h, ...) {
-                                      mlab <- svalue(labMain)
-                                      xlab <- svalue(labX)
-                                      GUI$getActiveDoc()$setSettings(
-                                          list(main = if (mlab != '') mlab else NULL,
-                                               xlab = if (xlab != '') xlab else NULL)
-                                          )
-                                      updateSettings()
-                                  })
-            tbl[3, 1:2, anchor = c(-1, -1), expand = TRUE] <- lbl1
-            tbl[4, 1, anchor = c(-1, -1), expand = TRUE] <- lbl2
-            tbl[4, 2, expand = TRUE] <- labMain
-            tbl[5, 1, anchor = c(-1, -1), expand = TRUE] <- lbl3
-            tbl[5, 2, expand = TRUE] <- labX
-            tbl[6, 1:2, anchor = c(-1, -1), expand = TRUE] <- lbl4
-            tbl[7, 1:2, expand = TRUE] <- showButton
-            add(optGrp, tbl)
-        })
-    )
 
 
 
