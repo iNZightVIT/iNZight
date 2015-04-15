@@ -57,6 +57,13 @@ iNZPlotInfWin <- setRefClass(
                 metTab[2, 1, expand = TRUE, anchor = c(-1, 0)] <<- metLab
                 typTab[2, 1, expand = TRUE, anchor = c(-1, 0)] <<- typLab
 
+                ## Show interval values button
+                intBtn <- gbutton("Get values", expand = FALSE,
+                                  handler = function(h, ...) {
+                                      displayValues()
+                                  })
+                btnTab[2, 1, expand = TRUE] <<- intBtn
+
                 add(mainGrp, parTab)
                 add(mainGrp, metTab)
                 add(mainGrp, typTab)
@@ -64,19 +71,62 @@ iNZPlotInfWin <- setRefClass(
 
                 addSpring(mainGrp)
 
-                okButton <<- gbutton("Close", expand = FALSE,
-                                     cont = mainGrp,
-                                     handler = function(h, ...) {
-                                         ## delete the module window
-                                         delete(GUI$leftMain, GUI$leftMain$children[[2]])
-                                         ## display the default view (data, variable, etc.)
-                                         visible(GUI$gp1) <<- TRUE
-                                     })
+                okButton <- gbutton("Close", expand = FALSE,
+                                    cont = mainGrp,
+                                    handler = function(h, ...) {
+                                        ## delete the module window
+                                        delete(GUI$leftMain, GUI$leftMain$children[[2]])
+                                        ## display the default view (data, variable, etc.)
+                                        visible(GUI$gp1) <<- TRUE
+                                    })
             }
         },
         ## up the curSet class variable
         updateSettings = function() {
             curSet <<- GUI$getActiveDoc()$getSettings()
+        },
+        displayValues = function() {
+            out <- c()
+            lapply(names(GUI$curPlot), function(nA) {
+                A <- GUI$curPlot[[nA]]
+                rr <- NULL
+                if (is.list(A)) {
+                    ret <- lapply(names(A), function(nB) {
+                        B <- A[[nB]]
+                        if (class(B) %in% c("inzdot", "inzhist", "inzbar")) {
+                            return(B$inference)
+                        } else {
+                            return(NULL)
+                        }
+                    })
+
+                    o <- c()
+                    if (any(!sapply(ret, is.null))) {
+                        sapply(ret, function(r) {
+                            sapply(names(r), function(typN) {
+                                typ <- r[[typN]]
+                                cat(typN, "\n")
+                                sapply(names(typ), function(intN) {
+                                    int <- typ[[intN]]
+                                    cat("   ", intN, "\n")
+                                    print(int)
+                                    #o <- c(o, int)
+                                })
+                            })
+                        })
+                    }
+                }
+
+                if (!is.null(rr)) {
+                    if (nA != "all")
+                        out <- c(out, cat("Level ", nA, ":\n"))
+
+                    out <- c(out, o)
+                }
+            })
+            #print(out)
+            
+            gwindow(title = "Inference values", parent = GUI$win)
         })
     )
 
@@ -112,8 +162,9 @@ iNZBarchartInf <- setRefClass(
             
             ## Add function
             addIntervals <- function() {
+                ## Inference type depends on method (normal = both; bootstrap = only confidence [for now]..)
                 if (svalue(compInt) | svalue(confInt))
-                    inf.type <- c("comp", "conf")[c(svalue(compInt), svalue(confInt))]
+                    inf.type <- c("comp", "conf")[c(svalue(compInt) & svalue(mthd, index = TRUE) == 1, svalue(confInt))]
                 else
                     inf.type <- NULL
                 
@@ -129,8 +180,8 @@ iNZBarchartInf <- setRefClass(
             }
 
             enabler <- function() {
-                enabled(compInt) <- svalue(mthd, index = TRUE) == 1
-                svalue(compInt) <- if (svalue(mthd, index = TRUE) == 1) svalue(compInt) else FALSE
+                visible(compInt) <- svalue(mthd, index = TRUE) == 1
+                #if (svalue(mthd, index = TRUE) == 2) svalue(compInt) <- FALSE
 
                 addIntervals()
             }
@@ -176,12 +227,16 @@ iNZDotchartInf <- setRefClass(
             
             ## Add function
             addIntervals <- function() {
-                if (svalue(compInt) | svalue(confInt)) {
-                    inf.type <- c("comp", "conf")[c(svalue(compInt), svalue(confInt))]
+                if (svalue(parm, index = TRUE) == 2 & svalue(mthd, index = TRUE) == 1) {
+                    ## If median + normal, display year12 interval:
+                    inf.type <- "conf"
+                    inf.par <- "median"
+                } else if (svalue(compInt) | svalue(confInt)) {
+                    inf.type <- c("comp", "conf")[c(svalue(compInt) & !is.null(curSet$y), svalue(confInt))]
                     inf.par <- c("mean", "median")[svalue(parm, index = TRUE)]
                 } else {
                     inf.type <- inf.par <- NULL
-                }          
+                }
                 
                 bs.inf <- svalue(mthd, index = TRUE) == 2
                 GUI$getActiveDoc()$setSettings(
@@ -194,77 +249,34 @@ iNZDotchartInf <- setRefClass(
                 updateSettings()
             }
 
-            enabler <- function() {
-                enabled(compInt) <- !is.null(curSet$y)
-                
-                if (svalue(parm, index = TRUE) == 2) {
-                    mthd$set_items(c("Year 12", "Bootstrap"))
-                    visible(typTab) <- svalue(mthd, index = TRUE) == 2
-                } else {
-                    mthd$set_items(c("Normal", "Bootstrap"))
-                    visible(typTab) <- TRUE
+            enabler <- function(p = FALSE) {
+                ## Hide comparison intervals if only one group:
+                visible(compInt) <- !is.null(curSet$y)
+
+                ## For MEAN, use NORMAL+BOOTSTRAP
+                ## For MEDIAN, use YEAR12+BOOTSTRAP
+                ##    YEAR12 intervals are neither CONFIDENCE nor COMPARISON, so hide that option too
+                ## But only do this if user changes the parameter:
+                if (p) {
+                    if (svalue(parm, index = TRUE) == 2) {
+                        mthd$set_items(c("Year 12", "Bootstrap"))
+                        
+                    } else {
+                        mthd$set_items(c("Normal", "Bootstrap"))
+                    }
                 }
 
+                visible(typTab) <<- svalue(parm, index = TRUE) == 1 | svalue(mthd, index = TRUE) == 2
+                
                 addIntervals()
             }
 
-            addHandlerChanged(parm, handler = function(h, ...) enabler())
+            addHandlerChanged(parm, handler = function(h, ...) enabler(TRUE))
             addHandlerChanged(mthd, handler = function(h, ...) enabler())
             addHandlerChanged(compInt, handler = function(h, ...) enabler())
             addHandlerChanged(confInt, handler = function(h, ...) enabler())
 
             enabler()
-                      
-            ## callSuper(gui)
-            ## parm <- gradio(c("Medians",
-            ##                  "Means"),
-            ##                selected = 2)
-            ## intType <- gradio(c("Comparison Intervals",
-            ##                     "Confidence Intervals",
-            ##                     "Comparison + Confidence Intervals"),
-            ##                   selected = 3)
-            ## mthd <- gradio(c("Bootstrap", "Normal Theory"),
-            ##                selected = 2)
-            ## addButton <- gbutton(
-            ##     "Add Intervals",
-            ##     handler = function(h, ...) {
-            ##         inf.type <- list("comp",
-            ##                          "conf",
-            ##                          c("comp", "conf"))[[svalue(intType,
-            ##                                                     index = TRUE)]]
-            ##         inf.par <- c("median", "mean")[svalue(parm, index = TRUE)]
-            ##         bs.inf <- svalue(mthd, index = TRUE) == 1
-            ##         GUI$getActiveDoc()$setSettings(
-            ##             list(
-            ##                 inference.type = inf.type,
-            ##                 inference.par = inf.par,
-            ##                 bs.inference = bs.inf
-            ##                 )
-            ##             )
-            ##     })
-            ## ## the different parameters (means/medians) have different
-            ## ## default interval type. On change of parameter, change
-            ## ## default interval type
-            ## addHandlerChanged(parm, handler = function(h, ...) {
-            ##     if (svalue(parm) == "Means") {
-            ##         intType$set_items(c("Comparison Intervals",
-            ##                             "Confidence Intervals",
-            ##                             "Comparison + Confidence Intervals"))
-            ##         svalue(intType) <- "Comparison + Confidence Intervals"
-            ##         mthd$set_items(c("Bootstrap", "Normal Theory"))
-            ##         svalue(mthd) <- "Normal Theory"
-            ##     } else {
-            ##         intType$set_items("Comparison Intervals")
-            ##         svalue(intType) <- "Comparison Intervals"
-            ##         selectedMthd <- svalue(mthd, index = TRUE)
-            ##         mthd$set_items(c("Bootstrap", "Year 12"))
-            ##         svalue(mthd, index = TRUE) <- selectedMthd
-            ##     }
-            ## })
-            ## tbl[1, 2] <<- parm
-            ## tbl[2, 2] <<- intType
-            ## tbl[3, 2] <<- mthd
-            ## tbl[4, 2, expand = TRUE, anchor = c(1, -1)] <<- addButton
         })
     )
 
