@@ -9,15 +9,9 @@ iNZPlotRmveModWin <- setRefClass(
         defSet = "ANY" ## the default plot settings
         ),
     methods = list(
-        initialize = function(gui=NULL) {
+        initialize = function(gui = NULL, new = TRUE) {
             initFields(GUI = gui)
             if(!is.null(GUI)) {
-                ## open in leftMain
-                if (length(GUI$leftMain$children) > 1) {
-                    delete(GUI$leftMain, GUI$leftMain$children[[2]])
-                }
-                GUI$initializeModuleWindow()
-                
                 curSet <<- GUI$getActiveDoc()$getSettings()
                 defSet <<- iNZightPlots:::inzpar()
                 ## labels for all possible additions
@@ -95,9 +89,9 @@ iNZPlotRmveModWin <- setRefClass(
                             ## update the plot settings
                             removeAdditions(rmv)
                         }, silent = TRUE)
-                        
-                        delete(GUI$leftMain, GUI$leftMain$children[[2]])
-                        visible(GUI$gp1) <<- TRUE
+
+                        ## only destroy the window if there are no more additions left to remove
+                        iNZPlotRmveModWin$new(GUI, new = FALSE)
                     })
 
                 closeButton <- gbutton(
@@ -107,6 +101,26 @@ iNZPlotRmveModWin <- setRefClass(
                         visible(GUI$gp1) <<- TRUE
                     })
 
+                if (sum(curAdditions) <= 1) {
+                    if (new) {
+                        ## User has just clicked the "Remove additions" button
+                        gmessage("There are no plot additions to remove.",
+                                 title = "Nothing to remove",
+                                 parent = GUI$win)
+                    } else {
+                        ## User has just removed a bunch of additions, and there are none left
+                        delete(GUI$leftMain, GUI$leftMain$children[[2]])
+                        visible(GUI$gp1) <<- TRUE
+                    }
+                    return()
+                }
+                
+                ## open in leftMain
+                if (length(GUI$leftMain$children) > 1) {
+                    delete(GUI$leftMain, GUI$leftMain$children[[2]])
+                }
+                GUI$initializeModuleWindow()
+                
                 mainGrp <- gvbox(container = GUI$moduleWindow, expand = TRUE)
                 
                 lbl <- glabel("Remove additions")
@@ -131,13 +145,9 @@ iNZPlotRmveModWin <- setRefClass(
                 }
                 checkOK()
 
-                if (sum(curAdditions) > 1) {
-                    sapply(additions[curAdditions], function(x) {
-                        gcheckbox(x, cont = selectGrp, handler = function(h, ...) checkOK())})
-                } else {
-                    glabel("No additions to remove", container = selectGrp)
-                }
-                
+                sapply(additions[curAdditions], function(x) {
+                       gcheckbox(x, cont = selectGrp, handler = function(h, ...) checkOK())})
+                                
                 addSpring(btnGrp)
                 add(btnGrp, btnTb)
                 

@@ -41,7 +41,8 @@ iNZGUI <- setRefClass(
                    plotType = "ANY"
                    ),
                prototype = list(
-                   activeDoc = 1
+                   activeDoc = 1,
+                   plotType = NULL
                    )
                ),
     methods = list(
@@ -775,6 +776,7 @@ iNZGUI <- setRefClass(
                 plotType <<- attr(curPlot, "plottype")
             } else {
                 iNZightPlots:::resetPlot()
+                plotType <<- NULL
             }
         },
         ## set a new iNZDocument and make it the active one

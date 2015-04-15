@@ -68,7 +68,8 @@ iNZPlotToolbar <- setRefClass(
         addToPlot = function() {
             curSet <- GUI$getActiveDoc()$getSettings()
             if (is.null(GUI$plotType))
-                gmessage("Please select at least one variable.")
+                gmessage("You must select at least one variable before you can access the Add To Plot menu.",
+                         title = "No variable selected")
             else
                 switch(GUI$plotType,
                        "scatter" = iNZScatterMod$new(GUI),
@@ -80,33 +81,23 @@ iNZPlotToolbar <- setRefClass(
                        iNZPlotModWin$new(GUI))
         },
         addInf = function() {
-            curSet <- GUI$getActiveDoc()$getSettings()            
-            if (is.numeric(curSet$x)) {
-                if (is.numeric(curSet$y)) {
-                    ## scatterplot
-                    if (is.null(curSet$trend) && curSet$smooth == 0)
-                        gmessage(msg = "Specify a trend or a smoother")
-                    else
-                        GUI$getActiveDoc()$setSettings(
-                            list(bs.inference = TRUE))
-                } else if (is.null(curSet$y)) {
-                    ## dot plot
-                    iNZDotchartInf$new(GUI)
-                } else {
-                    ## dotchart subsetted by a factor
-                    iNZDotchartInf$new(GUI)
-                }                
-            } else {
-                if (is.numeric(curSet$y)) {
-                    ## dotchart subsetted by a factor
-                    iNZDotchartInf$new(GUI)
-                } else if (is.null(curSet$y)) {
-                    ## normal bar chart
-                    iNZBarchartInf$new(GUI)
-                } else {
-                    ## segmented bar chart (2 factor vars)
-                    iNZBarchartInf$new(GUI)
-                }
-            }
+            curSet <- GUI$getActiveDoc()$getSettings()
+            if (is.null(GUI$plotType))
+                gmessage("You must select at least one variable before you can access the Inference menu.",
+                         title = "No variable selected", parent = GUI$win)
+            else
+                switch(GUI$plotType,
+                       "bar" = iNZBarchartInf$new(GUI),
+                       "hist" = ,
+                       "dot" = iNZDotchartInf$new(GUI),
+                       "grid" = ,
+                       "hex" = ,
+                       "scatter" = {
+                           if (is.null(curSet$trend) && curSet$smooth == 0)
+                               gmessage("Use the Add to Plot menu to add a trend(s) and/or smoother.",
+                                        title = "No trend or smoother", parent = GUI$win)
+                           else
+                               GUI$getActiveDoc()$setSettings(list(bs.inference = TRUE))
+                       })
         })
     )
