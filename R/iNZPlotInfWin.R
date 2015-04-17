@@ -86,47 +86,7 @@ iNZPlotInfWin <- setRefClass(
             curSet <<- GUI$getActiveDoc()$getSettings()
         },
         displayValues = function() {
-            out <- c()
-            lapply(names(GUI$curPlot), function(nA) {
-                A <- GUI$curPlot[[nA]]
-                rr <- NULL
-                if (is.list(A)) {
-                    ret <- lapply(names(A), function(nB) {
-                        B <- A[[nB]]
-                        if (class(B) %in% c("inzdot", "inzhist", "inzbar")) {
-                            return(B$inference)
-                        } else {
-                            return(NULL)
-                        }
-                    })
-
-                    o <- c()
-                    if (any(!sapply(ret, is.null))) {
-                        sapply(ret, function(r) {
-                            sapply(names(r), function(typN) {
-                                typ <- r[[typN]]
-                                cat(typN, "\n")
-                                sapply(names(typ), function(intN) {
-                                    int <- typ[[intN]]
-                                    cat("   ", intN, "\n")
-                                    print(int)
-                                    #o <- c(o, int)
-                                })
-                            })
-                        })
-                    }
-                }
-
-                if (!is.null(rr)) {
-                    if (nA != "all")
-                        out <- c(out, cat("Level ", nA, ":\n"))
-
-                    out <- c(out, o)
-                }
-            })
-            #print(out)
-            
-            gwindow(title = "Inference values", parent = GUI$win)
+            return(NULL)
         })
     )
 
@@ -260,7 +220,6 @@ iNZDotchartInf <- setRefClass(
                 if (p) {
                     if (svalue(parm, index = TRUE) == 2) {
                         mthd$set_items(c("Year 12", "Bootstrap"))
-                        
                     } else {
                         mthd$set_items(c("Normal", "Bootstrap"))
                     }
@@ -277,6 +236,89 @@ iNZDotchartInf <- setRefClass(
             addHandlerChanged(confInt, handler = function(h, ...) enabler())
 
             enabler()
+        },
+        displayValues = function() {
+            out <- c()
+            pl <- GUI$curPlot
+
+            ## First grab G2 stuff:
+            vn <- attr(pl, "varnames")
+            g1 <- vn$g1
+            g2 <- vn$g2
+            
+            if (is.null(g2)) {
+                pl <- pl["all"]
+            } else {
+                  pl <- pl[1:(which(names(pl) == "gen") - 1)]
+            }
+
+            for (n1 in names(pl)) {
+                ## Grab the level of g2:
+                p1 <- pl[[n1]]
+                
+                if (!is.null(g2))
+                    out <- c(out, paste0("## ", g2, " = ", n1))
+
+                for (n2 in names(p1)) {
+                    p2 <- p1[[n2]]
+
+                    if (!is.null(g1))
+                        out <- c(out, paste0("# ", g1, " = ", n2))
+
+                    ## If MEDIAN and NOT BOOTSTRAP, then we show Year 12 intervals (neither COMP nor
+                    ## CONF)
+                    if (!is.list(p2$inference)) {
+                        out <- c(out, "No inference", "")
+                        next
+                    }                        
+                        
+                    y12 <- names(p2$inference)[1] == "median" & !attr(p2$inference, "bootstrap")
+                    inf <- p2$inference[[1]]  ## only take the first (mean or median)
+
+                    if (y12)
+                        inf <- inf["conf"]
+
+                    inf <- inf[!sapply(inf, is.null)]
+                    
+                    if (length(inf) == 0) {
+                        out <- c(out, "No values", "")
+                    } else {                    
+                        do.call(cbind, lapply(names(inf), function(i) {
+                                                       m <- inf[[i]][, 1:2, drop = FALSE]
+                                                       if (!y12)
+                                                           colnames(m) <- paste(i, colnames(m), sep = ".")
+                                                       m
+                                                   })
+                                ) -> oo
+                        
+                        mat <- matrix(apply(oo, 2, function(col) {
+                                                    format(col, digits = 4)
+                                                }), nrow = nrow(oo))
+                        mat[grep("NA", mat)] <- ""
+                        
+                        mat <- rbind(colnames(oo), mat)
+                        if (nrow(oo) > 1)
+                            mat <- cbind(c("", rownames(oo)), mat)
+                        
+                        mat <- matrix(apply(mat, 2, function(col) {
+                                                     format(col, justify = "right")
+                                                 }), nrow = nrow(mat))
+                        
+                        mat <- apply(mat, 1, function(x) paste0("   ", paste(x, collapse = "   ")))
+                        
+                        out <- c(out, mat, "")
+                    }
+                }
+                
+
+                out <- c(out, "", "")
+            }
+
+            ww <- gwindow(title = "Inference values", parent = GUI$win,
+                          width = 700, height = 400, visible = FALSE)
+            g <- gtext(text = paste(out, collapse = "\n"),
+                       expand = TRUE, cont = ww, wrap = FALSE,
+                       font.attr = list(family = "monospace"))
+            visible(ww) <- TRUE
         })
     )
-
