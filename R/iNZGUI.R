@@ -38,7 +38,8 @@ iNZGUI <- setRefClass(
                    modWin = "ANY",
                    ## the current plot and its type (scatter, dot, etc...)
                    curPlot = "ANY",
-                   plotType = "ANY"
+                   plotType = "ANY",
+                   preferences = "list"
                    ),
                prototype = list(
                    activeDoc = 1,
@@ -57,6 +58,10 @@ iNZGUI <- setRefClass(
             win.title <- paste("iNZight (v",
                                packageDescription("iNZight")$Version,
                                ")", sep = "")
+
+            ## Grab settings file (or try to!)
+            getPreferences()
+            
             ## Check for updates ... need to use try incase it fails (no connection etc)
             ## RCurl no longer supports R < 3, so it wont be available on Mac SL version.
             if ("RCurl" %in% row.names(installed.packages())) {
@@ -64,15 +69,23 @@ iNZGUI <- setRefClass(
             } else connected <- FALSE
             
             if (connected) {
-                ap <- suppressWarnings(try(numeric_version(available.packages(
-                    contriburl = contrib.url("http://docker.stat.auckland.ac.nz/R",
-                        getOption("pkgType")))[,"Version"]), TRUE))
-                if (!inherits(ap, "try-error")) {
-                    if (length(ap) > 0) {
-                        ip <- try(numeric_version(installed.packages()[names(ap), "Version"]), TRUE)
-                        if (!inherits(ip, "try-error")) {
-                            if (any(ap > ip))
-                                win.title <- paste(win.title, " [updates available]")
+                if (preferences$track == "ask") {
+                    preferences$track <<-
+                        gconfirm("iNZight would like to use anonymous usage information. Are you ok for us to collect this information?",
+                                 title = "Share usage information?", icon = "question")
+                }
+
+                if (preferences$check.updates) {
+                    ap <- suppressWarnings(try(numeric_version(available.packages(
+                        contriburl = contrib.url("http://docker.stat.auckland.ac.nz/R",
+                            getOption("pkgType")))[,"Version"]), TRUE))
+                    if (!inherits(ap, "try-error")) {
+                        if (length(ap) > 0) {
+                            ip <- try(numeric_version(installed.packages()[names(ap), "Version"]), TRUE)
+                            if (!inherits(ip, "try-error")) {
+                                if (any(ap > ip))
+                                    win.title <- paste(win.title, " [updates available]")
+                            }
                         }
                     }
                 }
@@ -80,47 +93,48 @@ iNZGUI <- setRefClass(
                 ## we can update this part later to "count" every use ... but later
                 
                 ## also want to be cheeky and add users to "database" of users so we can track...
-
-                try({
-                    version = packageVersion("iNZight")
-                    os <- "Linux"
-                    if (.Platform$OS == "windows") {
-                        os = "Windows"
-                    } else if (Sys.info()["sysname"] == "Darwin") { 
-                        os = "Mac OS X"
-                        if (!inherits(osx.version, "try-error")) {
-                            os = paste("Mac OS X", osx.version)
+                if (preferences$track) {
+                    try({
+                        version = packageVersion("iNZight")
+                        os <- "Linux"
+                        if (.Platform$OS == "windows") {
+                            os = "Windows"
+                        } else if (Sys.info()["sysname"] == "Darwin") { 
+                            os = "Mac OS X"
+                            if (!inherits(osx.version, "try-error")) {
+                                os = paste("Mac OS X", osx.version)
+                            }
                         }
-                    }
-                    
-                    ## have they updated before?
-                    hash.id <- "new"
-                    if (os == "Windows") {
-                        libp <- "prog_files"
-                    } else if (os != "Linux") {
-                        ## i.e., mac
-                        libp <- "Library"
-                    } else {
-                        ## linux - save in library..
-                        libp <- .libPaths()[which(sapply(.libPaths(), function(p)
-                                                         "iNZight" %in% list.files(p)))[1]]
-                    }
-                    
-                    if (file.exists(file.path(libp, "id.txt"))) {
-                        hash.id <- readLines(file.path(libp, "id.txt"))
-                    }
-                    
-                    ## only if not already tracking
-                    if (hash.id == "new") {
-                        track.url <- paste0("http://docker.stat.auckland.ac.nz/R/tracker/index.php?track&v=",
-                                            version, "&os=", gsub(" ", "%20", os), "&hash=", hash.id)
-                        f <- try(url(track.url,  open = "r"), TRUE)
                         
-                        ## write the hash code to their installation:
-                        hash.id <- readLines(f)
-                        try(writeLines(hash.id, file.path(libp, "id.txt")), silent = TRUE)
-                    }
-                })
+                        ## have they updated before?
+                        hash.id <- "new"
+                        if (os == "Windows") {
+                            libp <- "prog_files"
+                        } else if (os != "Linux") {
+                            ## i.e., mac
+                            libp <- "Library"
+                        } else {
+                            ## linux - save in library..
+                            libp <- .libPaths()[which(sapply(.libPaths(), function(p)
+                                                             "iNZight" %in% list.files(p)))[1]]
+                        }
+                        
+                        if (file.exists(file.path(libp, "id.txt"))) {
+                            hash.id <- readLines(file.path(libp, "id.txt"))
+                        }
+                        
+                        ## only if not already tracking
+                        if (hash.id == "new") {
+                            track.url <- paste0("http://docker.stat.auckland.ac.nz/R/tracker/index.php?track&v=",
+                                                version, "&os=", gsub(" ", "%20", os), "&hash=", hash.id)
+                            f <- try(url(track.url,  open = "r"), TRUE)
+                            
+                            ## write the hash code to their installation:
+                            hash.id <- readLines(f)
+                            try(writeLines(hash.id, file.path(libp, "id.txt")), silent = TRUE)
+                        }
+                    })
+                }
             }
             
             win <<- gwindow(win.title, visible = FALSE, 
@@ -447,7 +461,7 @@ iNZGUI <- setRefClass(
                     label = "About",
                     icon = "symbol_diamond",
                     handler = function(h, ...) {
-                        w <- gwindow("About iNZight", width = 500, height = 400, visible = TRUE)
+                        w <- gwindow("About iNZight", width = 500, height = 400, visible = TRUE, parent = win)
                         g <- gvbox(expand = FALSE, cont = w, spacing = 5)
                         g$set_borderwidth(10)
                         mainlbl <- glabel("iNZight", container = g)
@@ -496,10 +510,48 @@ iNZGUI <- setRefClass(
                     handler = function(h, ...) {
                         browseURL("https://www.stat.auckland.ac.nz/~wild/iNZight/report.html")
                     }
+                ),
+                prefs = gaction (
+                    ## 36
+                    label = "Preferences",
+                    icon = "symbol_diamond",
+                    handler = function(h, ...) iNZPrefsWin$new(.self)
+                ),
+                home = gaction(
+                    ## 37
+                    label = "Exit",
+                    icon = "symbold_diamond",
+                    handler = function(h, ...) dispose(win)
+                ),
+                aboutiNZight = gaction(
+                    ## 38
+                    label = "Privacy",
+                    icon = "symbol_diamond",
+                    handler = function(h, ...) {
+                        w <- gwindow("Privacy", width = 500, height = 250, visible = TRUE, parent = win)
+                        g <- gvbox(expand = FALSE, cont = w, spacing = 5)
+                        g$set_borderwidth(10)
+
+                        mainlbl <- glabel("iNZight User Privacy", container = g)
+                        font(mainlbl) <- list(weight = "bold", family = "normal", size = 20)
+
+                        gpltxt <- gtext(expand = TRUE, cont = g, wrap = TRUE)
+                        insert(gpltxt, paste("\n\nTo provide us with information about our users and their behaviour,",
+                                             "we collect ANONYMOUS information about iNZight, such as the version number",
+                                             "you are using, the operating system, and how frequently iNZight is updated.",
+                                             "We collect ABSOLUTELY NO personal information from your computer. We place",
+                                             "a unique cookie that allows us to identify unique users, however this is not",
+                                             "in any way connected to your personal information.\n"),
+                               font.attr = list(size = 9)) -> l1
+                        insert(gpltxt, paste("If you wish to remain completely anonymous, then you can turn off the sharing of",
+                                             "usage information by going to 'File' > 'Preferences' and deselecting the appropriate box.\n"),
+                               font.attr = list(size = 9)) -> l2
+                        visible(w) <- TRUE
+                    }
                 )#,
                 ############ MAPS ############
                 ## maps = gaction(
-                ##     ## 36
+                ##     ## 39
                 ##     label = "Maps...",
                 ##     icon = "symbol_diamond",
                 ##     handler = function(h, ...) {
@@ -542,7 +594,7 @@ iNZGUI <- setRefClass(
             if (!'package:iNZightMR' %in% search())
                 enabled(actionList[[24]]) <- FALSE
             menuBarList <- list(
-                File = actionList[c(16, 1:2)],
+                File = actionList[c(16, 1:2, 36, 37)],
                 "Row Operations" = actionList[c(13, 27, 28, 31, 15)],
                 #"Filter Data" = actionList[c(13, 27, 28, 15)],
                 "Manipulate variables" = list(
@@ -565,6 +617,7 @@ iNZGUI <- setRefClass(
                     ),
                 "Help" = list(
                     actionList[[33]],
+                    actionList[[38]],
                     actionList[[34]],
                     actionList[[35]]
                     )
@@ -850,5 +903,33 @@ iNZGUI <- setRefClass(
             ## create a gvbox in moduleWindow
             moduleWindow <<- gvbox(container = leftMain, expand = TRUE)
             visible(gp1) <<- FALSE
+        },
+        defaultPrefs = function() {
+            ## The default iNZight settings:
+            list(track = "ask",
+                 check.updates = TRUE)
+        },
+        getPreferences = function() {
+            preferences <<-
+                if (".inzight" %in% list.files(all.files = TRUE)) {
+                    dget(".inzight")
+                } else if (".inzight" %in% list.files("~", all.files = TRUE)) {
+                    dget("~/.inzight")
+                } else {
+                    defaultPrefs()
+                }
+        },
+        savePreferences = function() {
+            if (".inzight" %in% list.files(all.files = TRUE)) {
+                dput(preferences, ".inzight")
+            } else if (".inzight" %in% list.files("~", all.files = TRUE)) {
+                dput(preferences, "~/.inzight")
+            } else {
+                conf <- gconfirm("iNZight will place a settings file in the current directory.",
+                                 title = "Create preferences file?", icon = "question", parent = win)
+                if (conf) {
+                    tt <- try(dput(preferences, ".inzight"))
+                }
+            }
         })
     )
