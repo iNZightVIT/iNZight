@@ -59,6 +59,10 @@ iNZGUI <- setRefClass(
                                packageDescription("iNZight")$Version,
                                ")", sep = "")
 
+            ## We must set the correct directory if using a Mac
+            if (is_MacOSX())
+                try(setwd(Sys.getenv("R_DIR")), TRUE)
+            
             ## Grab settings file (or try to!)
             getPreferences()
             
@@ -73,6 +77,7 @@ iNZGUI <- setRefClass(
                     preferences$track <<-
                         gconfirm("iNZight would like to use anonymous usage information. Are you ok for us to collect this information?",
                                  title = "Share usage information?", icon = "question")
+                    savePreferences()
                 }
 
                 if (preferences$check.updates) {
@@ -930,6 +935,9 @@ iNZGUI <- setRefClass(
                                  title = "Create preferences file?", icon = "question", parent = win)
                 if (conf) {
                     tt <- try(dput(preferences, ".inzight"))
+                    if (inherits(tt, "try-error"))
+                        gmessage("iNZight was unable to save your preferences. They will be saved for the current session, but will not carry over to future sessions.",
+                                 title = "Unable to save preferences", parent = win)
                 }
             }
         })
