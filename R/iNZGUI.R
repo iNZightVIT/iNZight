@@ -101,6 +101,7 @@ iNZGUI <- setRefClass(
                             os = "Windows"
                         } else if (Sys.info()["sysname"] == "Darwin") { 
                             os = "Mac OS X"
+                            osx.version <- try(system("sw_vers -productVersion", intern = TRUE), silent = TRUE)
                             if (!inherits(osx.version, "try-error")) {
                                 os = paste("Mac OS X", osx.version)
                             }
