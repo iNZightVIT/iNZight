@@ -935,9 +935,9 @@ iNZGUI <- setRefClass(
                                  title = "Create preferences file?", icon = "question", parent = win)
                 if (conf) {
                     tt <- try(dput(preferences, ".inzight"))
-                    if (inherits(tt, "try-error"))
-                        gmessage("iNZight was unable to save your preferences. They will be saved for the current session, but will not carry over to future sessions.",
-                                 title = "Unable to save preferences", parent = win)
+                    #if (inherits(tt, "try-error"))
+                    #    gmessage("iNZight was unable to save your preferences. They will be saved for the current session, but will not carry over to future sessions.",
+                    #             title = "Unable to save preferences", parent = win)
                 }
             }
         })
