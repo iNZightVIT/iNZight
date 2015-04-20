@@ -973,10 +973,13 @@ iNZBarchartMod <- setRefClass(
             ii <- ii + 1
             
             lbl2 <- glabel("Colour by levels of :")
-            grpVarList <- gcombobox(c("", names(GUI$getActiveData())),
+            grpVarList <- gcombobox(c("",
+                                      names(GUI$getActiveData())[sapply(GUI$getActiveData(),
+                                                                        is.factor)]),
                                     selected = ifelse(
                                         is.null(curSet$colby),
-                                        1, which(names(GUI$getActiveData()) ==
+                                        1, which(names(GUI$getActiveData())[sapply(GUI$getActiveData(),
+                                                                                   is.factor)] ==
                                                      curSet$varnames$colby)[1] + 1
                                         )
                                     )
@@ -1044,7 +1047,7 @@ iNZBarchartMod <- setRefClass(
 
 
             ## COLOUR
-            lbl <- glabel("Bar olour :")
+            lbl <- glabel("Bar colour :")
             barCols <- c(defts$bar.fill, "darkblue", "darkgreen",
                          "darkmagenta", "darkslateblue", "hotpink4",
                          "lightsalmon2", "palegreen3", "steelblue3")
@@ -1069,7 +1072,7 @@ iNZBarchartMod <- setRefClass(
                 ## according to another var, disable the option to
                 ## change the color
                 if (!is.null(GUI$getActiveDoc()$getSettings()$colby)) {
-                    enabled(symbolColList) <- FALSE
+                    enabled(barColList) <- FALSE
                     svalue(lbl) <- paste(
                         "Changing the bar color is disabled since\n",
                         "the bars are colored by '",
