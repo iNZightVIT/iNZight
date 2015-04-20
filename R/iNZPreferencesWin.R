@@ -42,7 +42,7 @@ iNZPrefsWin <- setRefClass(
                btnTb[1, 2, expand = TRUE] <- cancelButton
                add(btnGrp, btnTb)
                
-               visible(GUI$modWin) <- TRUE
+               visible(GUI$modWin) <<- TRUE
            }
         }
         )
