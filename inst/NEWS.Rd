@@ -3,7 +3,7 @@
 \encoding{UTF-8}
 
 \section{Changes in version 2.1}{
-  Release date: to be confirmed
+  Release date: 22 April 2015
 
   \subsection{NEW FEATURES}{
     \itemize{
