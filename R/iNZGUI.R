@@ -523,11 +523,11 @@ iNZGUI <- setRefClass(
                     icon = "symbol_diamond",
                     handler = function(h, ...) iNZPrefsWin$new(.self)
                 ),
-                home = gaction(
+                exit = gaction(
                     ## 37
                     label = "Exit",
                     icon = "symbold_diamond",
-                    handler = function(h, ...) dispose(win)
+                    handler = function(h, ...) closerHandler(disposeR)
                 ),
                 aboutiNZight = gaction(
                     ## 38
@@ -932,12 +932,12 @@ iNZGUI <- setRefClass(
                 dput(preferences, "~/.inzight")
             } else {
                 conf <- gconfirm("iNZight will place a settings file in the current directory.",
-                                 title = "Create preferences file?", icon = "question", parent = win)
-                if (conf) {
+                                 title = "Create preferences file?", icon = "question")
+                if (conf) {D
                     tt <- try(dput(preferences, ".inzight"))
-                    #if (inherits(tt, "try-error"))
-                    #    gmessage("iNZight was unable to save your preferences. They will be saved for the current session, but will not carry over to future sessions.",
-                    #             title = "Unable to save preferences", parent = win)
+                    if (inherits(tt, "try-error"))
+                        gmessage("iNZight was unable to save your preferences. They will be saved for the current session, but will not carry over to future sessions.",
+                                 title = "Unable to save preferences")
                 }
             }
         })
