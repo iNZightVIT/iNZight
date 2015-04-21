@@ -22,6 +22,9 @@
       window with the aim of making the interface cleaner and easier to
       navigate.
       
+      \item When colouring points by a numeric variable, a continuous colour
+      range is used rather than a discrete one.
+      
       \item The plotting package has been rewritten to accomodate survey
       designs (this will be integrated with iNZight itself at a later
       date). However, the plots have been modified to be cleaner and far
@@ -32,12 +35,21 @@
       \item The "Get Summary" and "Get Inference" outputs have been
       redesigned to hopefully give a more intuitive, cleaner
       presentation of the information. 
+      
+      \item From dot plots and histograms, the comparison (and confidence) 
+      interval values can be read from the graph by clicking 'Get Values'
+      in the 'Inference Information' panel. This includes the Year 12 intervals
+      applied to medians.
     }
   }
 
   \subsection{MINOR CHANGES}{
     \itemize{
-      \item missing values are now displayed on the plot
+      \item the number of missing values is now displayed on the plot,
+      broken down by variable
+      
+      \item the list of options in the 'Add to Plot' window are now in a drop
+      down menu, rather than radio buttons, to save space
 
       \item many other small UI improvements
     }
@@ -45,8 +57,13 @@
 
   \subsection{BUG FIXES}{
     \itemize{
-      \item many bug fixes in both iNZight and the plots. As this is a
-      big rewrite, we don't list them here.
+      \item if 'colour by' is set, but the graph is changed to a histogram,
+      the legend is removed from the plot
+      
+      \item fixes a bug in the plotting that was causing large values to fall off the axes
+      of the plots
+      
+      \item includes other patches from the previous version of iNZight
     }
   }
 }
