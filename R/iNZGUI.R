@@ -527,7 +527,7 @@ iNZGUI <- setRefClass(
                     ## 37
                     label = "Exit",
                     icon = "symbold_diamond",
-                    handler = function(h, ...) closerHandler(disposeR)
+                    handler = function(h, ...) if (disposeR) q(save = "no") else dispose(win)
                 ),
                 aboutiNZight = gaction(
                     ## 38
