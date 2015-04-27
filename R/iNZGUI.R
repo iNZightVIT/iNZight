@@ -915,15 +915,42 @@ iNZGUI <- setRefClass(
             list(track = "ask",
                  check.updates = TRUE)
         },
+        checkPrefs = function(prefs) {
+            allowed.names <- c("track", "check.updates")
+
+            ## Only keep allowed preferences --- anything else is discarded
+            prefs <- prefs[names(prefs) %in% allowed.names]
+            defs <- defaultPrefs()
+            
+            ## TRACK = TRUE | FALSE | "ask"
+            prefs$track <-
+                if (is.null(prefs$track)) defs$track
+                else if (!is.na(prefs$track) & (prefs$track == "ask" | is.logical(prefs$track))) prefs$track
+                else defs$track
+
+            ## check.updates = TRUE | FALSE
+            prefs$check.updates <- 
+                if (is.null(prefs$check.updates)) defs$check.updates
+                else if (!is.na(prefs$check.updates) & is.logical(prefs$check.updates)) prefs$check.updates
+                else defs$check.updates
+
+            prefs
+            
+        },
         getPreferences = function() {
-            preferences <<-
-                if (".inzight" %in% list.files(all.files = TRUE)) {
-                    dget(".inzight")
-                } else if (".inzight" %in% list.files("~", all.files = TRUE)) {
-                    dget("~/.inzight")
-                } else {
-                    defaultPrefs()
-                }
+            tt <- try({
+                preferences <<-
+                    if (".inzight" %in% list.files(all.files = TRUE)) {
+                        checkPrefs(dget(".inzight"))
+                    } else if (".inzight" %in% list.files("~", all.files = TRUE)) {
+                        checkPrefs(dget("~/.inzight"))
+                    } else {
+                        defaultPrefs()
+                    }
+            }, TRUE)
+            
+            if (inherits(tt, "try-error"))
+                preferences <<- defaultPrefs()
         },
         savePreferences = function() {
             if (".inzight" %in% list.files(all.files = TRUE)) {
