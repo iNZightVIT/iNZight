@@ -1961,18 +1961,24 @@ iNZScatterMod <- setRefClass(
                         if (curSet$g2.level != "_ALL")
                             w[curSet$g2 != curSet$g2.level] <- FALSE
                     }
-                }                
-
-                if (is.null(v))
-                    v <- as.character(1:length(x))
-                else {
-                    if (v == "id")
-                        v <- as.character(1:length(x))
-                    else {
-                        v <- as.character(GUI$getActiveData()[, v])
-                        v[is.na(v)] <- "missing"
-                    }
                 }
+
+                locVar <-
+                    if (svalue(varmenu) == "id") 1:nrow(GUI$getActiveData())
+                    else GUI$getActiveData()[, svalue(varmenu)]
+                
+                d <- data.frame(x = curSet$x, y = curSet$y, locate = locVar, id = 1:nrow(GUI$getActiveData()))
+
+                #if (is.null(v))
+                    #v <- as.character(1:length(x))
+                #else {
+                #    if (v == "id")
+                #        v <- as.character(1:length(x))
+                #    else {
+                #        v <- as.character(GUI$getActiveData()[, v])
+                #        v[is.na(v)] <- "missing"
+                #    }
+                #}
                 
                 
                 if (!is.null(curSet$g1)) {
@@ -1991,9 +1997,9 @@ iNZScatterMod <- setRefClass(
                     isNA <- isNA | is.na(curSet$g2)
 
                 dp <- grid.get("SCATTERPOINTS")
-                d <- data.frame(x = as.numeric(dp$x),
-                                y = as.numeric(dp$y),
-                                v = v[w & !isNA])
+              #  d <- data.frame(x = as.numeric(dp$x),
+              #                  y = as.numeric(dp$y),
+              #                  v = v[w & !isNA])
                 seekViewport("VP:locate.these.points")
                 
                 xy <- as.numeric(grid.locator())
@@ -2011,13 +2017,23 @@ iNZScatterMod <- setRefClass(
                 xy.s[1] <- (xy[1] - min(d$x)) / (max(d$x) - min(d$x))
                 xy.s[2] <- (xy[2] - min(d$y)) / (max(d$y) - min(d$y))
 
+                print(head(d))
                 o <- d[which.min((x.s - xy.s[1])^2 + (y.s - xy.s[2])^2), ]
 
-                grid.text(o$v, o$x,
-                          o$y + ifelse(o$y < mean(range(d$y)), 1, -1) *
-                          convertHeight(unit(1, "char"), "native", TRUE),
-                          just = ifelse(o$y > mean(d$y), "top", "bottom"),
-                          default.units = "native", gp = gpar(cex = 0.5))
+                pid <- o$id
+                print(pid)
+                GUI$getActiveDoc()$setSettings(
+                    list(locate = locVar, locate.id = c(curSet$locate.id, pid))
+                    )
+
+                updateSettings()
+                print(GUI$getActiveDoc()$getSettings()$locate.id)
+
+#                grid.text(o$v, o$x,
+#                          o$y + ifelse(o$y < mean(range(d$y)), 1, -1) *
+#                          convertHeight(unit(1, "char"), "native", TRUE),
+#                          just = ifelse(o$y > mean(d$y), "top", "bottom"),
+#                          default.units = "native", gp = gpar(cex = 0.5))
 
             })
 
