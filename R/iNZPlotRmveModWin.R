@@ -39,7 +39,8 @@ iNZPlotRmveModWin <- setRefClass(
                     "Restore default number of bins",
                     "Restore default number of grid bins",
                     "Restore default number of hexs",
-                    "Restore default plot type")
+                    "Restore default plot type",
+                    "Remove point labels")
                 ## check for presence of all additions
                 curAdditions <- c(
                     TRUE, ## all additiions
@@ -70,7 +71,9 @@ iNZPlotRmveModWin <- setRefClass(
                     !is.null(curSet$hist.bins),  ## number of histogram bins
                     curSet$scatter.grid.bins != defSet$scatter.grid.bins,  ## number of grid bins
                     curSet$hex.bins != defSet$hex.bins,  ## number of hexs
-                    curSet$plottype != defSet$plottype   ## plot type
+                    curSet$plottype != defSet$plottype,  ## plot type
+                    (!is.null(curSet$locate ) | !is.null(curSet$locate.id) |
+                     !is.null(curSet$locate.col))  ## locate labels
                     )
 
                 proceedButton <- gbutton(
@@ -192,7 +195,8 @@ iNZPlotRmveModWin <- setRefClass(
                                  list(hist.bins = NULL),  ## histogram bins
                                  list(scatter.grid.bins = defSet$scatter.grid.bins),  ## grid bins
                                  list(hex.bins = defSet$hex.bins),  ## n. hexs
-                                 list(plottype = defSet$plottype)  ## plot type
+                                 list(plottype = defSet$plottype),  ## plot type
+                                 list(locate = NULL, locate.id = NULL, locate.col = NULL)
                                  )
 
             GUI$getActiveDoc()$setSettings(

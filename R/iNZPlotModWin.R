@@ -1925,7 +1925,7 @@ iNZScatterMod <- setRefClass(
                 return()
             }
 
-            
+                        
             ## Do checking first
             ## If g1 or g2 = _MULTI, then we can't identify points (yet ...)
             cantDo <- function(msg = "using subsetting variables.") {
@@ -1935,12 +1935,67 @@ iNZScatterMod <- setRefClass(
                 return()
             }
 
-            lbl1 <- "1. Select variable to identify:"
-            font(lbl1) <- list(weight="bold", family = "normal")
-            varmenu <- gcombobox(c("id", names(GUI$getActiveData())), selected = 1)
+            tbl <- glayout()
+            ii <- 3
 
-            lbl2 <- "2. Click \"Locate\""
-            locateButton <- gbutton("Locate", handler = function(h, ...) {
+            lbl <- glabel("How do you want to label points?")
+            font(lbl) <- list(weight = "bold", family = "normal")
+            tbl[ii, 1, expand = TRUE, anchor = c(-1, 0)] <- lbl
+            ii <- ii + 1
+            
+            labMthd <- gradio(c("Text labels", "Colour points"), selected = 1, horiz = TRUE)
+            tbl[ii, 1, expand = TRUE, anchor = c(1, 0)] <- labMthd
+            ii <- ii + 1
+
+            labGrp <- ggroup(horiz = FALSE)
+            varbox <- ggroup(cont = labGrp)
+            varlab <- glabel("Label with: ", cont = varbox)
+            varmenu <- gcombobox(c("id", names(GUI$getActiveData())), selected = 1, cont = varbox, expand = TRUE)
+            colmenu <- gcombobox(c("red", "blue", "green4"), selected = 1, editable = TRUE, cont = labGrp)
+            visible(varbox) <- svalue(labMthd, TRUE) == 1
+            visible(colmenu) <- svalue(labMthd, TRUE) == 2
+
+            addHandlerChanged(labMthd, function(h, ...) {
+                visible(varbox) <- svalue(labMthd, TRUE) == 1
+                visible(colmenu) <- svalue(labMthd, TRUE) == 2
+            })
+            
+            tbl[ii, 1, expand = TRUE] <- labGrp
+            ii <- ii + 1
+
+            matchChk <- gcheckbox("Label points with the same level of")
+            tbl[ii, 1] <- matchChk
+            ii <- ii + 1
+
+            factVars <- sapply(GUI$getActiveData(), is.factor)
+            matchVar <- gcombobox(names(GUI$getActiveData())[factVars], selected = 1)
+            enabled(matchVar) <- svalue(matchChk)
+            tbl[ii, 1, expand = TRUE] <- matchVar
+            ii <- ii + 1
+
+            addHandlerChanged(matchChk, function(h, ...) {
+                enabled(matchVar) <- svalue(matchChk)
+            })
+            
+            ii <- ii + 1
+
+
+            lbl <- glabel("How do you want to select points?")
+            font(lbl) <- list(weight = "bold", family = "normal")
+            tbl[ii, 1, expand = TRUE, anchor = c(-1, 0)] <- lbl
+            ii <- ii + 1
+
+
+            selectMthd <- gradio(c("Click points",
+                                   "Select from list",
+                                   "Extreme values"), selected = 1)
+            tbl[ii, 1, expand = TRUE] <- selectMthd
+            ii <- ii + 1
+            
+            selectGrp <- ggroup(horiz = FALSE, expand = TRUE)
+            
+            locateButton <- gbutton("Click to Locate ...", cont = selectGrp)
+            addHandlerClicked(locateButton, handler = function(h, ...) {
                 x <- curSet$x  # used for removing missing values ...
                 y <- curSet$y
                 v <- svalue(varmenu)
@@ -1963,23 +2018,18 @@ iNZScatterMod <- setRefClass(
                     }
                 }
 
-                locVar <-
-                    if (svalue(varmenu) == "id") 1:nrow(GUI$getActiveData())
-                    else GUI$getActiveData()[, svalue(varmenu)]
-                
-                d <- data.frame(x = curSet$x, y = curSet$y, locate = locVar, id = 1:nrow(GUI$getActiveData()))
+                match.all <- svalue(matchChk)
 
-                #if (is.null(v))
-                    #v <- as.character(1:length(x))
-                #else {
-                #    if (v == "id")
-                #        v <- as.character(1:length(x))
-                #    else {
-                #        v <- as.character(GUI$getActiveData()[, v])
-                #        v[is.na(v)] <- "missing"
-                #    }
-                #}
+                locVar <-
+                    if (v == "id") 1:nrow(GUI$getActiveData())
+                    else GUI$getActiveData()[, v]
                 
+                matchVar <- GUI$getActiveData()[, svalue(matchVar)]
+                
+                ## Entire data set - ignore missing values etc etc
+                d <- data.frame(x = curSet$x, y = curSet$y,
+                                locate = locVar, id = 1:nrow(GUI$getActiveData()),
+                                match = matchVar)                
                 
                 if (!is.null(curSet$g1)) {
                     w[curSet$g1 != curSet$g1.level] <- FALSE
@@ -1997,12 +2047,18 @@ iNZScatterMod <- setRefClass(
                     isNA <- isNA | is.na(curSet$g2)
 
                 dp <- grid.get("SCATTERPOINTS")
-              #  d <- data.frame(x = as.numeric(dp$x),
-              #                  y = as.numeric(dp$y),
-              #                  v = v[w & !isNA])
+                d <- d[w & !isNA, ]
+                d$x = as.numeric(dp$x)
+                d$y = as.numeric(dp$y)
+
+
                 seekViewport("VP:locate.these.points")
-                
+
+                blockHandlers(locateButton)
+                svalue(locateButton) <- "Click a point"                
                 xy <- as.numeric(grid.locator())
+                svalue(locateButton) <- "Click to Locate ..."
+                unblockHandlers(locateButton)
                 
                 ## We only want to check X and Y for missing
                 na <- apply(d[, 1:2], 1, function(x) any(is.na(x)))
@@ -2017,36 +2073,69 @@ iNZScatterMod <- setRefClass(
                 xy.s[1] <- (xy[1] - min(d$x)) / (max(d$x) - min(d$x))
                 xy.s[2] <- (xy[2] - min(d$y)) / (max(d$y) - min(d$y))
 
-                print(head(d))
                 o <- d[which.min((x.s - xy.s[1])^2 + (y.s - xy.s[2])^2), ]
 
-                pid <- o$id
-                print(pid)
+                ## Grab the label:
+                if (match.all) {
+                    ## Match all instances of the same label:
+                    pid <- which(matchVar == o[, 'match'])
+                } else {
+                    pid <- o$id
+                }
+
                 GUI$getActiveDoc()$setSettings(
-                    list(locate = locVar, locate.id = c(curSet$locate.id, pid))
+                    list(locate = if (svalue(labMthd, TRUE) == 1) locVar else NULL,
+                         locate.id =
+                         if (svalue(labMthd, TRUE) == 1 | !match.all) c(curSet$locate.id, pid) else pid,
+                         locate.col = if (svalue(labMthd, TRUE) == 2) svalue(colmenu) else NULL)
                     )
 
                 updateSettings()
-                print(GUI$getActiveDoc()$getSettings()$locate.id)
-
-#                grid.text(o$v, o$x,
-#                          o$y + ifelse(o$y < mean(range(d$y)), 1, -1) *
-#                          convertHeight(unit(1, "char"), "native", TRUE),
-#                          just = ifelse(o$y > mean(d$y), "top", "bottom"),
-#                          default.units = "native", gp = gpar(cex = 0.5))
-
             })
 
-            lbl3 <- glabel("3. Click a point to identify it")
+            #selectList <- ggroup(FALSE, cont = selectGrp, expand = TRUE)
+            selectVar <- gcombobox(colnames(GUI$getActiveData()), selected = 0, cont = selectGrp)
+            #selectLevels <- gtable(levels(GUI$getActiveData()[, svalue(selectVar)]),
+            #                       cont = selectList, expand = TRUE)
 
-            tbl <- glayout()
-            tbl[3, 1, expand = TRUE, anchor = c(-1, 0)] <- lbl1
-            tbl[4, 1, expand = TRUE, anchor = c(1, 0)] <- varmenu
-            tbl[5, 1, expand = TRUE, anchor = c(-1, 0)] <- lbl2
-            tbl[6, 1, expand = TRUE, anchor = c(1, 0)] <- locateButton
-            tbl[7, 1, expand = TRUE, anchor = c(-1, 0)] <- lbl3
             
-            add(optGrp, tbl)
+            extremePts <- glabel("Not available yet", cont = selectGrp)
+
+            addHandlerChanged(selectMthd, function(h, ...) {
+                visible(locateButton) <- svalue(selectMthd, TRUE) == 1
+                visible(selectVar) <- svalue(selectMthd, TRUE) == 2
+                visible(extremePts) <- svalue(selectMthd, TRUE) == 3
+            })
+            selectMthd$invoke_change_handler()
+
+            addHandlerChanged(selectVar, function(h, ...) {
+                ww <- gwindow("Select levels to label ...", visible = FALSE, width = 200, height = 400,
+                              parent = GUI$win)
+                wg <- ggroup(FALSE, cont = ww)
+                wlbl <- glabel("Select levels (ctrl for multiple)", cont = wg)
+                selectLevels <- gtable(levels(GUI$getActiveData()[, svalue(selectVar)]),
+                                       cont = wg, expand = TRUE)
+                wb <- gbutton("Done", cont = wg)
+                visible(ww) <- TRUE
+            })
+
+            tbl[ii, 1, expand = TRUE, anchor = c(1, 0)] <- selectGrp
+            ii <- ii + 1
+
+
+            ii <- ii + 1
+            
+            clearBtn <- gbutton("Clear labels")
+            addHandlerClicked(clearBtn, function(h, ...) {
+                GUI$getActiveDoc()$setSettings(
+                    list(locate = NULL, locate.id = NULL)
+                    )
+                updateSettings()
+            })
+            tbl[ii, 1, expand = TRUE] <- clearBtn
+            ii <- ii + 1
+            
+            add(optGrp, tbl, expand = TRUE, fill = TRUE)
         },
         opt9 = function() {
             tbl <- glayout()
