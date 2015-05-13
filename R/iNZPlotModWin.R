@@ -19,7 +19,8 @@ iNZPlotModWin <- setRefClass(
         ## will be displayed here
         optGrp = "ANY",
         curSet = "list", ## the current plot settings
-        auto = "logical"  ## if TRUE, then changes occur automatically
+        auto = "logical",  ## if TRUE, then changes occur automatically
+        locateRefID = "numeric"
         ),
     methods = list(
         initialize = function(gui = NULL, which = 1) {
@@ -1940,59 +1941,98 @@ iNZScatterMod <- setRefClass(
 
             lbl <- glabel("How do you want to label points?")
             font(lbl) <- list(weight = "bold", family = "normal")
-            tbl[ii, 1, expand = TRUE, anchor = c(-1, 0)] <- lbl
-            ii <- ii + 1
-            
-            labMthd <- gradio(c("Text labels", "Colour points"), selected = 1, horiz = TRUE)
-            tbl[ii, 1, expand = TRUE, anchor = c(1, 0)] <- labMthd
+            tbl[ii, 1:2, expand = TRUE, anchor = c(-1, 0)] <- lbl
             ii <- ii + 1
 
-            labGrp <- ggroup(horiz = FALSE)
-            varbox <- ggroup(cont = labGrp)
-            varlab <- glabel("Label with: ", cont = varbox)
-            varmenu <- gcombobox(c("id", names(GUI$getActiveData())), selected = 1, cont = varbox, expand = TRUE)
-            colmenu <- gcombobox(c("red", "blue", "green4"), selected = 1, editable = TRUE, cont = labGrp)
-            visible(varbox) <- svalue(labMthd, TRUE) == 1
-            visible(colmenu) <- svalue(labMthd, TRUE) == 2
+            txtLabs <- gcheckbox("Text Labels", checked = TRUE)
+            varmenu <- gcombobox(c("id", names(GUI$getActiveData())), selected = 1, expand = TRUE)
+            tbl[ii, 1] <- txtLabs
+            tbl[ii, 2, expand = TRUE] <- varmenu
+            ii <- ii + 1
+                        
+            colLabs <- gcheckbox("Colour Points", checked = FALSE)
+            colmenu <- gcombobox(c("red", "blue", "green4"), selected = 1, editable = TRUE, expand = TRUE)
+            tbl[ii, 1] <- colLabs
+            tbl[ii, 2, expand = TRUE] <- colmenu
+            ii <- ii + 1
 
-            addHandlerChanged(labMthd, function(h, ...) {
-                visible(varbox) <- svalue(labMthd, TRUE) == 1
-                visible(colmenu) <- svalue(labMthd, TRUE) == 2
+            enabled(varmenu) <- svalue(txtLabs)  #labMthd, TRUE) == 1
+            enabled(colmenu) <- svalue(colLabs)  #labMthd, TRUE) == 2
+
+            addHandlerChanged(txtLabs, function(h, ...) {
+                enabled(varmenu) <- svalue(txtLabs)  #labMthd, TRUE) == 1
+                v <- svalue(varmenu)
+                locVar <- if (v == "id") 1:nrow(GUI$getActiveData()) else GUI$getActiveData()[, v]
+                updateEverything(
+                    locate = if (svalue(txtLabs)) locVar else NULL
+                    )
+            })
+            addHandlerChanged(varmenu, function(h, ...) {
+                v <- svalue(varmenu)
+                locVar <- if (v == "id") 1:nrow(GUI$getActiveData()) else GUI$getActiveData()[, v]
+                updateEverything(
+                    locate = if (svalue(txtLabs)) locVar else NULL
+                    )
+            })
+            addHandlerChanged(colLabs, function(h, ...) {
+                enabled(colmenu) <- svalue(colLabs)  #labMthd, TRUE) == 2
+                updateEverything(
+                    col = if (svalue(colLabs)) svalue(colmenu) else NULL
+                    )
+            })
+            addHandlerChanged(colmenu, function(h, ...) {
+                updateEverything(
+                    col = if (svalue(colLabs)) svalue(colmenu) else NULL
+                    )
             })
             
-            tbl[ii, 1, expand = TRUE] <- labGrp
-            ii <- ii + 1
 
-            matchChk <- gcheckbox("Label points with the same level of")
+            matchChk <- gcheckbox("With the same level of")
             tbl[ii, 1] <- matchChk
-            ii <- ii + 1
 
-            factVars <- sapply(GUI$getActiveData(), is.factor)
-            matchVar <- gcombobox(names(GUI$getActiveData())[factVars], selected = 1)
+            #factVars <- sapply(GUI$getActiveData(), is.factor)
+            matchVar <- gcombobox(names(GUI$getActiveData()), selected = 1)
             enabled(matchVar) <- svalue(matchChk)
-            tbl[ii, 1, expand = TRUE] <- matchVar
+            tbl[ii, 2, expand = TRUE] <- matchVar
             ii <- ii + 1
 
             addHandlerChanged(matchChk, function(h, ...) {
                 enabled(matchVar) <- svalue(matchChk)
+
+                
             })
+            
+            
             
             ii <- ii + 1
 
 
             lbl <- glabel("How do you want to select points?")
             font(lbl) <- list(weight = "bold", family = "normal")
-            tbl[ii, 1, expand = TRUE, anchor = c(-1, 0)] <- lbl
+            tbl[ii, 1:2, expand = TRUE, anchor = c(-1, 0)] <- lbl
             ii <- ii + 1
 
 
             selectMthd <- gradio(c("Click points",
                                    "Select from list",
                                    "Extreme values"), selected = 1)
-            tbl[ii, 1, expand = TRUE] <- selectMthd
+            tbl[ii, 1:2, expand = TRUE] <- selectMthd
             ii <- ii + 1
             
             selectGrp <- ggroup(horiz = FALSE, expand = TRUE)
+
+            updateEverything <- function(locate = GUI$getActiveDoc()$getSettings()$locate,
+                                         id = GUI$getActiveDoc()$getSettings()$locate.id,
+                                         col = GUI$getActiveDoc()$getSettings()$locate.col) {
+                if (is.null(id)) { locate = NULL; locate.id = NULL; locate.col = NULL }
+
+                GUI$getActiveDoc()$setSettings(
+                    list(locate = locate,
+                         locate.id = id,
+                         locate.col = col)
+                    )
+                updateSettings()
+            }
             
             locateButton <- gbutton("Click to Locate ...", cont = selectGrp)
             addHandlerClicked(locateButton, handler = function(h, ...) {
@@ -2075,6 +2115,9 @@ iNZScatterMod <- setRefClass(
 
                 o <- d[which.min((x.s - xy.s[1])^2 + (y.s - xy.s[2])^2), ]
 
+                ## Store the reference ID
+                locateRefID <<- o$id
+
                 ## Grab the label:
                 if (match.all) {
                     ## Match all instances of the same label:
@@ -2083,43 +2126,59 @@ iNZScatterMod <- setRefClass(
                     pid <- o$id
                 }
 
-                GUI$getActiveDoc()$setSettings(
-                    list(locate = if (svalue(labMthd, TRUE) == 1) locVar else NULL,
-                         locate.id =
-                         if (svalue(labMthd, TRUE) == 1 | !match.all) c(curSet$locate.id, pid) else pid,
-                         locate.col = if (svalue(labMthd, TRUE) == 2) svalue(colmenu) else NULL)
+                updateEverything(
+                    locate = if (svalue(txtLabs)) locVar else NULL,
+                    id = if (svalue(txtLabs) | !match.all) c(curSet$locate.id, pid) else pid,
+                    col = if (svalue(colLabs)) svalue(colmenu) else NULL
                     )
-
-                updateSettings()
             })
 
-            #selectList <- ggroup(FALSE, cont = selectGrp, expand = TRUE)
-            selectVar <- gcombobox(colnames(GUI$getActiveData()), selected = 0, cont = selectGrp)
-            #selectLevels <- gtable(levels(GUI$getActiveData()[, svalue(selectVar)]),
-            #                       cont = selectList, expand = TRUE)
-
+            selectList <- ggroup(TRUE, cont = selectGrp, expand = TRUE, fill = TRUE)
+            selectLab <- glabel("Variable: ", cont = selectList)
+            selectVar <- gcombobox(colnames(GUI$getActiveData()), selected = 0, cont = selectList,
+                                   expand = TRUE)
+            selectGo <- gbutton("Choose values", cont = selectList)
             
             extremePts <- glabel("Not available yet", cont = selectGrp)
 
             addHandlerChanged(selectMthd, function(h, ...) {
                 visible(locateButton) <- svalue(selectMthd, TRUE) == 1
-                visible(selectVar) <- svalue(selectMthd, TRUE) == 2
+                visible(selectList) <- svalue(selectMthd, TRUE) == 2
                 visible(extremePts) <- svalue(selectMthd, TRUE) == 3
+
+                enabled(matchChk) <- svalue(selectMthd, TRUE) == 1
             })
             selectMthd$invoke_change_handler()
 
-            addHandlerChanged(selectVar, function(h, ...) {
+            ## Bring up a new window to allow user to select levels to label:
+            addHandlerClicked(selectGo, function(h, ...) {
                 ww <- gwindow("Select levels to label ...", visible = FALSE, width = 200, height = 400,
                               parent = GUI$win)
                 wg <- ggroup(FALSE, cont = ww)
-                wlbl <- glabel("Select levels (ctrl for multiple)", cont = wg)
-                selectLevels <- gtable(levels(GUI$getActiveData()[, svalue(selectVar)]),
-                                       cont = wg, expand = TRUE)
+                wlbl <- glabel("Select levels to label\n(ctrl for multiple)", cont = wg)
+
+                selectLevels <- gtable(levels(as.factor(GUI$getActiveData()[, svalue(selectVar)])),
+                                       multiple = TRUE, cont = wg, expand = TRUE)
+                                  
                 wb <- gbutton("Done", cont = wg)
+                addHandlerClicked(wb, function(h, ...) {
+                    v <- svalue(varmenu)
+                    locVar <-
+                        if (v == "id") 1:nrow(GUI$getActiveData())
+                        else GUI$getActiveData()[, v]
+
+                    updateEverything(
+                        locate = if (svalue(txtLabs)) locVar else NULL,
+                        id = which(GUI$getActiveData()[, svalue(selectVar)] %in% svalue(selectLevels)),
+                        col = if (svalue(colLabs)) svalue(colmenu) else NULL
+                        )
+                    
+                    dispose(ww)
+                })
                 visible(ww) <- TRUE
             })
 
-            tbl[ii, 1, expand = TRUE, anchor = c(1, 0)] <- selectGrp
+            tbl[ii, 1:2, expand = TRUE, anchor = c(1, 0)] <- selectGrp
             ii <- ii + 1
 
 
@@ -2127,12 +2186,9 @@ iNZScatterMod <- setRefClass(
             
             clearBtn <- gbutton("Clear labels")
             addHandlerClicked(clearBtn, function(h, ...) {
-                GUI$getActiveDoc()$setSettings(
-                    list(locate = NULL, locate.id = NULL)
-                    )
-                updateSettings()
+                updateEverything(NULL, NULL, NULL)
             })
-            tbl[ii, 1, expand = TRUE] <- clearBtn
+            tbl[ii, 1:2, expand = TRUE] <- clearBtn
             ii <- ii + 1
             
             add(optGrp, tbl, expand = TRUE, fill = TRUE)
