@@ -1919,12 +1919,12 @@ iNZScatterMod <- setRefClass(
             add(optGrp, tbl)
         },
         opt8 = function() {
-            if (attr(GUI$curPlot, "nplots") > 1) {
-                tbl1 <- glayout()
-                tbl1[1, 1] <- glabel("Cannot identify points for this type of plot.")
-                add(optGrp, tbl1)
-                return()
-            }
+            #if (attr(GUI$curPlot, "nplots") > 1) {
+            #    tbl1 <- glayout()
+            #    tbl1[1, 1] <- glabel("Cannot identify points for this type of plot.")
+            #    add(optGrp, tbl1)
+            #    return()
+            #}
 
                         
             ## Do checking first
@@ -2023,19 +2023,29 @@ iNZScatterMod <- setRefClass(
 
             updateEverything <- function(locate = GUI$getActiveDoc()$getSettings()$locate,
                                          id = GUI$getActiveDoc()$getSettings()$locate.id,
-                                         col = GUI$getActiveDoc()$getSettings()$locate.col) {
-                if (is.null(id)) { locate = NULL; locate.id = NULL; locate.col = NULL }
+                                         col = GUI$getActiveDoc()$getSettings()$locate.col,
+                                         ext = GUI$getActiveDoc()$getSettings()$locate.extreme) {
+                if (is.null(id) & is.null(ext)) {
+                    locate = NULL
+                    id = NULL
+                    col = NULL
+                    ext = NULL
+                }
+
+                if (!is.null(id)) {
+                    ext <- NULL
+                }
 
                 GUI$getActiveDoc()$setSettings(
                     list(locate = locate,
-                         locate.id = id,
-                         locate.col = col)
+                         locate.id = unique(id),
+                         locate.col = col,
+                         locate.extreme = ext)
                     )
                 updateSettings()
             }
-            
-            locateButton <- gbutton("Click to Locate ...", cont = selectGrp)
-            addHandlerClicked(locateButton, handler = function(h, ...) {
+
+            locator <- function(h, remove = FALSE, btn, ...) {
                 x <- curSet$x  # used for removing missing values ...
                 y <- curSet$y
                 v <- svalue(varmenu)
@@ -2057,14 +2067,15 @@ iNZScatterMod <- setRefClass(
                             w[curSet$g2 != curSet$g2.level] <- FALSE
                     }
                 }
-
+                
                 match.all <- svalue(matchChk)
-
+                
                 locVar <-
                     if (v == "id") 1:nrow(GUI$getActiveData())
                     else GUI$getActiveData()[, v]
                 
-                matchVar <- GUI$getActiveData()[, svalue(matchVar)]
+                matchVar <- as.character(GUI$getActiveData()[, svalue(matchVar)])
+                matchVar[is.na(matchVar)] <- "missing"
                 
                 ## Entire data set - ignore missing values etc etc
                 d <- data.frame(x = curSet$x, y = curSet$y,
@@ -2079,59 +2090,77 @@ iNZScatterMod <- setRefClass(
                         w[curSet$g2 != curSet$g2.level] <- FALSE
                     }
                 }
-
+                
                 isNA <- is.na(x) | is.na(y)
                 if (!is.null(curSet$g1))
                     isNA <- isNA | is.na(curSet$g1)
                 if (!is.null(curSet$g2))
                     isNA <- isNA | is.na(curSet$g2)
-
+                
                 dp <- grid.get("SCATTERPOINTS")
                 d <- d[w & !isNA, ]
                 d$x = as.numeric(dp$x)
                 d$y = as.numeric(dp$y)
-
-
+                
+                
                 seekViewport("VP:locate.these.points")
-
-                blockHandlers(locateButton)
-                svalue(locateButton) <- "Click a point"                
+                
+                blockHandlers(btn)
+                oldVal <- svalue(btn)
+                svalue(btn) <- "Click a point"                
                 xy <- as.numeric(grid.locator())
-                svalue(locateButton) <- "Click to Locate ..."
-                unblockHandlers(locateButton)
+                svalue(btn) <- oldVal
+                unblockHandlers(btn)
                 
                 ## We only want to check X and Y for missing
                 na <- apply(d[, 1:2], 1, function(x) any(is.na(x)))
                 d <- d[!na, ]
-
+                
                 ## So now, d = data.frame with x, y, and the label
                 ## Standardise it:
                 x.s <- (d$x - min(d$x)) / (max(d$x) - min(d$x))
                 y.s <- (d$y - min(d$y)) / (max(d$y) - min(d$y))
-
+                
                 xy.s <- numeric(2)
                 xy.s[1] <- (xy[1] - min(d$x)) / (max(d$x) - min(d$x))
                 xy.s[2] <- (xy[2] - min(d$y)) / (max(d$y) - min(d$y))
-
+                
                 o <- d[which.min((x.s - xy.s[1])^2 + (y.s - xy.s[2])^2), ]
 
-                ## Store the reference ID
-                locateRefID <<- o$id
-
-                ## Grab the label:
-                if (match.all) {
-                    ## Match all instances of the same label:
-                    pid <- which(matchVar == o[, 'match'])
+                if (remove) {
+                    newID <- curSet$locate.id[curSet$locate.id != o$id]
                 } else {
-                    pid <- o$id
-                }
+                    ## Store the reference ID
+                    locateRefID <<- o$id
+                    
+                    ## Grab the label:
+                    if (match.all) {
+                        ## Match all instances of the same label:
+                        pid <- which(matchVar == o[, 'match'])
+                    } else {
+                        pid <- o$id
+                    }
 
+                    newID <- if (svalue(txtLabs) | !match.all) c(curSet$locate.id, pid) else pid
+                }
+                
                 updateEverything(
                     locate = if (svalue(txtLabs)) locVar else NULL,
-                    id = if (svalue(txtLabs) | !match.all) c(curSet$locate.id, pid) else pid,
+                    id = newID,
                     col = if (svalue(colLabs)) svalue(colmenu) else NULL
                     )
-            })
+            }
+
+            if (attr(GUI$curPlot, "nplots") > 1) {
+                locateButton <- glabel("Cannot locate using mouse for multiple graphs.", cont =
+                                           selectGrp)
+                svalue(selectMthd, TRUE) <- 2
+            } else {
+                locateButton <- gbutton("Click to Locate ...", cont = selectGrp)
+                addHandlerClicked(locateButton, function(h, ...) {
+                    locator(h, btn = locateButton)
+                })
+            }
 
             selectList <- ggroup(TRUE, cont = selectGrp, expand = TRUE, fill = TRUE)
             selectLab <- glabel("Variable: ", cont = selectList)
@@ -2139,7 +2168,19 @@ iNZScatterMod <- setRefClass(
                                    expand = TRUE)
             selectGo <- gbutton("Choose values", cont = selectList)
             
-            extremePts <- glabel("Not available yet", cont = selectGrp)
+            extremePts <- ggroup(cont = selectGrp, expand = TRUE, fill = TRUE)
+            extLab <- glabel("Number of points: ", cont = extremePts)
+            extN <- gslider(0, 10, cont = extremePts, expand = TRUE)
+            addHandlerChanged(extN, handler = function(h, ...) {
+                v <- svalue(varmenu)
+                locVar <- if (v == "id") 1:nrow(GUI$getActiveData()) else GUI$getActiveData()[, v]
+                updateEverything(
+                    locate = if (svalue(txtLabs)) locVar else NULL,
+                    id = NULL,
+                    col = if (svalue(colLabs)) svalue(colmenu) else NULL,
+                    ext = svalue(extN)
+                    )
+            })
 
             addHandlerChanged(selectMthd, function(h, ...) {
                 visible(locateButton) <- svalue(selectMthd, TRUE) == 1
@@ -2184,11 +2225,19 @@ iNZScatterMod <- setRefClass(
 
             ii <- ii + 1
             
-            clearBtn <- gbutton("Clear labels")
+            clearBtn <- gbutton("Clear all labels")
             addHandlerClicked(clearBtn, function(h, ...) {
                 updateEverything(NULL, NULL, NULL)
             })
-            tbl[ii, 1:2, expand = TRUE] <- clearBtn
+            tbl[ii, 1, expand = TRUE] <- clearBtn
+
+            if (attr(GUI$curPlot, "nplots") == 1) {
+                clearBtn2 <- gbutton("Clear label ...")
+                addHandlerClicked(clearBtn2, function(h, ...) {
+                    locator(h, remove = TRUE, btn = clearBtn2)
+                })
+                tbl[ii, 2, expand = TRUE] <- clearBtn2
+            }
             ii <- ii + 1
             
             add(optGrp, tbl, expand = TRUE, fill = TRUE)
