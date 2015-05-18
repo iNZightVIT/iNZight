@@ -19,7 +19,8 @@ iNZPlotModWin <- setRefClass(
         ## will be displayed here
         optGrp = "ANY",
         curSet = "list", ## the current plot settings
-        auto = "logical"   ## if TRUE, then changes occur automatically
+        auto = "logical",   ## if TRUE, then changes occur automatically
+        locSet = "ANY"
         ),
     methods = list(
         initialize = function(gui = NULL, which = 1) {
@@ -1935,13 +1936,13 @@ iNZScatterMod <- setRefClass(
                 return()
             }
 
-            locSet <- curSet$locate.settings
+            locSet <<- curSet$locate.settings
 
             updateEverything <- function(locate = GUI$getActiveDoc()$getSettings()$locate,
                                          id = GUI$getActiveDoc()$getSettings()$locate.id,
                                          col = GUI$getActiveDoc()$getSettings()$locate.col,
-                                         ext = GUI$getActiveDoc()$getSettings()$locate.extreme,
-                                         locSet = GUI$getActiveDoc()$getSettings()$locate.settings) {
+                                         ext = GUI$getActiveDoc()$getSettings()$locate.extreme) {
+#                                         locSet = GUI$getActiveDoc()$getSettings()$locate.settings) {
                 if (is.null(id) & is.null(ext)) {
                     locate = NULL
                     id = NULL
@@ -1951,19 +1952,23 @@ iNZScatterMod <- setRefClass(
 
                 if (!is.null(id)) {
                     ext <- NULL
+                } else {
+                    locSet$ID <<- NULL
                 }
 
+                highlight <- if (svalue(matchChk)) locSet$ID else NULL
+
                 ## update the locate settings:
-                locSet$txtLabs <- svalue(txtLabs)
-                locSet$txtVar <- svalue(varmenu)
+                locSet$txtLabs <<- svalue(txtLabs)
+                locSet$txtVar <<- svalue(varmenu)
 
-                locSet$colLabs <- svalue(colLabs)
-                locSet$colVar <- svalue(colmenu)
+                locSet$colLabs <<- svalue(colLabs)
+                locSet$colVar <<- svalue(colmenu)
 
-                locSet$matchChk <- svalue(matchChk)
-                locSet$matchVar <- svalue(matchVar)
+                locSet$matchChk <<- svalue(matchChk)
+                locSet$matchVar <<- svalue(matchVar)
 
-                locSet$selectMthd <- svalue(selectMthd)
+                locSet$selectMthd <<- svalue(selectMthd)
 
                 curSet$locate.settings <<- locSet
 
@@ -1972,7 +1977,8 @@ iNZScatterMod <- setRefClass(
                          locate.id = unique(id),
                          locate.col = col,
                          locate.extreme = ext,
-                         locate.settings = locSet)
+                         locate.settings = locSet,
+                         highlight = highlight)
                     )
                 updateSettings()
             }
@@ -1991,7 +1997,6 @@ iNZScatterMod <- setRefClass(
             tbl[ii, 2, expand = TRUE] <- varmenu
             ii <- ii + 1
 
-            locSet <- curSet$locate.settings
             if (!is.null(locSet$txtLabs)) svalue(txtLabs) <- locSet$txtLabs
             if (!is.null(locSet$txtVar))
                 if (locSet$txtVar %in% c("id", names(GUI$getActiveData())))
@@ -2058,7 +2063,6 @@ iNZScatterMod <- setRefClass(
             addHandlerChanged(matchChk, function(h, ...) {
                 enabled(matchVar) <- svalue(matchChk)
 
-                locSet <- curSet$locate.settings
                 if (svalue(matchChk)) {
                     ## Add all the points:
 
@@ -2077,8 +2081,6 @@ iNZScatterMod <- setRefClass(
             })
 
             addHandlerChanged(matchVar, function(h, ...) {
-                locSet <- curSet$locate.settings
-                
                 matchVar <- as.character(GUI$getActiveData()[, svalue(matchVar)])
                 matchVar[is.na(matchVar)] <- "missing"
                 
@@ -2191,16 +2193,14 @@ iNZScatterMod <- setRefClass(
                 
                 o <- d[which.min((x.s - xy.s[1])^2 + (y.s - xy.s[2])^2), ]
 
-                locSet <- curSet$locate.settings
-
                 if (remove) {
                     ## Remove it
-                    locSet$ID <- locSet$ID[locSet$ID != o$id]
+                    locSet$ID <<- locSet$ID[locSet$ID != o$id]
                     newID <- curSet$locate.id[curSet$locate.id != o$id]
                 } else {
                     ## Store the reference ID - add it
                     
-                    locSet$ID <- unique(c(locSet$ID, o$id))
+                    locSet$ID <<- unique(c(locSet$ID, o$id))
                     
                     ## Grab the label:
                     if (match.all) {
@@ -2216,8 +2216,7 @@ iNZScatterMod <- setRefClass(
                 updateEverything(
                     locate = if (svalue(txtLabs)) locVar else NULL,
                     id = newID,
-                    col = if (svalue(colLabs)) svalue(colmenu) else NULL,
-                    locSet = locSet
+                    col = if (svalue(colLabs)) svalue(colmenu) else NULL
                     )
             }
 
