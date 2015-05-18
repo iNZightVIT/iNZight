@@ -196,7 +196,8 @@ iNZPlotRmveModWin <- setRefClass(
                                  list(scatter.grid.bins = defSet$scatter.grid.bins),  ## grid bins
                                  list(hex.bins = defSet$hex.bins),  ## n. hexs
                                  list(plottype = defSet$plottype),  ## plot type
-                                 list(locate = NULL, locate.id = NULL, locate.col = NULL)
+                                 list(locate = NULL, locate.id = NULL, locate.col = NULL,
+                                      locate.settings = NULL)
                                  )
 
             GUI$getActiveDoc()$setSettings(

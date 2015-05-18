@@ -19,8 +19,7 @@ iNZPlotModWin <- setRefClass(
         ## will be displayed here
         optGrp = "ANY",
         curSet = "list", ## the current plot settings
-        auto = "logical",  ## if TRUE, then changes occur automatically
-        locateRefID = "numeric"
+        auto = "logical"   ## if TRUE, then changes occur automatically
         ),
     methods = list(
         initialize = function(gui = NULL, which = 1) {
@@ -1936,6 +1935,48 @@ iNZScatterMod <- setRefClass(
                 return()
             }
 
+            locSet <- curSet$locate.settings
+
+            updateEverything <- function(locate = GUI$getActiveDoc()$getSettings()$locate,
+                                         id = GUI$getActiveDoc()$getSettings()$locate.id,
+                                         col = GUI$getActiveDoc()$getSettings()$locate.col,
+                                         ext = GUI$getActiveDoc()$getSettings()$locate.extreme,
+                                         locSet = GUI$getActiveDoc()$getSettings()$locate.settings) {
+                if (is.null(id) & is.null(ext)) {
+                    locate = NULL
+                    id = NULL
+                    col = NULL
+                    ext = NULL
+                }
+
+                if (!is.null(id)) {
+                    ext <- NULL
+                }
+
+                ## update the locate settings:
+                locSet$txtLabs <- svalue(txtLabs)
+                locSet$txtVar <- svalue(varmenu)
+
+                locSet$colLabs <- svalue(colLabs)
+                locSet$colVar <- svalue(colmenu)
+
+                locSet$matchChk <- svalue(matchChk)
+                locSet$matchVar <- svalue(matchVar)
+
+                locSet$selectMthd <- svalue(selectMthd)
+
+                curSet$locate.settings <<- locSet
+
+                GUI$getActiveDoc()$setSettings(
+                    list(locate = locate,
+                         locate.id = unique(id),
+                         locate.col = col,
+                         locate.extreme = ext,
+                         locate.settings = locSet)
+                    )
+                updateSettings()
+            }
+
             tbl <- glayout()
             ii <- 3
 
@@ -1949,12 +1990,22 @@ iNZScatterMod <- setRefClass(
             tbl[ii, 1] <- txtLabs
             tbl[ii, 2, expand = TRUE] <- varmenu
             ii <- ii + 1
+
+            locSet <- curSet$locate.settings
+            if (!is.null(locSet$txtLabs)) svalue(txtLabs) <- locSet$txtLabs
+            if (!is.null(locSet$txtVar))
+                if (locSet$txtVar %in% c("id", names(GUI$getActiveData())))
+                    svalue(varmenu) <- locSet$txtVar
                         
             colLabs <- gcheckbox("Colour Points", checked = FALSE)
             colmenu <- gcombobox(c("red", "blue", "green4"), selected = 1, editable = TRUE, expand = TRUE)
             tbl[ii, 1] <- colLabs
             tbl[ii, 2, expand = TRUE] <- colmenu
             ii <- ii + 1
+
+            if (!is.null(locSet$colLabs)) svalue(colLabs) <- locSet$colLabs
+            if (!is.null(locSet$colVar))
+                svalue(colmenu) <- locSet$colVar
 
             enabled(varmenu) <- svalue(txtLabs)  #labMthd, TRUE) == 1
             enabled(colmenu) <- svalue(colLabs)  #labMthd, TRUE) == 2
@@ -1981,25 +2032,60 @@ iNZScatterMod <- setRefClass(
                     )
             })
             addHandlerChanged(colmenu, function(h, ...) {
-                updateEverything(
-                    col = if (svalue(colLabs)) svalue(colmenu) else NULL
-                    )
+                if (svalue(colmenu) %in% colours()) {
+                    updateEverything(
+                        col = if (svalue(colLabs)) svalue(colmenu) else NULL
+                        )
+                }
             })
             
 
             matchChk <- gcheckbox("With the same level of")
             tbl[ii, 1] <- matchChk
 
+            if (!is.null(locSet$matchChk)) svalue(matchChk) <- locSet$matchChk
+
             #factVars <- sapply(GUI$getActiveData(), is.factor)
             matchVar <- gcombobox(names(GUI$getActiveData()), selected = 1)
             enabled(matchVar) <- svalue(matchChk)
             tbl[ii, 2, expand = TRUE] <- matchVar
             ii <- ii + 1
+               
+            if (!is.null(locSet$matchVar))
+                if (locSet$matchVar %in% names(GUI$getActiveData()))
+                    svalue(matchVar) <- locSet$matchVar
 
             addHandlerChanged(matchChk, function(h, ...) {
                 enabled(matchVar) <- svalue(matchChk)
 
+                locSet <- curSet$locate.settings
+                if (svalue(matchChk)) {
+                    ## Add all the points:
+
+                    matchVar <- as.character(GUI$getActiveData()[, svalue(matchVar)])
+                    matchVar[is.na(matchVar)] <- "missing"
+
+                    matchLvls <- unique(matchVar[locSet$ID])
+                    newIDS <- which(matchVar %in% matchLvls)
+                    
+                    updateEverything(id = newIDS)
+                } else {
+                    ## Remove all the points:
+                    
+                    updateEverything(id = locSet$ID)
+                }
+            })
+
+            addHandlerChanged(matchVar, function(h, ...) {
+                locSet <- curSet$locate.settings
                 
+                matchVar <- as.character(GUI$getActiveData()[, svalue(matchVar)])
+                matchVar[is.na(matchVar)] <- "missing"
+                
+                matchLvls <- unique(matchVar[locSet$ID])
+                newIDS <- which(matchVar %in% matchLvls)
+                
+                updateEverything(id = newIDS)
             })
             
             
@@ -2014,36 +2100,14 @@ iNZScatterMod <- setRefClass(
 
 
             selectMthd <- gradio(c("Click points",
-                                   "Select from list",
+                                   "Select by value of ...",
                                    "Extreme values"), selected = 1)
             tbl[ii, 1:2, expand = TRUE] <- selectMthd
             ii <- ii + 1
             
             selectGrp <- ggroup(horiz = FALSE, expand = TRUE)
 
-            updateEverything <- function(locate = GUI$getActiveDoc()$getSettings()$locate,
-                                         id = GUI$getActiveDoc()$getSettings()$locate.id,
-                                         col = GUI$getActiveDoc()$getSettings()$locate.col,
-                                         ext = GUI$getActiveDoc()$getSettings()$locate.extreme) {
-                if (is.null(id) & is.null(ext)) {
-                    locate = NULL
-                    id = NULL
-                    col = NULL
-                    ext = NULL
-                }
-
-                if (!is.null(id)) {
-                    ext <- NULL
-                }
-
-                GUI$getActiveDoc()$setSettings(
-                    list(locate = locate,
-                         locate.id = unique(id),
-                         locate.col = col,
-                         locate.extreme = ext)
-                    )
-                updateSettings()
-            }
+            
 
             locator <- function(h, remove = FALSE, btn, ...) {
                 x <- curSet$x  # used for removing missing values ...
@@ -2127,11 +2191,16 @@ iNZScatterMod <- setRefClass(
                 
                 o <- d[which.min((x.s - xy.s[1])^2 + (y.s - xy.s[2])^2), ]
 
+                locSet <- curSet$locate.settings
+
                 if (remove) {
+                    ## Remove it
+                    locSet$ID <- locSet$ID[locSet$ID != o$id]
                     newID <- curSet$locate.id[curSet$locate.id != o$id]
                 } else {
-                    ## Store the reference ID
-                    locateRefID <<- o$id
+                    ## Store the reference ID - add it
+                    
+                    locSet$ID <- unique(c(locSet$ID, o$id))
                     
                     ## Grab the label:
                     if (match.all) {
@@ -2147,7 +2216,8 @@ iNZScatterMod <- setRefClass(
                 updateEverything(
                     locate = if (svalue(txtLabs)) locVar else NULL,
                     id = newID,
-                    col = if (svalue(colLabs)) svalue(colmenu) else NULL
+                    col = if (svalue(colLabs)) svalue(colmenu) else NULL,
+                    locSet = locSet
                     )
             }
 
@@ -2162,15 +2232,52 @@ iNZScatterMod <- setRefClass(
                 })
             }
 
-            selectList <- ggroup(TRUE, cont = selectGrp, expand = TRUE, fill = TRUE)
+            selectListGrp <- ggroup(FALSE, cont = selectGrp, expand = TRUE, fill = TRUE)
+
+            selectList <- ggroup(TRUE, cont = selectListGrp, expand = TRUE, fill = TRUE)
             selectLab <- glabel("Variable: ", cont = selectList)
             selectVar <- gcombobox(colnames(GUI$getActiveData()), selected = 0, cont = selectList,
                                    expand = TRUE)
-            selectGo <- gbutton("Choose values", cont = selectList)
+
+            selectSlideGrp <- ggroup(TRUE, cont = selectListGrp, expand = FALSE, fill = TRUE)
+            #selectSlide <- gslider(0, 1, cont = selectSlideGrp, expand = TRUE, fill = TRUE)
+            selectGo <- gbutton("Select values ...", cont = selectList)
+
+            enabled(selectGo) <- svalue(selectVar, TRUE) > 0
+            #visible(selectSlide) <- svalue(selectVar, TRUE) > 0
+            addHandlerChanged(selectVar, function(h, ...) {
+                enabled(selectGo) <- svalue(selectVar, TRUE) > 0
+
+                selVar <- GUI$getActiveData()[, svalue(selectVar)]
+
+                if (length(selectSlideGrp$children) > 0)
+                    selectSlideGrp$remove_child(selectSlideGrp$children[[1]])
+                
+                if (is.factor(selVar) | (length(unique(selVar)) <= 20)) {
+                    nn <- if (is.factor(selVar)) length(levels(selVar)) else length(unique(selVar))
+                    selectSlide <- gslider(if (is.factor(selVar)) levels(selVar) else unique(selVar),
+                                           cont = selectSlideGrp, expand = TRUE, fill = TRUE)
+
+                    addHandlerChanged(selectSlide, function(h, ...) {
+                        v <- svalue(varmenu)
+                        locVar <-
+                            if (v == "id") 1:nrow(GUI$getActiveData())
+                            else GUI$getActiveData()[, v]
+                        
+                        updateEverything(
+                            locate = if (svalue(txtLabs)) locVar else NULL,
+                            id = which(GUI$getActiveData()[, svalue(selectVar)] == svalue(selectSlide)),
+                            col = if (svalue(colLabs)) svalue(colmenu) else NULL
+                            )
+                    })
+                    selectSlide$invoke_change_handler()
+                }
+            })
             
             extremePts <- ggroup(cont = selectGrp, expand = TRUE, fill = TRUE)
             extLab <- glabel("Number of points: ", cont = extremePts)
             extN <- gslider(0, 10, cont = extremePts, expand = TRUE)
+            if (!is.null(curSet$locate.extreme)) svalue(extN) <- curSet$locate.extreme
             addHandlerChanged(extN, handler = function(h, ...) {
                 v <- svalue(varmenu)
                 locVar <- if (v == "id") 1:nrow(GUI$getActiveData()) else GUI$getActiveData()[, v]
@@ -2178,18 +2285,13 @@ iNZScatterMod <- setRefClass(
                     locate = if (svalue(txtLabs)) locVar else NULL,
                     id = NULL,
                     col = if (svalue(colLabs)) svalue(colmenu) else NULL,
-                    ext = svalue(extN)
+                    ext = if (svalue(extN) > 0) svalue(extN) else NULL
                     )
             })
 
-            addHandlerChanged(selectMthd, function(h, ...) {
-                visible(locateButton) <- svalue(selectMthd, TRUE) == 1
-                visible(selectList) <- svalue(selectMthd, TRUE) == 2
-                visible(extremePts) <- svalue(selectMthd, TRUE) == 3
-
-                enabled(matchChk) <- svalue(selectMthd, TRUE) == 1
-            })
-            selectMthd$invoke_change_handler()
+            if (!is.null(locSet$selectMthd))
+                svalue(selectMthd) <- locSet$selectMthd
+            
 
             ## Bring up a new window to allow user to select levels to label:
             addHandlerClicked(selectGo, function(h, ...) {
@@ -2227,18 +2329,27 @@ iNZScatterMod <- setRefClass(
             
             clearBtn <- gbutton("Clear all labels")
             addHandlerClicked(clearBtn, function(h, ...) {
-                updateEverything(NULL, NULL, NULL)
+                updateEverything(NULL, NULL, NULL, NULL)
             })
             tbl[ii, 1, expand = TRUE] <- clearBtn
 
-            if (attr(GUI$curPlot, "nplots") == 1) {
-                clearBtn2 <- gbutton("Clear label ...")
-                addHandlerClicked(clearBtn2, function(h, ...) {
-                    locator(h, remove = TRUE, btn = clearBtn2)
-                })
-                tbl[ii, 2, expand = TRUE] <- clearBtn2
-            }
+            
+            clearBtn2 <- gbutton("Clear label ...")
+            addHandlerClicked(clearBtn2, function(h, ...) {
+                locator(h, remove = TRUE, btn = clearBtn2)
+            })
+            tbl[ii, 2, expand = TRUE] <- clearBtn2
             ii <- ii + 1
+
+            addHandlerChanged(selectMthd, function(h, ...) {
+                visible(locateButton) <- svalue(selectMthd, TRUE) == 1
+                visible(selectListGrp) <- svalue(selectMthd, TRUE) == 2
+                visible(extremePts) <- svalue(selectMthd, TRUE) == 3
+
+                enabled(matchChk) <- svalue(selectMthd, TRUE) == 1
+                visible(clearBtn2) <- svalue(selectMthd, TRUE) == 1
+            })
+            selectMthd$invoke_change_handler()
             
             add(optGrp, tbl, expand = TRUE, fill = TRUE)
         },
