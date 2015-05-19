@@ -1942,7 +1942,6 @@ iNZScatterMod <- setRefClass(
                                          id = GUI$getActiveDoc()$getSettings()$locate.id,
                                          col = GUI$getActiveDoc()$getSettings()$locate.col,
                                          ext = GUI$getActiveDoc()$getSettings()$locate.extreme) {
-#                                         locSet = GUI$getActiveDoc()$getSettings()$locate.settings) {
                 if (is.null(id) & is.null(ext)) {
                     locate = NULL
                     id = NULL
@@ -1956,7 +1955,9 @@ iNZScatterMod <- setRefClass(
                     locSet$ID <<- NULL
                 }
 
-                highlight <- if (svalue(matchChk)) locSet$ID else NULL
+                highlight <-
+                    if (svalue(matchChk)) locSet$ID
+                    else NULL
 
                 ## update the locate settings:
                 locSet$txtLabs <<- svalue(txtLabs)
@@ -1972,13 +1973,29 @@ iNZScatterMod <- setRefClass(
 
                 curSet$locate.settings <<- locSet
 
+                if (locSet$matchChk) {
+                    levs <- unique(GUI$getActiveData()[highlight, locSet$matchVar])
+
+                    if (length(levs) > 1)
+                        levs <- paste0("{", paste(levs, collapse = ", "), "}")
+                    
+                    if (length(levs) == 1)
+                        subt <- paste0("(Locating points with ",
+                                       locSet$matchVar, " = ", levs, ")")
+                    else
+                        subt <- NULL
+                } else {
+                    subt <- NULL
+                }
+
                 GUI$getActiveDoc()$setSettings(
                     list(locate = locate,
                          locate.id = unique(id),
                          locate.col = col,
                          locate.extreme = ext,
                          locate.settings = locSet,
-                         highlight = highlight)
+                         highlight = highlight,
+                         subtitle = subt)
                     )
                 updateSettings()
             }
@@ -2062,6 +2079,8 @@ iNZScatterMod <- setRefClass(
 
             addHandlerChanged(matchChk, function(h, ...) {
                 enabled(matchVar) <- svalue(matchChk)
+                enabled(clearMulti) <- svalue(matchChk)
+                svalue(clearMulti) <- svalue(matchChk)
 
                 if (svalue(matchChk)) {
                     ## Add all the points:
@@ -2195,8 +2214,14 @@ iNZScatterMod <- setRefClass(
 
                 if (remove) {
                     ## Remove it
+                    if (svalue(clearMulti)) {
+                        rid <- which(matchVar == o[, 'match'])
+                    } else {
+                        rid <- o$id
+                    }
+                    
                     locSet$ID <<- locSet$ID[locSet$ID != o$id]
-                    newID <- curSet$locate.id[curSet$locate.id != o$id]
+                    newID <- curSet$locate.id[!curSet$locate.id %in% rid]
                 } else {
                     ## Store the reference ID - add it
                     
@@ -2275,7 +2300,7 @@ iNZScatterMod <- setRefClass(
             
             extremePts <- ggroup(cont = selectGrp, expand = TRUE, fill = TRUE)
             extLab <- glabel("Number of points: ", cont = extremePts)
-            extN <- gslider(0, 10, cont = extremePts, expand = TRUE)
+            extN <- gslider(0, 20, cont = extremePts, expand = TRUE)
             if (!is.null(curSet$locate.extreme)) svalue(extN) <- curSet$locate.extreme
             addHandlerChanged(extN, handler = function(h, ...) {
                 v <- svalue(varmenu)
@@ -2340,6 +2365,10 @@ iNZScatterMod <- setRefClass(
             tbl[ii, 2, expand = TRUE] <- clearBtn2
             ii <- ii + 1
 
+            clearMulti <- gcheckbox("Remove group", checked = svalue(matchChk))
+            tbl[ii, 2, expand = TRUE] <- clearMulti
+            ii <- ii + 1
+
             addHandlerChanged(selectMthd, function(h, ...) {
                 visible(locateButton) <- svalue(selectMthd, TRUE) == 1
                 visible(selectListGrp) <- svalue(selectMthd, TRUE) == 2
@@ -2347,6 +2376,8 @@ iNZScatterMod <- setRefClass(
 
                 enabled(matchChk) <- svalue(selectMthd, TRUE) == 1
                 visible(clearBtn2) <- svalue(selectMthd, TRUE) == 1
+                visible(clearMulti) <- svalue(selectMthd, TRUE) == 1
+                enabled(clearMulti) <- svalue(matchChk)
             })
             selectMthd$invoke_change_handler()
             
