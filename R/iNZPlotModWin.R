@@ -74,7 +74,497 @@ iNZPlotModWin <- setRefClass(
         ## up the curSet class variable
         updateSettings = function() {
             curSet <<- GUI$getActiveDoc()$getSettings()
+        },
+        
+iNZLocatePoints = function(dot = FALSE) {
+    ## Do checking first
+    ## If g1 or g2 = _MULTI, then we can't identify points (yet ...)
+    cantDo <- function(msg = "using subsetting variables.") {
+        gmessage(paste("Cannot identify points when", msg),
+                 icon = "error", title = "Unable to identify",
+                 parent = modWin)
+        return()
+    }
+    
+    locSet <<- curSet$locate.settings
+    
+    updateEverything <- function(locate = GUI$getActiveDoc()$getSettings()$locate,
+                                 id = GUI$getActiveDoc()$getSettings()$locate.id,
+                                 col = GUI$getActiveDoc()$getSettings()$locate.col,
+                                 ext = GUI$getActiveDoc()$getSettings()$locate.extreme) {
+        if (is.null(id) & is.null(ext)) {
+            locate = NULL
+            id = NULL
+            col = NULL
+            ext = NULL
+        }
+        
+        if (!is.null(id)) {
+            ext <- NULL
+        } else {
+            locSet$ID <<- NULL
+        }
+        
+        highlight <-
+            if (svalue(matchChk)) locSet$ID
+            else NULL
+        
+        ## update the locate settings:
+        locSet$txtLabs <<- svalue(txtLabs)
+        locSet$txtVar <<- svalue(varmenu)
+        
+        locSet$colLabs <<- svalue(colLabs)
+        locSet$colVar <<- svalue(colmenu)
+        
+        locSet$matchChk <<- svalue(matchChk)
+        locSet$matchVar <<- svalue(matchVar)
+        
+        locSet$selectMthd <<- svalue(selectMthd)
+        
+        curSet$locate.settings <<- locSet
+        
+        if (locSet$matchChk) {
+            levs <- unique(GUI$getActiveData()[highlight, locSet$matchVar])
+            
+            if (length(levs) > 1)
+                levs <- paste0("{", paste(levs, collapse = ", "), "}")
+            
+            if (length(levs) == 1)
+                subt <- paste0("(Locating points with ",
+                               locSet$matchVar, " = ", levs, ")")
+            else
+                subt <- NULL
+        } else {
+            subt <- NULL
+        }
+        
+        GUI$getActiveDoc()$setSettings(
+            list(locate = locate,
+                 locate.id = unique(id),
+                 locate.col = col,
+                 locate.extreme = ext,
+                 locate.settings = locSet,
+                 highlight = highlight,
+                 subtitle = subt)
+            )
+        updateSettings()
+    }
+    
+    tbl <- glayout()
+    ii <- 3
+    
+    lbl <- glabel("How do you want to label points?")
+    font(lbl) <- list(weight = "bold", family = "normal")
+    tbl[ii, 1:2, expand = TRUE, anchor = c(-1, 0)] <- lbl
+    ii <- ii + 1
+    
+    txtLabs <- gcheckbox("Text Labels", checked = TRUE)
+    varmenu <- gcombobox(c("id", names(GUI$getActiveData())), selected = 1, expand = TRUE)
+    tbl[ii, 1] <- txtLabs
+    tbl[ii, 2, expand = TRUE] <- varmenu
+    ii <- ii + 1
+    
+    if (!is.null(locSet$txtLabs)) svalue(txtLabs) <- locSet$txtLabs
+    if (!is.null(locSet$txtVar))
+        if (locSet$txtVar %in% c("id", names(GUI$getActiveData())))
+            svalue(varmenu) <- locSet$txtVar
+    
+    colLabs <- gcheckbox("Colour Points", checked = FALSE)
+    colmenu <- gcombobox(c("red", "blue", "green4"), selected = 1, editable = TRUE, expand = TRUE)
+    tbl[ii, 1] <- colLabs
+    tbl[ii, 2, expand = TRUE] <- colmenu
+    ii <- ii + 1
+    
+    if (!is.null(locSet$colLabs)) svalue(colLabs) <- locSet$colLabs
+    if (!is.null(locSet$colVar))
+        svalue(colmenu) <- locSet$colVar
+    
+    enabled(varmenu) <- svalue(txtLabs)  #labMthd, TRUE) == 1
+    enabled(colmenu) <- svalue(colLabs)  #labMthd, TRUE) == 2
+    
+    addHandlerChanged(txtLabs, function(h, ...) {
+        enabled(varmenu) <- svalue(txtLabs)  #labMthd, TRUE) == 1
+        v <- svalue(varmenu)
+        locVar <- if (v == "id") 1:nrow(GUI$getActiveData()) else GUI$getActiveData()[, v]
+        updateEverything(
+            locate = if (svalue(txtLabs)) locVar else NULL
+            )
+    })
+    addHandlerChanged(varmenu, function(h, ...) {
+        v <- svalue(varmenu)
+        locVar <- if (v == "id") 1:nrow(GUI$getActiveData()) else GUI$getActiveData()[, v]
+        updateEverything(
+            locate = if (svalue(txtLabs)) locVar else NULL
+            )
+    })
+    addHandlerChanged(colLabs, function(h, ...) {
+        enabled(colmenu) <- svalue(colLabs)  #labMthd, TRUE) == 2
+        updateEverything(
+            col = if (svalue(colLabs)) svalue(colmenu) else NULL
+            )
+    })
+    addHandlerChanged(colmenu, function(h, ...) {
+        if (svalue(colmenu) %in% colours()) {
+            updateEverything(
+                col = if (svalue(colLabs)) svalue(colmenu) else NULL
+                )
+        }
+    })
+    
+    
+    matchChk <- gcheckbox("With the same level of")
+    tbl[ii, 1] <- matchChk
+    
+    if (!is.null(locSet$matchChk)) svalue(matchChk) <- locSet$matchChk
+    
+                                        #factVars <- sapply(GUI$getActiveData(), is.factor)
+    matchVar <- gcombobox(names(GUI$getActiveData()), selected = 1)
+    enabled(matchVar) <- svalue(matchChk)
+    tbl[ii, 2, expand = TRUE] <- matchVar
+    ii <- ii + 1
+    
+    if (!is.null(locSet$matchVar))
+        if (locSet$matchVar %in% names(GUI$getActiveData()))
+            svalue(matchVar) <- locSet$matchVar
+    
+    addHandlerChanged(matchChk, function(h, ...) {
+        enabled(matchVar) <- svalue(matchChk)
+        enabled(clearMulti) <- svalue(matchChk)
+        svalue(clearMulti) <- svalue(matchChk)
+        
+        if (svalue(matchChk)) {
+            ## Add all the points:
+            
+            matchVar <- as.character(GUI$getActiveData()[, svalue(matchVar)])
+            matchVar[is.na(matchVar)] <- "missing"
+            
+            matchLvls <- unique(matchVar[locSet$ID])
+            newIDS <- which(matchVar %in% matchLvls)
+            
+            updateEverything(id = newIDS)
+        } else {
+            ## Remove all the points:
+            
+            updateEverything(id = locSet$ID)
+        }
+    })
+    
+    addHandlerChanged(matchVar, function(h, ...) {
+        matchVar <- as.character(GUI$getActiveData()[, svalue(matchVar)])
+        matchVar[is.na(matchVar)] <- "missing"
+        
+        matchLvls <- unique(matchVar[locSet$ID])
+        newIDS <- which(matchVar %in% matchLvls)
+        
+        updateEverything(id = newIDS)
+    })
+    
+    
+    
+    ii <- ii + 1
+    
+    
+    lbl <- glabel("How do you want to select points?")
+    font(lbl) <- list(weight = "bold", family = "normal")
+    tbl[ii, 1:2, expand = TRUE, anchor = c(-1, 0)] <- lbl
+    ii <- ii + 1
+    
+    
+    selectMthd <- gradio(c("Click points",
+                           "Select by value of ...",
+                           "Extreme values"), selected = 1)
+    tbl[ii, 1:2, expand = TRUE] <- selectMthd
+    ii <- ii + 1
+    
+    selectGrp <- ggroup(horiz = FALSE, expand = TRUE)
+    
+    
+    
+    locator <- function(h, remove = FALSE, btn, ...) {
+        x <- curSet$x  # used for removing missing values ...
+        y <- curSet$y
+        v <- svalue(varmenu)
+        
+        w <- rep(TRUE, length(x))
+        if (!is.null(curSet$g1)) {
+            if (is.null(curSet$g1.level)) {
+                cantDo()
+            } else if (curSet$g1.level == "_MULTI") {
+                cantDo()
+            }
+            w[curSet$g1 != curSet$g1.level] <- FALSE
+        }
+        if (!is.null(curSet$g2)) {
+            if (curSet$g2.level == "_MULTI") {
+                cantDo()
+            } else {
+                if (curSet$g2.level != "_ALL")
+                    w[curSet$g2 != curSet$g2.level] <- FALSE
+            }
+        }
+        
+        match.all <- svalue(matchChk)
+        
+        locVar <-
+            if (v == "id") 1:nrow(GUI$getActiveData())
+            else GUI$getActiveData()[, v]
+        
+        matchVar <- as.character(GUI$getActiveData()[, svalue(matchVar)])
+        matchVar[is.na(matchVar)] <- "missing"
+        
+        ## Entire data set - ignore missing values etc etc
+        d <- data.frame(x = curSet$x, y = curSet$y,
+                        locate = locVar, id = 1:nrow(GUI$getActiveData()),
+                        match = matchVar)                
+        
+        if (!is.null(curSet$g1)) {
+            w[curSet$g1 != curSet$g1.level] <- FALSE
+        }
+        if (!is.null(curSet$g2)) {
+            if (curSet$g2.level != "_ALL") {
+                w[curSet$g2 != curSet$g2.level] <- FALSE
+            }
+        }
+        
+        isNA <- is.na(x) | is.na(y)
+        if (!is.null(curSet$g1))
+            isNA <- isNA | is.na(curSet$g1)
+        if (!is.null(curSet$g2))
+            isNA <- isNA | is.na(curSet$g2)
+        
+        dp <- grid.get("SCATTERPOINTS")
+        d <- d[w & !isNA, ]
+        d$x = as.numeric(dp$x)
+        d$y = as.numeric(dp$y)
+        
+        
+        seekViewport("VP:locate.these.points")
+        
+        blockHandlers(btn)
+        oldVal <- svalue(btn)
+        svalue(btn) <- "Click a point"                
+        xy <- as.numeric(grid.locator())
+        svalue(btn) <- oldVal
+        unblockHandlers(btn)
+        
+        ## We only want to check X and Y for missing
+        na <- apply(d[, 1:2], 1, function(x) any(is.na(x)))
+        d <- d[!na, ]
+        
+        ## So now, d = data.frame with x, y, and the label
+        ## Standardise it:
+        x.s <- (d$x - min(d$x)) / (max(d$x) - min(d$x))
+        y.s <- (d$y - min(d$y)) / (max(d$y) - min(d$y))
+        
+        xy.s <- numeric(2)
+        xy.s[1] <- (xy[1] - min(d$x)) / (max(d$x) - min(d$x))
+        xy.s[2] <- (xy[2] - min(d$y)) / (max(d$y) - min(d$y))
+        
+        o <- d[which.min((x.s - xy.s[1])^2 + (y.s - xy.s[2])^2), ]
+        
+        if (remove) {
+            ## Remove it
+            if (svalue(clearMulti)) {
+                rid <- which(matchVar == o[, 'match'])
+            } else {
+                rid <- o$id
+            }
+            
+            locSet$ID <<- locSet$ID[!locSet$ID %in% rid]
+            newID <- curSet$locate.id[!curSet$locate.id %in% rid]
+        } else {
+            ## Store the reference ID - add it
+            
+            locSet$ID <<- unique(c(locSet$ID, o$id))
+            
+            ## Grab the label:
+            if (match.all) {
+                ## Match all instances of the same label:
+                pid <- which(matchVar == o[, 'match'])
+            } else {
+                pid <- o$id
+            }
+            
+            newID <- if (svalue(txtLabs) | !match.all) c(curSet$locate.id, pid) else pid
+        }
+        
+        updateEverything(
+            locate = if (svalue(txtLabs)) locVar else NULL,
+            id = newID,
+            col = if (svalue(colLabs)) svalue(colmenu) else NULL
+            )
+    }
+
+    if (dot) {
+        locateButton <- glabel("Locate not yet implemented for dot plots.",
+                               cont = selectGrp)
+        svalue(selectMthd, TRUE) <- 2
+    } else if (attr(GUI$curPlot, "nplots") > 1) {
+        locateButton <- glabel("Cannot locate using mouse for multiple graphs.", cont =
+                               selectGrp)
+        svalue(selectMthd, TRUE) <- 2
+    } else {
+        locateButton <- gbutton("Click to Locate ...", cont = selectGrp)
+        addHandlerClicked(locateButton, function(h, ...) {
+            locator(h, btn = locateButton)
         })
+    }
+    
+    selectListGrp <- ggroup(FALSE, cont = selectGrp, expand = TRUE, fill = TRUE)
+    
+    selectList <- ggroup(TRUE, cont = selectListGrp, expand = TRUE, fill = TRUE)
+    selectLab <- glabel("Variable: ", cont = selectList)
+    selectVar <- gcombobox(colnames(GUI$getActiveData()), selected = 0, cont = selectList,
+                           expand = TRUE)
+    
+    selectSlideGrp <- ggroup(TRUE, cont = selectListGrp, expand = FALSE, fill = TRUE)
+                                        #selectSlide <- gslider(0, 1, cont = selectSlideGrp, expand = TRUE, fill = TRUE)
+    selectGo <- gbutton("Select values ...", cont = selectList)
+    
+    enabled(selectGo) <- svalue(selectVar, TRUE) > 0
+                                        #visible(selectSlide) <- svalue(selectVar, TRUE) > 0
+    addHandlerChanged(selectVar, function(h, ...) {
+        enabled(selectGo) <- svalue(selectVar, TRUE) > 0
+        
+        selVar <- GUI$getActiveData()[, svalue(selectVar)]
+        
+        if (length(selectSlideGrp$children) > 0)
+            selectSlideGrp$remove_child(selectSlideGrp$children[[1]])
+        
+        if (is.factor(selVar) | (length(unique(selVar)) <= 20)) {
+            nn <- if (is.factor(selVar)) length(levels(selVar)) else length(unique(selVar))
+            selectSlide <- gslider(if (is.factor(selVar)) levels(selVar) else unique(selVar),
+                                   cont = selectSlideGrp, expand = TRUE, fill = TRUE)
+            
+            addHandlerChanged(selectSlide, function(h, ...) {
+                v <- svalue(varmenu)
+                locVar <-
+                    if (v == "id") 1:nrow(GUI$getActiveData())
+                    else GUI$getActiveData()[, v]
+                
+                updateEverything(
+                    locate = if (svalue(txtLabs)) locVar else NULL,
+                    id = which(GUI$getActiveData()[, svalue(selectVar)] == svalue(selectSlide)),
+                    col = if (svalue(colLabs)) svalue(colmenu) else NULL
+                    )
+            })
+            selectSlide$invoke_change_handler()
+        }
+    })
+    
+    
+
+    if (dot) {
+        extremePts <- ggroup(FALSE, cont = selectGrp, expand = TRUE, fill = TRUE)
+
+        lowerG <- ggroup(cont = extremePts, expand = TRUE, fill = TRUE)
+        lowerLab <- glabel("N Lower: ", cont = lowerG)
+        nlowerSld <- gslider(0, 20, expand = TRUE, fill = TRUE, cont = lowerG)
+
+        upperG <- ggroup(cont = extremePts, expand = TRUE, fill = TRUE)
+        upperLab <- glabel("N Upper: ", cont = upperG)
+        nupperSld <- gslider(0, 20, expand = TRUE, fill = TRUE, cont = upperG)
+
+        updateMe <- function(h, ...) {
+            v <- svalue(varmenu)
+            locVar <- if (v == "id") 1:nrow(GUI$getActiveData()) else GUI$getActiveData()[, v]
+            updateEverything(
+                locate = if (svalue(txtLabs)) locVar else NULL,
+                id = NULL,
+                col = if (svalue(colLabs)) svalue(colmenu) else NULL,
+                ext = c(svalue(nlowerSld), svalue(nupperSld))
+                )
+        }
+        addHandlerChanged(nlowerSld, updateMe)
+        addHandlerChanged(nupperSld, updateMe)
+    } else {
+        extremePts <- ggroup(cont = selectGrp, expand = TRUE, fill = TRUE)
+        extLab <- glabel("Number of points: ", cont = extremePts)
+        extN <- gslider(0, 20, cont = extremePts, expand = TRUE)
+        if (!is.null(curSet$locate.extreme)) svalue(extN) <- curSet$locate.extreme
+        addHandlerChanged(extN, handler = function(h, ...) {
+            v <- svalue(varmenu)
+            locVar <- if (v == "id") 1:nrow(GUI$getActiveData()) else GUI$getActiveData()[, v]
+            updateEverything(
+                locate = if (svalue(txtLabs)) locVar else NULL,
+                id = NULL,
+                col = if (svalue(colLabs)) svalue(colmenu) else NULL,
+                ext = if (svalue(extN) > 0) svalue(extN) else NULL
+                )
+        })
+    }
+    
+    if (!is.null(locSet$selectMthd))
+        svalue(selectMthd) <- locSet$selectMthd
+    
+    
+    ## Bring up a new window to allow user to select levels to label:
+    addHandlerClicked(selectGo, function(h, ...) {
+        ww <- gwindow("Select levels to label ...", visible = FALSE, width = 200, height = 400,
+                      parent = GUI$win)
+        wg <- ggroup(FALSE, cont = ww)
+        wlbl <- glabel("Select levels to label\n(ctrl for multiple)", cont = wg)
+        
+        selectLevels <- gtable(levels(as.factor(GUI$getActiveData()[, svalue(selectVar)])),
+                               multiple = TRUE, cont = wg, expand = TRUE)
+        
+        wb <- gbutton("Done", cont = wg)
+        addHandlerClicked(wb, function(h, ...) {
+            v <- svalue(varmenu)
+            locVar <-
+                if (v == "id") 1:nrow(GUI$getActiveData())
+                else GUI$getActiveData()[, v]
+            
+            updateEverything(
+                locate = if (svalue(txtLabs)) locVar else NULL,
+                id = which(GUI$getActiveData()[, svalue(selectVar)] %in% svalue(selectLevels)),
+                col = if (svalue(colLabs)) svalue(colmenu) else NULL
+                )
+            
+            dispose(ww)
+        })
+        visible(ww) <- TRUE
+    })
+    
+    tbl[ii, 1:2, expand = TRUE, anchor = c(1, 0)] <- selectGrp
+    ii <- ii + 1
+    
+    
+    ii <- ii + 1
+    
+    clearBtn <- gbutton("Clear all labels")
+    addHandlerClicked(clearBtn, function(h, ...) {
+        updateEverything(NULL, NULL, NULL, NULL)
+    })
+    tbl[ii, 1, expand = TRUE] <- clearBtn
+    
+    
+    clearBtn2 <- gbutton("Clear label ...")
+    addHandlerClicked(clearBtn2, function(h, ...) {
+        locator(h, remove = TRUE, btn = clearBtn2)
+    })
+    tbl[ii, 2, expand = TRUE] <- clearBtn2
+    ii <- ii + 1
+    
+    clearMulti <- gcheckbox("Remove group", checked = svalue(matchChk))
+    tbl[ii, 2, expand = TRUE] <- clearMulti
+    ii <- ii + 1
+    
+    addHandlerChanged(selectMthd, function(h, ...) {
+        visible(locateButton) <- svalue(selectMthd, TRUE) == 1
+        visible(selectListGrp) <- svalue(selectMthd, TRUE) == 2
+        visible(extremePts) <- svalue(selectMthd, TRUE) == 3
+        
+        enabled(matchChk) <- svalue(selectMthd, TRUE) == 1
+        visible(clearBtn2) <- svalue(selectMthd, TRUE) == 1
+        visible(clearMulti) <- svalue(selectMthd, TRUE) == 1
+        enabled(clearMulti) <- svalue(matchChk)
+    })
+    selectMthd$invoke_change_handler()
+    
+    add(optGrp, tbl, expand = TRUE, fill = TRUE)
+}
+        )
     )
 
 
@@ -89,7 +579,7 @@ iNZDotchartMod <- setRefClass(
             callSuper(GUI)
             ## need to specify the methods that we want to use in
             ## do.call later on (see changeOpts())
-            usingMethods(opt1, opt2, opt3, opt4)
+            usingMethods(opt1, opt2, opt3, opt4, iNZLocatePoints)
             opts <- gcombobox(c("Code more variables",
                                 "Change plot appearance",
                                 "Identify points",
@@ -368,6 +858,9 @@ iNZDotchartMod <- setRefClass(
             add(optGrp, tbl)
         },
         opt3 = function() {
+            iNZLocatePoints(TRUE)
+            return()
+            
             if (attr(GUI$curPlot, "nplots") > 1 | !is.null(curSet$y)) {
                 tbl1 <- glayout()
                 tbl1[1, 1] <- glabel("Cannot identify points for this type of plot.")
@@ -1199,7 +1692,7 @@ iNZScatterMod <- setRefClass(
             callSuper(GUI)
             ## need to specify the methods that we want to use in
             ## do.call later on (see changeOpts())
-            usingMethods(opt1, opt2, opt3, opt4, opt5, opt6, opt7, opt8, opt9)
+            usingMethods(opt1, opt2, opt3, opt4, opt5, opt6, opt7, opt8, opt9, iNZLocatePoints)
             opts <- gcombobox(c("Code more variables",
                                 "Add trend curves",
                                 "Add x=y line",
@@ -1918,471 +2411,7 @@ iNZScatterMod <- setRefClass(
             
             add(optGrp, tbl)
         },
-        opt8 = function() {
-            #if (attr(GUI$curPlot, "nplots") > 1) {
-            #    tbl1 <- glayout()
-            #    tbl1[1, 1] <- glabel("Cannot identify points for this type of plot.")
-            #    add(optGrp, tbl1)
-            #    return()
-            #}
-
-                        
-            ## Do checking first
-            ## If g1 or g2 = _MULTI, then we can't identify points (yet ...)
-            cantDo <- function(msg = "using subsetting variables.") {
-                gmessage(paste("Cannot identify points when", msg),
-                         icon = "error", title = "Unable to identify",
-                         parent = modWin)
-                return()
-            }
-
-            locSet <<- curSet$locate.settings
-
-            updateEverything <- function(locate = GUI$getActiveDoc()$getSettings()$locate,
-                                         id = GUI$getActiveDoc()$getSettings()$locate.id,
-                                         col = GUI$getActiveDoc()$getSettings()$locate.col,
-                                         ext = GUI$getActiveDoc()$getSettings()$locate.extreme) {
-                if (is.null(id) & is.null(ext)) {
-                    locate = NULL
-                    id = NULL
-                    col = NULL
-                    ext = NULL
-                }
-
-                if (!is.null(id)) {
-                    ext <- NULL
-                } else {
-                    locSet$ID <<- NULL
-                }
-
-                highlight <-
-                    if (svalue(matchChk)) locSet$ID
-                    else NULL
-
-                ## update the locate settings:
-                locSet$txtLabs <<- svalue(txtLabs)
-                locSet$txtVar <<- svalue(varmenu)
-
-                locSet$colLabs <<- svalue(colLabs)
-                locSet$colVar <<- svalue(colmenu)
-
-                locSet$matchChk <<- svalue(matchChk)
-                locSet$matchVar <<- svalue(matchVar)
-
-                locSet$selectMthd <<- svalue(selectMthd)
-
-                curSet$locate.settings <<- locSet
-
-                if (locSet$matchChk) {
-                    levs <- unique(GUI$getActiveData()[highlight, locSet$matchVar])
-
-                    if (length(levs) > 1)
-                        levs <- paste0("{", paste(levs, collapse = ", "), "}")
-                    
-                    if (length(levs) == 1)
-                        subt <- paste0("(Locating points with ",
-                                       locSet$matchVar, " = ", levs, ")")
-                    else
-                        subt <- NULL
-                } else {
-                    subt <- NULL
-                }
-
-                GUI$getActiveDoc()$setSettings(
-                    list(locate = locate,
-                         locate.id = unique(id),
-                         locate.col = col,
-                         locate.extreme = ext,
-                         locate.settings = locSet,
-                         highlight = highlight,
-                         subtitle = subt)
-                    )
-                updateSettings()
-            }
-
-            tbl <- glayout()
-            ii <- 3
-
-            lbl <- glabel("How do you want to label points?")
-            font(lbl) <- list(weight = "bold", family = "normal")
-            tbl[ii, 1:2, expand = TRUE, anchor = c(-1, 0)] <- lbl
-            ii <- ii + 1
-
-            txtLabs <- gcheckbox("Text Labels", checked = TRUE)
-            varmenu <- gcombobox(c("id", names(GUI$getActiveData())), selected = 1, expand = TRUE)
-            tbl[ii, 1] <- txtLabs
-            tbl[ii, 2, expand = TRUE] <- varmenu
-            ii <- ii + 1
-
-            if (!is.null(locSet$txtLabs)) svalue(txtLabs) <- locSet$txtLabs
-            if (!is.null(locSet$txtVar))
-                if (locSet$txtVar %in% c("id", names(GUI$getActiveData())))
-                    svalue(varmenu) <- locSet$txtVar
-                        
-            colLabs <- gcheckbox("Colour Points", checked = FALSE)
-            colmenu <- gcombobox(c("red", "blue", "green4"), selected = 1, editable = TRUE, expand = TRUE)
-            tbl[ii, 1] <- colLabs
-            tbl[ii, 2, expand = TRUE] <- colmenu
-            ii <- ii + 1
-
-            if (!is.null(locSet$colLabs)) svalue(colLabs) <- locSet$colLabs
-            if (!is.null(locSet$colVar))
-                svalue(colmenu) <- locSet$colVar
-
-            enabled(varmenu) <- svalue(txtLabs)  #labMthd, TRUE) == 1
-            enabled(colmenu) <- svalue(colLabs)  #labMthd, TRUE) == 2
-
-            addHandlerChanged(txtLabs, function(h, ...) {
-                enabled(varmenu) <- svalue(txtLabs)  #labMthd, TRUE) == 1
-                v <- svalue(varmenu)
-                locVar <- if (v == "id") 1:nrow(GUI$getActiveData()) else GUI$getActiveData()[, v]
-                updateEverything(
-                    locate = if (svalue(txtLabs)) locVar else NULL
-                    )
-            })
-            addHandlerChanged(varmenu, function(h, ...) {
-                v <- svalue(varmenu)
-                locVar <- if (v == "id") 1:nrow(GUI$getActiveData()) else GUI$getActiveData()[, v]
-                updateEverything(
-                    locate = if (svalue(txtLabs)) locVar else NULL
-                    )
-            })
-            addHandlerChanged(colLabs, function(h, ...) {
-                enabled(colmenu) <- svalue(colLabs)  #labMthd, TRUE) == 2
-                updateEverything(
-                    col = if (svalue(colLabs)) svalue(colmenu) else NULL
-                    )
-            })
-            addHandlerChanged(colmenu, function(h, ...) {
-                if (svalue(colmenu) %in% colours()) {
-                    updateEverything(
-                        col = if (svalue(colLabs)) svalue(colmenu) else NULL
-                        )
-                }
-            })
-            
-
-            matchChk <- gcheckbox("With the same level of")
-            tbl[ii, 1] <- matchChk
-
-            if (!is.null(locSet$matchChk)) svalue(matchChk) <- locSet$matchChk
-
-            #factVars <- sapply(GUI$getActiveData(), is.factor)
-            matchVar <- gcombobox(names(GUI$getActiveData()), selected = 1)
-            enabled(matchVar) <- svalue(matchChk)
-            tbl[ii, 2, expand = TRUE] <- matchVar
-            ii <- ii + 1
-               
-            if (!is.null(locSet$matchVar))
-                if (locSet$matchVar %in% names(GUI$getActiveData()))
-                    svalue(matchVar) <- locSet$matchVar
-
-            addHandlerChanged(matchChk, function(h, ...) {
-                enabled(matchVar) <- svalue(matchChk)
-                enabled(clearMulti) <- svalue(matchChk)
-                svalue(clearMulti) <- svalue(matchChk)
-
-                if (svalue(matchChk)) {
-                    ## Add all the points:
-
-                    matchVar <- as.character(GUI$getActiveData()[, svalue(matchVar)])
-                    matchVar[is.na(matchVar)] <- "missing"
-
-                    matchLvls <- unique(matchVar[locSet$ID])
-                    newIDS <- which(matchVar %in% matchLvls)
-                    
-                    updateEverything(id = newIDS)
-                } else {
-                    ## Remove all the points:
-                    
-                    updateEverything(id = locSet$ID)
-                }
-            })
-
-            addHandlerChanged(matchVar, function(h, ...) {
-                matchVar <- as.character(GUI$getActiveData()[, svalue(matchVar)])
-                matchVar[is.na(matchVar)] <- "missing"
-                
-                matchLvls <- unique(matchVar[locSet$ID])
-                newIDS <- which(matchVar %in% matchLvls)
-                
-                updateEverything(id = newIDS)
-            })
-            
-            
-            
-            ii <- ii + 1
-
-
-            lbl <- glabel("How do you want to select points?")
-            font(lbl) <- list(weight = "bold", family = "normal")
-            tbl[ii, 1:2, expand = TRUE, anchor = c(-1, 0)] <- lbl
-            ii <- ii + 1
-
-
-            selectMthd <- gradio(c("Click points",
-                                   "Select by value of ...",
-                                   "Extreme values"), selected = 1)
-            tbl[ii, 1:2, expand = TRUE] <- selectMthd
-            ii <- ii + 1
-            
-            selectGrp <- ggroup(horiz = FALSE, expand = TRUE)
-
-            
-
-            locator <- function(h, remove = FALSE, btn, ...) {
-                x <- curSet$x  # used for removing missing values ...
-                y <- curSet$y
-                v <- svalue(varmenu)
-                
-                w <- rep(TRUE, length(x))
-                if (!is.null(curSet$g1)) {
-                    if (is.null(curSet$g1.level)) {
-                        cantDo()
-                    } else if (curSet$g1.level == "_MULTI") {
-                        cantDo()
-                    }
-                    w[curSet$g1 != curSet$g1.level] <- FALSE
-                }
-                if (!is.null(curSet$g2)) {
-                    if (curSet$g2.level == "_MULTI") {
-                        cantDo()
-                    } else {
-                        if (curSet$g2.level != "_ALL")
-                            w[curSet$g2 != curSet$g2.level] <- FALSE
-                    }
-                }
-                
-                match.all <- svalue(matchChk)
-                
-                locVar <-
-                    if (v == "id") 1:nrow(GUI$getActiveData())
-                    else GUI$getActiveData()[, v]
-                
-                matchVar <- as.character(GUI$getActiveData()[, svalue(matchVar)])
-                matchVar[is.na(matchVar)] <- "missing"
-                
-                ## Entire data set - ignore missing values etc etc
-                d <- data.frame(x = curSet$x, y = curSet$y,
-                                locate = locVar, id = 1:nrow(GUI$getActiveData()),
-                                match = matchVar)                
-                
-                if (!is.null(curSet$g1)) {
-                    w[curSet$g1 != curSet$g1.level] <- FALSE
-                }
-                if (!is.null(curSet$g2)) {
-                    if (curSet$g2.level != "_ALL") {
-                        w[curSet$g2 != curSet$g2.level] <- FALSE
-                    }
-                }
-                
-                isNA <- is.na(x) | is.na(y)
-                if (!is.null(curSet$g1))
-                    isNA <- isNA | is.na(curSet$g1)
-                if (!is.null(curSet$g2))
-                    isNA <- isNA | is.na(curSet$g2)
-                
-                dp <- grid.get("SCATTERPOINTS")
-                d <- d[w & !isNA, ]
-                d$x = as.numeric(dp$x)
-                d$y = as.numeric(dp$y)
-                
-                
-                seekViewport("VP:locate.these.points")
-                
-                blockHandlers(btn)
-                oldVal <- svalue(btn)
-                svalue(btn) <- "Click a point"                
-                xy <- as.numeric(grid.locator())
-                svalue(btn) <- oldVal
-                unblockHandlers(btn)
-                
-                ## We only want to check X and Y for missing
-                na <- apply(d[, 1:2], 1, function(x) any(is.na(x)))
-                d <- d[!na, ]
-                
-                ## So now, d = data.frame with x, y, and the label
-                ## Standardise it:
-                x.s <- (d$x - min(d$x)) / (max(d$x) - min(d$x))
-                y.s <- (d$y - min(d$y)) / (max(d$y) - min(d$y))
-                
-                xy.s <- numeric(2)
-                xy.s[1] <- (xy[1] - min(d$x)) / (max(d$x) - min(d$x))
-                xy.s[2] <- (xy[2] - min(d$y)) / (max(d$y) - min(d$y))
-                
-                o <- d[which.min((x.s - xy.s[1])^2 + (y.s - xy.s[2])^2), ]
-
-                if (remove) {
-                    ## Remove it
-                    if (svalue(clearMulti)) {
-                        rid <- which(matchVar == o[, 'match'])
-                    } else {
-                        rid <- o$id
-                    }
-                    
-                    locSet$ID <<- locSet$ID[locSet$ID != o$id]
-                    newID <- curSet$locate.id[!curSet$locate.id %in% rid]
-                } else {
-                    ## Store the reference ID - add it
-                    
-                    locSet$ID <<- unique(c(locSet$ID, o$id))
-                    
-                    ## Grab the label:
-                    if (match.all) {
-                        ## Match all instances of the same label:
-                        pid <- which(matchVar == o[, 'match'])
-                    } else {
-                        pid <- o$id
-                    }
-
-                    newID <- if (svalue(txtLabs) | !match.all) c(curSet$locate.id, pid) else pid
-                }
-                
-                updateEverything(
-                    locate = if (svalue(txtLabs)) locVar else NULL,
-                    id = newID,
-                    col = if (svalue(colLabs)) svalue(colmenu) else NULL
-                    )
-            }
-
-            if (attr(GUI$curPlot, "nplots") > 1) {
-                locateButton <- glabel("Cannot locate using mouse for multiple graphs.", cont =
-                                           selectGrp)
-                svalue(selectMthd, TRUE) <- 2
-            } else {
-                locateButton <- gbutton("Click to Locate ...", cont = selectGrp)
-                addHandlerClicked(locateButton, function(h, ...) {
-                    locator(h, btn = locateButton)
-                })
-            }
-
-            selectListGrp <- ggroup(FALSE, cont = selectGrp, expand = TRUE, fill = TRUE)
-
-            selectList <- ggroup(TRUE, cont = selectListGrp, expand = TRUE, fill = TRUE)
-            selectLab <- glabel("Variable: ", cont = selectList)
-            selectVar <- gcombobox(colnames(GUI$getActiveData()), selected = 0, cont = selectList,
-                                   expand = TRUE)
-
-            selectSlideGrp <- ggroup(TRUE, cont = selectListGrp, expand = FALSE, fill = TRUE)
-            #selectSlide <- gslider(0, 1, cont = selectSlideGrp, expand = TRUE, fill = TRUE)
-            selectGo <- gbutton("Select values ...", cont = selectList)
-
-            enabled(selectGo) <- svalue(selectVar, TRUE) > 0
-            #visible(selectSlide) <- svalue(selectVar, TRUE) > 0
-            addHandlerChanged(selectVar, function(h, ...) {
-                enabled(selectGo) <- svalue(selectVar, TRUE) > 0
-
-                selVar <- GUI$getActiveData()[, svalue(selectVar)]
-
-                if (length(selectSlideGrp$children) > 0)
-                    selectSlideGrp$remove_child(selectSlideGrp$children[[1]])
-                
-                if (is.factor(selVar) | (length(unique(selVar)) <= 20)) {
-                    nn <- if (is.factor(selVar)) length(levels(selVar)) else length(unique(selVar))
-                    selectSlide <- gslider(if (is.factor(selVar)) levels(selVar) else unique(selVar),
-                                           cont = selectSlideGrp, expand = TRUE, fill = TRUE)
-
-                    addHandlerChanged(selectSlide, function(h, ...) {
-                        v <- svalue(varmenu)
-                        locVar <-
-                            if (v == "id") 1:nrow(GUI$getActiveData())
-                            else GUI$getActiveData()[, v]
-                        
-                        updateEverything(
-                            locate = if (svalue(txtLabs)) locVar else NULL,
-                            id = which(GUI$getActiveData()[, svalue(selectVar)] == svalue(selectSlide)),
-                            col = if (svalue(colLabs)) svalue(colmenu) else NULL
-                            )
-                    })
-                    selectSlide$invoke_change_handler()
-                }
-            })
-            
-            extremePts <- ggroup(cont = selectGrp, expand = TRUE, fill = TRUE)
-            extLab <- glabel("Number of points: ", cont = extremePts)
-            extN <- gslider(0, 20, cont = extremePts, expand = TRUE)
-            if (!is.null(curSet$locate.extreme)) svalue(extN) <- curSet$locate.extreme
-            addHandlerChanged(extN, handler = function(h, ...) {
-                v <- svalue(varmenu)
-                locVar <- if (v == "id") 1:nrow(GUI$getActiveData()) else GUI$getActiveData()[, v]
-                updateEverything(
-                    locate = if (svalue(txtLabs)) locVar else NULL,
-                    id = NULL,
-                    col = if (svalue(colLabs)) svalue(colmenu) else NULL,
-                    ext = if (svalue(extN) > 0) svalue(extN) else NULL
-                    )
-            })
-
-            if (!is.null(locSet$selectMthd))
-                svalue(selectMthd) <- locSet$selectMthd
-            
-
-            ## Bring up a new window to allow user to select levels to label:
-            addHandlerClicked(selectGo, function(h, ...) {
-                ww <- gwindow("Select levels to label ...", visible = FALSE, width = 200, height = 400,
-                              parent = GUI$win)
-                wg <- ggroup(FALSE, cont = ww)
-                wlbl <- glabel("Select levels to label\n(ctrl for multiple)", cont = wg)
-
-                selectLevels <- gtable(levels(as.factor(GUI$getActiveData()[, svalue(selectVar)])),
-                                       multiple = TRUE, cont = wg, expand = TRUE)
-                                  
-                wb <- gbutton("Done", cont = wg)
-                addHandlerClicked(wb, function(h, ...) {
-                    v <- svalue(varmenu)
-                    locVar <-
-                        if (v == "id") 1:nrow(GUI$getActiveData())
-                        else GUI$getActiveData()[, v]
-
-                    updateEverything(
-                        locate = if (svalue(txtLabs)) locVar else NULL,
-                        id = which(GUI$getActiveData()[, svalue(selectVar)] %in% svalue(selectLevels)),
-                        col = if (svalue(colLabs)) svalue(colmenu) else NULL
-                        )
-                    
-                    dispose(ww)
-                })
-                visible(ww) <- TRUE
-            })
-
-            tbl[ii, 1:2, expand = TRUE, anchor = c(1, 0)] <- selectGrp
-            ii <- ii + 1
-
-
-            ii <- ii + 1
-            
-            clearBtn <- gbutton("Clear all labels")
-            addHandlerClicked(clearBtn, function(h, ...) {
-                updateEverything(NULL, NULL, NULL, NULL)
-            })
-            tbl[ii, 1, expand = TRUE] <- clearBtn
-
-            
-            clearBtn2 <- gbutton("Clear label ...")
-            addHandlerClicked(clearBtn2, function(h, ...) {
-                locator(h, remove = TRUE, btn = clearBtn2)
-            })
-            tbl[ii, 2, expand = TRUE] <- clearBtn2
-            ii <- ii + 1
-
-            clearMulti <- gcheckbox("Remove group", checked = svalue(matchChk))
-            tbl[ii, 2, expand = TRUE] <- clearMulti
-            ii <- ii + 1
-
-            addHandlerChanged(selectMthd, function(h, ...) {
-                visible(locateButton) <- svalue(selectMthd, TRUE) == 1
-                visible(selectListGrp) <- svalue(selectMthd, TRUE) == 2
-                visible(extremePts) <- svalue(selectMthd, TRUE) == 3
-
-                enabled(matchChk) <- svalue(selectMthd, TRUE) == 1
-                visible(clearBtn2) <- svalue(selectMthd, TRUE) == 1
-                visible(clearMulti) <- svalue(selectMthd, TRUE) == 1
-                enabled(clearMulti) <- svalue(matchChk)
-            })
-            selectMthd$invoke_change_handler()
-            
-            add(optGrp, tbl, expand = TRUE, fill = TRUE)
-        },
+        opt8 = function() iNZLocatePoints(),
         opt9 = function() {
             tbl <- glayout()
             ii <- 3
@@ -3414,3 +3443,5 @@ iNZHexbinMod <- setRefClass(
             add(optGrp, tbl)
         })
     )
+
+
