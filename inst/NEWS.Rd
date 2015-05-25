@@ -3,7 +3,7 @@
 \encoding{UTF-8}
 
 \section{Changes in version 2.1}{
-  Release date: 22 April 2015
+  Release date: 25 May 2015
 
   \subsection{NEW FEATURES}{
     \itemize{
@@ -40,6 +40,11 @@
       interval values can be read from the graph by clicking 'Get Values'
       in the 'Inference Information' panel. This includes the Year 12 intervals
       applied to medians.
+
+      \item LOCATOR: functionality for scatterplots vastly improved,
+      allowing selection of related points, retaining points over
+      multiple graphcs, and selecting points by a variable.
+      (similar upgrades for dot plots coming in v2.2)
     }
   }
 
