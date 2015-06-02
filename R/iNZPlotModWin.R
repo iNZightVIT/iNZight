@@ -175,7 +175,7 @@ iNZLocatePoints = function(dot = FALSE) {
     tbl[ii, 2, expand = TRUE] <- colmenu
     ii <- ii + 1
     
-    if (!is.null(locSet$colLabs)) svalue(colLabs) <- locSet$colLabs
+    if (!is.null(locSet$colLabs)) svalue(colLabs) <- locSet$colLab
     if (!is.null(locSet$colVar))
         svalue(colmenu) <- locSet$colVar
     
@@ -470,10 +470,10 @@ iNZLocatePoints = function(dot = FALSE) {
         }
     })
     
-    
 
+    extremeGrp <- ggroup(FALSE, cont = selectGrp, expand = TRUE, fill = TRUE)
     if (dot) {
-        extremePts <- ggroup(FALSE, cont = selectGrp, expand = TRUE, fill = TRUE)
+        extremePts <- ggroup(FALSE, cont = extremeGrp, expand = TRUE, fill = TRUE)
 
         lowerG <- ggroup(cont = extremePts, expand = TRUE, fill = TRUE)
         lowerLab <- glabel("N Lower: ", cont = lowerG)
@@ -492,11 +492,13 @@ iNZLocatePoints = function(dot = FALSE) {
                 col = if (svalue(colLabs)) svalue(colmenu) else NULL,
                 ext = c(svalue(nlowerSld), svalue(nupperSld))
                 )
+
+            enabled(addPts) <- svalue(nlowerSld) > 0 | svalue(nupperSld) > 0
         }
         addHandlerChanged(nlowerSld, updateMe)
         addHandlerChanged(nupperSld, updateMe)
     } else {
-        extremePts <- ggroup(cont = selectGrp, expand = TRUE, fill = TRUE)
+        extremePts <- ggroup(cont = extremeGrp, expand = TRUE, fill = TRUE)
         extLab <- glabel("Number of points: ", cont = extremePts)
         extN <- gslider(0, 20, cont = extremePts, expand = TRUE)
         if (!is.null(curSet$locate.extreme)) svalue(extN) <- curSet$locate.extreme
@@ -509,8 +511,29 @@ iNZLocatePoints = function(dot = FALSE) {
                 col = if (svalue(colLabs)) svalue(colmenu) else NULL,
                 ext = if (svalue(extN) > 0) svalue(extN) else NULL
                 )
+            enabled(addPts) <- svalue(extN) > 0
         })
     }
+    addPts <- gbutton("Keep these points ...", cont = extremeGrp, expand = FALSE, anchor = c(0, 1))
+    enabled(addPts) <- if (dot) svalue(nlowerSld) > 0 | svalue(nupperSld) > 0 else svalue(extN) > 0
+
+    addHandlerClicked(addPts, function(h, ...) {
+        if (dot)
+            ids <- GUI$curPlot[[1]][[1]]$toplot[[1]]$extreme.ids
+        else
+            ids <- GUI$curPlot[[1]][[1]]$extreme.ids
+
+        locSet$ID <<- ids
+        v <- svalue(varmenu)
+        locVar <- if (v == "id") 1:nrow(GUI$getActiveData()) else GUI$getActiveData()[, v]
+        
+        updateEverything(
+            locate = if (svalue(txtLabs)) locVar else NULL,
+            id = locSet$ID,
+            col = if (svalue(colLabs)) svalue(colmenu) else NULL,
+            ext = NULL
+            )
+    })
     
     if (!is.null(locSet$selectMthd))
         svalue(selectMthd) <- locSet$selectMthd
@@ -579,7 +602,7 @@ iNZLocatePoints = function(dot = FALSE) {
     addHandlerChanged(selectMthd, function(h, ...) {
         visible(locateButton) <- svalue(selectMthd, TRUE) == 1
         visible(selectListGrp) <- svalue(selectMthd, TRUE) == 2
-        visible(extremePts) <- svalue(selectMthd, TRUE) == 3
+        visible(extremeGrp) <- svalue(selectMthd, TRUE) == 3
         
         enabled(matchChk) <- svalue(selectMthd, TRUE) != 3
         visible(clearBtn2) <- svalue(selectMthd, TRUE) == 1
