@@ -505,6 +505,7 @@ iNZLocatePoints = function(dot = FALSE) {
         addHandlerChanged(extN, handler = function(h, ...) {
             v <- svalue(varmenu)
             locVar <- if (v == "id") 1:nrow(GUI$getActiveData()) else GUI$getActiveData()[, v]
+            
             updateEverything(
                 locate = if (svalue(txtLabs)) locVar else NULL,
                 id = NULL,
@@ -514,8 +515,12 @@ iNZLocatePoints = function(dot = FALSE) {
             enabled(addPts) <- svalue(extN) > 0
         })
     }
-    addPts <- gbutton("Keep these points ...", cont = extremeGrp, expand = FALSE, anchor = c(0, 1))
+    addPts <- gbutton("Save these points ...", cont = extremeGrp, expand = FALSE, anchor = c(0, 1))
     enabled(addPts) <- if (dot) svalue(nlowerSld) > 0 | svalue(nupperSld) > 0 else svalue(extN) > 0
+
+    extLabel <- glabel("NOTE: related points wont be located until\nyou click the above button.")
+    font(extLabel) <- list(family = "normal", size = 7)
+    add(extremeGrp, extLabel, anchor = c(-1, -1))
 
     addHandlerClicked(addPts, function(h, ...) {
         if (dot)
@@ -526,13 +531,22 @@ iNZLocatePoints = function(dot = FALSE) {
         locSet$ID <<- ids
         v <- svalue(varmenu)
         locVar <- if (v == "id") 1:nrow(GUI$getActiveData()) else GUI$getActiveData()[, v]
+
+        if (svalue(matchChk)) {
+            mVar <- as.character(GUI$getActiveData()[, svalue(matchVar)])
+            mVar[is.na(mVar)] <- "missing"
+            mLevs <- unique(mVar[ids])
+            ids <- which(mVar %in% mLevs)
+        }
         
         updateEverything(
             locate = if (svalue(txtLabs)) locVar else NULL,
-            id = locSet$ID,
+            id = ids,
             col = if (svalue(colLabs)) svalue(colmenu) else NULL,
             ext = NULL
             )
+
+        enabled(addPts) <- length(locSet$ID) == 0
     })
     
     if (!is.null(locSet$selectMthd))
@@ -604,7 +618,7 @@ iNZLocatePoints = function(dot = FALSE) {
         visible(selectListGrp) <- svalue(selectMthd, TRUE) == 2
         visible(extremeGrp) <- svalue(selectMthd, TRUE) == 3
         
-        enabled(matchChk) <- svalue(selectMthd, TRUE) != 3
+        ## enabled(matchChk) <- svalue(selectMthd, TRUE) != 3
         visible(clearBtn2) <- svalue(selectMthd, TRUE) == 1
         visible(clearMulti) <- svalue(selectMthd, TRUE) == 1
         enabled(clearMulti) <- svalue(matchChk)
