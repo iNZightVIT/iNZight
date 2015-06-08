@@ -2,6 +2,16 @@
 \title{Change Log for iNZight}
 \encoding{UTF-8}
 
+\section{Changes in version 2.1.1}{
+  Release date: 09 June 2015
+
+  \subsection{BUG FIXES}{
+    \itemize{
+      \item fix a dependency issue required for aggregating data sets
+    }
+  }
+}
+
 \section{Changes in version 2.1}{
   Release date: 25 May 2015
 
