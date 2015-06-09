@@ -1,5 +1,5 @@
 import(grid, RGtk2, RODBC, gdata, gWidgets2RGtk2, cairoDevice, 
-       iNZightPlots, reshape2)
+       iNZightPlots, reshape2, plyr)
 importFrom(iNZightTools, newdevice)
 importClassesFrom(gWidgets2RGtk2)
 
