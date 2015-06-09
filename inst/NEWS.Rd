@@ -2,6 +2,31 @@
 \title{Change Log for iNZight}
 \encoding{UTF-8}
 
+\section{Changes in version 2.X.Y}{
+  Release date: ???
+
+  \subsection{NEW FEATURES}{
+    \itemize{
+      \item users can specify a window size in File > Preferences
+      \item Links to the User Guides found on our website have been
+      added, including help buttons in the Add To Plot and Inference
+      Information windows.
+    }
+  }
+
+  \subsection{MINOR CHANGES}{
+    \itemize{
+      \item the "Row Operations" menu has been renamed "Data"
+    }
+  }
+
+  \subsection{BUG FIXES}{
+    \itemize{
+      \item none yet
+    }
+  }
+}
+
 \section{Changes in version 2.1.1}{
   Release date: 09 June 2015
 
