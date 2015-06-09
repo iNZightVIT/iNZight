@@ -71,6 +71,13 @@ iNZPlotInfWin <- setRefClass(
 
                 addSpring(mainGrp)
 
+                gtoolbariNZ(c(list("help" = gaction(label = "help", icon = "help",
+                                       handler = function(h, ...) {
+                                           browseURL("https://www.stat.auckland.ac.nz/~wild/iNZight/user_guides/plot_options/?topic=plot_inference")
+                                       },
+                                       tooltop = "Get help with the Add To Plot interface"))),
+                            style="icons", cont = mainGrp, anchor = c(1, -1))
+
                 okButton <- gbutton("Close", expand = FALSE,
                                     cont = mainGrp,
                                     handler = function(h, ...) {

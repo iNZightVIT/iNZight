@@ -25,13 +25,45 @@ iNZPrefsWin <- setRefClass(
                                      checked = prefs$check.updates)
                add(g, updOpt)
 
+               lab <- glabel("Default Window Size (will take effect next time you start iNZight)")
+               font(lab) <- list(weight = "bold")
+               add(g, lab, anchor = c(-1, -1))
+
+               tbl <- glayout()
+               tbl[1, 1] <- glabel("Width (px): ")
+               winWd <- gedit(prefs$window.size[1], width = 4)
+               tbl[1, 2] <- winWd
+               tbl[1, 4] <- glabel("Height (px): ")
+               winHt <- gedit(prefs$window.size[2], width = 4)
+               tbl[1, 5] <- winHt
+
+               useCur <- gbutton("Use current dimensions")
+               addHandlerClicked(useCur, function(h, ...) {
+                   curDim <- size(GUI$win)
+                   svalue(winWd) <- curDim[1]
+                   svalue(winHt) <- curDim[2]
+               })
+               tbl[1, 8] <- useCur
+
+               useDef <- gbutton("Reset default")
+               addHandlerClicked(useDef, function(h, ...) {
+                   curDim <- GUI$defaultPrefs()$window.size
+                   svalue(winWd) <- curDim[1]
+                   svalue(winHt) <- curDim[2]
+               })
+               tbl[1, 9] <- useDef
+
+
+               add(g, tbl)
                
 
                btnGrp <- ggroup(container = g, expand = FALSE)
                okButton <- gbutton("OK", expand = FALSE,
                              handler = function(h, ...) {
                                  GUI$preferences <<- list(track = svalue(trackOpt),
-                                                          check.updates = svalue(updOpt))
+                                                          check.updates = svalue(updOpt),
+                                                          window.size =
+                                                          as.numeric(c(svalue(winWd), svalue(winHt))))
                                  GUI$savePreferences()
                                  dispose(GUI$modWin)
                              })

@@ -53,6 +53,14 @@ iNZPlotModWin <- setRefClass(
                 btnGrp <- ggroup(horizontal = FALSE,
                                  expand = FALSE)
                 addSpring(btnGrp)
+                
+                gtoolbariNZ(c(list("help" = gaction(label = "help", icon = "help",
+                                       handler = function(h, ...) {
+                                           browseURL("https://www.stat.auckland.ac.nz/~wild/iNZight/user_guides/plot_options/?topic=add_to_plot")
+                                       },
+                                       tooltop = "Get help with the Add To Plot interface"))),
+                            style="icons", cont = btnGrp, anchor = c(1, -1))
+                            
                 okButton <<- gbutton("Close", expand = FALSE,
                                      cont = btnGrp,
                                      handler = function(h, ...) {
@@ -63,7 +71,7 @@ iNZPlotModWin <- setRefClass(
                                      })
                 addSpring(btnGrp)
                 addSpring(mainGrp)
-                add(mainGrp, btnGrp)
+                add(mainGrp, btnGrp, anchor = c(-1, -1))
 
                 ## If sample size is too big, use a button instead of automatically apply changes
                 auto <<- nrow(GUI$getActiveData()) < 100000
