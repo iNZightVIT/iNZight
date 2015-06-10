@@ -33,7 +33,7 @@ iNZPlotModWin <- setRefClass(
                 }
                 GUI$initializeModuleWindow()
                 
-                mainGrp <- gvbox(container = GUI$moduleWindow, expand = TRUE)
+                mainGrp <- gvbox(container = GUI$moduleWindow, expand = TRUE, fill = TRUE)
                 mainGrp$set_borderwidth(5)
                 topGrp <- ggroup(horizontal = TRUE,
                                  container = mainGrp)
@@ -50,18 +50,18 @@ iNZPlotModWin <- setRefClass(
 
                 add(mainGrp, optGrp)
 
-                btnGrp <- ggroup(horizontal = FALSE,
+                addSpring(mainGrp)
+
+                btnGrp <- ggroup(horizontal = TRUE,
                                  expand = FALSE)
-                addSpring(btnGrp)
-                
-                gtoolbariNZ(c(list("help" = gaction(label = "help", icon = "help",
-                                       handler = function(h, ...) {
-                                           browseURL("https://www.stat.auckland.ac.nz/~wild/iNZight/user_guides/plot_options/?topic=add_to_plot")
-                                       },
-                                       tooltop = "Get help with the Add To Plot interface"))),
-                            style="icons", cont = btnGrp, anchor = c(1, -1))
+
+                helpButton <- gbutton("Help", expand = TRUE, fill = TRUE,
+                                      cont = btnGrp,
+                                      handler = function(h, ...) {
+                                          browseURL("https://www.stat.auckland.ac.nz/~wild/iNZight/user_guides/plot_options/?topic=add_to_plot")
+                                      })
                             
-                okButton <<- gbutton("Close", expand = FALSE,
+                okButton <<- gbutton("Close", expand = TRUE, fill = TRUE,
                                      cont = btnGrp,
                                      handler = function(h, ...) {
                                          ## delete the module window
@@ -69,9 +69,9 @@ iNZPlotModWin <- setRefClass(
                                          ## display the default view (data, variable, etc.)
                                          visible(GUI$gp1) <<- TRUE
                                      })
-                addSpring(btnGrp)
-                addSpring(mainGrp)
-                add(mainGrp, btnGrp, anchor = c(-1, -1))
+                
+                
+                add(mainGrp, btnGrp, expand = FALSE, fill = "x", anchor = c(0, -1))
 
                 ## If sample size is too big, use a button instead of automatically apply changes
                 auto <<- nrow(GUI$getActiveData()) < 100000
