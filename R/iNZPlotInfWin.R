@@ -71,14 +71,26 @@ iNZPlotInfWin <- setRefClass(
 
                 addSpring(mainGrp)
 
-                okButton <- gbutton("Close", expand = FALSE,
-                                    cont = mainGrp,
+                btnGrp <- ggroup(horizontal = TRUE,
+                                 expand = FALSE)
+
+                helpButton <- gbutton("Help", expand = TRUE, fill = TRUE,
+                                      cont = btnGrp,
+                                      handler = function(h, ...) {
+                                         browseURL("https://www.stat.auckland.ac.nz/~wild/iNZight/user_guides/plot_options/?topic=plot_inference")
+                                      })
+                            
+                okButton <- gbutton("Close", expand = TRUE, fill = TRUE,
+                                    cont = btnGrp,
                                     handler = function(h, ...) {
                                         ## delete the module window
                                         delete(GUI$leftMain, GUI$leftMain$children[[2]])
                                         ## display the default view (data, variable, etc.)
                                         visible(GUI$gp1) <<- TRUE
                                     })
+                
+                add(mainGrp, btnGrp, expand = FALSE, fill = "x", anchor = c(0, -1))
+                visible(GUI$moduleWindow) <<- TRUE
             }
         },
         ## up the curSet class variable

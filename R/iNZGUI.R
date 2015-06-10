@@ -144,7 +144,7 @@ iNZGUI <- setRefClass(
             }
             
             win <<- gwindow(win.title, visible = FALSE, 
-                            width = 870, height = 600)
+                            width = preferences$window.size[1], height = preferences$window.size[2])
             
             gtop <- ggroup(horizontal = FALSE, container = win,
                            use.scrollwindow = TRUE)
@@ -506,15 +506,15 @@ iNZGUI <- setRefClass(
                     label = "FAQ",
                     icon  = "symbol_diamond",
                     handler = function(h, ...) {
-                        browseURL("https://www.stat.auckland.ac.nz/~wild/iNZight/faq.php")
+                        browseURL("https://www.stat.auckland.ac.nz/~wild/iNZight/support/faq/")
                     }
                 ),
-                faqPage = gaction(
+                contactPage = gaction(
                     ## 35
                     label = "Contact Support/Report a Bug",
                     icon  = "symbol_diamond",
                     handler = function(h, ...) {
-                        browseURL("https://www.stat.auckland.ac.nz/~wild/iNZight/report.html")
+                        browseURL("https://www.stat.auckland.ac.nz/~wild/iNZight/support/contact/")
                     }
                 ),
                 prefs = gaction (
@@ -554,10 +554,58 @@ iNZGUI <- setRefClass(
                                font.attr = list(size = 9)) -> l2
                         visible(w) <- TRUE
                     }
+                ),
+                guideBasics = gaction(
+                    ## 39
+                    label = "The Basics",
+                    icon = "symbol_diamond",
+                    handler = function(h, ...) {
+                        browseURL("https://www.stat.auckland.ac.nz/~wild/iNZight/user_guides/basics/")
+                    }
+                ),
+                guideInterface = gaction(
+                    ## 40
+                    label = "The Interface",
+                    icon = "symbol_diamond",
+                    handler = function(h, ...) {
+                        browseURL("https://www.stat.auckland.ac.nz/~wild/iNZight/user_guides/interface/")
+                    }
+                ),
+                guidePlotOptions = gaction(
+                    ## 41
+                    label = "Plot Options",
+                    icon = "symbol_diamond",
+                    handler = function(h, ...) {
+                        browseURL("https://www.stat.auckland.ac.nz/~wild/iNZight/user_guides/plot_options/")
+                    }
+                ),
+                guideManipulateVariables = gaction(
+                    ## 42
+                    label = "Manipulate Variables Menu",
+                    icon = "symbol_diamond",
+                    handler = function(h, ...) {
+                        browseURL("https://www.stat.auckland.ac.nz/~wild/iNZight/user_guides/manipulate_variables/")
+                    }
+                ),
+                guideDataOptions = gaction(
+                    ## 43
+                    label = "Data Menu",
+                    icon = "symbol_diamond",
+                    handler = function(h, ...) {
+                        browseURL("https://www.stat.auckland.ac.nz/~wild/iNZight/user_guides/data_options/")
+                    }
+                ),
+                guideAdditional = gaction(
+                    ## 44
+                    label = "Advanced Menu",
+                    icon = "symbol_diamond",
+                    handler = function(h, ...) {
+                        browseURL("https://www.stat.auckland.ac.nz/~wild/iNZight/user_guides/add_ons/")
+                    }
                 )#,
                 ############ MAPS ############
                 ## maps = gaction(
-                ##     ## 39
+                ##     ## 45
                 ##     label = "Maps...",
                 ##     icon = "symbol_diamond",
                 ##     handler = function(h, ...) {
@@ -601,7 +649,7 @@ iNZGUI <- setRefClass(
                 enabled(actionList[[24]]) <- FALSE
             menuBarList <- list(
                 File = actionList[c(16, 1:2, 36, 37)],
-                "Row Operations" = actionList[c(13, 27, 28, 31, 15)],
+                "Data" = actionList[c(13, 27, 28, 31, 15)],
                 #"Filter Data" = actionList[c(13, 27, 28, 15)],
                 "Manipulate variables" = list(
                     actionList[[3]],
@@ -624,6 +672,7 @@ iNZGUI <- setRefClass(
                 "Help" = list(
                     actionList[[33]],
                     actionList[[38]],
+                    "User Guides" = actionList[39:44],
                     actionList[[34]],
                     actionList[[35]]
                     )
@@ -913,10 +962,11 @@ iNZGUI <- setRefClass(
         defaultPrefs = function() {
             ## The default iNZight settings:
             list(track = "ask",
-                 check.updates = TRUE)
+                 check.updates = TRUE,
+                 window.size = c(870, 600))
         },
         checkPrefs = function(prefs) {
-            allowed.names <- c("track", "check.updates")
+            allowed.names <- c("track", "check.updates", "window.size")
 
             ## Only keep allowed preferences --- anything else is discarded
             prefs <- prefs[names(prefs) %in% allowed.names]
@@ -933,6 +983,14 @@ iNZGUI <- setRefClass(
                 if (is.null(prefs$check.updates)) defs$check.updates
                 else if (!is.na(prefs$check.updates) & is.logical(prefs$check.updates)) prefs$check.updates
                 else defs$check.updates
+
+            ## window.size = c(WIDTH, HEIGHT)
+            prefs$window.size <-
+                if (is.null(prefs$window.size)) defs$window.size
+                else if (length(prefs$window.size) != 2) defs$window.size
+                else if (is.numeric(prefs$window.size)) prefs$window.size
+                else defs$window.size
+
 
             prefs
             

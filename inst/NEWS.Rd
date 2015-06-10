@@ -2,8 +2,43 @@
 \title{Change Log for iNZight}
 \encoding{UTF-8}
 
+\section{Changes in version 2.X.Y}{
+  Release date: ???
+
+  \subsection{NEW FEATURES}{
+    \itemize{
+      \item users can specify a window size in File > Preferences
+      \item Links to the User Guides found on our website have been
+      added, including help buttons in the Add To Plot and Inference
+      Information windows.
+    }
+  }
+
+  \subsection{MINOR CHANGES}{
+    \itemize{
+      \item the "Row Operations" menu has been renamed "Data"
+    }
+  }
+
+  \subsection{BUG FIXES}{
+    \itemize{
+      \item none yet
+    }
+  }
+}
+
+\section{Changes in version 2.1.1}{
+  Release date: 09 June 2015
+
+  \subsection{BUG FIXES}{
+    \itemize{
+      \item fix a dependency issue required for aggregating data sets
+    }
+  }
+}
+
 \section{Changes in version 2.1}{
-  Release date: 22 April 2015
+  Release date: 25 May 2015
 
   \subsection{NEW FEATURES}{
     \itemize{
@@ -40,6 +75,11 @@
       interval values can be read from the graph by clicking 'Get Values'
       in the 'Inference Information' panel. This includes the Year 12 intervals
       applied to medians.
+
+      \item LOCATOR: functionality for scatterplots vastly improved,
+      allowing selection of related points, retaining points over
+      multiple graphcs, and selecting points by a variable.
+      (similar upgrades for dot plots coming in v2.2)
     }
   }
 

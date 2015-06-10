@@ -25,22 +25,76 @@ iNZPrefsWin <- setRefClass(
                                      checked = prefs$check.updates)
                add(g, updOpt)
 
-               
 
+               addSpace(g, 30)
+
+               lab <- glabel("Default Window Size (will take effect next time you start iNZight)")
+               font(lab) <- list(weight = "bold")
+               add(g, lab, anchor = c(-1, -1))
+
+               tbl <- glayout()
+               tbl[1, 1] <- glabel("Width (px): ")
+               winWd <- gedit(prefs$window.size[1], width = 4)
+               tbl[1, 2] <- winWd
+               tbl[1, 4] <- glabel("Height (px): ")
+               winHt <- gedit(prefs$window.size[2], width = 4)
+               tbl[1, 5] <- winHt
+
+               useCur <- gbutton("Use current dimensions")
+               addHandlerClicked(useCur, function(h, ...) {
+                   curDim <- size(GUI$win)
+                   svalue(winWd) <- curDim[1]
+                   svalue(winHt) <- curDim[2]
+               })
+               tbl[1, 8] <- useCur
+
+               useDef <- gbutton("Reset default")
+               addHandlerClicked(useDef, function(h, ...) {
+                   curDim <- GUI$defaultPrefs()$window.size
+                   svalue(winWd) <- curDim[1]
+                   svalue(winHt) <- curDim[2]
+               })
+               tbl[1, 9] <- useDef
+               
+               add(g, tbl)
+
+               
+               addSpring(g)
+
+               ## APPLY / CANCEL / OK buttons
                btnGrp <- ggroup(container = g, expand = FALSE)
-               okButton <- gbutton("OK", expand = FALSE,
+               addSpring(btnGrp)
+
+               okButton <- gbutton("Apply", expand = FALSE, cont = btnGrp,
                              handler = function(h, ...) {
                                  GUI$preferences <<- list(track = svalue(trackOpt),
-                                                          check.updates = svalue(updOpt))
+                                                          check.updates = svalue(updOpt),
+                                                          window.size =
+                                                          as.numeric(c(svalue(winWd), svalue(winHt))))
+                                 GUI$savePreferences()
+                             })
+
+               addSpace(btnGrp, 15)
+
+               cancelButton <- gbutton("Cancel", expand = FALSE, cont = btnGrp,
+                                       handler = function(h, ...) dispose(GUI$modWin))
+
+               addSpace(btnGrp, 15)
+               
+               okButton <- gbutton("Save and Close", expand = FALSE, cont = btnGrp,
+                             handler = function(h, ...) {
+                                 GUI$preferences <<- list(track = svalue(trackOpt),
+                                                          check.updates = svalue(updOpt),
+                                                          window.size =
+                                                          as.numeric(c(svalue(winWd), svalue(winHt))))
                                  GUI$savePreferences()
                                  dispose(GUI$modWin)
                              })
-               cancelButton <- gbutton("Cancel", expand = FALSE,
-                                       handler = function(h, ...) dispose(GUI$modWin))
-               btnTb <- glayout()
-               btnTb[1, 1, expand = TRUE] <- okButton
-               btnTb[1, 2, expand = TRUE] <- cancelButton
-               add(btnGrp, btnTb)
+
+               addSpace(btnGrp, 15)
+
+               ## extra space between buttons and bottom of window
+               addSpace(g, 15)
                
                visible(GUI$modWin) <<- TRUE
            }
