@@ -79,7 +79,7 @@ iNZGUI <- setRefClass(
                                  title = "Share usage information?", icon = "question")
                     savePreferences()
                 }
-
+                
                 if (preferences$check.updates) {
                     ap <- suppressWarnings(try(numeric_version(available.packages(
                         contriburl = contrib.url("http://docker.stat.auckland.ac.nz/R",
@@ -95,7 +95,7 @@ iNZGUI <- setRefClass(
                     }
                 }
                 
-                ## we can update this part later to "count" every use ... but later
+                
                 
                 ## also want to be cheeky and add users to "database" of users so we can track...
                 if (preferences$track) {
@@ -112,37 +112,52 @@ iNZGUI <- setRefClass(
                             }
                         }
                         
+                        
                         ## have they updated before?
-                        hash.id <- "new"
-                        if (os == "Windows") {
-                            libp <- "prog_files"
-                        } else if (os != "Linux") {
-                            ## i.e., mac
-                            libp <- "Library"
-                        } else {
-                            ## linux - save in library..
-                            libp <- .libPaths()[which(sapply(.libPaths(), function(p)
-                                                             "iNZight" %in% list.files(p)))[1]]
-                        }
-                        
-                        if (file.exists(file.path(libp, "id.txt"))) {
-                            hash.id <- readLines(file.path(libp, "id.txt"))
-                        }
-                        
-                        ## only if not already tracking
-                        if (hash.id == "new") {
-                            track.url <- paste0("http://docker.stat.auckland.ac.nz/R/tracker/index.php?track&v=",
-                                                version, "&os=", gsub(" ", "%20", os), "&hash=", hash.id)
-                            f <- try(url(track.url,  open = "r"), TRUE)
+                        if (is.null(preferences$track.id)) {
+                            ## compatibility mode ---
+                            hash.id <- "new"
                             
-                            ## write the hash code to their installation:
-                            hash.id <- readLines(f)
-                            try(writeLines(hash.id, file.path(libp, "id.txt")), silent = TRUE)
+                            if (os == "Windows") {
+                                libp <- "prog_files"
+                            } else if (os != "Linux") {
+                                ## i.e., mac
+                                libp <- "Library"
+                            } else {
+                                ## linux - save in library..
+                                libp <- .libPaths()[which(sapply(.libPaths(), function(p)
+                                                                 "iNZight" %in% list.files(p)))[1]]
+                            }
+                            
+                            if (file.exists(file.path(libp, "id.txt"))) {
+                                hash.id <- readLines(file.path(libp, "id.txt"))
+                                unlink(file.path(libp, "id.txt"))  ## delete the old one
+                            }
+                            
+                            ## only if not already tracking
+                            if (hash.id == "new") {
+                                track.url <- paste0("http://docker.stat.auckland.ac.nz/R/tracker/index2.php?track&v=",
+                                                    version, "&os=", gsub(" ", "%20", os), "&hash=", hash.id)
+                                f <- try(url(track.url,  open = "r"), TRUE)
+                                
+                                ## write the hash code to their installation:
+                                hash.id <- readLines(f)
+                                
+                                
+                                ## try(writeLines(hash.id, file.path(libp, "id.txt")), silent = TRUE)
+                            }
+
+                            preferences$track.id <<- hash.id
+                            savePreferencecs()
+                        } else {
+                            hash.id <- preferences$track.id
+                            try(url(paste0("http://docker.stat.auckland.ac.nz/R/tracker/index.php?track&v=",
+                                           version, "&os=", gsub(" ", "%20", os), "&hash=", hash.id), open = "r"), TRUE)
                         }
                     })
                 }
             }
-            
+                
             win <<- gwindow(win.title, visible = FALSE, 
                             width = preferences$window.size[1], height = preferences$window.size[2])
             
@@ -961,12 +976,12 @@ iNZGUI <- setRefClass(
         },
         defaultPrefs = function() {
             ## The default iNZight settings:
-            list(track = "ask",
+            list(track = "ask", track.id = NULL,
                  check.updates = TRUE,
                  window.size = c(870, 600))
         },
         checkPrefs = function(prefs) {
-            allowed.names <- c("track", "check.updates", "window.size")
+            allowed.names <- c("track", "track.id", "check.updates", "window.size")
 
             ## Only keep allowed preferences --- anything else is discarded
             prefs <- prefs[names(prefs) %in% allowed.names]
@@ -977,6 +992,8 @@ iNZGUI <- setRefClass(
                 if (is.null(prefs$track)) defs$track
                 else if (!is.na(prefs$track) & (prefs$track == "ask" | is.logical(prefs$track))) prefs$track
                 else defs$track
+
+
 
             ## check.updates = TRUE | FALSE
             prefs$check.updates <- 
