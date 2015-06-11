@@ -136,7 +136,7 @@ iNZGUI <- setRefClass(
                             
                             ## only if not already tracking
                             if (hash.id == "new") {
-                                track.url <- paste0("http://docker.stat.auckland.ac.nz/R/tracker/index2.php?track&v=",
+                                track.url <- paste0("http://docker.stat.auckland.ac.nz/R/tracker/index.php?track&v=",
                                                     version, "&os=", gsub(" ", "%20", os), "&hash=", hash.id)
                                 f <- try(url(track.url,  open = "r"), TRUE)
                                 
@@ -148,7 +148,9 @@ iNZGUI <- setRefClass(
                             }
 
                             preferences$track.id <<- hash.id
-                            savePreferencecs()
+                            savePreferences()
+
+                            print(preferences)
                         } else {
                             hash.id <- preferences$track.id
                             try(url(paste0("http://docker.stat.auckland.ac.nz/R/tracker/index.php?track&v=",
