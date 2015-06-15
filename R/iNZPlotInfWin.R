@@ -63,6 +63,9 @@ iNZPlotInfWin <- setRefClass(
                                       displayValues()
                                   })
                 btnTab[2, 1, expand = TRUE] <<- intBtn
+                inflabl <- glabel("* iNZight may appear upresponsive while the bootstraps are performed.\nPlease be patient.")
+                font(inflabl) <- list(size = 8)
+                btnTab[3, 1, expand = TRUE] <- inflabl
 
                 add(mainGrp, parTab)
                 add(mainGrp, metTab)
@@ -116,7 +119,7 @@ iNZBarchartInf <- setRefClass(
 
             
             ## Methods
-            mthd <- gradio(c("Normal", "Bootstrap"),
+            mthd <- gradio(c("Normal", "Bootstrap *"),
                            selected = 1)
 
             metTab[3, 1] <<- mthd
@@ -181,7 +184,7 @@ iNZDotchartInf <- setRefClass(
 
             
             ## Methods
-            mthd <- gradio(c("Normal", "Bootstrap"),
+            mthd <- gradio(c("Normal", "Bootstrap *"),
                            selected = 1)
 
             metTab[3, 1] <<- mthd
@@ -231,9 +234,9 @@ iNZDotchartInf <- setRefClass(
                 ## But only do this if user changes the parameter:
                 if (p) {
                     if (svalue(parm, index = TRUE) == 2) {
-                        mthd$set_items(c("Year 12", "Bootstrap"))
+                        mthd$set_items(c("Year 12", "Bootstrap *"))
                     } else {
-                        mthd$set_items(c("Normal", "Bootstrap"))
+                        mthd$set_items(c("Normal", "Bootstrap *"))
                     }
                 }
 
