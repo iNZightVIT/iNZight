@@ -531,15 +531,15 @@ iNZLocatePoints = function(dot = FALSE) {
     add(extremeGrp, extLabel, anchor = c(-1, -1))
 
     addHandlerClicked(addPts, function(h, ...) {
+        cp <- GUI$curPlot
+        ## drop the last 3 pieces (gen, xlim, ylim)
+        cp <- cp[1:(length(cp) - 3)]
         if (dot) {
-            ## drop the last 3 pieces (gen, xlim, ylim)
-            cp <- GUI$curPlot
-            cp <- cp[1:(length(cp) - 3)]
-            cpi <- c(sapply(cp, function(p) sapply(p, function(q) sapply(q$toplot, function(r) r$extreme.ids))))
-            ids <- cpi
+            ids <- sapply(cp, function(p) sapply(p, function(q) sapply(q$toplot, function(r) r$extreme.ids)))
         } else {
-            ids <- GUI$curPlot[[1]][[1]]$extreme.ids
+            ids <- sapply(cp, function(p) sapply(p, function(q) q$extreme.ids))
         }
+        ids <- sapply(ids[!sapply(ids, is.null)], function(x) x)
 
         locSet$ID <<- ids
         v <- svalue(varmenu)
