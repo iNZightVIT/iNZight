@@ -65,7 +65,7 @@ iNZPlotInfWin <- setRefClass(
                 btnTab[2, 1, expand = TRUE] <<- intBtn
                 inflabl <- glabel("* iNZight may appear upresponsive while the bootstraps are performed.\nPlease be patient.")
                 font(inflabl) <- list(size = 8)
-                btnTab[3, 1, expand = TRUE] <- inflabl
+                btnTab[3, 1, expand = TRUE] <<- inflabl
 
                 add(mainGrp, parTab)
                 add(mainGrp, metTab)
