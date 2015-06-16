@@ -664,11 +664,10 @@ iNZGUI <- setRefClass(
                     enabled(x) <- FALSE}))
             if (!'package:iNZightMR' %in% search())
                 enabled(actionList[[24]]) <- FALSE
-            menuBarList <- list(
+            list(
                 File = actionList[c(16, 1:2, 36, 37)],
-                "Data" = actionList[c(13, 27, 28, 31, 15)],
-                #"Filter Data" = actionList[c(13, 27, 28, 15)],
-                "Manipulate variables" = list(
+                "Dataset" = actionList[c(13, 27, 28, 31, 15)],
+                "Variables" = list(
                     actionList[[3]],
                     "Categorical Variables" = actionList[c(6,5,7,8)],
                     "Numeric Variables" = actionList[c(4,12,10, 29,30)],
@@ -677,6 +676,11 @@ iNZGUI <- setRefClass(
                     actionList[[25]],
                     actionList[[14]],
                     actionList[[21]]
+                    ),
+                "Plot" = list(
+                    #gaction(label = "",
+                    #        icon = "diamond",
+                    #        handler = function(h, ...) addtoPlot())
                     ),
                 "Advanced" = list(
                     "Quick Explore" = actionList[c(24, 22, 23, 26, 20)],
