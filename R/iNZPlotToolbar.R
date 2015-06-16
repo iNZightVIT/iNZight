@@ -61,6 +61,34 @@ iNZPlotToolbar <- setRefClass(
                           gbutton(action = actionList[[9]]),
                           gseparator()
                           )
+            
+
+            ## And add to the menu bar:
+            curMenu <- svalue(GUI$menubar)
+            curMenu[["Plot"]] <- list(
+                gaction("Add to plot ...", handler = function(h, ...) addToPlot()),
+                gaction("Remove additions ...", handler = function(h, ...) iNZPlotRmveModWin$new(GUI)),
+                gaction("Add inference ...", handler = function(h, ...) addInf()),
+                gseparator(),
+                gaction(label = "New Tab", icon = "newplot",
+                        handler = function(h, ...) plotWidget$addPlot()),
+                gaction(label = "Close Tab", icon = "close",
+                        handler = function(h, ...) plotWidget$closePlot()),
+                gaction(label = "Rename Tab", icon = "editor",
+                        handler = function(h, ...) plotWidget$renamePlot()),
+                gseparator(),
+                gaction(label = "New Plot Window", icon = "new",
+                        handler = function(h, ...) {
+                            newdevice()
+                            GUI$updatePlot()
+                        }),
+                gaction(label = "Redraw Plot", icon = "refresh",
+                        handler = function(h, ...) GUI$updatePlot()),
+                gaction(label = "Save Plot", icon = "save",
+                        handler = function(h, ...) plotWidget$savePlot())
+                )
+            svalue(GUI$menubar) <<- curMenu
+
             gtoolbariNZ(tbarList, cont = cont, style="icons")
         },
         ## function to open the correct plot modification win

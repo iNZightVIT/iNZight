@@ -13,6 +13,7 @@ iNZGUI <- setRefClass(
                    activeDoc = "numeric", 
                    ## the main GUI window
                    win = "ANY",
+                   menubar = "ANY",
                    
                    ## left group
                    leftMain = "ANY",
@@ -664,7 +665,7 @@ iNZGUI <- setRefClass(
                     enabled(x) <- FALSE}))
             if (!'package:iNZightMR' %in% search())
                 enabled(actionList[[24]]) <- FALSE
-            list(
+            menuBarList <- list(
                 File = actionList[c(16, 1:2, 36, 37)],
                 "Dataset" = actionList[c(13, 27, 28, 31, 15)],
                 "Variables" = list(
@@ -698,7 +699,7 @@ iNZGUI <- setRefClass(
                     actionList[[35]]
                     )
                 )
-            gmenu(menuBarList, container = cont)
+            menubar <<- gmenu(menuBarList, container = cont)
 
         },
         ## set up buttons to switch between data and variable view
