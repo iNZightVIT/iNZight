@@ -14,5 +14,5 @@ Description: An interactive GUI for easy visual exploration of datasets.
 License: GPL-2
 Depends: R (>= 2.1), objectProperties, gWidgets2, cairoDevice
 Imports: grid, RGtk2, RODBC, gdata, reshape2, plyr, gWidgets2RGtk2, 
-	 iNZightPlots, iNZightTools
+	 iNZightPlots, iNZightTools, survey
 Suggests: rgl, gpairs, iNZightTS, iNZightModules

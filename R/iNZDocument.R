@@ -3,25 +3,20 @@ iNZDataModel <- setRefClass(
     properties(fields = list(
                    dataSet = "ANY",
                    origDataSet = "ANY",
-                   rowDataSet = "ANY"),
+                   rowDataSet = "ANY",
+                   dataDesign = "ANY"),
                prototype = list(
                    dataSet = data.frame(empty = " "),
                    origDataSet = data.frame(empty = " "),
-                   rowDataSet = data.frame(Row.names = 1, empty = " "))),
+                   rowDataSet = data.frame(Row.names = 1, empty = " "),
+                   dataDesign = NULL)),
     contains = "PropertySet", ## need this to add observer to object
     methods = list(
         initialize = function(data = NULL) {
             if(!is.null(data)) {
                 .self$setData(data)
-                #.self$setOriginalData(data)
             }
         },
-        #
-        #setOriginalData = function(data) {
-        #  origDataSet <<- data
-          
-        #},
-        ##
         setData = function(data) {
             names(data) <- make.names(names(data), unique = TRUE)
             dataSet <<- data
@@ -48,6 +43,32 @@ iNZDataModel <- setRefClass(
         },
         addObjObserver = function(FUN, ...) {
             .self$changed$connect(FUN, ...)
+        },
+        setDesign = function(strat, clus1, clus2, wt, nest, ...) {
+            id <- if (is.null(clus1) & is.null(clus2)) {
+                "~ 1"
+            } else if (is.null(clus1)) {
+                paste("~", clus2)
+            } else if (is.null(clus2)) {
+                paste("~", clus1) 
+            } else {
+                paste("~", clus1, "+", clus2)
+            }
+            
+            strata <- if (is.null(strat)) "NULL" else paste("~", strat)
+            weights <- if (is.null(wt)) "NULL" else paste("~", wt)
+            
+            obj <-
+                parse(text =
+                      paste0(
+                          "svydesign(",
+                          "id = ", id, ", ",
+                          "strata = ", strata, ", ",
+                          "weights = ", weights, ", ",
+                          "nest = ", nest, ", ",
+                          "data = getActiveData())"
+                          ))
+            dataDesign <<- obj
         }
         )
     )

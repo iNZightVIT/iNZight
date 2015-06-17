@@ -620,6 +620,12 @@ iNZGUI <- setRefClass(
                     handler = function(h, ...) {
                         browseURL("https://www.stat.auckland.ac.nz/~wild/iNZight/user_guides/add_ons/")
                     }
+                ),
+                specifyDesign = gaction(
+                    ## 44
+                    label = "Create Survey Object",
+                    icon = "symbol_diamond",
+                    handler = function(h, ...) iNZSurveyDesign$new(.self)
                 )#,
                 ############ MAPS ############
                 ## maps = gaction(
@@ -667,7 +673,15 @@ iNZGUI <- setRefClass(
                 enabled(actionList[[24]]) <- FALSE
             menuBarList <- list(
                 File = actionList[c(16, 1:2, 36, 37)],
-                "Dataset" = actionList[c(13, 27, 28, 31, 15)],
+                "Dataset" = list(
+                    actionList[[13]],
+                    actionList[[27]],
+                    actionList[[28]],
+                    actionList[[31]],
+                    actionList[[15]],
+                    gseparator(),
+                    actionList[[45]]
+                    ),
                 "Variables" = list(
                     actionList[[3]],
                     "Categorical Variables" = actionList[c(6,5,7,8)],
@@ -899,6 +913,13 @@ iNZGUI <- setRefClass(
                     curPlSet$varnames$y <- curPlSet$varnames$x
                     curPlSet$varnames$x <- x.tmp
                 }
+                ## Design or data?
+                des <- getActiveDoc()$getModel()$dataDesign
+                if (!is.null(des)) {
+                    curPlSet$data <- NULL
+                    curPlSet$design <- eval(des)
+                }
+                
                 ## Suppress the warnings produced by iNZightPlot ...
                 suppressWarnings({
                     curPlot <<- unclass(do.call(iNZightPlot, curPlSet))
