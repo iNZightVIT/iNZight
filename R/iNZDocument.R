@@ -44,19 +44,33 @@ iNZDataModel <- setRefClass(
         addObjObserver = function(FUN, ...) {
             .self$changed$connect(FUN, ...)
         },
-        setDesign = function(strat, clus1, clus2, wt, nest, ...) {
-            id <- if (is.null(clus1) & is.null(clus2)) {
+        setDesign = function(strata=NULL, clus1=NULL, clus2=NULL,
+                             wt=NULL, nest=NULL, ...) {
+            if (is.null(strata) & is.null(clus1) & is.null(clus2) &
+                is.null(wt) & is.null(nest))
+                dataDesign <<- NULL
+            else 
+                dataDesign <<- list(strata = strata,
+                                    clus1  = clus1,
+                                    clus2  = clus2,
+                                    wt     = wt,
+                                    nest   = nest)
+        },
+        createSurveyObject = function() {
+            des <- getDesign()
+                        
+            id <- if (is.null(des$clus1) & is.null(des$clus2)) {
                 "~ 1"
-            } else if (is.null(clus1)) {
-                paste("~", clus2)
-            } else if (is.null(clus2)) {
-                paste("~", clus1) 
+            } else if (is.null(des$clus1)) {
+                paste("~", des$clus2)
+            } else if (is.null(des$clus2)) {
+                paste("~", des$clus1) 
             } else {
-                paste("~", clus1, "+", clus2)
+                paste("~", des$clus1, "+", des$clus2)
             }
             
-            strata <- if (is.null(strat)) "NULL" else paste("~", strat)
-            weights <- if (is.null(wt)) "NULL" else paste("~", wt)
+            strata <- if (is.null(des$strata)) "NULL" else paste("~", des$strata)
+            weights <- if (is.null(des$wt)) "NULL" else paste("~", des$wt)
             
             obj <-
                 parse(text =
@@ -65,10 +79,14 @@ iNZDataModel <- setRefClass(
                           "id = ", id, ", ",
                           "strata = ", strata, ", ",
                           "weights = ", weights, ", ",
-                          "nest = ", nest, ", ",
-                          "data = getActiveData())"
-                          ))
-            dataDesign <<- obj
+                          "nest = ", des$nest, ", ",
+                          "data = dataSet)"
+                          )
+                      )
+            eval(obj)
+        },
+        getDesign = function() {
+            dataDesign
         }
         )
     )

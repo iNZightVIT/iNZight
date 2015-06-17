@@ -622,14 +622,20 @@ iNZGUI <- setRefClass(
                     }
                 ),
                 specifyDesign = gaction(
-                    ## 44
-                    label = "Create Survey Object",
+                    ## 45
+                    label = "Specify Survey Design ...",
                     icon = "symbol_diamond",
                     handler = function(h, ...) iNZSurveyDesign$new(.self)
+                ),
+                removeDesign = gaction(
+                    ## 46
+                    label = "Remove Design",
+                    icon = "symbol_diamond",
+                    handler = function(h, ...) .self$getActiveDoc()$getModel()$setDesign()
                 )#,
                 ############ MAPS ############
                 ## maps = gaction(
-                ##     ## 45
+                ##     # 47
                 ##     label = "Maps...",
                 ##     icon = "symbol_diamond",
                 ##     handler = function(h, ...) {
@@ -680,7 +686,8 @@ iNZGUI <- setRefClass(
                     actionList[[31]],
                     actionList[[15]],
                     gseparator(),
-                    actionList[[45]]
+                    actionList[[45]],
+                    actionList[[46]]
                     ),
                 "Variables" = list(
                     actionList[[3]],
@@ -914,10 +921,10 @@ iNZGUI <- setRefClass(
                     curPlSet$varnames$x <- x.tmp
                 }
                 ## Design or data?
-                des <- getActiveDoc()$getModel()$dataDesign
-                if (!is.null(des)) {
+                curMod <- getActiveDoc()$getModel()
+                if (!is.null(curMod$dataDesign)) {
                     curPlSet$data <- NULL
-                    curPlSet$design <- eval(des)
+                    curPlSet$design <- curMod$createSurveyObject()
                 }
                 
                 ## Suppress the warnings produced by iNZightPlot ...

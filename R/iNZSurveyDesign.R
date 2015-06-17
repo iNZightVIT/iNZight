@@ -94,6 +94,23 @@ iNZSurveyDesign <- setRefClass("iNZSurveyDesign",
                                            dispose(designWin)
                                        })
 
+
+                                       ## Populate the lists:
+                                       curDes <- GUI$getActiveDoc()$getModel()$getDesign()
+                                       if (!is.null(curDes)) {
+                                           if (!is.null(curDes$strata))
+                                               svalue(stratVar) <- curDes$strata
+                                           if (!is.null(curDes$clus1))
+                                               svalue(clus1Var) <- curDes$clus1
+                                           if (!is.null(curDes$clus2))
+                                               svalue(clus2Var) <- curDes$clus2
+                                           if (!is.null(curDes$nest))
+                                               svalue(nestChk) <- curDes$nest
+                                           if (!is.null(curDes$wt))
+                                               svalue(wtVar) <- curDes$wt
+                                       }
+                                       
+
                                        visible(designWin) <<- TRUE
                                    }
                                    )
