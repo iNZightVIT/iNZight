@@ -2,6 +2,38 @@
 \title{Change Log for iNZight}
 \encoding{UTF-8}
 
+\section{Changes in version 2.3}{
+  Release date: TBA
+
+  \subsection{NEW FEATURES}{
+    \itemize{
+      \item SURVEY DESIGNS: iNZight can now handle survey designs
+      (currently Strata, 2-stage (nesting) clustering, and a weighting
+      variable. Plots take account of this structure and inference that
+      displays (currently only trend lines on bivariate plots) use
+      functions from the `survey` packages and thus incorporate weights.
+
+      \item Adjust the axis limits from the Add to Plot menu.
+    }
+  }
+
+  \subsection{MINOR CHANGES}{
+    \itemize{
+      \item the plot tool bar has been added to the Menubar at the top
+      of the page. This allows users to work in a dual-window mode
+      (with a narrow iNZight interface and a separate plotting window)
+      and still be able to access plot functions.
+    }
+  }
+
+  \subsection{BUG FIXES}{
+    \itemize{
+      \item fixes to a few issues occuring in dotplots
+    }
+  }
+}
+
+
 \section{Changes in version 2.2}{
   Release date: 16 June 2015
 
