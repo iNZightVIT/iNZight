@@ -2,6 +2,17 @@
 \title{Change Log for iNZight}
 \encoding{UTF-8}
 
+\section{Changes in version 2.2.0-1}{
+  Release date: 01 July 2015
+
+  \subsection{PATCHES}{
+    \itemize{
+      \item iNZightPlots package: fix colour of segmented bar plots to
+      match the legend
+    }
+  }
+}
+
 \section{Changes in version 2.2}{
   Release date: 16 June 2015
 
