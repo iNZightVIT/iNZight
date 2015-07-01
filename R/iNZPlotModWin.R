@@ -655,11 +655,12 @@ iNZDotchartMod <- setRefClass(
             callSuper(GUI)
             ## need to specify the methods that we want to use in
             ## do.call later on (see changeOpts())
-            usingMethods(opt1, opt2, opt3, opt4, iNZLocatePoints)
+            usingMethods(opt1, opt2, opt3, opt4, opt5, iNZLocatePoints)
             opts <- gcombobox(c("Code more variables",
                                 "Change plot appearance",
                                 "Identify points",
-                                "Customize Labels"),
+                                "Customize Labels",
+                                "Adjust axis limits"),
                               selected = which)
             add(radioGrp, opts, fill = TRUE, expand = TRUE)
             eval(parse(text = paste0("opt", which, "()")))
@@ -1212,6 +1213,82 @@ iNZDotchartMod <- setRefClass(
             addHandlerChanged(labX, handler = function(h, ...) updateEverything())
             
             add(optGrp, tbl)
+        },
+        ## Adjust axis limits
+        opt5 = function(){
+            tbl <- glayout()
+            ii <- 3
+            
+            lbl <- glabel("Adjust Axis Limits")
+            font(lbl) <- list(weight="bold", family = "normal", size = 9)
+            tbl[ii, 1:2, anchor = c(-1, -1), expand = TRUE] <- lbl
+            ii <- ii + 1
+
+            pl <- GUI$curPlot
+            xlim <-pl$xlim
+           
+            lbl <- glabel("x-axis: ")
+            xlower <- gedit(xlim[1])
+            xupper <- gedit(xlim[2])
+            tbl[ii, 1, expand = TRUE, fill = TRUE] <- lbl
+            tbl[ii, 2, expand = TRUE] <- xlower
+            tbl[ii, 3, expand = TRUE] <- xupper
+            ii <- ii + 1
+
+
+            errlbl <- glabel("Limits must be numbers.")
+            tbl[ii, 1:3] <- errlbl
+            visible(errlbl) <- FALSE
+
+            updateEverything <- function() {
+                err <- FALSE
+                xl <- suppressWarnings(as.numeric(svalue(xlower)))
+                if (is.na(xl)) {
+                    xl <- xlim[1]
+                    err <- TRUE
+                }
+                xu <- suppressWarnings(as.numeric(svalue(xupper)))
+                if (is.na(xu)) {
+                    xu <- xlim[2]
+                    err <- TRUE
+                }
+
+                visible(errlbl) <- err
+                    
+                ## update plot settings
+                GUI$getActiveDoc()$setSettings(
+                    list(xlim = c(xl, xu))
+                    )
+                updateSettings()
+            }
+
+            timer <- NULL
+            updT <- function(h, ...) {
+                if (!is.null(timer))
+                    timer$stop_timer()
+                timer <- gtimer(800, function(...) updateEverything(), one.shot = TRUE)
+            }
+            addHandlerKeystroke(xlower, updT)
+            addHandlerKeystroke(xupper, updT)
+            
+            add(optGrp, tbl)
+
+            resetGrp <- ggroup(cont = optGrp)
+            addSpring(resetGrp)
+            resetbtn <- gbutton("Reset", cont = resetGrp)
+            addHandlerClicked(resetbtn, function(h, ...) {
+                GUI$getActiveDoc()$setSettings(
+                    list(xlim = NULL)
+                    )
+                updateSettings()
+
+                ## reset the values in the boxes:
+                pl <- GUI$curPlot
+                xlim <-pl$xlim
+
+                svalue(xlower) <- xlim[1]
+                svalue(xupper) <- xlim[2]
+            })
         })
     )
 
@@ -1228,9 +1305,10 @@ iNZHistogramMod <- setRefClass(
             callSuper(GUI)
             ## need to specify the methods that we want to use in
             ## do.call later on (see changeOpts())
-            usingMethods(opt1, opt2)
+            usingMethods(opt1, opt2, opt3)
             opts <- gcombobox(c("Change plot appearance",
-                                "Customize Labels"),
+                                "Customize Labels",
+                                "Adjust axis limits"),
                               selected = which)
             add(radioGrp, opts, expand = TRUE, fill = TRUE)
             eval(parse(text = paste0("opt", which, "()")))
@@ -1484,6 +1562,82 @@ iNZHistogramMod <- setRefClass(
             addHandlerChanged(labX, handler = function(h, ...) updateEverything())
             
             add(optGrp, tbl)
+        },
+        ## Adjust axis limits
+        opt3 = function(){
+            tbl <- glayout()
+            ii <- 3
+            
+            lbl <- glabel("Adjust Axis Limits")
+            font(lbl) <- list(weight="bold", family = "normal", size = 9)
+            tbl[ii, 1:2, anchor = c(-1, -1), expand = TRUE] <- lbl
+            ii <- ii + 1
+
+            pl <- GUI$curPlot
+            xlim <-pl$xlim
+           
+            lbl <- glabel("x-axis: ")
+            xlower <- gedit(xlim[1])
+            xupper <- gedit(xlim[2])
+            tbl[ii, 1, expand = TRUE, fill = TRUE] <- lbl
+            tbl[ii, 2, expand = TRUE] <- xlower
+            tbl[ii, 3, expand = TRUE] <- xupper
+            ii <- ii + 1
+
+
+            errlbl <- glabel("Limits must be numbers.")
+            tbl[ii, 1:3] <- errlbl
+            visible(errlbl) <- FALSE
+
+            updateEverything <- function() {
+                err <- FALSE
+                xl <- suppressWarnings(as.numeric(svalue(xlower)))
+                if (is.na(xl)) {
+                    xl <- xlim[1]
+                    err <- TRUE
+                }
+                xu <- suppressWarnings(as.numeric(svalue(xupper)))
+                if (is.na(xu)) {
+                    xu <- xlim[2]
+                    err <- TRUE
+                }
+
+                visible(errlbl) <- err
+                    
+                ## update plot settings
+                GUI$getActiveDoc()$setSettings(
+                    list(xlim = c(xl, xu))
+                    )
+                updateSettings()
+            }
+
+            timer <- NULL
+            updT <- function(h, ...) {
+                if (!is.null(timer))
+                    timer$stop_timer()
+                timer <- gtimer(800, function(...) updateEverything(), one.shot = TRUE)
+            }
+            addHandlerKeystroke(xlower, updT)
+            addHandlerKeystroke(xupper, updT)
+            
+            add(optGrp, tbl)
+
+            resetGrp <- ggroup(cont = optGrp)
+            addSpring(resetGrp)
+            resetbtn <- gbutton("Reset", cont = resetGrp)
+            addHandlerClicked(resetbtn, function(h, ...) {
+                GUI$getActiveDoc()$setSettings(
+                    list(xlim = NULL)
+                    )
+                updateSettings()
+
+                ## reset the values in the boxes:
+                pl <- GUI$curPlot
+                xlim <-pl$xlim
+
+                svalue(xlower) <- xlim[1]
+                svalue(xupper) <- xlim[2]
+            })
         })
     )
 
@@ -2591,13 +2745,14 @@ iNZScatterMod <- setRefClass(
             errlbl <- glabel("Limits must be numbers.")
             tbl[ii, 1:3] <- errlbl
             visible(errlbl) <- FALSE
+            ii <- ii + 1
 
             updateEverything <- function() {
                 err <- FALSE
                 xl <- suppressWarnings(as.numeric(svalue(xlower)))
                 if (is.na(xl)) {
                     xl <- xlim[1]
-                    err <- TRUE
+                    err <- TRUE4
                 }
                 xu <- suppressWarnings(as.numeric(svalue(xupper)))
                 if (is.na(xu)) {
@@ -2638,6 +2793,26 @@ iNZScatterMod <- setRefClass(
             addHandlerKeystroke(yupper, updT)
             
             add(optGrp, tbl)
+
+            resetGrp <- ggroup(cont = optGrp)
+            addSpring(resetGrp)
+            resetbtn <- gbutton("Reset", cont = resetGrp)
+            addHandlerClicked(resetbtn, function(h, ...) {
+                GUI$getActiveDoc()$setSettings(
+                    list(xlim = NULL, ylim = NULL)
+                    )
+                updateSettings()
+
+                ## reset the values in the boxes:
+                pl <- GUI$curPlot
+                xlim <-pl$xlim
+                ylim <- pl$ylim
+
+                svalue(xlower) <- xlim[1]
+                svalue(xupper) <- xlim[2]
+                svalue(ylower) <- ylim[1]
+                svalue(yupper) <- ylim[2]
+            })
         })
     )
 
@@ -3210,6 +3385,26 @@ iNZGriddenMod <- setRefClass(
             addHandlerKeystroke(yupper, updT)
             
             add(optGrp, tbl)
+
+            resetGrp <- ggroup(cont = optGrp)
+            addSpring(resetGrp)
+            resetbtn <- gbutton("Reset", cont = resetGrp)
+            addHandlerClicked(resetbtn, function(h, ...) {
+                GUI$getActiveDoc()$setSettings(
+                    list(xlim = NULL, ylim = NULL)
+                    )
+                updateSettings()
+
+                ## reset the values in the boxes:
+                pl <- GUI$curPlot
+                xlim <-pl$xlim
+                ylim <- pl$ylim
+
+                svalue(xlower) <- xlim[1]
+                svalue(xupper) <- xlim[2]
+                svalue(ylower) <- ylim[1]
+                svalue(yupper) <- ylim[2]
+            })
         })
     )
 
@@ -3223,7 +3418,7 @@ iNZHexbinMod <- setRefClass(
             callSuper(GUI)
             ## need to specify the methods that we want to use in
             ## do.call later on (see changeOpts())
-            usingMethods(opt1, opt2, opt3, opt4, opts5)
+            usingMethods(opt1, opt2, opt3, opt4, opt5)
             opts <- gcombobox(c("Add trend curves",
                                 "Add x=y line",
                                 "Change plot appearance",
@@ -3763,6 +3958,26 @@ iNZHexbinMod <- setRefClass(
             addHandlerKeystroke(yupper, updT)
             
             add(optGrp, tbl)
+
+            resetGrp <- ggroup(cont = optGrp)
+            addSpring(resetGrp)
+            resetbtn <- gbutton("Reset", cont = resetGrp)
+            addHandlerClicked(resetbtn, function(h, ...) {
+                GUI$getActiveDoc()$setSettings(
+                    list(xlim = NULL, ylim = NULL)
+                    )
+                updateSettings()
+
+                ## reset the values in the boxes:
+                pl <- GUI$curPlot
+                xlim <-pl$xlim
+                ylim <- pl$ylim
+
+                svalue(xlower) <- xlim[1]
+                svalue(xupper) <- xlim[2]
+                svalue(ylower) <- ylim[1]
+                svalue(yupper) <- ylim[2]
+            })
         })
     )
 
