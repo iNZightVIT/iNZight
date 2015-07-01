@@ -150,8 +150,6 @@ iNZGUI <- setRefClass(
 
                             preferences$track.id <<- hash.id
                             savePreferences()
-
-                            print(preferences)
                         } else {
                             hash.id <- preferences$track.id
                             try(url(paste0("http://docker.stat.auckland.ac.nz/R/tracker/index.php?track&v=",
