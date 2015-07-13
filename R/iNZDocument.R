@@ -115,6 +115,7 @@ iNZPlotSettings <- setRefClass(
         ## reset: if TRUE, the default plot settings are loaded
         ##        for the additions to the plot
         setSettings = function(setList, reset = FALSE) {
+            #cat("Resetting? ", reset, "\n")
             if (reset)
                 setList <- modifyList(setList,
                                       defaultSettings,
@@ -133,7 +134,8 @@ iNZPlotSettings <- setRefClass(
         ## extract a sub-list of a settings list
         ## than can be used to merge with defaultSettings
         extractDefaults = function(theSettings) {
-            defaultFields <- c("cex", "bg", "col.pt")
+            defaultFields <- c("cex", "bg", "col.pt", "col.pt", "cex.pt", "cex.dotpt",
+                               "alpha", "fill.pt", "pch")
             theSettings[defaultFields]
         },
         addSettingsObserver = function(FUN, ...) {

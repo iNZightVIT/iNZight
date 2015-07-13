@@ -26,7 +26,10 @@ iNZControlWidget <- setRefClass(
             tbl[5,7, anchor = c(0,0)] <- gbutton("clear",
                          handler=function(h,...) {
                              svalue(ylbl) <- "Drop name here"
-                             changePlotSettings(list(y = NULL))
+                             changePlotSettings(list(y = NULL,
+                                                     varnames = list(
+                                                         y = NULL)),
+                                                reset = { GUI$plotType != "dot" })
                          })
             tbl[7,7, anchor = c(0,0)] <- gbutton("clear",
                          handler=function(h,...) {
@@ -69,6 +72,13 @@ iNZControlWidget <- setRefClass(
             addDropTarget(
                 ylbl,
                 handler = function(h, ...) {
+                    ## DO NOT RESET the plot IF
+                    ## - X is numeric and TYPE is DOT and NEW Y is factor:
+                    do.reset <- TRUE
+                    if (GUI$plotType == "dot") 
+                        if (is.factor(GUI$getActiveDoc()$getData()[h$dropdata][[1]]))
+                            do.reset <- FALSE
+                            
                     svalue(h$obj) <- h$dropdata
                     changePlotSettings(list(
                         y = GUI$getActiveDoc()$getData()[h$dropdata][[1]],
@@ -76,7 +86,7 @@ iNZControlWidget <- setRefClass(
                         main = NULL,
                         varnames = list(
                             y = colnames(GUI$getActiveDoc()$getData()[h$dropdata]))
-                        ), reset = TRUE)
+                        ), reset = do.reset)
                 })
             ## slider 1
             addDropTarget(

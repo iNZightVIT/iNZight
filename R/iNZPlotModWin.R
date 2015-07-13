@@ -1225,7 +1225,10 @@ iNZDotchartMod <- setRefClass(
             ii <- ii + 1
 
             pl <- GUI$curPlot
-            xlim <-pl$xlim
+            xlim <- if (is.null(curSet$xlim))
+                pl$xlim
+            else
+                curSet$xlim
            
             lbl <- glabel("x-axis: ")
             xlower <- gedit(xlim[1])
@@ -1574,7 +1577,10 @@ iNZHistogramMod <- setRefClass(
             ii <- ii + 1
 
             pl <- GUI$curPlot
-            xlim <-pl$xlim
+            xlim <- if (is.null(curSet$xlim))
+                        pl$xlim
+                    else
+                        curSet$xlim
            
             lbl <- glabel("x-axis: ")
             xlower <- gedit(xlim[1])
@@ -2723,9 +2729,16 @@ iNZScatterMod <- setRefClass(
             ii <- ii + 1
 
             pl <- GUI$curPlot
-            xlim <-pl$xlim
-            ylim <- pl$ylim
-           
+            xlim <- if (is.null(curSet$xlim))
+                pl$xlim
+            else
+                curSet$xlim
+            ylim <- if (is.null(curSet$ylim))
+                pl$ylim
+            else
+                curSet$ylim
+
+            
             lbl <- glabel("x-axis: ")
             xlower <- gedit(xlim[1])
             xupper <- gedit(xlim[2])
@@ -3316,8 +3329,14 @@ iNZGriddenMod <- setRefClass(
             ii <- ii + 1
 
             pl <- GUI$curPlot
-            xlim <-pl$xlim
-            ylim <- pl$ylim
+            xlim <- if (is.null(curSet$xlim))
+                pl$xlim
+            else
+                curSet$xlim
+            ylim <- if (is.null(curSet$ylim))
+                pl$ylim
+            else
+                curSet$ylim
            
             lbl <- glabel("x-axis: ")
             xlower <- gedit(xlim[1])
@@ -3889,8 +3908,14 @@ iNZHexbinMod <- setRefClass(
             ii <- ii + 1
 
             pl <- GUI$curPlot
-            xlim <-pl$xlim
-            ylim <- pl$ylim
+            xlim <- if (is.null(curSet$xlim))
+                pl$xlim
+            else
+                curSet$xlim
+            ylim <- if (is.null(curSet$ylim))
+                pl$ylim
+            else
+                curSet$ylim
            
             lbl <- glabel("x-axis: ")
             xlower <- gedit(xlim[1])
