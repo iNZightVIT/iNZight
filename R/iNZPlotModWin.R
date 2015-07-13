@@ -1664,16 +1664,18 @@ iNZBarchartMod <- setRefClass(
             ## do.call later on (see changeOpts())
 
             if (is.null(curSet$y)) {
-                usingMethods(opt1, opt2, opt3)
+                usingMethods(opt1, opt2, opt3, opt4)
                 opts <- gcombobox(c("Code more variables",
                                     "Change plot appearance",
-                                    "Customize Labels"),
+                                    "Customize Labels",
+                                    "Adjust number of Bars"),
                                   selected = which)
             } else {
-                usingMethods(opt2, opt3)
+                usingMethods(opt2, opt3, opt4)
                 which <- ifelse(which == 1, 2, which)
                 opts <- gcombobox(c("Change plot appearance",
-                                    "Customize Labels"),
+                                    "Customize Labels",
+                                    "Adjust number of Bars"),
                                   selected = which - 1)
             }
             add(radioGrp, opts, fill = TRUE, expand = TRUE)
@@ -1912,6 +1914,79 @@ iNZBarchartMod <- setRefClass(
             addHandlerChanged(labX, handler = function(h, ...) updateEverything())
             
             add(optGrp, tbl)
+        },
+        ## Adjust number of bars visible
+        opt4 = function(){
+            tbl <- glayout()
+            ii <- 3
+            
+            lbl <- glabel("Adjust Number of Bars")
+            font(lbl) <- list(weight="bold", family = "normal", size = 9)
+            tbl[ii, 1:2, anchor = c(-1, -1), expand = TRUE] <- lbl
+            ii <- ii + 1
+
+            pl <- GUI$curPlot
+            curSet <- GUI$getActiveDoc()$getSettings()
+            zoom <- if (is.null(curSet$zoombars))
+                        pl$zoombars
+                    else
+                        NULL
+            
+            lbl <- glabel("Number of bars: ")
+            NBARS <- gslider(2, min(30, length(levels(curSet$x))), by = 1, value = min(30, length(levels(curSet$x))))
+            tbl[ii, 1, expand = TRUE, fill = TRUE, anchor = c(-1, 0)] <- lbl
+            tbl[ii, 2, expand = TRUE] <- NBARS
+            ii <- ii + 1
+
+            lbl <- glabel("Starting point: ")
+            START <- gslider(levels(curSet$x)[1:(length(levels(curSet$x)) - 1)])
+            tbl[ii, 1, expand = TRUE, fill = TRUE, anchor = c(-1, 0)] <- lbl
+            tbl[ii, 2, expand = TRUE] <- START
+            ii <- ii + 1         
+            
+            updateEverything <- function() {
+                ## update plot settings
+                GUI$getActiveDoc()$setSettings(
+                    list(zoombars = c(svalue(START, index = TRUE), svalue(NBARS)))
+                    )
+                updateSettings()
+            }
+
+            addHandlerChanged(NBARS, function(h, ...) updateEverything())
+            addHandlerChanged(START, function(h, ...) updateEverything())
+
+            if (!is.null(zoom)) {
+                svalue(NBARS) <- zoom[2]
+                svalue(START) <- zoom[1]
+            }
+
+            ## timer <- NULL
+            ## updT <- function(h, ...) {
+            ##     if (!is.null(timer))
+            ##         timer$stop_timer()
+            ##     timer <- gtimer(800, function(...) updateEverything(), one.shot = TRUE)
+            ## }
+            ## addHandlerKeystroke(xlower, updT)
+            ## addHandlerKeystroke(xupper, updT)
+            
+            add(optGrp, tbl)
+
+            resetGrp <- ggroup(cont = optGrp)
+            addSpring(resetGrp)
+            resetbtn <- gbutton("Reset", cont = resetGrp)
+            addHandlerClicked(resetbtn, function(h, ...) {
+                GUI$getActiveDoc()$setSettings(
+                    list(zoombars = NULL)
+                    )
+                updateSettings()
+
+                ## reset the values in the boxes:
+                ## pl <- GUI$curPlot
+                ## xlim <-pl$xlim
+
+                ## svalue(xlower) <- xlim[1]
+                ## svalue(xupper) <- xlim[2]
+            })
         })
     )
 
