@@ -1925,10 +1925,8 @@ iNZBarchartMod <- setRefClass(
             tbl[ii, 1:2, anchor = c(-1, -1), expand = TRUE] <- lbl
             ii <- ii + 1
 
-            pl <- GUI$curPlot
-            curSet <- GUI$getActiveDoc()$getSettings()
-            zoom <- if (is.null(curSet$zoombars))
-                        pl$zoombars
+            zoom <- if (!is.null(curSet$zoombars))
+                        curSet$zoombars
                     else
                         NULL
             
@@ -1957,7 +1955,7 @@ iNZBarchartMod <- setRefClass(
 
             if (!is.null(zoom)) {
                 svalue(NBARS) <- zoom[2]
-                svalue(START) <- zoom[1]
+                svalue(START, index = TRUE) <- zoom[1]
             }
 
             ## timer <- NULL
@@ -1966,7 +1964,7 @@ iNZBarchartMod <- setRefClass(
             ##         timer$stop_timer()
             ##     timer <- gtimer(800, function(...) updateEverything(), one.shot = TRUE)
             ## }
-            ## addHandlerKeystroke(xlower, updT)
+            ## addHandlerKeystroke(xlower, updT)z
             ## addHandlerKeystroke(xupper, updT)
             
             add(optGrp, tbl)
@@ -1987,6 +1985,9 @@ iNZBarchartMod <- setRefClass(
                 ## svalue(xlower) <- xlim[1]
                 ## svalue(xupper) <- xlim[2]
             })
+
+            ## We want to instantly display the results ...
+            updateEverything()
         })
     )
 
