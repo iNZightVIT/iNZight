@@ -109,6 +109,11 @@ iNZSurveyDesign <- setRefClass("iNZSurveyDesign",
                                            if (!is.null(curDes$wt))
                                                svalue(wtVar) <- curDes$wt
                                        }
+
+                                       ## DISABLE A WHOLE LOT OF STUFF
+                                        enabled(GUI$menubar$menu_list[["Dataset"]][[3]]) <<- FALSE
+                                       ##enabled(GUI$menubar$menu_list[["Variables"]][["Numeric Variables"]][[2]]) <<- FALSE
+                                       enabled(GUI$menubar$menu_list[["Plot"]][[3]]) <<- FALSE
                                        
 
                                        visible(designWin) <<- TRUE

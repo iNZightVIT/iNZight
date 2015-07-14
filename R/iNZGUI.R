@@ -30,6 +30,7 @@ iNZGUI <- setRefClass(
                    dataNameWidget = "ANY",
                    ## widget that handles the plot notebook
                    plotWidget = "ANY",
+                   plotToolbar = "ANY",
                    ## widget that handles the drag/drop buttons
                    ## under the dataViewWidget
                    ctrlWidget = "ANY",
@@ -882,7 +883,7 @@ iNZGUI <- setRefClass(
         },
         ## set up the buttons under the plot to interact with the plot
         initializePlotToolbar = function(cont) {
-            iNZPlotToolbar$new(.self, cont)
+            plotToolbar <<- iNZPlotToolbar$new(.self, cont)
         },
         ## if set upon gui startup, close the R sessions when
         ## the gui is closed
