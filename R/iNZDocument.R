@@ -115,8 +115,6 @@ iNZPlotSettings <- setRefClass(
         ## reset: if TRUE, the default plot settings are loaded
         ##        for the additions to the plot
         setSettings = function(setList, reset = FALSE) {
-            print(setList)
-            print(reset)
             if (reset)
                 setList <- modifyList(setList,
                                       defaultSettings,
