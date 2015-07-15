@@ -2,7 +2,9 @@ iNZControlWidget <- setRefClass(
     "iNZControlWidget",
     fields = list(
         GUI = "ANY",
-        ctrlGp = "ANY"
+        ctrlGp = "ANY",
+        V1box = "ANY",
+        V2box = "ANY"
         ),
     methods = list(
         initialize = function(gui) {
@@ -10,27 +12,47 @@ iNZControlWidget <- setRefClass(
             initFields(GUI = gui)
             ## set up glayout
             tbl <- glayout(expand = FALSE, cont = ctrlGp)
-            tbl[3,1, anchor = c(0,0)] <- glabel(" Variable 1 :")
-            tbl[5,1, anchor = c(0,0)] <- glabel(" Variable 2 :")
+
+
+            V1box <<- gcombobox(c("Select or Drag/drop Variable 1", colnames(GUI$getActiveData())))
+            V2box <<- gcombobox(c("Select or Drag/drop Variable 2", colnames(GUI$getActiveData())))
+            
+            tbl[3,1:5, anchor = c(0,0), expand = TRUE] <- V1box
+            tbl[5,1:5, anchor = c(0,0), expand = TRUE] <- V2box
+
+            #tbl[3,1, anchor = c(0,0)] <- glabel(" Variable 1 :")
+            #tbl[5,1, anchor = c(0,0)] <- glabel(" Variable 2 :")
             tbl[7,1, anchor = c(0,0)] <- glabel(" subset by  :")
             tbl[9,1, anchor = c(0,0)] <- glabel(" subset by  :")
-            tbl[3,3, anchor = c(0,0)] <- (xlbl <- glabel("Drop name here"))
-            tbl[5,3, anchor = c(0,0)] <- (ylbl <- glabel("Drop name here"))
+            #tbl[3,3, anchor = c(0,0)] <- (xlbl <- glabel("Drop name here"))
+            #tbl[5,3, anchor = c(0,0)] <- (ylbl <- glabel("Drop name here"))
             tbl[7,3, anchor = c(0,0)] <- (g1lbl <- glabel("Drop name here"))
             tbl[9,3, anchor = c(0,0)] <- (g2lbl <- glabel("Drop name here"))
-            tbl[3,7, anchor = c(0,0)] <- gbutton("clear",
-                         handler = function(h,...) {
-                             svalue(xlbl) <- "Drop name here"
-                             changePlotSettings(list(x = NULL))
-                         })
-            tbl[5,7, anchor = c(0,0)] <- gbutton("clear",
-                         handler=function(h,...) {
-                             svalue(ylbl) <- "Drop name here"
-                             changePlotSettings(list(y = NULL,
-                                                     varnames = list(
-                                                         y = NULL)),
-                                                reset = { GUI$plotType != "dot" })
-                         })
+
+            ### CLEAR BUTTONS
+
+            ## -- Variable 1
+            V1clearbtn <- gbutton("",
+                                  handler = function(h,...) {
+                                      svalue(V1box, index = TRUE) <<- 1
+                                      changePlotSettings(list(x = NULL))
+                                  })
+            V1clearbtn$set_icon("Cancel", size = "menu")
+            tbl[3,7, anchor = c(0,0)] <- V1clearbtn
+
+            ## -- Variable 2
+            V2clearbtn <- gbutton("",
+                                  handler = function(h,...) {
+                                      svalue(V2box, index = TRUE) <<- 1
+                                      changePlotSettings(list(y = NULL,
+                                                              varnames = list(
+                                                                  y = NULL)),
+                                                         reset = { GUI$plotType != "dot" })
+                                  })
+            V2clearbtn$set_icon("Cancel", size = "menu")
+            tbl[5,7, anchor = c(0,0)] <- V2clearbtn
+
+            ## -- Grouping Variable 1
             tbl[7,7, anchor = c(0,0)] <- gbutton("clear",
                          handler=function(h,...) {
                              deleteSlider(8) # delete a slider in row 8 of the glayout
@@ -52,42 +74,71 @@ iNZControlWidget <- setRefClass(
                                                      ), reset = TRUE)
                          })
             ## change the font
-            font(xlbl) <- list(weight="bold", family = "normal")
-            font(ylbl) <- list(weight="bold", family = "normal")
-            font(g1lbl) <- list(weight="bold", family = "normal")
-            font(g2lbl) <- list(weight="bold", family = "normal")
-            ## add drop functionality to the fields
+            #font(xlbl) <- list(weight="bold", family = "normal")
+            #font(ylbl) <- list(weight="bold", family = "normal")
+            #font(g1lbl) <- list(weight="bold", family = "normal")
+            #font(g2lbl) <- list(weight="bold", family = "normal")
+            
+            ### add drop functionality to the fields
+
+            ## -- Variable 1
             addDropTarget(
-                xlbl,
+                V1box,
                 handler = function(h, ...) {
                     svalue(h$obj) <- h$dropdata
+                })
+            addHandlerChanged(
+                V1box,
+                handler = function(h, ...) {
+                    if (svalue(h$obj, index = TRUE) == 1) {
+                        newX <- NULL
+                        newXname <- NULL
+                    } else {
+                        newX <- GUI$getActiveDoc()$getData()[svalue(h$obj)][[1]]
+                        newXname <- colnames(GUI$getActiveDoc()$getData()[svalue(h$obj)])
+                    }
+                    
                     changePlotSettings(list(
-                        x = GUI$getActiveDoc()$getData()[h$dropdata][[1]],
+                        x = newX,
                         xlab = NULL,
                         main = NULL,
                         varnames = list(
-                            x = colnames(GUI$getActiveDoc()$getData()[h$dropdata]))
+                            x = newXname)
                         ), reset = TRUE)
                 })
+
+            ## -- Variable 2
             addDropTarget(
-                ylbl,
+                V2box,
                 handler = function(h, ...) {
-                    ## DO NOT RESET the plot IF
-                    ## - X is numeric and TYPE is DOT and NEW Y is factor:
-                    do.reset <- TRUE
-                    if (GUI$plotType == "dot") 
-                        if (is.factor(GUI$getActiveDoc()$getData()[h$dropdata][[1]]))
-                            do.reset <- FALSE
-                            
                     svalue(h$obj) <- h$dropdata
+                })
+            addHandlerChanged(
+                V2box,
+                handler = function(h, ...) {
+                    do.reset <- TRUE
+                    
+                    if (svalue(h$obj, index = TRUE) == 1) {
+                        newY <- NULL
+                        newYname <- NULL
+                        do.reset <- TRUE
+                    } else {
+                        newY <- GUI$getActiveDoc()$getData()[svalue(h$obj)][[1]]
+                        newYname <- colnames(GUI$getActiveDoc()$getData()[svalue(h$obj)])
+                        
+                        if (GUI$plotType == "dot") 
+                            if (is.factor(newY))
+                                do.reset <- FALSE
+                    }                           
+                    
                     changePlotSettings(list(
-                        y = GUI$getActiveDoc()$getData()[h$dropdata][[1]],
+                        y = newY,
                         ylab = NULL,
                         main = NULL,
-                        varnames = list(
-                            y = colnames(GUI$getActiveDoc()$getData()[h$dropdata]))
+                        varnames = list(y = newYname)
                         ), reset = do.reset)
                 })
+            
             ## slider 1
             addDropTarget(
                 g1lbl,
@@ -136,6 +187,12 @@ iNZControlWidget <- setRefClass(
         ## change the plotSettings
         changePlotSettings = function(setList, reset = FALSE) {
             GUI$getActiveDoc()$setSettings(setList, reset)
+        },
+        updateVariables = function() {
+            V1box$set_items(c("Select or Drag/drop Variable 1", colnames(GUI$getActiveData())))
+            V1box$set_value(GUI$ctrlWidget$V1box$get_items()[1])
+            V2box$set_items(c("Select or Drag/drop Variable 2", colnames(GUI$getActiveData())))
+            V2box$set_value(GUI$ctrlWidget$V2box$get_items()[1])
         },
         createSlider = function(pos, dropdata) {
             ## make sure there is no slider at the pos

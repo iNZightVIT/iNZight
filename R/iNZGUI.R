@@ -770,6 +770,21 @@ iNZGUI <- setRefClass(
             ## if plotSettings change, update the plot
             getActiveDoc()$addSettingsObserver(function() updatePlot())
             ctrlWidget <<- iNZControlWidget$new(.self)
+
+            ## if the list of active document changes, update the data view
+            addActDocObs(
+                function() {
+                    ctrlWidget$updateVariables()       
+                }
+            )
+            ## if the dataSet changes, update the variable View
+            getActiveDoc()$addDataObserver(
+                function() {
+                    ctrlWidget$updateVariables()
+                }
+            )
+
+            .self$ctrlWidget
         },
         ## set up the summary and inference buttons under the
         ## drag and drop fields
