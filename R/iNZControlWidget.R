@@ -37,7 +37,7 @@ iNZControlWidget <- setRefClass(
                                       svalue(V1box, index = TRUE) <<- 1
                                       changePlotSettings(list(x = NULL))
                                   })
-            V1clearbtn$set_icon("Cancel", size = "menu")
+            V1clearbtn$set_icon("Cancel")#, size = "menu")
             tbl[3,7, anchor = c(0,0)] <- V1clearbtn
 
             ## -- Variable 2
@@ -49,7 +49,7 @@ iNZControlWidget <- setRefClass(
                                                                   y = NULL)),
                                                          reset = { GUI$plotType != "dot" })
                                   })
-            V2clearbtn$set_icon("Cancel", size = "menu")
+            V2clearbtn$set_icon("Cancel")#, size = "menu")
             tbl[5,7, anchor = c(0,0)] <- V2clearbtn
 
             ## -- Grouping Variable 1
