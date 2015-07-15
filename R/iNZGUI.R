@@ -34,6 +34,9 @@ iNZGUI <- setRefClass(
                    ## widget that handles the drag/drop buttons
                    ## under the dataViewWidget
                    ctrlWidget = "ANY",
+                   ## Save the summary and inference buttons to allow disabling
+                   sumBtn = "ANY",
+                   infBtn = "ANY",
                    ## every window that modifies plot/data
                    ## this way we can ensure to only have one
                    ## open at the time
@@ -630,7 +633,15 @@ iNZGUI <- setRefClass(
                     ## 46
                     label = "Remove Design",
                     icon = "symbol_diamond",
-                    handler = function(h, ...) .self$getActiveDoc()$getModel()$setDesign()
+                    handler = function(h, ...) {
+                        .self$getActiveDoc()$getModel()$setDesign()
+                        ## ENABLE A WHOLE LOT OF STUFF
+                        enabled(menubar$menu_list[["Dataset"]][[3]]) <<- TRUE
+                        enabled(menubar$menu_list[["Variables"]][["Numeric Variables"]][[2]]) <<- TRUE
+                        enabled(menubar$menu_list[["Plot"]][[3]]) <<- TRUE
+                        enabled(sumBtn) <<- TRUE
+                        enabled(infBtn) <<- TRUE
+                    }
                 )#,
                 ############ MAPS ############
                 ## maps = gaction(
@@ -790,7 +801,7 @@ iNZGUI <- setRefClass(
         ## drag and drop fields
         initializeSummaryBtns = function() {
             sumGrp <- ggroup()
-            sumBtn <- gbutton(
+            sumBtn <<- gbutton(
                 "Get Summary",
                 handler = function(h, ...) {
                     curSet <- getActiveDoc()$getSettings()
@@ -818,7 +829,7 @@ iNZGUI <- setRefClass(
                                  parent = win)
                     }
                 })
-            infBtn <- gbutton(
+            infBtn <<- gbutton(
                 "Get Inference",
                 handler = function(h, ...) {
                     curSet <- getActiveDoc()$getSettings()
@@ -882,10 +893,10 @@ iNZGUI <- setRefClass(
                                  parent = win)
                     }
                 })
-            font(sumBtn) <- list(weight = "bold",
+            font(sumBtn) <<- list(weight = "bold",
                                  family = "normal",
                                  color = "navy")
-            font(infBtn) <- list(weight = "bold",
+            font(infBtn) <<- list(weight = "bold",
                                  family = "normal",
                                  color = "navy")
             add(sumGrp, sumBtn, expand = TRUE)

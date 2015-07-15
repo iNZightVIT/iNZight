@@ -45,16 +45,17 @@ iNZDataModel <- setRefClass(
             .self$changed$connect(FUN, ...)
         },
         setDesign = function(strata=NULL, clus1=NULL, clus2=NULL,
-                             wt=NULL, nest=NULL, ...) {
+                             wt=NULL, nest=NULL, gui, ...) {
             if (is.null(strata) & is.null(clus1) & is.null(clus2) &
-                is.null(wt) & is.null(nest))
+                is.null(wt) & is.null(nest)) {
                 dataDesign <<- NULL
-            else 
+            } else {
                 dataDesign <<- list(strata = strata,
                                     clus1  = clus1,
                                     clus2  = clus2,
                                     wt     = wt,
                                     nest   = nest)
+            }
         },
         createSurveyObject = function() {
             des <- getDesign()

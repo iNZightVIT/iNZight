@@ -91,7 +91,6 @@ iNZPlotToolbar <- setRefClass(
             svalue(GUI$menubar) <<- curMenu
 
             menu <<- gtoolbariNZ(tbarList, cont = cont, style="icons")
-            print(menu$toolbar_list)
         },
         ## function to open the correct plot modification win
         ## depending on the currently selected variable types
@@ -112,8 +111,8 @@ iNZPlotToolbar <- setRefClass(
         },
         addInf = function() {
             if (!is.null(GUI$getActiveDoc()$getModel()$getDesign())) {
-                gmessage("Inference information not yet avaialable for Survey Data.",
-                         icon = "info", parent = GUI$win, title = "Not available")
+                gmessage("No inferential markup of plots for survey data.",
+                         icon = "alert", parent = GUI$win, title = "Not available")
             } else {
                 curSet <- GUI$getActiveDoc()$getSettings()
                 if (is.null(GUI$plotType))

@@ -88,8 +88,25 @@ iNZSurveyDesign <- setRefClass("iNZSurveyDesign",
                                            if (wts == "") wts <- NULL
 
                                            GUI$getActiveDoc()$getModel()$setDesign(
-                                               strat, clus1, clus2, wts, nest
+                                               strat, clus1, clus2, wts, nest, gui = GUI
                                                )
+
+                                           if (is.null(strat) & is.null(clus1) &
+                                               is.null(clus2) & is.null(wts)) {
+                                               ## ENABLE A WHOLE LOT OF STUFF
+                                               enabled(GUI$menubar$menu_list[["Dataset"]][[3]]) <<- TRUE
+                                               enabled(GUI$menubar$menu_list[["Variables"]][["Numeric Variables"]][[2]]) <<- TRUE
+                                               enabled(GUI$menubar$menu_list[["Plot"]][[3]]) <<- TRUE
+                                               enabled(GUI$sumBtn) <<- TRUE
+                                               enabled(GUI$infBtn) <<- TRUE
+                                           } else {
+                                               ## DISABLE A WHOLE LOT OF STUFF
+                                               enabled(GUI$menubar$menu_list[["Dataset"]][[3]]) <<- FALSE
+                                               enabled(GUI$menubar$menu_list[["Variables"]][["Numeric Variables"]][[2]]) <<- FALSE
+                                               enabled(GUI$menubar$menu_list[["Plot"]][[3]]) <<- FALSE
+                                               enabled(GUI$sumBtn) <<- FALSE
+                                               enabled(GUI$infBtn) <<- FALSE
+                                           }
 
                                            dispose(designWin)
                                        })
@@ -109,12 +126,6 @@ iNZSurveyDesign <- setRefClass("iNZSurveyDesign",
                                            if (!is.null(curDes$wt))
                                                svalue(wtVar) <- curDes$wt
                                        }
-
-                                       ## DISABLE A WHOLE LOT OF STUFF
-                                        enabled(GUI$menubar$menu_list[["Dataset"]][[3]]) <<- FALSE
-                                       ##enabled(GUI$menubar$menu_list[["Variables"]][["Numeric Variables"]][[2]]) <<- FALSE
-                                       enabled(GUI$menubar$menu_list[["Plot"]][[3]]) <<- FALSE
-                                       
 
                                        visible(designWin) <<- TRUE
                                    }

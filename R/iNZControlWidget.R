@@ -191,6 +191,7 @@ iNZControlWidget <- setRefClass(
         updateVariables = function() {
             V1box$set_items(c("Select or Drag/drop Variable 1", colnames(GUI$getActiveData())))
             V1box$set_value(GUI$ctrlWidget$V1box$get_items()[1])
+            
             V2box$set_items(c("Select or Drag/drop Variable 2", colnames(GUI$getActiveData())))
             V2box$set_value(GUI$ctrlWidget$V2box$get_items()[1])
         },
