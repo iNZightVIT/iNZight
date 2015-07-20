@@ -615,37 +615,38 @@ iNZGUI <- setRefClass(
                     label = "Advanced Menu",
                     icon = "symbol_diamond",
                     handler = function(h, ...) {
+                        
                         browseURL("https://www.stat.auckland.ac.nz/~wild/iNZight/user_guides/add_ons/")
                     }
-                )#,
+                ),
                 ############ MAPS ############
-                ## maps = gaction(
-                ##     ## 45
-                ##     label = "Maps...",
-                ##     icon = "symbol_diamond",
-                ##     handler = function(h, ...) {
-                ##         module = "iNZightMaps"
-                ##         setup  = modSetup(module)
-                ##         if (setup) {
-                ##             ## if there is no imported dataset,
-                ##             ## display a warning message
-                ##             if (emptyData()) {
-                ##                 displayMsg("maps")
-                ##                 return()
-                ##             }
-                ##             ## if there is a module open, initialize and open
-                ##             ## a module window
-                ##             if (length(leftMain$children) == 1) {
-                ##                 initializeModuleWindow()
-                ##                 source(paste0("../Modules/", module, ".R"))
-                ##                 iNZightMaps$new(.self)
-                ##                 visible(moduleWindow) <<- TRUE
-                ##             } else { return() }
-                ##         } else {
-                ##             return()
-                ##         }
-                ##     }
-                ## )
+                maps = gaction(
+                    ## 45
+                    label = "Maps...",
+                    icon = "symbol_diamond",
+                    handler = function(h, ...) {
+                        module = "iNZightMaps"
+                        setup  = modSetup(module)
+                        if (setup) {
+                            ## if there is no imported dataset,
+                            ## display a warning message
+                            if (emptyData()) {
+                                displayMsg("maps")
+                                return()
+                            }
+                            ## if there is a module open, initialize and open
+                            ## a module window
+                            if (length(leftMain$children) == 1) {
+                                initializeModuleWindow()
+                                #source(paste0("../Modules/", module, ".R"))
+                                iNZightMaps$new(.self)
+                                visible(moduleWindow) <<- TRUE
+                            } else { return() }
+                        } else {
+                            return()
+                        }
+                    }
+                )
                 ############ MAPS ############
                 #####################################################
                 ###  big suggestion
@@ -681,8 +682,8 @@ iNZGUI <- setRefClass(
                     actionList[[19]],
                     actionList[[17]],
                     actionList[[18]],
-                    actionList[[32]]#,
-#                    actionList[[36]]
+                    actionList[[32]],
+                    actionList[[45]]
                     ),
                 "Help" = list(
                     actionList[[33]],
@@ -960,7 +961,7 @@ iNZGUI <- setRefClass(
             } else {
                 install = gconfirm("The module is not found. Would you like to download it?")
                 if (install) {
-                    install.packages("iNZightMaps", repo = "http://docker.stat.auckland.ac.nz/R")
+                    install.packages(mod, repo = "http://docker.stat.auckland.ac.nz/R")
                     require(mod, character.only = TRUE)
                 }
                 return(install)
