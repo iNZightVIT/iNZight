@@ -155,18 +155,39 @@ iNZightMapModWin <- setRefClass(
             }
             
             ## option 1: longitude
+            decimalplaces <- function(x) {
+                if ((x %% 1) != 0) {
+                    nchar(strsplit(sub('0+$', '', as.character(x)), ".", fixed=TRUE)[[1]][[2]])
+                } else {
+                    return(0)
+                }
+            }
+            lonDecimal = decimalplaces(lonFrom)
+            if (lonDecimal > 10) {
+                lonBy = 10e-10
+            } else {
+                lonBy = 10^(-1*(decimalplaces(lonFrom)))
+            }
+            
             g1_opt1a = gcombobox(varNames, selected = lon)
             g1_opt1b = gspinbutton(from = lonFrom, to = lonTo,
-                                     by = 0.01, value = lonFrom)
+                                     by = lonBy, value = lonFrom)
             g1_opt1c = gspinbutton(from = lonFrom, to = lonTo,
-                                   by = 0.01, value = lonTo)
+                                   by = lonBy, value = lonTo)
             
             ## option 2: latitude
+            latDecimal = decimalplaces(latFrom)
+            if (latDecimal > 10) {
+                latBy = 10e-10
+            } else {
+                latBy = 10^(-1*(decimalplaces(latFrom)))
+            }
+            
             g1_opt2a = gcombobox(varNames, selected = lat)
             g1_opt2b = gspinbutton(from = latFrom, to = latTo, 
-                                     by = 0.01, value = latFrom)
+                                     by = latBy, value = latFrom)
             g1_opt2c = gspinbutton(from = latFrom, to = latTo, 
-                                   by = 0.01, value = latTo)
+                                   by = latBy, value = latTo)
             
             g1Layout[2, 1, expand = TRUE, anchor = c(1, 0)] = g1_lab1
             g1Layout[2, 3, expand = TRUE, anchor = c(1, 0)] = g1_lab2
