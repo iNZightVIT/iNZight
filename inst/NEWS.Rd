@@ -31,6 +31,9 @@
   \subsection{BUG FIXES}{
     \itemize{
       \item fixes to a few issues occuring in dotplots
+
+      \item display an error if Add to Plot is called without any
+      variables having been selected
     }
   }
 }
