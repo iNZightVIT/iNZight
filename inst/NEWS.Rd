@@ -2,6 +2,8 @@
 \title{Change Log for iNZight}
 \encoding{UTF-8}
 
+# [CHANGE] Drop-down menus for variables
+
 \section{Changes in version 2.3}{
   Release date: TBA
 
