@@ -2,18 +2,6 @@
 \title{Change Log for iNZight}
 \encoding{UTF-8}
 
-\section{Changes in version 2.4}{
-  Release date: TBA
-
-  \subsection{NEW FEATURES - BETA}{
-    \itemize{
-      \item Added the iNZightMaps module. Currently this is hardwired -
-      in future, we hope to make this a manually addable module (from
-      and Advanced menu)
-    }
-  }
-}
-
 \section{Changes in version 2.3}{
   RELEASE DATE: 04 August 2015
   \subsection{NEW FEATURES}{
