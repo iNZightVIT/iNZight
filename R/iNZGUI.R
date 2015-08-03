@@ -625,7 +625,7 @@ iNZGUI <- setRefClass(
                 ),
                 specifyDesign = gaction(
                     ## 45
-                    label = "Specify Survey Design ...",
+                    label = "[BETA] Specify Survey Design ...",
                     icon = "symbol_diamond",
                     handler = function(h, ...) iNZSurveyDesign$new(.self)
                 ),
@@ -783,17 +783,17 @@ iNZGUI <- setRefClass(
             ctrlWidget <<- iNZControlWidget$new(.self)
 
             ## if the list of active document changes, update the data view
-            addActDocObs(
-                function() {
-                    ctrlWidget$updateVariables()       
-                }
-            )
-            ## if the dataSet changes, update the variable View
-            getActiveDoc()$addDataObserver(
-                function() {
-                    ctrlWidget$updateVariables()
-                }
-            )
+            ## addActDocObs(
+            ##     function() {
+            ##         ctrlWidget$updateVariables()       
+            ##     }
+            ## )
+            ## ## if the dataSet changes, update the variable View
+            ## getActiveDoc()$addDataObserver(
+            ##     function() {
+            ##         ctrlWidget$updateVariables()
+            ##     }
+            ## )
 
             .self$ctrlWidget
         },
