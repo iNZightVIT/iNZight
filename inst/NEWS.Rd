@@ -12,8 +12,11 @@
       variable. Plots take account of this structure and inference that
       displays (currently only trend lines on bivariate plots) use
       functions from the `survey` packages and thus incorporate weights.
-
+      
       \item Adjust the axis limits from the Add to Plot menu.
+      
+      \item Adjust the number of bars displayed on a bar plot from the
+      Add to Plot menu.
     }
   }
 
@@ -69,6 +72,20 @@
   \subsection{MINOR CHANGES}{
     \itemize{
       \item the "Row Operations" menu has been renamed "Data"
+    }
+  }
+
+  \subsection{PATCH 2.2.0-1 (01 July 2015)}{
+    \itemize{
+      \item iNZightPlots package: fix colour of segmented bar plots to
+      match the legend
+    }
+  }
+
+  \subsection{PATCH 2.2.0-2 (27 July 2015)}{
+    \itemize{
+      \item Fix mapping of confidence intervals (instead of comparison
+      intervals) to Year 12 intervals in dot plots.
     }
   }
 }
