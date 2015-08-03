@@ -15,7 +15,8 @@ iNZPlotInfWin <- setRefClass(
         metTab = "ANY",
         typTab = "ANY",
         btnTab = "ANY",
-        curSet = "list"
+        curSet = "list",
+        intBtn = "ANY"
         ),
     methods = list(
         initialize = function(gui = NULL) {
@@ -58,11 +59,12 @@ iNZPlotInfWin <- setRefClass(
                 typTab[2, 1, expand = TRUE, anchor = c(-1, 0)] <<- typLab
 
                 ## Show interval values button
-                intBtn <- gbutton("Get values", expand = FALSE,
+                intBtn <<- gbutton("Get values", expand = FALSE,
                                   handler = function(h, ...) {
                                       displayValues()
                                   })
                 btnTab[2, 1, expand = TRUE] <<- intBtn
+                visible(intBtn) <<- FALSE
                 inflabl <- glabel("* iNZight may appear upresponsive while the bootstraps are performed.\nPlease be patient.")
                 font(inflabl) <- list(size = 8)
                 btnTab[3, 1, expand = TRUE] <<- inflabl
@@ -166,7 +168,6 @@ iNZBarchartInf <- setRefClass(
             addHandlerChanged(confInt, handler = function(h, ...) enabler())
 
             enabler()
-           
         })
     )
 
@@ -251,6 +252,8 @@ iNZDotchartInf <- setRefClass(
             addHandlerChanged(confInt, handler = function(h, ...) enabler())
 
             enabler()
+
+            visible(intBtn) <<- TRUE
         },
         displayValues = function() {
             out <- c()

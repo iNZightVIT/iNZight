@@ -11,7 +11,8 @@ iNZPlotToolbar <- setRefClass(
     "iNZPlotToolbar",
     fields = list(
         GUI = "ANY",
-        plotWidget = "ANY"
+        plotWidget = "ANY",
+        menu = "ANY"
         ),
     methods = list(
         initialize = function(gui, cont) {
@@ -61,7 +62,35 @@ iNZPlotToolbar <- setRefClass(
                           gbutton(action = actionList[[9]]),
                           gseparator()
                           )
-            gtoolbariNZ(tbarList, cont = cont, style="icons")
+            
+
+            ## And add to the menu bar:
+            curMenu <- svalue(GUI$menubar)
+            curMenu[["Plot"]] <- list(
+                gaction("Add to plot ...", handler = function(h, ...) addToPlot()),
+                gaction("Remove additions ...", handler = function(h, ...) iNZPlotRmveModWin$new(GUI)),
+                gaction("Add inference ...", handler = function(h, ...) addInf()),
+                gseparator(),
+                gaction(label = "New Tab", icon = "newplot",
+                        handler = function(h, ...) plotWidget$addPlot()),
+                gaction(label = "Close Tab", icon = "close",
+                        handler = function(h, ...) plotWidget$closePlot()),
+                gaction(label = "Rename Tab", icon = "editor",
+                        handler = function(h, ...) plotWidget$renamePlot()),
+                gseparator(),
+                gaction(label = "New Plot Window", icon = "new",
+                        handler = function(h, ...) {
+                            newdevice()
+                            GUI$updatePlot()
+                        }),
+                gaction(label = "Redraw Plot", icon = "refresh",
+                        handler = function(h, ...) GUI$updatePlot()),
+                gaction(label = "Save Plot", icon = "save",
+                        handler = function(h, ...) plotWidget$savePlot())
+                )
+            svalue(GUI$menubar) <<- curMenu
+
+            menu <<- gtoolbariNZ(tbarList, cont = cont, style="icons")
         },
         ## function to open the correct plot modification win
         ## depending on the currently selected variable types
@@ -81,23 +110,28 @@ iNZPlotToolbar <- setRefClass(
                        iNZPlotModWin$new(GUI))
         },
         addInf = function() {
-            curSet <- GUI$getActiveDoc()$getSettings()
-            if (is.null(GUI$plotType))
-                gmessage("You must select at least one variable before you can access the Inference menu.",
-                         title = "No variable selected", parent = GUI$win)
-            else
-                switch(GUI$plotType,
-                       "bar" = iNZBarchartInf$new(GUI),
-                       "hist" = ,
-                       "dot" = iNZDotchartInf$new(GUI),
-                       "grid" = ,
-                       "hex" = ,
-                       "scatter" = {
-                           if (is.null(curSet$trend) && curSet$smooth == 0)
-                               gmessage("Use the Add to Plot menu to add a trend(s) and/or smoother.",
-                                        title = "No trend or smoother", parent = GUI$win)
-                           else
-                               GUI$getActiveDoc()$setSettings(list(bs.inference = TRUE))
-                       })
+            if (!is.null(GUI$getActiveDoc()$getModel()$getDesign())) {
+                gmessage("No inferential markup of plots for survey data.",
+                         icon = "alert", parent = GUI$win, title = "Not available")
+            } else {
+                curSet <- GUI$getActiveDoc()$getSettings()
+                if (is.null(GUI$plotType))
+                    gmessage("You must select at least one variable before you can access the Inference menu.",
+                             title = "No variable selected", parent = GUI$win)
+                else
+                    switch(GUI$plotType,
+                           "bar" = iNZBarchartInf$new(GUI),
+                           "hist" = ,
+                           "dot" = iNZDotchartInf$new(GUI),
+                           "grid" = ,
+                           "hex" = ,
+                           "scatter" = {
+                               if (is.null(curSet$trend) && curSet$smooth == 0)
+                                   gmessage("Use the Add to Plot menu to add a trend(s) and/or smoother.",
+                                            title = "No trend or smoother", parent = GUI$win)
+                               else
+                                   GUI$getActiveDoc()$setSettings(list(bs.inference = TRUE))
+                           })
+            }
         })
     )

@@ -3,25 +3,20 @@ iNZDataModel <- setRefClass(
     properties(fields = list(
                    dataSet = "ANY",
                    origDataSet = "ANY",
-                   rowDataSet = "ANY"),
+                   rowDataSet = "ANY",
+                   dataDesign = "ANY"),
                prototype = list(
                    dataSet = data.frame(empty = " "),
                    origDataSet = data.frame(empty = " "),
-                   rowDataSet = data.frame(Row.names = 1, empty = " "))),
+                   rowDataSet = data.frame(Row.names = 1, empty = " "),
+                   dataDesign = NULL)),
     contains = "PropertySet", ## need this to add observer to object
     methods = list(
         initialize = function(data = NULL) {
             if(!is.null(data)) {
                 .self$setData(data)
-                #.self$setOriginalData(data)
             }
         },
-        #
-        #setOriginalData = function(data) {
-        #  origDataSet <<- data
-          
-        #},
-        ##
         setData = function(data) {
             names(data) <- make.names(names(data), unique = TRUE)
             dataSet <<- data
@@ -48,6 +43,51 @@ iNZDataModel <- setRefClass(
         },
         addObjObserver = function(FUN, ...) {
             .self$changed$connect(FUN, ...)
+        },
+        setDesign = function(strata=NULL, clus1=NULL, clus2=NULL,
+                             wt=NULL, nest=NULL, gui, ...) {
+            if (is.null(strata) & is.null(clus1) & is.null(clus2) &
+                is.null(wt) & is.null(nest)) {
+                dataDesign <<- NULL
+            } else {
+                dataDesign <<- list(strata = strata,
+                                    clus1  = clus1,
+                                    clus2  = clus2,
+                                    wt     = wt,
+                                    nest   = nest)
+            }
+        },
+        createSurveyObject = function() {
+            des <- getDesign()
+                        
+            id <- if (is.null(des$clus1) & is.null(des$clus2)) {
+                "~ 1"
+            } else if (is.null(des$clus1)) {
+                paste("~", des$clus2)
+            } else if (is.null(des$clus2)) {
+                paste("~", des$clus1) 
+            } else {
+                paste("~", des$clus1, "+", des$clus2)
+            }
+            
+            strata <- if (is.null(des$strata)) "NULL" else paste("~", des$strata)
+            weights <- if (is.null(des$wt)) "NULL" else paste("~", des$wt)
+            
+            obj <-
+                parse(text =
+                      paste0(
+                          "svydesign(",
+                          "id = ", id, ", ",
+                          "strata = ", strata, ", ",
+                          "weights = ", weights, ", ",
+                          "nest = ", des$nest, ", ",
+                          "data = dataSet)"
+                          )
+                      )
+            eval(obj)
+        },
+        getDesign = function() {
+            dataDesign
         }
         )
     )
@@ -94,7 +134,8 @@ iNZPlotSettings <- setRefClass(
         ## extract a sub-list of a settings list
         ## than can be used to merge with defaultSettings
         extractDefaults = function(theSettings) {
-            defaultFields <- c("cex", "bg", "col.pt")
+            defaultFields <- c("cex", "bg", "col.pt", "col.pt", "cex.pt", "cex.dotpt",
+                               "alpha", "fill.pt", "pch")
             theSettings[defaultFields]
         },
         addSettingsObserver = function(FUN, ...) {

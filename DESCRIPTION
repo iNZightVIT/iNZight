@@ -1,8 +1,8 @@
 Package: iNZight
 Type: Package
 Title: iNZight GUI for Data Exploration
-Version: 2.2.0-900
-Date: 2015-07-27
+Version: 2.3-901
+Date: 2015-08-04
 Authors@R: c(person("Tom", "Elliott", role = c("aut", "cre"),
                     email = "tell029@aucklanduni.ac.nz"),
              person("Dineika", "Chandrananda", role = "ctb"),
@@ -14,5 +14,5 @@ Description: An interactive GUI for easy visual exploration of datasets.
 License: GPL-2
 Depends: R (>= 2.1), objectProperties, gWidgets2, cairoDevice
 Imports: grid, RGtk2, RODBC, gdata, reshape2, plyr, gWidgets2RGtk2, 
-	 iNZightPlots, iNZightTools
+	 iNZightPlots, iNZightTools, survey
 Suggests: rgl, gpairs, iNZightTS, iNZightModules

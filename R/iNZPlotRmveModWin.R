@@ -40,7 +40,9 @@ iNZPlotRmveModWin <- setRefClass(
                     "Restore default number of grid bins",
                     "Restore default number of hexs",
                     "Restore default plot type",
-                    "Remove point labels")
+                    "Remove point labels",
+                    "Restore default axis limits",
+                    "Restore all bars of bar chart")
                 ## check for presence of all additions
                 curAdditions <- c(
                     TRUE, ## all additiions
@@ -72,8 +74,10 @@ iNZPlotRmveModWin <- setRefClass(
                     curSet$scatter.grid.bins != defSet$scatter.grid.bins,  ## number of grid bins
                     curSet$hex.bins != defSet$hex.bins,  ## number of hexs
                     curSet$plottype != defSet$plottype,  ## plot type
-                    (!is.null(curSet$locate ) | !is.null(curSet$locate.id) |
-                     !is.null(curSet$locate.col))  ## locate labels
+                    (!is.null(curSet$locate) | !is.null(curSet$locate.id) |
+                     !is.null(curSet$locate.col)),  ## locate labels
+                    (!is.null(curSet$xlim) | !is.null(curSet$ylim)),  ## axis limits
+                    (!is.null(curSet$zoombars))  ## bar plot zooming
                     )
 
                 proceedButton <- gbutton(
@@ -197,7 +201,9 @@ iNZPlotRmveModWin <- setRefClass(
                                  list(hex.bins = defSet$hex.bins),  ## n. hexs
                                  list(plottype = defSet$plottype),  ## plot type
                                  list(locate = NULL, locate.id = NULL, locate.col = NULL,
-                                      locate.settings = NULL)
+                                      locate.settings = NULL),
+                                 list(xlim = NULL, ylim = NULL),  ## axis limits
+                                 list(zoombars = NULL)  ## bar plot zooming
                                  )
 
             GUI$getActiveDoc()$setSettings(

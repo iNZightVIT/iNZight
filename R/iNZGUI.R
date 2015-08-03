@@ -13,6 +13,7 @@ iNZGUI <- setRefClass(
                    activeDoc = "numeric", 
                    ## the main GUI window
                    win = "ANY",
+                   menubar = "ANY",
                    
                    ## left group
                    leftMain = "ANY",
@@ -29,9 +30,13 @@ iNZGUI <- setRefClass(
                    dataNameWidget = "ANY",
                    ## widget that handles the plot notebook
                    plotWidget = "ANY",
+                   plotToolbar = "ANY",
                    ## widget that handles the drag/drop buttons
                    ## under the dataViewWidget
                    ctrlWidget = "ANY",
+                   ## Save the summary and inference buttons to allow disabling
+                   sumBtn = "ANY",
+                   infBtn = "ANY",
                    ## every window that modifies plot/data
                    ## this way we can ensure to only have one
                    ## open at the time
@@ -43,7 +48,7 @@ iNZGUI <- setRefClass(
                    ),
                prototype = list(
                    activeDoc = 1,
-                   plotType = NULL
+                   plotType = "none"
                    )
                ),
     methods = list(
@@ -615,13 +620,32 @@ iNZGUI <- setRefClass(
                     label = "Advanced Menu",
                     icon = "symbol_diamond",
                     handler = function(h, ...) {
-                        
                         browseURL("https://www.stat.auckland.ac.nz/~wild/iNZight/user_guides/add_ons/")
+                    }
+                ),
+                specifyDesign = gaction(
+                    ## 45
+                    label = "[BETA] Specify Survey Design ...",
+                    icon = "symbol_diamond",
+                    handler = function(h, ...) iNZSurveyDesign$new(.self)
+                ),
+                removeDesign = gaction(
+                    ## 46
+                    label = "Remove Design",
+                    icon = "symbol_diamond",
+                    handler = function(h, ...) {
+                        .self$getActiveDoc()$getModel()$setDesign()
+                        ## ENABLE A WHOLE LOT OF STUFF
+                        enabled(menubar$menu_list[["Dataset"]][[3]]) <<- TRUE
+                        enabled(menubar$menu_list[["Variables"]][["Numeric Variables"]][[2]]) <<- TRUE
+                        enabled(menubar$menu_list[["Plot"]][[3]]) <<- TRUE
+                        enabled(sumBtn) <<- TRUE
+                        enabled(infBtn) <<- TRUE
                     }
                 ),
                 ############ MAPS ############
                 maps = gaction(
-                    ## 45
+                    ## 47
                     label = "Maps...",
                     icon = "symbol_diamond",
                     handler = function(h, ...) {
@@ -647,7 +671,6 @@ iNZGUI <- setRefClass(
                         }
                     }
                 )
-                ############ MAPS ############
                 #####################################################
                 ###  big suggestion
                 ###  any new update function should be placing below to match the actionList[[number]]
@@ -665,9 +688,17 @@ iNZGUI <- setRefClass(
                 enabled(actionList[[24]]) <- FALSE
             menuBarList <- list(
                 File = actionList[c(16, 1:2, 36, 37)],
-                "Data" = actionList[c(13, 27, 28, 31, 15)],
-                #"Filter Data" = actionList[c(13, 27, 28, 15)],
-                "Manipulate variables" = list(
+                "Dataset" = list(
+                    actionList[[13]],
+                    actionList[[27]],
+                    actionList[[28]],
+                    actionList[[31]],
+                    actionList[[15]],
+                    gseparator(),
+                    actionList[[45]],
+                    actionList[[46]]
+                    ),
+                "Variables" = list(
                     actionList[[3]],
                     "Categorical Variables" = actionList[c(6,5,7,8)],
                     "Numeric Variables" = actionList[c(4,12,10, 29,30)],
@@ -676,6 +707,11 @@ iNZGUI <- setRefClass(
                     actionList[[25]],
                     actionList[[14]],
                     actionList[[21]]
+                    ),
+                "Plot" = list(
+                    #gaction(label = "",
+                    #        icon = "diamond",
+                    #        handler = function(h, ...) addtoPlot())
                     ),
                 "Advanced" = list(
                     "Quick Explore" = actionList[c(24, 22, 23, 26, 20)],
@@ -693,7 +729,7 @@ iNZGUI <- setRefClass(
                     actionList[[35]]
                     )
                 )
-            gmenu(menuBarList, container = cont)
+            menubar <<- gmenu(menuBarList, container = cont)
 
         },
         ## set up buttons to switch between data and variable view
@@ -744,12 +780,27 @@ iNZGUI <- setRefClass(
             ## if plotSettings change, update the plot
             getActiveDoc()$addSettingsObserver(function() updatePlot())
             ctrlWidget <<- iNZControlWidget$new(.self)
+
+            ## if the list of active document changes, update the data view
+            ## addActDocObs(
+            ##     function() {
+            ##         ctrlWidget$updateVariables()       
+            ##     }
+            ## )
+            ## ## if the dataSet changes, update the variable View
+            ## getActiveDoc()$addDataObserver(
+            ##     function() {
+            ##         ctrlWidget$updateVariables()
+            ##     }
+            ## )
+
+            .self$ctrlWidget
         },
         ## set up the summary and inference buttons under the
         ## drag and drop fields
         initializeSummaryBtns = function() {
             sumGrp <- ggroup()
-            sumBtn <- gbutton(
+            sumBtn <<- gbutton(
                 "Get Summary",
                 handler = function(h, ...) {
                     curSet <- getActiveDoc()$getSettings()
@@ -777,7 +828,7 @@ iNZGUI <- setRefClass(
                                  parent = win)
                     }
                 })
-            infBtn <- gbutton(
+            infBtn <<- gbutton(
                 "Get Inference",
                 handler = function(h, ...) {
                     curSet <- getActiveDoc()$getSettings()
@@ -841,10 +892,10 @@ iNZGUI <- setRefClass(
                                  parent = win)
                     }
                 })
-            font(sumBtn) <- list(weight = "bold",
+            font(sumBtn) <<- list(weight = "bold",
                                  family = "normal",
                                  color = "navy")
-            font(infBtn) <- list(weight = "bold",
+            font(infBtn) <<- list(weight = "bold",
                                  family = "normal",
                                  color = "navy")
             add(sumGrp, sumBtn, expand = TRUE)
@@ -857,7 +908,7 @@ iNZGUI <- setRefClass(
         },
         ## set up the buttons under the plot to interact with the plot
         initializePlotToolbar = function(cont) {
-            iNZPlotToolbar$new(.self, cont)
+            plotToolbar <<- iNZPlotToolbar$new(.self, cont)
         },
         ## if set upon gui startup, close the R sessions when
         ## the gui is closed
@@ -893,6 +944,13 @@ iNZGUI <- setRefClass(
                     curPlSet$varnames$y <- curPlSet$varnames$x
                     curPlSet$varnames$x <- x.tmp
                 }
+                ## Design or data?
+                curMod <- getActiveDoc()$getModel()
+                if (!is.null(curMod$dataDesign)) {
+                    curPlSet$data <- NULL
+                    curPlSet$design <- curMod$createSurveyObject()
+                }
+                
                 ## Suppress the warnings produced by iNZightPlot ...
                 suppressWarnings({
                     curPlot <<- unclass(do.call(iNZightPlot, curPlSet))
@@ -900,7 +958,7 @@ iNZGUI <- setRefClass(
                 plotType <<- attr(curPlot, "plottype")
             } else {
                 iNZightPlots:::resetPlot()
-                plotType <<- NULL
+                plotType <<- "none"
             }
         },
         ## set a new iNZDocument and make it the active one
