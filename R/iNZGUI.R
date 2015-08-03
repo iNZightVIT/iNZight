@@ -719,7 +719,7 @@ iNZGUI <- setRefClass(
                     actionList[[17]],
                     actionList[[18]],
                     actionList[[32]],
-                    actionList[[45]]
+                    actionList[[47]]
                     ),
                 "Help" = list(
                     actionList[[33]],
