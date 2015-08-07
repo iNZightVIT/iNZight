@@ -785,7 +785,7 @@ iNZGUI <- setRefClass(
             ## if the list of active document changes, update the data view
             addActDocObs(
                 function() {
-                    ctrlWidget$updateVariables()       
+                    ctrlWidget$updateVariables()  
                 }
             )
             ## if the dataSet changes, update the variable View
