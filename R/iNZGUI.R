@@ -785,7 +785,7 @@ iNZGUI <- setRefClass(
             ## if the list of active document changes, update the data view
             addActDocObs(
                 function() {
-                    ctrlWidget$updateVariables()  
+                    ctrlWidget$updateVariables()
                 }
             )
             ## if the dataSet changes, update the variable View
@@ -977,6 +977,9 @@ iNZGUI <- setRefClass(
                 function() {
                     dataViewWidget$updateWidget()
                     getActiveDoc()$updateSettings()
+
+                    ## Also, update list of variables in drop-downs:
+                    ctrlWidget$updateVariables()
                 }
                 )
             ## if plotSettings change, update the plot

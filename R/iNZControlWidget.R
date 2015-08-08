@@ -208,17 +208,23 @@ iNZControlWidget <- setRefClass(
             GUI$getActiveDoc()$setSettings(setList, reset)
         },
         updateVariables = function() {
-            V1box$set_items(c("Select/Drag-drop Variable 1", colnames(GUI$getActiveData())))
-            V1box$set_value(GUI$ctrlWidget$V1box$get_items()[1])
+            datavars <- colnames(GUI$getActiveData())
             
-            V2box$set_items(c("Select/Drag-drop Variable 2", colnames(GUI$getActiveData())))
-            V2box$set_value(GUI$ctrlWidget$V2box$get_items()[1])
+            v1 <- if (svalue(V1box) %in% datavars) which(datavars == svalue(V1box)) + 1 else 1
+            V1box$set_items(c(V1box$get_items()[1], datavars))
+            V1box$set_value(GUI$ctrlWidget$V1box$get_items()[v1])
 
-            G1box$set_items(c("Select/Drag-drop Grouping Variable 1", colnames(GUI$getActiveData())))
-            G1box$set_value(GUI$ctrlWidget$G1box$get_items()[1])
+            v2 <- if (svalue(V2box) %in% datavars) which(datavars == svalue(V2box)) + 1 else 1
+            V2box$set_items(c(V2box$get_items()[1], datavars))
+            V2box$set_value(GUI$ctrlWidget$V2box$get_items()[v2])
 
-            G2box$set_items(c("Select/Drag-drop Grouping Variable 2", colnames(GUI$getActiveData())))
-            G2box$set_value(GUI$ctrlWidget$G2box$get_items()[1])
+            g1 <- if (svalue(G1box) %in% datavars) which(datavars == svalue(G1box)) + 1 else 1
+            G1box$set_items(c(G1box$get_items()[1], datavars))
+            G1box$set_value(GUI$ctrlWidget$G1box$get_items()[g1])
+
+            g2 <- if (svalue(G2box) %in% datavars) which(datavars == svalue(G2box)) + 1 else 1
+            G2box$set_items(c(G2box$get_items()[1], datavars))
+            G2box$set_value(GUI$ctrlWidget$G2box$get_items()[g2])
         },
         createSlider = function(pos, dropdata) {
             ## make sure there is no slider at the pos
