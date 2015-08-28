@@ -58,11 +58,19 @@ iNZSurveyDesign <- setRefClass("iNZSurveyDesign",
                                        wtVar <- gcombobox(vars)
                                        tbl[ii, 2, expand = TRUE] <- wtVar
 
+                                       ii <- ii + 1
+                                       lbl <- glabel("Finite population correction: ")
+                                       tbl[ii, 1, expand = TRUE, fill = FALSE, anchor= c(1, 0)] <- lbl
+                                       fpcVar <- gcombobox(vars, editable = TRUE)
+                                       tbl[ii, 2, expand = TRUE] <- fpcVar
+
                                        
                                        
                                        addSpring(gg)
                                        
                                        btnGrp <- ggroup(cont = gg)
+                                       addSpace(btnGrp, 10)
+                                       #advancedBtn <- gbutton("Advanced", cont = btnGrp)
                                        addSpring(btnGrp)
                                        cancelBtn <- gbutton("Cancel", cont = btnGrp)
                                        addSpace(btnGrp, 10)
@@ -71,7 +79,8 @@ iNZSurveyDesign <- setRefClass("iNZSurveyDesign",
                                        
                                        addSpace(gg, 10)
 
-
+                                       #addHandlerClicked(advancedBtn, handler = function(h, ...) {
+                                       #})
                                        addHandlerClicked(cancelBtn, handler = function(h, ...) {
                                            dispose(designWin)
                                        })
@@ -80,35 +89,46 @@ iNZSurveyDesign <- setRefClass("iNZSurveyDesign",
                                            clus1 <- svalue(clus1Var, index = FALSE)
                                            clus2 <- svalue(clus2Var, index = FALSE)
                                            wts <- svalue(wtVar, index = FALSE)
+                                           fpc <- svalue(fpcVar, index = FALSE)
                                            nest <- as.character(svalue(nestChk))
 
                                            if (strat == "") strat <- NULL
                                            if (clus1 == "") clus1 <- NULL
                                            if (clus2 == "") clus2 <- NULL
                                            if (wts == "") wts <- NULL
+                                           if (fpc == "") fpc <- NULL
 
                                            GUI$getActiveDoc()$getModel()$setDesign(
-                                               strat, clus1, clus2, wts, nest, gui = GUI
+                                               strat, clus1, clus2, wts, nest, fpc, gui = GUI
                                                )
 
-                                           if (is.null(strat) & is.null(clus1) &
-                                               is.null(clus2) & is.null(wts)) {
-                                               ## ENABLE A WHOLE LOT OF STUFF
-                                               enabled(GUI$menubar$menu_list[["Dataset"]][[3]]) <<- TRUE
-                                               enabled(GUI$menubar$menu_list[["Variables"]][["Numeric Variables"]][[2]]) <<- TRUE
-                                               enabled(GUI$menubar$menu_list[["Plot"]][[3]]) <<- TRUE
-                                               enabled(GUI$sumBtn) <<- TRUE
-                                               enabled(GUI$infBtn) <<- TRUE
-                                           } else {
-                                               ## DISABLE A WHOLE LOT OF STUFF
-                                               enabled(GUI$menubar$menu_list[["Dataset"]][[3]]) <<- FALSE
-                                               enabled(GUI$menubar$menu_list[["Variables"]][["Numeric Variables"]][[2]]) <<- FALSE
-                                               enabled(GUI$menubar$menu_list[["Plot"]][[3]]) <<- FALSE
-                                               enabled(GUI$sumBtn) <<- FALSE
-                                               enabled(GUI$infBtn) <<- FALSE
-                                           }
+                                           setOK <- try(GUI$getActiveDoc()$getModel()$createSurveyObject(), TRUE)
+                                           
+                                           if (!inherits(setOK, "try-error")) {
+                                               if (is.null(strat) & is.null(clus1) &
+                                                   is.null(clus2) & is.null(wts) & is.null(fpc)) {
+                                                   ## ENABLE A WHOLE LOT OF STUFF
+                                                   enabled(GUI$menubar$menu_list[["Dataset"]][[3]]) <<- TRUE
+                                                   enabled(GUI$menubar$menu_list[["Variables"]][["Numeric Variables"]][[2]]) <<- TRUE
+                                                   enabled(GUI$menubar$menu_list[["Plot"]][[3]]) <<- TRUE
+                                                   enabled(GUI$sumBtn) <<- TRUE
+                                                   enabled(GUI$infBtn) <<- TRUE
+                                               } else {
+                                                   ## DISABLE A WHOLE LOT OF STUFF
+                                                   enabled(GUI$menubar$menu_list[["Dataset"]][[3]]) <<- FALSE
+                                                   enabled(GUI$menubar$menu_list[["Variables"]][["Numeric Variables"]][[2]]) <<- FALSE
+                                                   enabled(GUI$menubar$menu_list[["Plot"]][[3]]) <<- FALSE
+                                                   enabled(GUI$sumBtn) <<- FALSE
+                                                   enabled(GUI$infBtn) <<- FALSE
 
-                                           dispose(designWin)
+                                                   dispose(designWin)
+                                               }
+                                           } else {
+                                               gmessage(paste0(
+                                                   "There is a problem with the specification of the survey design:\n\n",
+                                                   setOK
+                                                   ), icon = "error")
+                                           }                                           
                                        })
 
 
@@ -125,6 +145,8 @@ iNZSurveyDesign <- setRefClass("iNZSurveyDesign",
                                                svalue(nestChk) <- curDes$nest
                                            if (!is.null(curDes$wt))
                                                svalue(wtVar) <- curDes$wt
+                                           if (!is.null(curDes$fpc))
+                                               svalue(fpcVar) <- curDes$fpc
                                        }
 
                                        visible(designWin) <<- TRUE

@@ -45,15 +45,16 @@ iNZDataModel <- setRefClass(
             .self$changed$connect(FUN, ...)
         },
         setDesign = function(strata=NULL, clus1=NULL, clus2=NULL,
-                             wt=NULL, nest=NULL, gui, ...) {
+                             wt=NULL, nest=NULL, fpc=NULL, gui, ...) {
             if (is.null(strata) & is.null(clus1) & is.null(clus2) &
-                is.null(wt) & is.null(nest)) {
+                is.null(wt) & is.null(nest) & is.null(fpc)) {
                 dataDesign <<- NULL
             } else {
                 dataDesign <<- list(strata = strata,
                                     clus1  = clus1,
                                     clus2  = clus2,
                                     wt     = wt,
+                                    fpc    = fpc,
                                     nest   = nest)
             }
         },
@@ -72,6 +73,7 @@ iNZDataModel <- setRefClass(
             
             strata <- if (is.null(des$strata)) "NULL" else paste("~", des$strata)
             weights <- if (is.null(des$wt)) "NULL" else paste("~", des$wt)
+            fpcs <- if (is.null(des$fpc)) "NULL" else paste("~", des$fpc)
             
             obj <-
                 parse(text =
@@ -80,6 +82,7 @@ iNZDataModel <- setRefClass(
                           "id = ", id, ", ",
                           "strata = ", strata, ", ",
                           "weights = ", weights, ", ",
+                          "fpc = ", fpcs, ", ",
                           "nest = ", des$nest, ", ",
                           "data = dataSet)"
                           )
