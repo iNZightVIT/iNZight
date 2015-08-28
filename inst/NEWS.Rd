@@ -3,6 +3,10 @@
 \encoding{UTF-8}
 
 # [CHANGE] Drop-down menus for variables
+# [FIX] enable/disable buttons for survey stuff
+# [NEW] include FPC specification in survey design window
+# [FIX] when closing svydesign window, it will check that the design is
+#       valid before saving
 
 \section{Changes in version 2.3}{
   Release date: TBA
