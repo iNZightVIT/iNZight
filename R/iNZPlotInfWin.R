@@ -114,6 +114,8 @@ iNZBarchartInf <- setRefClass(
         initialize = function(GUI) {
             callSuper(GUI)
 
+            is.survey <- !is.null(GUI$getActiveDoc()$getModel()$getDesign())
+
             ## Parameters
             parm <- glabel("Proportions")
             
@@ -121,8 +123,10 @@ iNZBarchartInf <- setRefClass(
 
             
             ## Methods
-            mthd <- gradio(c("Normal", "Bootstrap *"),
-                           selected = 1)
+            if (is.survey)
+                mthd <- gradio(c("Normal"), selected = 1)
+            else
+                mthd <- gradio(c("Normal", "Bootstrap *"), selected = 1)
 
             metTab[3, 1] <<- mthd
             
@@ -157,6 +161,12 @@ iNZBarchartInf <- setRefClass(
             }
 
             enabler <- function() {
+                if (is.survey) {
+                    ## While not available:
+                    visible(compInt) <- visible(confInt) <- FALSE
+                    return(NULL)
+                }
+                
                 visible(compInt) <- svalue(mthd, index = TRUE) == 1
                 #if (svalue(mthd, index = TRUE) == 2) svalue(compInt) <- FALSE
 
@@ -178,15 +188,22 @@ iNZDotchartInf <- setRefClass(
         initialize = function(GUI) {
             callSuper(GUI)
 
+            is.survey <- !is.null(GUI$getActiveDoc()$getModel()$getDesign())
+
             ## Parameters
-            parm <- gradio(c("Mean", "Median"), selected = 1)
+            if (is.survey)
+                parm <- gradio(c("Mean"), selected = 1)
+            else
+                parm <- gradio(c("Mean", "Median"), selected = 1)
             
             parTab[3, 1, expand = TRUE, anchor = c(-1, 0)] <<- parm
 
             
             ## Methods
-            mthd <- gradio(c("Normal", "Bootstrap *"),
-                           selected = 1)
+            if (is.survey)
+                mthd <- gradio(c("Normal"), selected = 1)
+            else
+                mthd <- gradio(c("Normal", "Bootstrap *"), selected = 1)
 
             metTab[3, 1] <<- mthd
             

@@ -111,9 +111,9 @@ iNZPlotToolbar <- setRefClass(
         },
         addInf = function() {
             if (!is.null(GUI$getActiveDoc()$getModel()$getDesign())) {
-                gmessage("No inferential markup of plots for survey data.",
-                         icon = "alert", parent = GUI$win, title = "Not available")
-            } else {
+                gmessage("Inferential markup of plots for survey data is still in development. If nothing shows up, it's because we haven't got to it yet. If you notice errors (wrong values for data you know) let us know.",
+                         icon = "warning", parent = GUI$win, title = "Developmental Feature")
+            }# else {
                 curSet <- GUI$getActiveDoc()$getSettings()
                 if (is.null(GUI$plotType))
                     gmessage("You must select at least one variable before you can access the Inference menu.",
@@ -132,6 +132,6 @@ iNZPlotToolbar <- setRefClass(
                                else
                                    GUI$getActiveDoc()$setSettings(list(bs.inference = TRUE))
                            })
-            }
+#            }
         })
     )
