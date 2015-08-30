@@ -163,11 +163,10 @@ iNZBarchartInf <- setRefClass(
             enabler <- function() {
                 if (is.survey) {
                     ## While not available:
-                    visible(compInt) <- visible(confInt) <- FALSE
-                    return(NULL)
+                    visible(compInt) <- FALSE
+                } else {
+                    visible(compInt) <- svalue(mthd, index = TRUE) == 1
                 }
-                
-                visible(compInt) <- svalue(mthd, index = TRUE) == 1
                 #if (svalue(mthd, index = TRUE) == 2) svalue(compInt) <- FALSE
 
                 addIntervals()
