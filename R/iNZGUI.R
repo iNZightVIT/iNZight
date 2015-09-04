@@ -815,6 +815,13 @@ iNZGUI <- setRefClass(
                             curSet$varnames$y <- v$x
                         }
 
+                        ## Design or data?
+                        curMod <- getActiveDoc()$getModel()
+                        if (!is.null(curMod$dataDesign)) {
+                            curSet$data <- NULL
+                            curSet$design <- curMod$createSurveyObject()
+                        }
+
                         w <- gwindow("Summary", width = 850, height = 400,
                                      visible = FALSE, parent = win)
                         g <- gtext(text = paste(do.call(
@@ -841,6 +848,13 @@ iNZGUI <- setRefClass(
                             v <- curSet$varnames
                             curSet$varnames$x <- v$y
                             curSet$varnames$y <- v$x
+                        }
+
+                        ## Design or data?
+                        curMod <- getActiveDoc()$getModel()
+                        if (!is.null(curMod$dataDesign)) {
+                            curSet$data <- NULL
+                            curSet$design <- curMod$createSurveyObject()
                         }
 
                         w <- gwindow("Choose Method", width = 100,
