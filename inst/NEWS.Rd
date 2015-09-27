@@ -9,7 +9,7 @@
 #       valid before saving
 
 \section{Changes in version 2.3}{
-  Release date: TBA
+  Release date: 4 August, 2015
 
   \subsection{NEW FEATURES}{
     \itemize{
@@ -18,9 +18,9 @@
       variable. Plots take account of this structure and inference that
       displays (currently only trend lines on bivariate plots) use
       functions from the `survey` packages and thus incorporate weights.
-      
+
       \item Adjust the axis limits from the Add to Plot menu.
-      
+
       \item Adjust the number of bars displayed on a bar plot from the
       Add to Plot menu.
     }
@@ -38,6 +38,9 @@
   \subsection{BUG FIXES}{
     \itemize{
       \item fixes to a few issues occuring in dotplots
+
+      \item display an error if Add to Plot is called without any
+      variables having been selected
     }
   }
 }
@@ -60,7 +63,7 @@
   \subsection{NEW FEATURES}{
     \itemize{
       \item users can specify a window size in File > Preferences
-      
+
       \item Links to the User Guides found on our website have been
       added, including help buttons in the Add To Plot and Inference
       Information windows.
@@ -71,7 +74,7 @@
     \itemize{
       \item LOCATE functionality now included for dot plots. Also fixes
       several bugs in the previous update for locating points in a
-      scatter plot. 
+      scatter plot.
     }
   }
 
@@ -125,10 +128,10 @@
       "Inference Information" windows have been integrated into the main
       window with the aim of making the interface cleaner and easier to
       navigate.
-      
+
       \item When colouring points by a numeric variable, a continuous colour
       range is used rather than a discrete one.
-      
+
       \item The plotting package has been rewritten to accomodate survey
       designs (this will be integrated with iNZight itself at a later
       date). However, the plots have been modified to be cleaner and far
@@ -138,9 +141,9 @@
 
       \item The "Get Summary" and "Get Inference" outputs have been
       redesigned to hopefully give a more intuitive, cleaner
-      presentation of the information. 
-      
-      \item From dot plots and histograms, the comparison (and confidence) 
+      presentation of the information.
+
+      \item From dot plots and histograms, the comparison (and confidence)
       interval values can be read from the graph by clicking 'Get Values'
       in the 'Inference Information' panel. This includes the Year 12 intervals
       applied to medians.
@@ -156,7 +159,7 @@
     \itemize{
       \item the number of missing values is now displayed on the plot,
       broken down by variable
-      
+
       \item the list of options in the 'Add to Plot' window are now in a drop
       down menu, rather than radio buttons, to save space
 
@@ -168,10 +171,10 @@
     \itemize{
       \item if 'colour by' is set, but the graph is changed to a histogram,
       the legend is removed from the plot
-      
+
       \item fixes a bug in the plotting that was causing large values to fall off the axes
       of the plots
-      
+
       \item includes other patches from the previous version of iNZight
     }
   }
@@ -179,22 +182,22 @@
 
 \section{Changes in version 2.0.4}{
   Release date: 18 November 2014
-  
+
   \subsection{NEW FEATURES}{
     \itemize{
       \item The data set name is displayed above the data view
 
       \item The variable type is now displayed as a prefix to the variable
       names in the variable view
-      
+
       \item A new "Updates Available" shows up when new versions are
       released
-      
+
       \item A new Help tab that includes Licence information, and a link
       to the FAQ and Support pages
     }
   }
-  
+
   \subsection{MINOR CHANGES}{
     \itemize{
       \item In the "Remove Additions" window, "Remove segmentation" has
@@ -243,7 +246,7 @@
 
 \section{Changes in version 2.0.3}{
   Release date: 17 September 2014
-  
+
   \subsection{MAJOR CHANGES}{
     \itemize{
       \item A new Multiple Response analysis module has been added to the
@@ -251,7 +254,7 @@
       Junjie Zeng
     }
   }
-  
+
   \subsection{MINOR CHANGES}{
     \itemize{
       \item "Add to Plot" window modified for barcharts - can show onlyake
@@ -269,7 +272,7 @@
 
 \section{Changes in version 2.0.2}{
   Release date: 17 June 2014
-  
+
   \subsection{NEW FEATURES}{
     \itemize{
       \item can now cycle through all two-variable plots for a selected
@@ -281,12 +284,12 @@
       \item data manipulation features added and modified
     }
   }
-  
+
   \subsection{MINOR CHANGES}{
     \itemize{
       \item can now specify to identify min/max points in a dot plot
 
-      \item in the Add to Plot window for barcharts, reworded "segment by" to "colour by" 
+      \item in the Add to Plot window for barcharts, reworded "segment by" to "colour by"
       for consistency.
 
       \item the transparency slider now runs from 0% to 100%
@@ -302,7 +305,7 @@
 
 \section{Changes in version 2.0.1}{
   Release date: 27 March 2014
-  
+
   \subsection{NEW FEATURES}{
     \itemize{
       \item Identify feature added to the "Add To Plot" menu. This
@@ -310,7 +313,7 @@
       variable. This feature works for both dot plots and scatter plots.
     }
   }
-  
+
   \subsection{MINOR CHANGES}{
     \itemize{
       \item Users can force scatter plots when the sample size is large,
@@ -340,13 +343,13 @@
 
 \section{Changes in version 2.0.0}{
   Release date: 18 January 2014
-  
+
   \subsection{MAJOR RELEASE}{
     \itemize{
 
       \item The entire iNZight module of iNZightVIT has been rewritten,
       with a multitude of changes along the way.
-      
+
     }
   }
 }

@@ -16,18 +16,18 @@ iNZControlWidget <- setRefClass(
             tbl <- glayout(expand = FALSE, cont = ctrlGp)
 
             ### DRAG/DROP MENUS
-            
+
             V1box <<- gcombobox(c("Select/Drag-drop Variable 1", colnames(GUI$getActiveData())))
             V2box <<- gcombobox(c("Select/Drag-drop Variable 2", colnames(GUI$getActiveData())))
             G1box <<- gcombobox(c("Select/Drag-drop Grouping Variable 1", colnames(GUI$getActiveData())))
             G2box <<- gcombobox(c("Select/Drag-drop Grouping Variable 2", colnames(GUI$getActiveData())))
-            
+
             tbl[3,1:5, anchor = c(0,0), expand = TRUE] <- V1box
             tbl[5,1:5, anchor = c(0,0), expand = TRUE] <- V2box
             tbl[7,1:5, anchor = c(0,0), expand = TRUE] <- G1box
             tbl[9,1:5, anchor = c(0,0), expand = TRUE] <- G2box
 
-            
+
             ### CLEAR BUTTONS
 
             ## -- Variable 1
@@ -67,68 +67,35 @@ iNZControlWidget <- setRefClass(
                                   })
             G2clearbtn$set_icon("Cancel")
             tbl[9,7, anchor = c(0,0)] <- G2clearbtn
-            
-            
+
+
             ## add drop functionality to the fields
 
             ## -- Variable 1
             addDropTarget(
-                V1box,
+                xlbl,
                 handler = function(h, ...) {
                     svalue(h$obj) <- h$dropdata
-                })
-            addHandlerChanged(
-                V1box,
-                handler = function(h, ...) {
-                    if (svalue(h$obj, index = TRUE) == 1) {
-                        newX <- NULL
-                        newXname <- NULL
-                    } else {
-                        newX <- GUI$getActiveDoc()$getData()[svalue(h$obj)][[1]]
-                        newXname <- colnames(GUI$getActiveDoc()$getData()[svalue(h$obj)])
-                    }
-                    
                     changePlotSettings(list(
-                        x = newX,
+                        x = GUI$getActiveDoc()$getData()[h$dropdata][[1]],
                         xlab = NULL,
                         main = NULL,
                         varnames = list(
-                            x = newXname)
+                            x = colnames(GUI$getActiveDoc()$getData()[h$dropdata]))
                         ), reset = TRUE)
                 })
-
-            ## -- Variable 2
             addDropTarget(
-                V2box,
+                ylbl,
                 handler = function(h, ...) {
                     svalue(h$obj) <- h$dropdata
-                })
-            addHandlerChanged(
-                V2box,
-                handler = function(h, ...) {
-                    do.reset <- TRUE
-                    
-                    if (svalue(h$obj, index = TRUE) == 1) {
-                        newY <- NULL
-                        newYname <- NULL
-                        do.reset <- TRUE
-                    } else {
-                        newY <- GUI$getActiveDoc()$getData()[svalue(h$obj)][[1]]
-                        newYname <- colnames(GUI$getActiveDoc()$getData()[svalue(h$obj)])
-                        
-                        if (GUI$plotType == "dot") 
-                            if (is.factor(newY))
-                                do.reset <- FALSE
-                    }                           
-                    
                     changePlotSettings(list(
-                        y = newY,
+                        y = GUI$getActiveDoc()$getData()[h$dropdata][[1]],
                         ylab = NULL,
                         main = NULL,
-                        varnames = list(y = newYname)
-                        ), reset = do.reset)
+                        varnames = list(
+                            y = colnames(GUI$getActiveDoc()$getData()[h$dropdata]))
+                        ), reset = TRUE)
                 })
-            
             ## slider 1
             addDropTarget(
                 G1box,
@@ -165,7 +132,7 @@ iNZControlWidget <- setRefClass(
                         }
                     }
                 })
-            
+
             ## slider 2
             addDropTarget(
                 G2box,
@@ -209,7 +176,7 @@ iNZControlWidget <- setRefClass(
         },
         updateVariables = function() {
             datavars <- colnames(GUI$getActiveData())
-            
+
             v1 <- if (svalue(V1box) %in% datavars) which(datavars == svalue(V1box)) + 1 else 1
             V1box$set_items(c(V1box$get_items()[1], datavars))
             V1box$set_value(GUI$ctrlWidget$V1box$get_items()[v1])
@@ -253,7 +220,7 @@ iNZControlWidget <- setRefClass(
             tbl[pos, 1:5, expand = TRUE] <- (hzGrp <- ggroup(fill = "x"))
 
             sliderGrp <- ggroup(horizontal = FALSE)
-            
+
             ## build the level names that are used for the slider
             grpData <- GUI$getActiveData()[dropdata][[1]]
             grpData <- iNZightPlots:::convert.to.factor(grpData)
@@ -317,7 +284,7 @@ iNZControlWidget <- setRefClass(
             add(hzGrp, sliderGrp, expand = TRUE)
             #add(hzGrp, playBtn, expand = FALSE, anchor = c(0, 0))
             tbl[pos, 7, anchor = c(0, 0), expand = FALSE] <- playBtn
-                                         
+
 
             ## ##################################
             ## ## start of workaround part2

@@ -107,7 +107,8 @@ iNZPlotToolbar <- setRefClass(
                        "hist" = iNZHistogramMod$new(GUI),
                        "grid" = iNZGriddenMod$new(GUI),
                        "hex" = iNZHexbinMod$new(GUI),
-                       iNZPlotModWin$new(GUI))
+                       gmessage("Select at least one variable before using Add to Plot.", title = "No variables selected",
+                                icon = "error", parent = GUI$win))
         },
         addInf = function() {
             if (!is.null(GUI$getActiveDoc()$getModel()$getDesign())) {

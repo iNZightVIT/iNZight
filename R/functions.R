@@ -25,65 +25,7 @@
     }
 }
 
-updateiNZight <- function() {
-    oldr <- r <- getOption("repos")
-    on.exit(options(repos = oldr))
-    r["CRAN"] <- "http://cran.stat.auckland.ac.nz"
-    options(repos = r)
 
-    ## Update CRAN packages
-    update.packages(ask = FALSE)
-
-    ## Update iNZight from ~wild
-    if (.Platform$OS.type != "unix") {
-        tmploc <- file.path(tempdir(), "iNZight.zip")
-        download.file("http://www.stat.auckland.ac.nz/~wild/downloads/iNZight.zip",
-                      destfile = tmploc)
-        install.packages(tmploc, type = "win.binary")
-        file.remove(tmploc)
-    } else {
-        tmploc <- file.path(tempdir(), "iNZight.tar.gz")
-        download.file("http://www.stat.auckland.ac.nz/~wild/downloads/iNZight.tar.gz",
-                      destfile = tmploc)
-        install.packages(tmploc, type = "source")
-        file.remove(tmploc)
-    }
-}
-
-iNZightBugReport <- function() {
-    pkgname <- "iNZight"
-    desc <- packageDescription(pkgname)
-    ind <- paste(rep(" ", floor(0.05 * getOption("width"))), collapse = "")
-    parwrap <- function(txt, indent = "")
-        cat(paste(strwrap(txt, prefix = ind), collapse = "\n"), "\n")
-
-    cat("\n")
-    tmp <- paste("To submit a bug report for the package ",
-                 sQuote(pkgname),
-                 ", please send an email with the following information:",
-                 sep = "")
-    parwrap(tmp, ind)
-    cat("\n")
-    cat(ind, "To: ", desc$Maintainer, "\n", sep = "")
-    cat(ind, "Subject: [BUG REPORT] ", desc$Package, " ", desc$Version, "\n", sep = "")
-    cat("\n")
-    tmp <- paste("For the body of the email, please paste the error message produced by ",
-                 sQuote(pkgname),
-                 " and describe any steps necessary to reproduce the bug.",
-                 sep = "")
-    parwrap(tmp, ind)
-    cat("\n")
-    tmp <- paste("The output from the commands ",
-                 sQuote("sessionInfo()"), " and ", sQuote("Sys.info()"),
-                 " would also be helpful.",
-                 sep = "")
-    parwrap(tmp, ind)
-    cat("\n")
-    tmp <- paste("Optionally, if the bug only occurs with a specific dataset, attaching it to the email would be helpful.")
-    parwrap(tmp, ind)
-    cat("\n")
-    cat(ind, "Thank you for your bug report.\n\n", sep = "")
-}
 
 iNZSaveFile <- function(theFile, ext, ...) {
     ###################################
