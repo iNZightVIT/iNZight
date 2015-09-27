@@ -73,27 +73,38 @@ iNZControlWidget <- setRefClass(
 
             ## -- Variable 1
             addDropTarget(
-                xlbl,
+                V1box,
                 handler = function(h, ...) {
                     svalue(h$obj) <- h$dropdata
+                })
+            addHandlerChanged(
+                V1box,
+                handler = function(h, ...) {
+                    val <- svalue(V1box)
                     changePlotSettings(list(
-                        x = GUI$getActiveDoc()$getData()[h$dropdata][[1]],
+                        x = GUI$getActiveDoc()$getData()[val][[1]],
                         xlab = NULL,
                         main = NULL,
                         varnames = list(
-                            x = colnames(GUI$getActiveDoc()$getData()[h$dropdata]))
+                            x = colnames(GUI$getActiveDoc()$getData()[val]))
                         ), reset = TRUE)
                 })
+            ## -- Variable 2
             addDropTarget(
-                ylbl,
+                V2box,
                 handler = function(h, ...) {
                     svalue(h$obj) <- h$dropdata
+                })
+            addHandlerChanged(
+                V2box,
+                handler = function(h, ...) {
+                    val <- svalue(V2box)
                     changePlotSettings(list(
-                        y = GUI$getActiveDoc()$getData()[h$dropdata][[1]],
+                        y = GUI$getActiveDoc()$getData()[val][[1]],
                         ylab = NULL,
                         main = NULL,
                         varnames = list(
-                            y = colnames(GUI$getActiveDoc()$getData()[h$dropdata]))
+                            y = colnames(GUI$getActiveDoc()$getData()[val]))
                         ), reset = TRUE)
                 })
             ## slider 1
