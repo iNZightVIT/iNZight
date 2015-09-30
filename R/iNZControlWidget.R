@@ -19,8 +19,8 @@ iNZControlWidget <- setRefClass(
 
             V1box <<- gcombobox(c("Select/Drag-drop Variable 1", colnames(GUI$getActiveData())))
             V2box <<- gcombobox(c("Select/Drag-drop Variable 2", colnames(GUI$getActiveData())))
-            G1box <<- gcombobox(c("Select/Drag-drop Grouping Variable 1", colnames(GUI$getActiveData())))
-            G2box <<- gcombobox(c("Select/Drag-drop Grouping Variable 2", colnames(GUI$getActiveData())))
+            G1box <<- gcombobox(c("Select/Drag-drop Subset Variable 1", colnames(GUI$getActiveData())))
+            G2box <<- gcombobox(c("Select/Drag-drop Subset Variable 2", colnames(GUI$getActiveData())))
 
             tbl[3,1:5, anchor = c(0,0), expand = TRUE] <- V1box
             tbl[5,1:5, anchor = c(0,0), expand = TRUE] <- V2box
