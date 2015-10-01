@@ -965,6 +965,9 @@ iNZGUI <- setRefClass(
                     curPlSet$design <- curMod$createSurveyObject()
                 }
 
+                ## new default to fix Shiny, so disable for now:
+                curPlSet$internal.labels <- FALSE
+
                 ## Suppress the warnings produced by iNZightPlot ...
                 suppressWarnings({
                     curPlot <<- unclass(do.call(iNZightPlot, curPlSet))
