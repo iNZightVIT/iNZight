@@ -7,6 +7,7 @@
 # [NEW] include FPC specification in survey design window
 # [FIX] when closing svydesign window, it will check that the design is
 #       valid before saving
+# [FIX] revert to the original wording for 'subset by' variables in control window
 
 \section{Changes in version 2.3}{
   Release date: 4 August, 2015
