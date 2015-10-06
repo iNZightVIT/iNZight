@@ -2,12 +2,39 @@
 \title{Change Log for iNZight}
 \encoding{UTF-8}
 
-# [CHANGE] Drop-down menus for variables
-# [FIX] enable/disable buttons for survey stuff
-# [NEW] include FPC specification in survey design window
-# [FIX] when closing svydesign window, it will check that the design is
-#       valid before saving
-# [FIX] revert to the original wording for 'subset by' variables in control window
+\section{Changes in version 2.4}{
+  Release date: 12 October, 2015
+
+  \subsection{NEW FEATURES}{
+    \itemize{
+      \item Include FPC (finite population corrections) in survey designs
+    }
+  }
+
+  \subsection{MAJOR CHANGES}{
+    \itemize{
+      \item Replace the drag-drop boxes for variabes with drop-down
+      boxes for an alternative method of variable
+      selection. Drag-and-drop functionality has been retained.
+    }
+  }
+
+  \subsection{BUG FIXES}{
+    \itemize{
+      \item Fix the enabling/disabling of buttons when survey designs
+      are specified.
+
+      \item When closing the survey design window, they specified design
+      is now checked for validity before saving the design.
+
+      \item Fix bug in the Multiple Response module that gave an
+      "inverse" error message.
+
+      \item Various other small fixes throughout iNZight and other
+      dependency pacakges. See their change logs for details.
+    }
+  }
+}
 
 \section{Changes in version 2.3}{
   Release date: 4 August, 2015
