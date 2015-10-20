@@ -34,6 +34,13 @@
       dependency pacakges. See their change logs for details.
     }
   }
+
+  \subsection{PATCH 2.4.1 - 21/10/2015}{
+    \itemize{
+      \item Remove dependency on \code{RODBC} package; this causes
+      issues on Mac attempting to manually install.
+    }
+  }
 }
 
 \section{Changes in version 2.3}{

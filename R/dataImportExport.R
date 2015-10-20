@@ -39,6 +39,9 @@ iNZDataImportExport <- setRefClass(
                     dataSet <<- out
                 }
             } else if (ext %in% c("xls", "xlsx")) {
+                if ("RODBC" %in% row.names(installed.packages()))
+                    try(require(RODBC), silent = TRUE)
+                
                 if (ext == "xls") {
                     channel <-  if (exists("odbcConnectExcel"))
                         try(RODBC::odbcConnectExcel(theFile,
