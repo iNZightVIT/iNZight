@@ -1197,6 +1197,18 @@ iNZDotchartMod <- setRefClass(
             lbl <- glabel("Press ENTER/RETURN to apply changes")
             font(lbl) <- list(family = "normal", size = 8)
             tbl[ii, 2, anchor = c(-1, -1), expand = TRUE] <- lbl
+            ii <- ii + 2
+
+            
+            lbl <- glabel("Group labels (\"y-axis\")")
+            font(lbl) <- list(weight = "bold", family = "normal", size = 9)
+            tbl[ii, 1:2, anchor = c(-1, -1), expand = TRUE] <- lbl
+            ii <- ii + 1
+
+            intLabs <- gcheckbox("Display inside graph (if labels aren't showing, check this box)",
+                                 checked = !curSet$internal.labels)
+            tbl[ii, 1:2, anchor = c(-1, -1), expand= TRUE] <- intLabs
+            ii <- ii + 1
 
             
             updateEverything <- function() {
@@ -1204,13 +1216,15 @@ iNZDotchartMod <- setRefClass(
                 xlab <- svalue(labX)
                 GUI$getActiveDoc()$setSettings(
                     list(main = if (mlab != '') mlab else NULL,
-                         xlab = if (xlab != '') xlab else NULL)
+                         xlab = if (xlab != '') xlab else NULL,
+                         internal.labels = !svalue(intLabs))
                     )
                 updateSettings()
             }
             
             addHandlerChanged(labMain, handler = function(h, ...) updateEverything())
             addHandlerChanged(labX, handler = function(h, ...) updateEverything())
+            addHandlerClicked(intLabs, handler = function(h, ...) updateEverything())
             
             add(optGrp, tbl)
         },
@@ -1551,18 +1565,31 @@ iNZHistogramMod <- setRefClass(
             tbl[ii, 2, anchor = c(-1, -1), expand = TRUE] <- lbl
 
             
+            lbl <- glabel("Group labels (\"y-axis\")")
+            font(lbl) <- list(weight = "bold", family = "normal", size = 9)
+            tbl[ii, 1:2, anchor = c(-1, -1), expand = TRUE] <- lbl
+            ii <- ii + 1
+
+            intLabs <- gcheckbox("Display inside graph (if labels aren't showing, check this box)",
+                                 checked = !curSet$internal.labels)
+            tbl[ii, 1:2, anchor = c(-1, -1), expand= TRUE] <- intLabs
+            ii <- ii + 1
+
+            
             updateEverything <- function() {
                 mlab <- svalue(labMain)
                 xlab <- svalue(labX)
                 GUI$getActiveDoc()$setSettings(
                     list(main = if (mlab != '') mlab else NULL,
-                         xlab = if (xlab != '') xlab else NULL)
+                         xlab = if (xlab != '') xlab else NULL,
+                         internal.labels = !svalue(intLabs))
                     )
                 updateSettings()
             }
             
             addHandlerChanged(labMain, handler = function(h, ...) updateEverything())
             addHandlerChanged(labX, handler = function(h, ...) updateEverything())
+            addHandlerClicked(intLabs, handler = function(h, ...) updateEverything())
             
             add(optGrp, tbl)
         },
