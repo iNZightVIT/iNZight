@@ -971,6 +971,9 @@ iNZGUI <- setRefClass(
                 ## Suppress the warnings produced by iNZightPlot ...
                 suppressWarnings({
                     curPlot <<- unclass(do.call(iNZightPlot, curPlSet))
+                    if (!is.null(attr(curPlot, "dotplot.redraw")))
+                        if (attr(curPlot, "dotplot.redraw"))
+                            curPlot <<- unclass(do.call(iNZightPlot, curPlSet))
                 })
                 plotType <<- attr(curPlot, "plottype")
             } else {

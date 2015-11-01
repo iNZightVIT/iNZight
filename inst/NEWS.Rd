@@ -48,6 +48,13 @@
       \item Fix from iNZightPlots for Get Summary (n.missing now correct)
     }
   }
+
+  \subsection{PATCH 2.4.3 - 02/11/2015}{
+    \itemize{
+      \item Improve smoothness of dotplot transitions by only redrawing
+      when the scaling has changed.
+    }
+  }
 }
 
 \section{Changes in version 2.3}{
