@@ -702,6 +702,53 @@ iNZDotchartMod <- setRefClass(
             tbl[ii, 2, expand = TRUE] <- grpVarList
             ii <- ii + 1
 
+            lvlCols <- gbutton("Specify colours")
+            tbl[ii, 2, expand = TRUE] <- lvlCols
+            visible(lvlCols) <- svalue(grpVarList, index = TRUE) != 1
+
+            addHandlerClicked(lvlCols, function(h, ...) {
+                variable <- GUI$getActiveData()[, svalue(grpVarList, index = FALSE)]
+                if (is.numeric(variable)) {
+                    gmessage("Set colour of numeric ... not yet implemented.", "Not ready yet.", icon = "warning")
+                } else {
+                    lvls <- levels(variable)
+
+                    colWin <- gwindow("Select Colours", visible = FALSE, parent = GUI$win)
+                    cgrp <- gvbox(spacing = 5, container = colWin)
+                    tbl <- glayout()
+                    jj <- 1
+                    
+                    lbl <- glabel("Select colours")
+                    font(lbl) <- list(weight = "bold", family = "normal", size = 9)
+                    tbl[jj, 1:2, anchor = c(-1, -1), expand = TRUE] <- lbl
+                    jj <- jj + 1
+                    
+                    ## this really needs changing!!
+                    default.cols <- c("darkblue", "darkgreen",
+                                      "darkmagenta", "darkslateblue", "hotpink4",
+                                      "lightsalmon2", "palegreen3", "steelblue3")
+                    current.cols <- GUI$curPlot$gen$col.args$f.cols
+
+                    wkeep <- jj
+                    for (k in 1:length(lvls)) {
+                        tbl[jj, 1, expand = TRUE] <- glabel(lvls[k])
+                        tbl[jj, 2] <- gcombobox(items = c(current.cols[k], default.cols), editable = TRUE)
+                        jj <- jj + 1
+                    }
+                    wkeep <- wkeep:jj
+
+
+                    okBtn <- gbutton("OK", function(h, ...) {
+                        #GUI$getActiveDoc()$setSettings(
+                        #                      list(col =
+                        
+                    })
+                    
+                    add(cgrp, tbl)                    
+                    visible(colWin) <- TRUE
+                }                
+            })
+
 
             ## Maintain a single function that is called whenever anything is updated:
             updateEverything <- function() {
@@ -718,6 +765,7 @@ iNZDotchartMod <- setRefClass(
             addHandlerChanged(grpVarList,
                               handler = function(h, ...) {
                                   updateEverything()
+                                  visible(lvlCols) <- svalue(grpVarList, index = TRUE) != 1
                               })
             
             add(optGrp, tbl)
