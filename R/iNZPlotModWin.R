@@ -783,6 +783,7 @@ iNZDotchartMod <- setRefClass(
             lvlCols <- gbutton("Specify colours")
             tbl[ii, 2, expand = TRUE] <- lvlCols
             visible(lvlCols) <- svalue(grpVarList, index = TRUE) != 1
+            ii <- ii + 1
 
             addHandlerClicked(lvlCols, function(h, ...) {
                 variable <- GUI$getActiveData()[, svalue(grpVarList, index = FALSE)]
@@ -2176,6 +2177,20 @@ iNZScatterMod <- setRefClass(
             tbl[ii, 2, expand = TRUE] <- grpVarList
             ii <- ii + 1
 
+            lvlCols <- gbutton("Specify colours")
+            tbl[ii, 2, expand = TRUE] <- lvlCols
+            visible(lvlCols) <- svalue(grpVarList, index = TRUE) != 1
+            ii <- ii + 1
+
+            addHandlerClicked(lvlCols, function(h, ...) {
+                variable <- GUI$getActiveData()[, svalue(grpVarList, index = FALSE)]
+                if (is.numeric(variable)) {
+                    gmessage("Set colour of numeric ... not yet implemented.", "Not ready yet.", icon = "warning")
+                } else {
+                    specifyColours(variable)
+                }                
+            })
+
 
             lbl <- glabel("Resize points proportional to :")
             rszVarList <- gcombobox(
@@ -2207,6 +2222,13 @@ iNZScatterMod <- setRefClass(
             ## in this case, no point in having a separate "show" button
             addHandlerChanged(grpVarList, handler = function(h, ...) updateEverything())
             addHandlerChanged(rszVarList, handler = function(h, ...) updateEverything())
+
+            addHandlerChanged(grpVarList,
+                              handler = function(h, ...) {
+                                  updateEverything()
+                                  visible(lvlCols) <- svalue(grpVarList, index = TRUE) != 1 &&
+                                      is.factor(GUI$getActiveData()[[svalue(grpVarList)]])
+                              })
                               
             add(optGrp, tbl)
         },

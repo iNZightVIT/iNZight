@@ -2,6 +2,17 @@
 \title{Change Log for iNZight}
 \encoding{UTF-8}
 
+\section{Changes in version 2.5}{
+  Release date: 08 November, 2015
+
+  \subsection{NEW FEATURES}{
+    \itemize{
+      \item specify colours for dotplots and scatterplots from the Add
+      to Plot > Code more variables screen.
+    }
+  }
+}
+
 \section{Changes in version 2.4}{
   Release date: 12 October, 2015
 
