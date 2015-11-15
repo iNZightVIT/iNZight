@@ -599,17 +599,17 @@ iNZGUI <- setRefClass(
                         browseURL("https://www.stat.auckland.ac.nz/~wild/iNZight/user_guides/plot_options/")
                     }
                 ),
-                guideManipulateVariables = gaction(
+                guideVariables = gaction(
                     ## 42
-                    label = "Manipulate Variables Menu",
+                    label = "Variables Menu",
                     icon = "symbol_diamond",
                     handler = function(h, ...) {
-                        browseURL("https://www.stat.auckland.ac.nz/~wild/iNZight/user_guides/manipulate_variables/")
+                        browseURL("https://www.stat.auckland.ac.nz/~wild/iNZight/user_guides/variables/")
                     }
                 ),
                 guideDataOptions = gaction(
                     ## 43
-                    label = "Data Menu",
+                    label = "Dataset Menu",
                     icon = "symbol_diamond",
                     handler = function(h, ...) {
                         browseURL("https://www.stat.auckland.ac.nz/~wild/iNZight/user_guides/data_options/")

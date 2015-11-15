@@ -809,9 +809,21 @@ iNZDotchartMod <- setRefClass(
             ## in this case, no point in having a separate "show" button
             addHandlerChanged(grpVarList,
                               handler = function(h, ...) {
-                                  updateEverything()
-                                  visible(lvlCols) <- svalue(grpVarList, index = TRUE) != 1 &&
-                                      is.factor(GUI$getActiveData()[[svalue(grpVarList)]])
+                                  if (svalue(grpVarList, index = TRUE) == 1) {
+                                      updateEverything()
+                                      visible(lvlCols) <- FALSE
+                                  } else {
+                                      var <- GUI$getActiveData()[[svalue(grpVarList)]]
+                                      if (length(unique(var)) <= 1) {
+                                          visible(lvlCols) <- FALSE
+                                          gmessage(paste("The variable", svalue(grpVarList),
+                                                         "only has one unique value, so colouring by it wont work."),
+                                                   icon = "warning", title = "Invalid variable")
+                                      } else {
+                                          updateEverything()
+                                          visible(lvlCols) <- is.factor(var)
+                                      }
+                                  }
                               })
             
             add(optGrp, tbl)

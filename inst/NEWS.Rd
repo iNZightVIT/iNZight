@@ -11,6 +11,14 @@
       to Plot > Code more variables screen.
     }
   }
+
+  \subsection{PATCH 2.5.1 - 16/11/2015}{
+    \itemize{
+      \item correct the names and URLs in the 'Help > User Guides' menu
+      \item fix bug that occurs when 'Colour by' variable has only one
+      unique value
+    }
+  }
 }
 
 \section{Changes in version 2.4}{
