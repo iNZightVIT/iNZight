@@ -333,28 +333,13 @@ iNZGUI <- setRefClass(
                     icon = "symbol_diamond",
                     handler = function(h, ...) {
                         ## module = "iNZightTS"
-                        ## setup  = modSetup(module)
-                        ## if (setup) {
-                        ##     if (emptyData()) {
-                        ##         ## if there is no imported
-                        ##         ## dataset, display a gmessage
-                        ##         displayMsg("time series")
-                        ##         return()
-                        ##     }
-                        ##     if (length(leftMain$children) == 1) {
-                        ##         initializeModuleWindow()
-                        ##         source(paste0("../Modules/", module, ".R"))
-                        ##         iNZightTimeSeries$new(.self)
-                        ##         visible(moduleWindow) <<- TRUE
-                        ##     } else { return() }
-                        ## } else {
-                        ##     return()
-                        ## }
-
+                        ## initializeModule(module)
+                        
                         ign <- gwindow("...", visible = FALSE)
                         tag(ign, "dataSet") <- getActiveData()
                         e <- list(obj = ign)
                         e$win <- win
+                        source("../iNZightModules/R/timeSeries-ui.R")
                         timeSeries(e)
                     }
                     ),
@@ -650,25 +635,7 @@ iNZGUI <- setRefClass(
                     icon = "symbol_diamond",
                     handler = function(h, ...) {
                         module = "iNZightMaps"
-                        setup  = modSetup(module)
-                        if (setup) {
-                            ## if there is no imported dataset,
-                            ## display a warning message
-                            if (emptyData()) {
-                                displayMsg("maps")
-                                return()
-                            }
-                            ## if there is a module open, initialize and open
-                            ## a module window
-                            if (length(leftMain$children) == 1) {
-                                initializeModuleWindow()
-                                #source(paste0("../Modules/", module, ".R"))
-                                iNZightMaps$new(.self)
-                                visible(moduleWindow) <<- TRUE
-                            } else { return() }
-                        } else {
-                            return()
-                        }
+                        initializeModule(module)
                     }
                 )
                 #####################################################
@@ -1028,11 +995,52 @@ iNZGUI <- setRefClass(
             }
         },
 
+        ## data check
+        checkData = function(module) {
+            data = .self$getActiveData()
+            vars = names(data)
+            
+            ## If dataset is empty (no data imported) display type 1 message,
+            ## otherwise check whether imported data is appropriate for module
+            ## (if wrong data type, display type 2 message)
+            if (length(vars) == 1 && vars == "empty") {
+                ## check for empty data
+                displayMsg(module, type = 1)
+                ret = FALSE
+            } else {
+                ## check for data type
+                if (module == "iNZightTS") {
+                    ret = any(grepl("([Tt][Ii][Mm][Ee])|([Dd][Aa][Tt][Ee])", vars))
+                    if (!ret) { displayMsg(module, type = 2) }
+                } else if (module == "iNZightMaps") {
+                    ret = isGeoData(data)
+                    if (!ret) { displayMsg(module, type = 2) }
+                } else if (module == "iNZightMR") {
+                    u   = apply(CaS, 2, function(x) length(unique(x)))
+                    n   = length(which(u == 2)) # how many binary variables
+                    ret = (n >= 2)
+                    if (!ret) { displayMsg(module, type = 2) }
+                }
+            }
+            return(ret)
+        },
+
         ## display warning message
-        displayMsg = function(label) {
-            gmessage(msg = paste("A dataset is required to use the",
-                                 label, "module"),
-                     title = "No data", icon = "error")
+#         displayMsg = function(label) {
+#             gmessage(msg = paste("A dataset is required to use the",
+#                                  label, "module"),
+#                      title = "No data", icon = "error")
+#         },
+
+        ## display warning message
+        displayMsg = function(module, type) {
+            if (type == 1) {
+                gmessage(msg = paste("A dataset is required to use the", module, "module"),
+                         title = "Empty data", icon = "error")
+            } else if (type == 2) {
+                gmessage(msg = paste("Imported dataset is not appropriate for", module, "module"),
+                         title = "Inappropriate data type", icon = "error")
+            }
         },
 
         ## module setup
@@ -1046,6 +1054,38 @@ iNZGUI <- setRefClass(
                     require(mod, character.only = TRUE)
                 }
                 return(install)
+            }
+        },
+
+        initializeModule = function(module) {
+            ## If module is already installed load it, 
+            ## otherwise ask for a download then install & load
+            if (module %in% rownames(installed.packages())) {
+                require(module, character.only = TRUE)
+            } else {
+                install = gconfirm("The module is not found. Would you like to download it?")
+                if (install) {
+                    install.packages(module, repo = "http://docker.stat.auckland.ac.nz/R")
+                    require(mod, character.only = TRUE)
+                }
+            }
+            
+            ## once module is loaded, check data
+            if (checkData(module)) {
+                ## if there is not a module open,
+                ## initialize and open a module window
+                if (length(leftMain$children) == 1) {
+                    initializeModuleWindow()
+                    source(paste0("../iNZightModules/R/", module, ".R"))
+                    cmd = paste0(module, "$new(.self)")
+                    eval(parse(text = cmd))
+                    #iNZightMaps$new(.self)
+                    visible(moduleWindow) <<- TRUE
+                } else {
+                    newModuleWindow(module)
+                }
+            } else {
+                return()
             }
         },
 
