@@ -1,4 +1,5 @@
-## iNZ toolbar class
+##' iNZ toolbar class
+##' @importMethodsFrom gWidgets2RGtk2
 GToolBariNZ <- setRefClass("GToolBariNZ",
                            contains = "GToolBar",
                            methods=list(

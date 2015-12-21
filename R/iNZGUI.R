@@ -334,7 +334,7 @@ iNZGUI <- setRefClass(
                     handler = function(h, ...) {
                         ## module = "iNZightTS"
                         ## initializeModule(module)
-                        
+
                         ign <- gwindow("...", visible = FALSE)
                         tag(ign, "dataSet") <- getActiveData()
                         e <- list(obj = ign)
@@ -685,8 +685,8 @@ iNZGUI <- setRefClass(
                     actionList[[19]],
                     actionList[[17]],
                     actionList[[18]],
-                    actionList[[32]]#,
-                    #actionList[[47]]
+                    actionList[[32]],
+                    actionList[[47]]
                     ),
                 "Help" = list(
                     actionList[[33]],
@@ -999,7 +999,7 @@ iNZGUI <- setRefClass(
         checkData = function(module) {
             data = .self$getActiveData()
             vars = names(data)
-            
+
             ## If dataset is empty (no data imported) display type 1 message,
             ## otherwise check whether imported data is appropriate for module
             ## (if wrong data type, display type 2 message)
@@ -1058,7 +1058,7 @@ iNZGUI <- setRefClass(
         },
 
         initializeModule = function(module) {
-            ## If module is already installed load it, 
+            ## If module is already installed load it,
             ## otherwise ask for a download then install & load
             if (module %in% rownames(installed.packages())) {
                 require(module, character.only = TRUE)
@@ -1069,7 +1069,7 @@ iNZGUI <- setRefClass(
                     require(mod, character.only = TRUE)
                 }
             }
-            
+
             ## once module is loaded, check data
             if (checkData(module)) {
                 ## if there is not a module open,
