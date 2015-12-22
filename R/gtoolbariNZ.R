@@ -1,5 +1,4 @@
 ##' iNZ toolbar class
-##' @importMethodsFrom gWidgets2RGtk2
 GToolBariNZ <- setRefClass("GToolBariNZ",
                            contains = "GToolBar",
                            methods=list(
@@ -45,7 +44,7 @@ gtoolbariNZ <- function(
                       style=match.arg(style),
                       container=container ,...
                     )
-  #check_return_class(obj, "GToolBariNZ")
+  check_return_class(obj, "GToolBariNZ")
   return(obj)
 }
 
@@ -66,10 +65,9 @@ gtoolbariNZ <- function(
 ##'
 ##' A toolbar item is a list of action items or a toolbar instance
 ##' @inheritParams add
-##' @export
 ##' @rdname gtoolbar
 ##' @method add GToolBar
-##' @S3method add GToolBar
+##' @export
 add.GToolBariNZ <- function(obj, child, expand=FALSE, fill=NULL, anchor=NULL, ...) {
     dispatcher <- function(obj, child) UseMethod("dispatcher")
     dispatcher.GToolBariNZ <- function(child, obj) obj$add_toolbar_items(svalue(child))
@@ -85,9 +83,8 @@ add.GToolBariNZ <- function(obj, child, expand=FALSE, fill=NULL, anchor=NULL, ..
 ##' for a toolbar, \code{svalue<-} replaces the toolbar items with new ones specified by value.
 ##' @inheritParams svalue
 ##' @usage \method{svalue}{GToolBar} (obj, index=NULL, ...) <- value
-##' @export
 ##' @rdname gtoolbar
 ##' @method svalue<- GToolBar
-##' @S3method svalue<- GToolBar
+##' @export
 "svalue<-.GToolBariNZ" <- function(obj, index=NULL, ..., value) NextMethod()
 

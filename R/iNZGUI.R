@@ -3,7 +3,6 @@
 #' @param data an optional data.frame that is loaded
 #' upon initialisation of the GUI window
 #'
-
 iNZGUI <- setRefClass(
     "iNZGUI",
     properties(fields = list(
