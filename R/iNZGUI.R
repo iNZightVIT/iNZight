@@ -1,8 +1,11 @@
-#' main class that builds the iNZight GUI
+#' iNZight GUI Class
 #'
-#' @param data an optional data.frame that is loaded
-#' upon initialisation of the GUI window
-#'
+#' Main class that builds the iNZight GUI
+#' @import methods
+#' @field iNZDocuments A list of documents containing data, plot settings, etc.
+#' @field activeDoc The numeric ID of the currently active document
+#' @export iNZGUI
+#' @exportClass iNZGUI
 iNZGUI <- setRefClass(
     "iNZGUI",
     properties(fields = list(
@@ -18,9 +21,9 @@ iNZGUI <- setRefClass(
                    leftMain = "ANY",
                    moduleWindow = "ANY",
                    gp1 = "ANY",
-                   ## right group
+                   ## middle group
                    gp2 = "ANY",
-
+                   
                    ## the Widget containing the 2 data views
                    dataViewWidget = "ANY",
                    ## the widget handling the switching between the
@@ -58,6 +61,7 @@ iNZGUI <- setRefClass(
         ## This is the main method of iNZight and calls all the other
         ## methods of the GUI class.
         initializeGui = function(data = NULL, disposeR = FALSE) {
+            "Initiates the GUI"
             iNZDocuments <<- list(iNZDocument$new(data = data))
             win.title <- paste("iNZight (v",
                                packageDescription("iNZight")$Version,
@@ -140,7 +144,7 @@ iNZGUI <- setRefClass(
 
                             ## only if not already tracking
                             if (hash.id == "new") {
-                                track.url <- paste0("http://docker.stat.auckland.ac.nz/R/tracker/index.php?track&v=",
+                                track.url <- paste0("http://r.docker.stat.auckland.ac.nz/R/tracker/index.php?track&v=",
                                                     version, "&os=", gsub(" ", "%20", os), "&hash=", hash.id)
                                 f <- try(url(track.url,  open = "r"), TRUE)
 
@@ -155,15 +159,18 @@ iNZGUI <- setRefClass(
                             savePreferences()
                         } else {
                             hash.id <- preferences$track.id
-                            try(url(paste0("http://docker.stat.auckland.ac.nz/R/tracker/index.php?track&v=",
+                            try(url(paste0("http://r.docker.stat.auckland.ac.nz/R/tracker/index.php?track&v=",
                                            version, "&os=", gsub(" ", "%20", os), "&hash=", hash.id), open = "r"), TRUE)
                         }
                     })
                 }
             }
 
+            popOut <- preferences$popout
+            
             win <<- gwindow(win.title, visible = FALSE,
-                            width = preferences$window.size[1], height = preferences$window.size[2])
+                            width = if (popOut) NULL else preferences$window.size[1],
+                            height = preferences$window.size[2])
 
             gtop <- ggroup(horizontal = FALSE, container = win,
                            use.scrollwindow = TRUE)
@@ -172,48 +179,64 @@ iNZGUI <- setRefClass(
             g <- gpanedgroup(container = gtop, expand = TRUE)
 
             ## Left side group
-            leftMain <<- ggroup(container = g)
-            size(leftMain) <<- c(300, -1)
+            leftMain <<- ggroup(container = g, expand = popOut)
+            if (!popOut) size(leftMain) <<- c(300, -1)
+            gp1 <<- gvbox(container = leftMain, expand = TRUE)
 
-            gp1 <<- gvbox(container = leftMain,
-                           expand = TRUE)
-
-            ## Right side group
-            gp2 <<- ggroup(horizontal = FALSE, container = g, expand = F)
+            ## Right group
+            gp2 <<- ggroup(horizontal = FALSE, container = g, expand = !popOut)
+            
+            
             ## set up widgets in the left group
             ## set up the menu bar at the top
-            # initializeMenu(gp1, disposeR)
+            ## initializeMenu(gp1, disposeR) ## -- from the old ways ...
+
             ## set up dataViewWidget, added below
             ## dataThreshold is used as maximum nr of cells
             ## before data.frame view gets deactivated
             dataThreshold <- 200000
             initializeDataView(dataThreshold)
+            
             ## set up buttons to switch between data/var view
             add(gp1, .self$initializeViewSwitcher(dataThreshold)$viewGroup)
+
             ## display the name of the data set
             add(gp1, .self$initializeDataNameWidget()$nameLabel)
+
             ## display the data
             add(gp1, dataViewWidget$dataGp, expand = TRUE)
+
             ## set up the drag and drop fields
             add(gp1, initializeControlWidget()$ctrlGp, expand = FALSE)
+
             ## set up the summary buttongs
             add(gp1, initializeSummaryBtns())
+
             ## set up widgets in the right group
+            grpRight <- ggroup(horizontal = popOut,
+                               container = gp2, expand = TRUE)
             ## set up plot notebook
             initializePlotWidget()
-            add(gp2, plotWidget$plotNb, expand = TRUE)
-            initializePlotToolbar(gp2)
+            if (!popOut) add(grpRight, plotWidget$plotNb, expand = TRUE)
+            else addSpace(grpRight, 10)
+            
+            ## set up plot toolbar
+            plotToolbar <<- ggroup(horizontal = !popOut, container = grpRight, spacing = 10)
+            size(plotToolbar) <<- if (popOut) c(-1, -1) else c(-1, 45)
+            initializePlotToolbar(plotToolbar)
+
             visible(win) <<- TRUE
+            
             ## ensures that all plot control btns are visible on startup
-            svalue(g) <- 0.375
+            #svalue(g) <- 0.375
             ## first plot(empty) needs to be added after window is drawn
             ## to ensure the correct device nr
-            plotWidget$addPlot()
+            if (popOut)
+                newdevice()
+            else
+                plotWidget$addPlot()
             ## add what is done upon closing the gui
             closerHandler(disposeR)
-
-#            add(g, leftMain)
-#            add(g, gp2)
         },
         ## set up the menu bar widget
         initializeMenu = function(cont, disposeR) {
@@ -905,8 +928,8 @@ iNZGUI <- setRefClass(
                     else
                         FALSE
                 } else {
-                    dispose(win)
                     try(dev.off(), silent = TRUE)
+                    dispose(win)                    
                 }
             })
         },
@@ -1099,10 +1122,11 @@ iNZGUI <- setRefClass(
             ## The default iNZight settings:
             list(track = "ask", track.id = NULL,
                  check.updates = TRUE,
-                 window.size = c(870, 600))
+                 window.size = c(870, 600),
+                 popout = FALSE)
         },
         checkPrefs = function(prefs) {
-            allowed.names <- c("track", "track.id", "check.updates", "window.size")
+            allowed.names <- c("track", "track.id", "check.updates", "window.size", "popout")
 
             ## Only keep allowed preferences --- anything else is discarded
             prefs <- prefs[names(prefs) %in% allowed.names]
@@ -1113,7 +1137,6 @@ iNZGUI <- setRefClass(
                 if (is.null(prefs$track)) defs$track
                 else if (!is.na(prefs$track) & (prefs$track == "ask" | is.logical(prefs$track))) prefs$track
                 else defs$track
-
 
 
             ## check.updates = TRUE | FALSE
@@ -1129,6 +1152,11 @@ iNZGUI <- setRefClass(
                 else if (is.numeric(prefs$window.size)) prefs$window.size
                 else defs$window.size
 
+            ## pop-out layout = FALSE
+            prefs$popout <-
+                if (is.null(prefs$popout)) defs$popout
+                else if (is.logical(prefs$popout)) prefs$popout
+                else defs$popout
 
             prefs
 

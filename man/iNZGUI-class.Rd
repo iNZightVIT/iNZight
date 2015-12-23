@@ -4,12 +4,20 @@
 \name{iNZGUI-class}
 \alias{iNZGUI}
 \alias{iNZGUI-class}
-\title{main class that builds the iNZight GUI}
-\arguments{
-\item{data}{an optional data.frame that is loaded
-upon initialisation of the GUI window}
-}
+\title{iNZight GUI Class}
 \description{
-main class that builds the iNZight GUI
+Main class that builds the iNZight GUI
 }
+\section{Fields}{
+
+\describe{
+\item{\code{iNZDocuments}}{A list of documents containing data, plot settings, etc.}
+
+\item{\code{activeDoc}}{The numeric ID of the currently active document}
+}}
+\section{Methods}{
+
+\describe{
+\item{\code{initializeGui(data = NULL, disposeR = FALSE)}}{Initiates the GUI}
+}}
 

@@ -58,6 +58,12 @@ iNZPrefsWin <- setRefClass(
                
                add(g, tbl)
 
+               addSpace(g, 30)
+
+               popoutWin <- gcheckbox("Open a separate window for plots?", checked = prefs$popout)
+
+               add(g, popoutWin)
+               
                
                addSpring(g)
 
@@ -70,7 +76,8 @@ iNZPrefsWin <- setRefClass(
                                  GUI$preferences <<- list(track = svalue(trackOpt),
                                                           check.updates = svalue(updOpt),
                                                           window.size =
-                                                          as.numeric(c(svalue(winWd), svalue(winHt))))
+                                                              as.numeric(c(svalue(winWd), svalue(winHt))),
+                                                          popout = svalue(popoutWin))
                                  GUI$savePreferences()
                              })
 
@@ -86,7 +93,8 @@ iNZPrefsWin <- setRefClass(
                                  GUI$preferences <<- list(track = svalue(trackOpt),
                                                           check.updates = svalue(updOpt),
                                                           window.size =
-                                                          as.numeric(c(svalue(winWd), svalue(winHt))))
+                                                          as.numeric(c(svalue(winWd), svalue(winHt))),
+                                                          popout = svalue(popoutWin))
                                  GUI$savePreferences()
                                  dispose(GUI$modWin)
                              })
