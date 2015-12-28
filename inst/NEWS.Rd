@@ -2,6 +2,23 @@
 \title{Change Log for iNZight}
 \encoding{UTF-8}
 
+###### iNZight 3.0
+
+### New Features
+#
+# * Pop-out view enabled
+#
+### Changes
+#
+# * Add to Plot / Remove Additions / Inference Information buttons
+#   replaced with icons.
+#
+### Bug Fixes
+#
+# * Fixed a bug that caused Gtk-CRITICAL messages appearing in the R
+#   console
+#
+
 \section{Changes in version 2.5}{
   Release date: 08 November, 2015
 

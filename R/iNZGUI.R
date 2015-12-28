@@ -179,8 +179,8 @@ iNZGUI <- setRefClass(
             g <- gpanedgroup(container = gtop, expand = TRUE)
 
             ## Left side group
-            leftMain <<- ggroup(container = g, expand = popOut)
-            if (!popOut) size(leftMain) <<- c(300, -1)
+            leftMain <<- ggroup(container = g, expand = FALSE)
+            if (!popOut) size(leftMain) <<- c(200, -1)
             gp1 <<- gvbox(container = leftMain, expand = TRUE)
 
             ## Right group
