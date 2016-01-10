@@ -332,15 +332,15 @@ iNZGUI <- setRefClass(
                     label = "Time Series...",
                     icon = "symbol_diamond",
                     handler = function(h, ...) {
-                        ## module = "iNZightTS"
-                        ## initializeModule(module)
+                        module = "iNZightTS"
+                        initializeModule(module)
                         
-                        ign <- gwindow("...", visible = FALSE)
-                        tag(ign, "dataSet") <- getActiveData()
-                        e <- list(obj = ign)
-                        e$win <- win
-                        source("../iNZightModules/R/timeSeries-ui.R")
-                        timeSeries(e)
+                        ## ign <- gwindow("...", visible = FALSE)
+                        ## tag(ign, "dataSet") <- getActiveData()
+                        ## e <- list(obj = ign)
+                        ## e$win <- win
+                        ## source("../iNZightModules/R/timeSeries-ui.R")
+                        ## timeSeries(e)
                     }
                     ),
                 modelFit = gaction(
@@ -460,11 +460,18 @@ iNZGUI <- setRefClass(
                     label = "Multiple Response...",
                     icon = "symbol_diamond",
                     handler = function(h, ...) {
-                        ign <- gwindow("...", visible = FALSE)
-                        tag(ign, "dataSet") <- getActiveData()
-                        e <- list(obj = ign)
-                        e$win <- win
-                        multipleResponseWindow(e)
+                        # ign <- gwindow("...", visible = FALSE)
+                        # tag(ign, "dataSet") <- getActiveData()
+                        # e <- list(obj = ign)
+                        # e$win <- win
+                        # multipleResponseWindow(e)
+                        
+                        initializeModuleWindow()
+                        iNZightMultiRes$new(.self)
+                        visible(moduleWindow) <<- TRUE
+                        
+                        # module = "iNZightMultiRes"
+                        # initializeModule(module)
                     }
                 ),
                 aboutiNZight = gaction(
@@ -985,20 +992,11 @@ iNZGUI <- setRefClass(
             .self$activeDocChanged$connect(FUN, ...)
         },
 
-        ## check for any imported data
-        emptyData = function() {
-            vars = names(.self$getActiveData())
-            if(length(vars) == 1 && vars == "empty") {
-                return(TRUE)
-            } else {
-                return(FALSE)
-            }
-        },
-
         ## data check
         checkData = function(module) {
             data = .self$getActiveData()
             vars = names(data)
+            ret  = logical(1)
             
             ## If dataset is empty (no data imported) display type 1 message,
             ## otherwise check whether imported data is appropriate for module
@@ -1008,19 +1006,20 @@ iNZGUI <- setRefClass(
                 displayMsg(module, type = 1)
                 ret = FALSE
             } else {
-                ## check for data type
-                if (module == "iNZightTS") {
-                    ret = any(grepl("([Tt][Ii][Mm][Ee])|([Dd][Aa][Tt][Ee])", vars))
-                    if (!ret) { displayMsg(module, type = 2) }
-                } else if (module == "iNZightMaps") {
-                    ret = isGeoData(data)
-                    if (!ret) { displayMsg(module, type = 2) }
-                } else if (module == "iNZightMR") {
-                    u   = apply(CaS, 2, function(x) length(unique(x)))
-                    n   = length(which(u == 2)) # how many binary variables
-                    ret = (n >= 2)
-                    if (!ret) { displayMsg(module, type = 2) }
-                }
+                ret = TRUE
+#                 ## check for data type
+#                 if (module == "iNZightTS") {
+#                     ret = any(grepl("([Tt][Ii][Mm][Ee])|([Dd][Aa][Tt][Ee])", vars))
+#                     if (!ret) { displayMsg(module, type = 2) }
+#                 } else if (module == "iNZightMaps") {
+#                     ret = isGeoData(data)
+#                     if (!ret) { displayMsg(module, type = 2) }
+#                 } else if (module == "iNZightMR") {
+#                     u   = apply(CaS, 2, function(x) length(unique(x)))
+#                     n   = length(which(u == 2)) # how many binary variables
+#                     ret = (n >= 2)
+#                     if (!ret) { displayMsg(module, type = 2) }
+#                 }
             }
             return(ret)
         },
@@ -1040,20 +1039,6 @@ iNZGUI <- setRefClass(
             } else if (type == 2) {
                 gmessage(msg = paste("Imported dataset is not appropriate for", module, "module"),
                          title = "Inappropriate data type", icon = "error")
-            }
-        },
-
-        ## module setup
-        modSetup = function(mod) {
-            if (mod %in% rownames(installed.packages())) {
-                require(mod, character.only = TRUE)
-            } else {
-                install = gconfirm("The module is not found. Would you like to download it?")
-                if (install) {
-                    install.packages(mod, repo = "http://docker.stat.auckland.ac.nz/R")
-                    require(mod, character.only = TRUE)
-                }
-                return(install)
             }
         },
 
@@ -1079,7 +1064,6 @@ iNZGUI <- setRefClass(
                     source(paste0("../iNZightModules/R/", module, ".R"))
                     cmd = paste0(module, "$new(.self)")
                     eval(parse(text = cmd))
-                    #iNZightMaps$new(.self)
                     visible(moduleWindow) <<- TRUE
                 } else {
                     newModuleWindow(module)
