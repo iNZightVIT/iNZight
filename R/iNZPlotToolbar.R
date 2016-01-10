@@ -22,9 +22,17 @@ iNZPlotToolbar <- setRefClass(
                        plotWidget = gui$plotWidget,
                        popOut = gui$preferences$popout)
 
+            
             img.add2plot <- system.file("images/graph-plus-transp.gif", package = "iNZight")
             img.rmvplot <- system.file("images/graph-cross-transp.gif", package = "iNZight")
             img.infinfo <- system.file("images/graph-inference.gif", package = "iNZight")
+            
+            
+            #print(img.add2plot)
+            
+            ## create icons:
+            #addStockIcons(c("plotadd", "plotrmv", "plotinference"),
+            #              c(img.add2plot, img.rmvplot, img.infinfo))
             
             ## And add to the menu bar:
             curMenu <- svalue(GUI$menubar)
@@ -76,7 +84,8 @@ iNZPlotToolbar <- setRefClass(
             # addtoplotBtn <- gbutton("Add to Plot", function(h, ...) addToPlot())
             ## removeaddBtn <- gbutton("Remove\nAdditions", function(h, ...) iNZPlotRmveModWin$new(GUI))
             ## inferenceBtn <- gbutton("Inference\nInformation", function(h, ...) addInf())
-            
+
+            ## -- IMAGES
             addtoplotBtn <- gimage(img.add2plot, size = "button")
             addHandlerClicked(addtoplotBtn, function(h, ...) addToPlot())
 
@@ -85,6 +94,11 @@ iNZPlotToolbar <- setRefClass(
 
             inferenceBtn <- gimage(img.infinfo, size = "button")
             addHandlerClicked(inferenceBtn, function(h, ...) addInf())
+
+            ## -- BUTTONS
+            ## addtoplotBtn <- gbutton("", function(h, ...) addToPlot(), icon = "plotadd")
+            ## removeaddBtn <- gbutton("", function(h, ...) iNZPlotRmveModWin$new(GUI), icon = "plotrmv")
+            ## inferenceBtn <- gbutton("", function(h, ...) addInf(), icon = "plotinference")
             
             addSpace(cont, 10)
             add(cont, newplotBtn)
