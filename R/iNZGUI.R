@@ -1030,19 +1030,22 @@ iNZGUI <- setRefClass(
                 displayMsg(module, type = 1)
                 ret = FALSE
             } else {
-                ## check for data type
-                if (module == "iNZightTS") {
-                    ret = any(grepl("([Tt][Ii][Mm][Ee])|([Dd][Aa][Tt][Ee])", vars))
-                    if (!ret) { displayMsg(module, type = 2) }
-                } else if (module == "iNZightMaps") {
-                    ret = isGeoData(data)
-                    if (!ret) { displayMsg(module, type = 2) }
-                } else if (module == "iNZightMR") {
-                    u   = apply(CaS, 2, function(x) length(unique(x)))
-                    n   = length(which(u == 2)) # how many binary variables
-                    ret = (n >= 2)
-                    if (!ret) { displayMsg(module, type = 2) }
-                }
+                ## this will be done in the module
+                
+                ## ## check for data type
+                ## if (module == "iNZightTS") {
+                ##     ret = any(grepl("([Tt][Ii][Mm][Ee])|([Dd][Aa][Tt][Ee])", vars))
+                ##     if (!ret) { displayMsg(module, type = 2) }
+                ## } else if (module == "iNZightMaps") {
+                ##     ret = isGeoData(data)
+                ##     if (!ret) { displayMsg(module, type = 2) }
+                ## } else if (module == "iNZightMR") {
+                ##     u   = apply(CaS, 2, function(x) length(unique(x)))
+                ##     n   = length(which(u == 2)) # how many binary variables
+                ##     ret = (n >= 2)
+                ##     if (!ret) { displayMsg(module, type = 2) }
+                ## }
+                ret = TRUE
             }
             return(ret)
         },
