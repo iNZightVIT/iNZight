@@ -23,7 +23,7 @@ iNZGUI <- setRefClass(
                    gp1 = "ANY",
                    ## middle group
                    gp2 = "ANY",
-                   
+
                    ## the Widget containing the 2 data views
                    dataViewWidget = "ANY",
                    ## the widget handling the switching between the
@@ -77,7 +77,7 @@ iNZGUI <- setRefClass(
             ## Check for updates ... need to use try incase it fails (no connection etc)
             ## RCurl no longer supports R < 3, so it wont be available on Mac SL version.
             if ("RCurl" %in% row.names(installed.packages())) {
-                connected <- RCurl::url.exists("docker.stat.auckland.ac.nz")
+                connected <- RCurl::url.exists("r.docker.stat.auckland.ac.nz")
             } else connected <- FALSE
 
             if (connected) {
@@ -90,7 +90,7 @@ iNZGUI <- setRefClass(
 
                 if (preferences$check.updates) {
                     ap <- suppressWarnings(try(numeric_version(available.packages(
-                        contriburl = contrib.url("http://docker.stat.auckland.ac.nz/R",
+                        contriburl = contrib.url("http://r.docker.stat.auckland.ac.nz/R",
                             getOption("pkgType")))[,"Version"]), TRUE))
                     if (!inherits(ap, "try-error")) {
                         if (length(ap) > 0) {
@@ -167,7 +167,7 @@ iNZGUI <- setRefClass(
             }
 
             popOut <- preferences$popout
-            
+
             win <<- gwindow(win.title, visible = FALSE,
                             width = if (popOut) NULL else preferences$window.size[1],
                             height = preferences$window.size[2])
@@ -185,8 +185,8 @@ iNZGUI <- setRefClass(
 
             ## Right group
             gp2 <<- ggroup(horizontal = FALSE, container = g, expand = !popOut)
-            
-            
+
+
             ## set up widgets in the left group
             ## set up the menu bar at the top
             ## initializeMenu(gp1, disposeR) ## -- from the old ways ...
@@ -196,7 +196,7 @@ iNZGUI <- setRefClass(
             ## before data.frame view gets deactivated
             dataThreshold <- 200000
             initializeDataView(dataThreshold)
-            
+
             ## set up buttons to switch between data/var view
             add(gp1, .self$initializeViewSwitcher(dataThreshold)$viewGroup)
 
@@ -219,14 +219,14 @@ iNZGUI <- setRefClass(
             initializePlotWidget()
             if (!popOut) add(grpRight, plotWidget$plotNb, expand = TRUE)
             else addSpace(grpRight, 10)
-            
+
             ## set up plot toolbar
             plotToolbar <<- ggroup(horizontal = !popOut, container = grpRight, spacing = 10)
             size(plotToolbar) <<- if (popOut) c(-1, -1) else c(-1, 45)
             initializePlotToolbar(plotToolbar)
 
             visible(win) <<- TRUE
-            
+
             ## ensures that all plot control btns are visible on startup
             #svalue(g) <- 0.375
             ## first plot(empty) needs to be added after window is drawn
@@ -354,15 +354,8 @@ iNZGUI <- setRefClass(
                     label = "Time Series...",
                     icon = "symbol_diamond",
                     handler = function(h, ...) {
-                        ## module = "iNZightTS"
-                        ## initializeModule(module)
-
-                        ign <- gwindow("...", visible = FALSE)
-                        tag(ign, "dataSet") <- getActiveData()
-                        e <- list(obj = ign)
-                        e$win <- win
-                        source("../iNZightModules/R/timeSeries-ui.R")
-                        timeSeries(e)
+                        module = "iNZightTS"
+                        initializeModule(module)
                     }
                     ),
                 modelFit = gaction(
@@ -477,16 +470,14 @@ iNZGUI <- setRefClass(
                     icon = "symbol_diamond",
                     handler = function(h, ...) iNZstackVarWin$new(.self)
                 ),
-                modelFit = gaction(
+                multipleResponse = gaction(
                     ## 32
                     label = "Multiple Response...",
                     icon = "symbol_diamond",
                     handler = function(h, ...) {
-                        ign <- gwindow("...", visible = FALSE)
-                        tag(ign, "dataSet") <- getActiveData()
-                        e <- list(obj = ign)
-                        e$win <- win
-                        multipleResponseWindow(e)
+                        initializeModuleWindow()
+                        iNZightMultiRes$new(.self)
+                        visible(moduleWindow) <<- TRUE
                     }
                 ),
                 aboutiNZight = gaction(
@@ -929,7 +920,7 @@ iNZGUI <- setRefClass(
                         FALSE
                 } else {
                     try(dev.off(), silent = TRUE)
-                    dispose(win)                    
+                    dispose(win)
                 }
             })
         },
@@ -1006,21 +997,11 @@ iNZGUI <- setRefClass(
         addActDocObs = function(FUN, ...) {
             .self$activeDocChanged$connect(FUN, ...)
         },
-
-        ## check for any imported data
-        emptyData = function() {
-            vars = names(.self$getActiveData())
-            if(length(vars) == 1 && vars == "empty") {
-                return(TRUE)
-            } else {
-                return(FALSE)
-            }
-        },
-
         ## data check
         checkData = function(module) {
             data = .self$getActiveData()
             vars = names(data)
+            ret = TRUE
 
             ## If dataset is empty (no data imported) display type 1 message,
             ## otherwise check whether imported data is appropriate for module
@@ -1029,34 +1010,10 @@ iNZGUI <- setRefClass(
                 ## check for empty data
                 displayMsg(module, type = 1)
                 ret = FALSE
-            } else {
-                ## this will be done in the module
-                
-                ## ## check for data type
-                ## if (module == "iNZightTS") {
-                ##     ret = any(grepl("([Tt][Ii][Mm][Ee])|([Dd][Aa][Tt][Ee])", vars))
-                ##     if (!ret) { displayMsg(module, type = 2) }
-                ## } else if (module == "iNZightMaps") {
-                ##     ret = isGeoData(data)
-                ##     if (!ret) { displayMsg(module, type = 2) }
-                ## } else if (module == "iNZightMR") {
-                ##     u   = apply(CaS, 2, function(x) length(unique(x)))
-                ##     n   = length(which(u == 2)) # how many binary variables
-                ##     ret = (n >= 2)
-                ##     if (!ret) { displayMsg(module, type = 2) }
-                ## }
-                ret = TRUE
             }
+
             return(ret)
         },
-
-        ## display warning message
-#         displayMsg = function(label) {
-#             gmessage(msg = paste("A dataset is required to use the",
-#                                  label, "module"),
-#                      title = "No data", icon = "error")
-#         },
-
         ## display warning message
         displayMsg = function(module, type) {
             if (type == 1) {
@@ -1067,21 +1024,7 @@ iNZGUI <- setRefClass(
                          title = "Inappropriate data type", icon = "error")
             }
         },
-
-        ## module setup
-        modSetup = function(mod) {
-            if (mod %in% rownames(installed.packages())) {
-                require(mod, character.only = TRUE)
-            } else {
-                install = gconfirm("The module is not found. Would you like to download it?")
-                if (install) {
-                    install.packages(mod, repo = "http://docker.stat.auckland.ac.nz/R")
-                    require(mod, character.only = TRUE)
-                }
-                return(install)
-            }
-        },
-
+        ## initialize module window
         initializeModule = function(module) {
             ## If module is already installed load it,
             ## otherwise ask for a download then install & load
@@ -1104,7 +1047,6 @@ iNZGUI <- setRefClass(
                     source(paste0("../iNZightModules/R/", module, ".R"))
                     cmd = paste0(module, "$new(.self)")
                     eval(parse(text = cmd))
-                    #iNZightMaps$new(.self)
                     visible(moduleWindow) <<- TRUE
                 } else {
                     newModuleWindow(module)
@@ -1113,7 +1055,6 @@ iNZGUI <- setRefClass(
                 return()
             }
         },
-
         ## create a gvbox object into the module window (ie, initialize it)
         ## NOTE: should be run every time when a new module is open
         initializeModuleWindow = function() {
