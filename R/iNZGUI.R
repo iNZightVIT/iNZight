@@ -647,8 +647,11 @@ iNZGUI <- setRefClass(
                     label = "Maps...",
                     icon = "symbol_diamond",
                     handler = function(h, ...) {
-                        module = "iNZightMaps"
-                        initializeModule(module)
+                        ## module = "iNZightMaps"
+                        ## initializeModule(module)
+                        #initializeModuleWindow()
+                        iNZightMapMod$new(.self)
+                        #visible(moduleWindow) <<- TRUE
                     }
                 )
                 #####################################################
