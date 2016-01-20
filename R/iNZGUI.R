@@ -692,11 +692,9 @@ iNZGUI <- setRefClass(
                     actionList[[21]]
                     ),
                 "Plot" = list(
-                    #gaction(label = "",
-                    #        icon = "diamond",
-                    #        handler = function(h, ...) addtoPlot())
                     ),
                 "Advanced" = list(
+                    ## This will be automated in future
                     "Quick Explore" = actionList[c(24, 22, 23, 26, 20)],
                     actionList[[19]],
                     actionList[[17]],
