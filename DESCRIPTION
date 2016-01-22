@@ -30,6 +30,5 @@ Imports:
     survey,
     iNZightModules
 Suggests:
-    iNZightModules,
     RODBC
 RoxygenNote: 5.0.1
