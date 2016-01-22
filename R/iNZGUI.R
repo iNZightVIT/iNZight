@@ -1,7 +1,7 @@
 #' iNZight GUI Class
 #'
 #' Main class that builds the iNZight GUI
-#' @import methods
+#' @import methods iNZightModules
 #' @field iNZDocuments A list of documents containing data, plot settings, etc.
 #' @field activeDoc The numeric ID of the currently active document
 #' @export iNZGUI
@@ -354,8 +354,14 @@ iNZGUI <- setRefClass(
                     label = "Time Series...",
                     icon = "symbol_diamond",
                     handler = function(h, ...) {
-                        module = "iNZightTS"
-                        initializeModule(module)
+                        ##module = "iNZightTSMod"
+                        ##initializeModule(module)
+                        ##iNZightTSMod$new(.self)
+                        ign <- gwindow("...", visible = FALSE)
+                        tag(ign, "dataSet") <- getActiveData()
+                        e <- list(obj = ign)
+                        e$win <- win
+                        timeSeries(e)
                     }
                     ),
                 modelFit = gaction(
@@ -665,9 +671,9 @@ iNZGUI <- setRefClass(
                 enabled(actionList[[16]]) <- FALSE
             ## disable modules if packages are not loaded
             if (!'package:iNZightModules' %in% search())
-                invisible(sapply(actionList[19:20], function(x) {
+                invisible(sapply(actionList[c(19,17,18,32,47)], function(x) {
                     enabled(x) <- FALSE}))
-            if (!'package:iNZightMR' %in% search())
+            if (!'iNZightMR' %in% rownames(installed.packages()))
                 enabled(actionList[[24]]) <- FALSE
             menuBarList <- list(
                 File = actionList[c(16, 1:2, 36, 37)],

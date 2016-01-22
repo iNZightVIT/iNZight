@@ -29,7 +29,7 @@ iNZExploreMissing <- setRefClass(
             svalue(GUI$modWin) <<- "Explore Missing Values"
             oldWd <- options(width = 1000)  # so it doesn't wrap
             dd <- GUI$getActiveData()
-            g <- gtext(text = paste(calcmissing(dd,
+            g <- gtext(text = paste(iNZightMR::calcmissing(dd,
                            print = FALSE,
                            final = FALSE),
                            collapse = "\n"),
@@ -37,7 +37,7 @@ iNZExploreMissing <- setRefClass(
                        font.attr = list(family = "monospace"))
             visible(GUI$modWin) <<- TRUE
             dev.new()
-            plotcombn(dd)
+            iNZightMR::plotcombn(dd)
             options(width = oldWd$width)
         })
     )
