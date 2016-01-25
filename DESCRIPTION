@@ -27,8 +27,7 @@ Imports:
     iNZightTools,
     reshape2,
     plyr,
-    survey,
-    iNZightModules
+    survey
 Suggests:
     RODBC
 RoxygenNote: 5.0.1

@@ -1,7 +1,7 @@
 #' iNZight GUI Class
 #'
 #' Main class that builds the iNZight GUI
-#' @import methods iNZightModules
+#' @import methods
 #' @field iNZDocuments A list of documents containing data, plot settings, etc.
 #' @field activeDoc The numeric ID of the currently active document
 #' @export iNZGUI
@@ -669,10 +669,14 @@ iNZGUI <- setRefClass(
             ## home button is disabled if package 'vit' is not loaded
             if (!'package:vit' %in% search())
                 enabled(actionList[[16]]) <- FALSE
+            
             ## disable modules if packages are not loaded
-            if (!'package:iNZightModules' %in% search())
+            if ("iNZightModules" %in% rownames(installed.packages())) {
+                require(iNZightModules)
+            } else {
                 invisible(sapply(actionList[c(19,17,18,32,47)], function(x) {
-                    enabled(x) <- FALSE}))
+                                     enabled(x) <- FALSE}))
+            }
             if (!'iNZightMR' %in% rownames(installed.packages()))
                 enabled(actionList[[24]]) <- FALSE
             menuBarList <- list(
