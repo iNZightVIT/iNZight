@@ -20,6 +20,7 @@ iNZGUI <- setRefClass(
                    ## left group
                    leftMain = "ANY",
                    moduleWindow = "ANY",
+                   activeModule = "ANY",
                    gp1 = "ANY",
                    ## middle group
                    gp2 = "ANY",
@@ -656,7 +657,7 @@ iNZGUI <- setRefClass(
                         ## module = "iNZightMaps"
                         ## initializeModule(module)
                         #initializeModuleWindow()
-                        iNZightMapMod$new(.self)
+                        activeModule <<- iNZightMapMod$new(.self)
                         #visible(moduleWindow) <<- TRUE
                     }
                 )
