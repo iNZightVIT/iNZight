@@ -24,35 +24,7 @@ iNZPlotToolbar <- setRefClass(
             initFields(GUI = gui,
                        plotWidget = gui$plotWidget,
                        popOut = gui$preferences$popout)
-
-            ## And add to the menu bar:
-            curMenu <- svalue(GUI$menubar)
-            curMenu[["Plot"]] <- list(
-                gaction("Add to plot ...",
-                        handler = function(h, ...) addToPlot()),
-                gaction("Remove additions ...", handler = function(h, ...) iNZPlotRmveModWin$new(GUI)),
-                gaction("Add inference ...", handler = function(h, ...) addInf()),
-                gseparator(),
-                gaction(label = "New Tab", icon = "newplot",
-                        handler = function(h, ...) plotWidget$addPlot()),
-                gaction(label = "Close Tab", icon = "close",
-                        handler = function(h, ...) plotWidget$closePlot()),
-                gaction(label = "Rename Tab", icon = "editor",
-                        handler = function(h, ...) plotWidget$renamePlot()),
-                gseparator(),
-                gaction(label = "New Plot Window", icon = "new",
-                        handler = function(h, ...) newPlotWindow()),
-                gaction(label = "Redraw Plot", icon = "refresh",
-                        handler = function(h, ...) GUI$updatePlot()),
-                gaction(label = "Save Plot", icon = "save",
-                        handler = function(h, ...) plotWidget$savePlot())
-                )
-            if (popOut)
-                curMenu[["Plot"]][5:8] <- NULL
-
-            svalue(GUI$menubar) <<- curMenu
-
-
+            
             toolbarcont <<- ggroup(container = cont, spacing = 0, fill = TRUE, expand = TRUE)
             iconbar <<- ggroup(horizontal = !popOut, container = toolbarcont, spacing = 15,
                                fill = TRUE, expand = TRUE)
@@ -76,14 +48,18 @@ iNZPlotToolbar <- setRefClass(
             makeToolbar(btns, refresh.fn = refresh, extra, cont = altbar)
         },
         restore = function() {
+            setPlotMenu()
             delete(toolbarcont, toolbarcont$children[[2]])
             visible(iconbar) <<- TRUE
         },
         ## create the toolbar!
         makeToolbar = function(btns = c("add", "rmv", "inf"),
                                refresh.fn = NULL,
-                               extra, cont = iconbar) {
+            extra, cont = iconbar) {
 
+            ## link the menu:
+            setPlotMenu(btns, refresh.fn, extra)
+            
             img.add2plot <- system.file("images/graph-plus-transp.gif", package = "iNZight")
             img.rmvplot <- system.file("images/graph-cross-transp.gif", package = "iNZight")
             img.infinfo <- system.file("images/graph-inference.gif", package = "iNZight")
@@ -153,6 +129,47 @@ iNZPlotToolbar <- setRefClass(
             }
 
             addSpace(cont, 10)
+
+        },
+        ## Plot Menu
+        setPlotMenu = function(btns = c("add", "rmv", "inf"),
+                               refresh.fn = NULL,
+                               extra) {
+
+            if (is.null(refresh.fn)) {
+                refreshFn = GUI$updatePlot
+            } else {
+                refreshFn = GUI$activeModule[[refresh.fn]]
+            }
+            
+            curMenu <- svalue(GUI$menubar)
+            curMenu[["Plot"]] <- list(
+                gaction("Add to plot ...",
+                                             handler = function(h, ...) addToPlot()),
+                gaction("Remove additions ...", handler = function(h, ...) iNZPlotRmveModWin$new(GUI)),
+                gaction("Add inference ...", handler = function(h, ...) addInf()),
+                gseparator(),
+                gaction(label = "New Tab", icon = "newplot",
+                        handler = function(h, ...) plotWidget$addPlot()),
+                gaction(label = "Close Tab", icon = "close",
+                        handler = function(h, ...) plotWidget$closePlot()),
+                gaction(label = "Rename Tab", icon = "editor",
+                        handler = function(h, ...) plotWidget$renamePlot()),
+                gseparator(),
+                gaction(label = "New Plot Window", icon = "new",
+                        handler = function(h, ...) newPlotWindow()),
+                gaction(label = "Redraw Plot", icon = "refresh",
+                        handler = function(h, ...) refreshFn()),
+                gaction(label = "Save Plot", icon = "save",
+                        handler = function(h, ...) plotWidget$savePlot())
+                )
+            
+            if (popOut)
+                curMenu[["Plot"]][5:8] <- NULL
+
+            curMenu[["Plot"]][which(!c("add", "rmv", "inf") %in% btns)] <- NULL
+
+            svalue(GUI$menubar) <<- curMenu
 
         },
         ## function to open a new plot window
