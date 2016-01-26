@@ -24,7 +24,7 @@ iNZPlotToolbar <- setRefClass(
             initFields(GUI = gui,
                        plotWidget = gui$plotWidget,
                        popOut = gui$preferences$popout)
-            
+
             ## And add to the menu bar:
             curMenu <- svalue(GUI$menubar)
             curMenu[["Plot"]] <- list(
@@ -49,28 +49,30 @@ iNZPlotToolbar <- setRefClass(
                 )
             if (popOut)
                 curMenu[["Plot"]][5:8] <- NULL
-            
+
             svalue(GUI$menubar) <<- curMenu
 
-            
+
             toolbarcont <<- ggroup(container = cont, spacing = 0, fill = TRUE, expand = TRUE)
-            iconbar <<- ggroup(container = toolbarcont, spacing = 15, fill = TRUE, expand = TRUE)
-            
+            iconbar <<- ggroup(horizontal = !popOut, container = toolbarcont, spacing = 15,
+                               fill = TRUE, expand = TRUE)
+
             makeToolbar()
-            
+
         },
         ## update the toolbar (as opposed to initialize it)
         update = function(btns = c("add", "rmv", "inf"),
                           refresh = NULL,
                           extra = NULL) {
-            
+
             visible(iconbar) <<- FALSE
 
             if (length(toolbarcont$children) > 1)
                 delete(toolbarcont, toolbarcont$children[[2]])
-            
-            altbar <<- ggroup(container = toolbarcont, spacing = 15, fill = TRUE, expand = TRUE)
-            
+
+            altbar <<- ggroup(horizontal = !popOut,container = toolbarcont, spacing = 15,
+                              fill = TRUE, expand = TRUE)
+
             makeToolbar(btns, refresh.fn = refresh, extra, cont = altbar)
         },
         restore = function() {
@@ -97,7 +99,7 @@ iNZPlotToolbar <- setRefClass(
                 refreshFn = GUI$updatePlot
             } else {
                 refreshFn = GUI$activeModule[[refresh.fn]]
-            }            
+            }
             addHandlerClicked(refreshplotBtn, function(h, ...) refreshFn())
 
             renametabBtn <- gimage(stock.id = "editor", size = "button")
@@ -121,9 +123,9 @@ iNZPlotToolbar <- setRefClass(
             inferenceBtn <- gimage(img.infinfo, size = "button")
             addHandlerClicked(inferenceBtn, function(h, ...) addInf())
 
-            
+
             addSpace(cont, 10)
-            
+
             add(cont, newplotBtn)
             if (!popOut) add(cont, newtabBtn)
             add(cont, refreshplotBtn)
@@ -151,7 +153,7 @@ iNZPlotToolbar <- setRefClass(
             }
 
             addSpace(cont, 10)
-            
+
         },
         ## function to open a new plot window
         newPlotWindow = function() {

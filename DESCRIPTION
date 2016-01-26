@@ -29,5 +29,7 @@ Imports:
     plyr,
     survey
 Suggests:
-    RODBC
+    RODBC,
+    iNZightMR,
+    iNZightModules
 RoxygenNote: 5.0.1

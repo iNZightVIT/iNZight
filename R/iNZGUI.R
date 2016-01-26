@@ -77,7 +77,7 @@ iNZGUI <- setRefClass(
 
             ## Check for updates ... need to use try incase it fails (no connection etc)
             ## RCurl no longer supports R < 3, so it wont be available on Mac SL version.
-            if ("RCurl" %in% row.names(installed.packages())) {
+            if (requireNamespace("RCurl", quietly = TRUE)) {
                 connected <- RCurl::url.exists("r.docker.stat.auckland.ac.nz")
             } else connected <- FALSE
 
@@ -362,7 +362,7 @@ iNZGUI <- setRefClass(
                         tag(ign, "dataSet") <- getActiveData()
                         e <- list(obj = ign)
                         e$win <- win
-                        timeSeries(e)
+                        iNZightModules::timeSeries(e)
                     }
                     ),
                 modelFit = gaction(
@@ -374,7 +374,7 @@ iNZGUI <- setRefClass(
                         tag(ign, "dataSet") <- getActiveData()
                         e <- list(obj = ign)
                         e$win <- win
-                        modelFitting(e)
+                        iNZightModules::modelFitting(e)
                     }
                     ),
                 threeDPlot = gaction(
@@ -483,7 +483,7 @@ iNZGUI <- setRefClass(
                     icon = "symbol_diamond",
                     handler = function(h, ...) {
                         initializeModuleWindow()
-                        iNZightMultiRes$new(.self)
+                        iNZightModules::iNZightMultiRes$new(.self)
                         visible(moduleWindow) <<- TRUE
                     }
                 ),
@@ -657,7 +657,7 @@ iNZGUI <- setRefClass(
                         ## module = "iNZightMaps"
                         ## initializeModule(module)
                         #initializeModuleWindow()
-                        activeModule <<- iNZightMapMod$new(.self)
+                        activeModule <<- iNZightModules::iNZightMapMod$new(.self)
                         #visible(moduleWindow) <<- TRUE
                     }
                 )
@@ -670,15 +670,13 @@ iNZGUI <- setRefClass(
             ## home button is disabled if package 'vit' is not loaded
             if (!'package:vit' %in% search())
                 enabled(actionList[[16]]) <- FALSE
-            
+
             ## disable modules if packages are not loaded
-            if ("iNZightModules" %in% rownames(installed.packages())) {
-                require(iNZightModules)
-            } else {
+            if (!requireNamespace("iNZightModules", quietly = TRUE)) {
                 invisible(sapply(actionList[c(19,17,18,32,47)], function(x) {
                                      enabled(x) <- FALSE}))
             }
-            if (!'iNZightMR' %in% rownames(installed.packages()))
+            if (!requireNamespace("iNZightMR", quietly = TRUE))
                 enabled(actionList[[24]]) <- FALSE
             menuBarList <- list(
                 File = actionList[c(16, 1:2, 36, 37)],
@@ -1018,7 +1016,7 @@ iNZGUI <- setRefClass(
             ## If dataset is empty (no data imported) display type 1 message,
             ## otherwise check whether imported data is appropriate for module
             ## (if wrong data type, display type 2 message)
-            if (length(vars) == 1 && vars == "empty") {
+            if (length(vars) == 1 && vars[1] == "empty") {
                 ## check for empty data
                 displayMsg(module, type = 1)
                 ret = FALSE
@@ -1045,7 +1043,7 @@ iNZGUI <- setRefClass(
             } else {
                 install = gconfirm("The module is not found. Would you like to download it?")
                 if (install) {
-                    install.packages(module, repo = "http://docker.stat.auckland.ac.nz/R")
+                    install.packages(module, repo = "http://r.docker.stat.auckland.ac.nz/R")
                     require(mod, character.only = TRUE)
                 }
             }

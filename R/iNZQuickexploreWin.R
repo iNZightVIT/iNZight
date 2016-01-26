@@ -68,7 +68,7 @@ iNZallPlots <- setRefClass(
             tag(ign, "dataSet") <- gui$getActiveData()
             e <- list(obj = ign)
             e$win <- gui$win
-            allUniPlots(e)
+            iNZightModules::allUniPlots(e)
         })
     )
 
@@ -82,7 +82,7 @@ iNZall2Plots <- setRefClass(
             tag(ign, "dataSet") <- gui$getActiveData()
             e <- list(obj = ign)
             e$win <- gui$win
-            allBivarPlots(e)
+            iNZightModules::allBivarPlots(e)
         })
     )
 
@@ -95,6 +95,6 @@ iNZscatterMatrix <- setRefClass(
             tag(ign, "dataSet") <- gui$getActiveData()
             e <- list(obj = ign)
             e$win <- gui$win
-            scatterPlotMatrix(e)
+            iNZightModules::scatterPlotMatrix(e)
         })
     )
