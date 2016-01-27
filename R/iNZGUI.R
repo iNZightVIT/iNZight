@@ -482,9 +482,7 @@ iNZGUI <- setRefClass(
                     label = "Multiple Response...",
                     icon = "symbol_diamond",
                     handler = function(h, ...) {
-                        initializeModuleWindow()
                         iNZightModules::iNZightMultiRes$new(.self)
-                        visible(moduleWindow) <<- TRUE
                     }
                 ),
                 aboutiNZight = gaction(
