@@ -344,7 +344,7 @@ iNZGUI <- setRefClass(
                     ),
                 home = gaction(
                   #16
-                    label = "Home",
+                    label = "iNZightVIT Home",
                     icon = "symbold_diamond",
                     handler = function(h, ...) {
                         dispose(win)
@@ -652,11 +652,7 @@ iNZGUI <- setRefClass(
                     label = "Maps...",
                     icon = "symbol_diamond",
                     handler = function(h, ...) {
-                        ## module = "iNZightMaps"
-                        ## initializeModule(module)
-                        #initializeModuleWindow()
-                        activeModule <<- iNZightModules::iNZightMapMod$new(.self)
-                        #visible(moduleWindow) <<- TRUE
+                        iNZightModules::iNZightMapMod$new(.self)
                     }
                 )
                 #####################################################
@@ -1065,10 +1061,12 @@ iNZGUI <- setRefClass(
         },
         ## create a gvbox object into the module window (ie, initialize it)
         ## NOTE: should be run every time when a new module is open
-        initializeModuleWindow = function() {
+        initializeModuleWindow = function(mod) {
             ## create a gvbox in moduleWindow
             moduleWindow <<- gvbox(container = leftMain, expand = TRUE)
             visible(gp1) <<- FALSE
+
+            activeModule <<- mod
         },
         defaultPrefs = function() {
             ## The default iNZight settings:
