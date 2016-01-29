@@ -1,10 +1,9 @@
 #' iNZight GUI Class
 #'
 #' Main class that builds the iNZight GUI
-#' @import methods
+#' @import methods utils grDevices
 #' @field iNZDocuments A list of documents containing data, plot settings, etc.
 #' @field activeDoc The numeric ID of the currently active document
-#' @import utils
 #' @export iNZGUI
 #' @exportClass iNZGUI
 iNZGUI <- setRefClass(
@@ -1067,7 +1066,8 @@ iNZGUI <- setRefClass(
             moduleWindow <<- gvbox(container = leftMain, expand = TRUE)
             visible(gp1) <<- FALSE
 
-            activeModule <<- mod
+            if (!missing(mod))
+                activeModule <<- mod
         },
         defaultPrefs = function() {
             ## The default iNZight settings:
