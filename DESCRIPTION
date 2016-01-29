@@ -19,6 +19,7 @@ Depends:
     gWidgets2,
     cairoDevice
 Imports:
+    utils,
     methods,
     grid,
     gdata,
