@@ -2,6 +2,19 @@
 \title{Change Log for iNZight}
 \encoding{UTF-8}
 
+# CHANGES!!!!!
+
+# - Now using R 3.2.3, and all-updated packages - please let us know if anything no longer works, as it may be due to changes in other packages
+# - iNZight and VIT have broken up! But they are still living together - you can launch iNZight or VIT directly from the iNZightVIT folder,
+#   which means iNZight starts much faster and keeps things tidier.
+# - Toolbar: it's changed a fair bit - we no longer use buttons, instead just images you can click. This means they can be displayed vertically!
+#   File > Preferences lets you set a separate-window format for iNZight, with a vertical toolbar instead of horizontal below the plot.
+# - Responsive Toolbar: when you open new modules (see below) the toolbar will change and provide relevant buttons.
+# - MODULES: we've revamped these (or at least we've started to)
+#   - Multiple Response: this was previously not used, now it has a much more user-friendly interface
+#   - Maps: now you can display geographical data on maps using iNZight! Still in development, so keep updated!
+# - ...
+
 \section{Changes in version 2.5}{
   Release date: 08 November, 2015
 
