@@ -74,7 +74,28 @@ iNZGUI <- setRefClass(
 
             ## We must set the correct directory correctly ...
             switch(OS,
-                   "windows" = ,
+                   "windows" = {
+                       if (file.exists(file.path("~", "iNZightVIT"))) {
+                           setwd(file.path("~", "iNZightVIT"))
+                       } else {
+                           ## Create it:
+                           conf <- gconfirm(paste("Do you want to create an iNZightVIT directory",
+                                                  "in your My Documents folder to save data and preferences?"),
+                                            title = "Create Folder", icon = "question")
+
+                           if (conf) {
+                               if ( dir.create(file.path("~", "iNZightVIT")) ) {
+                                   ## copy the Data folder:
+                                   ##try(file.copy("Data.lnk", file.path("~", "iNZightVIT")), TRUE)
+                                   try(file.symlink("data", file.path("~", "iNZightVIT")), TRUE)
+                                   
+                                   setwd(file.path("~", "iNZightVIT"))
+                                   break
+                               }
+
+                               gmessage("iNZight was unable to create the folder.")
+                           }
+                       },
                    "mac" = {
                        if (file.exists(file.path("~", "Documents", "iNZightVIT"))) {
                            setwd(file.path("~", "Documents", "iNZightVIT"))
@@ -87,21 +108,17 @@ iNZGUI <- setRefClass(
                            if (conf) {
                                if ( dir.create(file.path("~", "Documents", "iNZightVIT")) ) {
                                    ## copy the Data folder:
-                                   if (OS == "windows") {
-                                       try(file.copy("Data.lnk", file.path("~", "Documents", "iNZightVIT")), TRUE)
-                                   } else {
-                                       try(file.symlink("/Library/Applications/iNZightVIT/data",
-                                                        file.path("~", "Documents", "iNZightVIT", "Data")), TRUE)
-                                   }
+                                   try(file.symlink("/Library/Applications/iNZightVIT/data",
+                                                    file.path("~", "Documents", "iNZightVIT", "Data")), TRUE)
                                    
                                    setwd(file.path("~", "Documents", "iNZightVIT"))
-                                   break
+                                   return()
                                }
 
                                gmessage("iNZight was unable to create the folder.")
                            }
                            
-                           if (OS == "mac") try(setwd(Sys.getenv("R_DIR")), TRUE)
+                           try(setwd(Sys.getenv("R_DIR")), TRUE)
                        }
                    },
                    "linux" = {
@@ -1155,7 +1172,8 @@ iNZGUI <- setRefClass(
         getPreferences = function() {
             ## --- GET THE PREFERENCES
             ## Windows: the working directory will be set as $INSTDIR (= C:\Program Files (x86) by default)
-            ##     1. ~\Documents\iNZightVIT\.inzight -> this is where it goes for Most users
+            ##      NOTE: "~" -> C:\Users\<user>\Documents on windows!!!!!
+            ##     1. ~\iNZightVIT\.inzight -> this is where it goes for Most users
             ##     2. ~\.inzight -> fallback for R users
             ##
             ## Mac: the working directory will be set as /Applications/iNZightVIT/
@@ -1170,24 +1188,22 @@ iNZGUI <- setRefClass(
             
             prefs.location <<-
                 switch(OS,
-                       "windows" = ,
+                       "windows" = {
+                           if (file.exists(file.path("~", "iNZightVIT"))) {
+                               path <- file.path("~", "iNZightVIT", ".inzight")
+                           } else {
+                               path <- file.path("~", ".inzight")
+                           }
+                           
+                           path
+                       },
                        "mac" = {
                            if (file.exists(file.path("~", "Documents", "iNZightVIT"))) {
                                path <- file.path("~", "Documents", "iNZightVIT", ".inzight")
                            } else {
-                               ## no directory ... try HOME (for R users)
-                               conf <- gconfirm(paste("Do you want to create an iNZightVIT directory",
-                                                      "in your Documents folder to save data and preferences?"),
-                                                title = "Create Folder", icon = "question")
-                               if (conf) {
-                                   path <- file.path("~", "Documents", "iNZightVIT", ".inzight")
-                                   if ( !dir.create(file.path("~", "Documents", "iNZightVIT")) )
-                                       path <- file.path("~", ".inzight")
-                               } else {
-                                   path <- file.path("~", ".inzight")
-                               }
+                               path <- file.path("~", ".inzight")
                            }
-
+                           
                            path
                        },
                        "linux" = {
