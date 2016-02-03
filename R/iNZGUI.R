@@ -82,7 +82,7 @@ iNZGUI <- setRefClass(
                            conf <- gconfirm(paste("Do you want to create an iNZightVIT directory",
                                                   "in your My Documents folder to save data and preferences?"),
                                             title = "Create Folder", icon = "question")
-
+                           
                            if (conf) {
                                if ( dir.create(file.path("~", "iNZightVIT")) ) {
                                    ## copy the Data folder:
@@ -92,10 +92,11 @@ iNZGUI <- setRefClass(
                                    setwd(file.path("~", "iNZightVIT"))
                                    break
                                }
-
+                               
                                gmessage("iNZight was unable to create the folder.")
                            }
-                       },
+                       }
+                   },
                    "mac" = {
                        if (file.exists(file.path("~", "Documents", "iNZightVIT"))) {
                            setwd(file.path("~", "Documents", "iNZightVIT"))
