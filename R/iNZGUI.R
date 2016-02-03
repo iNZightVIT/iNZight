@@ -47,6 +47,8 @@ iNZGUI <- setRefClass(
                    ## the current plot and its type (scatter, dot, etc...)
                    curPlot = "ANY",
                    plotType = "ANY",
+                   OS = "character",
+                   prefs.location = "character",
                    preferences = "list"
                    ),
                prototype = list(
@@ -68,9 +70,44 @@ iNZGUI <- setRefClass(
                                packageDescription("iNZight")$Version,
                                ")", sep = "")
 
-            ## We must set the correct directory if using a Mac
-            if (is_MacOSX())
-                try(setwd(Sys.getenv("R_DIR")), TRUE)
+            OS <<- if (.Platform$OS == "windows") "windows" else if (Sys.info()["sysname"] == "Darwin") "mac" else "linux"
+
+            ## We must set the correct directory correctly ...
+            switch(OS,
+                   "windows" = ,
+                   "mac" = {
+                       if (file.exists(file.path("~", "Documents", "iNZightVIT"))) {
+                           setwd(file.path("~", "Documents", "iNZightVIT"))
+                       } else {
+                           ## Create it:
+                           conf <- gconfirm(paste("Do you want to create an iNZightVIT directory",
+                                                  "in your Documents folder to save data and preferences?"),
+                                            title = "Create Folder", icon = "question")
+
+                           if (conf) {
+                               if ( dir.create(file.path("~", "Documents", "iNZightVIT")) ) {
+                                   ## copy the Data folder:
+                                   if (OS == "windows") {
+                                       try(file.copy("Data.lnk", file.path("~", "Documents", "iNZightVIT")), TRUE)
+                                   } else {
+                                       try(file.symlink("/Library/Applications/iNZightVIT/data",
+                                                        file.path("~", "Documents", "iNZightVIT", "Data")), TRUE)
+                                   }
+                                   
+                                   setwd(file.path("~", "Documents", "iNZightVIT"))
+                                   break
+                               }
+
+                               gmessage("iNZight was unable to create the folder.")
+                           }
+                           
+                           if (OS == "mac") try(setwd(Sys.getenv("R_DIR")), TRUE)
+                       }
+                   },
+                   "linux" = {
+                       ## no need to do anything (yet..)
+                   })
+                
 
             ## Grab settings file (or try to!)
             getPreferences()
@@ -82,7 +119,9 @@ iNZGUI <- setRefClass(
             } else connected <- FALSE
 
             if (connected) {
-                if (preferences$track == "ask") {
+                ## DON'T ASK UNTIL DATABSE UP ONLINE
+                ## if (preferences$track == "ask") {
+                if (FALSE) {
                     preferences$track <<-
                         gconfirm("iNZight would like to use anonymous usage information. Are you ok for us to collect this information?",
                                  title = "Share usage information?", icon = "question")
@@ -105,9 +144,9 @@ iNZGUI <- setRefClass(
                 }
 
 
-
-                ## also want to be cheeky and add users to "database" of users so we can track...
-                if (preferences$track) {
+                ## --- TURNED OFF PERMANENTLY UNTIL DATABASE BACK ONLINE                
+                ## if (preferences$track) {
+                if (FALSE) {
                     try({
                         version = packageVersion("iNZight")
                         os <- "Linux"
@@ -1069,6 +1108,7 @@ iNZGUI <- setRefClass(
             if (!missing(mod))
                 activeModule <<- mod
         },
+        ## --- PREFERENCES SETTINGS and LOCATIONS etc ...
         defaultPrefs = function() {
             ## The default iNZight settings:
             list(track = "ask", track.id = NULL,
@@ -1113,34 +1153,71 @@ iNZGUI <- setRefClass(
 
         },
         getPreferences = function() {
+            ## --- GET THE PREFERENCES
+            ## Windows: the working directory will be set as $INSTDIR (= C:\Program Files (x86) by default)
+            ##     1. ~\Documents\iNZightVIT\.inzight -> this is where it goes for Most users
+            ##     2. ~\.inzight -> fallback for R users
+            ##
+            ## Mac: the working directory will be set as /Applications/iNZightVIT/
+            ##     1. ~/Documents/iNZightVIT/.inzight -> again, default
+            ##     2. ~/.inzight -> fallback for R users
+            ##
+            ## Linux: user installs manually, at least for now, working directory will be wherever they run R from ...
+            ##     1. ~/.inzight
+            ##     2. $(pwd)/.inzight -> overrides (1) if present
+
+            ## If Windows or Mac, set the working directory to Documents/iNZightVIT if possible ...
+            
+            prefs.location <<-
+                switch(OS,
+                       "windows" = ,
+                       "mac" = {
+                           if (file.exists(file.path("~", "Documents", "iNZightVIT"))) {
+                               path <- file.path("~", "Documents", "iNZightVIT", ".inzight")
+                           } else {
+                               ## no directory ... try HOME (for R users)
+                               conf <- gconfirm(paste("Do you want to create an iNZightVIT directory",
+                                                      "in your Documents folder to save data and preferences?"),
+                                                title = "Create Folder", icon = "question")
+                               if (conf) {
+                                   path <- file.path("~", "Documents", "iNZightVIT", ".inzight")
+                                   if ( !dir.create(file.path("~", "Documents", "iNZightVIT")) )
+                                       path <- file.path("~", ".inzight")
+                               } else {
+                                   path <- file.path("~", ".inzight")
+                               }
+                           }
+
+                           path
+                       },
+                       "linux" = {
+                           path <- file.path("~", ".inzight")
+                           
+                           if (file.exists(".inzight"))
+                               path <- file.path(".inzight")
+
+                           path
+                       })
+
             tt <- try({
                 preferences <<-
-                    if (".inzight" %in% list.files(all.files = TRUE)) {
-                        checkPrefs(dget(".inzight"))
-                    } else if (".inzight" %in% list.files("~", all.files = TRUE)) {
-                        checkPrefs(dget("~/.inzight"))
+                    if (file.exists(prefs.location)) {
+                        checkPrefs(dget(prefs.location))
                     } else {
                         defaultPrefs()
                     }
             }, TRUE)
-
+            
             if (inherits(tt, "try-error"))
                 preferences <<- defaultPrefs()
         },
         savePreferences = function() {
-            if (".inzight" %in% list.files(all.files = TRUE)) {
-                dput(preferences, ".inzight")
-            } else if (".inzight" %in% list.files("~", all.files = TRUE)) {
-                dput(preferences, "~/.inzight")
-            } else {
-                conf <- gconfirm("iNZight will place a settings file in the current directory.",
-                                 title = "Create preferences file?", icon = "question")
-                if (conf) {
-                    tt <- try(dput(preferences, ".inzight"))
-                    if (inherits(tt, "try-error"))
-                        gmessage("iNZight was unable to save your preferences. They will be saved for the current session, but will not carry over to future sessions.",
-                                 title = "Unable to save preferences")
-                }
-            }
+            ## attempt to save the preferences in the expected location:
+            tt <- try(dput(preferences, prefs.location), silent = TRUE)
+            if (inherits(tt, "try-error")) {
+                gmessage(paste("iNZight was unable to save your preferences, so",
+                               "they won't carry over into the next session."),
+                         title = "Unable to save preferences", icon = "warning")
+            }            
         })
     )
