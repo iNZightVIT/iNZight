@@ -75,6 +75,7 @@ iNZGUI <- setRefClass(
             ## We must set the correct directory correctly ...
             switch(OS,
                    "windows" = {
+                       done <- FALSE
                        if (file.exists(file.path("~", "iNZightVIT"))) {
                            setwd(file.path("~", "iNZightVIT"))
 
@@ -97,18 +98,20 @@ iNZGUI <- setRefClass(
 
                                    dir.create(file.path("~", "iNZightVIT", "modules"))
                                    
-                                   return()
+                                   done <- TRUE
                                }
-                               
-                               gmessage("iNZight was unable to create the folder.")
+
+                               if (!done)
+                                   gmessage("iNZight was unable to create the folder.")
                            }
                        }
-
+                       
                        ## Set the library path if it exists
                        if (file.exists(file.path("~", "iNZightVIT", "modules")))
                            .libPaths(file.path("~", "iNZightVIT", "modules"))
                    },
                    "mac" = {
+                       done <- FALSE
                        if (file.exists(file.path("~", "Documents", "iNZightVIT"))) {
                            setwd(file.path("~", "Documents", "iNZightVIT"))
                            
@@ -123,25 +126,22 @@ iNZGUI <- setRefClass(
 
                            if (conf) {
                                if ( dir.create(file.path("~", "Documents", "iNZightVIT")) ) {
-                                   ## copy the Data folder:
-                                   try(file.symlink("/Library/Applications/iNZightVIT/data",
-                                                    file.path("~", "Documents", "iNZightVIT", "Data")), TRUE)
-
                                    dir.create(file.path("~", "Documents", "iNZightVIT", "modules"))
-                                   
-                                   ##setwd(file.path("~", "Documents", "iNZightVIT"))
                                    try(setwd(Sys.getenv("R_DIR")), TRUE)
-                                   return()
+
+                                   done <- TRUE
                                }
 
-                               gmessage("iNZight was unable to create the folder.")
+                               if (!done)
+                                   gmessage("iNZight was unable to create the folder.")
                            }
 
                            ## Set the library path if it exists
                            if (file.exists(file.path("~", "Documents", "iNZightVIT", "modules")))
                                .libPaths(file.path("~", "DocumentS", "iNZightVIT", "modules"))
-                           
-                           try(setwd(Sys.getenv("R_DIR")), TRUE)
+
+                           if (!done)
+                               try(setwd(Sys.getenv("R_DIR")), TRUE)
                        }
                    },
                    "linux" = {
