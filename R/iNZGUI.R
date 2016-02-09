@@ -97,7 +97,7 @@ iNZGUI <- setRefClass(
 
                                    dir.create(file.path("~", "iNZightVIT", "modules"))
                                    
-                                   break
+                                   return()
                                }
                                
                                gmessage("iNZight was unable to create the folder.")
