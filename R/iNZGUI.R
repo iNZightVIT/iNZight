@@ -87,9 +87,9 @@ iNZGUI <- setRefClass(
                                if ( dir.create(file.path("~", "iNZightVIT")) ) {
                                    ## copy the Data folder:
                                    ##try(file.copy("Data.lnk", file.path("~", "iNZightVIT")), TRUE)
-                                   try(file.symlink("data", file.path("~", "iNZightVIT")), TRUE)
+                                   ##try(file.symlink("data", file.path("~", "iNZightVIT")), TRUE)
                                    
-                                   setwd(file.path("~", "iNZightVIT"))
+                                   ##setwd(file.path("~", "iNZightVIT"))
                                    break
                                }
                                
@@ -112,7 +112,8 @@ iNZGUI <- setRefClass(
                                    try(file.symlink("/Library/Applications/iNZightVIT/data",
                                                     file.path("~", "Documents", "iNZightVIT", "Data")), TRUE)
                                    
-                                   setwd(file.path("~", "Documents", "iNZightVIT"))
+                                   ##setwd(file.path("~", "Documents", "iNZightVIT"))
+                                   try(setwd(Sys.getenv("R_DIR")), TRUE)
                                    return()
                                }
 

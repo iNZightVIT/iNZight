@@ -27,6 +27,7 @@ iNZImportWin <- setRefClass("iNZImportWin",
                                     filterList = c(ll,filterList)                                  
                                     filetbl[2,2] = glabel("Local file")
                                     filetbl[2,3] <- (filebrowse = gfilebrowse(text="Specify a file",
+                                                         initial.dir = file.path(".", "data"),
                                                          action=invisible,
                                                          container=filetbl, filter=filterList, quote=FALSE))
                                     filetbl[3,2:3] <- gseparator(container = filetbl)
