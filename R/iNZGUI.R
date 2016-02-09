@@ -465,7 +465,7 @@ iNZGUI <- setRefClass(
                         tag(ign, "dataSet") <- getActiveData()
                         e <- list(obj = ign)
                         e$win <- win
-                        plot3D(e)
+                        iNZightModules::plot3D(e)
                     }
                     ),
                 scatterMatrix = gaction(
