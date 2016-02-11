@@ -81,7 +81,8 @@ iNZImportExampleWin <-
                                      data(list = dname, package = svalue(dsPkg), envir = tmp.env)
 
                                      ## Set the name to the title (or Item if title missing)
-                                     attr(tmp.env[[dname]], "name") <- svalue(dsData)
+                                     attr(tmp.env[[dname]], "name") <-
+                                         ifelse(datasets[ind, "Title"] == "", dname, datasets[ind, "Title"])
                                      
                                      GUI$setDocument(iNZDocument$new(data = tmp.env[[dname]]))
 
