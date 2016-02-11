@@ -2,6 +2,7 @@
 \title{Change Log for iNZight}
 \encoding{UTF-8}
 
+\section{New ...}{
 ###### iNZight 3.0
 
 ### New Features
@@ -18,6 +19,7 @@
 # * Fixed a bug that caused Gtk-CRITICAL messages appearing in the R
 #   console
 #
+}
 
 \section{Changes in version 2.5}{
   Release date: 08 November, 2015

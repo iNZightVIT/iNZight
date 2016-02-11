@@ -733,6 +733,12 @@ iNZGUI <- setRefClass(
                     handler = function(h, ...) {
                         iNZightModules::iNZightMapMod$new(.self)
                     }
+                ),
+                import = gaction(
+                    ## 48
+                    label = "Example data...", icon = "symbol_diamond",
+                    tooltip = "Load Example Data",
+                    handler = function(h, ...) iNZImportExampleWin$new(.self)
                 )
                 #####################################################
                 ###  big suggestion
@@ -752,7 +758,7 @@ iNZGUI <- setRefClass(
             if (!requireNamespace("iNZightMR", quietly = TRUE))
                 enabled(actionList[[24]]) <- FALSE
             menuBarList <- list(
-                File = actionList[c(16, 1:2, 36, 37)],
+                File = actionList[c(16, 1:2, 48, 36, 37)],
                 "Dataset" = list(
                     actionList[[13]],
                     actionList[[27]],
