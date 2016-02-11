@@ -12,7 +12,11 @@ iNZImportExampleWin <-
                 initFields(GUI = gui)
 
                 ## packages that have data in them:
-                pkgs <- c("iNZight", "iNZightMaps", "survey")
+                pkgsL <- list("iNZight" = "Default",
+                              "iNZightMR" = "Multiple Response",
+                              "iNZightMaps" = "Maps",
+                              "survey" = "Survey Package")
+                pkgs <- unlist(pkgsL)  ## becomes a named vector
                 
                 ## create the window
                 importFileWin <<- gwindow("Load Example Data", parent = GUI$win, visible = FALSE,
@@ -46,8 +50,7 @@ iNZImportExampleWin <-
                 addSpring(mainGrp)
 
                 setDataMenu <- function() {
-                    datasets <<- data(package = svalue(dsPkg))$results
-                    ## dsNames <- ifelse(datasets[, "Title"] == "", datasets[, "Item"], datasets[, "Title"])
+                    datasets <<- data(package = names(pkgs)[svalue(dsPkg, index = TRUE)])$results
                     dsData$set_items(datasets[, "Item"])
                 }
                 setDataMenu()
@@ -78,7 +81,8 @@ iNZImportExampleWin <-
                                      ind <- svalue(dsData, index = TRUE)
                                      dname <- datasets[ind, "Item"]
                                      tmp.env <- new.env()
-                                     data(list = dname, package = svalue(dsPkg), envir = tmp.env)
+                                     data(list = dname, package = names(pkgs)[svalue(dsPkg, index = TRUE)],
+                                          envir = tmp.env)
 
                                      ## Set the name to the title (or Item if title missing)
                                      attr(tmp.env[[dname]], "name") <-
