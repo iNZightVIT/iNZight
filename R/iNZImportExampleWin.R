@@ -14,6 +14,7 @@ iNZImportExampleWin <-
                 ## packages that have data in them:
                 pkgsL <- list("iNZight" = "Default",
                               "iNZightMR" = "Multiple Response",
+                              "iNZightTS" = "Time Series",
                               "iNZightMaps" = "Maps",
                               "survey" = "Survey Package")
                 pkgs <- unlist(pkgsL)  ## becomes a named vector
