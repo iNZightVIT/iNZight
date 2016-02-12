@@ -18,3 +18,17 @@
 #' }
 #' @source \url{http://new.censusatschool.org.nz/}
 "census.at.school.500"
+
+
+#' Gap Minder
+#'
+#' A dataset containing variables for countries over several years.
+#'
+#' @format A data frame with 3577 rows and 55 variables:
+#' \describe{
+#'   \item{Country}{the country name}
+#'   \item{Region.Geo}{geographical region}
+#'   \item{Continent}{continent name}
+#'   \item{Region}{region name}
+#' }
+"gapminder"

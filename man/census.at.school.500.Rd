@@ -4,7 +4,7 @@
 \name{census.at.school.500}
 \alias{census.at.school.500}
 \title{Census at School 500}
-\format{A data frame with 53940 rows and 10 variables:
+\format{A data frame with 500 rows and 10 variables:
 \describe{
   \item{cellsource}{the source of cellphone money}
   \item{rightfoot}{length of the right foot, mm}
