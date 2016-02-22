@@ -60,7 +60,7 @@ iNZPrefsWin <- setRefClass(
 
                addSpace(g, 30)
 
-               popoutWin <- gcheckbox("Open a separate window for plots?", checked = prefs$popout)
+               popoutWin <- gcheckbox("Use dual-window display mode", checked = prefs$popout)
 
                add(g, popoutWin)
                
