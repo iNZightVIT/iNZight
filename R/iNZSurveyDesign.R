@@ -18,8 +18,12 @@ iNZSurveyDesign <- setRefClass("iNZSurveyDesign",
                                        }
 
 
-                                       gmessage("IMPORTANT: The Survey functionality in iNZight is still being developed (i.e., it is in BETA), and is provided here for any curious users to explore. The inference information has only been recently implemented for some features, but shouldn't be relied on yet (we need to check everything for possible flaws). If you do notice any obvious bugs (i.e., something happens, but it looks wrong) let us know! However, many features aren't implemented and you may simply see nothing happen - this is not a bug. \n\nFinally, if you do any data- or variable-manipulation (filter, add/remove variables, etc) you will need to update the Survey object by opening up this window again and clicking 'OK' (without modifying anything) to update the design object.",
-                                              title = "BETA Software - Use with Caution!", parent = GUI$win, icon = "warning")
+                                       gmessage(paste(
+                                           "The Survey functionality is still under development. Please use with caution",
+                                           "and for experimentation only.",
+                                           "\n\nIf you discover any bugs, let us know by emailing",
+                                           "inzight_support@stat.auckland.ac.nz."),
+                                                title = "Survey Analysis BETA", parent = GUI$win, icon = "warning")
 
                                        designWin <<- gwindow("Specify survey design", parent = GUI$win,
                                                             width = 450, height = 300, visible = FALSE)

@@ -758,7 +758,17 @@ iNZGUI <- setRefClass(
             if (!requireNamespace("iNZightMR", quietly = TRUE))
                 enabled(actionList[[24]]) <- FALSE
             menuBarList <- list(
-                File = actionList[c(16, 1:2, 48, 36, 37)],
+                "File" = list(
+                    actionList[[16]],
+                    gseparator(),
+                    actionList[[1]],
+                    actionList[[2]],
+                    gseparator(),
+                    actionList[[48]],
+                    gseparator(),
+                    actionList[[36]],
+                    actionList[[37]]
+                    ),
                 "Dataset" = list(
                     actionList[[13]],
                     actionList[[27]],
@@ -798,6 +808,12 @@ iNZGUI <- setRefClass(
                     actionList[[35]]
                     )
                 )
+            
+            if (!"package:vit" %in% search()) { # remove ...
+                menuBarList[[1]][[2]] <- NULL  ## gseparator
+                menuBarList[[1]][[1]] <- NULL  ## iNZightVIT Home
+            }
+            
             menubar <<- gmenu(menuBarList, container = cont)
 
         },

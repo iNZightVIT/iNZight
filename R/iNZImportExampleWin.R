@@ -18,6 +18,8 @@ iNZImportExampleWin <-
                               "iNZightMaps" = "Maps",
                               "survey" = "Survey Package")
                 pkgs <- unlist(pkgsL)  ## becomes a named vector
+
+                pkgs <- pkgs[names(pkgs) %in% rownames(installed.packages())]
                 
                 ## create the window
                 importFileWin <<- gwindow("Load Example Data", parent = GUI$win, visible = FALSE,
@@ -80,10 +82,18 @@ iNZImportExampleWin <-
                                      ## Set the data - will need to 'load' it into an evironment, then
                                      ## reassign it:
                                      ind <- svalue(dsData, index = TRUE)
-                                     dname <- datasets[ind, "Item"]
+                                     dataName <- dname <- datasets[ind, "Item"]
+                                     pkgname <- names(pkgs)[svalue(dsPkg, index = TRUE)]
+                                     
+                                     if (pkgname == "survey") {
+                                         if (grep('\\(.+\\)', dname)) {
+                                             dataName <- gsub("\\)", "", gsub(".+\\(", "", dataName))
+                                             dname <- gsub(" \\(.+", "", dname)
+                                         }
+                                     }
+                                     
                                      tmp.env <- new.env()
-                                     data(list = dname, package = names(pkgs)[svalue(dsPkg, index = TRUE)],
-                                          envir = tmp.env)
+                                     data(list = dataName, package = pkgname, envir = tmp.env)
 
                                      ## Set the name to the title (or Item if title missing)
                                      attr(tmp.env[[dname]], "name") <-
