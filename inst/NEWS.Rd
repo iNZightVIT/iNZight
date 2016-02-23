@@ -2,23 +2,44 @@
 \title{Change Log for iNZight}
 \encoding{UTF-8}
 
-\section{New ...}{
-###### iNZight 3.0
+\section{iNZight v3.0}{
+  Release date: XX February, 2016
 
-### New Features
-#
-# * Pop-out view enabled
-#
-### Changes
-#
-# * Add to Plot / Remove Additions / Inference Information buttons
-#   replaced with icons.
-#
-### Bug Fixes
-#
-# * Fixed a bug that caused Gtk-CRITICAL messages appearing in the R
-#   console
-#
+  \subsection{New Features}{
+    \itemize{
+      \item dual-window display mode for working with the default
+      graphics device (most useful on Windows)
+
+      \item Maps Module - visualise geographical data (coordinates or
+      countries, currently)
+
+      \item Example data sets - easily load example data quickly from
+      within iNZight
+
+      \item Resize points proportional to a variable - now does exactly
+      that! With the option of reverting to the old method.
+    }
+  }
+
+  \subsection{Major Changes}{
+    \itemize{
+      \item Plot Toolbar - new icons for Add to Plot, Remove Additions,
+      and Inference Information. Also responsive to Advanced Modules.
+
+      \item Multiple Response Module - complete redesign to make it more
+      intuitive.
+    }
+  }
+
+  \subsection{Minor Changes / Bug Fixes}{
+    \itemize{
+      \item remove those pesky GTK warnings!
+      
+      \item lots of other changes/bug fixes. Many months of work is all being compiled
+      into one single release. A new installation method and directory
+      structure, so please inform us of bugs as you come across them!
+    }
+  }
 }
 
 \section{Changes in version 2.5}{
