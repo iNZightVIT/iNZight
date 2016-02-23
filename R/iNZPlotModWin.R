@@ -2204,7 +2204,7 @@ iNZScatterMod <- setRefClass(
             })
 
 
-            lbl <- glabel("Resize points proportional to :")
+            lbl <- glabel("Resize points by :")
             rszVarList <- gcombobox(
                 c("", rszNames <- names(GUI$getActiveData())[sapply(GUI$getActiveData(), is.numeric)]),
                 selected = ifelse(
@@ -2216,6 +2216,22 @@ iNZScatterMod <- setRefClass(
             tbl[ii, 2, expand = TRUE] <- rszVarList
             ii <- ii + 1
 
+            lbl <- "Resize method :"
+            rszMethods <- c("proportional", "emphasize")
+            rszMthd <- gcombobox(rszMethods,
+                                 selected = which(rszMethods == curSet$resize.method))
+            tbl[ii, 1, anchor = c(-1, -1), expand = TRUE] <- lbl
+            tbl[ii, 2, expand = TRUE] <- rszMthd
+            ii <- ii + 1
+
+            rszDescOpts <- list(method1 =
+                                    c("Points area proportional to value of variable."),
+                                method2 =
+                                    c("Point area linearly sized from 0.25 to 4.",
+                                      "Good for exaggerating trends."))
+            rszDesc <- glabel(paste(rszDescOpts[[svalue(rszMthd, index = TRUE)]]))
+            tbl[ii, 1:2, anchor = c(1, 0), expand = TRUE] <- rszDesc
+
 
             ## Maintain a single function that is called whenever anything is updated:
             updateEverything <- function() {
@@ -2224,6 +2240,7 @@ iNZScatterMod <- setRefClass(
                              svalue(grpVarList)]],
                          sizeby = GUI$getActiveData()[[
                              svalue(rszVarList)]],
+                         resize.method = svalue(rszMthd),
                          varnames = list(
                              colby = svalue(grpVarList),
                              sizeby = svalue(rszVarList)))
@@ -2234,6 +2251,10 @@ iNZScatterMod <- setRefClass(
             ## in this case, no point in having a separate "show" button
             addHandlerChanged(grpVarList, handler = function(h, ...) updateEverything())
             addHandlerChanged(rszVarList, handler = function(h, ...) updateEverything())
+            addHandlerChanged(rszMthd, handler = function(h, ...) {
+                                  svalue(rszDesc) <- rszDescOpts[[svalue(h$obj, index = TRUE)]]
+                                  updateEverything()
+                              })
 
             addHandlerChanged(grpVarList,
                               handler = function(h, ...) {

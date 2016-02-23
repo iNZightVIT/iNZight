@@ -7,67 +7,146 @@
 # directly in the class initialization and not through add()
 #--------------------------------------------------
 
+##' @importFrom iNZightTools newdevice
 iNZPlotToolbar <- setRefClass(
     "iNZPlotToolbar",
     fields = list(
         GUI = "ANY",
         plotWidget = "ANY",
-        menu = "ANY"
+        menu = "ANY",
+        popOut = "ANY",
+        toolbarcont = "ANY",
+        iconbar = "ANY",
+        altbar = "ANY"
         ),
     methods = list(
         initialize = function(gui, cont) {
             initFields(GUI = gui,
-                       plotWidget = gui$plotWidget)
-            actionList <- list(
-                "newplot" = gaction(label = "newplot", icon = "newplot",
-                    handler = function(h, ...)
-                    plotWidget$addPlot(),
-                    tooltip = "Create a new plot tab"),
-                "new" = gaction(label = "new", icon = "new",
-                    handler = function(h, ...) {
-                        newdevice()  #dev.new()
-                        GUI$updatePlot()
-                    },
-                    tooltip = "Detach plot from window"),
-                "refresh" = gaction(label = "refresh", icon = "refresh",
-                    handler = function(h, ...) GUI$updatePlot(),
-                    tooltip = "Redraw plot with current settings"),
-                "rename" = gaction(label = "rename", icon = "editor",
-                    handler = function(h, ...) plotWidget$renamePlot(),
-                    tooltip = "Rename the plot tab"),
-                "save" = gaction(label = "save", icon = "save",
-                    handler = function(h, ...) plotWidget$savePlot(),
-                    tooltip = "Save the plot to a file"),
-                "close" = gaction(label = "close", icon = "close",
-                    handler = function(h, ...) plotWidget$closePlot(),
-                    tooltip = "Close the current plot tab"),
-                "addToPlot" = gaction(label = "Add to Plot",
-                    handler = function(h, ...) addToPlot(),
-                    tooltip = "Add modifications to the Plot"),
-                "removeAdd" = gaction(label = "Remove\nAdditions",
-                    handler = function(h, ...) iNZPlotRmveModWin$new(GUI),
-                    tooltip = "Remove modifications from the Plot"),
-                "inference" = gaction(label = "Inference\nInformation",
-                    handler = function(h, ...) addInf(),
-                    tooltip = "Add inference information to the Plot")
-                )
-            tbarList <- c(actionList[1:4],
-                          gseparator(),
-                          actionList[5:6],
-                          gseparator(),
-                          gbutton(action = actionList[[7]]),
-                          gseparator(),
-                          gbutton(action = actionList[[8]]),
-                          gseparator(),
-                          gbutton(action = actionList[[9]]),
-                          gseparator()
-                          )
+                       plotWidget = gui$plotWidget,
+                       popOut = gui$preferences$popout)
             
+            toolbarcont <<- ggroup(container = cont, spacing = 0, fill = TRUE, expand = TRUE)
+            iconbar <<- ggroup(horizontal = !popOut, container = toolbarcont, spacing = 15,
+                               fill = TRUE, expand = TRUE)
 
-            ## And add to the menu bar:
+            makeToolbar()
+
+        },
+        ## update the toolbar (as opposed to initialize it)
+        update = function(btns = c("add", "rmv", "inf"),
+                          refresh = NULL,
+                          extra = NULL) {
+
+            visible(iconbar) <<- FALSE
+
+            if (length(toolbarcont$children) > 1)
+                delete(toolbarcont, toolbarcont$children[[2]])
+
+            altbar <<- ggroup(horizontal = !popOut,container = toolbarcont, spacing = 15,
+                              fill = TRUE, expand = TRUE)
+
+            makeToolbar(btns, refresh.fn = refresh, extra, cont = altbar)
+        },
+        restore = function() {
+            setPlotMenu()
+            delete(toolbarcont, toolbarcont$children[[2]])
+            visible(iconbar) <<- TRUE
+        },
+        ## create the toolbar!
+        makeToolbar = function(btns = c("add", "rmv", "inf"),
+                               refresh.fn = NULL,
+            extra, cont = iconbar) {
+
+            ## link the menu:
+            setPlotMenu(btns, refresh.fn, extra)
+
+            if (is.null(refresh.fn)) {
+                refreshFn = GUI$updatePlot
+            } else {
+                refreshFn = GUI$activeModule[[refresh.fn]]
+            }
+            
+            img.add2plot <- system.file("images/graph-plus-transp.gif", package = "iNZight")
+            img.rmvplot <- system.file("images/graph-cross-transp.gif", package = "iNZight")
+            img.infinfo <- system.file("images/graph-inference.gif", package = "iNZight")
+
+            newplotBtn <- gimage(stock.id = "newplot", size = "button", name = "newplotbutton")
+            addHandlerClicked(newplotBtn, function(h, ...) newPlotWindow(refreshFn))
+
+            newtabBtn <- gimage(stock.id = "new", size = "button")
+            addHandlerClicked(newtabBtn, function(h, ...) plotWidget$addPlot())
+
+            refreshplotBtn <- gimage(stock.id = "refresh", size = "button")
+            addHandlerClicked(refreshplotBtn, function(h, ...) refreshFn())
+
+            renametabBtn <- gimage(stock.id = "editor", size = "button")
+            addHandlerClicked(renametabBtn, function(h, ...) plotWidget$renamePlot())
+
+
+            saveplotBtn <- gimage(stock.id = "save", size = "button")
+            addHandlerClicked(saveplotBtn, function(h, ...) plotWidget$savePlot())
+
+            closetabBtn <- gimage(stock.id = "close", size = "button")
+            addHandlerClicked(closetabBtn, function(h, ...) plotWidget$closePlot())
+
+
+            ## -- IMAGES
+            addtoplotBtn <- gimage(img.add2plot, size = "button")
+            addHandlerClicked(addtoplotBtn, function(h, ...) addToPlot())
+
+            removeaddBtn <- gimage(img.rmvplot, size = "button")
+            addHandlerClicked(removeaddBtn, function(h, ...) iNZPlotRmveModWin$new(GUI))
+
+            inferenceBtn <- gimage(img.infinfo, size = "button")
+            addHandlerClicked(inferenceBtn, function(h, ...) addInf())
+
+
+            addSpace(cont, 10)
+
+            add(cont, newplotBtn)
+            if (!popOut) add(cont, newtabBtn)
+            add(cont, refreshplotBtn)
+            if (!popOut) add(cont, renametabBtn)
+
+            addSpace(cont, 10)
+
+            add(cont, saveplotBtn)
+            if (!popOut) add(cont, closetabBtn)
+
+            addSpring(cont)
+
+            if ("add" %in% btns)
+                add(cont, addtoplotBtn)
+
+            if ("rmv" %in% btns)
+                add(cont, removeaddBtn)
+
+            if ("inf" %in% btns)
+                add(cont, inferenceBtn)
+
+            if (!missing(extra)) {
+                addSpace(cont, 10)
+                lapply(extra, function(x) add(cont, x))
+            }
+
+            addSpace(cont, 10)
+
+        },
+        ## Plot Menu
+        setPlotMenu = function(btns = c("add", "rmv", "inf"),
+                               refresh.fn = NULL,
+                               extra) {
+
+            if (is.null(refresh.fn)) {
+                refreshFn = GUI$updatePlot
+            } else {
+                refreshFn = GUI$activeModule[[refresh.fn]]
+            }
+            
             curMenu <- svalue(GUI$menubar)
             curMenu[["Plot"]] <- list(
-                gaction("Add to plot ...", handler = function(h, ...) addToPlot()),
+                gaction("Add to plot ...",
+                                             handler = function(h, ...) addToPlot()),
                 gaction("Remove additions ...", handler = function(h, ...) iNZPlotRmveModWin$new(GUI)),
                 gaction("Add inference ...", handler = function(h, ...) addInf()),
                 gseparator(),
@@ -79,18 +158,25 @@ iNZPlotToolbar <- setRefClass(
                         handler = function(h, ...) plotWidget$renamePlot()),
                 gseparator(),
                 gaction(label = "New Plot Window", icon = "new",
-                        handler = function(h, ...) {
-                            newdevice()
-                            GUI$updatePlot()
-                        }),
+                        handler = function(h, ...) newPlotWindow()),
                 gaction(label = "Redraw Plot", icon = "refresh",
-                        handler = function(h, ...) GUI$updatePlot()),
+                        handler = function(h, ...) refreshFn()),
                 gaction(label = "Save Plot", icon = "save",
                         handler = function(h, ...) plotWidget$savePlot())
                 )
+            
+            if (popOut)
+                curMenu[["Plot"]][5:8] <- NULL
+
+            curMenu[["Plot"]][which(!c("add", "rmv", "inf") %in% btns)] <- NULL
+
             svalue(GUI$menubar) <<- curMenu
 
-            menu <<- gtoolbariNZ(tbarList, cont = cont, style="icons")
+        },
+        ## function to open a new plot window
+        newPlotWindow = function(f) {
+            newdevice()
+            f()
         },
         ## function to open the correct plot modification win
         ## depending on the currently selected variable types

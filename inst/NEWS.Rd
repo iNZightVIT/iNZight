@@ -1,19 +1,47 @@
+
 \name{Change Log}
 \title{Change Log for iNZight}
 \encoding{UTF-8}
 
-# CHANGES!!!!!
+\section{iNZight v3.0}{
+  Release date: XX February, 2016
 
-# - Now using R 3.2.3, and all-updated packages - please let us know if anything no longer works, as it may be due to changes in other packages
-# - iNZight and VIT have broken up! But they are still living together - you can launch iNZight or VIT directly from the iNZightVIT folder,
-#   which means iNZight starts much faster and keeps things tidier.
-# - Toolbar: it's changed a fair bit - we no longer use buttons, instead just images you can click. This means they can be displayed vertically!
-#   File > Preferences lets you set a separate-window format for iNZight, with a vertical toolbar instead of horizontal below the plot.
-# - Responsive Toolbar: when you open new modules (see below) the toolbar will change and provide relevant buttons.
-# - MODULES: we've revamped these (or at least we've started to)
-#   - Multiple Response: this was previously not used, now it has a much more user-friendly interface
-#   - Maps: now you can display geographical data on maps using iNZight! Still in development, so keep updated!
-# - ...
+  \subsection{New Features}{
+    \itemize{
+      \item dual-window display mode for working with the default
+      graphics device (most useful on Windows)
+
+      \item Maps Module - visualise geographical data (coordinates or
+      countries, currently)
+
+      \item Example data sets - easily load example data quickly from
+      within iNZight
+
+      \item Resize points proportional to a variable - now does exactly
+      that! With the option of reverting to the old method.
+    }
+  }
+
+  \subsection{Major Changes}{
+    \itemize{
+      \item Plot Toolbar - new icons for Add to Plot, Remove Additions,
+      and Inference Information. Also responsive to Advanced Modules.
+
+      \item Multiple Response Module - complete redesign to make it more
+      intuitive.
+    }
+  }
+
+  \subsection{Minor Changes / Bug Fixes}{
+    \itemize{
+      \item remove those pesky GTK warnings!
+      
+      \item lots of other changes/bug fixes. Many months of work is all being compiled
+      into one single release. A new installation method and directory
+      structure, so please inform us of bugs as you come across them!
+    }
+  }
+}
 
 \section{Changes in version 2.5}{
   Release date: 08 November, 2015
@@ -126,6 +154,7 @@
   }
 }
 
+>>>>>>> dev-modules
 \section{Changes in version 2.2.0-1}{
   Release date: 01 July 2015
 
@@ -154,7 +183,7 @@
   \subsection{MAJOR CHANGES}{
     \itemize{
       \item LOCATE functionality now included for dot plots. Also fixes
-      several bugs in the previous update for locating points in a
+      several bugs in the previous update for locating points in 
       scatter plot.
     }
   }

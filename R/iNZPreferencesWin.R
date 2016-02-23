@@ -58,35 +58,43 @@ iNZPrefsWin <- setRefClass(
                
                add(g, tbl)
 
+               addSpace(g, 30)
+
+               popoutWin <- gcheckbox("Use dual-window display mode", checked = prefs$popout)
+
+               add(g, popoutWin)
+               
                
                addSpring(g)
 
-               ## APPLY / CANCEL / OK buttons
+               ## CANCEL / OK buttons
                btnGrp <- ggroup(container = g, expand = FALSE)
                addSpring(btnGrp)
 
-               okButton <- gbutton("Apply", expand = FALSE, cont = btnGrp,
-                             handler = function(h, ...) {
-                                 GUI$preferences <<- list(track = svalue(trackOpt),
-                                                          check.updates = svalue(updOpt),
-                                                          window.size =
-                                                          as.numeric(c(svalue(winWd), svalue(winHt))))
-                                 GUI$savePreferences()
-                             })
+               ## okButton <- gbutton("Apply", expand = FALSE, cont = btnGrp,
+               ##               handler = function(h, ...) {
+               ##                   GUI$preferences <<- list(track = svalue(trackOpt),
+               ##                                            check.updates = svalue(updOpt),
+               ##                                            window.size =
+               ##                                                as.numeric(c(svalue(winWd), svalue(winHt))),
+               ##                                            popout = svalue(popoutWin))
+               ##                   GUI$savePreferences()
+               ##               })
 
-               addSpace(btnGrp, 15)
+               ## addSpace(btnGrp, 15)
 
                cancelButton <- gbutton("Cancel", expand = FALSE, cont = btnGrp,
                                        handler = function(h, ...) dispose(GUI$modWin))
 
                addSpace(btnGrp, 15)
                
-               okButton <- gbutton("Save and Close", expand = FALSE, cont = btnGrp,
+               okButton <- gbutton("Save", expand = FALSE, cont = btnGrp,
                              handler = function(h, ...) {
                                  GUI$preferences <<- list(track = svalue(trackOpt),
                                                           check.updates = svalue(updOpt),
                                                           window.size =
-                                                          as.numeric(c(svalue(winWd), svalue(winHt))))
+                                                          as.numeric(c(svalue(winWd), svalue(winHt))),
+                                                          popout = svalue(popoutWin))
                                  GUI$savePreferences()
                                  dispose(GUI$modWin)
                              })

@@ -60,21 +60,21 @@ iNZDataModel <- setRefClass(
         },
         createSurveyObject = function() {
             des <- getDesign()
-                        
+
             id <- if (is.null(des$clus1) & is.null(des$clus2)) {
                 "~ 1"
             } else if (is.null(des$clus1)) {
                 paste("~", des$clus2)
             } else if (is.null(des$clus2)) {
-                paste("~", des$clus1) 
+                paste("~", des$clus1)
             } else {
                 paste("~", des$clus1, "+", des$clus2)
             }
-            
+
             strata <- if (is.null(des$strata)) "NULL" else paste("~", des$strata)
             weights <- if (is.null(des$wt)) "NULL" else paste("~", des$wt)
             fpcs <- if (is.null(des$fpc)) "NULL" else paste("~", des$fpc)
-            
+
             obj <-
                 parse(text =
                       paste0(
@@ -221,7 +221,7 @@ iNZDataNameWidget <- setRefClass(
         },
         updateWidget = function() {
             dataSet <- GUI$getActiveData()
-            
+
             if(is.null(dataSet)){
                 datName <<- "No data loaded"
             } else {

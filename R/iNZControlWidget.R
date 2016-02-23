@@ -80,14 +80,21 @@ iNZControlWidget <- setRefClass(
             addHandlerChanged(
                 V1box,
                 handler = function(h, ...) {
-                    val <- svalue(V1box)
+                    if (svalue(V1box, TRUE) == 1) {
+                        newX <- NULL
+                        newXname <- NULL
+                    } else {
+                        val <- svalue(V1box)
+                        newX <- GUI$getActiveDoc()$getData()[val][[1]]
+                        newXname <- val
+                    }
+                    
                     changePlotSettings(list(
-                        x = GUI$getActiveDoc()$getData()[val][[1]],
+                        x = newX,
                         xlab = NULL,
                         main = NULL,
-                        varnames = list(
-                            x = colnames(GUI$getActiveDoc()$getData()[val]))
-                        ), reset = TRUE)
+                        varnames = list(x = newXname)
+                    ), reset = TRUE)
                 })
             ## -- Variable 2
             addDropTarget(
@@ -98,14 +105,21 @@ iNZControlWidget <- setRefClass(
             addHandlerChanged(
                 V2box,
                 handler = function(h, ...) {
-                    val <- svalue(V2box)
+                    if (svalue(V2box, TRUE) == 1) {
+                        newY <- NULL
+                        newYname <- NULL
+                    } else {
+                        val <- svalue(V2box)
+                        newY <- GUI$getActiveDoc()$getData()[val][[1]]
+                        newYname <- val
+                    }
+                    
                     changePlotSettings(list(
-                        y = GUI$getActiveDoc()$getData()[val][[1]],
+                        y = newY,
                         ylab = NULL,
                         main = NULL,
-                        varnames = list(
-                            y = colnames(GUI$getActiveDoc()$getData()[val]))
-                        ), reset = TRUE)
+                        varnames = list(y = newYname)
+                    ), reset = TRUE)
                 })
             ## slider 1
             addDropTarget(
