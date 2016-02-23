@@ -59,23 +59,24 @@ iNZPlotToolbar <- setRefClass(
 
             ## link the menu:
             setPlotMenu(btns, refresh.fn, extra)
+
+            if (is.null(refresh.fn)) {
+                refreshFn = GUI$updatePlot
+            } else {
+                refreshFn = GUI$activeModule[[refresh.fn]]
+            }
             
             img.add2plot <- system.file("images/graph-plus-transp.gif", package = "iNZight")
             img.rmvplot <- system.file("images/graph-cross-transp.gif", package = "iNZight")
             img.infinfo <- system.file("images/graph-inference.gif", package = "iNZight")
 
             newplotBtn <- gimage(stock.id = "newplot", size = "button", name = "newplotbutton")
-            addHandlerClicked(newplotBtn, function(h, ...) newPlotWindow())
+            addHandlerClicked(newplotBtn, function(h, ...) newPlotWindow(refreshFn))
 
             newtabBtn <- gimage(stock.id = "new", size = "button")
             addHandlerClicked(newtabBtn, function(h, ...) plotWidget$addPlot())
 
             refreshplotBtn <- gimage(stock.id = "refresh", size = "button")
-            if (is.null(refresh.fn)) {
-                refreshFn = GUI$updatePlot
-            } else {
-                refreshFn = GUI$activeModule[[refresh.fn]]
-            }
             addHandlerClicked(refreshplotBtn, function(h, ...) refreshFn())
 
             renametabBtn <- gimage(stock.id = "editor", size = "button")
@@ -173,9 +174,9 @@ iNZPlotToolbar <- setRefClass(
 
         },
         ## function to open a new plot window
-        newPlotWindow = function() {
+        newPlotWindow = function(f) {
             newdevice()
-            GUI$updatePlot()
+            f()
         },
         ## function to open the correct plot modification win
         ## depending on the currently selected variable types
