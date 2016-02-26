@@ -20,6 +20,7 @@ Depends:
     cairoDevice
 Imports:
     utils,
+    grDevices,
     methods,
     grid,
     gdata,
@@ -28,10 +29,12 @@ Imports:
     iNZightTools,
     reshape2,
     plyr,
-    survey
+    survey,
+    colorspace
 Suggests:
     RODBC,
     iNZightMR,
-    iNZightModules
+    iNZightModules,
+    png
 LazyData: true
 RoxygenNote: 5.0.1

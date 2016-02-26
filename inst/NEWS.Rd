@@ -29,6 +29,9 @@
 
       \item Multiple Response Module - complete redesign to make it more
       intuitive.
+
+      \item More choice of colours! When colouring by a variable, you
+      can now select a colour palette from the 'Change plot appearance' window.
     }
   }
 

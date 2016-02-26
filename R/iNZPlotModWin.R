@@ -20,7 +20,8 @@ iNZPlotModWin <- setRefClass(
         optGrp = "ANY",
         curSet = "list", ## the current plot settings
         auto = "logical",   ## if TRUE, then changes occur automatically
-        locSet = "ANY"
+        locSet = "ANY",
+        palettes = "list"
         ),
     methods = list(
         initialize = function(gui = NULL, which = 1) {
@@ -767,7 +768,7 @@ iNZDotchartMod <- setRefClass(
             tbl[ii, 1:2, anchor = c(-1, -1), expand = TRUE] <- lbl1
             ii <- ii + 1
             
-            lbl2 <- glabel("Colour by levels of :")
+            lbl2 <- glabel("Colour by :")
             grpVarList <- gcombobox(c("", names(GUI$getActiveData())),
                                     selected = ifelse(
                                         is.null(curSet$colby),
@@ -1837,7 +1838,7 @@ iNZBarchartMod <- setRefClass(
             tbl[ii, 1:2, anchor = c(-1, -1), expand = TRUE] <- lbl1
             ii <- ii + 1
             
-            lbl2 <- glabel("Colour by levels of :")
+            lbl2 <- glabel("Colour by :")
             grpVarList <- gcombobox(c("",
                                       names(GUI$getActiveData())[sapply(GUI$getActiveData(),
                                                                         is.factor)]),
@@ -2177,7 +2178,7 @@ iNZScatterMod <- setRefClass(
             tbl[ii, 1:2, anchor = c(-1, -1), expand = TRUE] <- lbl1
             ii <- ii + 1
             
-            lbl <- glabel("Colour by levels of :")
+            lbl <- glabel("Colour by :")
             grpVarList <- gcombobox(c("", names(GUI$getActiveData())),
                                     selected = ifelse(
                                         is.null(curSet$colby),
@@ -2763,39 +2764,51 @@ iNZScatterMod <- setRefClass(
             tbl[ii, 1:2, anchor = c(-1,-1), expand = TRUE] <- lbl
             ii <- ii + 1
 
-            ## COLOUR            
-            lbl <- glabel("Colour :")
-            pointCols <- c(defts$col.pt, "darkblue", "darkgreen",
-                           "darkmagenta", "darkslateblue", "hotpink4",
-                           "lightsalmon2", "palegreen3", "steelblue3")
-            symbolColList <- gcombobox(
-                pointCols,
-                selected = ifelse(
-                    is.na(which(pointCols == curSet$col.pt)[1]),
-                    1,
-                    which(pointCols == curSet$col.pt)[1]),
-                editable = TRUE)
+            isColBy <- !is.null(GUI$getActiveDoc()$getSettings()$colby)
+            if (!isColBy) {
+                ## COLOUR            
+                lbl <- glabel("Colour :")
+                pointCols <- c(defts$col.pt, "darkblue", "darkgreen",
+                               "darkmagenta", "darkslateblue", "hotpink4",
+                               "lightsalmon2", "palegreen3", "steelblue3")
+                symbolColList <- gcombobox(
+                    pointCols,
+                    selected = ifelse(
+                        is.na(which(pointCols == curSet$col.pt)[1]),
+                        1,
+                        which(pointCols == curSet$col.pt)[1]),
+                    editable = TRUE)
+                
+                tbl[ii,  1, anchor = c(-1,-1), expand = TRUE] <- lbl
+                tbl[ii,  2, expand = TRUE] <- symbolColList
+                ii <- ii + 1
+                
+                lbl <- glabel("NOTE: You can type in a colour if it is not listed.")
+                
+                font(lbl) <- list(family = "normal", size = 8)
+                tbl[ii, 1:2, anchor = c(-1, -1), expand = TRUE] <- lbl                
+                ii <- ii + 1
+            } else {
+                ## COLOUR PALETTE
+                lbl <- glabel("Colour palette :")
+                palettes <<- list("default" = NULL,
+                                  "rainbow" = function(n) rainbow(n, start = 1/6),
+                                  "heat" = heat.colors,
+                                  "terrain" = terrain.colors)
+                if (requireNamespace("colorspace", quietly = TRUE)) {
+                    palettes <<- c(palettes, list("advanced" = NULL))
+                }
+                paletteList <- gcombobox(
+                    names(palettes),
+                    selected = ifelse(
+                        is.na(which(names(palettes) == attr(curSet$col.fun, "name"))[1]),
+                        1,
+                        which(names(palettes) == attr(curSet$col.fun, "name"))[1]),
+                    editable = FALSE)
 
-            tbl[ii,  1, anchor = c(-1,-1), expand = TRUE] <- lbl
-            tbl[ii,  2, expand = TRUE] <- symbolColList
-            ii <- ii + 1
-
-            lbl <- glabel("NOTE: You can type in a colour if it is not listed.")
-            
-            ## if the "colby" options is set, i.e. points are colored
-            ## according to another var, disable the option to
-            ## change the color
-            if (!is.null(GUI$getActiveDoc()$getSettings()$colby)) {
-                enabled(symbolColList) <- FALSE
-                svalue(lbl) <- paste(
-                    "Changing the color of symbols is disabled since\n",
-                    "the symbols are colored by '",
-                    GUI$getActiveDoc()$getSettings()$varnames$colby,
-                    "'", sep = "")
+                tbl[ii, 1, anchor = c(-1, -1), expand = TRUE] <- lbl
+                tbl[ii, 2, expand = TRUE] <- paletteList
             }
-            font(lbl) <- list(family = "normal", size = 8)
-            tbl[ii, 1:2, anchor = c(-1, -1), expand = TRUE] <- lbl                
-            ii <- ii + 1
 
             ## FILL
             fillColor <- gcheckbox("Colour interior",
@@ -2827,8 +2840,15 @@ iNZScatterMod <- setRefClass(
                 
                 pch.sel <- ifelse(svalue(fillColor) | svalue(transpSlider) > 0,
                                   19, 1)
+                if (isColBy) {
+                    colFn <- palettes[[svalue(paletteList, index = TRUE)]]
+                    if (svalue(paletteList, index = TRUE) > 1) {
+                        attr(colFn, "name") <- svalue(paletteList)
+                    }
+                }
                 GUI$getActiveDoc()$setSettings(
-                    list(col.pt = svalue(symbolColList),
+                    list(col.pt = if (isColBy) curSet$col.pt else svalue(symbolColList),
+                         col.fun = if (isColBy) colFn else NULL,
                          bg = svalue(backgroundColList),
                          cex.pt = svalue(cexSlider),
                          pch = pch.sel,
@@ -2853,20 +2873,30 @@ iNZScatterMod <- setRefClass(
                                   })
 
                 ## This one needs to be deactivated if user is typing:
-                pcoltimer <- NULL
-                addHandlerChanged(symbolColList,
-                                  handler = function(h, ...) {
-                                      if (!is.null(pcoltimer))
-                                          pcoltimer$stop_timer()
-                                      pcoltimer <- gtimer(500, function(...) {
-                                                               if (nchar(svalue(symbolColList)) >= 3)
-                                                                   updateEverything()
-                                                           }, one.shot = TRUE)
-                                  })
- 
+                if (isColBy) {
+                    addHandlerChanged(paletteList,
+                                      handler = function(h, ...) {
+                                          if (svalue(paletteList) == "advanced") {
+                                              palettes$advanced <<- colorspace::choose_palette()
+                                          }
+                                          updateEverything()
+                                      })
+                } else {
+                    pcoltimer <- NULL
+                    addHandlerChanged(symbolColList,
+                                      handler = function(h, ...) {
+                                          if (!is.null(pcoltimer))
+                                              pcoltimer$stop_timer()
+                                          pcoltimer <- gtimer(500, function(...) {
+                                                                  if (nchar(svalue(symbolColList)) >= 3)
+                                                                      updateEverything()
+                                                              }, one.shot = TRUE)
+                                      })
+                }
+
                 addHandlerChanged(fillColor,
                                   handler = function(h, ...) updateEverything())
-                
+                                
                 cextimer <- NULL
                 addHandlerChanged(cexSlider,
                                   handler = function(h, ...) {

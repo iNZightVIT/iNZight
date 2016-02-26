@@ -315,6 +315,10 @@ iNZGUI <- setRefClass(
                 newdevice()
             else
                 plotWidget$addPlot()
+
+            ## draw the iNZight splash screen
+            plotSplashScreen()
+            
             ## add what is done upon closing the gui
             closerHandler(disposeR)
         },
@@ -1280,5 +1284,13 @@ iNZGUI <- setRefClass(
                                "they won't carry over into the next session."),
                          title = "Unable to save preferences", icon = "warning")
             }            
+        },
+        plotSplashScreen = function() {
+            if (requireNamespace("png", quitely = TRUE)) {
+                img <- png::readPNG(system.file("images/inzight_splash.png", package = "iNZight"))
+                grid::grid.newpage()
+                grid::pushViewport(grid::viewport())
+                grid::grid.raster(img)
+            }
         })
     )
