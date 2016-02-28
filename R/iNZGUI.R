@@ -1286,7 +1286,7 @@ iNZGUI <- setRefClass(
             }            
         },
         plotSplashScreen = function() {
-            if (requireNamespace("png", quitely = TRUE)) {
+            if (requireNamespace("png", quietly = TRUE)) {
                 img <- png::readPNG(system.file("images/inzight_splash.png", package = "iNZight"))
                 grid::grid.newpage()
                 grid::pushViewport(grid::viewport())
