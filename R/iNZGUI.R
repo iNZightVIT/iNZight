@@ -310,7 +310,7 @@ iNZGUI <- setRefClass(
             ## first plot(empty) needs to be added after window is drawn
             ## to ensure the correct device nr
             if (popOut)
-                newdevice()
+                iNZightTools::newdevice()
             else
                 plotWidget$addPlot()
 
@@ -1292,6 +1292,8 @@ iNZGUI <- setRefClass(
                 grid::grid.newpage()
                 grid::pushViewport(grid::viewport())
                 grid::grid.raster(img)
+
+                grDevices::dev.flush()
             }
         })
     )
