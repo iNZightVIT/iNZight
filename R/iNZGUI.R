@@ -268,8 +268,6 @@ iNZGUI <- setRefClass(
 
 
             ## set up widgets in the left group
-            ## set up the menu bar at the top
-            ## initializeMenu(gp1, disposeR) ## -- from the old ways ...
 
             ## set up dataViewWidget, added below
             ## dataThreshold is used as maximum nr of cells
@@ -820,6 +818,9 @@ iNZGUI <- setRefClass(
             
             menubar <<- gmenu(menuBarList, container = cont)
 
+            ## if (all(dim(.self$getActiveData()) == 1)) {
+            ##     one day, get around to disabling the menu bar before data is loaded
+            ## }
         },
         ## set up buttons to switch between data and variable view
         initializeViewSwitcher = function(dataThreshold) {
