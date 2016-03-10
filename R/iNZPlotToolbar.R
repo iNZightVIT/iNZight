@@ -84,7 +84,7 @@ iNZPlotToolbar <- setRefClass(
 
 
             saveplotBtn <- gimage(stock.id = "save", size = "button")
-            addHandlerClicked(saveplotBtn, function(h, ...) plotWidget$savePlot())
+            addHandlerClicked(saveplotBtn, function(h, ...) plotWidget$savePlot(refreshFn))
 
             closetabBtn <- gimage(stock.id = "close", size = "button")
             addHandlerClicked(closetabBtn, function(h, ...) plotWidget$closePlot())
@@ -162,7 +162,7 @@ iNZPlotToolbar <- setRefClass(
                 gaction(label = "Redraw Plot", icon = "refresh",
                         handler = function(h, ...) refreshFn()),
                 gaction(label = "Save Plot", icon = "save",
-                        handler = function(h, ...) plotWidget$savePlot())
+                        handler = function(h, ...) plotWidget$savePlot(refreshFn))
                 )
             
             if (popOut)

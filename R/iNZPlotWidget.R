@@ -38,11 +38,11 @@ iNZPlotWidget <- setRefClass(
             if (length(input) > 0)
                 names(plotNb)[svalue(plotNb)] <<- input
         },
-        savePlot = function() {
+        savePlot = function(fun = GUI$updatePlot) {
             ## iNZSaveWin$new(GUI, type = "plot",
             ##                which = tabDevLink[svalue(plotNb)]
             ##                )
-
+            
             w <- gwindow("Save plot", parent = GUI$win, width = 500, height = 250)
             g <- gvbox(spacing = 15, container = w)
             
@@ -127,7 +127,7 @@ iNZPlotWidget <- setRefClass(
                                    filetypes[[svalue(fileType)]](file = f,
                                                                  width = dim[1],
                                                                  height = dim[2])
-                                   GUI$updatePlot(allow.redraw = TRUE)
+                                   fun()
                                    dev.off()
 
                                    dispose(w)
