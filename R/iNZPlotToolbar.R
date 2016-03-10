@@ -109,7 +109,7 @@ iNZPlotToolbar <- setRefClass(
             if (!popOut) add(cont, renametabBtn)
 
             addSpace(cont, 10)
-
+            
             add(cont, saveplotBtn)
             if (!popOut) add(cont, closetabBtn)
 

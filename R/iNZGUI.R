@@ -1035,7 +1035,7 @@ iNZGUI <- setRefClass(
             })
         },
         ## plot with the current active plot settings
-        updatePlot = function() {
+        updatePlot = function(allow.redraw = TRUE) {
             curPlSet <- getActiveDoc()$getSettings()
             if(!is.null(curPlSet$x)){
               # Switch x and y:
@@ -1061,10 +1061,10 @@ iNZGUI <- setRefClass(
                 ## Suppress the warnings produced by iNZightPlot ...
                 suppressWarnings({
                     curPlot <<- unclass(do.call(iNZightPlot, curPlSet))
-                    if (!is.null(attr(curPlot, "dotplot.redraw")))
+                    if (allow.redraw & !is.null(attr(curPlot, "dotplot.redraw")))
                         if (attr(curPlot, "dotplot.redraw"))
                             curPlot <<- unclass(do.call(iNZightPlot, curPlSet))
-                })
+                })                
                 plotType <<- attr(curPlot, "plottype")
             } else {
                 iNZightPlots:::resetPlot()
