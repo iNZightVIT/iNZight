@@ -70,34 +70,34 @@ iNZPlotToolbar <- setRefClass(
             img.rmvplot <- system.file("images/graph-cross-transp.gif", package = "iNZight")
             img.infinfo <- system.file("images/graph-inference.gif", package = "iNZight")
 
-            newplotBtn <- gimage(stock.id = "newplot", size = "button", name = "newplotbutton")
+            newplotBtn <- gimagebutton(stock.id = "newplot", size = "button", name = "newplotbutton")
             addHandlerClicked(newplotBtn, function(h, ...) newPlotWindow(refreshFn))
 
-            newtabBtn <- gimage(stock.id = "new", size = "button")
+            newtabBtn <- gimagebutton(stock.id = "new", size = "button")
             addHandlerClicked(newtabBtn, function(h, ...) plotWidget$addPlot())
 
-            refreshplotBtn <- gimage(stock.id = "refresh", size = "button")
+            refreshplotBtn <- gimagebutton(stock.id = "refresh", size = "button")
             addHandlerClicked(refreshplotBtn, function(h, ...) refreshFn())
 
-            renametabBtn <- gimage(stock.id = "editor", size = "button")
+            renametabBtn <- gimagebutton(stock.id = "editor", size = "button")
             addHandlerClicked(renametabBtn, function(h, ...) plotWidget$renamePlot())
 
 
-            saveplotBtn <- gimage(stock.id = "save", size = "button")
+            saveplotBtn <- gimagebutton(stock.id = "save", size = "button")
             addHandlerClicked(saveplotBtn, function(h, ...) plotWidget$savePlot(refreshFn))
 
-            closetabBtn <- gimage(stock.id = "close", size = "button")
+            closetabBtn <- gimagebutton(stock.id = "close", size = "button")
             addHandlerClicked(closetabBtn, function(h, ...) plotWidget$closePlot())
 
 
             ## -- IMAGES
-            addtoplotBtn <- gimage(img.add2plot, size = "button")
+            addtoplotBtn <- gimagebutton(filename = img.add2plot, size = "button")
             addHandlerClicked(addtoplotBtn, function(h, ...) addToPlot())
 
-            removeaddBtn <- gimage(img.rmvplot, size = "button")
+            removeaddBtn <- gimagebutton(filename = img.rmvplot, size = "button")
             addHandlerClicked(removeaddBtn, function(h, ...) iNZPlotRmveModWin$new(GUI))
 
-            inferenceBtn <- gimage(img.infinfo, size = "button")
+            inferenceBtn <- gimagebutton(filename = img.infinfo, size = "button")
             addHandlerClicked(inferenceBtn, function(h, ...) addInf())
 
 

@@ -13,7 +13,7 @@ iNZControlWidget <- setRefClass(
             ctrlGp <<- ggroup(horizontal = FALSE)
             initFields(GUI = gui)
             ## set up glayout
-            tbl <- glayout(expand = FALSE, cont = ctrlGp)
+            tbl <- glayout(expand = TRUE, homogeneous = FALSE, cont = ctrlGp, spacing = 5)
 
             ### DRAG/DROP MENUS
 
@@ -22,25 +22,36 @@ iNZControlWidget <- setRefClass(
             G1box <<- gcombobox(c("Select/Drag-drop Subset Variable 1", colnames(GUI$getActiveData())))
             G2box <<- gcombobox(c("Select/Drag-drop Subset Variable 2", colnames(GUI$getActiveData())))
 
-            tbl[3,1:5, anchor = c(0,0), expand = TRUE] <- V1box
-            tbl[5,1:5, anchor = c(0,0), expand = TRUE] <- V2box
-            tbl[7,1:5, anchor = c(0,0), expand = TRUE] <- G1box
-            tbl[9,1:5, anchor = c(0,0), expand = TRUE] <- G2box
+            tbl[1,1:5, anchor = c(0,0), expand = TRUE] <- V1box
+            tbl[3,1:5, anchor = c(0,0), expand = TRUE] <- V2box
+            tbl[5,1:5, anchor = c(0,0), expand = TRUE] <- G1box
+            tbl[7,1:5, anchor = c(0,0), expand = TRUE] <- G2box
 
 
             ### CLEAR BUTTONS
 
             ## -- Variable 1
-            V1clearbtn <- gbutton("",
+            V1clearbtn <- gimagebutton(stock.id = "cancel",
                                   handler = function(h,...) {
                                       svalue(V1box, index = TRUE) <<- 1
                                       changePlotSettings(list(x = NULL))
                                   })
-            V1clearbtn$set_icon("Cancel")
-            tbl[3,7, anchor = c(0,0)] <- V1clearbtn
+            ## V1clearbtn$set_icon("Cancel")
+            tbl[1,7, anchor = c(0,0)] <- V1clearbtn
+
+            ## old_cursor <- getToolkitWidget(GUI$win)$getWindow()$getCursor()
+            ## cross <- gdkCursorNew("GDK_HAND1")
+            ## addHandler(switchV12, "enter-notify-event", handler=function(h,...) {
+            ##                getToolkitWidget(switchV12)$getWindow()$setCursor(cross)
+            ##                TRUE
+            ##            })
+            ## addHandler(switchV12, "leave-notify-event", handler=function(h,...) {
+            ##                getToolkitWidget(switchV12)$getWindow()$setCursor(old_cursor)
+            ##                TRUE
+            ##            })
 
             ## -- Variable 2
-            V2clearbtn <- gbutton("",
+            V2clearbtn <- gimagebutton(stock.id = "cancel",
                                   handler = function(h,...) {
                                       svalue(V2box, index = TRUE) <<- 1
                                       changePlotSettings(list(y = NULL,
@@ -48,26 +59,64 @@ iNZControlWidget <- setRefClass(
                                                                   y = NULL)),
                                                          reset = { GUI$plotType != "dot" })
                                   })
-            V2clearbtn$set_icon("Cancel")
-            tbl[5,7, anchor = c(0,0)] <- V2clearbtn
+            ## V2clearbtn$set_icon("Cancel")
+            tbl[3,7, anchor = c(0,0)] <- V2clearbtn
 
             ## -- Grouping Variable 1
-            G1clearbtn <- gbutton("",
+            G1clearbtn <- gimagebutton(stock.id = "cancel",
                                   handler = function(h,...) {
                                       svalue(G1box, index = TRUE) <<- 1
                                       ## change handler will handle the rest
                                   })
-            G1clearbtn$set_icon("Cancel")
-            tbl[7,7, anchor = c(0,0)] <- G1clearbtn
+            tbl[5,7, anchor = c(0,0)] <- G1clearbtn
 
             ## -- Grouping Variable 2
-            G2clearbtn <- gbutton("",
+            G2clearbtn <- gimagebutton(stock.id = "cancel",
                                   handler = function(h,...) {
                                       svalue(G2box, index = TRUE) <<- 1
                                   })
-            G2clearbtn$set_icon("Cancel")
-            tbl[9,7, anchor = c(0,0)] <- G2clearbtn
+            tbl[7,7, anchor = c(0,0)] <- G2clearbtn
 
+
+            ## "SWITCH" buttons:
+            switchV12 <- gimagebutton("go-down")
+            addHandlerClicked(switchV12, function(h, ...) {
+                                  if (svalue(V1box, TRUE) == 1 || svalue(V2box, TRUE) == 1) {
+                                      gmessage("Need variable selected in both boxes", icon = "error")
+                                      return()
+                                  }
+                                  
+                                  V1 <- svalue(V1box)
+                                  V2 <- svalue(V2box)
+                                  
+                                  blockHandlers(V1box)
+                                  blockHandlers(V2box)
+                                  
+                                  svalue(V1box) <<- V2
+                                  svalue(V2box) <<- V1
+                                  
+                                  valX <- svalue(V1box)
+                                  newX <- GUI$getActiveDoc()$getData()[valX][[1]]
+                                  newXname <- valX
+                                  
+                                  valY <- svalue(V2box)
+                                  newY <- GUI$getActiveDoc()$getData()[valY][[1]]
+                                  newYname <- valY
+                                  
+                                  changePlotSettings(list(
+                                      x = newX, y = newY,
+                                      xlab = NULL, ylab = NULL,
+                                      main = NULL,
+                                      varnames = list(x = newXname, y = newYname)
+                                      ), reset = TRUE)
+                                  
+                                  unblockHandlers(V1box)
+                                  unblockHandlers(V2box)
+                              })
+            switchV23 <- gimagebutton("go-down")
+
+            tbl[1, 6] <- switchV12
+            tbl[3, 6] <- switchV23
 
             ## add drop functionality to the fields
 
@@ -135,10 +184,10 @@ iNZControlWidget <- setRefClass(
                         gmessage("You cannot use the same variable in both subsetting slots.",
                                  parent = GUI$win)
                     } else {
-                        deleteSlider(pos = 8)
+                        deleteSlider(pos = 6)
                         if (svalue(G1box, index = TRUE) > 1) {
                             val <- svalue(G1box)
-                            createSlider(pos = 8, val)
+                            createSlider(pos = 6, val)
                             changePlotSettings(list(
                                 g1 = iNZightPlots:::convert.to.factor(
                                     GUI$getActiveDoc()$getData()[val][[1]]
@@ -172,10 +221,10 @@ iNZControlWidget <- setRefClass(
                         gmessage("You cannot use the same variable in both subsetting slots.",
                                  parent = GUI$win)
                     } else {
-                        deleteSlider(pos = 10)
+                        deleteSlider(pos = 8)
                         if (svalue(G2box, index = TRUE) > 1) {
                             val <- svalue(G2box)
-                            createSlider(pos = 10, val)
+                            createSlider(pos = 8, val)
                             changePlotSettings(list(
                                 g2 = iNZightPlots:::convert.to.factor(
                                     GUI$getActiveDoc()$getData()[val][[1]]
@@ -242,14 +291,14 @@ iNZControlWidget <- setRefClass(
             ## create a ggroup for the slider at the specified
             ## pos in the glayout
             tbl <- ctrlGp$children[[1]]
-            tbl[pos, 1:5, expand = TRUE] <- (hzGrp <- ggroup(fill = "x"))
+            tbl[pos, 1:4, expand = TRUE] <- (hzGrp <- ggroup(fill = "x"))
 
             sliderGrp <- ggroup(horizontal = FALSE)
 
             ## build the level names that are used for the slider
             grpData <- GUI$getActiveData()[dropdata][[1]]
             grpData <- iNZightPlots:::convert.to.factor(grpData)
-            if (pos == 8)
+            if (pos == 6)
                 lev <- c("_MULTI", levels(grpData))
             else
                 lev <- c("_ALL", levels(grpData), "_MULTI")
@@ -257,7 +306,7 @@ iNZControlWidget <- setRefClass(
             slider <- gslider(from = lev,
                               value = 1)
             add(sliderGrp, slider, expand = FALSE)
-            if (pos == 8)
+            if (pos == 6)
                 grp = "g1"
             else
                 grp = "g2"
@@ -278,7 +327,7 @@ iNZControlWidget <- setRefClass(
             if (sum(nchar(lbl)) > 42)
                 lbl <- 1:length(lbl)
             ## add * or _ to beginning of labels
-            if (pos == 8)
+            if (pos == 6)
                 lbl <- c("_MULTI", lbl)
             else
                 lbl <- c("_ALL", lbl, "_MULTI")
@@ -288,7 +337,8 @@ iNZControlWidget <- setRefClass(
 
             ## Play button
             playBtn <- gbutton("Play", expand = FALSE,
-                            handler = function(h, ...) {
+                               handler = function(h, ...) {
+                                   h$obj$set_value("Stop")
                                 oldSet <- GUI$getActiveDoc()$getSettings()
                                 for (i in 1:length(levels(grpData))) {
                                     changePlotSettings(
@@ -304,11 +354,13 @@ iNZControlWidget <- setRefClass(
                                   # discression!!!!!
                                     Sys.sleep(0.6)
                                 }
+                                   h$obj$set_value("Play")
                                 changePlotSettings(oldSet)
                             })
+            #playBtn$set_icon("go")
             add(hzGrp, sliderGrp, expand = TRUE)
             #add(hzGrp, playBtn, expand = FALSE, anchor = c(0, 0))
-            tbl[pos, 7, anchor = c(0, 0), expand = FALSE] <- playBtn
+            tbl[pos, 6:7, anchor = c(0, 0), expand = FALSE] <- playBtn
 
 
             ## ##################################
@@ -339,7 +391,7 @@ iNZControlWidget <- setRefClass(
         ## reset the widget to its original state
         ## (same as triggering all 4 clear buttons)
         resetWidget = function() {
-            invisible(sapply(c(3,5,7,9), function(x) {
+            invisible(sapply(c(1,3,5,7), function(x) {
                 ctrlGp$children[[1]][x, 7]$invoke_change_handler()
             }))
         })
