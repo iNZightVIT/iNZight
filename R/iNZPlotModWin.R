@@ -4567,15 +4567,10 @@ iNZScatterMod <- setRefClass(
                                "grid" = "scatter.grid.bins",
                                "hex" = "hex.bins")]] <- svalue(cexPt)
                 if (PLOTTYPE == "scatter") {
-                    if (svalue(sizeVar, index = TRUE) == 1) {
-                        newSet$sizeby <- ""
-                        newSet$varnames$sizeby <- ""
-                    } else {
-                        newSet$sizeby <- GUI$getActiveData()[[svalue(sizeVar)]]
-                        newSet$varnames <- c(newSet$varnames,
-                                             list(sizeby = svalue(sizeVar)))
-                        newSet$resize.method <- svalue(sizeMethod)
-                    }
+                    newSet <- c(newSet, list(sizeby = GUI$getActiveData()[[svalue(sizeVar)]]))
+                    newSet$varnames <- c(newSet$varnames,
+                                         list(sizeby = svalue(sizeVar)))
+                    newSet$resize.method <- svalue(sizeMethod)
                 }
 
                 ## Colour
