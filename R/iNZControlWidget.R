@@ -7,12 +7,13 @@ iNZControlWidget <- setRefClass(
         V2box = "ANY",
         G1box = "ANY",
         G2box = "ANY",
-        playButton = "list"
+        playButton = "list",
+        playdelay = "numeric"
         ),
     methods = list(
         initialize = function(gui) {
             ctrlGp <<- ggroup(horizontal = FALSE)
-            initFields(GUI = gui)
+            initFields(GUI = gui, playdelay = 0.6)
             ## set up glayout
             tbl <- glayout(expand = TRUE, homogeneous = FALSE, cont = ctrlGp, spacing = 5)
 
@@ -442,8 +443,8 @@ iNZControlWidget <- setRefClass(
             else
                 lbl <- c("_ALL", lbl, "_MULTI")
             ## only add label if it is short enough
-            if (sum(nchar(lbl)) + 3 * length(lbl) < 50)
-                add(sliderGrp, glabel(paste(lbl, collapse = "   ")))
+            ## if (sum(nchar(lbl)) + 3 * length(lbl) < 50)
+            ##    add(sliderGrp, glabel(paste(lbl, collapse = "   ")))
 
             ## Play button
             PLAY <- function(data) {
@@ -473,14 +474,43 @@ iNZControlWidget <- setRefClass(
                                     Nlev = length(levels(grpData)),
                                     levi = 0, oldSet = oldSet)
                 PLAY(oldSet)
-                playButton$playtimer <<- gtimer(600, PLAY, data = oldSet, one.shot = FALSE)
+                playButton$playtimer <<- gtimer(playdelay * 1000, PLAY, data = oldSet, one.shot = FALSE)
             }
             img.playicon <- system.file("images/icon-play.png", package = "iNZight")
             img.stopicon <- system.file("images/icon-stop.png", package = "iNZight")
             playBtn <- gimagebutton(filename = img.playicon, size = "button", handler = clickPlay)
             add(hzGrp, sliderGrp, expand = TRUE)
-            tbl[pos, 7, anchor = c(0, 0), expand = FALSE] <- playBtn
+            
 
+            ## Play time delay - time in milliseconds
+            img.clockicon <- system.file("images/icon-clock.png", package = "iNZight")
+            delayBtn <- gimagebutton(filename = img.clockicon, size = "button",
+                                     handler = function(h, ...) {
+                                         w <- gwindow(title = "Play Settings", width = 200, height = 80,
+                                                      parent = GUI$win)
+                                         g <- gvbox(spacing = 10, container = w)
+                                         g$set_borderwidth(10)
+
+                                         g1 <- ggroup(container = g)
+                                         glabel("Time delay between plots :", container = g1)
+                                         spin <- gspinbutton(from = 0.1, to = 3, by = 0.1, value = playdelay, container = g1)
+                                         glabel("(seconds)", container = g1)
+
+                                         g2 <- ggroup(container = g)
+                                         addSpring(g2)
+                                         gbutton("OK", container = g, handler = function(h, ...) {
+                                                     playdelay <<- svalue(spin)
+                                                     dispose(w)
+                                                 })
+                                     })
+            delaySpin <- gspinbutton(from = 0.1, to = 3, by = 0.1, value = playdelay,
+                                     handler = function(h, ...) playdelay <<- svalue(h$obj))
+
+            ## Add things to layout:
+            tbl[pos, 6, anchor = c(0, 0), expand = FALSE] <- delayBtn
+            tbl[pos, 7, anchor = c(0, 0), expand = FALSE] <- playBtn
+            
+            
             ## ##################################
             ## ## start of workaround part2
             ## ##################################
