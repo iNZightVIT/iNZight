@@ -24,7 +24,8 @@ iNZPlotModWin <- setRefClass(
         locSet = "ANY",
         palettes = "list",
         bgColours = "list",
-        pointColours = "list"
+        pointColours = "list",
+        colourPalettes = "list"
         ),
     methods = list(
         initialize = function(gui = NULL, which = 1) {
@@ -43,7 +44,10 @@ iNZPlotModWin <- setRefClass(
                                 lightgrey = "grey80",
                                 blue = "blue",
                                 red = "red",
-                                green = "green4"))
+                                green = "green4"),
+                       colourPalettes =
+                           list(cat  = list(default = inzpar()$col.default$cat),
+                                cont = list(default = inzpar()$col.default$cont)))
             if (!is.null(GUI)) {
                 updateSettings()
 
@@ -4503,7 +4507,7 @@ iNZScatterMod <- setRefClass(
             ##   Colour palette : [default->{num->divergent_hcl, cat->rainbow_hcl}, ...]   [s]
             ##         Advanced : [ { Manual colour button for cat }, { Adjust palette }]  [s]
             ##     Transparency : 0|-------------------1                                   [s,h,g]
-            ##  [ ] Fill symbol interior                                                   [s]
+            ##  [o] Fill symbol interior                                                   [s]
             ## 
             ## -----------------------------------------------------------------------------------
             if (PLOTTYPE != "grid") {
@@ -4517,12 +4521,48 @@ iNZScatterMod <- setRefClass(
                     if (which(ptCols == curSet$col.pt)[1] > 1)
                         svalue(ptCol) <- curSet$col.pt
                 
-                lbl <- glabel(switch(PLOTTYPE,
+                colLabel <- glabel(switch(PLOTTYPE,
                                      "scatter" = "Point colour :",
                                      "hex"     = "Hexagon colour :"))
-                tbl[ii, 1:2, anchor = c(1, 0), expand = TRUE] <- lbl
+                tbl[ii, 1:2, anchor = c(1, 0), expand = TRUE, fill = TRUE] <- colLabel
                 tbl[ii, 3:6, expand = TRUE] <- ptCol
+                ptColROW <- ii  ## save for switching later
                 ii <- ii + 1
+            }
+
+            if (PLOTTYPE == "scatter") {
+                
+                lbl <- glabel("Colour by :")
+                colVar <-
+                    gcombobox(c("", colVarNames <- names(GUI$getActiveData())),
+                              selected = ifelse(
+                                  is.null(curSet$colby),
+                                  1, which(colVarNames == curSet$varnames$colby)[1] + 1
+                                  ))
+                tbl[ii, 1:2, anchor = c(1, 0), expand = TRUE] <- lbl
+                tbl[ii, 3:6, expand = TRUE] <- colVar
+                ii <- ii + 1
+                
+                ## dropdown for colour palette
+                palCont <- gcombobox(c("default", "palette1", "palette2"))
+                palCat <- gcombobox(c("default", "palette1", "palette2", "palette3"))
+                tbl[ptColROW, 3:6, expand = TRUE] <- palCont
+                tbl[ptColROW, 3:6, expand = TRUE] <- palCat
+
+                if (!is.null(curSet$colby)) {
+                    ## already set - need to match
+                    cval <- curSet$varnames$colby
+                    svalue(colVar) <- cval
+                    visible(ptCol) <- FALSE
+                    if (is.numeric(GUI$getActiveData()[[cval]])) {
+                        visible(palCat) <- FALSE
+                    } else {
+                        visible(palCont) <- FALSE
+                    }
+                    
+                } else {
+                    visible(palCont) <- visible(palCat) <- FALSE
+                }
             }
 
             ii <- ii + 1
@@ -4575,13 +4615,22 @@ iNZScatterMod <- setRefClass(
 
                 ## Colour
                 if (PLOTTYPE != "grid") {
-                    newSet$col.pt <- 
-                        if (svalue(ptCol) %in% names(pointColours))
-                            pointColours[[svalue(ptCol, index = TRUE)]]
-                        else if (!inherits(try(col2rgb(svalue(ptCol)), silent = TRUE), "try-error"))
-                            svalue(ptCol)
-                        else
-                            curSet$col.pt
+                    if (PLOTTYPE == "scatter" && svalue(colVar, TRUE) > 1) {
+                        ## colouring by a variable - and a palette
+                        newSet$colby <- GUI$getActiveData()[[svalue(colVar)]]
+                        newSet$varnames <- c(newSet$varnames,
+                                             list(colby = svalue(colVar)))
+                    } else {
+                        newSet$colby <- ""
+                        newSet$varnames <- c(newSet$varnames, list(colby = NULL))
+                        newSet$col.pt <- 
+                            if (svalue(ptCol) %in% names(pointColours))
+                                pointColours[[svalue(ptCol, index = TRUE)]]
+                            else if (!inherits(try(col2rgb(svalue(ptCol)), silent = TRUE), "try-error"))
+                                svalue(ptCol)
+                            else
+                                curSet$col.pt
+                    }
                 }
                 
             ##     pch.sel <- ifelse(svalue(fillColor) | svalue(transpSlider) > 0,
@@ -4657,6 +4706,24 @@ iNZScatterMod <- setRefClass(
                                                               }, one.shot = TRUE)
                                       })
                 }
+                if (PLOTTYPE == "scatter") {
+                    addHandlerChanged(colVar, handler = function(h, ...) {
+                                          if (svalue(h$obj, index = TRUE) == 1) {
+                                              svalue(colLabel) <- "Point colour :"
+                                              visible(palCont) <- visible(palCat) <- FALSE
+                                              visible(ptCol) <- TRUE
+                                          } else {
+                                              svalue(colLabel) <- "Palette :"
+                                              visible(ptCol) <- FALSE
+                                              if (is.numeric(GUI$getActiveData()[[svalue(h$obj)]])) {
+                                                  visible(palCont) <- TRUE
+                                              } else {
+                                                  visible(palCat) <- TRUE
+                                              }
+                                          }
+                                          updateEverything()
+                                      })
+                }
             }
 
             add(optGrp, tbl)
@@ -4721,7 +4788,7 @@ iNZScatterMod <- setRefClass(
                     gmessage("Set colour of numeric ... not yet implemented.", "Not ready yet.", icon = "warning")
                 } else {
                     specifyColours(variable)
-                }                
+                }
             })
 
 
