@@ -6,7 +6,8 @@ iNZControlWidget <- setRefClass(
         V1box = "ANY",
         V2box = "ANY",
         G1box = "ANY",
-        G2box = "ANY"
+        G2box = "ANY",
+        playButton = "list"
         ),
     methods = list(
         initialize = function(gui) {
@@ -82,7 +83,7 @@ iNZControlWidget <- setRefClass(
             switchV12 <- gimagebutton("go-down")
             addHandlerClicked(switchV12, function(h, ...) {
                                   if (svalue(V1box, TRUE) == 1 || svalue(V2box, TRUE) == 1) {
-                                      gmessage("Need variable selected in both boxes", icon = "error")
+                                      gmessage("Need both Variable 1 and Variable 2 selected", icon = "error")
                                       return()
                                   }
                                   
@@ -114,9 +115,118 @@ iNZControlWidget <- setRefClass(
                                   unblockHandlers(V2box)
                               })
             switchV23 <- gimagebutton("go-down")
+            addHandlerClicked(switchV23, function(h, ...) {
+                                  if (svalue(V2box, TRUE) == 1 && svalue(G1box, TRUE) == 1) {
+                                      gmessage("Need at least one of Variable 2 and Subset Variable 1 selected", icon = "error")
+                                      return()
+                                  }
+                                  
+                                  V2 <- svalue(V2box, TRUE)
+                                  G1 <- svalue(G1box, TRUE)
+
+                                  blockHandlers(V2box)
+                                  blockHandlers(G1box)
+
+                                  deleteSlider(pos = 6)
+                                  svalue(V2box, TRUE) <<- G1
+                                  svalue(G1box, TRUE) <<- V2
+
+                                  if (svalue(V2box, TRUE) == 1) {
+                                      valY <- NULL
+                                      newY <- NULL
+                                  } else {
+                                      valY <- svalue(V2box)
+                                      newY <- GUI$getActiveDoc()$getData()[valY][[1]]
+                                  }
+                                  newYname <- valY
+
+                                  if (svalue(G1box, TRUE) == 1) {
+                                      changePlotSettings(list(y = newY, ylab = NULL, xlab = NULL,
+                                                              main = NULL,
+                                                              g1 = NULL,
+                                                              g1.level = NULL,
+                                                              varnames = list(
+                                                                  y = newYname,
+                                                                  g1 = NULL)
+                                                              ), reset = TRUE)
+                                  } else {
+                                      valG1 <- svalue(G1box)
+                                      newG1 <-  iNZightPlots:::convert.to.factor(GUI$getActiveDoc()$getData()[valG1][[1]])
+                                      newG1name <- valG1
+
+                                      createSlider(pos = 6, valG1)
+                                      changePlotSettings(list(y = newY, ylab = NULL, xlab = NULL,
+                                                              main = NULL,
+                                                              g1 = newG1,
+                                                              g1.level = "_MULTI",
+                                                              varnames = list(
+                                                                  y = newYname,
+                                                                  g1 = newG1name)
+                                                              ))
+                                  }
+
+                                  unblockHandlers(V2box)
+                                  unblockHandlers(G1box)
+                                  
+                              })
+            switchV34 <- gimagebutton("go-down")
+            addHandlerClicked(switchV34, function(h, ...) {
+                                  if (svalue(G1box, TRUE) == 1 && svalue(G2box, TRUE) == 1) {
+                                      gmessage("Need at least one subsetting variable selected", icon = "error")
+                                      return()
+                                  }
+
+                                  G1 <- svalue(G1box, TRUE)
+                                  G2 <- svalue(G2box, TRUE)
+
+                                  blockHandlers(G1box)
+                                  blockHandlers(G2box)
+
+                                  deleteSlider(pos = 6)
+                                  deleteSlider(pos = 8)
+                                  svalue(G2box, TRUE) <<- G1
+                                  svalue(G1box, TRUE) <<- G2
+
+                                  if (svalue(G1box, TRUE) == 1) {
+                                      varG1 <- NULL
+                                      newG1 <- NULL
+                                      newG1name <- NULL
+                                      newG1level <- NULL
+                                  } else {
+                                      valG1 <- svalue(G1box)
+                                      newG1 <- iNZightPlots:::convert.to.factor(GUI$getActiveDoc()$getData()[valG1][[1]])
+                                      newG1name <- valG1
+                                      newG1level <- "_MULTI"
+                                      createSlider(pos = 6, valG1)
+                                  }
+                                  if (svalue(G2box, TRUE) == 1) {
+                                      varG2 <- NULL
+                                      newG2 <- NULL
+                                      newG2name <- NULL
+                                      newG2level <- NULL
+                                  } else {
+                                      valG2 <- svalue(G2box)
+                                      newG2 <- iNZightPlots:::convert.to.factor(GUI$getActiveDoc()$getData()[valG2][[1]])
+                                      newG2name <- valG2
+                                      newG2level <- "_ALL"
+                                      createSlider(pos = 8, valG2)
+                                  }
+
+                                  changePlotSettings(list(main = NULL,
+                                                          g1 = newG1, g2 = newG2,
+                                                          g1.level = newG1level, g2.level = newG2level,
+                                                          varnames = list(
+                                                              g1 = newG1name,
+                                                              g2 = newG2name)
+                                                          ))
+
+                                  unblockHandlers(G1box)
+                                  unblockHandlers(G2box)
+                              })
 
             tbl[1, 6] <- switchV12
             tbl[3, 6] <- switchV23
+            tbl[5, 6] <- switchV34
 
             ## add drop functionality to the fields
 
@@ -291,7 +401,7 @@ iNZControlWidget <- setRefClass(
             ## create a ggroup for the slider at the specified
             ## pos in the glayout
             tbl <- ctrlGp$children[[1]]
-            tbl[pos, 1:4, expand = TRUE] <- (hzGrp <- ggroup(fill = "x"))
+            tbl[pos, 1:5, expand = TRUE] <- (hzGrp <- ggroup(fill = "x"))
 
             sliderGrp <- ggroup(horizontal = FALSE)
 
@@ -336,32 +446,40 @@ iNZControlWidget <- setRefClass(
                 add(sliderGrp, glabel(paste(lbl, collapse = "   ")))
 
             ## Play button
-            playBtn <- gbutton("Play", expand = FALSE,
-                               handler = function(h, ...) {
-                                   h$obj$set_value("Stop")
-                                oldSet <- GUI$getActiveDoc()$getSettings()
-                                for (i in 1:length(levels(grpData))) {
-                                    changePlotSettings(
-                                        structure(list(i),
-                                                  .Names = paste(
-                                                      grp,
-                                                      "level",
-                                                      sep = ".")
-                                                  )
-                                        )
-                                  # This effectively freezes the R session,
-                                  # and therefore iNZight --- so increase with
-                                  # discression!!!!!
-                                    Sys.sleep(0.6)
-                                }
-                                   h$obj$set_value("Play")
-                                changePlotSettings(oldSet)
-                            })
-            #playBtn$set_icon("go")
+            PLAY <- function(data) {
+                playButton$levi <<- playButton$levi + 1
+                if (playButton$levi > playButton$Nlev) {
+                    playButton$playtimer$stop_timer()
+                    changePlotSettings(data)
+                    playBtn$set_value(img.playicon)
+                    playButton$playtimer <<- NULL
+                } else {
+                    changePlotSettings(structure(list(playButton$levi),
+                                                 .Names = paste(grp, "level", sep = ".")))
+                }
+            }
+            clickPlay <- function(h, ...) {
+                if (!is.null(playButton$playtimer)) {
+                    ## time is running - so stop the animation
+                    playButton$playtimer$stop_timer()
+                    changePlotSettings(playButton$oldSet)
+                    playBtn$set_value(img.playicon)
+                    playButton$playtimer <<- NULL
+                    return()
+                }
+                oldSet <- GUI$getActiveDoc()$getSettings()
+                playBtn$set_value(img.stopicon)
+                playButton <<- list(playtimer = NULL,
+                                    Nlev = length(levels(grpData)),
+                                    levi = 0, oldSet = oldSet)
+                PLAY(oldSet)
+                playButton$playtimer <<- gtimer(600, PLAY, data = oldSet, one.shot = FALSE)
+            }
+            img.playicon <- system.file("images/icon-play.png", package = "iNZight")
+            img.stopicon <- system.file("images/icon-stop.png", package = "iNZight")
+            playBtn <- gimagebutton(filename = img.playicon, size = "button", handler = clickPlay)
             add(hzGrp, sliderGrp, expand = TRUE)
-            #add(hzGrp, playBtn, expand = FALSE, anchor = c(0, 0))
-            tbl[pos, 6:7, anchor = c(0, 0), expand = FALSE] <- playBtn
-
+            tbl[pos, 7, anchor = c(0, 0), expand = FALSE] <- playBtn
 
             ## ##################################
             ## ## start of workaround part2
