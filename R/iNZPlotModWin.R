@@ -46,8 +46,31 @@ iNZPlotModWin <- setRefClass(
                                 red = "red",
                                 green = "green4"),
                        colourPalettes =
-                           list(cat  = list(default = inzpar()$col.default$cat),
-                                cont = list(default = inzpar()$col.default$cont)))
+                           list(cat  =
+                                    list(default = inzpar()$col.default$cat,
+                                         light = function(n) rainbow_hcl(n, c = 50, l = 80, start = 10, end = 320),
+                                         dark = function(n) rainbow_hcl(n, c = 50, l = 60, start = 0, end = 288),
+                                         vibrant = function(n) rainbow_hcl(n, c = 80, l = 60, start = 0, end = 300)),
+                                cont =
+                                    list(default = inzpar()$col.default$cont,
+                                         blue = function(n)
+                                             sequential_hcl(n, h = 260, c. = c(80, 10), l = c(30, 95), power = 0.7),
+                                         green = function(n)
+                                             sequential_hcl(n, h = 135, c. = c(50, 10), l = c(40, 95), power = 0.4),
+                                         red = function(n)
+                                             sequential_hcl(n, h = 10, c. = c(80, 10), l = c(30, 95), power = 0.7),
+                                         "green-yellow" = function(n)
+                                             terrain_hcl(n, h = c(130, 30), c. = c(65, 0), l = c(45, 90),
+                                                            power = c(0.5, 1.5)),
+                                         "red-blue" = function(n)
+                                             terrain_hcl(n, h = c(0, -100), c. = c(80, 40), l = c(40, 75),
+                                                            power = c(1, 1)),
+                                         terrain = terrain_hcl,
+                                         heat = heat_hcl,
+                                         "blue/white/pink" = function(n)
+                                             diverge_hcl(n, h = c(180, 330), c = 59, l = c(75, 95), power = 1.5),
+                                         "blue/white/red" = function(n)
+                                             diverge_hcl(n, h = c(260, 0), c = 100, l = c(50, 90), power = 1))))
             if (!is.null(GUI)) {
                 updateSettings()
 
@@ -4544,8 +4567,8 @@ iNZScatterMod <- setRefClass(
                 ii <- ii + 1
                 
                 ## dropdown for colour palette
-                palCont <- gcombobox(c("default", "palette1", "palette2"))
-                palCat <- gcombobox(c("default", "palette1", "palette2", "palette3"))
+                palCont <- gcombobox(names(colourPalettes$cont))
+                palCat <- gcombobox(names(colourPalettes$cat))
                 tbl[ptColROW, 3:6, expand = TRUE] <- palCont
                 tbl[ptColROW, 3:6, expand = TRUE] <- palCat
 
@@ -4620,6 +4643,9 @@ iNZScatterMod <- setRefClass(
                         newSet$colby <- GUI$getActiveData()[[svalue(colVar)]]
                         newSet$varnames <- c(newSet$varnames,
                                              list(colby = svalue(colVar)))
+                        newSet$col.fun <-
+                            if (is.numeric(newSet$colby)) colourPalettes$cont[[svalue(palCont)]]
+                            else colourPalettes$cat[[svalue(palCat)]]
                     } else {
                         newSet$colby <- ""
                         newSet$varnames <- c(newSet$varnames, list(colby = NULL))
@@ -4723,6 +4749,8 @@ iNZScatterMod <- setRefClass(
                                           }
                                           updateEverything()
                                       })
+                    addHandlerChanged(palCat, handler = function(h, ...) updateEverything())
+                    addHandlerChanged(palCont, handler = function(h, ...) updateEverything())
                 }
             }
 
