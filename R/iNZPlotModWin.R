@@ -4399,11 +4399,10 @@ iNZScatterMod <- setRefClass(
             ## PLOT TYPE
             lbl <- glabel("Plot type :")
             
-            # plotTypes <- c("default", "scatter plot", "grid-density plot", "hexbin plot")
             PLOTTYPES <- list(default = "default",
-                              scatter = "scatter plot",
-                              grid    = "grid-density plot",
-                              hex     = "hexagonal binning plot")
+                              scatter = "scatter",
+                              grid    = "grid-density",
+                              hex     = "hexagonal binning")
             
             plotTypes <- do.call(c, PLOTTYPES)
             plotTypeValues <- names(PLOTTYPES)
@@ -4413,9 +4412,14 @@ iNZScatterMod <- setRefClass(
                 )
             
             addHandlerChanged(plotTypeList, handler = function(h, ...) {
-                GUI$getActiveDoc()$setSettings(
-                    list(plottype = plotTypeValues[[svalue(plotTypeList, index = TRUE)]])
-                    )
+                newSet <- list(plottype = plotTypeValues[[svalue(plotTypeList, index = TRUE)]])
+                if (svalue(plotTypeList) == PLOTTYPES[["hex"]]) {
+                    if (is.numeric(curSet$colby)) {
+                        newSet <- c(newSet, list(colby = NULL,
+                                                 varnames = list(colby = NULL)))
+                    }
+                }
+                GUI$getActiveDoc()$setSettings(newSet)
                 updateSettings()
 
                 plType <- svalue(plotTypeList, index = TRUE)
@@ -4471,8 +4475,9 @@ iNZScatterMod <- setRefClass(
 
                 ## SIZE BY
                 lbl <- glabel("Resize points by :")
+                sizeVarNames <- names(GUI$getActiveData())[sapply(GUI$getActiveData(), is.numeric)]
                 sizeVar <-
-                    gcombobox(c("", sizeVarNames <- names(GUI$getActiveData())[sapply(GUI$getActiveData(), is.numeric)]),
+                    gcombobox(c("", sizeVarNames),
                               selected = ifelse(
                                   is.null(curSet$sizeby),
                                   1, which(sizeVarNames == curSet$varnames$sizeby)[1] + 1
@@ -4583,8 +4588,15 @@ iNZScatterMod <- setRefClass(
                 ## dropdown for colour palette
                 palCont <- gcombobox(names(colourPalettes$cont))
                 palCat <- gcombobox(names(colourPalettes$cat))
-                tbl[ptColROW, 3:6, expand = TRUE] <- palCont
-                tbl[ptColROW, 3:6, expand = TRUE] <- palCat
+                palAdvanced <- gimagebutton(filename = system.file("images/gear.png",
+                                                                   package = "iNZight"),
+                                            size = "button",
+                                            handler = function(h, ...) {
+                                                gmessage("Advanced colour palette options ...")
+                                            })
+                tbl[ptColROW, 3:5, expand = TRUE] <- palCont
+                tbl[ptColROW, 3:5, expand = TRUE] <- palCat
+                tbl[ptColROW, 6, anchor = c(0, 0)] <- palAdvanced
 
                 if (!is.null(curSet$colby)) {
                     ## already set - need to match
@@ -4596,9 +4608,8 @@ iNZScatterMod <- setRefClass(
                     } else {
                         visible(palCont) <- FALSE
                     }
-                    
                 } else {
-                    visible(palCont) <- visible(palCat) <- FALSE
+                    visible(palAdvanced) <- visible(palCont) <- visible(palCat) <- FALSE
                 }
             }
 
@@ -4615,9 +4626,18 @@ iNZScatterMod <- setRefClass(
                 tbl[ii,  1:6, anchor = c(-1, 0), expand = TRUE] <- sectionTitle("Point Symbol")
                 ii <- ii + 1
 
-                
+                ## MATCH SYMBOL and COLOUR BY
+                pchMatch <- gcheckbox("Match with colour variable",
+                                      selected = FALSE)#curSet$match.pch)
+                tbl[ii, 1:6, anchor = c(1, 0)] <- pchMatch
+                ii <- ii + 1
+                enabled(pchMatch) <- FALSE
 
-
+                lbl <- glabel("Symbol :")
+                symPch <- gspinbutton(1, 6)
+                tbl[ii, 1:2] <- lbl
+                tbl[ii, 3:6] <- symPch
+                ii <- ii + 1
             }
             
             updateEverything <- function(update = auto) {
@@ -4673,6 +4693,11 @@ iNZScatterMod <- setRefClass(
                             else
                                 curSet$col.pt
                     }
+                }
+
+                ## Plotting Symbol
+                if (PLOTTYPE == "scatter") {
+                    newSet$pch <- svalue(symPch)
                 }
                 
             ##     pch.sel <- ifelse(svalue(fillColor) | svalue(transpSlider) > 0,
@@ -4753,7 +4778,8 @@ iNZScatterMod <- setRefClass(
                     addHandlerChanged(colVar, handler = function(h, ...) {
                                           if (svalue(h$obj, index = TRUE) == 1) {
                                               svalue(colLabel) <- "Point colour :"
-                                              visible(palCont) <- visible(palCat) <- FALSE
+                                              visible(palAdvanced) <- visible(palCont) <-
+                                                  visible(palCat) <- FALSE
                                               visible(ptCol) <- TRUE
                                           } else {
                                               svalue(colLabel) <- "Palette :"
@@ -4763,11 +4789,16 @@ iNZScatterMod <- setRefClass(
                                               } else {
                                                   visible(palCat) <- TRUE
                                               }
+                                              visible(palAdvanced) <- TRUE
                                           }
                                           updateEverything()
                                       })
                     addHandlerChanged(palCat, handler = function(h, ...) updateEverything())
                     addHandlerChanged(palCont, handler = function(h, ...) updateEverything())
+                }
+
+                if (PLOTTYPE == "scatter") {
+                    addHandlerChanged(symPch, handler = function(h, ...) updateEverything())
                 }
             }
 
