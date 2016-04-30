@@ -4454,7 +4454,8 @@ iNZScatterMod <- setRefClass(
             ##    Sizing method : [proportional, emphasize]                                 [s]
             ##                    (info text)
             ##     Overall size : 0------|-------------3                                    [s,h,g]
-            ## 
+            ##            Style : [size, alpha]                                             [h]
+            ##
             ## -----------------------------------------------------------------------------------
             if (PLOTTYPE == "scatter") {
                 tbl[ii,  1:6, anchor = c(-1, 0), expand = TRUE] <- sectionTitle("Point Size")
@@ -4521,13 +4522,22 @@ iNZScatterMod <- setRefClass(
                 ii <- ii + 1
             }
 
+            if (PLOTTYPE == "hex") {
+                lbl <- glabel("Style :")
+                hexStyles <- c("size", "alpha")
+                hexStyle <- gcombobox(hexStyles, selected = which(hexStyles == curSet$hex.style))
+                tbl[ii, 1:2, anchor = c(1, 0), expand = TRUE] <- lbl
+                tbl[ii, 3:6, expand = TRUE] <- hexStyle
+                ii <- ii + 1
+            }
+
             ii <- ii + 1
             ## ----- POINT COLOUR ----------------------------------------------------------------
             ##
-            ##        Colour by : [ { select variable } ]                                  [s]
+            ##        Colour by : [ { select variable } ]                                  [s,h]
             ##           Colour : [default->"grey50", black, white, ...]                   [s,h]
             ##         OR 
-            ##   Colour palette : [default->{num->divergent_hcl, cat->rainbow_hcl}, ...]   [s]
+            ##   Colour palette : [default->{num->divergent_hcl, cat->rainbow_hcl}, ...]   [s,h{cat_only}]
             ##         Advanced : [ { Manual colour button for cat }, { Adjust palette }]  [s]
             ##     Transparency : 0|-------------------1                                   [s,h,g]
             ##  [o] Fill symbol interior                                                   [s]
@@ -4551,13 +4561,17 @@ iNZScatterMod <- setRefClass(
                 tbl[ii, 3:6, expand = TRUE] <- ptCol
                 ptColROW <- ii  ## save for switching later
                 ii <- ii + 1
-            }
 
-            if (PLOTTYPE == "scatter") {
-                
+
+
+                ## Colour by
                 lbl <- glabel("Colour by :")
+                colVarNames <- names(GUI$getActiveData())
+                if (PLOTTYPE == "hex") {
+                    colVarNames <- colVarNames[sapply(GUI$getActiveData(), is.factor)]
+                }
                 colVar <-
-                    gcombobox(c("", colVarNames <- names(GUI$getActiveData())),
+                    gcombobox(c("", colVarNames),
                               selected = ifelse(
                                   is.null(curSet$colby),
                                   1, which(colVarNames == curSet$varnames$colby)[1] + 1
@@ -4635,10 +4649,12 @@ iNZScatterMod <- setRefClass(
                                          list(sizeby = svalue(sizeVar)))
                     newSet$resize.method <- svalue(sizeMethod)
                 }
+                if (PLOTTYPE == "hex")
+                    newSet <- c(newSet, list(hex.style = svalue(hexStyle)))
 
                 ## Colour
                 if (PLOTTYPE != "grid") {
-                    if (PLOTTYPE == "scatter" && svalue(colVar, TRUE) > 1) {
+                    if (svalue(colVar, TRUE) > 1) {
                         ## colouring by a variable - and a palette
                         newSet$colby <- GUI$getActiveData()[[svalue(colVar)]]
                         newSet$varnames <- c(newSet$varnames,
@@ -4709,15 +4725,18 @@ iNZScatterMod <- setRefClass(
 
                 if (PLOTTYPE == "scatter") {
                     addHandlerChanged(sizeVar, handler = function(h, ...) {
-                                          visible(sizeDesc) <- visible(resizeLbl) <- visible(sizeMethod) <-
-                                              svalue(sizeVar, index = TRUE) > 1
-                                          
-                                          updateEverything()
-                                      })
+                        visible(sizeDesc) <- visible(resizeLbl) <- visible(sizeMethod) <-
+                            svalue(sizeVar, index = TRUE) > 1
+                        
+                        updateEverything()
+                    })
                     addHandlerChanged(sizeMethod, handler = function(h, ...) {
-                                          svalue(sizeDesc) <- paste(sizeDescs[[svalue(sizeMethod, index = TRUE)]])
-                                          updateEverything()
-                                      })
+                        svalue(sizeDesc) <- paste(sizeDescs[[svalue(sizeMethod, index = TRUE)]])
+                        updateEverything()
+                    })
+                }
+                if (PLOTTYPE == "hex") {
+                    addHandlerChanged(hexStyle, handler = function(h, ...) updateEverything())
                 }
 
                 if (PLOTTYPE != "grid") {
@@ -4731,8 +4750,6 @@ iNZScatterMod <- setRefClass(
                                                                       updateEverything()
                                                               }, one.shot = TRUE)
                                       })
-                }
-                if (PLOTTYPE == "scatter") {
                     addHandlerChanged(colVar, handler = function(h, ...) {
                                           if (svalue(h$obj, index = TRUE) == 1) {
                                               svalue(colLabel) <- "Point colour :"

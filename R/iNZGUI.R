@@ -1,9 +1,9 @@
 #' iNZight GUI Class
 #'
 #' Main class that builds the iNZight GUI
-#' @import methods utils grDevices
 #' @field iNZDocuments A list of documents containing data, plot settings, etc.
 #' @field activeDoc The numeric ID of the currently active document
+#' @import methods utils grDevices colorspace
 #' @export iNZGUI
 #' @exportClass iNZGUI
 iNZGUI <- setRefClass(
