@@ -25,7 +25,8 @@ iNZPlotModWin <- setRefClass(
         palettes = "list",
         bgColours = "list",
         pointColours = "list",
-        colourPalettes = "list"
+        colourPalettes = "list",
+        EMPH.LEVEL = "numeric"
         ),
     methods = list(
         initialize = function(gui = NULL, which = 1) {
@@ -70,7 +71,13 @@ iNZPlotModWin <- setRefClass(
                                          "blue/white/pink" = function(n)
                                              diverge_hcl(n, h = c(180, 330), c = 59, l = c(75, 95), power = 1.5),
                                          "blue/white/red" = function(n)
-                                             diverge_hcl(n, h = c(260, 0), c = 100, l = c(50, 90), power = 1))))
+                                             diverge_hcl(n, h = c(260, 0), c = 100, l = c(50, 90), power = 1)),
+                                emphasize = function(n, k) {
+                                    cols <- sequential_hcl(n, h = 49, c. = c(85, 75), l = c(69, 86), power = 0.6)
+                                    cols[k] <- "#6D150C"
+                                    cols
+                                }),
+                       EMPH.LEVEL = 0)
             if (!is.null(GUI)) {
                 updateSettings()
 
@@ -4413,12 +4420,12 @@ iNZScatterMod <- setRefClass(
             
             addHandlerChanged(plotTypeList, handler = function(h, ...) {
                 newSet <- list(plottype = plotTypeValues[[svalue(plotTypeList, index = TRUE)]])
-                if (svalue(plotTypeList) == PLOTTYPES[["hex"]]) {
-                    if (is.numeric(curSet$colby)) {
-                        newSet <- c(newSet, list(colby = NULL,
-                                                 varnames = list(colby = NULL)))
-                    }
-                }
+                #if (svalue(plotTypeList) == PLOTTYPES[["hex"]]) {
+                #    if (is.numeric(curSet$colby)) {
+                #        newSet <- c(newSet, list(colby = NULL,
+                #                                 varnames = list(colby = NULL)))
+                #    }
+                #}
                 GUI$getActiveDoc()$setSettings(newSet)
                 updateSettings()
 
@@ -4572,9 +4579,9 @@ iNZScatterMod <- setRefClass(
                 ## Colour by
                 lbl <- glabel("Colour by :")
                 colVarNames <- names(GUI$getActiveData())
-                if (PLOTTYPE == "hex") {
-                    colVarNames <- colVarNames[sapply(GUI$getActiveData(), is.factor)]
-                }
+                #if (PLOTTYPE == "hex") {
+                #    colVarNames <- colVarNames[sapply(GUI$getActiveData(), is.factor)]
+                #}
                 colVar <-
                     gcombobox(c("", colVarNames),
                               selected = ifelse(
@@ -4603,7 +4610,7 @@ iNZScatterMod <- setRefClass(
                     cval <- curSet$varnames$colby
                     svalue(colVar) <- cval
                     visible(ptCol) <- FALSE
-                    if (is.numeric(GUI$getActiveData()[[cval]])) {
+                    if (is.numeric(GUI$getActiveData()[[cval]]) & PLOTTYPE != "hex") {
                         visible(palCat) <- FALSE
                     } else {
                         visible(palCont) <- FALSE
@@ -4611,6 +4618,36 @@ iNZScatterMod <- setRefClass(
                 } else {
                     visible(palAdvanced) <- visible(palCont) <- visible(palCat) <- FALSE
                 }
+
+                ## Cycle through levels:
+                cycleLbl <- glabel("Cycle levels :")
+                cyclePanel <- ggroup()
+                addSpace(cyclePanel, 10)
+                cyclePrev <- gimagebutton(stock.id = "1leftarrow", container = cyclePanel,
+                                          handler = function(h, ...) {
+                                              nl <- length(levels(curSet$colby))
+                                              EMPH.LEVEL <<- ifelse(EMPH.LEVEL == 0, nl, EMPH.LEVEL - 1)
+                                              updateEverything()
+                                          })
+                cycleNext <- gimagebutton(stock.id = "1rightarrow", container = cyclePanel,
+                                          handler = function(h, ...) {
+                                              nl <- length(levels(curSet$colby))
+                                              EMPH.LEVEL <<- ifelse(EMPH.LEVEL == nl, 0, EMPH.LEVEL + 1)
+                                              updateEverything()
+                                          })
+                addSpace(cyclePanel, 20)
+                cycleStop <- gimagebutton(stock.id = "cancel", container = cyclePanel,
+                                          handler = function(h, ...) {
+                                              EMPH.LEVEL <<- 0
+                                              updateEverything()
+                                          })
+                if (!is.factor(curSet$colby)) {
+                    visible(cycleLbl) <- visible(cyclePanel) <- FALSE
+                }
+
+                tbl[ii, 1:2, anchor = c(1, 0), expand = TRUE] <- cycleLbl
+                tbl[ii, 3:6, expand = TRUE] <- cyclePanel
+                ii <- ii + 1
             }
 
             ii <- ii + 1
@@ -4676,12 +4713,17 @@ iNZScatterMod <- setRefClass(
                 if (PLOTTYPE != "grid") {
                     if (svalue(colVar, TRUE) > 1) {
                         ## colouring by a variable - and a palette
-                        newSet$colby <- GUI$getActiveData()[[svalue(colVar)]]
+                        newSet$colby <-
+                            if (PLOTTYPE == "hex") iNZightPlots::convert.to.factor(GUI$getActiveData()[[svalue(colVar)]])
+                            else GUI$getActiveData()[[svalue(colVar)]]
                         newSet$varnames <- c(newSet$varnames,
                                              list(colby = svalue(colVar)))
                         newSet$col.fun <-
                             if (is.numeric(newSet$colby)) colourPalettes$cont[[svalue(palCont)]]
+                            else if (EMPH.LEVEL > 0) function(n) colourPalettes$emphasize(n, k = EMPH.LEVEL)
                             else colourPalettes$cat[[svalue(palCat)]]
+
+                        visible(cycleLbl) <- visible(cyclePanel) <- is.factor(newSet$colby)
                     } else {
                         newSet$colby <- ""
                         newSet$varnames <- c(newSet$varnames, list(colby = NULL))
@@ -4692,6 +4734,8 @@ iNZScatterMod <- setRefClass(
                                 svalue(ptCol)
                             else
                                 curSet$col.pt
+
+                        visible(cycleLbl) <- visible(cyclePanel) <- FALSE
                     }
                 }
 
@@ -4776,6 +4820,7 @@ iNZScatterMod <- setRefClass(
                                                               }, one.shot = TRUE)
                                       })
                     addHandlerChanged(colVar, handler = function(h, ...) {
+                                          EMPH.LEVEL <<- 0
                                           if (svalue(h$obj, index = TRUE) == 1) {
                                               svalue(colLabel) <- "Point colour :"
                                               visible(palAdvanced) <- visible(palCont) <-
@@ -4784,7 +4829,8 @@ iNZScatterMod <- setRefClass(
                                           } else {
                                               svalue(colLabel) <- "Palette :"
                                               visible(ptCol) <- FALSE
-                                              if (is.numeric(GUI$getActiveData()[[svalue(h$obj)]])) {
+                                              if (is.numeric(GUI$getActiveData()[[svalue(h$obj)]]) &
+                                                  PLOTTYPE != "hex") {
                                                   visible(palCont) <- TRUE
                                               } else {
                                                   visible(palCat) <- TRUE
