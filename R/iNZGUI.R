@@ -260,7 +260,7 @@ iNZGUI <- setRefClass(
 
             ## Left side group
             leftMain <<- ggroup(container = g, expand = FALSE)
-            if (!popOut) size(leftMain) <<- c(200, -1)
+            if (!popOut) size(leftMain) <<- c(220, -1)
             gp1 <<- gvbox(container = leftMain, expand = TRUE)
 
             ## Right group
@@ -1180,7 +1180,7 @@ iNZGUI <- setRefClass(
             ## The default iNZight settings:
             list(track = "ask", track.id = NULL,
                  check.updates = TRUE,
-                 window.size = c(870, 600),
+                 window.size = c(1020, 700),
                  popout = FALSE)
         },
         checkPrefs = function(prefs) {

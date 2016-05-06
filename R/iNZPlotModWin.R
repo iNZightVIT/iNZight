@@ -72,11 +72,15 @@ iNZPlotModWin <- setRefClass(
                                              diverge_hcl(n, h = c(180, 330), c = 59, l = c(75, 95), power = 1.5),
                                          "blue/white/red" = function(n)
                                              diverge_hcl(n, h = c(260, 0), c = 100, l = c(50, 90), power = 1)),
-                                emphasize = function(n, k, fn = inzpar()$col.default$cat) {
-                                    ##cols <- sequential_hcl(n, h = 49, c. = c(85, 75), l = c(69, 86), power = 0.6)
+                                emphasize = function(n, k, cat = TRUE, ncat = 5,
+                                                     fn = if (cat) inzpar()$col.default$cat else inzpar()$col.default$cont) {
                                     cols <- fn(n)
+                                    if (!cat) {
+                                        ks <- floor(seq(1, n, length = ncat + 1))
+                                        k <- ks[k]:ks[k+1]
+                                    }
                                     cols[k] <- iNZightPlots:::darken(cols[k], 0.6)
-                                    cols[-k] <- iNZightPlots:::shade(cols[-k], 0.5)
+                                    cols[-k] <- iNZightPlots:::shade(cols[-k], 0.7)
                                     cols
                                 }),
                        EMPH.LEVEL = 0)
@@ -4618,13 +4622,17 @@ iNZPlotMod <- setRefClass(
                 addSpace(cyclePanel, 10)
                 cyclePrev <- gimagebutton(stock.id = "1leftarrow", container = cyclePanel,
                                           handler = function(h, ...) {
-                                              nl <- length(levels(curSet$colby))
+                                              nl <-
+                                                  if (is.factor(curSet$colby)) length(levels(curSet$colby))
+                                                  else svalue(cycleN)
                                               EMPH.LEVEL <<- ifelse(EMPH.LEVEL == 0, nl, EMPH.LEVEL - 1)
                                               updateEverything()
                                           })
                 cycleNext <- gimagebutton(stock.id = "1rightarrow", container = cyclePanel,
                                           handler = function(h, ...) {
-                                              nl <- length(levels(curSet$colby))
+                                              nl <-
+                                                  if (is.factor(curSet$colby)) length(levels(curSet$colby))
+                                                  else svalue(cycleN)
                                               EMPH.LEVEL <<- ifelse(EMPH.LEVEL == nl, 0, EMPH.LEVEL + 1)
                                               updateEverything()
                                           })
@@ -4635,10 +4643,17 @@ iNZPlotMod <- setRefClass(
                                               EMPH.LEVEL <<- 0
                                               updateEverything()
                                           })
-                if (!is.factor(curSet$colby)) {
-                    visible(cycleLbl) <- visible(cyclePanel) <- FALSE
-                }
+                addSpace(cyclePanel, 40)
+                cycleNlab <- glabel("N quantiles :", container = cyclePanel)
+                font(cycleNlab) <- list(size = 9)
+                cycleN <- gspinbutton(4, 10, by = 1, container = cyclePanel)
 
+                visible(cycleLbl) <- visible(cyclePanel) <- !is.null(curSet$colby)
+                if (is.numeric(curSet$colby)) {
+                    visible(cycleNlab) <- visible(cycleN) <- TRUE
+                    svalue(cycleLbl) <- "Cycle quantiles :"
+                }
+                
                 tbl[ii, 1:2, anchor = c(1, 0), expand = TRUE] <- cycleLbl
                 tbl[ii, 3:6, expand = TRUE] <- cyclePanel
                 ii <- ii + 1
@@ -4705,9 +4720,16 @@ iNZPlotMod <- setRefClass(
                 if (length(symVars) >= 1) {
                     tbl[ii, 1:2, anchor = c(1, 0), expand = TRUE] <- lbl
                     tbl[ii, 3:6] <- symVar
+                    ii <- ii + 1
                 }
-
+                
                 enabled(symVar) <- enabled(symPch) <- !svalue(pchMatch)
+
+                ## Fill Symbols
+                fillSym <- gcheckbox("Fill symbol interior", checked = curSet$fill.pt == "fill")
+                enabled(fillSym) <- svalue(transpSlider) == 0
+                tbl[ii, 3:6, anchor = c(-1, 0)] <- fillSym
+                ii <- ii + 1
             }
             
             updateEverything <- function(update = auto) {
@@ -4752,11 +4774,19 @@ iNZPlotMod <- setRefClass(
                         newSet$varnames <- c(newSet$varnames,
                                              list(colby = svalue(colVar)))
                         newSet$col.fun <-
-                            if (is.numeric(newSet$colby)) colourPalettes$cont[[svalue(palCont)]]
-                            else if (EMPH.LEVEL > 0) function(n) colourPalettes$emphasize(n, k = EMPH.LEVEL)
+                            if (EMPH.LEVEL > 0)
+                                function(n)
+                                    colourPalettes$emphasize(n, k = EMPH.LEVEL, cat = is.factor(newSet$colby),
+                                                             ncat = svalue(cycleN),
+                                                             fn = if (is.numeric(newSet$colby))
+                                                                      colourPalettes$cont[[svalue(palCont)]]
+                                                                  else colourPalettes$cat[[svalue(palCat)]])
+                            else if (is.numeric(newSet$colby)) colourPalettes$cont[[svalue(palCont)]]
                             else colourPalettes$cat[[svalue(palCat)]]
-
-                        visible(cycleLbl) <- visible(cyclePanel) <- is.factor(newSet$colby)
+                        
+                        visible(cycleLbl) <- visible(cyclePanel) <- TRUE
+                        visible(cycleNlab) <- visible(cycleN) <- is.numeric(newSet$colby)
+                        svalue(cycleLbl) <- ifelse(visible(cycleN), "Cycle quantiles :", "Cycle levels :")
                     } else {
                         newSet <- c(newSet, list(colby = NULL))
                         newSet$varnames <- c(newSet$varnames, list(colby = NULL))
@@ -4789,6 +4819,7 @@ iNZPlotMod <- setRefClass(
                         newSet$varnames$symbolby <- svalue(symVar)
                     }
                     newSet$pch <- symVals[svalue(symPch, index = TRUE)]
+                    newSet$fill.pt <- ifelse(svalue(fillSym), "fill", "transparent")
                 }
                 
             ##     pch.sel <- ifelse(svalue(fillColor) | svalue(transpSlider) > 0,
@@ -4879,8 +4910,10 @@ iNZPlotMod <- setRefClass(
                                               visible(ptCol) <- FALSE
                                               if (is.numeric(GUI$getActiveData()[[svalue(h$obj)]]) &
                                                   PLOTTYPE != "hex") {
+                                                  visible(palCat) <- FALSE
                                                   visible(palCont) <- TRUE
                                               } else {
+                                                  visible(palCont) <- FALSE
                                                   visible(palCat) <- TRUE
                                               }
                                               visible(palAdvanced) <- TRUE
@@ -4894,6 +4927,7 @@ iNZPlotMod <- setRefClass(
                     transptimer <- NULL
                     addHandlerChanged(transpSlider,
                                       handler = function(h, ...) {
+                                          enabled(fillSym) <- svalue(transpSlider) == 0
                                           if (!is.null(transptimer))
                                               transptimer$stop_timer()
                                           transptimer <- gtimer(500, function(...) updateEverything(), one.shot = TRUE)
@@ -4907,6 +4941,7 @@ iNZPlotMod <- setRefClass(
                                       })
                     addHandlerChanged(symPch, handler = function(h, ...) updateEverything())
                     addHandlerChanged(symVar, handler = function(h, ...) updateEverything())
+                    addHandlerChanged(fillSym, handler = function(h, ...) updateEverything())
                 }
             }
 
