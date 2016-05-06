@@ -43,7 +43,7 @@ iNZPlotModWin <- setRefClass(
                            list(default = "grey50",
                                 darkgrey = "grey20",
                                 lightgrey = "grey80",
-                                blue = "blue",
+                                blue = "#004b85",
                                 red = "red",
                                 green = "green4"),
                        colourPalettes =
@@ -72,9 +72,11 @@ iNZPlotModWin <- setRefClass(
                                              diverge_hcl(n, h = c(180, 330), c = 59, l = c(75, 95), power = 1.5),
                                          "blue/white/red" = function(n)
                                              diverge_hcl(n, h = c(260, 0), c = 100, l = c(50, 90), power = 1)),
-                                emphasize = function(n, k) {
-                                    cols <- sequential_hcl(n, h = 49, c. = c(85, 75), l = c(69, 86), power = 0.6)
-                                    cols[k] <- "#6D150C"
+                                emphasize = function(n, k, fn = inzpar()$col.default$cat) {
+                                    ##cols <- sequential_hcl(n, h = 49, c. = c(85, 75), l = c(69, 86), power = 0.6)
+                                    cols <- fn(n)
+                                    cols[k] <- iNZightPlots:::darken(cols[k], 0.6)
+                                    cols[-k] <- iNZightPlots:::shade(cols[-k], 0.5)
                                     cols
                                 }),
                        EMPH.LEVEL = 0)
@@ -4353,8 +4355,8 @@ iNZHexbinMod <- setRefClass(
 
 
 
-iNZScatterMod <- setRefClass(
-    "iNZScatterMod",
+iNZPlotMod <- setRefClass(
+    "iNZPlotMod",
     contains = "iNZPlotModWin",
     methods = list(
         initialize = function(GUI, which = 1) {
@@ -4390,8 +4392,8 @@ iNZScatterMod <- setRefClass(
 
             ## Default settings
             defts <- iNZightPlots:::inzpar()
-            TYPE <- curSet$plottype  # GUI$plotType
-            PLOTTYPE <- GUI$plotType
+            TYPE <- #curSet$plottype  # GUI$plotType
+                PLOTTYPE <- GUI$plotType
             
             ## ----- GENERAL APPEARANCE ----------------------------------------------------------
             ##
@@ -4406,7 +4408,7 @@ iNZScatterMod <- setRefClass(
             ## PLOT TYPE
             lbl <- glabel("Plot type :")
             
-            PLOTTYPES <- list(default = "default",
+            PLOTTYPES <- list(#default = "default",
                               scatter = "scatter",
                               grid    = "grid-density",
                               hex     = "hexagonal binning")
@@ -4420,18 +4422,12 @@ iNZScatterMod <- setRefClass(
             
             addHandlerChanged(plotTypeList, handler = function(h, ...) {
                 newSet <- list(plottype = plotTypeValues[[svalue(plotTypeList, index = TRUE)]])
-                #if (svalue(plotTypeList) == PLOTTYPES[["hex"]]) {
-                #    if (is.numeric(curSet$colby)) {
-                #        newSet <- c(newSet, list(colby = NULL,
-                #                                 varnames = list(colby = NULL)))
-                #    }
-                #}
                 GUI$getActiveDoc()$setSettings(newSet)
                 updateSettings()
 
                 plType <- svalue(plotTypeList, index = TRUE)
                 if (curSet$plottype != TYPE) {
-                    iNZScatterMod$new(GUI, which = 1)
+                    iNZPlotMod$new(GUI, which = 1)
                 }
             })
             
@@ -4563,8 +4559,7 @@ iNZScatterMod <- setRefClass(
                 ptCols <- do.call(c, pointColours)
                 ptCol <- gcombobox(names(pointColours), selected = 1, editable = TRUE)
                 if (curSet$col.pt %in% ptCols)
-                    if (which(ptCols == curSet$col.pt)[1] > 1)
-                        svalue(ptCol) <- curSet$col.pt
+                    svalue(ptCol) <- names(pointColours)[which(ptCols %in% curSet$col.pt)[1]]
                 
                 colLabel <- glabel(switch(PLOTTYPE,
                                      "scatter" = "Point colour :",
@@ -4573,8 +4568,6 @@ iNZScatterMod <- setRefClass(
                 tbl[ii, 3:6, expand = TRUE] <- ptCol
                 ptColROW <- ii  ## save for switching later
                 ii <- ii + 1
-
-
 
                 ## Colour by
                 lbl <- glabel("Colour by :")
@@ -4636,7 +4629,8 @@ iNZScatterMod <- setRefClass(
                                               updateEverything()
                                           })
                 addSpace(cyclePanel, 20)
-                cycleStop <- gimagebutton(stock.id = "cancel", container = cyclePanel,
+                cycleStop <- gimagebutton(filename = system.file("images/icon-undo.png", package = "iNZight"),
+                                          container = cyclePanel,
                                           handler = function(h, ...) {
                                               EMPH.LEVEL <<- 0
                                               updateEverything()
@@ -4648,6 +4642,14 @@ iNZScatterMod <- setRefClass(
                 tbl[ii, 1:2, anchor = c(1, 0), expand = TRUE] <- cycleLbl
                 tbl[ii, 3:6, expand = TRUE] <- cyclePanel
                 ii <- ii + 1
+            }
+
+            if (PLOTTYPE == "scatter") {
+                lbl <- glabel("Transparency :")
+                transpSlider <- gslider(from = 0, to = 100,
+                                        by = 1, value = 100 * (1 - curSet$alpha))
+                tbl[ii, 1:2, anchor = c(1, 0), expand = TRUE] <- lbl
+                tbl[ii, 3:6, expand = TRUE] <- transpSlider
             }
 
             ii <- ii + 1
@@ -4666,15 +4668,46 @@ iNZScatterMod <- setRefClass(
                 ## MATCH SYMBOL and COLOUR BY
                 pchMatch <- gcheckbox("Match with colour variable",
                                       selected = FALSE)#curSet$match.pch)
-                tbl[ii, 1:6, anchor = c(1, 0)] <- pchMatch
+                tbl[ii, 1:6, anchor = c(-1, 0)] <- pchMatch
                 ii <- ii + 1
-                enabled(pchMatch) <- FALSE
+                
+                pchMsg <- glabel("(requires categorical variable with 5 or fewer levels)")
+                font(pchMsg) <- list(size = 8)
+                tbl[ii, 1:6, anchor = c(-1, 0), expand = TRUE] <- pchMsg
+                ii <- ii + 1
+
+                symbolMatch <- function() {
+                    visible(pchMsg) <- visible(pchMatch) <- svalue(colVar, TRUE) > 1
+                    if (visible(pchMatch)) {
+                        enabled(pchMatch) <- length(levels(GUI$getActiveData()[[svalue(colVar)]])) %in% 1:5
+                        visible(pchMsg) <- !enabled(pchMatch)
+                    }
+                }
+                symbolMatch()
+                
 
                 lbl <- glabel("Symbol :")
-                symPch <- gspinbutton(1, 6)
-                tbl[ii, 1:2] <- lbl
+                symbolList <- list(circle = 21,
+                                   square = 22,
+                                   diamond = 23,
+                                   triangle = 24,
+                                   'inverted triangle' = 25)
+                symVals <- do.call(c, symbolList) 
+                symPch <- gcombobox(names(symbolList), selected = 1)
+                if (curSet$pch %in% symVals) svalue(symPch, TRUE) <- which(symVals == curSet$pch)
+                tbl[ii, 1:2, anchor = c(1, 0), expand = TRUE] <- lbl
                 tbl[ii, 3:6] <- symPch
                 ii <- ii + 1
+
+                symVars <- colnames(GUI$getActiveData())[sapply(GUI$getActiveData(), function(x) length(levels(x)) %in% 1:5)]
+                lbl <- glabel("Symbol by :")
+                symVar <- gcombobox(c("", symVars), selected = 1)
+                if (length(symVars) >= 1) {
+                    tbl[ii, 1:2, anchor = c(1, 0), expand = TRUE] <- lbl
+                    tbl[ii, 3:6] <- symVar
+                }
+
+                enabled(symVar) <- enabled(symPch) <- !svalue(pchMatch)
             }
             
             updateEverything <- function(update = auto) {
@@ -4725,7 +4758,7 @@ iNZScatterMod <- setRefClass(
 
                         visible(cycleLbl) <- visible(cyclePanel) <- is.factor(newSet$colby)
                     } else {
-                        newSet$colby <- ""
+                        newSet <- c(newSet, list(colby = NULL))
                         newSet$varnames <- c(newSet$varnames, list(colby = NULL))
                         newSet$col.pt <- 
                             if (svalue(ptCol) %in% names(pointColours))
@@ -4738,10 +4771,24 @@ iNZScatterMod <- setRefClass(
                         visible(cycleLbl) <- visible(cyclePanel) <- FALSE
                     }
                 }
+                if (PLOTTYPE == "scatter") {
+                    newSet$alpha <- 1 - svalue(transpSlider) / 100
+                }
 
                 ## Plotting Symbol
                 if (PLOTTYPE == "scatter") {
-                    newSet$pch <- svalue(symPch)
+                    newSet <- c(newSet, list(symbolby = NULL))
+                    newSet$varnames <- c(newSet$varnames, list(symbolby = NULL))
+                    if (svalue(pchMatch) & !is.null(newSet$colby)) {
+                        if (length(levels(newSet$colby)) %in% 1:5) {
+                            newSet$symbolby <- newSet$colby
+                            newSet$varnames$symbolby = newSet$varnames$colby
+                        }
+                    } else if (svalue(symVar, TRUE) > 1) {
+                        newSet$symbolby <- GUI$getActiveData()[[svalue(symVar)]]
+                        newSet$varnames$symbolby <- svalue(symVar)
+                    }
+                    newSet$pch <- symVals[svalue(symPch, index = TRUE)]
                 }
                 
             ##     pch.sel <- ifelse(svalue(fillColor) | svalue(transpSlider) > 0,
@@ -4821,6 +4868,7 @@ iNZScatterMod <- setRefClass(
                                       })
                     addHandlerChanged(colVar, handler = function(h, ...) {
                                           EMPH.LEVEL <<- 0
+                                          if (PLOTTYPE == "scatter") symbolMatch()
                                           if (svalue(h$obj, index = TRUE) == 1) {
                                               svalue(colLabel) <- "Point colour :"
                                               visible(palAdvanced) <- visible(palCont) <-
@@ -4842,9 +4890,23 @@ iNZScatterMod <- setRefClass(
                     addHandlerChanged(palCat, handler = function(h, ...) updateEverything())
                     addHandlerChanged(palCont, handler = function(h, ...) updateEverything())
                 }
+                if (PLOTTYPE == "scatter") {
+                    transptimer <- NULL
+                    addHandlerChanged(transpSlider,
+                                      handler = function(h, ...) {
+                                          if (!is.null(transptimer))
+                                              transptimer$stop_timer()
+                                          transptimer <- gtimer(500, function(...) updateEverything(), one.shot = TRUE)
+                                      })
+                }
 
                 if (PLOTTYPE == "scatter") {
+                    addHandlerChanged(pchMatch, handler = function(h, ...) {
+                                          enabled(symVar) <- enabled(symPch) <- !svalue(pchMatch)
+                                          updateEverything()
+                                      })
                     addHandlerChanged(symPch, handler = function(h, ...) updateEverything())
+                    addHandlerChanged(symVar, handler = function(h, ...) updateEverything())
                 }
             }
 
