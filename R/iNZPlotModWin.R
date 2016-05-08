@@ -4643,8 +4643,8 @@ iNZPlotMod <- setRefClass(
                                               EMPH.LEVEL <<- 0
                                               updateEverything()
                                           })
-                addSpace(cyclePanel, 40)
-                cycleNlab <- glabel("N quantiles :", container = cyclePanel)
+                addSpace(cyclePanel, 20)
+                cycleNlab <- glabel("# quantiles :", container = cyclePanel)
                 font(cycleNlab) <- list(size = 9)
                 cycleN <- gspinbutton(4, 10, by = 1, container = cyclePanel)
 
@@ -4783,6 +4783,19 @@ iNZPlotMod <- setRefClass(
                                                                   else colourPalettes$cat[[svalue(palCat)]])
                             else if (is.numeric(newSet$colby)) colourPalettes$cont[[svalue(palCont)]]
                             else colourPalettes$cat[[svalue(palCat)]]
+
+                        newSet$plot.features <- list(order.first = NULL)
+                        if (EMPH.LEVEL > 0) {
+                            ## need to add "order.first" to plot features:
+                            if (is.factor(newSet$colby)) {
+                                newSet$plot.features <-
+                                    list(order.first = which(newSet$colby == levels(newSet$colby)[EMPH.LEVEL]))
+                            } else if (is.numeric(newSet$colby)) {
+                                Qs <- seq(min(newSet$colby, na.rm = TRUE), max(newSet$colby, na.rm = TRUE), length = svalue(cycleN) + 1)
+                                newSet$plot.features <-
+                                    list(order.first = which(newSet$colby >= Qs[EMPH.LEVEL] & newSet$colby < Qs[EMPH.LEVEL + 1]))
+                            }
+                        }
                         
                         visible(cycleLbl) <- visible(cyclePanel) <- TRUE
                         visible(cycleNlab) <- visible(cycleN) <- is.numeric(newSet$colby)
