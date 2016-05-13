@@ -96,7 +96,7 @@ iNZPlotModWin <- setRefClass(
                 mainGrp$set_borderwidth(5)
                 topGrp <- ggroup(horizontal = TRUE,
                                  container = mainGrp)
-                lbl <- glabel("I want to ")
+                lbl <- glabel("Add to Plot :")
                 font(lbl) <- list(weight="bold",
                                   family = "normal",
                                   size = 11)
@@ -2439,7 +2439,7 @@ iNZScatterMod.old<- setRefClass(
                 ## smoother option
                 qsmth <-
                     if (svalue(quantSmthChk))
-                        if (svalue(smthChk))"default" else NULL
+                        if (svalue(smthChk)) "default" else NULL
                     else NULL
                 smth <- ifelse(svalue(smthChk) & is.null(qsmth),
                                svalue(smthSlid),
@@ -4368,9 +4368,9 @@ iNZPlotMod <- setRefClass(
             ## need to specify the methods that we want to use in
             ## do.call later on (see changeOpts())
             pageMethods <<- list("Customise Plot Appearance" = appearance,
-                                "Add Lines and Axis Features" = features,
-                                "Identify Points" = identify,
-                                "Adjust Axis Limits and Labels" = axes,
+                                 "Trend Lines and Curves" = features,
+                                 "Axes and Labels" = axes,
+                                 "Identify Points" = identify,
                                 iNZLocatePoints)
             ## do.call(usingMethods, pageMethods)
             usingMethods(appearance, features, identify, axes, iNZLocatePoints)
@@ -4665,6 +4665,15 @@ iNZPlotMod <- setRefClass(
                                         by = 1, value = 100 * (1 - curSet$alpha))
                 tbl[ii, 1:2, anchor = c(1, 0), expand = TRUE] <- lbl
                 tbl[ii, 3:6, expand = TRUE] <- transpSlider
+                ii <- ii + 1
+
+                transpWarning <- glabel(paste("WARNING: adding transparency may cause iNZight to freeze",
+                                              "when using diamond or triangle symbols on large data sets.",
+                                              sep = "\n"))
+                font(transpWarning) <- list(size = 9)
+                tbl[ii, 1:6, anchor = c(1, 0), expand = TRUE] <- transpWarning
+                visible(transpWarning) <- FALSE
+                ii <- ii + 1
             }
 
             ii <- ii + 1
@@ -4710,6 +4719,7 @@ iNZPlotMod <- setRefClass(
                 symVals <- do.call(c, symbolList) 
                 symPch <- gcombobox(names(symbolList), selected = 1)
                 if (curSet$pch %in% symVals) svalue(symPch, TRUE) <- which(symVals == curSet$pch)
+                visible(transpWarning) <- svalue(symPch, index = TRUE) %in% c(3:5)
                 tbl[ii, 1:2, anchor = c(1, 0), expand = TRUE] <- lbl
                 tbl[ii, 3:6] <- symPch
                 ii <- ii + 1
@@ -4769,19 +4779,24 @@ iNZPlotMod <- setRefClass(
                     if (svalue(colVar, TRUE) > 1) {
                         ## colouring by a variable - and a palette
                         newSet$colby <-
-                            if (PLOTTYPE == "hex") iNZightPlots::convert.to.factor(GUI$getActiveData()[[svalue(colVar)]])
+                            if (PLOTTYPE == "hex")
+                                iNZightPlots::convert.to.factor(
+                                    GUI$getActiveData()[[svalue(colVar)]])
                             else GUI$getActiveData()[[svalue(colVar)]]
                         newSet$varnames <- c(newSet$varnames,
                                              list(colby = svalue(colVar)))
                         newSet$col.fun <-
                             if (EMPH.LEVEL > 0)
                                 function(n)
-                                    colourPalettes$emphasize(n, k = EMPH.LEVEL, cat = is.factor(newSet$colby),
-                                                             ncat = svalue(cycleN),
-                                                             fn = if (is.numeric(newSet$colby))
-                                                                      colourPalettes$cont[[svalue(palCont)]]
-                                                                  else colourPalettes$cat[[svalue(palCat)]])
-                            else if (is.numeric(newSet$colby)) colourPalettes$cont[[svalue(palCont)]]
+                                    colourPalettes$emphasize(
+                                        n, k = EMPH.LEVEL, cat = is.factor(newSet$colby),
+                                        ncat = svalue(cycleN),
+                                        fn = if (is.numeric(newSet$colby))
+                                                 colourPalettes$cont[[svalue(palCont)]]
+                                             else colourPalettes$cat[[svalue(palCat)]]
+                                    )
+                            else if (is.numeric(newSet$colby))
+                                colourPalettes$cont[[svalue(palCont)]]
                             else colourPalettes$cat[[svalue(palCat)]]
 
                         newSet$plot.features <- list(order.first = NULL)
@@ -4789,24 +4804,30 @@ iNZPlotMod <- setRefClass(
                             ## need to add "order.first" to plot features:
                             if (is.factor(newSet$colby)) {
                                 newSet$plot.features <-
-                                    list(order.first = which(newSet$colby == levels(newSet$colby)[EMPH.LEVEL]))
+                                    list(order.first = which(newSet$colby ==
+                                                             levels(newSet$colby)[EMPH.LEVEL]))
                             } else if (is.numeric(newSet$colby)) {
-                                Qs <- seq(min(newSet$colby, na.rm = TRUE), max(newSet$colby, na.rm = TRUE), length = svalue(cycleN) + 1)
+                                Qs <- seq(min(newSet$colby, na.rm = TRUE),
+                                          max(newSet$colby, na.rm = TRUE),
+                                          length = svalue(cycleN) + 1)
                                 newSet$plot.features <-
-                                    list(order.first = which(newSet$colby >= Qs[EMPH.LEVEL] & newSet$colby < Qs[EMPH.LEVEL + 1]))
+                                    list(order.first = which(newSet$colby >= Qs[EMPH.LEVEL] &
+                                                             newSet$colby < Qs[EMPH.LEVEL + 1]))
                             }
                         }
                         
                         visible(cycleLbl) <- visible(cyclePanel) <- TRUE
                         visible(cycleNlab) <- visible(cycleN) <- is.numeric(newSet$colby)
-                        svalue(cycleLbl) <- ifelse(visible(cycleN), "Cycle quantiles :", "Cycle levels :")
+                        svalue(cycleLbl) <- ifelse(visible(cycleN),
+                                                   "Cycle quantiles :", "Cycle levels :")
                     } else {
                         newSet <- c(newSet, list(colby = NULL))
                         newSet$varnames <- c(newSet$varnames, list(colby = NULL))
                         newSet$col.pt <- 
                             if (svalue(ptCol) %in% names(pointColours))
                                 pointColours[[svalue(ptCol, index = TRUE)]]
-                            else if (!inherits(try(col2rgb(svalue(ptCol)), silent = TRUE), "try-error"))
+                            else if (!inherits(try(col2rgb(svalue(ptCol)), silent = TRUE),
+                                               "try-error"))
                                 svalue(ptCol)
                             else
                                 curSet$col.pt
@@ -4952,7 +4973,19 @@ iNZPlotMod <- setRefClass(
                                           enabled(symVar) <- enabled(symPch) <- !svalue(pchMatch)
                                           updateEverything()
                                       })
-                    addHandlerChanged(symPch, handler = function(h, ...) updateEverything())
+                    addHandlerChanged(symPch, handler = function(h, ...) {
+                        if (svalue(symPch, index = TRUE) %in% c(3:5) && nrow(GUI$getActiveData()) > 2000) {
+                            ## TRANSPARENCY VERY SLOW!
+                            if (svalue(transpSlider) > 0) {
+                                gmessage("Transparency reset to zero.\n\nWARNING: drawing can be VERY slow if using transparent symbols that are NOT circles or squares.")
+                                blockHandlers(transpSlider)
+                                svalue(transpSlider) <- 0
+                                unblockHandlers(transpSlider)
+                            }                            
+                        }
+                        visible(transpWarning) <- svalue(symPch, index = TRUE) %in% c(3:5)
+                        updateEverything()
+                    })
                     addHandlerChanged(symVar, handler = function(h, ...) updateEverything())
                     addHandlerChanged(fillSym, handler = function(h, ...) updateEverything())
                 }
@@ -4967,9 +5000,106 @@ iNZPlotMod <- setRefClass(
             ii <- 3
             
             ## PLOT APPEARANCE
-            tbl[ii,  1:2, anchor = c(-1,-1), expand = TRUE] <- sectionTitle("Trend Curves")
+            tbl[ii,  1:6, anchor = c(-1,-1), expand = TRUE] <- sectionTitle("Trend Curves")
             ii <- ii + 1
 
+            lineColours <- c("red", "black", "blue", "green4",
+                             "yellow", "pink", "grey", "orange")
+
+            trendCurves <- c("linear", "quadratic", "cubic")
+            trendLin <- gcheckbox("linear", selected = "linear" %in% curSet$trend)
+            trendLinCol <- gcombobox(lineColours, editable = TRUE,
+                                     selected =
+                                         if (curSet$col.trend$linear %in% lineColours)
+                                             which(lineColours == curSet$col.trend$linear)
+                                         else 1)
+            tbl[ii, 1:3, anchor = c(-1, 0), expand = TRUE] <- trendLin
+            tbl[ii, 4:6] <- trendLinCol
+            ii <- ii + 1
+
+            trendQuad <- gcheckbox("quadratic", selected = "quadratic" %in% curSet$trend)
+            trendQuadCol <- gcombobox(lineColours, editable = TRUE,
+                                      selected =
+                                          if (curSet$col.trend$quadratic %in% lineColours)
+                                              which(lineColours == curSet$col.trend$quadratic)
+                                          else 1)
+            tbl[ii, 1:3, anchor = c(-1, 0), expand = TRUE] <- trendQuad
+            tbl[ii, 4:6] <- trendQuadCol
+            ii <- ii + 1
+
+            trendCub <- gcheckbox("cubic", selected = "cubic" %in% curSet$trend)
+            trendCubCol <- gcombobox(lineColours, editable = TRUE,
+                                      selected =
+                                          if (curSet$col.trend$cubic %in% lineColours)
+                                              which(lineColours == curSet$col.trend$cubic)
+                                          else 1)
+            tbl[ii, 1:3, anchor = c(-1, 0), expand = TRUE] <- trendCub
+            tbl[ii, 4:6] <- trendCubCol
+            ii <- ii + 1
+
+
+            ii <- ii + 1
+            tbl[ii,  1:6, anchor = c(-1,-1), expand = TRUE] <- sectionTitle("Smoother")
+            ii <- ii + 1
+
+            smooth <- gcheckbox("Add smoother",
+                                selected = curSet$smooth != 0 | !is.null(curSet$quant.smooth))
+            smoothCol <- gcombobox(lineColours, editable = TRUE,
+                                     selected =
+                                         if (curSet$col.smooth %in% lineColours)
+                                             which(lineColours == curSet$col.smooth)
+                                         else 1)
+            tbl[ii, 1:3, anchor = c(-1, 0), expand = TRUE] <- smooth
+            tbl[ii, 4:6] <- smoothCol
+            ii <- ii + 1
+
+            
+
+            updateEverything <- function(update = auto) {
+                ## To easily diable automatic updating of plot, add this argument,
+                ## otherwise would have to block/unblock handlers
+                ##     if (!update)
+                ##         return()
+
+                ## Things that don't need checking:
+                newSet <- list(trend = trendCurves[c(svalue(trendLin),
+                                                     svalue(trendQuad),
+                                                     svalue(trendCub))])
+                
+                ## Trend line colours - editable:
+                tCols <- curSet$col.trend
+                if (!inherits(try(col2rgb(svalue(trendLinCol)), silent = TRUE), "try-error"))
+                    tCols$linear <- svalue(trendLinCol)
+                if (!inherits(try(col2rgb(svalue(trendQuadCol)), silent = TRUE), "try-error"))
+                    tCols$quadratic <- svalue(trendQuadCol)
+                if (!inherits(try(col2rgb(svalue(trendCubCol)), silent = TRUE), "try-error"))
+                    tCols$cubic <- svalue(trendCubCol)
+                newSet$col.trend <- tCols
+
+                
+                GUI$getActiveDoc()$setSettings(newSet)
+                updateSettings()
+            }
+
+            if (TRUE) { ## if (auto) {
+                addHandlerChanged(trendLin, handler = function(h, ...) updateEverything())
+                addHandlerChanged(trendQuad, handler = function(h, ...) updateEverything())
+                addHandlerChanged(trendCub, handler = function(h, ...) updateEverything())
+
+                pLinColtimer <- NULL
+                addHandlerChanged(trendLinCol,
+                                  handler = function(h, ...) {
+                                      if (!is.null(pLinColtimer))
+                                          pLinColtimer$stop_timer()
+                                      pLinColtimer <- gtimer(500, function(...) {
+                                          if (nchar(svalue(trendLinCol)) >= 3)
+                                              updateEverything()
+                                      }, one.shot = TRUE)
+                                  })
+                addHandlerChanged(trendQuadCol, handler = function(h, ...) updateEverything())
+                addHandlerChanged(trendCubCol, handler = function(h, ...) updateEverything())
+            }            
+            
             add(optGrp, tbl)
         },
         identify = function() {
