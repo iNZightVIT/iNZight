@@ -151,6 +151,9 @@ iNZPlotModWin <- setRefClass(
                          parent = modWin)
                 return()
             }
+            ## remove random ordering of points ...
+            GUI$getActiveDoc()$setSettings(list(plot.features = list(order.first = -1)))
+            updateSettings()
             
             locSet <<- curSet$locate.settings
             
@@ -211,7 +214,8 @@ iNZPlotModWin <- setRefClass(
                                            locate.extreme = ext,
                                            locate.settings = locSet,
                                            highlight = highlight,
-                                           subtitle = subt)
+                                           subtitle = subt,
+                                           plot.features = list(order.first = -1))
                                   )
                 updateSettings()
             }
@@ -5003,7 +5007,7 @@ iNZPlotMod <- setRefClass(
             tbl[ii,  1:6, anchor = c(-1,-1), expand = TRUE] <- sectionTitle("Trend Curves")
             ii <- ii + 1
 
-            lineColours <- c("red", "black", "blue", "green4",
+            lineColours <- c("red", "black", "blue", "green4", "magenta",
                              "yellow", "pink", "grey", "orange")
 
             trendCurves <- c("linear", "quadratic", "cubic")
@@ -5043,16 +5047,87 @@ iNZPlotMod <- setRefClass(
             ii <- ii + 1
 
             smooth <- gcheckbox("Add smoother",
-                                selected = curSet$smooth != 0 | !is.null(curSet$quant.smooth))
+                                checked = curSet$smooth != 0 | !is.null(curSet$quant.smooth))
             smoothCol <- gcombobox(lineColours, editable = TRUE,
-                                     selected =
-                                         if (curSet$col.smooth %in% lineColours)
-                                             which(lineColours == curSet$col.smooth)
-                                         else 1)
+                                   selected =
+                                       if (curSet$col.smooth %in% lineColours)
+                                           which(lineColours == curSet$col.smooth)
+                                       else 1)
             tbl[ii, 1:3, anchor = c(-1, 0), expand = TRUE] <- smooth
             tbl[ii, 4:6] <- smoothCol
             ii <- ii + 1
 
+            qsmooth <- gcheckbox("Use Quantiles",
+                                 checked = !is.null(curSet$quant.smooth))
+            tbl[ii, 1:3, anchor = c(-1, 0), expand = TRUE] <- qsmooth
+
+            smoothF <- gslider(from = 0.1, to = 1, by = 0.01,
+                               value = ifelse(curSet$smooth == 0, 0.7, curSet$smooth))
+            tbl[ii, 4:6] <- smoothF
+            ii <- ii + 1
+
+            visible(qsmooth) <- visible(smoothF) <- svalue(smooth)
+            enabled(smoothF) <- !svalue(qsmooth)
+
+            ## join points
+            tbl[ii,  1:6, anchor = c(-1,-1), expand = TRUE] <- sectionTitle("Join Points")
+            ii <- ii + 1
+            
+            joinPoints <- gcheckbox("Join points by lines", checked = curSet$join)
+            joinPointsCol <- gcombobox(lineColours, editable = TRUE,
+                                       selected =
+                                           if (curSet$col.line %in% lineColours)
+                                               which(lineColours == curSet$col.line)
+                                           else 1)
+            tbl[ii, 1:3, anchor = c(-1, 0), expand = TRUE] <- joinPoints
+            tbl[ii, 4:6] <- joinPointsCol
+            ii <- ii + 1
+
+            if (is.factor(curSet$colby)) {
+                joinPointsBy <- gcheckbox(paste("For each level of", curSet$varnames$colby),
+                                          selected = curSet$lines.by)
+                tbl[ii, 1:6, anchor = c(-1, 0), expand = TRUE] <- joinPointsBy
+                ii <- ii + 1
+            }
+            
+            ## extra settings ...
+            tbl[ii,  1:6, anchor = c(-1,-1), expand = TRUE] <- sectionTitle("Trend Line Options")
+            ii <- ii + 1
+
+            ## For each level of COLBY
+            if (is.factor(curSet$colby)) {
+                trendBy <- gcheckbox(paste("For each level of", curSet$varnames$colby),
+                                     checked = curSet$trend.by)
+                trendParallel <- gcheckbox("Parallel trend lines (common slope)",
+                                           checked = curSet$trend.parallel)
+                tbl[ii, 1:6] <- trendBy
+                ii <- ii + 1
+                tbl[ii, 1:6] <- trendParallel
+                ii <- ii + 1
+            }
+            activateOptions <- function() {
+                if (is.factor(curSet$colby)) {
+                    enabled(joinPointsBy) <- svalue(joinPoints)
+                    enabled(joinPointsCol) <- !svalue(joinPointsBy)
+                    enabled(trendBy) <- svalue(trendLin) | svalue(trendQuad) | svalue(trendCub) |
+                        (svalue(smooth) & !svalue(qsmooth))
+                    enabled(trendParallel) <- svalue(trendBy) & enabled(trendBy)
+                    
+                    enabled(trendLinCol) <- enabled(trendQuadCol) <- enabled(trendCubCol) <-
+                        enabled(smoothCol) <- !(enabled(trendBy) & svalue(trendBy))
+                }
+            }
+            activateOptions()
+
+            lbl <- glabel("Line Width Multiplier :")
+            lwdSpin <- gspinbutton(1, 4, by = 1, value = curSet$lwd)
+            tbl[ii, 1:3, anchor = c(1, 0), expand = TRUE] <- lbl
+            tbl[ii, 4, anchor = c(-1, 0), expand = FALSE] <- lwdSpin
+            ii <- ii + 1
+
+            loe <- gcheckbox("Add line of equality (x = y)", checked = curSet$LOE)
+            tbl[ii, 1:6, anchor = c(-1, 0), expand = TRUE] <- loe
+            ii <- ii + 1
             
 
             updateEverything <- function(update = auto) {
@@ -5060,11 +5135,14 @@ iNZPlotMod <- setRefClass(
                 ## otherwise would have to block/unblock handlers
                 ##     if (!update)
                 ##         return()
+                activateOptions()
 
                 ## Things that don't need checking:
                 newSet <- list(trend = trendCurves[c(svalue(trendLin),
                                                      svalue(trendQuad),
-                                                     svalue(trendCub))])
+                                                     svalue(trendCub))],
+                               LOE = svalue(loe),
+                               join = svalue(joinPoints))
                 
                 ## Trend line colours - editable:
                 tCols <- curSet$col.trend
@@ -5076,6 +5154,27 @@ iNZPlotMod <- setRefClass(
                     tCols$cubic <- svalue(trendCubCol)
                 newSet$col.trend <- tCols
 
+                qsmth <- if (svalue(qsmooth) & svalue(smooth)) "default" else NULL
+                newSet <- c(newSet, list(quant.smooth = qsmth))
+                newSet$smooth <- ifelse(svalue(smooth) & is.null(qsmth),
+                                        svalue(smoothF), 0)
+
+                newSet$col.smooth <-
+                    if (!inherits(try(col2rgb(svalue(smoothCol)), silent = TRUE), "try-error"))
+                        svalue(smoothCol)
+                    else curSet$col.smooth
+
+                if (!inherits(try(col2rgb(svalue(joinPointsCol)), silent = TRUE), "try-error"))
+                    newSet$col.line <- svalue(joinPointsCol)
+
+                newSet$lines.by <- FALSE
+                if (is.factor(curSet$colby)) {
+                    newSet$trend.by <- svalue(trendBy)
+                    newSet$trend.parallel <- svalue(trendParallel)
+                    newSet$lines.by <- svalue(joinPointsBy)
+                }
+
+                newSet$lwd <- svalue(lwdSpin)
                 
                 GUI$getActiveDoc()$setSettings(newSet)
                 updateSettings()
@@ -5086,24 +5185,87 @@ iNZPlotMod <- setRefClass(
                 addHandlerChanged(trendQuad, handler = function(h, ...) updateEverything())
                 addHandlerChanged(trendCub, handler = function(h, ...) updateEverything())
 
-                pLinColtimer <- NULL
+                linColtimer <- NULL
                 addHandlerChanged(trendLinCol,
                                   handler = function(h, ...) {
-                                      if (!is.null(pLinColtimer))
-                                          pLinColtimer$stop_timer()
-                                      pLinColtimer <- gtimer(500, function(...) {
+                                      if (!is.null(linColtimer))
+                                          linColtimer$stop_timer()
+                                      linColtimer <- gtimer(500, function(...) {
                                           if (nchar(svalue(trendLinCol)) >= 3)
                                               updateEverything()
                                       }, one.shot = TRUE)
                                   })
-                addHandlerChanged(trendQuadCol, handler = function(h, ...) updateEverything())
-                addHandlerChanged(trendCubCol, handler = function(h, ...) updateEverything())
+                quadColtimer <- NULL
+                addHandlerChanged(trendQuadCol,
+                                  handler = function(h, ...) {
+                                      if (!is.null(quadColtimer))
+                                          quadColtimer$stop_timer()
+                                      quadColtimer <- gtimer(500, function(...) {
+                                          if (nchar(svalue(trendQuadCol)) >= 3)
+                                              updateEverything()
+                                      }, one.shot = TRUE)
+                                  })
+                cubColtimer <- NULL
+                addHandlerChanged(trendCubCol,
+                                  handler = function(h, ...) {
+                                      if (!is.null(cubColtimer))
+                                          cubColtimer$stop_timer()
+                                      cubColtimer <- gtimer(500, function(...) {
+                                          if (nchar(svalue(trendCubCol)) >= 3)
+                                              updateEverything()
+                                      }, one.shot = TRUE)
+                                  })
+
+                addHandlerChanged(smooth, function(h, ...) {
+                    visible(qsmooth) <- visible(smoothF) <- svalue(smooth)
+                    enabled(smoothF) <- !svalue(qsmooth)
+                    updateEverything()
+                })
+                addHandlerChanged(qsmooth, function(h, ...) {
+                    enabled(smoothF) <- !svalue(qsmooth)
+                    updateEverything()
+                })
+                smoothtimer <- NULL
+                addHandlerChanged(smoothF,
+                                  handler = function(h, ...) {
+                                      if (!is.null(smoothtimer))
+                                          smoothtimer$stop_timer()
+                                      smoothtimer <- gtimer(500, function(...) updateEverything(), one.shot = TRUE)
+                                  })
+                smoothColtimer <- NULL
+                addHandlerChanged(smoothCol,
+                                  handler = function(h, ...) {
+                                      if (!is.null(smoothColtimer))
+                                          smoothColtimer$stop_timer()
+                                      smoothColtimer <- gtimer(500, function(...) {
+                                          if (nchar(svalue(smoothCol)) >= 3)
+                                              updateEverything()
+                                      }, one.shot = TRUE)
+                                  })
+
+                addHandlerChanged(joinPoints, function(h, ...) updateEverything())
+                joinColtimer <- NULL
+                addHandlerChanged(joinPointsCol,
+                                  handler = function(h, ...) {
+                                      if (!is.null(joinColtimer))
+                                          joinColtimer$stop_timer()
+                                      joinColtimer <- gtimer(500, function(...) {
+                                          if (nchar(svalue(joinPointsCol)) >= 3)
+                                              updateEverything()
+                                      }, one.shot = TRUE)
+                                  })
+
+                if (is.factor(curSet$colby)) {
+                    addHandlerChanged(trendBy, function(h, ...) updateEverything())
+                    addHandlerChanged(trendParallel, function(h, ...) updateEverything())
+                    addHandlerChanged(joinPointsBy, function(h, ...) updateEverything())
+                }
+
+                addHandlerChanged(lwdSpin, function(h, ...) updateEverything())
+                addHandlerChanged(loe, function(h, ...) updateEverything())
             }            
             
             add(optGrp, tbl)
-        },
-        identify = function() {
-            iNZLocatePoints()
         },
         axes = function() {
             tbl <- glayout()
@@ -5113,7 +5275,12 @@ iNZPlotMod <- setRefClass(
             tbl[ii,  1:2, anchor = c(-1,-1), expand = TRUE] <- sectionTitle("Axis Labels")
             ii <- ii + 1
 
+            
+
             add(optGrp, tbl)
+        },
+        identify = function() {
+            iNZLocatePoints()
         },
         ## Code more variables
         opt1 = function() {
