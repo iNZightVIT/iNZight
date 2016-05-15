@@ -217,7 +217,7 @@ iNZPlotToolbar <- setRefClass(
                                    gmessage("Use the Add to Plot menu to add a trend(s) and/or smoother.",
                                             title = "No trend or smoother", parent = GUI$win)
                                else
-                                   GUI$getActiveDoc()$setSettings(list(bs.inference = TRUE))
+                                   GUI$getActiveDoc()$setSettings(list(bs.inference = !curSet$bs.inference))
                            })
 #            }
         })

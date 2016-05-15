@@ -103,13 +103,11 @@ iNZPlotModWin <- setRefClass(
                 radioGrp <<- ggroup(horizontal = FALSE,
                                     expand = TRUE)
                 
-                optGrp <<- ggroup(horizontal = FALSE, expand = TRUE)
+                optGrp <<- ggroup(horizontal = FALSE, expand = TRUE, use.scrollwindow = TRUE)
                 add(topGrp, lbl)
                 add(topGrp, radioGrp, expand = TRUE, fill = TRUE)
 
-                add(mainGrp, optGrp)
-
-                addSpring(mainGrp)
+                add(mainGrp, optGrp, expand = TRUE)
 
                 btnGrp <- ggroup(horizontal = TRUE,
                                  expand = FALSE)
@@ -4430,6 +4428,14 @@ iNZPlotMod <- setRefClass(
             
             addHandlerChanged(plotTypeList, handler = function(h, ...) {
                 newSet <- list(plottype = plotTypeValues[[svalue(plotTypeList, index = TRUE)]])
+                if (!is.null(curSet$colby)) {
+                    ## when switching scatter <-> hex, need to swtich numeric colby <-> factor colby
+                    newSet$colby <-
+                        if (newSet$plottype == "hex")
+                            iNZightPlots::convert.to.factor(curSet$colby)
+                        else
+                            GUI$getActiveData()[[curSet$varnames$colby]]
+                }
                 GUI$getActiveDoc()$setSettings(newSet)
                 updateSettings()
 
@@ -4654,8 +4660,9 @@ iNZPlotMod <- setRefClass(
 
                 visible(cycleLbl) <- visible(cyclePanel) <- !is.null(curSet$colby)
                 if (is.numeric(curSet$colby)) {
-                    visible(cycleNlab) <- visible(cycleN) <- TRUE
                     svalue(cycleLbl) <- "Cycle quantiles :"
+                } else {
+                    visible(cycleNlab) <- visible(cycleN) <- FALSE
                 }
                 
                 tbl[ii, 1:2, anchor = c(1, 0), expand = TRUE] <- cycleLbl
@@ -4671,8 +4678,8 @@ iNZPlotMod <- setRefClass(
                 tbl[ii, 3:6, expand = TRUE] <- transpSlider
                 ii <- ii + 1
 
-                transpWarning <- glabel(paste("WARNING: adding transparency may cause iNZight to freeze",
-                                              "when using diamond or triangle symbols on large data sets.",
+                transpWarning <- glabel(paste("Warning: transparency may freeze iNZight.  ",
+                                              "Use circle symbols to avoid this.",
                                               sep = "\n"))
                 font(transpWarning) <- list(size = 9)
                 tbl[ii, 1:6, anchor = c(1, 0), expand = TRUE] <- transpWarning
@@ -4732,17 +4739,22 @@ iNZPlotMod <- setRefClass(
                 lbl <- glabel("Symbol by :")
                 symVar <- gcombobox(c("", symVars), selected = 1)
                 if (length(symVars) >= 1) {
-                    tbl[ii, 1:2, anchor = c(1, 0), expand = TRUE] <- lbl
-                    tbl[ii, 3:6] <- symVar
+                    tbl[ii, 1, anchor = c(1, 0), expand = TRUE] <- lbl
+                    tbl[ii, 2:6] <- symVar
                     ii <- ii + 1
                 }
                 
                 enabled(symVar) <- enabled(symPch) <- !svalue(pchMatch)
 
-                ## Fill Symbols
-                fillSym <- gcheckbox("Fill symbol interior", checked = curSet$fill.pt == "fill")
+                ## Fill Symbols + line width
+                lbl <- glabel("Symbol line width :")
+                symLwd <- gspinbutton(1, 4, by = 1, value = curSet$lwd.pt)
+                tbl[ii, 1:2, anchor = c(1, 0), expand = TRUE] <- lbl
+                tbl[ii, 3:4] <- symLwd
+                
+                fillSym <- gcheckbox("Fill symbols", checked = curSet$fill.pt == "fill")
                 enabled(fillSym) <- svalue(transpSlider) == 0
-                tbl[ii, 3:6, anchor = c(-1, 0)] <- fillSym
+                tbl[ii, 5:6, anchor = c(-1, 0)] <- fillSym
                 ii <- ii + 1
             }
             
@@ -4858,25 +4870,9 @@ iNZPlotMod <- setRefClass(
                     }
                     newSet$pch <- symVals[svalue(symPch, index = TRUE)]
                     newSet$fill.pt <- ifelse(svalue(fillSym), "fill", "transparent")
+                    newSet$lwd.pt <- svalue(symLwd)
                 }
                 
-            ##     pch.sel <- ifelse(svalue(fillColor) | svalue(transpSlider) > 0,
-            ##                       19, 1)
-            ##     if (isColBy) {
-            ##         colFn <- palettes[[svalue(paletteList, index = TRUE)]]
-            ##         if (svalue(paletteList, index = TRUE) > 1) {
-            ##             attr(colFn, "name") <- svalue(paletteList)
-            ##         }
-            ##     }
-            ##     GUI$getActiveDoc()$setSettings(
-            ##         list(col.pt = if (isColBy) curSet$col.pt else svalue(symbolColList),
-            ##              col.fun = if (isColBy) colFn else NULL,
-            ##              bg = svalue(backgroundColList),
-            ##              cex.pt = svalue(cexSlider),
-            ##              pch = pch.sel,
-            ##              alpha = 1 - svalue(transpSlider) / 100
-            ##              ))
-
                 GUI$getActiveDoc()$setSettings(newSet)
                 updateSettings()
             }
@@ -4985,12 +4981,15 @@ iNZPlotMod <- setRefClass(
                                 blockHandlers(transpSlider)
                                 svalue(transpSlider) <- 0
                                 unblockHandlers(transpSlider)
-                            }                            
+                            }
+                            visible(transpWarning) <- TRUE
+                        } else {
+                            visible(transpWarning) <- FALSE
                         }
-                        visible(transpWarning) <- svalue(symPch, index = TRUE) %in% c(3:5)
                         updateEverything()
                     })
                     addHandlerChanged(symVar, handler = function(h, ...) updateEverything())
+                    addHandlerChanged(symLwd, handler = function(h, ...) updateEverything())
                     addHandlerChanged(fillSym, handler = function(h, ...) updateEverything())
                 }
             }
@@ -5002,6 +5001,8 @@ iNZPlotMod <- setRefClass(
         features = function() {
             tbl <- glayout()
             ii <- 3
+
+            PLOTTYPE <- GUI$plotType
             
             ## PLOT APPEARANCE
             tbl[ii,  1:6, anchor = c(-1,-1), expand = TRUE] <- sectionTitle("Trend Curves")
@@ -5069,25 +5070,27 @@ iNZPlotMod <- setRefClass(
             visible(qsmooth) <- visible(smoothF) <- svalue(smooth)
             enabled(smoothF) <- !svalue(qsmooth)
 
-            ## join points
-            tbl[ii,  1:6, anchor = c(-1,-1), expand = TRUE] <- sectionTitle("Join Points")
-            ii <- ii + 1
-            
-            joinPoints <- gcheckbox("Join points by lines", checked = curSet$join)
-            joinPointsCol <- gcombobox(lineColours, editable = TRUE,
-                                       selected =
-                                           if (curSet$col.line %in% lineColours)
-                                               which(lineColours == curSet$col.line)
-                                           else 1)
-            tbl[ii, 1:3, anchor = c(-1, 0), expand = TRUE] <- joinPoints
-            tbl[ii, 4:6] <- joinPointsCol
-            ii <- ii + 1
-
-            if (is.factor(curSet$colby)) {
-                joinPointsBy <- gcheckbox(paste("For each level of", curSet$varnames$colby),
-                                          selected = curSet$lines.by)
-                tbl[ii, 1:6, anchor = c(-1, 0), expand = TRUE] <- joinPointsBy
+            if (PLOTTYPE == "scatter") {
+                ## join points
+                tbl[ii,  1:6, anchor = c(-1,-1), expand = TRUE] <- sectionTitle("Join Points")
                 ii <- ii + 1
+                
+                joinPoints <- gcheckbox("Join points by lines", checked = curSet$join)
+                joinPointsCol <- gcombobox(lineColours, editable = TRUE,
+                                           selected =
+                                               if (curSet$col.line %in% lineColours)
+                                                   which(lineColours == curSet$col.line)
+                                               else 1)
+                tbl[ii, 1:3, anchor = c(-1, 0), expand = TRUE] <- joinPoints
+                tbl[ii, 4:6] <- joinPointsCol
+                ii <- ii + 1
+                
+                if (is.factor(curSet$colby)) {
+                    joinPointsBy <- gcheckbox(paste("For each level of", curSet$varnames$colby),
+                                              selected = curSet$lines.by)
+                    tbl[ii, 1:6, anchor = c(-1, 0), expand = TRUE] <- joinPointsBy
+                    ii <- ii + 1
+                }
             }
             
             ## extra settings ...
@@ -5107,11 +5110,14 @@ iNZPlotMod <- setRefClass(
             }
             activateOptions <- function() {
                 if (is.factor(curSet$colby)) {
-                    enabled(joinPointsBy) <- svalue(joinPoints)
-                    enabled(joinPointsCol) <- !svalue(joinPointsBy)
+                    if (PLOTTYPE == "scatter") {
+                        enabled(joinPointsBy) <- svalue(joinPoints)
+                        enabled(joinPointsCol) <- !svalue(joinPointsBy)
+                    }
                     enabled(trendBy) <- svalue(trendLin) | svalue(trendQuad) | svalue(trendCub) |
                         (svalue(smooth) & !svalue(qsmooth))
-                    enabled(trendParallel) <- svalue(trendBy) & enabled(trendBy)
+                    enabled(trendParallel) <- svalue(trendBy) &
+                        (svalue(trendLin) | svalue(trendQuad) | svalue(trendCub))
                     
                     enabled(trendLinCol) <- enabled(trendQuadCol) <- enabled(trendCubCol) <-
                         enabled(smoothCol) <- !(enabled(trendBy) & svalue(trendBy))
@@ -5141,8 +5147,7 @@ iNZPlotMod <- setRefClass(
                 newSet <- list(trend = trendCurves[c(svalue(trendLin),
                                                      svalue(trendQuad),
                                                      svalue(trendCub))],
-                               LOE = svalue(loe),
-                               join = svalue(joinPoints))
+                               LOE = svalue(loe))
                 
                 ## Trend line colours - editable:
                 tCols <- curSet$col.trend
@@ -5164,14 +5169,18 @@ iNZPlotMod <- setRefClass(
                         svalue(smoothCol)
                     else curSet$col.smooth
 
-                if (!inherits(try(col2rgb(svalue(joinPointsCol)), silent = TRUE), "try-error"))
-                    newSet$col.line <- svalue(joinPointsCol)
+                if (PLOTTYPE == "scatter") {
+                    newSet$join <- svalue(joinPoints)
+                    if (!inherits(try(col2rgb(svalue(joinPointsCol)), silent = TRUE), "try-error"))
+                        newSet$col.line <- svalue(joinPointsCol)
+                }
 
                 newSet$lines.by <- FALSE
                 if (is.factor(curSet$colby)) {
                     newSet$trend.by <- svalue(trendBy)
                     newSet$trend.parallel <- svalue(trendParallel)
-                    newSet$lines.by <- svalue(joinPointsBy)
+                    if (PLOTTYPE == "scatter")
+                        newSet$lines.by <- svalue(joinPointsBy)
                 }
 
                 newSet$lwd <- svalue(lwdSpin)
@@ -5243,23 +5252,26 @@ iNZPlotMod <- setRefClass(
                                       }, one.shot = TRUE)
                                   })
 
-                addHandlerChanged(joinPoints, function(h, ...) updateEverything())
-                joinColtimer <- NULL
-                addHandlerChanged(joinPointsCol,
-                                  handler = function(h, ...) {
-                                      if (!is.null(joinColtimer))
-                                          joinColtimer$stop_timer()
-                                      joinColtimer <- gtimer(500, function(...) {
-                                          if (nchar(svalue(joinPointsCol)) >= 3)
-                                              updateEverything()
-                                      }, one.shot = TRUE)
-                                  })
-
+                if (PLOTTYPE == "scatter") {
+                    addHandlerChanged(joinPoints, function(h, ...) updateEverything())
+                    joinColtimer <- NULL
+                    addHandlerChanged(joinPointsCol,
+                                      handler = function(h, ...) {
+                                          if (!is.null(joinColtimer))
+                                              joinColtimer$stop_timer()
+                                          joinColtimer <- gtimer(500, function(...) {
+                                              if (nchar(svalue(joinPointsCol)) >= 3)
+                                                  updateEverything()
+                                          }, one.shot = TRUE)
+                                      })
+                }
                 if (is.factor(curSet$colby)) {
                     addHandlerChanged(trendBy, function(h, ...) updateEverything())
                     addHandlerChanged(trendParallel, function(h, ...) updateEverything())
-                    addHandlerChanged(joinPointsBy, function(h, ...) updateEverything())
+                    if (PLOTTYPE == "scatter")
+                        addHandlerChanged(joinPointsBy, function(h, ...) updateEverything())
                 }
+                
 
                 addHandlerChanged(lwdSpin, function(h, ...) updateEverything())
                 addHandlerChanged(loe, function(h, ...) updateEverything())
@@ -5270,12 +5282,110 @@ iNZPlotMod <- setRefClass(
         axes = function() {
             tbl <- glayout()
             ii <- 3
+
+            PLOTTYPE <- GUI$plotType
             
-            ## PLOT APPEARANCE
+            ## AXIS LABELS
             tbl[ii,  1:2, anchor = c(-1,-1), expand = TRUE] <- sectionTitle("Axis Labels")
             ii <- ii + 1
 
+            lbl <- glabel("Title :")
+            labMain <- gedit(ifelse(is.null(curSet$main), "", curSet$main))
+            tbl[ii, 1:2, anchor = c(1, 0), expand = TRUE] <- lbl
+            tbl[ii, 3:6, expand = TRUE] <- labMain
+            ii <- ii + 1
             
+            lbl <- glabel("x-axis :")
+            labXlab <- gedit(ifelse(is.null(curSet$xlab), "", curSet$xlab))
+            tbl[ii, 1:2, anchor = c(1, 0), expand = TRUE] <- lbl
+            tbl[ii, 3:6, expand = TRUE] <- labXlab
+            ii <- ii + 1
+
+            lbl <- glabel("y-axis :")
+            labYlab <- gedit(ifelse(is.null(curSet$ylab), "", curSet$ylab))
+            tbl[ii, 1:2, anchor = c(1, 0), expand = TRUE] <- lbl
+            tbl[ii, 3:6, expand = TRUE] <- labYlab
+            ii <- ii + 1
+
+            lbl <- glabel("TAB or ENTER/RETURN to apply changes")
+            font(lbl) <- list(family = "normal", size = 8)
+            tbl[ii, 3:6, anchor = c(-1, 0), expand = TRUE] <- lbl
+            ii <- ii + 2
+
+            lbl <- glabel("Enter a single space to print no label\nLeave blank to print default label")
+            font(lbl) <- list(family = "normal", size = 8)
+            tbl[ii, 3:6, anchor = c(-1, 0), expand = TRUE] <- lbl
+            ii <- ii + 1
+
+
+            if (PLOTTYPE == "scatter") {
+                ## JITTER and RUGS
+                tbl[ii,  1:2, anchor = c(-1,-1), expand = TRUE] <- sectionTitle("Axis Features")
+                ii <- ii + 1
+                
+                lbl <- glabel("Jitter :")
+                if (any(sapply(curSet$varnames[c("x", "y")], nchar) > 15)) {
+                    xJit <- gcheckbox("x-variable", checked = curSet$jitter %in% c("x", "xy"))
+                    yJit <- gcheckbox("x-variable", checked = curSet$jitter %in% c("y", "xy"))
+                } else {
+                    xJit <- gcheckbox(curSet$varnames$y, checked = curSet$jitter %in% c("x", "xy"))
+                    yJit <- gcheckbox(curSet$varnames$x, checked = curSet$jitter %in% c("y", "xy"))
+                }
+                tbl[ii, 1:2, anchor = c(1, 0), expand = TRUE] <- lbl
+                tbl[ii, 3:4, anchor = c(-1, 0), expand = TRUE] <- xJit
+                tbl[ii, 5:6, anchor = c(-1, 0), expand = TRUE] <- yJit
+                ii <- ii + 1
+                
+                lbl <- glabel("Rugs :")
+                if (any(sapply(curSet$varnames[c("x", "y")], nchar) > 15)) {
+                    xRug <- gcheckbox("x-variable", checked = curSet$rug %in% c("x", "xy"))
+                    yRug <- gcheckbox("x-variable", checked = curSet$rug %in% c("y", "xy"))
+                } else {
+                    xRug <- gcheckbox(curSet$varnames$y, checked = curSet$rug %in% c("x", "xy"))
+                    yRug <- gcheckbox(curSet$varnames$x, checked = curSet$rug %in% c("y", "xy"))
+                }
+                tbl[ii, 1:2, anchor = c(1, 0), expand = TRUE] <- lbl
+                tbl[ii, 3:4, anchor = c(-1, 0), expand = TRUE] <- xRug
+                tbl[ii, 5:6, anchor = c(-1, 0), expand = TRUE] <- yRug
+                ii <- ii + 1
+            }
+            
+
+            updateEverything <- function(update = auto) {
+                ## To easily diable automatic updating of plot, add this argument,
+                ## otherwise would have to block/unblock handlers
+                ##     if (!update)
+                ##         return()
+                
+                ## Things that don't need checking:
+                newSet <- list(main = if (svalue(labMain) == "") NULL else svalue(labMain),
+                               xlab = if (svalue(labXlab) == "") NULL else svalue(labXlab),
+                               ylab = if (svalue(labYlab) == "") NULL else svalue(labYlab))
+                
+                if (PLOTTYPE == "scatter") {
+                    newSet$jitter <- paste0(ifelse(svalue(xJit), "x", ""),
+                                            ifelse(svalue(yJit), "y", ""))
+                    newSet$rugs <- paste0(ifelse(svalue(xRug), "x", ""),
+                                            ifelse(svalue(yRug), "y", ""))
+                }
+
+                GUI$getActiveDoc()$setSettings(newSet)
+                updateSettings()
+            }
+            
+            addHandlerChanged(labMain, function(h, ...) updateEverything())
+            addHandlerBlur(labMain, function(h, ...) updateEverything())
+            addHandlerChanged(labXlab, function(h, ...) updateEverything())
+            addHandlerBlur(labXlab, function(h, ...) updateEverything())
+            addHandlerChanged(labYlab, function(h, ...) updateEverything())
+            addHandlerBlur(labYlab, function(h, ...) updateEverything())
+
+            if (PLOTTYPE == "scatter") {
+                addHandlerChanged(xJit, function(h, ...) updateEverything())
+                addHandlerChanged(yJit, function(h, ...) updateEverything())
+                addHandlerChanged(xRug, function(h, ...) updateEverything())
+                addHandlerChanged(yRug, function(h, ...) updateEverything())
+            }
 
             add(optGrp, tbl)
         },
