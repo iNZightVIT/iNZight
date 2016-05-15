@@ -5326,7 +5326,7 @@ iNZPlotMod <- setRefClass(
                 lbl <- glabel("Jitter :")
                 if (any(sapply(curSet$varnames[c("x", "y")], nchar) > 15)) {
                     xJit <- gcheckbox("x-variable", checked = curSet$jitter %in% c("x", "xy"))
-                    yJit <- gcheckbox("x-variable", checked = curSet$jitter %in% c("y", "xy"))
+                    yJit <- gcheckbox("y-variable", checked = curSet$jitter %in% c("y", "xy"))
                 } else {
                     xJit <- gcheckbox(curSet$varnames$y, checked = curSet$jitter %in% c("x", "xy"))
                     yJit <- gcheckbox(curSet$varnames$x, checked = curSet$jitter %in% c("y", "xy"))
@@ -5339,7 +5339,7 @@ iNZPlotMod <- setRefClass(
                 lbl <- glabel("Rugs :")
                 if (any(sapply(curSet$varnames[c("x", "y")], nchar) > 15)) {
                     xRug <- gcheckbox("x-variable", checked = curSet$rug %in% c("x", "xy"))
-                    yRug <- gcheckbox("x-variable", checked = curSet$rug %in% c("y", "xy"))
+                    yRug <- gcheckbox("y-variable", checked = curSet$rug %in% c("y", "xy"))
                 } else {
                     xRug <- gcheckbox(curSet$varnames$y, checked = curSet$rug %in% c("x", "xy"))
                     yRug <- gcheckbox(curSet$varnames$x, checked = curSet$rug %in% c("y", "xy"))
