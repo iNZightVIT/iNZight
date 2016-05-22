@@ -32,15 +32,16 @@ iNZPlotModWin <- setRefClass(
         initialize = function(gui = NULL, which = 1) {
             initFields(GUI = gui,
                        bgColours =
-                           list(default = "#eeeeee",
+                           list(lightgrey = "#eeeeee",
                                 darkgrey = "grey20",
+                                mediumgrey = "grey50",
                                 white = "white",
                                 black = "black",
                                 wheat = "wheat",
                                 bisque = "bisque",
                                 cornsilk = "cornsilk"),
                        pointColours =
-                           list(default = "grey50",
+                           list(grey = "grey50",
                                 darkgrey = "grey20",
                                 lightgrey = "grey80",
                                 blue = "#004b85",
@@ -103,7 +104,7 @@ iNZPlotModWin <- setRefClass(
                 radioGrp <<- ggroup(horizontal = FALSE,
                                     expand = TRUE)
                 
-                optGrp <<- ggroup(horizontal = FALSE, expand = TRUE, use.scrollwindow = TRUE)
+                optGrp <<- ggroup(horizontal = FALSE, expand = TRUE, use.scrollwindow = "y")
                 add(topGrp, lbl)
                 add(topGrp, radioGrp, expand = TRUE, fill = TRUE)
 
@@ -5008,8 +5009,13 @@ iNZPlotMod <- setRefClass(
             tbl[ii,  1:6, anchor = c(-1,-1), expand = TRUE] <- sectionTitle("Trend Curves")
             ii <- ii + 1
 
+            tbl[ii, 4:5, anchor = c(-1, 0), expand = TRUE] <- glabel("Line colour")
+            tbl[ii, 6, anchor = c(-1, 0), expand = TRUE] <- glabel("Line type")
+            ii <- ii + 1
+
             lineColours <- c("red", "black", "blue", "green4", "magenta",
                              "yellow", "pink", "grey", "orange")
+            colBoxWidth <- 100 ## 15 * max(sapply(lineColours, nchar))
 
             trendCurves <- c("linear", "quadratic", "cubic")
             trendLin <- gcheckbox("linear", selected = "linear" %in% curSet$trend)
@@ -5019,7 +5025,10 @@ iNZPlotMod <- setRefClass(
                                              which(lineColours == curSet$col.trend$linear)
                                          else 1)
             tbl[ii, 1:3, anchor = c(-1, 0), expand = TRUE] <- trendLin
-            tbl[ii, 4:6] <- trendLinCol
+            tbl[ii, 4:5] <- trendLinCol
+            trendLinCol$widget$setSizeRequest(colBoxWidth, -1)
+            trendLinLTY <- gspinbutton(1, 6, by = 1, value = curSet$lty.trend[["linear"]])
+            tbl[ii, 6] <- trendLinLTY
             ii <- ii + 1
 
             trendQuad <- gcheckbox("quadratic", selected = "quadratic" %in% curSet$trend)
@@ -5029,7 +5038,10 @@ iNZPlotMod <- setRefClass(
                                               which(lineColours == curSet$col.trend$quadratic)
                                           else 1)
             tbl[ii, 1:3, anchor = c(-1, 0), expand = TRUE] <- trendQuad
-            tbl[ii, 4:6] <- trendQuadCol
+            tbl[ii, 4:5] <- trendQuadCol
+            trendQuadCol$widget$setSizeRequest(colBoxWidth, -1)
+            trendQuadLTY <- gspinbutton(1, 6, by = 1, value = curSet$lty.trend[["quadratic"]])
+            tbl[ii, 6] <- trendQuadLTY
             ii <- ii + 1
 
             trendCub <- gcheckbox("cubic", selected = "cubic" %in% curSet$trend)
@@ -5039,7 +5051,10 @@ iNZPlotMod <- setRefClass(
                                               which(lineColours == curSet$col.trend$cubic)
                                           else 1)
             tbl[ii, 1:3, anchor = c(-1, 0), expand = TRUE] <- trendCub
-            tbl[ii, 4:6] <- trendCubCol
+            tbl[ii, 4:5] <- trendCubCol
+            trendCubCol$widget$setSizeRequest(colBoxWidth, -1)
+            trendCubLTY <- gspinbutton(1, 6, by = 1, value = curSet$lty.trend[["cubic"]])
+            tbl[ii, 6] <- trendCubLTY
             ii <- ii + 1
 
 
@@ -5055,7 +5070,8 @@ iNZPlotMod <- setRefClass(
                                            which(lineColours == curSet$col.smooth)
                                        else 1)
             tbl[ii, 1:3, anchor = c(-1, 0), expand = TRUE] <- smooth
-            tbl[ii, 4:6] <- smoothCol
+            tbl[ii, 4:5] <- smoothCol
+            smoothCol$widget$setSizeRequest(colBoxWidth, -1)
             ii <- ii + 1
 
             qsmooth <- gcheckbox("Use Quantiles",
@@ -5081,8 +5097,9 @@ iNZPlotMod <- setRefClass(
                                                if (curSet$col.line %in% lineColours)
                                                    which(lineColours == curSet$col.line)
                                                else 1)
-                tbl[ii, 1:3, anchor = c(-1, 0), expand = TRUE] <- joinPoints
-                tbl[ii, 4:6] <- joinPointsCol
+                tbl[ii, 1:4, anchor = c(-1, 0), expand = TRUE] <- joinPoints
+                tbl[ii, 5:6] <- joinPointsCol
+                joinPointsCol$widget$setSizeRequest(colBoxWidth, -1)
                 ii <- ii + 1
                 
                 if (is.factor(curSet$colby)) {
@@ -5127,8 +5144,8 @@ iNZPlotMod <- setRefClass(
 
             lbl <- glabel("Line Width Multiplier :")
             lwdSpin <- gspinbutton(1, 4, by = 1, value = curSet$lwd)
-            tbl[ii, 1:3, anchor = c(1, 0), expand = TRUE] <- lbl
-            tbl[ii, 4, anchor = c(-1, 0), expand = FALSE] <- lwdSpin
+            tbl[ii, 1:4, anchor = c(1, 0), expand = TRUE] <- lbl
+            tbl[ii, 5, anchor = c(-1, 0), expand = FALSE] <- lwdSpin
             ii <- ii + 1
 
             loe <- gcheckbox("Add line of equality (x = y)", checked = curSet$LOE)
@@ -5147,7 +5164,11 @@ iNZPlotMod <- setRefClass(
                 newSet <- list(trend = trendCurves[c(svalue(trendLin),
                                                      svalue(trendQuad),
                                                      svalue(trendCub))],
-                               LOE = svalue(loe))
+                               LOE = svalue(loe),
+                               lty.trend =
+                                   list(linear = svalue(trendLinLTY),
+                                        quadratic = svalue(trendQuadLTY),
+                                        cubic = svalue(trendCubLTY)))
                 
                 ## Trend line colours - editable:
                 tCols <- curSet$col.trend
@@ -5193,6 +5214,9 @@ iNZPlotMod <- setRefClass(
                 addHandlerChanged(trendLin, handler = function(h, ...) updateEverything())
                 addHandlerChanged(trendQuad, handler = function(h, ...) updateEverything())
                 addHandlerChanged(trendCub, handler = function(h, ...) updateEverything())
+                addHandlerChanged(trendLinLTY, handler = function(h, ...) updateEverything())
+                addHandlerChanged(trendQuadLTY, handler = function(h, ...) updateEverything())
+                addHandlerChanged(trendCubLTY, handler = function(h, ...) updateEverything())
 
                 linColtimer <- NULL
                 addHandlerChanged(trendLinCol,
@@ -5349,6 +5373,40 @@ iNZPlotMod <- setRefClass(
                 tbl[ii, 5:6, anchor = c(-1, 0), expand = TRUE] <- yRug
                 ii <- ii + 1
             }
+
+            ## Axis Limits
+            tbl[ii,  1:2, anchor = c(-1,-1), expand = TRUE] <- sectionTitle("Axis Limits")
+            ii <- ii + 1
+
+            isNA <- is.na(curSet$x) | is.na(curSet$y)
+            xrange <- range(curSet$y[!isNA])
+            yrange <- range(curSet$x[!isNA])
+            
+            xlim <- curSet$xlim
+            if (is.null(xlim)) xlim <- xrange
+            ylim <- curSet$ylim
+            if (is.null(ylim)) ylim <- yrange
+
+            lbl <- glabel("x axis :")
+            xlower <- gedit(xlim[1], width = 8)
+            xupper <- gedit(xlim[2], width = 8)
+            tbl[ii, 1:2, expand = TRUE, anchor = c(1, 0)] <- lbl
+            tbl[ii, 3:4, expand = TRUE] <- xlower
+            tbl[ii, 5:6, expand = TRUE] <- xupper
+            ii <- ii + 1
+
+            lbl <- glabel("y axis :")
+            ylower <- gedit(ylim[1], width = 8)
+            yupper <- gedit(ylim[2], width = 8)
+            tbl[ii, 1:2, expand = TRUE, anchor = c(1, 0)] <- lbl
+            tbl[ii, 3:4, expand = TRUE] <- ylower
+            tbl[ii, 5:6, expand = TRUE] <- yupper
+            ii <- ii + 1
+
+            errlbl <- glabel("Limits must be numbers.")
+            tbl[ii, 3:6, expand = TRUE, anchor = c(-1, 0)] <- errlbl
+            visible(errlbl) <- FALSE
+            ii <- ii + 1 
             
 
             updateEverything <- function(update = auto) {
@@ -5369,6 +5427,39 @@ iNZPlotMod <- setRefClass(
                                             ifelse(svalue(yRug), "y", ""))
                 }
 
+                err <- FALSE
+                xl <- suppressWarnings(as.numeric(svalue(xlower)))
+                if (is.na(xl)) {
+                    xl <- if (svalue(xlower) == "") xrange[1] else xlim[1]
+                    if (svalue(xlower) != "") err <- TRUE
+                }
+                xu <- suppressWarnings(as.numeric(svalue(xupper)))
+                if (is.na(xu)) {
+                    xu <- if (svalue(xupper) == "") xrange[2] else xlim[2]
+                    if (svalue(xupper) != "") err <- TRUE
+                }
+                if (xl == xu) {
+                    xl <- xrange[1]
+                    xu <- xrange[2]
+                }
+                yl <- suppressWarnings(as.numeric(svalue(xlower)))
+                if (is.na(yl)) {
+                    yl <- if (svalue(ylower) == "") yrange[1] else ylim[1]
+                    if (svalue(ylower) != "") err <- TRUE
+                }
+                yu <- suppressWarnings(as.numeric(svalue(yupper)))
+                if (is.na(yu)) {
+                    yu <- if (svalue(yupper) == "") yrange[2] else ylim[2]
+                    if (svalue(yupper) != "") err <- TRUE
+                }
+                if (yl == yu) {
+                    yl <- yrange[1]
+                    yu <- yrange[2]
+                }
+                visible(errlbl) <- err
+                newSet$xlim <- c(xl, xu)
+                newSet$ylim <- c(yl, yu)
+
                 GUI$getActiveDoc()$setSettings(newSet)
                 updateSettings()
             }
@@ -5386,6 +5477,17 @@ iNZPlotMod <- setRefClass(
                 addHandlerChanged(xRug, function(h, ...) updateEverything())
                 addHandlerChanged(yRug, function(h, ...) updateEverything())
             }
+
+            timer <- NULL
+            updT <- function(h, ...) {
+                if (!is.null(timer))
+                    timer$stop_timer()
+                timer <- gtimer(800, function(...) updateEverything(), one.shot = TRUE)
+            }
+            addHandlerKeystroke(xlower, updT)
+            addHandlerKeystroke(xupper, updT)
+            addHandlerKeystroke(ylower, updT)
+            addHandlerKeystroke(yupper, updT)
 
             add(optGrp, tbl)
         },
