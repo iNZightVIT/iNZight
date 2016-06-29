@@ -24,7 +24,7 @@ iNZPlotToolbar <- setRefClass(
             initFields(GUI = gui,
                        plotWidget = gui$plotWidget,
                        popOut = gui$preferences$popout)
-            
+
             toolbarcont <<- ggroup(container = cont, spacing = 0, fill = TRUE, expand = TRUE)
             iconbar <<- ggroup(horizontal = !popOut, container = toolbarcont, spacing = 15,
                                fill = TRUE, expand = TRUE)
@@ -65,7 +65,7 @@ iNZPlotToolbar <- setRefClass(
             } else {
                 refreshFn = GUI$activeModule[[refresh.fn]]
             }
-            
+
             img.add2plot <- system.file("images/graph-plus-transp.gif", package = "iNZight")
             img.rmvplot <- system.file("images/graph-cross-transp.gif", package = "iNZight")
             img.infinfo <- system.file("images/graph-inference.gif", package = "iNZight")
@@ -109,7 +109,7 @@ iNZPlotToolbar <- setRefClass(
             if (!popOut) add(cont, renametabBtn)
 
             addSpace(cont, 10)
-            
+
             add(cont, saveplotBtn)
             if (!popOut) add(cont, closetabBtn)
 
@@ -142,7 +142,7 @@ iNZPlotToolbar <- setRefClass(
             } else {
                 refreshFn = GUI$activeModule[[refresh.fn]]
             }
-            
+
             curMenu <- svalue(GUI$menubar)
             curMenu[["Plot"]] <- list(
                 gaction("Add to plot ...",
@@ -164,7 +164,7 @@ iNZPlotToolbar <- setRefClass(
                 gaction(label = "Save Plot", icon = "save",
                         handler = function(h, ...) plotWidget$savePlot(refreshFn))
                 )
-            
+
             if (popOut)
                 curMenu[["Plot"]][5:8] <- NULL
 
@@ -188,7 +188,6 @@ iNZPlotToolbar <- setRefClass(
             else
                 switch(GUI$plotType,
                        "bar" = iNZBarchartMod$new(GUI),
-                       "hist" = iNZHistogramMod$new(GUI),
                        iNZPlotMod$new(GUI))
         },
         addInf = function() {
