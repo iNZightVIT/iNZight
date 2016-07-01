@@ -2452,14 +2452,15 @@ iNZPlotMod <- setRefClass(
             ##
             ## -----------------------------------------------------------------------------------
             if (PLOTTYPE %in% c("scatter", "hex", "dot", "hist", "bar")) {
-                bars <- PLOTTYPE %in% c("hist", "bar")
+                bars <- PLOTTYPE == "bar"
+                hist <- PLOTTYPE == "hist"
 
                 tbl[ii,  1:6, anchor = c(-1, 0), expand = TRUE] <-
                     sectionTitle(switch(PLOTTYPE, "dot" = , "scatter" = "Point Colour", "hex" = "Colour",
                                         "hist" = , "bar" = "Bar Colour"))
                 ii <- ii + 1
 
-                if (bars) {
+                if (bars | hist) {
                   barCols <- do.call(c, barColours)
                   barCol <- gcombobox(names(barColours), selected = 1, editable = TRUE)
                   if (curSet$bar.fill %in% barCols)
@@ -2475,14 +2476,14 @@ iNZPlotMod <- setRefClass(
                                           "dot" = ,
                                           "scatter" = "Point colour :",
                                           "hex"     = "Hexagon colour :",
-                                          "hist"    = ,
+                                          "hist"    = "Bar colour",
                                           "bar"     = ifelse(is.null(curSet$y), "Bar colour :", "Colour palette : ")))
                 tbl[ii, 1:2, anchor = c(1, 0), expand = TRUE, fill = TRUE] <- colLabel
-                tbl[ii, 3:6, expand = TRUE] <- if (bars) barCol else ptCol
+                tbl[ii, 3:6, expand = TRUE] <- if (bars | hist) barCol else ptCol
                 ptColROW <- ii  ## save for switching later
                 ii <- ii + 1
 
-                if (!bars | is.null(curSet$y)) {
+                if (!hist & (!bars | is.null(curSet$y))) {
                   ## Colour by
                   lbl <- glabel("Colour by :")
                     if (bars)
@@ -2704,6 +2705,7 @@ iNZPlotMod <- setRefClass(
 
                 ## Colour
                 if (PLOTTYPE %in% c("scatter", "hex", "dot", "bar")) {
+                    setPal <- FALSE
                     if (bars & !is.null(curSet$y)) {
                       setPal <- TRUE
                     } else if (svalue(colVar, TRUE) > 1) {
@@ -2786,6 +2788,16 @@ iNZPlotMod <- setRefClass(
                         }
                     }
                 }
+                if (hist) {
+                    newSet$bar.fill <-
+                        if (svalue(barCol) %in% names(barColours))
+                            barColours[[svalue(barCol, index = TRUE)]]
+                        else if (!inherits(try(col2rgb(svalue(barCol)), silent = TRUE),
+                                           "try-error"))
+                            svalue(barCol)
+                        else
+                            curSet$bar.fill
+                }
                 if (PLOTTYPE %in% c("dot", "scatter")) {
                     newSet$alpha <- 1 - svalue(transpSlider) / 100
                 }
@@ -2857,8 +2869,19 @@ iNZPlotMod <- setRefClass(
                     addHandlerChanged(hexStyle, handler = function(h, ...) updateEverything())
                 }
 
-                if (PLOTTYPE %in% c("scatter", "hex", "dot", "bar")) {
-                    if (!bars) {
+                if (PLOTTYPE %in% c("scatter", "hex", "dot", "bar", "hist")) {
+                    if (bars | hist) {
+                      bcoltimer <- NULL
+                      addHandlerChanged(barCol,
+                                        handler = function(h, ...) {
+                                            if (!is.null(bcoltimer))
+                                                bcoltimer$stop_timer()
+                                            bcoltimer <- gtimer(500, function(...) {
+                                                                    if (nchar(svalue(barCol)) >= 3)
+                                                                        updateEverything()
+                                                                }, one.shot = TRUE)
+                                        })
+                    } else {
                       pcoltimer <- NULL
                       addHandlerChanged(ptCol,
                                         handler = function(h, ...) {
@@ -2870,35 +2893,37 @@ iNZPlotMod <- setRefClass(
                                                                 }, one.shot = TRUE)
                                         })
                     }
-                      if (!bars | is.null(curSet$y)) {
-                        addHandlerChanged(colVar, handler = function(h, ...) {
-                                              EMPH.LEVEL <<- 0
-                                              if (PLOTTYPE %in% c("dot", "scatter")) symbolMatch()
-                                              if (svalue(h$obj, index = TRUE) == 1) {
-                                                  svalue(colLabel) <- ifelse(bars, "Bar colour : ", "Point colour :")
-                                                  visible(palAdvanced) <- visible(palCont) <-
-                                                      visible(palCat) <- FALSE
-                                                  if (bars) visible(barCol) <- TRUE
-                                                  else visible(ptCol) <- TRUE
-                                              } else {
-                                                  svalue(colLabel) <- "Palette :"
-                                                  if (bars) visible(barCol) <- FALSE
-                                                  else visible(ptCol) <- FALSE
-                                                  if (is.numeric(GUI$getActiveData()[[svalue(h$obj)]]) &
-                                                      PLOTTYPE != "hex") {
-                                                      visible(palCat) <- FALSE
-                                                      visible(palCont) <- TRUE
-                                                  } else {
-                                                      visible(palCont) <- FALSE
-                                                      visible(palCat) <- TRUE
-                                                  }
-                                                  visible(palAdvanced) <- TRUE
-                                              }
-                                              updateEverything()
-                                          })
-                      }
-                    addHandlerChanged(palCat, handler = function(h, ...) updateEverything())
-                    addHandlerChanged(palCont, handler = function(h, ...) updateEverything())
+                    if (!hist & (!bars | is.null(curSet$y))) {
+                      addHandlerChanged(colVar, handler = function(h, ...) {
+                                            EMPH.LEVEL <<- 0
+                                            if (PLOTTYPE %in% c("dot", "scatter")) symbolMatch()
+                                            if (svalue(h$obj, index = TRUE) == 1) {
+                                                svalue(colLabel) <- ifelse(bars, "Bar colour : ", "Point colour :")
+                                                visible(palAdvanced) <- visible(palCont) <-
+                                                    visible(palCat) <- FALSE
+                                                if (bars) visible(barCol) <- TRUE
+                                                else visible(ptCol) <- TRUE
+                                            } else {
+                                                svalue(colLabel) <- "Palette :"
+                                                if (bars) visible(barCol) <- FALSE
+                                                else visible(ptCol) <- FALSE
+                                                if (is.numeric(GUI$getActiveData()[[svalue(h$obj)]]) &
+                                                    PLOTTYPE != "hex") {
+                                                    visible(palCat) <- FALSE
+                                                    visible(palCont) <- TRUE
+                                                } else {
+                                                    visible(palCont) <- FALSE
+                                                    visible(palCat) <- TRUE
+                                                }
+                                                visible(palAdvanced) <- TRUE
+                                            }
+                                            updateEverything()
+                                        })
+                    }
+                    if (!hist) {
+                      addHandlerChanged(palCat, handler = function(h, ...) updateEverything())
+                      addHandlerChanged(palCont, handler = function(h, ...) updateEverything())
+                    }
                 }
                 if (PLOTTYPE %in% c("scatter", "dot")) {
                     transptimer <- NULL
