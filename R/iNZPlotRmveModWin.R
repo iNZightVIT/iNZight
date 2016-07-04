@@ -42,7 +42,8 @@ iNZPlotRmveModWin <- setRefClass(
                     "Restore default plot type",
                     "Remove point labels",
                     "Restore default axis limits",
-                    "Restore all bars of bar chart")
+                    "Restore all bars of bar chart",
+                    "Restore default size scale")
                 ## check for presence of all additions
                 curAdditions <- c(
                     TRUE, ## all additiions
@@ -61,7 +62,7 @@ iNZPlotRmveModWin <- setRefClass(
                     is.null(curSet$y),
                     !is.null(curSet$inference.type) ||
                     curSet$bs.inference, ## confidence intervals
-                    curSet$fill.pt != defSet$fill.pt | curSet$pch != defSet$pch, ## point filling
+                    curSet$fill.pt != defSet$fill.pt,  ## point filling
                     curSet$col.pt != defSet$col.pt, ## point colour
                     (all.equal(curSet$cex.pt, defSet$cex.pt) != TRUE), ## point size
                     (all.equal(curSet$alpha, defSet$alpha) != TRUE), ## transparency
@@ -77,7 +78,8 @@ iNZPlotRmveModWin <- setRefClass(
                     (!is.null(curSet$locate) | !is.null(curSet$locate.id) |
                      !is.null(curSet$locate.col)),  ## locate labels
                     (!is.null(curSet$xlim) | !is.null(curSet$ylim)),  ## axis limits
-                    (!is.null(curSet$zoombars))  ## bar plot zooming
+                    (!is.null(curSet$zoombars)),  ## bar plot zooming
+                    curSet$cex != defSet$cex  ## cex overall
                     )
 
                 proceedButton <- gbutton(
@@ -203,7 +205,8 @@ iNZPlotRmveModWin <- setRefClass(
                                  list(locate = NULL, locate.id = NULL, locate.col = NULL,
                                       locate.settings = NULL),
                                  list(xlim = NULL, ylim = NULL),  ## axis limits
-                                 list(zoombars = NULL)  ## bar plot zooming
+                                 list(zoombars = NULL),  ## bar plot zooming
+                                 list(cex = defSet$cex)  ## overall cex
                                  )
 
             GUI$getActiveDoc()$setSettings(

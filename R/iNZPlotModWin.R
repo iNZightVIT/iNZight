@@ -2514,7 +2514,7 @@ iNZPlotMod <- setRefClass(
                 tbl[ptColROW, 3:5, expand = TRUE] <- palCat
                 ## tbl[ptColROW, 6, anchor = c(0, 0)] <- palAdvanced
 
-                if (!is.null(curSet$colby) & (!bars | is.null(curSet$y))) {
+                if (!is.null(curSet$colby) & (!bars | is.null(curSet$y)) & !hist) {
                     ## already set - need to match
                     cval <- curSet$varnames$colby
                     svalue(colVar) <- cval
@@ -2526,7 +2526,7 @@ iNZPlotMod <- setRefClass(
                     } else {
                         visible(palCont) <- FALSE
                     }
-                } else if (bars & !is.null(curSet$y)) {
+                } else if (bars & !is.null(curSet$y) & !hist) {
                     visible(barCol) <- visible(palAdvanced) <- visible(palCont) <- FALSE
                     visible(palCat) <- TRUE
                 } else {
