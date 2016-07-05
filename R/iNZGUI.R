@@ -1055,9 +1055,6 @@ iNZGUI <- setRefClass(
                     curPlSet$design <- curMod$createSurveyObject()
                 }
 
-                ## "swap" the behaviour around
-                curPlSet$internal.labels <- !curPlSet$internal.labels
-
                 ## Suppress the warnings produced by iNZightPlot ...
                 suppressWarnings({
                     curPlot <<- unclass(do.call(iNZightPlot, curPlSet))
