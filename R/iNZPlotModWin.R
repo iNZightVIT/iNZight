@@ -3306,7 +3306,7 @@ iNZPlotMod <- setRefClass(
 
               if (YAXlbl) {
                 intLabs <- gcheckbox("Display group labels inside graph",
-                                     checked = !curSet$internal.labels)
+                                     checked = curSet$internal.labels)
                 tbl[ii, 3:6, anchor = c(-1, -1), expand= TRUE] <- intLabs
                 ii <- ii + 1
               }
@@ -3457,7 +3457,7 @@ iNZPlotMod <- setRefClass(
                                xlab = if (svalue(labXlab) == "") NULL else svalue(labXlab))
 
                 if (YAX) newSet$ylab <- if (svalue(labYlab) == "") NULL else svalue(labYlab)
-                if (YAXlbl) newSet$internal.labels <- !svalue(intLabs)
+                if (YAXlbl) newSet$internal.labels <- svalue(intLabs)
 
                 if (PLOTTYPE == "scatter") {
                     newSet$jitter <- paste0(ifelse(svalue(xJit), "x", ""),
