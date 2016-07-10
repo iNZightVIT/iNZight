@@ -3,8 +3,8 @@
 \title{Change Log for iNZight}
 \encoding{UTF-8}
 
-\section{iNZight v3.0}{
-  Release date: XX February, 2016
+\section{iNZight v3.0 - BETA}{
+  Release date: 11 July 2016
 
   \subsection{New Features}{
     \itemize{
@@ -19,6 +19,10 @@
 
       \item Resize points proportional to a variable - now does exactly
       that! With the option of reverting to the old method.
+
+      \item Play timer - now allows stopping, and also a timing adjustment
+
+      \item "Switch" variables by clicking the down arrows next to them (switch with variable BELOW)
     }
   }
 
@@ -30,6 +34,8 @@
       \item Multiple Response Module - complete redesign to make it more
       intuitive.
 
+      \item Add to Plot Window - completely redesigned to make plot modifications faster and easier
+
       \item More choice of colours! When colouring by a variable, you
       can now select a colour palette from the 'Change plot appearance' window.
     }
@@ -38,7 +44,7 @@
   \subsection{Minor Changes / Bug Fixes}{
     \itemize{
       \item remove those pesky GTK warnings!
-      
+
       \item lots of other changes/bug fixes. Many months of work is all being compiled
       into one single release. A new installation method and directory
       structure, so please inform us of bugs as you come across them!
@@ -186,7 +192,7 @@
   \subsection{MAJOR CHANGES}{
     \itemize{
       \item LOCATE functionality now included for dot plots. Also fixes
-      several bugs in the previous update for locating points in 
+      several bugs in the previous update for locating points in
       scatter plot.
     }
   }
