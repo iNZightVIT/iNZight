@@ -56,7 +56,8 @@ iNZPlotWidget <- setRefClass(
             filetypes <- list("JPEG (.jpg)" = jpeg,
                               "PNG (.png)" = png,
                               "Bitmap (.bmp)" = bmp,
-                              "TIFF (.tiff)" = tiff)
+                              "TIFF (.tiff)" = tiff,
+                              "PDF (.pdf)" = pdf)
             
             fileType <- gcombobox(names(filetypes))
             tbl[ii, 1, anchor = c(1, 0), expand = TRUE] <- lbl
@@ -122,11 +123,22 @@ iNZPlotWidget <- setRefClass(
                                    }
                                    
                                    f <- file.path(svalue(fLoc), paste0(svalue(fName), svalue(fExt)))
-                                   dim <- dev.size("px")
                                    
-                                   filetypes[[svalue(fileType)]](file = f,
-                                                                 width = dim[1],
-                                                                 height = dim[2])
+
+                                   switch(svalue(fileType),
+                                          "PDF (.pdf)" = {
+                                              dim <- dev.size("in")
+                                              pdf(file = f,
+                                                  width = dim[1],
+                                                  height = dim[2],
+                                                  useDingbats = FALSE,
+                                                  onefile = FALSE)
+                                          }, {
+                                              dim <- dev.size("px")
+                                              filetypes[[svalue(fileType)]](file = f,
+                                                                            width = dim[1],
+                                                                            height = dim[2])
+                                          })
                                    fun()
                                    dev.off()
 
