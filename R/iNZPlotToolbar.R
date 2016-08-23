@@ -186,9 +186,6 @@ iNZPlotToolbar <- setRefClass(
                 gmessage("You must select at least one variable before you can access the Add To Plot menu.",
                          title = "No variable selected")
             else iNZPlotMod$new(GUI)
-                # switch(GUI$plotType,
-                #        "bar" = iNZBarchartMod$new(GUI),
-                #        iNZPlotMod$new(GUI))
         },
         addInf = function() {
             if (!is.null(GUI$getActiveDoc()$getModel()$getDesign())) {

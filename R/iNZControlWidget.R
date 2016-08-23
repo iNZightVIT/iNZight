@@ -41,17 +41,6 @@ iNZControlWidget <- setRefClass(
             ## V1clearbtn$set_icon("Cancel")
             tbl[1,7, anchor = c(0,0)] <- V1clearbtn
 
-            ## old_cursor <- getToolkitWidget(GUI$win)$getWindow()$getCursor()
-            ## cross <- gdkCursorNew("GDK_HAND1")
-            ## addHandler(switchV12, "enter-notify-event", handler=function(h,...) {
-            ##                getToolkitWidget(switchV12)$getWindow()$setCursor(cross)
-            ##                TRUE
-            ##            })
-            ## addHandler(switchV12, "leave-notify-event", handler=function(h,...) {
-            ##                getToolkitWidget(switchV12)$getWindow()$setCursor(old_cursor)
-            ##                TRUE
-            ##            })
-
             ## -- Variable 2
             V2clearbtn <- gimagebutton(stock.id = "cancel",
                                   handler = function(h,...) {
@@ -402,9 +391,9 @@ iNZControlWidget <- setRefClass(
             ## create a ggroup for the slider at the specified
             ## pos in the glayout
             tbl <- ctrlGp$children[[1]]
-            tbl[pos, 1:5, expand = TRUE] <- (hzGrp <- ggroup(fill = "x"))
+            #tbl[pos, 1:5, expand = TRUE] <- (hzGrp <- ggroup(fill = "x"))
 
-            sliderGrp <- ggroup(horizontal = FALSE)
+            #sliderGrp <- ggroup(horizontal = FALSE)
 
             ## build the level names that are used for the slider
             grpData <- GUI$getActiveData()[dropdata][[1]]
@@ -416,7 +405,8 @@ iNZControlWidget <- setRefClass(
             lev <- factor(lev, levels = lev)
             slider <- gslider(from = lev,
                               value = 1)
-            add(sliderGrp, slider, expand = FALSE)
+            
+            #add(sliderGrp, slider, expand = FALSE)
             if (pos == 6)
                 grp = "g1"
             else
@@ -451,26 +441,35 @@ iNZControlWidget <- setRefClass(
                 playButton$levi <<- playButton$levi + 1
                 if (playButton$levi > playButton$Nlev) {
                     playButton$playtimer$stop_timer()
-                    changePlotSettings(data)
+                    #changePlotSettings(data)
                     playBtn$set_value(img.playicon)
                     playButton$playtimer <<- NULL
                 } else {
                     changePlotSettings(structure(list(playButton$levi),
                                                  .Names = paste(grp, "level", sep = ".")))
+                    ri <- playButton$row
+                    tb <- ctrlGp$children[[1]][ri, 1]
+                    blockHandlers(tb)
+                    ## This line creates "IA__gtk_table_attach: assertion 'child->parent == NULL' failed" error.
+                    svalue(tb, index = TRUE) <- playButton$levi + 1
+                    unblockHandlers(tb)
                 }
             }
             clickPlay <- function(h, ...) {
                 if (!is.null(playButton$playtimer)) {
                     ## time is running - so stop the animation
                     playButton$playtimer$stop_timer()
-                    changePlotSettings(playButton$oldSet)
+                    #changePlotSettings(playButton$oldSet)
                     playBtn$set_value(img.playicon)
                     playButton$playtimer <<- NULL
                     return()
                 }
                 oldSet <- GUI$getActiveDoc()$getSettings()
                 playBtn$set_value(img.stopicon)
-                playButton <<- list(playtimer = NULL,
+                pr <- h$obj$parent
+                wc <- which(sapply(pr$child_positions, function(x) identical(h$obj, x$child)))
+                #sld <- pr[pr$child_positions[[wc]]$x, 1]
+                playButton <<- list(playtimer = NULL, row = pr$child_positions[[wc]]$x,
                                     Nlev = length(levels(grpData)),
                                     levi = 0, oldSet = oldSet)
                 PLAY(oldSet)
@@ -479,7 +478,7 @@ iNZControlWidget <- setRefClass(
             img.playicon <- system.file("images/icon-play.png", package = "iNZight")
             img.stopicon <- system.file("images/icon-stop.png", package = "iNZight")
             playBtn <- gimagebutton(filename = img.playicon, size = "button", handler = clickPlay)
-            add(hzGrp, sliderGrp, expand = TRUE)
+            #add(hzGrp, sliderGrp, expand = TRUE)
             
 
             ## Play time delay - time in milliseconds
@@ -507,6 +506,7 @@ iNZControlWidget <- setRefClass(
                                      handler = function(h, ...) playdelay <<- svalue(h$obj))
 
             ## Add things to layout:
+            tbl[pos, 1:5, expand = TRUE] <- slider
             tbl[pos, 6, anchor = c(0, 0), expand = FALSE] <- delayBtn
             tbl[pos, 7, anchor = c(0, 0), expand = FALSE] <- playBtn
             

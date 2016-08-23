@@ -1131,40 +1131,44 @@ iNZGUI <- setRefClass(
                          title = "Inappropriate data type", icon = "error")
             }
         },
-        ## initialize module window
-        initializeModule = function(module) {
-            ## If module is already installed load it,
-            ## otherwise ask for a download then install & load
-            if (module %in% rownames(installed.packages())) {
-                require(module, character.only = TRUE)
-            } else {
-                install = gconfirm("The module is not found. Would you like to download it?")
-                if (install) {
-                    install.packages(module, repo = "http://r.docker.stat.auckland.ac.nz/R")
-                    require(mod, character.only = TRUE)
-                }
-            }
+        ## ## initialize module window
+        ## initializeModule = function(module) {
+        ##     ## If module is already installed load it,
+        ##     ## otherwise ask for a download then install & load
+        ##     if (module %in% rownames(installed.packages())) {
+        ##         require(module, character.only = TRUE)
+        ##     } else {
+        ##         install = gconfirm("The module is not found. Would you like to download it?")
+        ##         if (install) {
+        ##             install.packages(module, repo = "http://r.docker.stat.auckland.ac.nz/R")
+        ##             require(mod, character.only = TRUE)
+        ##         }
+        ##     }
 
-            ## once module is loaded, check data
-            if (checkData(module)) {
-                ## if there is not a module open,
-                ## initialize and open a module window
-                if (length(leftMain$children) == 1) {
-                    initializeModuleWindow()
-                    source(paste0("../iNZightModules/R/", module, ".R"))
-                    cmd = paste0(module, "$new(.self)")
-                    eval(parse(text = cmd))
-                    visible(moduleWindow) <<- TRUE
-                } else {
-                    newModuleWindow(module)
-                }
-            } else {
-                return()
-            }
-        },
+        ##     ## once module is loaded, check data
+        ##     if (checkData(module)) {
+        ##         ## if there is not a module open,
+        ##         ## initialize and open a module window
+        ##         if (length(leftMain$children) == 1) {
+        ##             initializeModuleWindow()
+        ##             source(paste0("../iNZightModules/R/", module, ".R"))
+        ##             cmd = paste0(module, "$new(.self)")
+        ##             eval(parse(text = cmd))
+        ##             visible(moduleWindow) <<- TRUE
+        ##         } else {
+        ##             newModuleWindow(module)
+        ##         }
+        ##     } else {
+        ##         return()
+        ##     }
+        ## },
         ## create a gvbox object into the module window (ie, initialize it)
         ## NOTE: should be run every time when a new module is open
         initializeModuleWindow = function(mod) {
+            ## delete any old ones:
+            if (length(.self$leftMain$children) > 1) {
+                delete(.self$leftMain, .self$leftMain$children[[2]])
+            }
             ## create a gvbox in moduleWindow
             moduleWindow <<- gvbox(container = leftMain, expand = TRUE)
             visible(gp1) <<- FALSE

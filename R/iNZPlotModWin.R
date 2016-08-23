@@ -112,9 +112,6 @@ iNZPlotModWin <- setRefClass(
             if (!is.null(GUI)) {
                 updateSettings()
 
-                if (length(GUI$leftMain$children) > 1) {
-                    delete(GUI$leftMain, GUI$leftMain$children[[2]])
-                }
                 GUI$initializeModuleWindow()
 
                 mainGrp <- gvbox(container = GUI$moduleWindow, expand = TRUE, fill = TRUE)
@@ -3022,15 +3019,14 @@ iNZPlotMod <- setRefClass(
 
             lineColours <- c("red", "black", "blue", "green4", "magenta",
                              "yellow", "pink", "grey", "orange")
-            colBoxWidth <- 100 ## 15 * max(sapply(lineColours, nchar))
+            colBoxWidth <- 100
 
             trendCurves <- c("linear", "quadratic", "cubic")
-            trendLin <- gcheckbox("linear", selected = "linear" %in% curSet$trend)
-            trendLinCol <- gcombobox(lineColours, editable = TRUE,
-                                     selected =
-                                         if (curSet$col.trend$linear %in% lineColours)
-                                             which(lineColours == curSet$col.trend$linear)
-                                         else 1)
+            trendLin <- gcheckbox("linear", checked = "linear" %in% curSet$trend)
+            trendLinCol <- gcombobox(
+                c(if (!curSet$col.trend$linear %in% lineColours) curSet$col.trend$linear, lineColours),
+                editable = TRUE,
+                selected = which(lineColours == curSet$col.trend$linear))
             tbl[ii, 1:3, anchor = c(-1, 0), expand = TRUE] <- trendLin
             tbl[ii, 4:5] <- trendLinCol
             trendLinCol$widget$setSizeRequest(colBoxWidth, -1)
@@ -3038,12 +3034,11 @@ iNZPlotMod <- setRefClass(
             tbl[ii, 6] <- trendLinLTY
             ii <- ii + 1
 
-            trendQuad <- gcheckbox("quadratic", selected = "quadratic" %in% curSet$trend)
-            trendQuadCol <- gcombobox(lineColours, editable = TRUE,
-                                      selected =
-                                          if (curSet$col.trend$quadratic %in% lineColours)
-                                              which(lineColours == curSet$col.trend$quadratic)
-                                          else 1)
+            trendQuad <- gcheckbox("quadratic", checked = "quadratic" %in% curSet$trend)
+            trendQuadCol <- gcombobox(
+                c(if (!curSet$col.trend$quadratic %in% lineColours) curSet$col.trend$quadratic, lineColours),
+                editable = TRUE,
+                selected = which(lineColours == curSet$col.trend$quadratic))
             tbl[ii, 1:3, anchor = c(-1, 0), expand = TRUE] <- trendQuad
             tbl[ii, 4:5] <- trendQuadCol
             trendQuadCol$widget$setSizeRequest(colBoxWidth, -1)
@@ -3051,12 +3046,11 @@ iNZPlotMod <- setRefClass(
             tbl[ii, 6] <- trendQuadLTY
             ii <- ii + 1
 
-            trendCub <- gcheckbox("cubic", selected = "cubic" %in% curSet$trend)
-            trendCubCol <- gcombobox(lineColours, editable = TRUE,
-                                      selected =
-                                          if (curSet$col.trend$cubic %in% lineColours)
-                                              which(lineColours == curSet$col.trend$cubic)
-                                          else 1)
+            trendCub <- gcheckbox("cubic", checked = "cubic" %in% curSet$trend)
+            trendCubCol <- gcombobox(
+                c(if (!curSet$col.trend$cubic %in% lineColours) curSet$col.trend$cubic, lineColours),
+                editable = TRUE,
+                selected = which(lineColours == curSet$col.trend$cubic))
             tbl[ii, 1:3, anchor = c(-1, 0), expand = TRUE] <- trendCub
             tbl[ii, 4:5] <- trendCubCol
             trendCubCol$widget$setSizeRequest(colBoxWidth, -1)
