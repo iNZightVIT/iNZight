@@ -21,6 +21,7 @@ iNZPlotModWin <- setRefClass(
         optGrp = "ANY",
         curSet = "list", ## the current plot settings
         auto = "logical",   ## if TRUE, then changes occur automatically
+        updateEverything = "ANY",
         locSet = "ANY",
         palettes = "list",
         bgColours = "list",
@@ -133,6 +134,23 @@ iNZPlotModWin <- setRefClass(
 
                 add(mainGrp, optGrp, expand = TRUE)
 
+                ## auto update checkbox
+                
+                ## If sample size is too big, use a button instead of automatically apply changes
+                auto <<- nrow(GUI$getActiveData()) < 100000
+                autoGrp <- ggroup(horizontal = TRUE, fill = TRUE)
+                addSpring(autoGrp)
+                autoChk <- gcheckbox("Update automatically", checked = auto, cont = autoGrp)
+                updateBtn <- gbutton("Update Plot", fill = TRUE,
+                                     cont = autoGrp,
+                                     handler = function(h, ...) updateEverything(TRUE))
+                visible(updateBtn) <- !auto
+                add(mainGrp, autoGrp, expand = FALSE, anchor = c(0, 1))
+                addHandlerChanged(autoChk, handler = function(h, ...) {
+                    auto <<- svalue(h$obj)
+                    visible(updateBtn) <- !svalue(h$obj)
+                })
+                
                 btnGrp <- ggroup(horizontal = TRUE,
                                  expand = FALSE)
 
@@ -154,8 +172,7 @@ iNZPlotModWin <- setRefClass(
 
                 add(mainGrp, btnGrp, expand = FALSE, fill = "x", anchor = c(0, -1))
 
-                ## If sample size is too big, use a button instead of automatically apply changes
-                auto <<- nrow(GUI$getActiveData()) < 100000
+
 
                 visible(GUI$moduleWindow) <<- TRUE
             }
@@ -179,7 +196,7 @@ iNZPlotModWin <- setRefClass(
 
             locSet <<- curSet$locate.settings
 
-            updateEverything <- function(locate = GUI$getActiveDoc()$getSettings()$locate,
+            updateEverything <<- function(locate = GUI$getActiveDoc()$getSettings()$locate,
                                          id = GUI$getActiveDoc()$getSettings()$locate.id,
                                          col = GUI$getActiveDoc()$getSettings()$locate.col,
                                          ext = GUI$getActiveDoc()$getSettings()$locate.extreme) {
@@ -2689,11 +2706,11 @@ iNZPlotMod <- setRefClass(
                 ii <- ii + 1
             }
 
-            updateEverything <- function(update = auto) {
+            updateEverything <<- function(update = auto) {
                 ## To easily diable automatic updating of plot, add this argument,
                 ## otherwise would have to block/unblock handlers
-            ##     if (!update)
-            ##         return()
+                if (!update)
+                    return()
 
                 ## Things that don't need checking:
                 newSet <- list(cex = svalue(cexMain))
@@ -2848,150 +2865,146 @@ iNZPlotMod <- setRefClass(
                 updateSettings()
             }
 
-            if (TRUE) { ## if (auto) {
-                bgtimer <- NULL
-                addHandlerChanged(bgCol,
-                                  handler = function(h, ...) {
-                                      if (!is.null(bgtimer))
-                                          bgtimer$stop_timer()
-                                      bgtimer <- gtimer(500, function(...) {
-                                                            if (nchar(svalue(bgCol)) >= 3)
-                                                                updateEverything()
-                                                        }, one.shot = TRUE)
-                                  })
-                mcextimer <- NULL
-                addHandlerChanged(cexMain,
-                                  handler = function(h, ...) {
-                                      if (!is.null(mcextimer))
-                                          mcextimer$stop_timer()
-                                      mcextimer <- gtimer(500, function(...) updateEverything(), one.shot = TRUE)
-                                  })
-
-                if (!PLOTTYPE %in% c("bar")) {
-                  ptcextimer <- NULL
-                  addHandlerChanged(cexPt,
-                                    handler = function(h, ...) {
-                                        if (!is.null(ptcextimer))
-                                            ptcextimer$stop_timer()
-                                        ptcextimer <- gtimer(500, function(...) updateEverything(), one.shot = TRUE)
-                                    })
-                }
-
-                if (PLOTTYPE == "scatter") {
-                    addHandlerChanged(sizeVar, handler = function(h, ...) {
-                        visible(sizeDesc) <- visible(resizeLbl) <- visible(sizeMethod) <-
-                            svalue(sizeVar, index = TRUE) > 1
-
-                        updateEverything()
-                    })
-                    addHandlerChanged(sizeMethod, handler = function(h, ...) {
-                        svalue(sizeDesc) <- paste(sizeDescs[[svalue(sizeMethod, index = TRUE)]])
-                        updateEverything()
-                    })
-                }
-                if (PLOTTYPE == "hex") {
-                    addHandlerChanged(hexStyle, handler = function(h, ...) updateEverything())
-                }
-
-                if (PLOTTYPE %in% c("scatter", "hex", "dot", "bar", "hist")) {
-                    if (bars | hist) {
-                      bcoltimer <- NULL
-                      addHandlerChanged(barCol,
-                                        handler = function(h, ...) {
-                                            if (!is.null(bcoltimer))
-                                                bcoltimer$stop_timer()
-                                            bcoltimer <- gtimer(500, function(...) {
-                                                                    if (nchar(svalue(barCol)) >= 3)
-                                                                        updateEverything()
-                                                                }, one.shot = TRUE)
-                                        })
-                    } else {
-                      pcoltimer <- NULL
-                      addHandlerChanged(ptCol,
-                                        handler = function(h, ...) {
-                                            if (!is.null(pcoltimer))
-                                                pcoltimer$stop_timer()
-                                            pcoltimer <- gtimer(500, function(...) {
-                                                                    if (nchar(svalue(ptCol)) >= 3)
-                                                                        updateEverything()
-                                                                }, one.shot = TRUE)
-                                        })
-                    }
-                    if (!hist & (!bars | is.null(curSet$y))) {
-                      addHandlerChanged(colVar, handler = function(h, ...) {
-                                            EMPH.LEVEL <<- 0
-                                            if (PLOTTYPE %in% c("dot", "scatter")) symbolMatch()
-                                            if (svalue(h$obj, index = TRUE) == 1) {
-                                                svalue(colLabel) <- ifelse(bars, "Bar colour : ", "Point colour :")
-                                                visible(useRank) <- visible(palAdvanced) <- visible(palCont) <-
-                                                    visible(palCat) <- FALSE
-                                                if (bars) visible(barCol) <- TRUE
-                                                else visible(ptCol) <- TRUE
-                                            } else {
-                                                svalue(colLabel) <- "Palette :"
-                                                if (bars) visible(barCol) <- FALSE
-                                                else visible(ptCol) <- FALSE
-                                                if (is.numeric(GUI$getActiveData()[[svalue(h$obj)]]) &
-                                                    PLOTTYPE != "hex") {
-                                                    visible(palCat) <- FALSE
-                                                    visible(useRank) <- visible(palCont) <- TRUE
-                                                } else {
-                                                    visible(useRank) <- visible(palCont) <- FALSE
-                                                    visible(palCat) <- TRUE
-                                                }
-                                                visible(palAdvanced) <- TRUE
-                                            }
-                                            visible(revPal) <- visible(palCat) || visible(palCont)
-                                            updateEverything()
-                      })
-                      addHandlerChanged(revPal, handler = function(h, ...) updateEverything())
-                      addHandlerChanged(useRank, handler = function(h, ...) updateEverything())
-                    }
-                    if (!hist) {
-                      addHandlerChanged(palCat, handler = function(h, ...) updateEverything())
-                      addHandlerChanged(palCont, handler = function(h, ...) updateEverything())
-                    }
-                }
-                if (PLOTTYPE %in% c("scatter", "dot")) {
-                    transptimer <- NULL
-                    addHandlerChanged(transpSlider,
-                                      handler = function(h, ...) {
-                                          enabled(fillSym) <- svalue(transpSlider) == 0
-                                          if (!is.null(transptimer))
-                                              transptimer$stop_timer()
-                                          transptimer <- gtimer(500, function(...) updateEverything(), one.shot = TRUE)
-                                      })
-                }
-
-                if (PLOTTYPE %in% c("scatter", "dot")) {
-                    addHandlerChanged(pchMatch, handler = function(h, ...) {
-                                          enabled(symVar) <- enabled(symPch) <- !svalue(pchMatch)
+            bgtimer <- NULL
+            addHandlerChanged(bgCol,
+                              handler = function(h, ...) {
+                                  if (!is.null(bgtimer))
+                                      bgtimer$stop_timer()
+                                  bgtimer <- gtimer(500, function(...) {
+                                      if (nchar(svalue(bgCol)) >= 3)
                                           updateEverything()
+                                  }, one.shot = TRUE)
+                              })
+            mcextimer <- NULL
+            addHandlerChanged(cexMain,
+                              handler = function(h, ...) {
+                                  if (!is.null(mcextimer))
+                                      mcextimer$stop_timer()
+                                  mcextimer <- gtimer(500, function(...) updateEverything(), one.shot = TRUE)
+                              })
+            
+            if (!PLOTTYPE %in% c("bar")) {
+                ptcextimer <- NULL
+                addHandlerChanged(cexPt,
+                                  handler = function(h, ...) {
+                                      if (!is.null(ptcextimer))
+                                          ptcextimer$stop_timer()
+                                      ptcextimer <- gtimer(500, function(...) updateEverything(), one.shot = TRUE)
+                                  })
+            }
+            
+            if (PLOTTYPE == "scatter") {
+                addHandlerChanged(sizeVar, handler = function(h, ...) {
+                    visible(sizeDesc) <- visible(resizeLbl) <- visible(sizeMethod) <-
+                        svalue(sizeVar, index = TRUE) > 1
+                    
+                    updateEverything()
+                })
+                addHandlerChanged(sizeMethod, handler = function(h, ...) {
+                    svalue(sizeDesc) <- paste(sizeDescs[[svalue(sizeMethod, index = TRUE)]])
+                    updateEverything()
+                })
+            }
+            if (PLOTTYPE == "hex") {
+                addHandlerChanged(hexStyle, handler = function(h, ...) updateEverything())
+            }
+            
+            if (PLOTTYPE %in% c("scatter", "hex", "dot", "bar", "hist")) {
+                if (bars | hist) {
+                    bcoltimer <- NULL
+                    addHandlerChanged(barCol,
+                                      handler = function(h, ...) {
+                                          if (!is.null(bcoltimer))
+                                              bcoltimer$stop_timer()
+                                          bcoltimer <- gtimer(500, function(...) {
+                                              if (nchar(svalue(barCol)) >= 3)
+                                                  updateEverything()
+                                          }, one.shot = TRUE)
                                       })
-                    addHandlerChanged(symPch, handler = function(h, ...) {
-                        if (svalue(symPch, index = TRUE) %in% c(3:5) && nrow(GUI$getActiveData()) > 2000) {
-                            ## TRANSPARENCY VERY SLOW!
-                            if (svalue(transpSlider) > 0) {
-                                gmessage("Transparency reset to zero.\n\nWARNING: drawing can be VERY slow if using transparent symbols that are NOT circles or squares.")
-                                blockHandlers(transpSlider)
-                                svalue(transpSlider) <- 0
-                                unblockHandlers(transpSlider)
-                            }
-                            visible(transpWarning) <- TRUE
+                } else {
+                    pcoltimer <- NULL
+                    addHandlerChanged(ptCol,
+                                      handler = function(h, ...) {
+                                          if (!is.null(pcoltimer))
+                                              pcoltimer$stop_timer()
+                                          pcoltimer <- gtimer(500, function(...) {
+                                              if (nchar(svalue(ptCol)) >= 3)
+                                                  updateEverything()
+                                          }, one.shot = TRUE)
+                                      })
+                }
+                if (!hist & (!bars | is.null(curSet$y))) {
+                    addHandlerChanged(colVar, handler = function(h, ...) {
+                        EMPH.LEVEL <<- 0
+                        if (PLOTTYPE %in% c("dot", "scatter")) symbolMatch()
+                        if (svalue(h$obj, index = TRUE) == 1) {
+                            svalue(colLabel) <- ifelse(bars, "Bar colour : ", "Point colour :")
+                            visible(useRank) <- visible(palAdvanced) <- visible(palCont) <-
+                                visible(palCat) <- FALSE
+                            if (bars) visible(barCol) <- TRUE
+                            else visible(ptCol) <- TRUE
                         } else {
-                            visible(transpWarning) <- FALSE
+                            svalue(colLabel) <- "Palette :"
+                            if (bars) visible(barCol) <- FALSE
+                            else visible(ptCol) <- FALSE
+                            if (is.numeric(GUI$getActiveData()[[svalue(h$obj)]]) &
+                                PLOTTYPE != "hex") {
+                                visible(palCat) <- FALSE
+                                visible(useRank) <- visible(palCont) <- TRUE
+                            } else {
+                                visible(useRank) <- visible(palCont) <- FALSE
+                                visible(palCat) <- TRUE
+                            }
+                            visible(palAdvanced) <- TRUE
                         }
+                        visible(revPal) <- visible(palCat) || visible(palCont)
                         updateEverything()
                     })
-                    addHandlerChanged(symVar, handler = function(h, ...) updateEverything())
-                    addHandlerChanged(symLwd, handler = function(h, ...) updateEverything())
-                    addHandlerChanged(fillSym, handler = function(h, ...) updateEverything())
+                    addHandlerChanged(revPal, handler = function(h, ...) updateEverything())
+                    addHandlerChanged(useRank, handler = function(h, ...) updateEverything())
+                }
+                if (!hist) {
+                    addHandlerChanged(palCat, handler = function(h, ...) updateEverything())
+                    addHandlerChanged(palCont, handler = function(h, ...) updateEverything())
                 }
             }
-
+            if (PLOTTYPE %in% c("scatter", "dot")) {
+                transptimer <- NULL
+                addHandlerChanged(transpSlider,
+                                  handler = function(h, ...) {
+                                      enabled(fillSym) <- svalue(transpSlider) == 0
+                                      if (!is.null(transptimer))
+                                          transptimer$stop_timer()
+                                      transptimer <- gtimer(500, function(...) updateEverything(), one.shot = TRUE)
+                                  })
+            }
+            
+            if (PLOTTYPE %in% c("scatter", "dot")) {
+                addHandlerChanged(pchMatch, handler = function(h, ...) {
+                    enabled(symVar) <- enabled(symPch) <- !svalue(pchMatch)
+                    updateEverything()
+                })
+                addHandlerChanged(symPch, handler = function(h, ...) {
+                    if (svalue(symPch, index = TRUE) %in% c(3:5) && nrow(GUI$getActiveData()) > 2000) {
+                        ## TRANSPARENCY VERY SLOW!
+                        if (svalue(transpSlider) > 0) {
+                            gmessage("Transparency reset to zero.\n\nWARNING: drawing can be VERY slow if using transparent symbols that are NOT circles or squares.")
+                            blockHandlers(transpSlider)
+                            svalue(transpSlider) <- 0
+                            unblockHandlers(transpSlider)
+                        }
+                        visible(transpWarning) <- TRUE
+                    } else {
+                        visible(transpWarning) <- FALSE
+                    }
+                    updateEverything()
+                })
+                addHandlerChanged(symVar, handler = function(h, ...) updateEverything())
+                addHandlerChanged(symLwd, handler = function(h, ...) updateEverything())
+                addHandlerChanged(fillSym, handler = function(h, ...) updateEverything())
+            }
+            
             add(optGrp, tbl)
-
-
         },
         features = function() {
             tbl <- glayout()
@@ -3147,11 +3160,12 @@ iNZPlotMod <- setRefClass(
             ii <- ii + 1
 
 
-            updateEverything <- function(update = auto) {
+            updateEverything <<- function(update = auto) {
                 ## To easily diable automatic updating of plot, add this argument,
                 ## otherwise would have to block/unblock handlers
-                ##     if (!update)
-                ##         return()
+                if (!update)
+                    return()
+                
                 activateOptions()
 
                 ## Things that don't need checking:
@@ -3204,97 +3218,95 @@ iNZPlotMod <- setRefClass(
                 updateSettings()
             }
 
-            if (TRUE) { ## if (auto) {
-                addHandlerChanged(trendLin, handler = function(h, ...) updateEverything())
-                addHandlerChanged(trendQuad, handler = function(h, ...) updateEverything())
-                addHandlerChanged(trendCub, handler = function(h, ...) updateEverything())
-                addHandlerChanged(trendLinLTY, handler = function(h, ...) updateEverything())
-                addHandlerChanged(trendQuadLTY, handler = function(h, ...) updateEverything())
-                addHandlerChanged(trendCubLTY, handler = function(h, ...) updateEverything())
-
-                linColtimer <- NULL
-                addHandlerChanged(trendLinCol,
+            addHandlerChanged(trendLin, handler = function(h, ...) updateEverything())
+            addHandlerChanged(trendQuad, handler = function(h, ...) updateEverything())
+            addHandlerChanged(trendCub, handler = function(h, ...) updateEverything())
+            addHandlerChanged(trendLinLTY, handler = function(h, ...) updateEverything())
+            addHandlerChanged(trendQuadLTY, handler = function(h, ...) updateEverything())
+            addHandlerChanged(trendCubLTY, handler = function(h, ...) updateEverything())
+            
+            linColtimer <- NULL
+            addHandlerChanged(trendLinCol,
+                              handler = function(h, ...) {
+                                  if (!is.null(linColtimer))
+                                      linColtimer$stop_timer()
+                                  linColtimer <- gtimer(500, function(...) {
+                                      if (nchar(svalue(trendLinCol)) >= 3)
+                                          updateEverything()
+                                  }, one.shot = TRUE)
+                              })
+            quadColtimer <- NULL
+            addHandlerChanged(trendQuadCol,
+                              handler = function(h, ...) {
+                                  if (!is.null(quadColtimer))
+                                      quadColtimer$stop_timer()
+                                  quadColtimer <- gtimer(500, function(...) {
+                                      if (nchar(svalue(trendQuadCol)) >= 3)
+                                          updateEverything()
+                                  }, one.shot = TRUE)
+                              })
+            cubColtimer <- NULL
+            addHandlerChanged(trendCubCol,
+                              handler = function(h, ...) {
+                                  if (!is.null(cubColtimer))
+                                      cubColtimer$stop_timer()
+                                  cubColtimer <- gtimer(500, function(...) {
+                                      if (nchar(svalue(trendCubCol)) >= 3)
+                                          updateEverything()
+                                  }, one.shot = TRUE)
+                              })
+            
+            addHandlerChanged(smooth, function(h, ...) {
+                visible(qsmooth) <- visible(smoothF) <- svalue(smooth)
+                enabled(smoothF) <- !svalue(qsmooth)
+                updateEverything()
+            })
+            addHandlerChanged(qsmooth, function(h, ...) {
+                enabled(smoothF) <- !svalue(qsmooth)
+                updateEverything()
+            })
+            smoothtimer <- NULL
+            addHandlerChanged(smoothF,
+                              handler = function(h, ...) {
+                                  if (!is.null(smoothtimer))
+                                      smoothtimer$stop_timer()
+                                  smoothtimer <- gtimer(500, function(...) updateEverything(), one.shot = TRUE)
+                              })
+            smoothColtimer <- NULL
+            addHandlerChanged(smoothCol,
+                              handler = function(h, ...) {
+                                  if (!is.null(smoothColtimer))
+                                      smoothColtimer$stop_timer()
+                                  smoothColtimer <- gtimer(500, function(...) {
+                                      if (nchar(svalue(smoothCol)) >= 3)
+                                          updateEverything()
+                                  }, one.shot = TRUE)
+                              })
+            
+            if (PLOTTYPE == "scatter") {
+                addHandlerChanged(joinPoints, function(h, ...) updateEverything())
+                joinColtimer <- NULL
+                addHandlerChanged(joinPointsCol,
                                   handler = function(h, ...) {
-                                      if (!is.null(linColtimer))
-                                          linColtimer$stop_timer()
-                                      linColtimer <- gtimer(500, function(...) {
-                                          if (nchar(svalue(trendLinCol)) >= 3)
+                                      if (!is.null(joinColtimer))
+                                          joinColtimer$stop_timer()
+                                      joinColtimer <- gtimer(500, function(...) {
+                                          if (nchar(svalue(joinPointsCol)) >= 3)
                                               updateEverything()
                                       }, one.shot = TRUE)
                                   })
-                quadColtimer <- NULL
-                addHandlerChanged(trendQuadCol,
-                                  handler = function(h, ...) {
-                                      if (!is.null(quadColtimer))
-                                          quadColtimer$stop_timer()
-                                      quadColtimer <- gtimer(500, function(...) {
-                                          if (nchar(svalue(trendQuadCol)) >= 3)
-                                              updateEverything()
-                                      }, one.shot = TRUE)
-                                  })
-                cubColtimer <- NULL
-                addHandlerChanged(trendCubCol,
-                                  handler = function(h, ...) {
-                                      if (!is.null(cubColtimer))
-                                          cubColtimer$stop_timer()
-                                      cubColtimer <- gtimer(500, function(...) {
-                                          if (nchar(svalue(trendCubCol)) >= 3)
-                                              updateEverything()
-                                      }, one.shot = TRUE)
-                                  })
-
-                addHandlerChanged(smooth, function(h, ...) {
-                    visible(qsmooth) <- visible(smoothF) <- svalue(smooth)
-                    enabled(smoothF) <- !svalue(qsmooth)
-                    updateEverything()
-                })
-                addHandlerChanged(qsmooth, function(h, ...) {
-                    enabled(smoothF) <- !svalue(qsmooth)
-                    updateEverything()
-                })
-                smoothtimer <- NULL
-                addHandlerChanged(smoothF,
-                                  handler = function(h, ...) {
-                                      if (!is.null(smoothtimer))
-                                          smoothtimer$stop_timer()
-                                      smoothtimer <- gtimer(500, function(...) updateEverything(), one.shot = TRUE)
-                                  })
-                smoothColtimer <- NULL
-                addHandlerChanged(smoothCol,
-                                  handler = function(h, ...) {
-                                      if (!is.null(smoothColtimer))
-                                          smoothColtimer$stop_timer()
-                                      smoothColtimer <- gtimer(500, function(...) {
-                                          if (nchar(svalue(smoothCol)) >= 3)
-                                              updateEverything()
-                                      }, one.shot = TRUE)
-                                  })
-
-                if (PLOTTYPE == "scatter") {
-                    addHandlerChanged(joinPoints, function(h, ...) updateEverything())
-                    joinColtimer <- NULL
-                    addHandlerChanged(joinPointsCol,
-                                      handler = function(h, ...) {
-                                          if (!is.null(joinColtimer))
-                                              joinColtimer$stop_timer()
-                                          joinColtimer <- gtimer(500, function(...) {
-                                              if (nchar(svalue(joinPointsCol)) >= 3)
-                                                  updateEverything()
-                                          }, one.shot = TRUE)
-                                      })
-                }
-                if (is.factor(curSet$colby)) {
-                    addHandlerChanged(trendBy, function(h, ...) updateEverything())
-                    addHandlerChanged(trendParallel, function(h, ...) updateEverything())
-                    if (PLOTTYPE == "scatter")
-                        addHandlerChanged(joinPointsBy, function(h, ...) updateEverything())
-                }
-
-
-                addHandlerChanged(lwdSpin, function(h, ...) updateEverything())
-                addHandlerChanged(loe, function(h, ...) updateEverything())
             }
-
+            if (is.factor(curSet$colby)) {
+                addHandlerChanged(trendBy, function(h, ...) updateEverything())
+                addHandlerChanged(trendParallel, function(h, ...) updateEverything())
+                if (PLOTTYPE == "scatter")
+                    addHandlerChanged(joinPointsBy, function(h, ...) updateEverything())
+            }
+            
+            
+            addHandlerChanged(lwdSpin, function(h, ...) updateEverything())
+            addHandlerChanged(loe, function(h, ...) updateEverything())
+            
             add(optGrp, tbl)
         },
         axes = function() {
@@ -3473,11 +3485,11 @@ iNZPlotMod <- setRefClass(
               ii <- ii + 1
             }
 
-            updateEverything <- function(update = auto) {
+            updateEverything <<- function(update = auto) {
                 ## To easily diable automatic updating of plot, add this argument,
                 ## otherwise would have to block/unblock handlers
-                ##     if (!update)
-                ##         return()
+                if (!update)
+                    return()
 
                 ## Things that don't need checking:
                 newSet <- list(main = if (svalue(labMain) == "") NULL else svalue(labMain),
