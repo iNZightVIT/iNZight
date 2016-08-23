@@ -35,6 +35,7 @@ Suggests:
     RODBC,
     iNZightMR,
     iNZightModules,
-    png
+    png,
+    viridis
 LazyData: true
 RoxygenNote: 5.0.1
