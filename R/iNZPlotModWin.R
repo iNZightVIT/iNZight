@@ -59,31 +59,43 @@ iNZPlotModWin <- setRefClass(
                                 grey = "grey50",
                                 darkgrey = "grey20"),
                        colourPalettes =
-                           list(cat  =
+                           list(cat = c(
+                                    if (requireNamespace("viridis"))
+                                        list(viridis = viridis::viridis,
+                                             magma = viridis::magma,
+                                             plasma = viridis::plasma,
+                                             inferno = viridis::inferno),
                                     list(default = inzpar()$col.default$cat,
                                          light = function(n) rainbow_hcl(n, c = 50, l = 80, start = 10, end = 320),
                                          dark = function(n) rainbow_hcl(n, c = 50, l = 60, start = 0, end = 288),
-                                         vibrant = function(n) rainbow_hcl(n, c = 80, l = 60, start = 0, end = 300)),
-                                cont =
+                                         vibrant = function(n) rainbow_hcl(n, c = 80, l = 60, start = 0, end = 300))
+                                   ),
+                                cont = c(
+                                    if (requireNamespace("viridis"))
+                                        list(viridis = viridis::viridis,
+                                             magma = viridis::magma,
+                                             plasma = viridis::plasma,
+                                             inferno = viridis::inferno),
                                     list(default = inzpar()$col.default$cont,
-                                         blue = function(n)
-                                             sequential_hcl(n, h = 260, c. = c(80, 10), l = c(30, 95), power = 0.7),
-                                         green = function(n)
-                                             sequential_hcl(n, h = 135, c. = c(50, 10), l = c(40, 95), power = 0.4),
-                                         red = function(n)
-                                             sequential_hcl(n, h = 10, c. = c(80, 10), l = c(30, 95), power = 0.7),
-                                         "green-yellow" = function(n)
-                                             terrain_hcl(n, h = c(130, 30), c. = c(65, 0), l = c(45, 90),
-                                                            power = c(0.5, 1.5)),
-                                         "red-blue" = function(n)
-                                             terrain_hcl(n, h = c(0, -100), c. = c(80, 40), l = c(40, 75),
-                                                            power = c(1, 1)),
+                                         blue =
+                                             function(n) sequential_hcl(n, h = 260, c. = c(80, 10), l = c(30, 95), power = 0.7),
+                                         green =
+                                             function(n) sequential_hcl(n, h = 135, c. = c(50, 10), l = c(40, 95), power = 0.4),
+                                         red =
+                                             function(n) sequential_hcl(n, h = 10, c. = c(80, 10), l = c(30, 95), power = 0.7),
+                                         "green-yellow" =
+                                             function(n) terrain_hcl(n, h = c(130, 30), c. = c(65, 0), l = c(45, 90),
+                                                                     power = c(0.5, 1.5)),
+                                         "red-blue" =
+                                             function(n) terrain_hcl(n, h = c(0, -100), c. = c(80, 40), l = c(40, 75),
+                                                                     power = c(1, 1)),
                                          terrain = terrain_hcl,
                                          heat = heat_hcl,
-                                         "blue/white/pink" = function(n)
-                                             diverge_hcl(n, h = c(180, 330), c = 59, l = c(75, 95), power = 1.5),
-                                         "blue/white/red" = function(n)
-                                             diverge_hcl(n, h = c(260, 0), c = 100, l = c(50, 90), power = 1)),
+                                         "blue/white/pink" =
+                                             function(n) diverge_hcl(n, h = c(180, 330), c = 59, l = c(75, 95), power = 1.5),
+                                         "blue/white/red" =
+                                             function(n) diverge_hcl(n, h = c(260, 0), c = 100, l = c(50, 90), power = 1))
+                                   ),
                                 emphasize = function(n, k, cat = TRUE, ncat = 5,
                                                      fn = if (cat) inzpar()$col.default$cat else inzpar()$col.default$cont) {
                                     cols <- fn(n)
@@ -91,7 +103,7 @@ iNZPlotModWin <- setRefClass(
                                         ks <- floor(seq(1, n, length = ncat + 1))
                                         k <- ks[k]:ks[k+1]
                                     }
-                                    cols[k] <- iNZightPlots:::darken(cols[k], 0.6)
+                                    #cols[k] <- iNZightPlots:::darken(cols[k], 0.6)
                                     cols[-k] <- iNZightPlots:::shade(cols[-k], 0.7)
                                     cols
                                 }),
@@ -2484,8 +2496,8 @@ iNZPlotMod <- setRefClass(
                 ii <- ii + 1
 
                 if (!hist & (!bars | is.null(curSet$y))) {
-                  ## Colour by
-                  lbl <- glabel("Colour by :")
+                    ## Colour by
+                    lbl <- glabel("Colour by :")
                     if (bars)
                         colVarNames <- names(GUI$getActiveData()[sapply(GUI$getActiveData(), is.factor)])
                     else
@@ -2498,6 +2510,15 @@ iNZPlotMod <- setRefClass(
                                       ))
                     tbl[ii, 1:2, anchor = c(1, 0), expand = TRUE] <- lbl
                     tbl[ii, 3:6, expand = TRUE] <- colVar
+                    ii <- ii + 1
+
+                    ## reverse palette direction
+                    revPal <- gcheckbox("Reverse palette", checked = curSet$reverse.palette)
+                    tbl[ii, 3:4, anchor = c(-1, 0)] <- revPal
+
+                    ## rank instead of linear scale
+                    useRank <- gcheckbox("Use Ranks", checked = curSet$col.method == "rank")
+                    tbl[ii, 5:6, anchor = c(-1, 0)] <- useRank
                     ii <- ii + 1
                 }
 
@@ -2524,14 +2545,15 @@ iNZPlotMod <- setRefClass(
                     if (is.numeric(GUI$getActiveData()[[cval]]) & PLOTTYPE != "hex" & !bars) {
                         visible(palCat) <- FALSE
                     } else {
-                        visible(palCont) <- FALSE
+                        visible(useRank) <- visible(palCont) <- FALSE
                     }
                 } else if (bars & !is.null(curSet$y) & !hist) {
-                    visible(barCol) <- visible(palAdvanced) <- visible(palCont) <- FALSE
+                    visible(useRank) <- visible(barCol) <- visible(palAdvanced) <- visible(palCont) <- FALSE
                     visible(palCat) <- TRUE
                 } else {
-                    visible(palAdvanced) <- visible(palCont) <- visible(palCat) <- FALSE
+                    visible(useRank) <- visible(palAdvanced) <- visible(palCont) <- visible(palCat) <- FALSE
                 }
+                visible(revPal) <- visible(palCat) || visible(palCont)
 
                 if (!bars) {
                     ## Cycle through levels:
@@ -2644,7 +2666,7 @@ iNZPlotMod <- setRefClass(
                 tbl[ii, 3:6] <- symPch
                 ii <- ii + 1
 
-                symVars <- colnames(GUI$getActiveData())[sapply(GUI$getActiveData(), function(x)                         length(levels(x)) %in% 1:5)]
+                symVars <- colnames(GUI$getActiveData())[sapply(GUI$getActiveData(), function(x) length(levels(x)) %in% 1:5)]
                 lbl <- glabel("Symbol by :")
                 symVar <- gcombobox(c("", symVars), selected = 1)
                 if (length(symVars) >= 1) {
@@ -2721,6 +2743,8 @@ iNZPlotMod <- setRefClass(
                               else GUI$getActiveData()[[svalue(colVar)]]
                           newSet$varnames <- c(newSet$varnames,
                                                list(colby = svalue(colVar)))
+                          newSet$reverse.palette <- svalue(revPal)
+                          newSet$col.method <- ifelse(svalue(useRank), "rank", "linear")
                         }
                         if (bars) {
                           newSet$col.fun <- colourPalettes$cat[[svalue(palCat)]]
@@ -2899,7 +2923,7 @@ iNZPlotMod <- setRefClass(
                                             if (PLOTTYPE %in% c("dot", "scatter")) symbolMatch()
                                             if (svalue(h$obj, index = TRUE) == 1) {
                                                 svalue(colLabel) <- ifelse(bars, "Bar colour : ", "Point colour :")
-                                                visible(palAdvanced) <- visible(palCont) <-
+                                                visible(useRank) <- visible(palAdvanced) <- visible(palCont) <-
                                                     visible(palCat) <- FALSE
                                                 if (bars) visible(barCol) <- TRUE
                                                 else visible(ptCol) <- TRUE
@@ -2910,15 +2934,18 @@ iNZPlotMod <- setRefClass(
                                                 if (is.numeric(GUI$getActiveData()[[svalue(h$obj)]]) &
                                                     PLOTTYPE != "hex") {
                                                     visible(palCat) <- FALSE
-                                                    visible(palCont) <- TRUE
+                                                    visible(useRank) <- visible(palCont) <- TRUE
                                                 } else {
-                                                    visible(palCont) <- FALSE
+                                                    visible(useRank) <- visible(palCont) <- FALSE
                                                     visible(palCat) <- TRUE
                                                 }
                                                 visible(palAdvanced) <- TRUE
                                             }
+                                            visible(revPal) <- visible(palCat) || visible(palCont)
                                             updateEverything()
-                                        })
+                      })
+                      addHandlerChanged(revPal, handler = function(h, ...) updateEverything())
+                      addHandlerChanged(useRank, handler = function(h, ...) updateEverything())
                     }
                     if (!hist) {
                       addHandlerChanged(palCat, handler = function(h, ...) updateEverything())
