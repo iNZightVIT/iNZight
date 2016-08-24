@@ -66,38 +66,50 @@ iNZPlotToolbar <- setRefClass(
                 refreshFn = GUI$activeModule[[refresh.fn]]
             }
 
-            img.add2plot <- system.file("images/graph-plus-transp.gif", package = "iNZight")
-            img.rmvplot <- system.file("images/graph-cross-transp.gif", package = "iNZight")
-            img.infinfo <- system.file("images/graph-inference.gif", package = "iNZight")
+            ## img.add2plot <- system.file("images/graph-plus-transp.gif", package = "iNZight")
+            ## img.rmvplot <- system.file("images/graph-cross-transp.gif", package = "iNZight")
+            ## img.infinfo <- system.file("images/graph-inference.gif", package = "iNZight")
+            img.add2plot <- system.file("images/toolbar-add.png", package = "iNZight")
+            img.rmvplot <- system.file("images/toolbar-remove.png", package = "iNZight")
+            img.infinfo <- system.file("images/toolbar-inference.png", package = "iNZight")
 
-            newplotBtn <- gimagebutton(stock.id = "newplot", size = "button", name = "newplotbutton")
+            newplotBtn <- gimagebutton(stock.id = "newplot", size = "button", name = "newplotbutton",
+                                       tooltip = "New Graphics Window")
             addHandlerClicked(newplotBtn, function(h, ...) newPlotWindow(refreshFn))
 
-            newtabBtn <- gimagebutton(stock.id = "new", size = "button")
+            newtabBtn <- gimagebutton(stock.id = "new", size = "button",
+                                      tooltip = "New Plot Tab")
             addHandlerClicked(newtabBtn, function(h, ...) plotWidget$addPlot())
 
-            refreshplotBtn <- gimagebutton(stock.id = "refresh", size = "button")
+            refreshplotBtn <- gimagebutton(stock.id = "refresh", size = "button",
+                                           tooltip = "Refresh Plot")
             addHandlerClicked(refreshplotBtn, function(h, ...) refreshFn())
 
-            renametabBtn <- gimagebutton(stock.id = "editor", size = "button")
+            renametabBtn <- gimagebutton(stock.id = "editor", size = "button",
+                                         tooltip = "Rename Plot Tab")
             addHandlerClicked(renametabBtn, function(h, ...) plotWidget$renamePlot())
 
 
-            saveplotBtn <- gimagebutton(stock.id = "save", size = "button")
+            saveplotBtn <- gimagebutton(stock.id = "save", size = "button",
+                                        tooltip = "Save Plot")
             addHandlerClicked(saveplotBtn, function(h, ...) plotWidget$savePlot(refreshFn))
 
-            closetabBtn <- gimagebutton(stock.id = "close", size = "button")
+            closetabBtn <- gimagebutton(stock.id = "close", size = "button",
+                                        tooltip = "Close Plot Tab")
             addHandlerClicked(closetabBtn, function(h, ...) plotWidget$closePlot())
 
 
             ## -- IMAGES
-            addtoplotBtn <- gimagebutton(filename = img.add2plot, size = "button")
+            addtoplotBtn <- gimagebutton(filename = img.add2plot, size = "button",
+                                         tooltip = "Add to Plot")
             addHandlerClicked(addtoplotBtn, function(h, ...) addToPlot())
 
-            removeaddBtn <- gimagebutton(filename = img.rmvplot, size = "button")
+            removeaddBtn <- gimagebutton(filename = img.rmvplot, size = "button",
+                                         tooltip = "Remove Additions")
             addHandlerClicked(removeaddBtn, function(h, ...) iNZPlotRmveModWin$new(GUI))
 
-            inferenceBtn <- gimagebutton(filename = img.infinfo, size = "button")
+            inferenceBtn <- gimagebutton(filename = img.infinfo, size = "button",
+                                         tooltip = "Add Inference Information")
             addHandlerClicked(inferenceBtn, function(h, ...) addInf())
 
 
@@ -182,34 +194,47 @@ iNZPlotToolbar <- setRefClass(
         ## depending on the currently selected variable types
         addToPlot = function() {
             curSet <- GUI$getActiveDoc()$getSettings()
+            err <- FALSE
             if (is.null(GUI$plotType))
-                gmessage("You must select at least one variable before you can access the Add To Plot menu.",
-                         title = "No variable selected")
-            else iNZPlotMod$new(GUI)
+                err <- TRUE
+            if (GUI$plotType == "none")
+                err <- TRUE
+
+            if (err)
+                gmessage("Hmm... you'll have to create a plot before you can add to it!",
+                         title = "No plot!")
+            else
+                iNZPlotMod$new(GUI)
         },
         addInf = function() {
             if (!is.null(GUI$getActiveDoc()$getModel()$getDesign())) {
                 gmessage("Inferential markup of plots for survey data is still in development. If nothing shows up, it's because we haven't got to it yet. If you notice errors (wrong values for data you know) let us know.",
                          icon = "warning", parent = GUI$win, title = "Developmental Feature")
-            }# else {
-                curSet <- GUI$getActiveDoc()$getSettings()
-                if (is.null(GUI$plotType))
-                    gmessage("You must select at least one variable before you can access the Inference menu.",
-                             title = "No variable selected", parent = GUI$win)
-                else
-                    switch(GUI$plotType,
-                           "bar" = iNZBarchartInf$new(GUI),
-                           "hist" = ,
+            }
+            
+            curSet <- GUI$getActiveDoc()$getSettings()
+            err <- FALSE
+            if (is.null(GUI$plotType))
+                err <- TRUE
+            if (GUI$plotType == "none")
+                err <- TRUE
+            
+            if (err)
+                gmessage("It looks like you haven't created a plot yet! Do that, then you can add inference to it!",
+                         title = "No variable selected", parent = GUI$win)
+            else
+                switch(GUI$plotType,
+                       "bar" = iNZBarchartInf$new(GUI),
+                       "hist" = ,
                            "dot" = iNZDotchartInf$new(GUI),
-                           "grid" = ,
+                       "grid" = ,
                            "hex" = ,
-                           "scatter" = {
-                               if (is.null(curSet$trend) && curSet$smooth == 0)
-                                   gmessage("Use the Add to Plot menu to add a trend(s) and/or smoother.",
-                                            title = "No trend or smoother", parent = GUI$win)
-                               else
-                                   GUI$getActiveDoc()$setSettings(list(bs.inference = !curSet$bs.inference))
-                           })
-#            }
+                               "scatter" = {
+                                   if (is.null(curSet$trend) && curSet$smooth == 0)
+                                       gmessage("Use the Add to Plot menu to add a trend(s) and/or smoother.",
+                                                title = "No trend or smoother", parent = GUI$win)
+                                   else
+                                       GUI$getActiveDoc()$setSettings(list(bs.inference = !curSet$bs.inference))
+                               })
         })
-    )
+)
