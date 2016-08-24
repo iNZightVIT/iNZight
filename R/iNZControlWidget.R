@@ -33,7 +33,7 @@ iNZControlWidget <- setRefClass(
             ### CLEAR BUTTONS
 
             ## -- Variable 1
-            V1clearbtn <- gimagebutton(stock.id = "cancel",
+            V1clearbtn <- gimagebutton(stock.id = "cancel", tooltip = "Clear Variable",
                                   handler = function(h,...) {
                                       svalue(V1box, index = TRUE) <<- 1
                                       changePlotSettings(list(x = NULL))
@@ -42,7 +42,7 @@ iNZControlWidget <- setRefClass(
             tbl[1,7, anchor = c(0,0)] <- V1clearbtn
 
             ## -- Variable 2
-            V2clearbtn <- gimagebutton(stock.id = "cancel",
+            V2clearbtn <- gimagebutton(stock.id = "cancel", tooltip = "Clear Variable",
                                   handler = function(h,...) {
                                       svalue(V2box, index = TRUE) <<- 1
                                       changePlotSettings(list(y = NULL,
@@ -54,7 +54,7 @@ iNZControlWidget <- setRefClass(
             tbl[3,7, anchor = c(0,0)] <- V2clearbtn
 
             ## -- Grouping Variable 1
-            G1clearbtn <- gimagebutton(stock.id = "cancel",
+            G1clearbtn <- gimagebutton(stock.id = "cancel", tooltip = "Clear Variable",
                                   handler = function(h,...) {
                                       svalue(G1box, index = TRUE) <<- 1
                                       ## change handler will handle the rest
@@ -62,7 +62,7 @@ iNZControlWidget <- setRefClass(
             tbl[5,7, anchor = c(0,0)] <- G1clearbtn
 
             ## -- Grouping Variable 2
-            G2clearbtn <- gimagebutton(stock.id = "cancel",
+            G2clearbtn <- gimagebutton(stock.id = "cancel", tooltip = "Clear Variable",
                                   handler = function(h,...) {
                                       svalue(G2box, index = TRUE) <<- 1
                                   })
@@ -70,7 +70,7 @@ iNZControlWidget <- setRefClass(
 
 
             ## "SWITCH" buttons:
-            switchV12 <- gimagebutton("go-down")
+            switchV12 <- gimagebutton("go-down", tooltip = "Switch with Variable 2")
             addHandlerClicked(switchV12, function(h, ...) {
                                   if (svalue(V1box, TRUE) == 1 || svalue(V2box, TRUE) == 1) {
                                       gmessage("Need both Variable 1 and Variable 2 selected", icon = "error")
@@ -104,7 +104,7 @@ iNZControlWidget <- setRefClass(
                                   unblockHandlers(V1box)
                                   unblockHandlers(V2box)
                               })
-            switchV23 <- gimagebutton("go-down")
+            switchV23 <- gimagebutton("go-down", tooltip = "Switch with Subset Variable 1")
             addHandlerClicked(switchV23, function(h, ...) {
                                   if (svalue(V2box, TRUE) == 1 && svalue(G1box, TRUE) == 1) {
                                       gmessage("Need at least one of Variable 2 and Subset Variable 1 selected", icon = "error")
@@ -159,7 +159,7 @@ iNZControlWidget <- setRefClass(
                                   unblockHandlers(G1box)
                                   
                               })
-            switchV34 <- gimagebutton("go-down")
+            switchV34 <- gimagebutton("go-down", tooltip = "Switch with Subset Variable 2")
             addHandlerClicked(switchV34, function(h, ...) {
                                   if (svalue(G1box, TRUE) == 1 && svalue(G2box, TRUE) == 1) {
                                       gmessage("Need at least one subsetting variable selected", icon = "error")
@@ -371,29 +371,9 @@ iNZControlWidget <- setRefClass(
             ## make sure there is no slider at the pos
             deleteSlider(pos)
 
-            ## ##################################
-            ## ## This is a workaround for the current bug in
-            ## ## gWidgets2RGtk2. Remove this code once the bug
-            ## ## is fixed! Comes in 2 parts
-            ## ##################################
-            ## if (pos == 8) {
-            ##     childPos <- which(sapply(ctrlGp$children[[1]]$child_positions,
-            ##                          function(x) x$x == 10))
-            ##     if (length(childPos) > 0) {
-            ##         g2Data <- svalue(ctrlGp$children[[1]][9, 3])
-            ##         deleteSlider(10)
-            ##     }
-            ## }
-            ## ##################################
-            ## ## End of woraround part1
-            ## ##################################
-
             ## create a ggroup for the slider at the specified
             ## pos in the glayout
             tbl <- ctrlGp$children[[1]]
-            #tbl[pos, 1:5, expand = TRUE] <- (hzGrp <- ggroup(fill = "x"))
-
-            #sliderGrp <- ggroup(horizontal = FALSE)
 
             ## build the level names that are used for the slider
             grpData <- GUI$getActiveData()[dropdata][[1]]
@@ -423,25 +403,12 @@ iNZControlWidget <- setRefClass(
                                             )
                                   )
                           })
-            lbl <- levels(grpData)
-            ## if the level names are too long, replace them with nr
-            if (sum(nchar(lbl)) > 42)
-                lbl <- 1:length(lbl)
-            ## add * or _ to beginning of labels
-            if (pos == 6)
-                lbl <- c("_MULTI", lbl)
-            else
-                lbl <- c("_ALL", lbl, "_MULTI")
-            ## only add label if it is short enough
-            ## if (sum(nchar(lbl)) + 3 * length(lbl) < 50)
-            ##    add(sliderGrp, glabel(paste(lbl, collapse = "   ")))
 
             ## Play button
             PLAY <- function(data) {
                 playButton$levi <<- playButton$levi + 1
                 if (playButton$levi > playButton$Nlev) {
                     playButton$playtimer$stop_timer()
-                    #changePlotSettings(data)
                     playBtn$set_value(img.playicon)
                     playButton$playtimer <<- NULL
                 } else {
@@ -459,7 +426,6 @@ iNZControlWidget <- setRefClass(
                 if (!is.null(playButton$playtimer)) {
                     ## time is running - so stop the animation
                     playButton$playtimer$stop_timer()
-                    #changePlotSettings(playButton$oldSet)
                     playBtn$set_value(img.playicon)
                     playButton$playtimer <<- NULL
                     return()
@@ -468,7 +434,6 @@ iNZControlWidget <- setRefClass(
                 playBtn$set_value(img.stopicon)
                 pr <- h$obj$parent
                 wc <- which(sapply(pr$child_positions, function(x) identical(h$obj, x$child)))
-                #sld <- pr[pr$child_positions[[wc]]$x, 1]
                 playButton <<- list(playtimer = NULL, row = pr$child_positions[[wc]]$x,
                                     Nlev = length(levels(grpData)),
                                     levi = 0, oldSet = oldSet)
@@ -477,13 +442,14 @@ iNZControlWidget <- setRefClass(
             }
             img.playicon <- system.file("images/icon-play.png", package = "iNZight")
             img.stopicon <- system.file("images/icon-stop.png", package = "iNZight")
-            playBtn <- gimagebutton(filename = img.playicon, size = "button", handler = clickPlay)
-            #add(hzGrp, sliderGrp, expand = TRUE)
+            playBtn <- gimagebutton(filename = img.playicon, size = "button", handler = clickPlay,
+                                    tooltip = "Play through levels")
             
 
             ## Play time delay - time in milliseconds
             img.clockicon <- system.file("images/icon-clock.png", package = "iNZight")
             delayBtn <- gimagebutton(filename = img.clockicon, size = "button",
+                                     tooltip = "Set play timing options",
                                      handler = function(h, ...) {
                                          w <- gwindow(title = "Play Settings", width = 200, height = 80,
                                                       parent = GUI$win)
@@ -509,24 +475,12 @@ iNZControlWidget <- setRefClass(
             tbl[pos, 1:5, expand = TRUE] <- slider
             tbl[pos, 6, anchor = c(0, 0), expand = FALSE] <- delayBtn
             tbl[pos, 7, anchor = c(0, 0), expand = FALSE] <- playBtn
-            
-            
-            ## ##################################
-            ## ## start of workaround part2
-            ## ##################################
-            ## if (exists("g2Data")) {
-            ##     createSlider(10, g2Data)
-            ## }
-            ## ##################################
-            ## ## end of workaround part2
-            ## ##################################
         },
         deleteSlider = function(pos) {
             ## get the child that is at the specified positions
             childPos <- which(sapply(ctrlGp$children[[1]]$child_positions,
                                      function(x) x$x == pos))
             while(length(childPos) > 0) {
-                ##childPos <- names(ctrlGp$children[[1]]$child_positions)[[childPos]]
                 ## delete all the current children of sliderGrp
                 try({
                     ctrlGp$children[[1]]$remove_child(

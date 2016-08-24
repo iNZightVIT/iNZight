@@ -576,12 +576,14 @@ iNZGUI <- setRefClass(
                         g$set_borderwidth(10)
                         mainlbl <- glabel("iNZight", container = g)
                         font(mainlbl) <- list(weight = "bold", family = "normal", size = 20)
-                        verlbl <- glabel(paste("Version", packageDescription("iNZight")$Version), container = g)
+                        verlbl <- glabel(sprintf("Version %s - Released %s",
+                                                 packageDescription("iNZight")$Version,
+                                                 format(as.POSIXct(packageDescription("iNZight")$Date),
+                                                        "%d %B, %Y")), container = g)
                         font(verlbl) <- list(weight = "normal", family = "normal", size = 10)
+                        rverlbl <- glabel(sprintf("Running on R version %s", getRversion()), container = g)
+                        font(rverlbl) <- list(weight = "normal", family = "normal", size = 10)
                         addSpace(g, 10)
-                        copylbl <- glabel("Copyright (C) 2014 University of Auckland", container = g)
-                        font(copylbl) <- list(weight = "normal", family = "normal", size = 8)
-                        addSpace(g, 15)
                         gpltxt <- gtext(expand = TRUE, cont = g, wrap = TRUE)
                         insert(gpltxt, paste("\n\nThis program is free software; you can redistribute it and/or",
                                              "modify it under the terms of the GNU General Public License",
