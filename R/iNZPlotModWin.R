@@ -31,7 +31,9 @@ iNZPlotModWin <- setRefClass(
         EMPH.LEVEL = "numeric"
         ),
     methods = list(
-        initialize = function(gui = NULL, which = 1) {
+        initialize = function(gui = NULL, which = 1,
+                              .viridis = requireNamespace("viridis", quietly = TRUE),
+                              .rcb = requireNamespace("RColorBrewer", quietly = TRUE)) {
             initFields(GUI = gui,
                        bgColours =
                            list(lightgrey = "#eeeeee",
@@ -61,23 +63,36 @@ iNZPlotModWin <- setRefClass(
                                 darkgrey = "grey20"),
                        colourPalettes =
                            list(cat = c(
-                                    if (requireNamespace("viridis"))
+                                    if (.rcb)
+                                        list(contrast =
+                                                 function(n)
+                                                     if (n > 8) colourPalettes$cat$dark
+                                                     else RColorBrewer::brewer.pal(n, "Set2"),
+                                             bright =
+                                                 function(n)
+                                                     if (n > 9) colourPalettes$cat$light
+                                                     else RColorBrewer::brewer.pal(n, "Set1"),
+                                             light =
+                                                 function(n)
+                                                     if (n > 12) colourPalettes$cat[[4]]
+                                                     else RColorBrewer::brewer.pal(n, "Set3")),
+                                    if (.viridis)
                                         list(viridis = viridis::viridis,
                                              magma = viridis::magma,
                                              plasma = viridis::plasma,
                                              inferno = viridis::inferno),
-                                    list(default = inzpar()$col.default$cat,
-                                         light = function(n) rainbow_hcl(n, c = 50, l = 80, start = 10, end = 320),
-                                         dark = function(n) rainbow_hcl(n, c = 50, l = 60, start = 0, end = 288),
-                                         vibrant = function(n) rainbow_hcl(n, c = 80, l = 60, start = 0, end = 300))
+                                    list('rainbow (hcl)' = function(n) hcl((1:n) / n * 360, c = 80, l = 50))
+                                         #light = function(n) rainbow_hcl(n, c = 50, l = 80, start = 10, end = 320),
+                                         #dark = function(n) rainbow_hcl(n, c = 50, l = 60, start = 0, end = 288),
+                                         #vibrant = function(n) rainbow_hcl(n, c = 80, l = 60, start = 0, end = 300))
                                    ),
                                 cont = c(
-                                    if (requireNamespace("viridis"))
+                                    if (.viridis)
                                         list(viridis = viridis::viridis,
                                              magma = viridis::magma,
                                              plasma = viridis::plasma,
                                              inferno = viridis::inferno),
-                                    list(default = inzpar()$col.default$cont,
+                                    list('rainbow (hcl)' = function(n) hcl((1:n) / n * 320 + 60, c = 100, l = 50),
                                          blue =
                                              function(n) sequential_hcl(n, h = 260, c. = c(80, 10), l = c(30, 95), power = 0.7),
                                          green =
@@ -2526,14 +2541,15 @@ iNZPlotMod <- setRefClass(
                     tbl[ii, 3:6, expand = TRUE] <- colVar
                     ii <- ii + 1
 
-                    ## reverse palette direction
-                    revPal <- gcheckbox("Reverse palette", checked = curSet$reverse.palette)
-                    tbl[ii, 3:4, anchor = c(-1, 0)] <- revPal
-
                     ## rank instead of linear scale
                     useRank <- gcheckbox("Use Ranks", checked = curSet$col.method == "rank")
                     tbl[ii, 5:6, anchor = c(-1, 0)] <- useRank
                     ii <- ii + 1
+                }
+                if (!hist) {
+                    ## reverse palette direction
+                    revPal <- gcheckbox("Reverse palette", checked = curSet$reverse.palette)
+                    tbl[ii - exists("useRank"), 3:4, anchor = c(-1, 0)] <- revPal
                 }
 
                 ## dropdown for colour palette
@@ -2565,9 +2581,14 @@ iNZPlotMod <- setRefClass(
                     visible(useRank) <- visible(barCol) <- visible(palAdvanced) <- visible(palCont) <- FALSE
                     visible(palCat) <- TRUE
                 } else {
-                    visible(useRank) <- visible(palAdvanced) <- visible(palCont) <- visible(palCat) <- FALSE
+                    visible(palAdvanced) <- visible(palCont) <- visible(palCat) <- FALSE
+                    if (!hist) {
+                        visible(useRank) <- FALSE
+                    }
                 }
-                visible(revPal) <- visible(palCat) || visible(palCont)
+                if (!hist) {
+                    visible(revPal) <- visible(palCont) || visible(palCat)
+                }
 
                 if (!bars) {
                     ## Cycle through levels:
@@ -2757,9 +2778,9 @@ iNZPlotMod <- setRefClass(
                               else GUI$getActiveData()[[svalue(colVar)]]
                           newSet$varnames <- c(newSet$varnames,
                                                list(colby = svalue(colVar)))
-                          newSet$reverse.palette <- svalue(revPal)
                           newSet$col.method <- ifelse(svalue(useRank), "rank", "linear")
                         }
+                        newSet$reverse.palette <- svalue(revPal)
                         if (bars) {
                           newSet$col.fun <- colourPalettes$cat[[svalue(palCat)]]
                         } else {
@@ -2957,12 +2978,12 @@ iNZPlotMod <- setRefClass(
                         visible(revPal) <- visible(palCat) || visible(palCont)
                         updateEverything()
                     })
-                    addHandlerChanged(revPal, handler = function(h, ...) updateEverything())
                     addHandlerChanged(useRank, handler = function(h, ...) updateEverything())
                 }
                 if (!hist) {
                     addHandlerChanged(palCat, handler = function(h, ...) updateEverything())
                     addHandlerChanged(palCont, handler = function(h, ...) updateEverything())
+                    addHandlerChanged(revPal, handler = function(h, ...) updateEverything())
                 }
             }
             if (PLOTTYPE %in% c("scatter", "dot")) {

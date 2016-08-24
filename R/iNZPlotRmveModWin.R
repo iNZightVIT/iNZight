@@ -30,6 +30,7 @@ iNZPlotRmveModWin <- setRefClass(
                     "Remove symbol interior colouring",
                     "Restore default symbol colours",
                     "Restore default plotting symbol sizes",
+                    "Remove symbol coding by", curSet$varnames$symbolby,
                     "Restore default symbol transparency",
                     "Restore default background colour",
                     "Restore default line thickness",
@@ -65,6 +66,7 @@ iNZPlotRmveModWin <- setRefClass(
                     curSet$fill.pt != defSet$fill.pt,  ## point filling
                     curSet$col.pt != defSet$col.pt, ## point colour
                     (all.equal(curSet$cex.pt, defSet$cex.pt) != TRUE), ## point size
+                    !is.null(curSet$symbolby),  ## symbol by
                     (all.equal(curSet$alpha, defSet$alpha) != TRUE), ## transparency
                     curSet$bg != defSet$bg, ## bg colour
                     curSet$lwd.pt != defSet$lwd.pt, ## point line thickness
@@ -74,7 +76,7 @@ iNZPlotRmveModWin <- setRefClass(
                     !is.null(curSet$hist.bins),  ## number of histogram bins
                     curSet$scatter.grid.bins != defSet$scatter.grid.bins,  ## number of grid bins
                     curSet$hex.bins != defSet$hex.bins,  ## number of hexs
-                    curSet$plottype != defSet$plottype,  ## plot type
+                    curSet$plottype != defSet$plottype && curSet$plottype != "default",  ## plot type
                     (!is.null(curSet$locate) | !is.null(curSet$locate.id) |
                      !is.null(curSet$locate.col)),  ## locate labels
                     (!is.null(curSet$xlim) | !is.null(curSet$ylim)),  ## axis limits
@@ -192,6 +194,8 @@ iNZPlotRmveModWin <- setRefClass(
                                  list(pch = defSet$pch, fill.pt = defSet$fill.pt), ## point filling
                                  list(col.pt = defSet$col.pt), ## point colour
                                  list(cex.pt = defSet$cex.pt), ## point size
+                                 list(symbolby = NULL,
+                                      varnames = list(symbolby = NULL)), ## symbol by
                                  list(alpha = defSet$alpha), ## transparency
                                  list(bg = defSet$bg), ## bg colour
                                  list(lwd.pt = defSet$lwd.pt), ## point line thickness

@@ -133,9 +133,9 @@ iNZBarchartInf <- setRefClass(
             
             ## Interval types
             compInt <- gcheckbox("Comparison Intervals",
-                                 checked = "comp" %in% curSet$inference.type)
+                                 checked = TRUE)  # "comp" %in% curSet$inference.type)
             confInt <- gcheckbox("Confidence Intervals",
-                                 checked = "conf" %in% curSet$inference.type)
+                                 checked = TRUE)  #"conf" %in% curSet$inference.type)
 
             typTab[3, 1] <<- confInt
             typTab[4, 1] <<- compInt            
@@ -209,9 +209,9 @@ iNZDotchartInf <- setRefClass(
             
             ## Interval types
             compInt <- gcheckbox("Comparison Intervals",
-                                 checked = "comp" %in% curSet$inference.type)
+                                 checked = TRUE)  # "comp" %in% curSet$inference.type)
             confInt <- gcheckbox("Confidence Intervals",
-                                 checked = "conf" %in% curSet$inference.type)
+                                 checked = TRUE)  # "conf" %in% curSet$inference.type)
 
             typTab[3, 1] <<- confInt
             typTab[4, 1] <<- compInt            
