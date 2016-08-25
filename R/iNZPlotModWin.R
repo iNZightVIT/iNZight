@@ -28,7 +28,8 @@ iNZPlotModWin <- setRefClass(
         pointColours = "list",
         barColours = "list",
         colourPalettes = "list",
-        EMPH.LEVEL = "numeric"
+        EMPH.LEVEL = "numeric",
+        timer = "ANY"
         ),
     methods = list(
         initialize = function(gui = NULL, which = 1,
@@ -120,7 +121,8 @@ iNZPlotModWin <- setRefClass(
                                     cols[-k] <- iNZightPlots:::shade(cols[-k], 0.7)
                                     cols
                                 }),
-                       EMPH.LEVEL = 0)
+                       EMPH.LEVEL = 0,
+                       timer = NULL)
             if (!is.null(GUI)) {
                 updateSettings()
 
@@ -169,7 +171,7 @@ iNZPlotModWin <- setRefClass(
                                           browseURL("https://www.stat.auckland.ac.nz/~wild/iNZight/user_guides/plot_options/?topic=add_to_plot")
                                       })
 
-                okButton <<- gbutton("Close", expand = TRUE, fill = TRUE,
+                okButton <<- gbutton("Home", expand = TRUE, fill = TRUE,
                                      cont = btnGrp,
                                      handler = function(h, ...) {
                                          ## delete the module window
@@ -1035,21 +1037,23 @@ iNZPlotMod <- setRefClass(
                 ii <- ii + 1
 
                 lbl <- glabel(switch(PLOTTYPE,
-                                     "hex"  = "Number of hexagons :",
-                                     "grid" = "Number of grid bins :",
-                                     "hist" = "Number of bars :"))
+                                     "hex"  = "Hexagon size :",
+                                     "grid" = "Bin size :",
+                                     "hist" = "Histogram bin width :"))
                 cexPt <- switch(PLOTTYPE,
                                 "hex" = {
-                                    gslider(from = 10, to = 80, by = 1,
-                                            value = curSet$hex.bins)
+                                    gslider(from = 0.5, to = 4, by = 0.1,
+                                            value = curSet$hex.bins / iNZightPlots::inzpar()$hex.bins)
                                 },
                                 "grid" = {
-                                    gslider(from = 10, to = 250, by = 1,
-                                            value = curSet$scatter.grid.bins)
+                                    gslider(from = 0.2, to = 5, by = 0.1,
+                                            value = curSet$scatter.grid.bins / iNZightPlots::inzpar()$scatter.grid.bins)
                                 },
                                 "hist" = {
-                                    gslider(from = 10, to = 100, by = 1,
-                                            value = length(GUI$curPlot[[1]][[1]]$toplot[[1]][[1]]))
+                                    gslider(from = 0.05, to = 3.5,
+                                            by = 0.05, value = curSet$cex.dotpt)
+                                    #gslider(from = 10, to = 100, by = 1,
+                                    #        value = length(GUI$curPlot[[1]][[1]]$toplot[[1]][[1]]))
                                 })
                 tbl[ii, 1:2, anchor = c(1, 0), expand = TRUE] <- lbl
                 tbl[ii, 3:6, expand = TRUE] <- cexPt
@@ -1329,12 +1333,11 @@ iNZPlotMod <- setRefClass(
 
                 ## Size
                 if (!PLOTTYPE %in% c("bar")) {
-                  newSet[[switch(PLOTTYPE,
-                                 "scatter" = "cex.pt",
-                                 "dot" = "cex.dotpt",
-                                 "grid" = "scatter.grid.bins",
-                                 "hex" = "hex.bins",
-                                 "hist" = "hist.bins")]] <- svalue(cexPt)
+                  switch(PLOTTYPE,
+                         "scatter" = newSet$cex.pt <- svalue(cexPt),
+                         "dot"     =, "hist" = newSet$cex.dotpt <- svalue(cexPt),
+                         "grid"    = newSet$scatter.grid.bins <- iNZightPlots::inzpar()$scatter.grid.bins / svalue(cexPt),
+                         "hex"     = newSet$hex.bins <- iNZightPlots::inzpar()$hex.bins / svalue(cexPt))
                 }
                 if (PLOTTYPE == "scatter") {
                     newSet <- c(newSet, list(sizeby = GUI$getActiveData()[[svalue(sizeVar)]]))
@@ -1469,31 +1472,30 @@ iNZPlotMod <- setRefClass(
                 updateSettings()
             }
 
-            bgtimer <- NULL
             addHandlerChanged(bgCol,
                               handler = function(h, ...) {
-                                  if (!is.null(bgtimer))
-                                      bgtimer$stop_timer()
-                                  bgtimer <- gtimer(500, function(...) {
+                                  if (!is.null(timer))
+                                      if (timer$started) timer$stop_timer()
+                                  timer <<- gtimer(500, function(...) {
                                       if (nchar(svalue(bgCol)) >= 3)
                                           updateEverything()
                                   }, one.shot = TRUE)
                               })
-            mcextimer <- NULL
+
             addHandlerChanged(cexMain,
                               handler = function(h, ...) {
-                                  if (!is.null(mcextimer))
-                                      mcextimer$stop_timer()
-                                  mcextimer <- gtimer(500, function(...) updateEverything(), one.shot = TRUE)
+                                  if (!is.null(timer))
+                                      if (timer$started) timer$stop_timer()
+                                  timer <<- gtimer(500, function(...) updateEverything(), one.shot = TRUE)
                               })
             
             if (!PLOTTYPE %in% c("bar")) {
-                ptcextimer <- NULL
                 addHandlerChanged(cexPt,
                                   handler = function(h, ...) {
-                                      if (!is.null(ptcextimer))
-                                          ptcextimer$stop_timer()
-                                      ptcextimer <- gtimer(500, function(...) updateEverything(), one.shot = TRUE)
+                                      if (!is.null(timer))
+                                          if (timer$started)
+                                              if (timer$started) timer$stop_timer()
+                                      timer <<- gtimer(500, function(...) updateEverything(), one.shot = TRUE)
                                   })
             }
             
@@ -1515,23 +1517,21 @@ iNZPlotMod <- setRefClass(
             
             if (PLOTTYPE %in% c("scatter", "hex", "dot", "bar", "hist")) {
                 if (bars | hist) {
-                    bcoltimer <- NULL
                     addHandlerChanged(barCol,
                                       handler = function(h, ...) {
-                                          if (!is.null(bcoltimer))
-                                              bcoltimer$stop_timer()
-                                          bcoltimer <- gtimer(500, function(...) {
+                                          if (!is.null(timer))
+                                              if (timer$started) timer$stop_timer()
+                                          timer <<- gtimer(500, function(...) {
                                               if (nchar(svalue(barCol)) >= 3)
                                                   updateEverything()
                                           }, one.shot = TRUE)
                                       })
                 } else {
-                    pcoltimer <- NULL
                     addHandlerChanged(ptCol,
                                       handler = function(h, ...) {
-                                          if (!is.null(pcoltimer))
-                                              pcoltimer$stop_timer()
-                                          pcoltimer <- gtimer(500, function(...) {
+                                          if (!is.null(timer))
+                                              if (timer$started) timer$stop_timer()
+                                          timer <<- gtimer(500, function(...) {
                                               if (nchar(svalue(ptCol)) >= 3)
                                                   updateEverything()
                                           }, one.shot = TRUE)
@@ -1573,13 +1573,12 @@ iNZPlotMod <- setRefClass(
                 }
             }
             if (PLOTTYPE %in% c("scatter", "dot")) {
-                transptimer <- NULL
                 addHandlerChanged(transpSlider,
                                   handler = function(h, ...) {
                                       enabled(fillSym) <- svalue(transpSlider) == 0
-                                      if (!is.null(transptimer))
-                                          transptimer$stop_timer()
-                                      transptimer <- gtimer(500, function(...) updateEverything(), one.shot = TRUE)
+                                      if (!is.null(timer))
+                                          if (timer$started) timer$stop_timer()
+                                      timer <<- gtimer(500, function(...) updateEverything(), one.shot = TRUE)
                                   })
             }
             
@@ -1826,32 +1825,31 @@ iNZPlotMod <- setRefClass(
             addHandlerChanged(trendQuadLTY, handler = function(h, ...) updateEverything())
             addHandlerChanged(trendCubLTY, handler = function(h, ...) updateEverything())
             
-            linColtimer <- NULL
             addHandlerChanged(trendLinCol,
                               handler = function(h, ...) {
-                                  if (!is.null(linColtimer))
-                                      linColtimer$stop_timer()
-                                  linColtimer <- gtimer(500, function(...) {
+                                  if (!is.null(timer))
+                                      if (timer$started) timer$stop_timer()
+                                  timer <<- gtimer(500, function(...) {
                                       if (nchar(svalue(trendLinCol)) >= 3)
                                           updateEverything()
                                   }, one.shot = TRUE)
                               })
-            quadColtimer <- NULL
+
             addHandlerChanged(trendQuadCol,
                               handler = function(h, ...) {
-                                  if (!is.null(quadColtimer))
-                                      quadColtimer$stop_timer()
-                                  quadColtimer <- gtimer(500, function(...) {
+                                  if (!is.null(timer))
+                                      if (timer$started) timer$stop_timer()
+                                  timer <<- gtimer(500, function(...) {
                                       if (nchar(svalue(trendQuadCol)) >= 3)
                                           updateEverything()
                                   }, one.shot = TRUE)
                               })
-            cubColtimer <- NULL
+
             addHandlerChanged(trendCubCol,
                               handler = function(h, ...) {
-                                  if (!is.null(cubColtimer))
-                                      cubColtimer$stop_timer()
-                                  cubColtimer <- gtimer(500, function(...) {
+                                  if (!is.null(timer))
+                                      if (timer$started) timer$stop_timer()
+                                  timer <<- gtimer(500, function(...) {
                                       if (nchar(svalue(trendCubCol)) >= 3)
                                           updateEverything()
                                   }, one.shot = TRUE)
@@ -1866,19 +1864,19 @@ iNZPlotMod <- setRefClass(
                 enabled(smoothF) <- !svalue(qsmooth)
                 updateEverything()
             })
-            smoothtimer <- NULL
+
             addHandlerChanged(smoothF,
                               handler = function(h, ...) {
-                                  if (!is.null(smoothtimer))
-                                      smoothtimer$stop_timer()
-                                  smoothtimer <- gtimer(500, function(...) updateEverything(), one.shot = TRUE)
+                                  if (!is.null(timer))
+                                      if (timer$started) timer$stop_timer()
+                                  timer <<- gtimer(500, function(...) updateEverything(), one.shot = TRUE)
                               })
-            smoothColtimer <- NULL
+
             addHandlerChanged(smoothCol,
                               handler = function(h, ...) {
-                                  if (!is.null(smoothColtimer))
-                                      smoothColtimer$stop_timer()
-                                  smoothColtimer <- gtimer(500, function(...) {
+                                  if (!is.null(timer))
+                                      if (timer$started) timer$stop_timer()
+                                  timer <<- gtimer(500, function(...) {
                                       if (nchar(svalue(smoothCol)) >= 3)
                                           updateEverything()
                                   }, one.shot = TRUE)
@@ -1886,12 +1884,11 @@ iNZPlotMod <- setRefClass(
             
             if (PLOTTYPE == "scatter") {
                 addHandlerChanged(joinPoints, function(h, ...) updateEverything())
-                joinColtimer <- NULL
                 addHandlerChanged(joinPointsCol,
                                   handler = function(h, ...) {
-                                      if (!is.null(joinColtimer))
-                                          joinColtimer$stop_timer()
-                                      joinColtimer <- gtimer(500, function(...) {
+                                      if (!is.null(timer))
+                                          if (timer$started) timer$stop_timer()
+                                      timer <<- gtimer(500, function(...) {
                                           if (nchar(svalue(joinPointsCol)) >= 3)
                                               updateEverything()
                                       }, one.shot = TRUE)
@@ -2174,11 +2171,10 @@ iNZPlotMod <- setRefClass(
                 addHandlerChanged(yRug, function(h, ...) updateEverything())
             }
 
-            timer <- NULL
             updT <- function(h, ...) {
                 if (!is.null(timer))
-                    timer$stop_timer()
-                timer <- gtimer(800, function(...) updateEverything(), one.shot = TRUE)
+                    if (timer$started) timer$stop_timer()
+                timer <<- gtimer(800, function(...) updateEverything(), one.shot = TRUE)
             }
             if (PLOTTYPE == "bar") {
               if (length(levels(curSet$x)) > 2) {

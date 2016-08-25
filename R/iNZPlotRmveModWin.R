@@ -106,7 +106,7 @@ iNZPlotRmveModWin <- setRefClass(
                     })
 
                 closeButton <- gbutton(
-                    "Close",
+                    "Home",
                     handler = function(h, ...) {
                         delete(GUI$leftMain, GUI$leftMain$children[[2]])
                         visible(GUI$gp1) <<- TRUE
@@ -139,15 +139,15 @@ iNZPlotRmveModWin <- setRefClass(
                 add(mainGrp, lbl)
                 
                 selectGrp <- ggroup(horizontal = FALSE,
-                                  container = mainGrp,
-                                  expand = FALSE)
-                btnGrp <- ggroup(container = mainGrp, expand = FALSE)
+                                    container = mainGrp,
+                                    expand = FALSE)
+                
+                addSpring(mainGrp)
+                btnGrp <- ggroup(container = mainGrp, horizontal = TRUE)
                 mainGrp$set_borderwidth(5)
 
-                ## Action buttons:
-                btnTb <- glayout()
-                btnTb[1, 1, expand = TRUE] <- proceedButton
-                btnTb[1, 2, expand = TRUE] <- closeButton
+                add(btnGrp, proceedButton, expand = TRUE, fill = TRUE)
+                add(btnGrp, closeButton, expand = TRUE, fill = TRUE)
 
                 ## Checking function:
                 checkOK <- function() {
@@ -158,9 +158,7 @@ iNZPlotRmveModWin <- setRefClass(
 
                 sapply(additions[curAdditions], function(x) {
                        gcheckbox(x, cont = selectGrp, handler = function(h, ...) checkOK())})
-                                
-                addSpring(btnGrp)
-                add(btnGrp, btnTb)
+                
                 
                 ## add observer to the data
                 ## if it changes, remove all current additions

@@ -85,7 +85,7 @@ iNZPlotInfWin <- setRefClass(
                                          browseURL("https://www.stat.auckland.ac.nz/~wild/iNZight/user_guides/plot_options/?topic=plot_inference")
                                       })
                             
-                okButton <- gbutton("Close", expand = TRUE, fill = TRUE,
+                okButton <- gbutton("Home", expand = TRUE, fill = TRUE,
                                     cont = btnGrp,
                                     handler = function(h, ...) {
                                         ## delete the module window

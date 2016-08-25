@@ -76,7 +76,7 @@ iNZImportExampleWin <-
                                          dispose(importFileWin)
                                      })
 
-                okBtn <- gbutton("OK", expand = TRUE, cont = btnGrp,
+                okBtn <- gbutton("Ok", expand = TRUE, cont = btnGrp,
                                  handler = function(h, ...) {
                                      ## Set the data - will need to 'load' it into an evironment, then
                                      ## reassign it:

@@ -21,8 +21,8 @@ iNZControlWidget <- setRefClass(
 
             V1box <<- gcombobox(c("Select/Drag-drop Variable 1", colnames(GUI$getActiveData())))
             V2box <<- gcombobox(c("Select/Drag-drop Variable 2", colnames(GUI$getActiveData())))
-            G1box <<- gcombobox(c("Select/Drag-drop Subset Variable 1", colnames(GUI$getActiveData())))
-            G2box <<- gcombobox(c("Select/Drag-drop Subset Variable 2", colnames(GUI$getActiveData())))
+            G1box <<- gcombobox(c("Select/Drag-drop Variable 3 (subset)", colnames(GUI$getActiveData())))
+            G2box <<- gcombobox(c("Select/Drag-drop Variable 4 (subset)", colnames(GUI$getActiveData())))
 
             tbl[1,1:5, anchor = c(0,0), expand = TRUE] <- V1box
             tbl[3,1:5, anchor = c(0,0), expand = TRUE] <- V2box
@@ -72,10 +72,7 @@ iNZControlWidget <- setRefClass(
             ## "SWITCH" buttons:
             switchV12 <- gimagebutton("go-down", tooltip = "Switch with Variable 2")
             addHandlerClicked(switchV12, function(h, ...) {
-                                  if (svalue(V1box, TRUE) == 1 || svalue(V2box, TRUE) == 1) {
-                                      gmessage("Need both Variable 1 and Variable 2 selected", icon = "error")
-                                      return()
-                                  }
+                                  if (svalue(V1box, TRUE) == 1 || svalue(V2box, TRUE) == 1) return()
                                   
                                   V1 <- svalue(V1box)
                                   V2 <- svalue(V2box)
@@ -104,12 +101,9 @@ iNZControlWidget <- setRefClass(
                                   unblockHandlers(V1box)
                                   unblockHandlers(V2box)
                               })
-            switchV23 <- gimagebutton("go-down", tooltip = "Switch with Subset Variable 1")
+            switchV23 <- gimagebutton("go-down", tooltip = "Switch with Variable 3")
             addHandlerClicked(switchV23, function(h, ...) {
-                                  if (svalue(V2box, TRUE) == 1 && svalue(G1box, TRUE) == 1) {
-                                      gmessage("Need at least one of Variable 2 and Subset Variable 1 selected", icon = "error")
-                                      return()
-                                  }
+                                  if (svalue(V2box, TRUE) == 1 && svalue(G1box, TRUE) == 1) return()
                                   
                                   V2 <- svalue(V2box, TRUE)
                                   G1 <- svalue(G1box, TRUE)
@@ -159,12 +153,9 @@ iNZControlWidget <- setRefClass(
                                   unblockHandlers(G1box)
                                   
                               })
-            switchV34 <- gimagebutton("go-down", tooltip = "Switch with Subset Variable 2")
+            switchV34 <- gimagebutton("go-down", tooltip = "Switch with Variable 4")
             addHandlerClicked(switchV34, function(h, ...) {
-                                  if (svalue(G1box, TRUE) == 1 && svalue(G2box, TRUE) == 1) {
-                                      gmessage("Need at least one subsetting variable selected", icon = "error")
-                                      return()
-                                  }
+                                  if (svalue(G1box, TRUE) == 1 && svalue(G2box, TRUE) == 1) return()
 
                                   G1 <- svalue(G1box, TRUE)
                                   G2 <- svalue(G2box, TRUE)
