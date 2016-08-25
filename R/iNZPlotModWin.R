@@ -82,7 +82,8 @@ iNZPlotModWin <- setRefClass(
                                              magma = viridis::magma,
                                              plasma = viridis::plasma,
                                              inferno = viridis::inferno),
-                                    list('rainbow (hcl)' = function(n) hcl((1:n) / n * 360, c = 80, l = 50))
+                                    list("Colourblind Friendly" = inzpar()$col.default$cat,
+                                         'rainbow (hcl)' = function(n) hcl((1:n) / n * 360, c = 80, l = 50))
                                    ),
                                 cont = c(
                                     if (.viridis)
@@ -117,7 +118,7 @@ iNZPlotModWin <- setRefClass(
                                         ks <- floor(seq(1, n, length = ncat + 1))
                                         k <- ks[k]:ks[k+1]
                                     }
-                                    #cols[k] <- iNZightPlots:::darken(cols[k], 0.6)
+                                    #cols[k] <- iNZightPlots:::shade(cols[k], -0.4)
                                     cols[-k] <- iNZightPlots:::shade(cols[-k], 0.7)
                                     cols
                                 }),
