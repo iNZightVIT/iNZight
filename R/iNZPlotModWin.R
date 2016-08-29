@@ -1168,7 +1168,7 @@ iNZPlotMod <- setRefClass(
                         visible(useRank) <- visible(palCont) <- FALSE
                     }
                 } else if (bars & !is.null(curSet$y) & !hist) {
-                    visible(useRank) <- visible(barCol) <- visible(palAdvanced) <- visible(palCont) <- FALSE
+                    visible(barCol) <- visible(palAdvanced) <- visible(palCont) <- FALSE
                     visible(palCat) <- TRUE
                 } else {
                     visible(palAdvanced) <- visible(palCont) <- visible(palCat) <- FALSE
