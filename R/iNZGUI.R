@@ -114,10 +114,6 @@ iNZGUI <- setRefClass(
                        done <- FALSE
                        if (file.exists(file.path("~", "Documents", "iNZightVIT"))) {
                            setwd(file.path("~", "Documents", "iNZightVIT"))
-                           
-                           ## Now check to see if there is a library in there ...
-                           if (!file.exists("modules")) 
-                               modulesLib <- dir.create("modules")
                        } else {
                            ## Create it:
                            conf <- gconfirm(paste("Do you want to create an iNZightVIT directory",
@@ -136,13 +132,14 @@ iNZGUI <- setRefClass(
                                    gmessage("iNZight was unable to create the folder.")
                            }
 
-                           ## Set the library path if it exists
-                           if (file.exists(file.path("~", "Documents", "iNZightVIT", "modules")))
-                               .libPaths(file.path("~", "DocumentS", "iNZightVIT", "modules"))
-
                            if (!done)
                                try(setwd(Sys.getenv("R_DIR")), TRUE)
                        }
+                       try({
+                           dir.create(file.path("~", "Documents", "iNZightVIT", "Saved Plots"))
+                           dir.create(file.path("~", "Documents", "iNZightVIT", "Saved Data"))
+                       }, TRUE)
+                       
                    },
                    "linux" = {
                        ## no need to do anything (yet..)
