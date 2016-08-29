@@ -15,7 +15,8 @@ iNZImportExampleWin <-
                 pkgsL <- list("iNZight" = "Default",
                               "iNZightMR" = "Multiple Response",
                               "iNZightTS" = "Time Series",
-                              "iNZightMaps" = "Maps")
+                              "iNZightMaps" = "Maps",
+                              "FutureLearnData" = "FutureLearn")
                 pkgs <- unlist(pkgsL)  ## becomes a named vector
 
                 pkgs <- pkgs[names(pkgs) %in% rownames(installed.packages())]
