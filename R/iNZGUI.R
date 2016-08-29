@@ -1017,20 +1017,22 @@ iNZGUI <- setRefClass(
         ## the gui is closed
         closerHandler = function(disposeR) {
             addHandlerUnrealize(win, handler = function(h, ...) {
-                if (disposeR) {
-                    confirm <- gconfirm(
-                        title = "Are you sure?",
-                        msg = "Do you wish to quit iNZightVIT?",
-                        icon = "question",
-                        parent = win)
-                    if (confirm)
+                confirm <- gconfirm(
+                    title = "Are you sure?",
+                    msg = "Do you wish to quit iNZightVIT?",
+                    icon = "question",
+                    parent = win)
+                if (confirm) {
+                    if (disposeR) {
                         q(save = "no")
-                    else
-                        FALSE
-                } else {
-                    try(dev.off(), silent = TRUE)
-                    dispose(win)
+                    } else {
+                        ##dispose(win)
+                        try(dev.off(), silent = TRUE)
+                        return(FALSE)
+                    }
                 }
+                
+                TRUE
             })
         },
         ## plot with the current active plot settings
