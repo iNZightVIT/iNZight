@@ -87,17 +87,17 @@ iNZGUI <- setRefClass(
                            conf <- gconfirm(paste("Do you want to create an iNZightVIT directory",
                                                   "in your My Documents folder to save data and preferences?"),
                                             title = "Create Folder", icon = "question")
-                           
+
                            if (conf) {
                                if ( dir.create(file.path("~", "iNZightVIT")) ) {
                                    ## copy the Data folder:
                                    ##try(file.copy("Data.lnk", file.path("~", "iNZightVIT")), TRUE)
                                    ##try(file.symlink("data", file.path("~", "iNZightVIT")), TRUE)
-                                   
+
                                    ##setwd(file.path("~", "iNZightVIT"))
 
                                    dir.create(file.path("~", "iNZightVIT", "modules"))
-                                   
+
                                    done <- TRUE
                                }
 
@@ -105,7 +105,7 @@ iNZGUI <- setRefClass(
                                    gmessage("iNZight was unable to create the folder.")
                            }
                        }
-                       
+
                        ## Set the library path if it exists
                        if (file.exists(file.path("~", "iNZightVIT", "modules")))
                            .libPaths(file.path("~", "iNZightVIT", "modules"))
@@ -139,12 +139,12 @@ iNZGUI <- setRefClass(
                            dir.create(file.path("~", "Documents", "iNZightVIT", "Saved Plots"))
                            dir.create(file.path("~", "Documents", "iNZightVIT", "Saved Data"))
                        }, TRUE)
-                       
+
                    },
                    "linux" = {
                        ## no need to do anything (yet..)
                    })
-                
+
 
             ## Grab settings file (or try to!)
             getPreferences()
@@ -181,7 +181,7 @@ iNZGUI <- setRefClass(
                 }
 
 
-                ## --- TURNED OFF PERMANENTLY UNTIL DATABASE BACK ONLINE                
+                ## --- TURNED OFF PERMANENTLY UNTIL DATABASE BACK ONLINE
                 ## if (preferences$track) {
                 if (FALSE) {
                     try({
@@ -313,7 +313,7 @@ iNZGUI <- setRefClass(
 
             ## draw the iNZight splash screen
             plotSplashScreen()
-            
+
             ## add what is done upon closing the gui
             closerHandler(disposeR)
         },
@@ -809,12 +809,12 @@ iNZGUI <- setRefClass(
                     actionList[[35]]
                     )
                 )
-            
+
             if (!"package:vit" %in% search()) { # remove ...
                 menuBarList[[1]][[2]] <- NULL  ## gseparator
                 menuBarList[[1]][[1]] <- NULL  ## iNZightVIT Home
             }
-            
+
             menubar <<- gmenu(menuBarList, container = cont)
 
             ## if (all(dim(.self$getActiveData()) == 1)) {
@@ -1031,7 +1031,7 @@ iNZGUI <- setRefClass(
                         return(FALSE)
                     }
                 }
-                
+
                 TRUE
             })
         },
@@ -1062,7 +1062,7 @@ iNZGUI <- setRefClass(
                     if (allow.redraw & !is.null(attr(curPlot, "dotplot.redraw")))
                         if (attr(curPlot, "dotplot.redraw"))
                             curPlot <<- unclass(do.call(iNZightPlot, curPlSet))
-                })                
+                })
                 plotType <<- attr(curPlot, "plottype")
             } else {
                 iNZightPlots:::resetPlot()
@@ -1237,7 +1237,7 @@ iNZGUI <- setRefClass(
             ##     2. $(pwd)/.inzight -> overrides (1) if present
 
             ## If Windows or Mac, set the working directory to Documents/iNZightVIT if possible ...
-            
+
             prefs.location <<-
                 switch(OS,
                        "windows" = {
@@ -1246,7 +1246,7 @@ iNZGUI <- setRefClass(
                            } else {
                                path <- file.path("~", ".inzight")
                            }
-                           
+
                            path
                        },
                        "mac" = {
@@ -1255,12 +1255,12 @@ iNZGUI <- setRefClass(
                            } else {
                                path <- file.path("~", ".inzight")
                            }
-                           
+
                            path
                        },
                        "linux" = {
                            path <- file.path("~", ".inzight")
-                           
+
                            if (file.exists(".inzight"))
                                path <- file.path(".inzight")
 
@@ -1275,7 +1275,7 @@ iNZGUI <- setRefClass(
                         defaultPrefs()
                     }
             }, TRUE)
-            
+
             if (inherits(tt, "try-error"))
                 preferences <<- defaultPrefs()
         },
@@ -1286,7 +1286,7 @@ iNZGUI <- setRefClass(
                 gmessage(paste("iNZight was unable to save your preferences, so",
                                "they won't carry over into the next session."),
                          title = "Unable to save preferences", icon = "warning")
-            }            
+            }
         },
         plotSplashScreen = function() {
             if (requireNamespace("png", quietly = TRUE)) {
