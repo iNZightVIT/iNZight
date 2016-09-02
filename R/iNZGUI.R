@@ -743,7 +743,7 @@ iNZGUI <- setRefClass(
                 ),
                 convTbl = gaction(
                     ## 49
-                    label = "Convert Table ...",
+                    label = "Expand 2-way Table ...",
                     icon = "symbol_diamond",
                     handler = function(h, ...) iNZexpandTblWin$new(.self)
                 )
@@ -782,6 +782,7 @@ iNZGUI <- setRefClass(
                     actionList[[28]],
                     actionList[[31]],
                     actionList[[15]],
+                    actionList[[49]],
                     gseparator(),
                     actionList[[45]],
                     actionList[[46]]
