@@ -740,6 +740,12 @@ iNZGUI <- setRefClass(
                     label = "Example data...", icon = "symbol_diamond",
                     tooltip = "Load Example Data",
                     handler = function(h, ...) iNZImportExampleWin$new(.self)
+                ),
+                convTbl = gaction(
+                    ## 49
+                    label = "Convert Table ...",
+                    icon = "symbol_diamond",
+                    handler = function(h, ...) iNZexpandTblWin$new(.self)
                 )
                 #####################################################
                 ###  big suggestion

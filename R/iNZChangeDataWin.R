@@ -655,3 +655,50 @@ iNZstackVarWin <- setRefClass(
       }
     })
 )
+
+
+iNZexpandTblWin <- setRefClass(
+    "iNZexpandTblWin",
+    fields = list(GUI = "ANY"),
+    methods = list(
+        initialize = function(gui = NULL) {
+            if (!is.null(GUI)) {
+                try(dispose(GUI$modWin), silent = TRUE)
+                GUI$modWin <<- gwindow("Expand Table to Rows",
+                                       parent = GUI$win, visible = FALSE)
+                mainGroup <- ggroup(expand = TRUE, horizontal = FALSE)
+
+                lbl1 <- glabel("Select data columns")
+                font(lbl1) <- list(weight = "bold", family = "normal")
+                lbl2 <- glabel("(Hold Ctrl to choose many)")
+                font(lbl2) <- list(weight = "bold", family = "normal")
+
+                ## colVar <- ginput(
+
+                numIndices <- sapply(GUI$getActiveData(), function(x) !is.factor(x))
+                numVar <- gtable(names(GUI$getActiveData())[numIndices], multiple = TRUE)
+                names(numVar) <- "Variables"
+                okBtn <- gbutton("Ok", handler = function(h, ...) {
+                    if (length(svalue(numVar)) > 0) {
+                        measure.vars <- svalue(numVar)
+                        dat <- GUI$getActiveData()
+                        long <- reshape2::melt.data.frame(dat, measure.vars = meaure.vars,
+                                                          variable.name = "Var 2",
+                                                          value.name = "Count")
+                        out <- long[rep(rownames(long), long$Count), ]
+                        GUI$getActiveDoc()$getModel()$updateData(out[, - ncol(out)])
+
+                        dispose(GUI$modWin)
+                    }
+                })
+
+                add(mainGroup, lbl1)
+                add(mainGroup, lbl2)
+                add(mainGroup, numVar, expand = TRUE)
+                add(mainGroup, StackButton)
+                add(GUI$modWin, mainGroup, expand = TRUE, fill = TRUE)
+                visible(GUI$modWin) <<- TRUE
+            }
+        }
+    )
+)
