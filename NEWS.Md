@@ -1,5 +1,5 @@
 # Version 3.0
-__Release date:__ 5 Septemer, 2016__
+__Release date:__ 5 Septemer, 2016
 
 This is a major new release of iNZight, so many things have changed.
 We hope you like them!
@@ -11,7 +11,8 @@ Here's just a few of the major new features to iNZight.
 - Example data sets available from the File menu
 - Play time can now be stopped, and the interval adjusted
 - Switch variables with the one below by clicking the "down" arrow to the right of the variable box
-- __Maps Module__ - visualise geographical data
+- __Maps Module__ - visualise geographical data:
+
   - Coordinates: if your data set includes GPS coordinates for each observation,
     iNZight will let you plot them on a map.
   - Countries: if observations have country names associated with them,
