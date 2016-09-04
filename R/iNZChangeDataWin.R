@@ -687,7 +687,11 @@ iNZexpandTblWin <- setRefClass(
                         variable.name = "Column", value.name = "Count", na.rm = TRUE)
                     out <- long[rep(rownames(long), long$Count), ]
                     rownames(out) <- 1:nrow(out)
-                    GUI$getActiveDoc()$getModel()$updateData(out[, - ncol(out)])
+                    ## for 1-way tables, don't need the "Count" column!
+                    if (length(unique(out$Column)) == 1)
+                        out$Column <- NULL
+                    out$Count <- NULL
+                    GUI$getActiveDoc()$getModel()$updateData(out)
                 }
             }
         }

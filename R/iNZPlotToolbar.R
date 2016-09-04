@@ -66,9 +66,6 @@ iNZPlotToolbar <- setRefClass(
                 refreshFn = GUI$activeModule[[refresh.fn]]
             }
 
-            ## img.add2plot <- system.file("images/graph-plus-transp.gif", package = "iNZight")
-            ## img.rmvplot <- system.file("images/graph-cross-transp.gif", package = "iNZight")
-            ## img.infinfo <- system.file("images/graph-inference.gif", package = "iNZight")
             img.add2plot <- system.file("images/toolbar-add.png", package = "iNZight")
             img.rmvplot <- system.file("images/toolbar-remove.png", package = "iNZight")
             img.infinfo <- system.file("images/toolbar-inference.png", package = "iNZight")

@@ -1,3 +1,17 @@
+# Version ...
+__Release date:__ TBA
+
+## New Feature
+
+- (temporary) Just a quick workaround for analysing tables in iNZight: Dataset > Expand Table
+
+## Minor Changes
+
+- more subtle colours from group labels on plots
+
+
+
+***
 # Version 3.0
 __Release date:__ 5 Septemer, 2016
 
