@@ -743,15 +743,10 @@ iNZGUI <- setRefClass(
                 ),
                 convTbl = gaction(
                     ## 49
-                    label = "Expand 2-way Table ...",
+                    label = "Expand Table ...",
                     icon = "symbol_diamond",
                     handler = function(h, ...) iNZexpandTblWin$new(.self)
                 )
-                #####################################################
-                ###  big suggestion
-                ###  any new update function should be placing below to match the actionList[[number]]
-                ###  so next one should be #31 and placing below.
-                ###################################################
             )
             ## home button is disabled if package 'vit' is not loaded
             if (!'package:vit' %in% search())
@@ -782,10 +777,11 @@ iNZGUI <- setRefClass(
                     actionList[[28]],
                     actionList[[31]],
                     actionList[[15]],
-                    actionList[[49]],
                     gseparator(),
                     actionList[[45]],
-                    actionList[[46]]
+                    actionList[[46]],
+                    gseparator(),
+                    actionList[[49]]
                     ),
                 "Variables" = list(
                     actionList[[3]],

@@ -665,14 +665,30 @@ iNZexpandTblWin <- setRefClass(
             initFields(GUI = gui)
             if (!is.null(GUI)) {
                 try(dispose(GUI$modWin), silent = TRUE)
-                numIndices <- sapply(GUI$getActiveData(), function(x) !is.factor(x))
-                dat <- GUI$getActiveData()
-                long <- reshape2:::melt.data.frame(
-                  dat, measure.vars = names(GUI$getActiveData())[numIndices],
-                  variable.name = "Var 2", value.name = "Count")
 
-                out <- long[rep(rownames(long), long$Count), ]
-                GUI$getActiveDoc()$getModel()$updateData(out[, - ncol(out)])
+                conf <-
+                    gconfirm(paste("This will expand the table to individial rows.",
+                                   "Use Dataset > Restore dataset to go back to revert this change.",
+                                   "Note: this is a temporary workaround for small tables until we integrate frequency tables.",
+                                   sep = "\n\n"),
+                             title = "Expand table?", icon = "question", parent = GUI$win)
+
+                if (conf) {
+                    dat <- GUI$getActiveData()
+                    dat <- tryCatch({as.numeric(rownames(dat)); dat},
+                                    warning = function(w) {
+                                        ## cannot convert rownames to numeric - create column
+                                        dat$Row <- rownames(dat)
+                                        dat
+                                    })
+                    numIndices <- sapply(dat, function(x) is.numeric(x))
+                    long <- reshape2:::melt.data.frame(
+                        dat, measure.vars = colnames(dat)[numIndices],
+                        variable.name = "Column", value.name = "Count", na.rm = TRUE)
+                    out <- long[rep(rownames(long), long$Count), ]
+                    rownames(out) <- 1:nrow(out)
+                    GUI$getActiveDoc()$getModel()$updateData(out[, - ncol(out)])
+                }
             }
         }
     )
