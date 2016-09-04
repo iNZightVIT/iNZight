@@ -1,17 +1,3 @@
-# Version ...
-__Release date:__ TBA
-
-## New Feature
-
-- (temporary) Just a quick workaround for analysing tables in iNZight: Dataset > Expand Table
-
-## Minor Changes
-
-- more subtle colours from group labels on plots
-
-
-
-***
 # Version 3.0
 __Release date:__ 5 Septemer, 2016
 
@@ -47,6 +33,7 @@ We can't list everything here, but some of the important ones are listed below.
 - __COLOUR__: new, better palettes have been introduced, including [viridis](https://cran.r-project.org/web/packages/viridis/vignettes/intro-to-viridis.html),
   which are colourblind friendly.
 - Multiple Response has been overhauled to be more intuitive and fit in with the rest of iNZight.
+- (temporary) Just a quick workaround for analysing tables in iNZight: Dataset > Expand Table
 
 
 ## Minor Changes
