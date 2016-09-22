@@ -79,7 +79,7 @@ iNZPlotToolbar <- setRefClass(
             addHandlerClicked(newtabBtn, function(h, ...) plotWidget$addPlot())
 
             refreshplotBtn <- gimagebutton(stock.id = "refresh", size = "button",
-                                           tooltip = "Refresh Plot")
+                                           tooltip = "Redraw Plot")
             addHandlerClicked(refreshplotBtn, function(h, ...) refreshFn())
 
             renametabBtn <- gimagebutton(stock.id = "editor", size = "button",
@@ -159,14 +159,14 @@ iNZPlotToolbar <- setRefClass(
                 gaction("Remove additions ...", handler = function(h, ...) iNZPlotRmveModWin$new(GUI)),
                 gaction("Add inference ...", handler = function(h, ...) addInf()),
                 gseparator(),
-                gaction(label = "New Tab", icon = "newplot",
+                gaction(label = "New Tab", icon = "new",
                         handler = function(h, ...) plotWidget$addPlot()),
                 gaction(label = "Close Tab", icon = "close",
                         handler = function(h, ...) plotWidget$closePlot()),
                 gaction(label = "Rename Tab", icon = "editor",
                         handler = function(h, ...) plotWidget$renamePlot()),
                 gseparator(),
-                gaction(label = "New Plot Window", icon = "new",
+                gaction(label = "New Plot Window", icon = "newplot",
                         handler = function(h, ...) newPlotWindow()),
                 gaction(label = "Redraw Plot", icon = "refresh",
                         handler = function(h, ...) refreshFn()),

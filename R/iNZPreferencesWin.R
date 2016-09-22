@@ -28,7 +28,7 @@ iNZPrefsWin <- setRefClass(
 
                addSpace(g, 30)
 
-               lab <- glabel("Default Window Size (will take effect next time you start iNZight)")
+               lab <- glabel("Default Window Size - Changes take effect next time your start iNZight")
                font(lab) <- list(weight = "bold")
                add(g, lab, anchor = c(-1, -1))
 
@@ -60,7 +60,9 @@ iNZPrefsWin <- setRefClass(
 
                addSpace(g, 30)
 
-               popoutWin <- gcheckbox("Use dual-window display mode", checked = prefs$popout)
+               popoutWin <- gcheckbox(
+                   "Use dual-window display mode (strongly advised for Windows users who are not computer novices",
+                   checked = prefs$popout)
 
                add(g, popoutWin)
                
