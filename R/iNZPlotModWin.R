@@ -68,15 +68,15 @@ iNZPlotModWin <- setRefClass(
                                         list("contrast (max 8)" =
                                                  function(n)
                                                      if (n > 8) inzpar()$col.default$cat(n)
-                                                     else RColorBrewer::brewer.pal(n, "Set2"),
+                                                     else RColorBrewer::brewer.pal(n, "Set2")[1:n],
                                              "bright (max 9)" =
                                                  function(n)
                                                      if (n > 9) inzpar()$col.default$cat(n)
-                                                     else RColorBrewer::brewer.pal(n, "Set1"),
+                                                     else RColorBrewer::brewer.pal(n, "Set1")[1:n],
                                              "light (max 12)" =
                                                  function(n)
                                                      if (n > 12) inzpar()$col.default$cat(n)
-                                                     else RColorBrewer::brewer.pal(n, "Set3")),
+                                                     else RColorBrewer::brewer.pal(n, "Set3")[1:n]),
                                     if (.viridis)
                                         list(viridis = viridis::viridis,
                                              magma = viridis::magma,
