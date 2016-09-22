@@ -193,7 +193,7 @@ iNZPlotModWin <- setRefClass(
         updateSettings = function() {
             curSet <<- GUI$getActiveDoc()$getSettings()
         },
-        iNZLocatePoints = function(dot = FALSE) {
+        iNZLocatePoints = function(dot = GUI$plotType == "dot") {
             ## Do checking first
             ## If g1 or g2 = _MULTI, then we can't identify points (yet ...)
             cantDo <- function(msg = "using subsetting variables.") {
