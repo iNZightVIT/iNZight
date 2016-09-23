@@ -166,18 +166,24 @@ iNZGUI <- setRefClass(
                 }
 
                 if (preferences$check.updates) {
-                    ap <- suppressWarnings(try(numeric_version(available.packages(
-                        contriburl = contrib.url("http://r.docker.stat.auckland.ac.nz/R",
-                            getOption("pkgType")))[,"Version"]), TRUE))
-                    if (!inherits(ap, "try-error")) {
-                        if (length(ap) > 0) {
-                            ip <- try(numeric_version(installed.packages()[names(ap), "Version"]), TRUE)
-                            if (!inherits(ip, "try-error")) {
-                                if (any(ap > ip))
-                                    win.title <- paste(win.title, " [updates available]")
-                            }
+                    ## ap <- suppressWarnings(try(numeric_version(available.packages(
+                    ##     contriburl = contrib.url("http://r.docker.stat.auckland.ac.nz/R",
+                    ##         getOption("pkgType")))[,"Version"]), TRUE))
+                    ## if (!inherits(ap, "try-error")) {
+                    ##     if (length(ap) > 0) {
+                    ##         ip <- try(numeric_version(installed.packages()[names(ap), "Version"]), TRUE)
+                    ##         if (!inherits(ip, "try-error")) {
+                    ##             if (any(ap > ip))
+                    ##                 win.title <- paste(win.title, " [updates available]")
+                    ##         }
+                    ##     }
+                    ## }
+                    try({
+                        oldpkg <- old.packages(repos = "http://r.docker.stat.auckland.ac.nz/R")
+                        if (nrow(oldpkg) > 0) {
+                            win.title <- paste(win.title, " [updates available]")
                         }
-                    }
+                    }, silent = TRUE)
                 }
 
 
