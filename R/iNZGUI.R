@@ -151,103 +151,104 @@ iNZGUI <- setRefClass(
 
             ## Check for updates ... need to use try incase it fails (no connection etc)
             ## RCurl no longer supports R < 3, so it wont be available on Mac SL version.
-            if (requireNamespace("RCurl", quietly = TRUE)) {
-                connected <- RCurl::url.exists("r.docker.stat.auckland.ac.nz")
-            } else connected <- FALSE
+            # if (requireNamespace("RCurl", quietly = TRUE)) {
+            #     connected <- RCurl::url.exists("r.docker.stat.auckland.ac.nz")
+            # } else connected <- FALSE
 
-            if (connected) {
-                ## DON'T ASK UNTIL DATABSE UP ONLINE
-                ## if (preferences$track == "ask") {
-                if (FALSE) {
-                    preferences$track <<-
-                        gconfirm("iNZight would like to use anonymous usage information. Are you ok for us to collect this information?",
-                                 title = "Share usage information?", icon = "question")
-                    savePreferences()
+            if (preferences$check.updates) {
+              # ap <- suppressWarnings(try(numeric_version(available.packages(
+              #     contriburl = contrib.url("http://r.docker.stat.auckland.ac.nz/R",
+              #         getOption("pkgType")))[,"Version"]), TRUE))
+              # if (!inherits(ap, "try-error")) {
+              #     if (length(ap) > 0) {
+              #         ip <- try(numeric_version(installed.packages()[names(ap), "Version"]), TRUE)
+              #         if (!inherits(ip, "try-error")) {
+              #             if (any(ap > ip))
+              #                 win.title <- paste(win.title, " [updates available]")
+              #         }
+              #     }
+              # }
+              try({
+                oldpkg <- old.packages(repos = "http://r.docker.stat.auckland.ac.nz/R")
+                if (nrow(oldpkg) > 0) {
+                  win.title <- paste(win.title, " [updates available]")
                 }
-
-                if (preferences$check.updates) {
-                    ## ap <- suppressWarnings(try(numeric_version(available.packages(
-                    ##     contriburl = contrib.url("http://r.docker.stat.auckland.ac.nz/R",
-                    ##         getOption("pkgType")))[,"Version"]), TRUE))
-                    ## if (!inherits(ap, "try-error")) {
-                    ##     if (length(ap) > 0) {
-                    ##         ip <- try(numeric_version(installed.packages()[names(ap), "Version"]), TRUE)
-                    ##         if (!inherits(ip, "try-error")) {
-                    ##             if (any(ap > ip))
-                    ##                 win.title <- paste(win.title, " [updates available]")
-                    ##         }
-                    ##     }
-                    ## }
-                    try({
-                        oldpkg <- old.packages(repos = "http://r.docker.stat.auckland.ac.nz/R")
-                        if (nrow(oldpkg) > 0) {
-                            win.title <- paste(win.title, " [updates available]")
-                        }
-                    }, silent = TRUE)
-                }
-
-
-                ## --- TURNED OFF PERMANENTLY UNTIL DATABASE BACK ONLINE
-                ## if (preferences$track) {
-                if (FALSE) {
-                    try({
-                        version = packageVersion("iNZight")
-                        os <- "Linux"
-                        if (.Platform$OS == "windows") {
-                            os = "Windows"
-                        } else if (Sys.info()["sysname"] == "Darwin") {
-                            os = "Mac OS X"
-                            osx.version <- try(system("sw_vers -productVersion", intern = TRUE), silent = TRUE)
-                            if (!inherits(osx.version, "try-error")) {
-                                os = paste("Mac OS X", osx.version)
-                            }
-                        }
-
-
-                        ## have they updated before?
-                        if (is.null(preferences$track.id)) {
-                            ## compatibility mode ---
-                            hash.id <- "new"
-
-                            if (os == "Windows") {
-                                libp <- "prog_files"
-                            } else if (os != "Linux") {
-                                ## i.e., mac
-                                libp <- "Library"
-                            } else {
-                                ## linux - save in library..
-                                libp <- .libPaths()[which(sapply(.libPaths(), function(p)
-                                                                 "iNZight" %in% list.files(p)))[1]]
-                            }
-
-                            if (file.exists(file.path(libp, "id.txt"))) {
-                                hash.id <- readLines(file.path(libp, "id.txt"))
-                                unlink(file.path(libp, "id.txt"))  ## delete the old one
-                            }
-
-                            ## only if not already tracking
-                            if (hash.id == "new") {
-                                track.url <- paste0("http://r.docker.stat.auckland.ac.nz/R/tracker/index.php?track&v=",
-                                                    version, "&os=", gsub(" ", "%20", os), "&hash=", hash.id)
-                                f <- try(url(track.url,  open = "r"), TRUE)
-
-                                ## write the hash code to their installation:
-                                hash.id <- readLines(f)
-
-
-                                ## try(writeLines(hash.id, file.path(libp, "id.txt")), silent = TRUE)
-                            }
-
-                            preferences$track.id <<- hash.id
-                            savePreferences()
-                        } else {
-                            hash.id <- preferences$track.id
-                            try(url(paste0("http://r.docker.stat.auckland.ac.nz/R/tracker/index.php?track&v=",
-                                           version, "&os=", gsub(" ", "%20", os), "&hash=", hash.id), open = "r"), TRUE)
-                        }
-                    })
-                }
+                }, silent = TRUE)
             }
+
+            # if (FALSE) {
+            #     ## DON'T ASK UNTIL DATABSE UP ONLINE
+            #     ## if (preferences$track == "ask") {
+            #     if (FALSE) {
+            #         preferences$track <<-
+            #             gconfirm("iNZight would like to use anonymous usage information. Are you ok for us to collect this information?",
+            #                      title = "Share usage information?", icon = "question")
+            #         savePreferences()
+            #     }
+            #
+            #
+            #
+            #     ## --- TURNED OFF PERMANENTLY UNTIL DATABASE BACK ONLINE
+            #     ## if (preferences$track) {
+            #     if (FALSE) {
+            #         try({
+            #             version = packageVersion("iNZight")
+            #             os <- "Linux"
+            #             if (.Platform$OS == "windows") {
+            #                 os = "Windows"
+            #             } else if (Sys.info()["sysname"] == "Darwin") {
+            #                 os = "Mac OS X"
+            #                 osx.version <- try(system("sw_vers -productVersion", intern = TRUE), silent = TRUE)
+            #                 if (!inherits(osx.version, "try-error")) {
+            #                     os = paste("Mac OS X", osx.version)
+            #                 }
+            #             }
+            #
+            #
+            #             ## have they updated before?
+            #             if (is.null(preferences$track.id)) {
+            #                 ## compatibility mode ---
+            #                 hash.id <- "new"
+            #
+            #                 if (os == "Windows") {
+            #                     libp <- "prog_files"
+            #                 } else if (os != "Linux") {
+            #                     ## i.e., mac
+            #                     libp <- "Library"
+            #                 } else {
+            #                     ## linux - save in library..
+            #                     libp <- .libPaths()[which(sapply(.libPaths(), function(p)
+            #                                                      "iNZight" %in% list.files(p)))[1]]
+            #                 }
+            #
+            #                 if (file.exists(file.path(libp, "id.txt"))) {
+            #                     hash.id <- readLines(file.path(libp, "id.txt"))
+            #                     unlink(file.path(libp, "id.txt"))  ## delete the old one
+            #                 }
+            #
+            #                 ## only if not already tracking
+            #                 if (hash.id == "new") {
+            #                     track.url <- paste0("http://r.docker.stat.auckland.ac.nz/R/tracker/index.php?track&v=",
+            #                                         version, "&os=", gsub(" ", "%20", os), "&hash=", hash.id)
+            #                     f <- try(url(track.url,  open = "r"), TRUE)
+            #
+            #                     ## write the hash code to their installation:
+            #                     hash.id <- readLines(f)
+            #
+            #
+            #                     ## try(writeLines(hash.id, file.path(libp, "id.txt")), silent = TRUE)
+            #                 }
+            #
+            #                 preferences$track.id <<- hash.id
+            #                 savePreferences()
+            #             } else {
+            #                 hash.id <- preferences$track.id
+            #                 try(url(paste0("http://r.docker.stat.auckland.ac.nz/R/tracker/index.php?track&v=",
+            #                                version, "&os=", gsub(" ", "%20", os), "&hash=", hash.id), open = "r"), TRUE)
+            #             }
+            #         })
+            #     }
+            # }
 
             popOut <- preferences$popout
 

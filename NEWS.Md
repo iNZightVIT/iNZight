@@ -50,7 +50,11 @@ Given the magnitude of changes, there's little point mentioning the minor ones a
 - Fix a bug where two-level bar plots failed to draw
 - Fix a bug where empty levels in two-way bar plots failed to draw
 - Fix locator for dot plots
-- Fix the updates available checker 
+- Fix the updates available checker
+
+### 3.0.2 - 04/10/2016
+
+- Add "Updates Available" text back to the title (when they're available, of course!)
 
 
 ***
