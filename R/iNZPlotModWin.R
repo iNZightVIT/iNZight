@@ -1435,16 +1435,16 @@ iNZPlotMod <- setRefClass(
                           visible(cycleLbl) <- visible(cyclePanel) <- FALSE
                         }
                     }
-                    if (hist) {
-                        newSet$bar.fill <-
-                            if (svalue(barCol) %in% names(barColours))
-                                barColours[[svalue(barCol, index = TRUE)]]
-                            else if (!inherits(try(col2rgb(svalue(barCol)), silent = TRUE),
-                                               "try-error"))
-                                svalue(barCol)
-                            else
-                                curSet$bar.fill
-                    }
+                }
+                if (PLOTTYPE == "hist") {
+                    newSet$bar.fill <-
+                        if (svalue(barCol) %in% names(barColours))
+                            barColours[[svalue(barCol, index = TRUE)]]
+                        else if (!inherits(try(col2rgb(svalue(barCol)), silent = TRUE),
+                                           "try-error"))
+                            svalue(barCol)
+                        else
+                            curSet$bar.fill
                 }
                 
                 if (PLOTTYPE %in% c("dot", "scatter")) {

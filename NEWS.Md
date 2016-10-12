@@ -56,6 +56,9 @@ Given the magnitude of changes, there's little point mentioning the minor ones a
 
 - Add "Updates Available" text back to the title (when they're available, of course!)
 
+### 3.0.3 - 12/10/2016
+
+- Bug fix: can now change colours of histograms
 
 ***
 # Version 2.5
