@@ -955,23 +955,74 @@ iNZGUI <- setRefClass(
                             curSet$design <- curMod$createSurveyObject()
                         }
 
-                        w <- gwindow("Choose Method", width = 100,
-                                     height = 100, parent = win)
-                        g <- ggroup(cont = w, horizontal = FALSE)
-                        lbl <- glabel("Choose Method to \nGenerate Inference:",
-                                      cont = g)
-                        rd <- gradio(c("Normal", "Bootstrap"), cont = g)
-                        btn <- gbutton("ok", handler = function(h, ...) {
+                        w <- gwindow("Get Inference",
+                                     width = 350,
+                                     height = 400,
+                                     parent = win)
+                        g <- gvbox(container = w, expand = TRUE, fill = TRUE)
+                        g$set_borderwidth(5)
+
+                        tbl <- glayout(container = g)
+                        ii <- 1
+
+                        ## Inference method
+                        lbl <- glabel("Method :")
+                        infMthd <- gradio(c("Normal", "Bootstrap"), horizontal = TRUE)
+                        tbl[ii, 1:3, anchor = c(1, 0), expand = TRUE] <- lbl
+                        tbl[ii, 4:6, expand = TRUE] <- infMthd
+                        ii <- ii + 1
+
+                        ## Checkbox: perform hypothesis test? Activates hypothesis options.
+                        ii <- ii + 1
+                        hypTest <- gcheckbox("Perform <Type of Hypothesis Test>", checked = TRUE)
+                        font(hypTest) <- list(size = 10, weight = "bold")
+                        tbl[ii, 1:6, anchor = c(1, 0), expand = TRUE] <- hypTest
+                        ii <- ii + 1
+
+                        ## Null hypothesis value
+                        lbl <- glabel("Null Value :")
+                        hypVal <- gedit("0", width = 10)
+                        tbl[ii, 1:3, anchor = c(1, 0), expand = TRUE] <- lbl
+                        tbl[ii, 4:5, expand = TRUE] <- hypVal
+                        ii <- ii + 1
+
+                        ## alternative hypothesis
+                        lbl <- glabel("Alternative Hypothesis :")
+                        hypAlt <- gcombobox(c("two sided", "greater than", "less than"))
+                        tbl[ii, 1:3, anchor = c(1, 0), expand = TRUE] <- lbl
+                        tbl[ii, 4:5, expand = TRUE] <- hypAlt
+                        ii <- ii + 1
+
+                        ## use equal variance assumption?
+
+
+                        
+                        btn <- gbutton("OK", handler = function(h, ...) {
+                            infType <- svalue(infMthd, index = TRUE)
                             sets <- curSet
                             sets <- modifyList(
                                 sets,
-                                list(bs.inference = (svalue(rd, index = TRUE) == 2),
+                                list(bs.inference = infType == 2,
                                      summary.type = "inference",
                                      inference.type = "conf",
                                      inference.par = NULL)
-                                )
+                            )
+                            if (svalue(hypTest)) {
+                                if (is.na(as.numeric(svalue(hypVal)))) {
+                                    gmessage("Null value must be a valid number.", title = "Invalid Value",
+                                             icon = "error")
+                                    return()
+                                }
+                                sets <- modifyList(
+                                    sets,
+                                    list(hypothesis.value = as.numeric(svalue(hypVal)),
+                                         hypothesis.alt   = switch(svalue(hypAlt, index = TRUE),
+                                                                   "two.sided", "greater", "less")))
+                            } else {
+                                sets <- modifyList(sets, list(hypothesis = NULL))
+                            }                            
 
-                            infType <- svalue(rd, index = TRUE)
+                            ## Close setup window and display results
                             dispose(w)
 
                             infTitle <- "Inference Information"
@@ -998,7 +1049,10 @@ iNZGUI <- setRefClass(
                                 font.attr = list(family = "monospace"))
                             visible(w2) <- TRUE
                             try(dispose(wBoots), silent = TRUE)
-                        }, cont = g)
+                        })
+
+                        addSpring(g)
+                        add(g, btn)
 
                     } else {
                         gmessage("Please select at least one variable",
