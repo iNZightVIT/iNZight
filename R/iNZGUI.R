@@ -990,11 +990,18 @@ iNZGUI <- setRefClass(
                         tbl[ii, 4:6, expand = TRUE] <- infMthd
                         ii <- ii + 1
 
+                        ii <- ii + 1
+
+                        ## if two sample, paired?
+                        pairedSamp <- gcheckbox("Paired sample", checked = FALSE)
+                        if (INFTYPE == "twosample-ttest" && diff(table(curSet$y)) == 0) {
+                            tbl[ii, 1:6, anchor = c(1, 0), expand = TRUE] <- pairedSamp
+                            ii <- ii + 1
+                        }
 
                         doHypTest <- grepl("ttest", INFTYPE)
 
                         ## Checkbox: perform hypothesis test? Activates hypothesis options.
-                        ii <- ii + 1
                         hypTest <- gcheckbox("Perform <Type of Hypothesis Test>", checked = FALSE) #doHypTest)
                         font(hypTest) <- list(size = 10, weight = "bold")
                         if (doHypTest) {
@@ -1008,14 +1015,14 @@ iNZGUI <- setRefClass(
                             hypVal <- gedit("0", width = 10)
                             
                             tbl[ii, 1:3, anchor = c(1, 0), expand = TRUE] <- lbl
-                            tbl[ii, 4:5, expand = TRUE] <- hypVal
+                            tbl[ii, 4:6, expand = TRUE] <- hypVal
                             ii <- ii + 1
                             
                             ## alternative hypothesis
                             lbl <- glabel("Alternative Hypothesis :")
                             hypAlt <- gcombobox(c("two sided", "greater than", "less than"))
                             tbl[ii, 1:3, anchor = c(1, 0), expand = TRUE] <- lbl
-                            tbl[ii, 4:5, expand = TRUE] <- hypAlt
+                            tbl[ii, 4:6, expand = TRUE] <- hypAlt
                             ii <- ii + 1
 
                             enabled(hypAlt) <- enabled(hypVal) <- svalue(hypTest)
@@ -1024,15 +1031,19 @@ iNZGUI <- setRefClass(
                             hypEqualVar <- gcheckbox("Use equal-variance", checked = FALSE)
                             if (INFTYPE == "twosample-ttest") {
                                 
-                                tbl[ii, 4:6, anchor = c(-1, 0), expand = TRUE] <- hypEqualVar
+                                tbl[ii, 4:6, expand = TRUE] <- hypEqualVar
                                 ii <- ii + 1
 
                                 enabled(hypEqualVar) <- svalue(hypTest)
+                                visible(hypEqualVar) <- !svalue(pairedSamp)
                             }
                         }
 
                         addHandlerChanged(hypTest, function(h, ...) {
                             enabled(hypEqualVar) <- enabled(hypAlt) <- enabled(hypVal) <- svalue(h$obj)
+                        })
+                        addHandlerChanged(pairedSamp, function(h, ...) {
+                            visible(hypEqualVar) <- !svalue(h$obj)
                         })
 
                         
@@ -1044,7 +1055,8 @@ iNZGUI <- setRefClass(
                                 list(bs.inference = infType == 2,
                                      summary.type = "inference",
                                      inference.type = "conf",
-                                     inference.par = NULL)
+                                     inference.par = NULL,
+                                     paired = svalue(pairedSamp))
                             )
                             if (svalue(hypTest)) {
                                 if (is.na(as.numeric(svalue(hypVal)))) {
@@ -1059,8 +1071,8 @@ iNZGUI <- setRefClass(
                                                                    "two.sided", "greater", "less"),
                                          hypothesis.var.equal = svalue(hypEqualVar)))
                             } else {
-                                sets <- modifyList(sets, list(hypothesis = NULL))
-                            }                            
+                                sets <- modifyList(sets, list(hypothesis = NULL), keep.null = TRUE)
+                            }
 
                             ## Close setup window and display results
                             dispose(w)
