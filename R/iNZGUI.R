@@ -939,7 +939,25 @@ iNZGUI <- setRefClass(
                 handler = function(h, ...) {
                     curSet <- getActiveDoc()$getSettings()
                     if (!is.null(curSet$x)) {
-                        if (is.numeric(curSet$x) & is.numeric(curSet$y)) {
+                        ## Figure out what type of inference will be happening:
+                        xnum <- is.numeric(curSet$x)
+
+                        if (is.null(curSet$y)) {
+                            INFTYPE <- ifelse(xnum, "onesample-ttest", "oneway-table")
+                        } else {
+                            ynum <- is.numeric(curSet$y)
+                            if (xnum && ynum) {
+                                INFTYPE <- "regression"
+                            } else if (xnum | ynum) {
+                                M <- if (xnum) length(levels(curSet$y)) else length(levels(curSet$x))
+                                if (M == 2) INFTYPE <- "twosample-ttest"
+                                if (M > 2) INFTYPE <- "anova"
+                            } else {
+                                INFTYPE <- "twoway-table"
+                            }
+                        }
+                        
+                        if (INFTYPE == "regression") {
                             tmp.x <- curSet$y
                             curSet$y <- curSet$x
                             curSet$x <- tmp.x
@@ -957,8 +975,8 @@ iNZGUI <- setRefClass(
 
                         w <- gwindow("Get Inference",
                                      width = 350,
-                                     height = 400,
-                                     parent = win)
+                                     #height = 400,
+                                     parent = win, visible = FALSE)
                         g <- gvbox(container = w, expand = TRUE, fill = TRUE)
                         g$set_borderwidth(5)
 
@@ -972,29 +990,50 @@ iNZGUI <- setRefClass(
                         tbl[ii, 4:6, expand = TRUE] <- infMthd
                         ii <- ii + 1
 
+
+                        doHypTest <- grepl("ttest", INFTYPE)
+
                         ## Checkbox: perform hypothesis test? Activates hypothesis options.
                         ii <- ii + 1
-                        hypTest <- gcheckbox("Perform <Type of Hypothesis Test>", checked = TRUE)
+                        hypTest <- gcheckbox("Perform <Type of Hypothesis Test>", checked = FALSE) #doHypTest)
                         font(hypTest) <- list(size = 10, weight = "bold")
-                        tbl[ii, 1:6, anchor = c(1, 0), expand = TRUE] <- hypTest
-                        ii <- ii + 1
+                        if (doHypTest) {
+                            tbl[ii, 1:6, anchor = c(1, 0), expand = TRUE] <- hypTest
+                            ii <- ii + 1
+                        }
 
-                        ## Null hypothesis value
-                        lbl <- glabel("Null Value :")
-                        hypVal <- gedit("0", width = 10)
-                        tbl[ii, 1:3, anchor = c(1, 0), expand = TRUE] <- lbl
-                        tbl[ii, 4:5, expand = TRUE] <- hypVal
-                        ii <- ii + 1
+                        if (doHypTest) {
+                            ## Null hypothesis value
+                            lbl <- glabel("Null Value :")
+                            hypVal <- gedit("0", width = 10)
+                            
+                            tbl[ii, 1:3, anchor = c(1, 0), expand = TRUE] <- lbl
+                            tbl[ii, 4:5, expand = TRUE] <- hypVal
+                            ii <- ii + 1
+                            
+                            ## alternative hypothesis
+                            lbl <- glabel("Alternative Hypothesis :")
+                            hypAlt <- gcombobox(c("two sided", "greater than", "less than"))
+                            tbl[ii, 1:3, anchor = c(1, 0), expand = TRUE] <- lbl
+                            tbl[ii, 4:5, expand = TRUE] <- hypAlt
+                            ii <- ii + 1
 
-                        ## alternative hypothesis
-                        lbl <- glabel("Alternative Hypothesis :")
-                        hypAlt <- gcombobox(c("two sided", "greater than", "less than"))
-                        tbl[ii, 1:3, anchor = c(1, 0), expand = TRUE] <- lbl
-                        tbl[ii, 4:5, expand = TRUE] <- hypAlt
-                        ii <- ii + 1
+                            enabled(hypAlt) <- enabled(hypVal) <- svalue(hypTest)
+                            
+                            ## use equal variance assumption?
+                            hypEqualVar <- gcheckbox("Use equal-variance", checked = FALSE)
+                            if (INFTYPE == "twosample-ttest") {
+                                
+                                tbl[ii, 4:6, anchor = c(-1, 0), expand = TRUE] <- hypEqualVar
+                                ii <- ii + 1
 
-                        ## use equal variance assumption?
+                                enabled(hypEqualVar) <- svalue(hypTest)
+                            }
+                        }
 
+                        addHandlerChanged(hypTest, function(h, ...) {
+                            enabled(hypEqualVar) <- enabled(hypAlt) <- enabled(hypVal) <- svalue(h$obj)
+                        })
 
                         
                         btn <- gbutton("OK", handler = function(h, ...) {
@@ -1017,7 +1056,8 @@ iNZGUI <- setRefClass(
                                     sets,
                                     list(hypothesis.value = as.numeric(svalue(hypVal)),
                                          hypothesis.alt   = switch(svalue(hypAlt, index = TRUE),
-                                                                   "two.sided", "greater", "less")))
+                                                                   "two.sided", "greater", "less"),
+                                         hypothesis.var.equal = svalue(hypEqualVar)))
                             } else {
                                 sets <- modifyList(sets, list(hypothesis = NULL))
                             }                            
@@ -1029,11 +1069,18 @@ iNZGUI <- setRefClass(
                             if (infType == 2) {
                                 ## Not sure why this acts weird. At least on Linux, the text inside `wBoots` doesn't becoem visible until the
                                 ## function has finished.
-                                wBoots <- gwindow("Please wait while iNZight performs bootstrap simulations ...", visible = FALSE,
-                                                  parent = win, width=850, height=400)
-                                gBoots <- gtext("Currently performing bootstrap simulations.\nDepending on the size of your data, this may take a while.",
-                                                cont = wBoots, expand = TRUE,
-                                                font.attr = list(family = "monospace"))
+                                wBoots <- gwindow("Performing Bootstrap ...",
+                                                  parent = win, width=350, height=120, visible = FALSE)
+                                ggBoots <- ggroup(container = wBoots)
+                                addSpace(ggBoots, 5)
+                                hBoots <- gvbox(container = ggBoots, spacing = 10)
+                                addSpace(hBoots, 5)
+                                iBoots <- gimage(stock.id = "info", cont = hBoots, size = "dialog")
+                                fBoots <- gvbox(container = ggBoots, spacing = 10)
+                                fBoots$set_borderwidth(10)
+                                gBoots <- glabel("Please wait while iNZight\nperforms bootstrap simulations.", anchor = c(-1, 0), cont = fBoots)
+                                font(gBoots) <- list(size = 14, weight = "bold")
+                                gBoots2 <- glabel("Depending on the size of the data,\nthis could take a while.", anchor = c(-1, 0), cont = fBoots)
                                 visible(wBoots) <- TRUE
                             }
 
@@ -1053,6 +1100,8 @@ iNZGUI <- setRefClass(
 
                         addSpring(g)
                         add(g, btn)
+
+                        visible(w) <- TRUE
 
                     } else {
                         gmessage("Please select at least one variable",
