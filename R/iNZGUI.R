@@ -992,12 +992,6 @@ iNZGUI <- setRefClass(
 
                         ii <- ii + 1
 
-                        ## if two sample, paired?
-                        pairedSamp <- gcheckbox("Paired sample", checked = FALSE)
-                        if (INFTYPE == "twosample-ttest" && diff(table(curSet$y)) == 0) {
-                            tbl[ii, 1:6, anchor = c(1, 0), expand = TRUE] <- pairedSamp
-                            ii <- ii + 1
-                        }
 
                         doHypTest <- grepl("ttest", INFTYPE)
 
@@ -1035,15 +1029,11 @@ iNZGUI <- setRefClass(
                                 ii <- ii + 1
 
                                 enabled(hypEqualVar) <- svalue(hypTest)
-                                visible(hypEqualVar) <- !svalue(pairedSamp)
                             }
                         }
 
                         addHandlerChanged(hypTest, function(h, ...) {
                             enabled(hypEqualVar) <- enabled(hypAlt) <- enabled(hypVal) <- svalue(h$obj)
-                        })
-                        addHandlerChanged(pairedSamp, function(h, ...) {
-                            visible(hypEqualVar) <- !svalue(h$obj)
                         })
 
                         
@@ -1055,8 +1045,7 @@ iNZGUI <- setRefClass(
                                 list(bs.inference = infType == 2,
                                      summary.type = "inference",
                                      inference.type = "conf",
-                                     inference.par = NULL,
-                                     paired = svalue(pairedSamp))
+                                     inference.par = NULL)
                             )
                             if (svalue(hypTest)) {
                                 if (is.na(as.numeric(svalue(hypVal)))) {
