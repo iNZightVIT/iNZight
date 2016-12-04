@@ -34,11 +34,18 @@
 "gapminder"
 
 
-#' Gap Minder
+#' SURF Income Survey
 #'
-#' A dataset containing variables for countries over several years.
+#' The NZIS is run annually during the June quarter (April to June),
+#' as a supplement to the Household Labour Force Survey (HLFS).
+#' All respondents in the HLFS were asked to participate in the NZIS,
+#' which provides a snapshot of income levels for people and households.
+#' NZIS data gives average weekly income for the June quarter from most sources,
+#' including government transfers, investments, self-employment, and wages and salaries.
 #'
-#' @format A data frame with 3577 rows and 55 variables:
+#' This is a subset of that data.
+#'
+#' @format A data frame with 200 rows and 8 variables:
 #' \describe{
 #'   \item{Personid}{a random unique ID number for each record in the Super SURF}
 #'   \item{Gender}{male and female}
@@ -49,4 +56,5 @@
 #'   \item{Marital}{marital status}
 #'   \item{Ethnicity}{six categories}
 #' }
+#' @source \url{http://www.stats.govt.nz/tools_and_services/university-students/NZIS-Super-SURF.aspx}
 "SURFIncomeSurvey"
