@@ -57,4 +57,4 @@
 #'   \item{Ethnicity}{six categories}
 #' }
 #' @source \url{http://www.stats.govt.nz/tools_and_services/university-students/NZIS-Super-SURF.aspx}
-"SURFIncomeSurvey"
+"SURFIncomeSurvey_200"
