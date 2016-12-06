@@ -922,12 +922,129 @@ iNZGUI <- setRefClass(
 
                         w <- gwindow("Summary", width = 850, height = 400,
                                      visible = FALSE, parent = win)
-                        g <- gtext(text = paste(do.call(
-                                       iNZightPlots:::getPlotSummary,
-                                       curSet),
-                                       collapse = "\n"),
-                                   expand = TRUE, cont = w, wrap = FALSE,
-                                   font.attr = list(family = "monospace"))
+                        g <- gvbox(container = w)
+                        txtSmry <- gtext(text = paste(do.call(
+                                             iNZightPlots:::getPlotSummary,
+                                             curSet),
+                                             collapse = "\n"),
+                                         expand = TRUE, container = g, wrap = FALSE,
+                                         font.attr = list(family = "monospace"))
+
+                        ## if regression OR anova is going on:
+                        if (is.null(curSet$g1) && is.null(curSet$g2) &&
+                            !is.null(curSet$y) && (is.numeric(curSet$x) | is.numeric(curSet$y)) &&
+                            (!is.null(curSet$trend) | !is.numeric(curSet$x) | !is.numeric(curSet$y))) {
+                            btngrp <- ggroup(container = g)
+                            addSpace(btngrp, 5)
+                            
+                            btnHandler <- function(h, ...) {
+                                varType <- ifelse(grepl("residuals", svalue(h$obj)), "residual", "predict")
+                                
+                                ## window asking for variable names:
+                                w2 <- gwindow("Store fitted values", width = 350,
+                                              parent = w, visible = FALSE)
+
+                                g2 <- gvbox(container = w2)
+                                g2$set_borderwidth(15)
+
+                                lbl <- glabel(sprintf("Specify names for the new variable%s", ifelse(length(curSet$trend) > 1, "s", "")), container = g2,
+                                              anchor = c(-1, -1))
+                                font(lbl) <- list(size = 12, weight = "bold")
+
+                                addSpace(g2, 20)
+
+                                
+                                tbl <- glayout(container = g2)
+                                ii <- 1
+                                
+                                ## Predicted values for GROUP MEANS:
+                                fittedLbl <- glabel("")
+                                fittedName <- gedit(sprintf("%s.%s", curSet$varnames[[ifelse(is.numeric(curSet$y), "y", "x")]], varType),
+                                                    width = 25)
+                                if (is.factor(curSet$x) || is.factor(curSet$y) || length(curSet$trend) == 1) {
+                                    tbl[ii, 1:3, anchor = c(1, 0), expand = TRUE] <- fittedLbl
+                                    tbl[ii, 4:6, expand = TRUE] <- fittedName
+                                    ii <- ii + 1
+                                }
+
+                                ## Predicted values for LINEAR trend:
+                                fittedLbl.lin <- glabel(ifelse(length(curSet$trend) > 1, "Linear :", ""))
+                                fittedName.lin <- gedit(sprintf("%s.%s.linear", curSet$varnames$y, varType),
+                                                        width = 25)
+                                if (length(curSet$trend) > 1 && "linear" %in% curSet$trend) {
+                                    tbl[ii, 1:3, anchor = c(1, 0), expand = TRUE] <- fittedLbl.lin
+                                    tbl[ii, 4:6, expand = TRUE] <- fittedName.lin
+                                    ii <- ii + 1
+                                }
+
+                                ## Predicted values for QUADRATIC trend:
+                                fittedLbl.quad <- glabel(ifelse(length(curSet$trend) > 1, "Quadratic :", ""))
+                                fittedName.quad <- gedit(sprintf("%s.%s.quadratic", curSet$varnames$y, varType),
+                                                         width = 25)
+                                if (length(curSet$trend) > 1 && "quadratic" %in% curSet$trend) {
+                                    tbl[ii, 1:3, anchor = c(1, 0), expand = TRUE] <- fittedLbl.quad
+                                    tbl[ii, 4:6, expand = TRUE] <- fittedName.quad
+                                    ii <- ii + 1
+                                }
+
+                                ## Predicted values for CUBIC trend:
+                                fittedLbl.cub <- glabel(ifelse(length(curSet$trend) > 1, "Cubic :", ""))
+                                fittedName.cub <- gedit(sprintf("%s.%s.cubic", curSet$varnames$y, varType),
+                                                        width = 25)
+                                if (length(curSet$trend) > 1 && "cubic" %in% curSet$trend) {
+                                    tbl[ii, 1:3, anchor = c(1, 0), expand = TRUE] <- fittedLbl.cub
+                                    tbl[ii, 4:6, expand = TRUE] <- fittedName.cub
+                                    ii <- ii + 1
+                                }
+
+                                addSpring(g2)
+
+                                okBtn <- gbutton("Ok", icon = "save",
+                                                 handler = function(h, ...) {
+                                                     FUN <- if (varType == "predict")
+                                                                function(object)
+                                                                    predict(object, newdata = curSet)
+                                                            else
+                                                                function(object)
+                                                                    residuals(object)
+                                                     
+                                                     if (is.factor(curSet$x) || is.factor(curSet$y) || length(curSet$trend) == 1) {
+                                                         ## just the one
+                                                         fit <- with(curSet, lm(if (is.numeric(curSet$y)) y ~ x else x ~ y, na.action = na.exclude))
+                                                         pred <- data.frame(FUN(fit))
+                                                         colnames(pred) <- svalue(fittedName)
+                                                     } else {
+                                                         ## for each trend line
+                                                         fits <- lapply(curSet$trend, function(ord) {
+                                                             with(curSet, switch(ord,
+                                                                                 "linear"    = lm(y ~ x, na.action = na.exclude),
+                                                                                 "quadratic" = lm(y ~ x + I(x^2), na.action = na.exclude),
+                                                                                 "cubic"     = lm(y ~ x + I(x^2) + I(x^3), na.action = na.exclude)))
+                                                         })
+                                                         pred <- sapply(fits, function(f) FUN(f))
+                                                         colnames(pred) <- sapply(curSet$trend, function(ord) {
+                                                             switch(ord,
+                                                                    "linear" = svalue(fittedName.lin),
+                                                                    "quadratic" = svalue(fittedName.quad),
+                                                                    "cubic" = svalue(fittedName.cub))
+                                                         })
+                                                     }
+
+                                                     newdata <- data.frame(getActiveData(), pred)
+                                                     getActiveDoc()$getModel()$updateData(newdata)
+                                                     
+                                                     dispose(w2)
+                                                 }, container = g2)
+                                
+                                visible(w2) <- TRUE
+                            }
+                            
+                            predBtn <- gbutton("Store fitted values", container = btngrp, handler = btnHandler)
+                            residBtn <- gbutton("Store residuals", container = btngrp, handler = btnHandler)
+                            
+                            addSpace(g, 0)
+                        }
+                            
                         visible(w) <- TRUE
                     } else {
                         gmessage("Please select at least one variable",
@@ -1039,91 +1156,6 @@ iNZGUI <- setRefClass(
                             }
                         }
 
-                        createVars <- INFTYPE %in% c("regression", "anova", "twosample-ttest") &&
-                            is.null(curSet$g1) && is.null(curSet$g2)
-                        
-                        if (INFTYPE == "regression") {
-                            createVars <- createVars && !is.null(curSet$trend)
-
-                            ## if no trend set, require one at this point ...
-                        }
-                        
-                        if (createVars) {
-                            fittedChk <- gcheckbox("Compute fitted values", checked = FALSE)
-                            tbl[ii, 1:6, anchor = c(1, 0), expand = TRUE] <- fittedChk
-                            ii <- ii + 1
-
-                            enableII <- numeric()
-                            infolbl <- glabel("New variables will be added to the end of the data set")
-                            
-                            if (INFTYPE == "regression" && length(curSet$trend) > 1) {
-                                ## Predicted values for LINEAR trend:
-                                fittedLbl.lin <- glabel("Variable name :")
-                                fittedName.lin <- gedit(sprintf("%s.predict.linear", curSet$varnames$y),
-                                                        width = 25)
-                                if ("linear" %in% curSet$trend) {
-                                    tbl[ii, 1:3, anchor = c(1, 0), expand = TRUE] <- fittedLbl.lin
-                                    tbl[ii, 4:6, expand = TRUE] <- fittedName.lin
-                                    enableII <- c(enableII, ii)
-                                    ii <- ii + 1
-                                }
-
-                                ## Predicted values for QUADRATIC trend:
-                                fittedLbl.quad <- glabel("Variable name :")
-                                fittedName.quad <- gedit(sprintf("%s.predict.quadratic", curSet$varnames$y),
-                                                         width = 25)
-                                if ("quadratic" %in% curSet$trend) {
-                                    tbl[ii, 1:3, anchor = c(1, 0), expand = TRUE] <- fittedLbl.quad
-                                    tbl[ii, 4:6, expand = TRUE] <- fittedName.quad
-                                    enableII <- c(enableII, ii)
-                                    ii <- ii + 1
-                                }
-
-                                ## Predicted values for CUBIC trend:
-                                fittedLbl.cub <- glabel("Variable name :")
-                                fittedName.cub <- gedit(sprintf("%s.predict.cubic", curSet$varnames$y),
-                                                        width = 25)
-                                if ("cubic" %in% curSet$trend) {
-                                    tbl[ii, 1:3, anchor = c(1, 0), expand = TRUE] <- fittedLbl.cub
-                                    tbl[ii, 4:6, expand = TRUE] <- fittedName.cub
-                                    enableII <- c(enableII, ii)
-                                    ii <- ii + 1
-                                }
-                                
-                                
-                                enabled(fittedLbl.lin) <- enabled(fittedName.lin) <- 
-                                    enabled(fittedLbl.quad) <- enabled(fittedName.quad) <-
-                                    enabled(fittedLbl.cub) <- enabled(fittedName.cub) <-svalue(fittedChk)
-                                
-                                addHandlerChanged(fittedChk, function(h, ...) {
-                                    visible(infolbl) <- enabled(fittedLbl.lin) <- enabled(fittedName.lin) <- 
-                                        enabled(fittedLbl.quad) <- enabled(fittedName.quad) <-
-                                        enabled(fittedLbl.cub) <- enabled(fittedName.cub) <- svalue(h$obj)
-                                })
-                            } else {
-                                ## Predicted values for GROUP MEANS:
-                                fittedLbl <- glabel("Variable name :")
-                                fittedName <- gedit(sprintf("%s.predict", curSet$varnames[[ifelse(is.numeric(curSet$y), "y", "x")]]),
-                                                    width = 25)
-                                tbl[ii, 1:3, anchor = c(1, 0), expand = TRUE] <- fittedLbl
-                                tbl[ii, 4:6, expand = TRUE] <- fittedName
-                                enableII <- c(enableII, ii)
-                                ii <- ii + 1
-                                
-                                enabled(fittedLbl) <- enabled(fittedName) <- svalue(fittedChk)
-                                addHandlerChanged(fittedChk, function(h, ...) {
-                                    visible(infolbl) <- enabled(fittedLbl) <- enabled(fittedName) <- svalue(h$obj)
-                                })
-                            }
-
-                            
-                            font(infolbl) <- list(size = 8)
-                            tbl[ii, 1:6, anchor = c(-1, 0), expand = TRUE] <- infolbl
-                            ii <- ii + 1
-
-                            visible(infolbl) <- svalue(fittedChk)
-                        }
-
                         addHandlerChanged(hypTest, function(h, ...) {
                             enabled(hypEqualVar) <- enabled(hypAlt) <- enabled(hypVal) <- svalue(h$obj)
                         })
@@ -1155,37 +1187,37 @@ iNZGUI <- setRefClass(
                                 sets <- modifyList(sets, list(hypothesis = NULL), keep.null = TRUE)
                             }
 
-                            ## Create predicted values, if requested:
-                            if (createVars) {
-                                if (svalue(fittedChk)) {
-                                    if (INFTYPE == "regression") {
-                                        fit <- lapply(curSet$trend, function(ord) {
-                                            with(curSet, switch(ord,
-                                                                "linear"    = lm(y ~ x),
-                                                                "quadratic" = lm(y ~ x + I(x^2)),
-                                                                "cubic"     = lm(y ~ x + I(x^2) + I(x^3))))
-                                        })
-                                        pred <- sapply(fit, function(f) predict(f, newdata = curSet))
-                                        if (length(curSet$trend) == 1) {
-                                            colnames(pred) <- svalue(fittedName)
-                                        } else {
-                                            colnames(pred) <- sapply(curSet$trend, function(ord) {
-                                                switch(ord,
-                                                       "linear" = svalue(fittedName.lin),
-                                                       "quadratic" = svalue(fittedName.quad),
-                                                       "cubic" = svalue(fittedName.cub))
-                                            })
-                                        }
-                                    } else {
-                                        fit <- with(curSet, lm(if (is.numeric(curSet$y)) y ~ x else x ~ y))
-                                        pred <- data.frame(predict(fit, newdata = curSet))
-                                        colnames(pred) <- svalue(fittedName)
-                                    }
+                            ## ## Create predicted values, if requested:
+                            ## if (createVars) {
+                            ##     if (svalue(fittedChk)) {
+                            ##         if (INFTYPE == "regression") {
+                            ##             fit <- lapply(curSet$trend, function(ord) {
+                            ##                 with(curSet, switch(ord,
+                            ##                                     "linear"    = lm(y ~ x),
+                            ##                                     "quadratic" = lm(y ~ x + I(x^2)),
+                            ##                                     "cubic"     = lm(y ~ x + I(x^2) + I(x^3))))
+                            ##             })
+                            ##             pred <- sapply(fit, function(f) predict(f, newdata = curSet))
+                            ##             if (length(curSet$trend) == 1) {
+                            ##                 colnames(pred) <- svalue(fittedName)
+                            ##             } else {
+                            ##                 colnames(pred) <- sapply(curSet$trend, function(ord) {
+                            ##                     switch(ord,
+                            ##                            "linear" = svalue(fittedName.lin),
+                            ##                            "quadratic" = svalue(fittedName.quad),
+                            ##                            "cubic" = svalue(fittedName.cub))
+                            ##                 })
+                            ##             }
+                            ##         } else {
+                            ##             fit <- with(curSet, lm(if (is.numeric(curSet$y)) y ~ x else x ~ y))
+                            ##             pred <- data.frame(predict(fit, newdata = curSet))
+                            ##             colnames(pred) <- svalue(fittedName)
+                            ##         }
                                     
-                                    newdata <- data.frame(getActiveData(), pred)
-                                    getActiveDoc()$getModel()$updateData(newdata)
-                                }
-                            }
+                            ##         newdata <- data.frame(getActiveData(), pred)
+                            ##         getActiveDoc()$getModel()$updateData(newdata)
+                            ##     }
+                            ## }
 
                             ## Close setup window and display results
                             dispose(w)

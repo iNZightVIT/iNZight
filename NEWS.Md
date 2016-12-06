@@ -1,3 +1,19 @@
+# Version 3.1
+__Release date:__ TBA
+
+Main changes in this update are within the Inference functions;
+t-tests performed on request.
+
+## New Features
+
+- t-tests can now be performed, including specification of H0 etc.
+
+## Minor Changes
+
+- "factor" reworded to "categorical" in summary output
+
+***
+
 # Version 3.0
 __Release date:__ 5 Septemer, 2016
 
