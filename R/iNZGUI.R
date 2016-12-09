@@ -1110,7 +1110,7 @@ iNZGUI <- setRefClass(
                         ii <- ii + 1
 
 
-                        doHypTest <- grepl("ttest", INFTYPE)
+                        doHypTest <- grepl("ttest|anova", INFTYPE)
                         test.type <- switch(INFTYPE,
                                             "onesample-ttest" = "One Sample t-test",
                                             "twosample-ttest" = "Two Sample t-test",
@@ -1119,10 +1119,18 @@ iNZGUI <- setRefClass(
                                             "oneway-table"    = ,
                                             "twoway-table"    = "Chi-square test")
                         
-
+                        
                         ## Checkbox: perform hypothesis test? Activates hypothesis options.
-                        hypTest <- gcheckbox(sprintf("Perform %s", test.type), checked = FALSE) #doHypTest)
+                        hypTest <- if ((TTEST <- INFTYPE == "twosample-ttest"))
+                                       gradio(c("None", "Two Sample t-test", "ANOVA"), horizontal = TRUE)
+                                   else
+                                       gcheckbox(test.type, checked = FALSE)
                         if (doHypTest) {
+                            lbl <- glabel("Hypothesis Testing")
+                            font(lbl) <- list(weight = "bold")
+                            tbl[ii, 1:6, anchor = c(-1, 0), expand = TRUE] <- lbl
+                            ii <- ii + 1
+                            
                             tbl[ii, 1:6, anchor = c(1, 0), expand = TRUE] <- hypTest
                             ii <- ii + 1
                         }
@@ -1131,33 +1139,36 @@ iNZGUI <- setRefClass(
                             ## Null hypothesis value
                             lbl <- glabel("Null Value :")
                             hypVal <- gedit("0", width = 10)
-                            
-                            tbl[ii, 1:3, anchor = c(1, 0), expand = TRUE] <- lbl
-                            tbl[ii, 4:6, expand = TRUE] <- hypVal
-                            ii <- ii + 1
+
+                            if (INFTYPE != "anova") {
+                                tbl[ii, 1:3, anchor = c(1, 0), expand = TRUE] <- lbl
+                                tbl[ii, 4:6, expand = TRUE] <- hypVal
+                                ii <- ii + 1
+                            }
                             
                             ## alternative hypothesis
                             lbl <- glabel("Alternative Hypothesis :")
                             hypAlt <- gcombobox(c("two sided", "greater than", "less than"))
-                            tbl[ii, 1:3, anchor = c(1, 0), expand = TRUE] <- lbl
-                            tbl[ii, 4:6, expand = TRUE] <- hypAlt
-                            ii <- ii + 1
+                            if (INFTYPE != "anova") {
+                                tbl[ii, 1:3, anchor = c(1, 0), expand = TRUE] <- lbl
+                                tbl[ii, 4:6, expand = TRUE] <- hypAlt
+                                ii <- ii + 1
+                            }
 
-                            enabled(hypAlt) <- enabled(hypVal) <- svalue(hypTest)
+                            enabled(hypAlt) <- enabled(hypVal) <- if (TTEST) svalue(hypTest, index = TRUE) == 2 else svalue(hypTest)
                             
                             ## use equal variance assumption?
                             hypEqualVar <- gcheckbox("Use equal-variance", checked = FALSE)
-                            if (INFTYPE == "twosample-ttest") {
-                                
+                            if (TTEST) {
                                 tbl[ii, 4:6, expand = TRUE] <- hypEqualVar
                                 ii <- ii + 1
 
-                                enabled(hypEqualVar) <- svalue(hypTest)
+                                enabled(hypEqualVar) <- svalue(hypTest, index = TRUE) == 2
                             }
                         }
 
                         addHandlerChanged(hypTest, function(h, ...) {
-                            enabled(hypEqualVar) <- enabled(hypAlt) <- enabled(hypVal) <- svalue(h$obj)
+                            enabled(hypEqualVar) <- enabled(hypAlt) <- enabled(hypVal) <- if (TTEST) svalue(hypTest, index = TRUE) == 2 else svalue(h$obj)
                         })
 
                         
@@ -1171,7 +1182,7 @@ iNZGUI <- setRefClass(
                                      inference.type = "conf",
                                      inference.par = NULL)
                             )
-                            if (svalue(hypTest)) {
+                            if (ifelse(TTEST, svalue(hypTest, index = TRUE) > 1, svalue(hypTest))) {
                                 if (is.na(as.numeric(svalue(hypVal)))) {
                                     gmessage("Null value must be a valid number.", title = "Invalid Value",
                                              icon = "error")
@@ -1182,49 +1193,18 @@ iNZGUI <- setRefClass(
                                     list(hypothesis.value = as.numeric(svalue(hypVal)),
                                          hypothesis.alt   = switch(svalue(hypAlt, index = TRUE),
                                                                    "two.sided", "greater", "less"),
-                                         hypothesis.var.equal = svalue(hypEqualVar)))
+                                         hypothesis.var.equal = svalue(hypEqualVar),
+                                         hypothesis.test = ifelse(TTEST, switch(svalue(hypTest, index = TRUE), "default", "t.test", "anova"), "default")))
                             } else {
                                 sets <- modifyList(sets, list(hypothesis = NULL), keep.null = TRUE)
                             }
-
-                            ## ## Create predicted values, if requested:
-                            ## if (createVars) {
-                            ##     if (svalue(fittedChk)) {
-                            ##         if (INFTYPE == "regression") {
-                            ##             fit <- lapply(curSet$trend, function(ord) {
-                            ##                 with(curSet, switch(ord,
-                            ##                                     "linear"    = lm(y ~ x),
-                            ##                                     "quadratic" = lm(y ~ x + I(x^2)),
-                            ##                                     "cubic"     = lm(y ~ x + I(x^2) + I(x^3))))
-                            ##             })
-                            ##             pred <- sapply(fit, function(f) predict(f, newdata = curSet))
-                            ##             if (length(curSet$trend) == 1) {
-                            ##                 colnames(pred) <- svalue(fittedName)
-                            ##             } else {
-                            ##                 colnames(pred) <- sapply(curSet$trend, function(ord) {
-                            ##                     switch(ord,
-                            ##                            "linear" = svalue(fittedName.lin),
-                            ##                            "quadratic" = svalue(fittedName.quad),
-                            ##                            "cubic" = svalue(fittedName.cub))
-                            ##                 })
-                            ##             }
-                            ##         } else {
-                            ##             fit <- with(curSet, lm(if (is.numeric(curSet$y)) y ~ x else x ~ y))
-                            ##             pred <- data.frame(predict(fit, newdata = curSet))
-                            ##             colnames(pred) <- svalue(fittedName)
-                            ##         }
-                                    
-                            ##         newdata <- data.frame(getActiveData(), pred)
-                            ##         getActiveDoc()$getModel()$updateData(newdata)
-                            ##     }
-                            ## }
 
                             ## Close setup window and display results
                             dispose(w)
 
                             infTitle <- "Inference Information"
                             if (infType == 2) {
-                                ## Not sure why this acts weird. At least on Linux, the text inside `wBoots` doesn't becoem visible until the
+                                ## Not sure why this acts weird. At least on Linux, the text inside `wBoots` doesn't become visible until the
                                 ## function has finished.
                                 wBoots <- gwindow("Performing Bootstrap ...",
                                                   parent = win, width=350, height=120, visible = FALSE)
