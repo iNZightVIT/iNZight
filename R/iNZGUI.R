@@ -933,7 +933,7 @@ iNZGUI <- setRefClass(
                         ## if regression OR anova is going on:
                         if (is.null(curSet$g1) && is.null(curSet$g2) &&
                             !is.null(curSet$y) && (is.numeric(curSet$x) | is.numeric(curSet$y)) &&
-                            (!is.null(curSet$trend) | !is.numeric(curSet$x) | !is.numeric(curSet$y))) {
+                            (!is.null(curSet$trend) | curSet$smooth > 0 | !is.numeric(curSet$x) | !is.numeric(curSet$y))) {
                             btngrp <- ggroup(container = g)
                             addSpace(btngrp, 5)
                             
@@ -997,23 +997,34 @@ iNZGUI <- setRefClass(
                                     ii <- ii + 1
                                 }
 
+                                ## Predicted values for SMOOTHER:
+                                fittedLbl.smth <- glabel("Smoother :")
+                                fittedName.smth <- gedit(sprintf("%s.%s.smooth", curSet$varnames$y, varType),
+                                                        width = 25)
+                                if (curSet$smooth > 0 && is.numeric(curSet$x) && is.numeric(curSet$y)) {
+                                    tbl[ii, 1:3, anchor = c(1, 0), expand = TRUE] <- fittedLbl.smth
+                                    tbl[ii, 4:6, expand = TRUE] <- fittedName.smth
+                                    ii <- ii + 1
+                                }
+
                                 addSpring(g2)
 
                                 okBtn <- gbutton("Ok", icon = "save",
                                                  handler = function(h, ...) {
                                                      FUN <- if (varType == "predict")
                                                                 function(object)
-                                                                    predict(object, newdata = curSet)
+                                                                    predict(object, newdata = data.frame(x = curSet$x))
                                                             else
                                                                 function(object)
                                                                     residuals(object)
-                                                     
+
+                                                     pred <- NULL
                                                      if (is.factor(curSet$x) || is.factor(curSet$y) || length(curSet$trend) == 1) {
                                                          ## just the one
                                                          fit <- with(curSet, lm(if (is.numeric(curSet$y)) y ~ x else x ~ y, na.action = na.exclude))
                                                          pred <- data.frame(FUN(fit))
                                                          colnames(pred) <- svalue(fittedName)
-                                                     } else {
+                                                     } else if (length(curSet$trend) > 1) {
                                                          ## for each trend line
                                                          fits <- lapply(curSet$trend, function(ord) {
                                                              with(curSet, switch(ord,
@@ -1029,8 +1040,21 @@ iNZGUI <- setRefClass(
                                                                     "cubic" = svalue(fittedName.cub))
                                                          })
                                                      }
+                                                     if (!is.null(pred))
+                                                         newdata <- data.frame(getActiveData(), pred)
+                                                     else
+                                                         newdata <- getActiveData()
 
-                                                     newdata <- data.frame(getActiveData(), pred)
+                                                     
+                                                     if (curSet$smooth > 0 && is.numeric(curSet$x) && is.numeric(curSet$y)) {
+                                                         tmp <- data.frame(x = curSet$x, y = curSet$y)
+                                                         fit <- with(curSet, loess(y ~ x, span = curSet$smooth, family = "gaussian", degree = 1, na.action = "na.exclude"))
+                                                         pred <- data.frame(FUN(fit))
+                                                         colnames(pred) <- svalue(fittedName.smth)
+                                                         newdata <- data.frame(newdata, pred)
+                                                     }
+
+
                                                      getActiveDoc()$getModel()$updateData(newdata)
                                                      
                                                      dispose(w2)
@@ -1110,7 +1134,7 @@ iNZGUI <- setRefClass(
                         ii <- ii + 1
 
 
-                        doHypTest <- grepl("ttest|anova", INFTYPE)
+                        doHypTest <- grepl("ttest|anova|table", INFTYPE)
                         test.type <- switch(INFTYPE,
                                             "onesample-ttest" = "One Sample t-test",
                                             "twosample-ttest" = "Two Sample t-test",
@@ -1119,9 +1143,11 @@ iNZGUI <- setRefClass(
                                             "oneway-table"    = ,
                                             "twoway-table"    = "Chi-square test")
                         
-                        
+
                         ## Checkbox: perform hypothesis test? Activates hypothesis options.
-                        hypTest <- if ((TTEST <- INFTYPE == "twosample-ttest"))
+                        TTEST <- grepl(INFTYPE, "ttest")
+                        TTEST2 <- INFTYPE == "twosample-ttest"
+                        hypTest <- if (TTEST2)
                                        gradio(c("None", "Two Sample t-test", "ANOVA"), horizontal = TRUE)
                                    else
                                        gcheckbox(test.type, checked = FALSE)
@@ -1140,7 +1166,7 @@ iNZGUI <- setRefClass(
                             lbl <- glabel("Null Value :")
                             hypVal <- gedit("0", width = 10)
 
-                            if (INFTYPE != "anova") {
+                            if (TTEST) {
                                 tbl[ii, 1:3, anchor = c(1, 0), expand = TRUE] <- lbl
                                 tbl[ii, 4:6, expand = TRUE] <- hypVal
                                 ii <- ii + 1
@@ -1149,17 +1175,17 @@ iNZGUI <- setRefClass(
                             ## alternative hypothesis
                             lbl <- glabel("Alternative Hypothesis :")
                             hypAlt <- gcombobox(c("two sided", "greater than", "less than"))
-                            if (INFTYPE != "anova") {
+                            if (TTEST) {
                                 tbl[ii, 1:3, anchor = c(1, 0), expand = TRUE] <- lbl
                                 tbl[ii, 4:6, expand = TRUE] <- hypAlt
                                 ii <- ii + 1
                             }
 
-                            enabled(hypAlt) <- enabled(hypVal) <- if (TTEST) svalue(hypTest, index = TRUE) == 2 else svalue(hypTest)
+                            enabled(hypAlt) <- enabled(hypVal) <- if (TTEST2) svalue(hypTest, index = TRUE) == 2 else svalue(hypTest)
                             
                             ## use equal variance assumption?
                             hypEqualVar <- gcheckbox("Use equal-variance", checked = FALSE)
-                            if (TTEST) {
+                            if (TTEST2) {
                                 tbl[ii, 4:6, expand = TRUE] <- hypEqualVar
                                 ii <- ii + 1
 
@@ -1168,7 +1194,7 @@ iNZGUI <- setRefClass(
                         }
 
                         addHandlerChanged(hypTest, function(h, ...) {
-                            enabled(hypEqualVar) <- enabled(hypAlt) <- enabled(hypVal) <- if (TTEST) svalue(hypTest, index = TRUE) == 2 else svalue(h$obj)
+                            enabled(hypEqualVar) <- enabled(hypAlt) <- enabled(hypVal) <- if (TTEST2) svalue(hypTest, index = TRUE) == 2 else svalue(h$obj)
                         })
 
                         
@@ -1182,7 +1208,7 @@ iNZGUI <- setRefClass(
                                      inference.type = "conf",
                                      inference.par = NULL)
                             )
-                            if (ifelse(TTEST, svalue(hypTest, index = TRUE) > 1, svalue(hypTest))) {
+                            if (ifelse(TTEST2, svalue(hypTest, index = TRUE) > 1, svalue(hypTest))) {
                                 if (is.na(as.numeric(svalue(hypVal)))) {
                                     gmessage("Null value must be a valid number.", title = "Invalid Value",
                                              icon = "error")
@@ -1194,7 +1220,7 @@ iNZGUI <- setRefClass(
                                          hypothesis.alt   = switch(svalue(hypAlt, index = TRUE),
                                                                    "two.sided", "greater", "less"),
                                          hypothesis.var.equal = svalue(hypEqualVar),
-                                         hypothesis.test = ifelse(TTEST, switch(svalue(hypTest, index = TRUE), "default", "t.test", "anova"), "default")))
+                                         hypothesis.test = ifelse(TTEST2, switch(svalue(hypTest, index = TRUE), "default", "t.test", "anova"), "default")))
                             } else {
                                 sets <- modifyList(sets, list(hypothesis = NULL), keep.null = TRUE)
                             }

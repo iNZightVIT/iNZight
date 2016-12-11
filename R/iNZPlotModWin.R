@@ -1778,6 +1778,10 @@ iNZPlotMod <- setRefClass(
                                    list(linear = svalue(trendLinLTY),
                                         quadratic = svalue(trendQuadLTY),
                                         cubic = svalue(trendCubLTY)))
+                ## if no trend specified, set to NULL
+                if (length(newSet$trend) == 0) {
+                    newSet <- modifyList(newSet, list(trend = NULL), keep.null = TRUE)
+                }
 
                 ## Trend line colours - editable:
                 tCols <- curSet$col.trend
