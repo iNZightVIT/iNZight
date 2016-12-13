@@ -38,7 +38,6 @@ Here's just a few of the major new features to iNZight.
 - Play time can now be stopped, and the interval adjusted
 - Switch variables with the one below by clicking the "down" arrow to the right of the variable box
 - __Maps Module__ - visualise geographical data:
-
   - Coordinates: if your data set includes GPS coordinates for each observation,
     iNZight will let you plot them on a map.
   - Countries: if observations have country names associated with them,
