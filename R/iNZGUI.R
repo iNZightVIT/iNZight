@@ -1145,7 +1145,7 @@ iNZGUI <- setRefClass(
                         
 
                         ## Checkbox: perform hypothesis test? Activates hypothesis options.
-                        TTEST <- grepl(INFTYPE, "ttest")
+                        TTEST <- grepl("ttest", INFTYPE)
                         TTEST2 <- INFTYPE == "twosample-ttest"
                         hypTest <- if (TTEST2)
                                        gradio(c("None", "Two Sample t-test", "ANOVA"), horizontal = TRUE)
