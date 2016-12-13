@@ -21,6 +21,7 @@ t-tests performed on request.
 ## Bug Fixes
 
 - Fix a bug in inference output where reorded factors' confidence intervals and p-values were _not_ reordered!
+- Fix issue where confidence intervals for two-way table row proportions were ordered incorrectly
 
 ***
 
