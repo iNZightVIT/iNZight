@@ -440,14 +440,14 @@ iNZGUI <- setRefClass(
                     label = "Time Series...",
                     icon = "symbol_diamond",
                     handler = function(h, ...) {
-                        ##module = "iNZightTSMod"
-                        ##initializeModule(module)
-                        ##iNZightTSMod$new(.self)
-                        ign <- gwindow("...", visible = FALSE)
-                        tag(ign, "dataSet") <- getActiveData()
-                        e <- list(obj = ign)
-                        e$win <- win
-                        iNZightModules::timeSeries(e)
+                        #module = "iNZightTSMod"
+                        #initializeModule(module)
+                        iNZightModules::iNZightTSMod$new(.self)
+                        #ign <- gwindow("...", visible = FALSE)
+                        #tag(ign, "dataSet") <- getActiveData()
+                        #e <- list(obj = ign)
+                        #e$win <- win
+                        #iNZightModules::timeSeries(e)
                     }
                     ),
                 modelFit = gaction(
