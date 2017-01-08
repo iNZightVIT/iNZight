@@ -440,14 +440,7 @@ iNZGUI <- setRefClass(
                     label = "Time Series...",
                     icon = "symbol_diamond",
                     handler = function(h, ...) {
-                        #module = "iNZightTSMod"
-                        #initializeModule(module)
                         iNZightModules::iNZightTSMod$new(.self)
-                        #ign <- gwindow("...", visible = FALSE)
-                        #tag(ign, "dataSet") <- getActiveData()
-                        #e <- list(obj = ign)
-                        #e$win <- win
-                        #iNZightModules::timeSeries(e)
                     }
                     ),
                 modelFit = gaction(
@@ -936,10 +929,10 @@ iNZGUI <- setRefClass(
                             (!is.null(curSet$trend) | curSet$smooth > 0 | !is.numeric(curSet$x) | !is.numeric(curSet$y))) {
                             btngrp <- ggroup(container = g)
                             addSpace(btngrp, 5)
-                            
+
                             btnHandler <- function(h, ...) {
                                 varType <- ifelse(grepl("residuals", svalue(h$obj)), "residual", "predict")
-                                
+
                                 ## window asking for variable names:
                                 w2 <- gwindow("Store fitted values", width = 350,
                                               parent = w, visible = FALSE)
@@ -953,10 +946,10 @@ iNZGUI <- setRefClass(
 
                                 addSpace(g2, 20)
 
-                                
+
                                 tbl <- glayout(container = g2)
                                 ii <- 1
-                                
+
                                 ## Predicted values for GROUP MEANS:
                                 fittedLbl <- glabel("")
                                 fittedName <- gedit(sprintf("%s.%s", curSet$varnames[[ifelse(is.numeric(curSet$y), "y", "x")]], varType),
@@ -1045,7 +1038,7 @@ iNZGUI <- setRefClass(
                                                      else
                                                          newdata <- getActiveData()
 
-                                                     
+
                                                      if (curSet$smooth > 0 && is.numeric(curSet$x) && is.numeric(curSet$y)) {
                                                          tmp <- data.frame(x = curSet$x, y = curSet$y)
                                                          fit <- with(curSet, loess(y ~ x, span = curSet$smooth, family = "gaussian", degree = 1, na.action = "na.exclude"))
@@ -1056,19 +1049,19 @@ iNZGUI <- setRefClass(
 
 
                                                      getActiveDoc()$getModel()$updateData(newdata)
-                                                     
+
                                                      dispose(w2)
                                                  }, container = g2)
-                                
+
                                 visible(w2) <- TRUE
                             }
-                            
+
                             predBtn <- gbutton("Store fitted values", container = btngrp, handler = btnHandler)
                             residBtn <- gbutton("Store residuals", container = btngrp, handler = btnHandler)
-                            
+
                             addSpace(g, 0)
                         }
-                            
+
                         visible(w) <- TRUE
                     } else {
                         gmessage("Please select at least one variable",
@@ -1097,7 +1090,7 @@ iNZGUI <- setRefClass(
                                 INFTYPE <- "twoway-table"
                             }
                         }
-                        
+
                         if (INFTYPE == "regression") {
                             tmp.x <- curSet$y
                             curSet$y <- curSet$x
@@ -1142,7 +1135,7 @@ iNZGUI <- setRefClass(
                                             "regression"      = "Regression Analysis",
                                             "oneway-table"    = ,
                                             "twoway-table"    = "Chi-square test")
-                        
+
 
                         ## Checkbox: perform hypothesis test? Activates hypothesis options.
                         TTEST <- grepl("ttest", INFTYPE)
@@ -1156,7 +1149,7 @@ iNZGUI <- setRefClass(
                             font(lbl) <- list(weight = "bold")
                             tbl[ii, 1:6, anchor = c(-1, 0), expand = TRUE] <- lbl
                             ii <- ii + 1
-                            
+
                             tbl[ii, 1:6, anchor = c(1, 0), expand = TRUE] <- hypTest
                             ii <- ii + 1
                         }
@@ -1171,7 +1164,7 @@ iNZGUI <- setRefClass(
                                 tbl[ii, 4:6, expand = TRUE] <- hypVal
                                 ii <- ii + 1
                             }
-                            
+
                             ## alternative hypothesis
                             lbl <- glabel("Alternative Hypothesis :")
                             hypAlt <- gcombobox(c("two sided", "greater than", "less than"))
@@ -1182,7 +1175,7 @@ iNZGUI <- setRefClass(
                             }
 
                             enabled(hypAlt) <- enabled(hypVal) <- if (TTEST2) svalue(hypTest, index = TRUE) == 2 else svalue(hypTest)
-                            
+
                             ## use equal variance assumption?
                             hypEqualVar <- gcheckbox("Use equal-variance", checked = FALSE)
                             if (TTEST2) {
@@ -1197,7 +1190,7 @@ iNZGUI <- setRefClass(
                             enabled(hypEqualVar) <- enabled(hypAlt) <- enabled(hypVal) <- if (TTEST2) svalue(hypTest, index = TRUE) == 2 else svalue(h$obj)
                         })
 
-                        
+
                         btn <- gbutton("OK", handler = function(h, ...) {
                             infType <- svalue(infMthd, index = TRUE)
                             sets <- curSet
