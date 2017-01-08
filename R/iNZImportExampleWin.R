@@ -16,6 +16,7 @@ iNZImportExampleWin <-
                               "iNZightMR" = "Multiple Response",
                               "iNZightTS" = "Time Series",
                               "iNZightMaps" = "Maps",
+                              "survey" = "Survey",
                               "FutureLearnData" = "FutureLearn")
                 pkgs <- unlist(pkgsL)  ## becomes a named vector
 
@@ -85,12 +86,12 @@ iNZImportExampleWin <-
                                      dataName <- dname <- datasets[ind, "Item"]
                                      pkgname <- names(pkgs)[svalue(dsPkg, index = TRUE)]
                                      
-                                     ## if (pkgname == "survey") {
-                                     ##     if (grep('\\(.+\\)', dname)) {
-                                     ##         dataName <- gsub("\\)", "", gsub(".+\\(", "", dataName))
-                                     ##         dname <- gsub(" \\(.+", "", dname)
-                                     ##     }
-                                     ## }
+                                     if (pkgname == "survey") {
+                                         if (grepl('\\(.+\\)', dname)) {
+                                             dataName <- gsub("\\)", "", gsub(".+\\(", "", dataName))
+                                             dname <- gsub(" \\(.+", "", dname)
+                                         }
+                                     }
                                      
                                      tmp.env <- new.env()
                                      data(list = dataName, package = pkgname, envir = tmp.env)
