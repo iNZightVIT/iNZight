@@ -449,7 +449,11 @@ iNZGUI <- setRefClass(
                     icon = "symbol_diamond",
                     handler = function(h, ...) {
                         ign <- gwindow("...", visible = FALSE)
+                        
                         tag(ign, "dataSet") <- getActiveData()
+                        curMod <- getActiveDoc()$getModel()
+                        if (!is.null(curMod$dataDesign))
+                            tag(ign, "design") <- curMod$createSurveyObject()
                         e <- list(obj = ign)
                         e$win <- win
                         iNZightModules::modelFitting(e)
