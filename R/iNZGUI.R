@@ -750,6 +750,16 @@ iNZGUI <- setRefClass(
                     label = "Expand Table ...",
                     icon = "symbol_diamond",
                     handler = function(h, ...) iNZexpandTblWin$new(.self)
+                ),
+                load = gaction(
+                    ## 50
+                    label = "Load ...", icon = "symbol_diamond",
+                    handler = function(h, ...) iNZLoadSaveWin$new(.self, action = "load")
+                ),
+                save = gaction(
+                    ## 51
+                    label = "Save ...", icon = "save",
+                    handler = function(h, ...) iNZLoadSaveWin$new(.self, action = "save")
                 )
             )
             ## home button is disabled if package 'vit' is not loaded
@@ -765,6 +775,9 @@ iNZGUI <- setRefClass(
                 enabled(actionList[[24]]) <- FALSE
             menuBarList <- list(
                 "File" = list(
+                    actionList[[50]],
+                    actionList[[51]],
+                    gseparator(),
                     actionList[[16]],
                     gseparator(),
                     actionList[[1]],
@@ -818,8 +831,8 @@ iNZGUI <- setRefClass(
                 )
 
             if (!"package:vit" %in% search()) { # remove ...
-                menuBarList[[1]][[2]] <- NULL  ## gseparator
-                menuBarList[[1]][[1]] <- NULL  ## iNZightVIT Home
+                menuBarList[[1]][[5]] <- NULL  ## gseparator
+                menuBarList[[1]][[4]] <- NULL  ## iNZightVIT Home
             }
 
             menubar <<- gmenu(menuBarList, container = cont)
