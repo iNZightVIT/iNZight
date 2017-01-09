@@ -1,10 +1,108 @@
 iNZImportWin <- setRefClass("iNZImportWin",
                             fields = list(
                                 GUI = "ANY",
-                                importFileWin = "ANY"
-                                ),
+                                importFileWin = "ANY",
+                                filetypes = "list",
+                                fname = "ANY",
+                                fext = "ANY",
+                                prevGp = "ANY",
+                                prevLbl = "ANY",
+                                prev = "ANY",
+                                tmpData = "ANY"
+                            ),
                             methods = list(
-                                initialize = function(GUI) {
+                                initialize = function(gui) {
+                                    initFields(GUI = gui,
+                                               filetypes = list("All files" = list(patterns = c("*")),
+                                                                "Comma Separated Values (.csv)" = list(patterns = c("*.csv")),
+                                                                "Tab-delimited Text Files (.txt)" = list(patterns = c("*.txt")),
+                                                                "SPSS Files (.sav)" = list(patterns = c("*.sav")),
+                                                                "SAS Files (.???)" = list(patterns = c("*.sas")),
+                                                                "97-2003 Excel Files (.xls)" = list(patterns = c("*.xls")),
+                                                                "2007 Excel Files (.xlsx)" = list(patterns = c("*.xlsx"))))
+
+                                    importFileWin <<- gwindow("Import File", parent = GUI$win, width = 600, visible = FALSE)
+                                    mainGp <- gvbox(container = importFileWin)
+                                    mainGp$set_borderwidth(10)
+
+                                    ## Select file (and extension)
+                                    fileGp <- gframe("Select File to Import", pos = 0, horizontal = FALSE, container = mainGp)
+                                    fileGp$set_borderwidth(10)
+                                    fileTbl <- glayout(container = fileGp)
+                                    ii <- 1
+                                    
+                                    lbl <- glabel("File Name :")
+                                    fname <<- gedit("", width = 40)
+                                    browseBtn <- gbutton("Browse", 
+                                                         handler = function(h, ...) {
+                                                             svalue(fname) <<- gfile(text = "Choose a file", 
+                                                                                     initial.dir = file.path(".", "data"),
+                                                                                     filter = filetypes, quote = FALSE,
+                                                                                     container = fileGp)
+                                                         })
+                                    fileTbl[ii, 1, anchor = c(1, 0), expand = TRUE] <- lbl
+                                    fileTbl[ii, 2:5, expand = TRUE] <- fname
+                                    fileTbl[ii, 6] <- browseBtn
+                                    ii <- ii + 1
+
+                                    ## --- Extension
+                                    lbl <- glabel("File Type :")
+                                    filetype <- gcombobox(c(names(filetypes)[-1]), selected = 0)
+                                    fileTbl[ii, 1, anchor = c(1, 0), expand = TRUE] <- lbl
+                                    fileTbl[ii, 2:5, expand = TRUE] <- filetype
+                                    ii <- ii + 1
+
+
+                                    ## Change handlers:
+                                    addHandlerChanged(fname, function(h, ...) {
+                                        fext <<- tools::file_ext(svalue(h$obj))
+                                        
+                                        blockHandlers(filetype)
+                                        match <- which(sapply(filetypes[-1], function(ft) grepl(paste0(ft$patterns, "$"), paste0(".", fext))))
+                                        svalue(filetype, index = TRUE) <- if (length(match) > 0) match else 0
+                                        unblockHandlers(filetype)
+                                        
+                                        generatePreview(h, ...)
+                                    })
+                                    addHandlerKeystroke(fname, function(h, ...) h$obj$invoke_change_handler())
+
+                                    addHandlerChanged(filetype, generatePreview)
+
+                                    ## Preview:
+                                    prevGp <<- gframe("Preview", pos = 0, container = mainGp)
+                                    #size(prevGp) <<- c(100, 150)
+                                    prevGp$set_borderwidth(10)
+
+                                    prevLbl <<- glabel("No file selected.", container = prevGp, anchor = c(1, -1))
+                                    prev <<- NULL
+                                    
+                                    visible(importFileWin) <<- TRUE
+                                },
+                                ## Generate a preview
+                                generatePreview = function(h, ...) {
+                                    if (length(svalue(fname)) && file.exists(svalue(fname))) {
+                                        if (!is.null(prev))
+                                            delete(prevGp, prev)
+                                        prev <<- NULL
+                                        svalue(prevLbl) <<- "Loading preview ..."
+                                        
+                                        ## load the preview ...
+                                        tmpData <<- read.table(svalue(fname), header = TRUE, nrows = 5, sep = "\t")
+                                        
+                                        ## set the preview
+                                        Sys.sleep(2)
+                                        visible(prevLbl) <<- FALSE
+                                        prev <<- gtable(tmpData, container = prevGp)
+                                    } else {
+                                        if (!is.null(prev))
+                                            delete(prevGp, prev)
+                                        prev <<- NULL
+                                        svalue(prevLbl) <<- "No file selected."
+                                        visible(prevLbl) <<- TRUE
+                                    }
+                                },
+                                
+                                initialize_old= function(GUI) {
                                     initFields(GUI = GUI)
                                     ## set up main import window
                                     importFileWin <<- gwindow("File Browser", 
