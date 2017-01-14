@@ -70,7 +70,7 @@ iNZImportWin <- setRefClass("iNZImportWin",
 
                                     ## Preview:
                                     prevGp <<- gframe("Preview", pos = 0, container = mainGp)
-                                    #size(prevGp) <<- c(100, 150)
+                                    size(prevGp) <<- c(100, 150)
                                     prevGp$set_borderwidth(10)
 
                                     prevLbl <<- glabel("No file selected.", container = prevGp, anchor = c(1, -1))
@@ -87,12 +87,12 @@ iNZImportWin <- setRefClass("iNZImportWin",
                                         svalue(prevLbl) <<- "Loading preview ..."
                                         
                                         ## load the preview ...
-                                        tmpData <<- read.table(svalue(fname), header = TRUE, nrows = 5, sep = "\t")
+                                        tmpData <<- read.table(svalue(fname), header = TRUE, nrows = 5, sep = ",")
                                         
                                         ## set the preview
-                                        Sys.sleep(2)
+                                        Sys.sleep(0.2)
                                         visible(prevLbl) <<- FALSE
-                                        prev <<- gtable(tmpData, container = prevGp)
+                                        prev <<- gdf(tmpData, container=prevGp)#gtable(tmpData, container = prevGp)
                                     } else {
                                         if (!is.null(prev))
                                             delete(prevGp, prev)
