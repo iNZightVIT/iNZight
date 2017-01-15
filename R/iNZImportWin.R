@@ -5,24 +5,28 @@ iNZImportWin <- setRefClass("iNZImportWin",
                                 filetypes = "list",
                                 fname = "ANY",
                                 fext = "ANY",
+                                fColTypes = "ANY",
                                 prevGp = "ANY",
                                 prevLbl = "ANY",
                                 prev = "ANY",
-                                tmpData = "ANY"
+                                tmpData = "ANY",
+                                advGp = "ANY"
                             ),
                             methods = list(
-                                initialize = function(gui) {
-                                    initFields(GUI = gui,
+                                initialize = function(GUI) {
+                                    initFields(GUI = GUI,
                                                filetypes = list("All files" = list(patterns = c("*")),
                                                                 "Comma Separated Values (.csv)" = list(patterns = c("*.csv")),
                                                                 "Tab-delimited Text Files (.txt)" = list(patterns = c("*.txt")),
                                                                 "SPSS Files (.sav)" = list(patterns = c("*.sav")),
-                                                                "SAS Files (.???)" = list(patterns = c("*.sas")),
+                                                                #"SAS Files (.sas)" = list(patterns = c("*.sas")),
                                                                 "97-2003 Excel Files (.xls)" = list(patterns = c("*.xls")),
-                                                                "2007 Excel Files (.xlsx)" = list(patterns = c("*.xlsx"))))
+                                                                "2007 Excel Files (.xlsx)" = list(patterns = c("*.xlsx")),
+                                                                "STATA Files (.dta)" = list(patterns = c("*.dta"))),
+                                               fColTypes = NULL)
 
                                     importFileWin <<- gwindow("Import File", parent = GUI$win, width = 600, visible = FALSE)
-                                    mainGp <- gvbox(container = importFileWin)
+                                    mainGp <- gvbox(container = importFileWin, expand = TRUE, fill = TRUE)
                                     mainGp$set_borderwidth(10)
 
                                     ## Select file (and extension)
@@ -66,33 +70,102 @@ iNZImportWin <- setRefClass("iNZImportWin",
                                     })
                                     addHandlerKeystroke(fname, function(h, ...) h$obj$invoke_change_handler())
 
-                                    addHandlerChanged(filetype, generatePreview)
+                                    addHandlerChanged(filetype, function(h, ...) {
+                                        ## set the file extension
+                                        fext <<- gsub("[*.]", "", filetypes[[svalue(h$obj, index = TRUE) + 1]]$patterns)
+                                        generatePreview(h, ...)
+                                    })
 
                                     ## Preview:
                                     prevGp <<- gframe("Preview", pos = 0, container = mainGp)
                                     size(prevGp) <<- c(100, 150)
                                     prevGp$set_borderwidth(10)
-
-                                    prevLbl <<- glabel("No file selected.", container = prevGp, anchor = c(1, -1))
+                                    
+                                    prevLbl <<- glabel("No file selected.", container = prevGp, anchor = c(-1, 1), fill = TRUE)
                                     prev <<- NULL
+
+
+                                    ## Advanced Import Settings
+                                    advGp <<- gexpandgroup("Advanced Options", horizontal = FALSE, container = mainGp)
+                                    visible(advGp) <<- FALSE
+                                    glabel("Some advanced options go here", container = advGp)
+
+
+                                    addSpring(mainGp)
+                                    ## Import Data!
+                                    btnGp <- ggroup(container = mainGp)
+                                    addSpring(btnGp)
+                                    cancelBtn <- gbutton("Cancel", handler = function(h, ...) dispose(importFileWin), container = btnGp)
+                                    okBtn <- gbutton("Import", handler = function(h, ...) {
+                                        isPreview <- function(x) !iNZightTools:::isFullFile(x) ## delete once iNZightTools updated
+                                        
+                                        if (is.null(tmpData) || isPreview(tmpData)) readData()
+                                        
+                                        ## coerce character to factor
+                                        invisible(sapply(which(sapply(tmpData, class) == "character"),
+                                                         function(i) tmpData[[i]] <<- factor(tmpData[[i]])))
+                                        GUI$setDocument(iNZDocument$new(data = as.data.frame(tmpData, stringsAsFactors = TRUE)))
+
+                                        ## dunno why but need to delete gdf ...
+                                        if (!is.null(prev)) delete(prevGp, prev)
+                                        dispose(importFileWin)
+                                    }, container = btnGp)
                                     
                                     visible(importFileWin) <<- TRUE
                                 },
+                                readData = function(preview = FALSE) {
+                                    ## Read data using object values:
+                                    ## if (!is.null(fColTypes))
+                                    ##     types <- getTypes()
+                                    ## else types <- NULL
+                                    
+                                    ##tmpData <<- readr::read_delim(svalue(fname), delim = ",", n_max = 100, col_types = types)
+                                    tmpData <<- suppressWarnings(suppressMessages({
+                                        iNZightTools::iNZread(svalue(fname), extension = fext,
+                                                              preview = preview, col.types = getTypes())
+                                    }))
+
+                                    ## do a check that col classes match requested ...
+                                    fColTypes <<- sapply(tmpData, class)
+                                },
                                 ## Generate a preview
-                                generatePreview = function(h, ...) {
+                                generatePreview = function(h, ..., reload = FALSE) {
                                     if (length(svalue(fname)) && file.exists(svalue(fname))) {
-                                        if (!is.null(prev))
+                                        if (!is.null(prev)) {
                                             delete(prevGp, prev)
-                                        prev <<- NULL
+                                            prev <<- NULL
+                                        }
                                         svalue(prevLbl) <<- "Loading preview ..."
-                                        
+                                        visible(prevLbl) <<- TRUE
+
                                         ## load the preview ...
-                                        tmpData <<- read.table(svalue(fname), header = TRUE, nrows = 5, sep = ",")
-                                        
-                                        ## set the preview
-                                        Sys.sleep(0.2)
-                                        visible(prevLbl) <<- FALSE
-                                        prev <<- gdf(tmpData, container=prevGp)#gtable(tmpData, container = prevGp)
+                                        tryCatch({
+                                            readData(preview = TRUE)
+                                            ## set the preview
+                                            visible(prevLbl) <<- FALSE
+                                            prev <<- gdf(head(tmpData, 5), container = prevGp)
+                                            invisible(prev$remove_popup_menu())
+                                            invisible(prev$add_popup(function(col_index) {
+                                                j <- prev$get_column_index(col_index)
+                                                x <- prev$get_column_value(j)
+                                                types <- c("numeric", "categorical")
+                                                tmp <- function(x) UseMethod("tmp")
+                                                tmp.default <- function(x) ""
+                                                tmp.numeric <- function(x) "numeric"
+                                                tmp.factor <- function(x) "categorical"
+                                                tmp.character <- function(x) "categorical"
+                                                list(gradio(types,
+                                                            selected = match(tmp(x), types),
+                                                            handler = function(h, ...) {
+                                                                fColTypes[j] <<- types[svalue(h$obj, index = TRUE)]
+                                                                generatePreview(h, ..., reload = TRUE)
+                                                            }))
+                                            }))
+                                        },
+                                        error = function(e) {
+                                            svalue(prevLbl) <<- "Unable to read the file. Check the file type is correct and try again."
+                                            print(e)
+                                        })
                                     } else {
                                         if (!is.null(prev))
                                             delete(prevGp, prev)
@@ -100,6 +173,12 @@ iNZImportWin <- setRefClass("iNZImportWin",
                                         svalue(prevLbl) <<- "No file selected."
                                         visible(prevLbl) <<- TRUE
                                     }
+                                },
+                                getTypes = function() {
+                                    if (is.null(fColTypes)) return(NULL)
+                                    lapply(fColTypes, function(x) switch(x, "numeric" =, "integer" = readr::col_number(),
+                                                                         "categorical" = , "factor" = , "character" =
+                                                                             readr::col_character()))
                                 },
                                 
                                 initialize_old= function(GUI) {
@@ -152,7 +231,6 @@ iNZImportWin <- setRefClass("iNZImportWin",
                                     add(buttonGp, okButton)
                                     add(buttonGp, cancelButton)
                                     add(fileMainGp,
-                                        #glabel("Space for extra options : to define NA string, header presence etc."))                                                                   
                                         glabel(""))
                                     },
                                     pop = function(x) {
