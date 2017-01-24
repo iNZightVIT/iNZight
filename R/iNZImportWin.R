@@ -13,7 +13,9 @@ iNZImportWin <- setRefClass("iNZImportWin",
                                 advGp = "ANY",
                                 delimiters = "list", csvdelim = "ANY", txtdelim = "ANY",
                                 decMark = "ANY", decimalmarks = "list",
-                                bigMark = "ANY", bigmarks = "list"
+                                bigMark = "ANY", bigmarks = "list",
+                                encoding = "ANY", encodings = "character",
+                                dateFormat = "ANY", dateformats = "character"
                             ),
                             methods = list(
                                 initialize = function(GUI) {
@@ -29,8 +31,10 @@ iNZImportWin <- setRefClass("iNZImportWin",
                                                fColTypes = NULL,
                                                delimiters = list("Comma (,)" = ",", "Semi-colon (;)" = ";", "Tab" = "\t"),
                                                csvdelim = ",", txtdelim = "\t",
-                                               decimalmarks = list("Period (.)" = ".", "Comma (,)" = ","), decMark = ",",
-                                               bigmarks = list("None" = "", "Comma (,)" = ",", "Period (.)" = "."), bigMark = ""
+                                               decimalmarks = list("Period (.)" = ".", "Comma (,)" = ","), decMark = ".",
+                                               bigmarks = list("None" = "", "Comma (,)" = ",", "Period (.)" = "."), bigMark = "",
+                                               encodings = c("UTF-8", "ISO-8859-1"), encoding = "UTF-8",
+                                               dateformats = c("%Y-%m-%d", "%d/%m/%Y"), dateformat = "%Y-%m-%d")
                                                )
 
                                     importFileWin <<- gwindow("Import File", parent = GUI$win, width = 600, visible = FALSE)
@@ -115,10 +119,17 @@ iNZImportWin <- setRefClass("iNZImportWin",
                                         GUI$setDocument(iNZDocument$new(data = as.data.frame(tmpData, stringsAsFactors = TRUE)))
 
                                         ## dunno why but need to delete gdf ...
-                                        if (!is.null(prev)) delete(prevGp, prev)
+                                        #if (!is.null(prev)) delete(prevGp, prev)
                                         dispose(importFileWin)
                                     }, container = btnGp)
-                                    
+
+
+                                    addHandlerDestroy(importFileWin, handler = function(h, ...) {
+                                        ## Not sure why but if this isn't done before the window closes,
+                                        ## a GTK Critical error is thrown.
+                                        if (!is.null(prev)) delete(prevGp, prev)
+                                        return(TRUE)
+                                    })
                                     visible(importFileWin) <<- TRUE
                                 },
                                 readData = function(preview = FALSE) {
@@ -127,7 +138,6 @@ iNZImportWin <- setRefClass("iNZImportWin",
                                     ##     types <- getTypes()
                                     ## else types <- NULL
                                     
-                                    ##tmpData <<- readr::read_delim(svalue(fname), delim = ",", n_max = 100, col_types = types)
                                     tmpData <<- suppressWarnings(suppressMessages({
                                         iNZightTools::iNZread(svalue(fname), extension = fext,
                                                               preview = preview, col.types = getTypes(),
@@ -136,7 +146,8 @@ iNZImportWin <- setRefClass("iNZImportWin",
                                     }))
 
                                     ## do a check that col classes match requested ...
-                                    fColTypes <<- sapply(tmpData, class)
+                                    if (is.null(fColTypes) || length(fColTypes) != ncol(tmpData))
+                                        fColTypes <<- rep("auto", ncol(tmpData))
                                 },
                                 ## Generate a preview
                                 generatePreview = function(h, ..., reload = FALSE) {
@@ -156,25 +167,25 @@ iNZImportWin <- setRefClass("iNZImportWin",
                                             invisible(prev$remove_popup_menu())
                                             invisible(prev$add_popup(function(col_index) {
                                                 j <- prev$get_column_index(col_index)
-                                                x <- prev$get_column_value(j)
-                                                types <- c("numeric", "categorical")
-                                                tmp <- function(x) UseMethod("tmp")
-                                                tmp.default <- function(x) ""
-                                                tmp.numeric <- function(x) "numeric"
-                                                tmp.factor <- function(x) "categorical"
-                                                tmp.character <- function(x) "categorical"
+                                                types <- c("auto", "numeric", "categorical")
                                                 list(gradio(types,
-                                                            selected = match(tmp(x), types),
+                                                            selected = match(fColTypes[j], types),
                                                             handler = function(h, ...) {
                                                                 fColTypes[j] <<- types[svalue(h$obj, index = TRUE)]
                                                                 generatePreview(h, ..., reload = TRUE)
                                                             }))
                                             }))
-                                            names(prev) <<- paste0(names(prev), " (", sapply(tmpData, function(x) switch(class(x), "numeric" = "n", "character" = "c")), ")")
+                                            names(prev) <<- paste0(
+                                                names(prev), " (",
+                                                sapply(tmpData, function(x)
+                                                    switch(class(x),
+                                                           "integer" = , "numeric" = "n",
+                                                           "factor" = , "character" = "c")),
+                                                ")")
                                         },
                                         error = function(e) {
                                             svalue(prevLbl) <<- "Unable to read the file. Check the file type is correct and try again."
-                                            #print(e)
+                                            ## print(e)
                                         }, finally = advancedOptions())
                                     } else {
                                         if (!is.null(prev))
@@ -185,10 +196,11 @@ iNZImportWin <- setRefClass("iNZImportWin",
                                     }
                                 },
                                 getTypes = function() {
-                                    if (is.null(fColTypes)) return(NULL)
-                                    lapply(fColTypes, function(x) switch(x, "numeric" =, "integer" = readr::col_number(),
-                                                                         "categorical" = , "factor" = , "character" =
-                                                                             readr::col_character()))
+                                    if (is.null(fColTypes) || all(fColTypes == "auto")) return(NULL)
+                                    lapply(fColTypes, function(x) switch(x,
+                                                                         "auto" = readr::col_guess(),
+                                                                         "numeric" = readr::col_number(),
+                                                                         "categorical" = readr::col_character()))
                                 },
                                 advancedOptions = function() {
                                     ## populate the Advanced Options panel (advGp) with extra options for various data sets.
@@ -200,8 +212,8 @@ iNZImportWin <- setRefClass("iNZImportWin",
                                     ii <- 1
 
                                     switch(fext,
-                                           "csv" =,
-                                           "txt" = {
+                                           "csv" =, "txt" = {
+                                               ## ----------------- LEFT HAND SIDE
                                                ## --- DELIMITER
                                                lbl <- glabel("Delimiter :")
                                                ## add custom choices ...
@@ -211,41 +223,81 @@ iNZImportWin <- setRefClass("iNZImportWin",
                                                                      handler = function(h, ...) {
                                                                          if (fext == "txt") txtdelim <<- delimiters[[svalue(h$obj, index = TRUE)]]
                                                                          else csvdelim <<- delimiters[[svalue(h$obj, index = TRUE)]]
+                                                                         ## changing delimiter == changing where columns are
+                                                                         fColTypes <<- NULL
                                                                          generatePreview(h, ...)
                                                                      })
                                                tbl[ii, 1, anchor = c(1, 0), expand = TRUE] <- lbl
-                                               tbl[ii, 2, expand = TRUE] <- delimOpt
+                                               tbl[ii, 2:3, expand = TRUE] <- delimOpt
                                                ii <- ii + 1
 
                                                ## --- DECIMAL MARK
                                                lbl <- glabel("Decimal Mark :")
                                                decMarkOpt <- gcombobox(names(decimalmarks),
-                                                                       selected = which(sapply(decimalmarks, function(x) decMark == x)),
+                                                                       selected = match(decMark, decimalmarks), ##which(sapply(decimalmarks, function(x) decMark == x)),
                                                                        handler = function(h, ...) {
                                                                            decMark <<- decimalmarks[[svalue(h$obj, index = TRUE)]]
-                                                                           generatePreview(h, ...)
+                                                                           ## Do not allow value to be same as thousands separator!
+                                                                           if (decMark == bigMark)
+                                                                               gmessage("Decimal mark and thousands separator must be different.",
+                                                                                        type = "error")
+                                                                           else
+                                                                               generatePreview(h, ...)
                                                                        })
                                                tbl[ii, 1, anchor = c(1, 0), expand = TRUE] <- lbl
-                                               tbl[ii, 2, expand = TRUE] <- decMarkOpt
+                                               tbl[ii, 2:3, expand = TRUE] <- decMarkOpt
                                                ii <- ii + 1
 
                                                ## --- THOUSANDS SEPARATOR
                                                lbl <- glabel("Thousands Separator :")
                                                bigMarkOpt <- gcombobox(names(bigmarks),
-                                                                       selected = which(sapply(bigmarks, function(x) bigMark == x)),
+                                                                       selected = match(bigMark, bigmarks), ##which(sapply(bigmarks, function(x) bigMark == x)),
                                                                        handler = function(h, ...) {
                                                                            bigMark <<- bigmarks[[svalue(h$obj, index = TRUE)]]
-                                                                           generatePreview(h, ...)
+                                                                           ## Do not allow value to be same as thousands separator!
+                                                                           if (decMark == bigMark)
+                                                                               gmessage("Decimal mark and thousands separator must be different.",
+                                                                                        type = "error")
+                                                                           else
+                                                                               generatePreview(h, ...)
                                                                        })
                                                tbl[ii, 1, anchor = c(1, 0), expand = TRUE] <- lbl
-                                               tbl[ii, 2, expand = TRUE] <- bigMarkOpt
+                                               tbl[ii, 2:3, expand = TRUE] <- bigMarkOpt
                                                ii <- ii + 1
 
+                                               ## --- FILE ENCODING
+                                               lbl <- glabel("File Encoding :")
+                                               encOpt <- gcombobox(encodings,
+                                                                   selected = match(encoding, encodings),
+                                                                   handler = function(h, ...) {
+                                                                       encoding <<- svalue(h$obj)
+                                                                       generatePreview(h, ...)
+                                                                   })
+                                               tbl[ii, 1, anchor = c(1, 0), expand = TRUE] <- lbl
+                                               tbl[ii, 2:3, expand = TRUE] <- encOpt
+                                               ii <- ii + 1
+
+                                               
+                                               ## ----------------- RIGHT HAND SIDE
+                                               ii <- 1
+
+                                               ## --- DATE FORMAT
+                                               ## this should be a drop down of some common formats (2016-01-16, 16 Jan 2016, 16/01/16, 01/16/16, ...)
+                                               lbl <- glabel("Date Format :")
+                                               dateFmt <- gcombobox()
+                                               
                                                
                                            }, {
                                                lbl <- glabel("No options available for this file type.")
                                                tbl[ii, 1, anchor = c(-1, 0), expand = TRUE] <- lbl
                                            })
+                                },
+                                closeHandler = function(h, ...) {
+                                    #addHandlerUnrealize(importFileWin, handler = function(h, ...) {
+                                    print("closing now")
+                                    if (!is.null(prev)) delete(prevGp, prev)
+                                    return(TRUE)
+                                    #})
                                 },
                                 
                                 initialize_old= function(GUI) {
