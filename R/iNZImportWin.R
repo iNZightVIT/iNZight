@@ -34,7 +34,7 @@ iNZImportWin <- setRefClass("iNZImportWin",
                                                decimalmarks = list("Period (.)" = ".", "Comma (,)" = ","), decMark = ".",
                                                bigmarks = list("None" = "", "Comma (,)" = ",", "Period (.)" = "."), bigMark = "",
                                                encodings = c("UTF-8", "ISO-8859-1"), encoding = "UTF-8",
-                                               dateformats = c("%Y-%m-%d", "%d/%m/%Y"), dateformat = "%Y-%m-%d")
+                                               dateformats = c("%Y-%m-%d", "%d/%m/%Y"), dateformat = "%Y-%m-%d"
                                                )
 
                                     importFileWin <<- gwindow("Import File", parent = GUI$win, width = 600, visible = FALSE)
