@@ -34,7 +34,7 @@ iNZImportWin <- setRefClass("iNZImportWin",
                                                decimalmarks = list("Period (.)" = ".", "Comma (,)" = ","), decMark = ".",
                                                bigmarks = list("None" = "", "Comma (,)" = ",", "Period (.)" = "."), bigMark = "",
                                                encodings = c("UTF-8", "ISO-8859-1"), encoding = "UTF-8",
-                                               dateformats = c("%Y-%m-%d", "%d/%m/%Y"), dateformat = "%Y-%m-%d"
+                                               dateformats = c("%Y-%m-%d", "%d/%m/%Y"), dateFormat = "%Y-%m-%d"
                                                )
 
                                     importFileWin <<- gwindow("Import File", parent = GUI$win, width = 600, visible = FALSE)
@@ -185,7 +185,7 @@ iNZImportWin <- setRefClass("iNZImportWin",
                                         },
                                         error = function(e) {
                                             svalue(prevLbl) <<- "Unable to read the file. Check the file type is correct and try again."
-                                            ## print(e)
+                                            print(e)
                                         }, finally = advancedOptions())
                                     } else {
                                         if (!is.null(prev))
@@ -197,10 +197,11 @@ iNZImportWin <- setRefClass("iNZImportWin",
                                 },
                                 getTypes = function() {
                                     if (is.null(fColTypes) || all(fColTypes == "auto")) return(NULL)
-                                    lapply(fColTypes, function(x) switch(x,
-                                                                         "auto" = readr::col_guess(),
-                                                                         "numeric" = readr::col_number(),
-                                                                         "categorical" = readr::col_character()))
+                                    return(fColTypes)
+                                    #sapply(fColTypes, function(x) switch(x,
+                                    #                                     "auto" = readr::col_guess(),
+                                    #                                     "numeric" = readr::col_number(),
+                                    #                                     "categorical" = readr::col_character()))
                                 },
                                 advancedOptions = function() {
                                     ## populate the Advanced Options panel (advGp) with extra options for various data sets.
@@ -284,7 +285,7 @@ iNZImportWin <- setRefClass("iNZImportWin",
                                                ## --- DATE FORMAT
                                                ## this should be a drop down of some common formats (2016-01-16, 16 Jan 2016, 16/01/16, 01/16/16, ...)
                                                lbl <- glabel("Date Format :")
-                                               dateFmt <- gcombobox()
+#                                               dateFmt <- gcombobox()
                                                
                                                
                                            }, {
