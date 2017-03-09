@@ -109,9 +109,7 @@ iNZImportWin <- setRefClass("iNZImportWin",
                                     addSpring(btnGp)
                                     cancelBtn <- gbutton("Cancel", handler = function(h, ...) dispose(importFileWin), container = btnGp)
                                     okBtn <- gbutton("Import", handler = function(h, ...) {
-                                        isPreview <- function(x) !iNZightTools:::isFullFile(x) ## delete once iNZightTools updated
-                                        
-                                        if (is.null(tmpData) || isPreview(tmpData)) readData()
+                                        if (is.null(tmpData) || iNZightTools::isPreview(tmpData)) readData()
                                         
                                         ## coerce character to factor
                                         invisible(sapply(which(sapply(tmpData, class) == "character"),
@@ -134,10 +132,6 @@ iNZImportWin <- setRefClass("iNZImportWin",
                                 },
                                 readData = function(preview = FALSE) {
                                     ## Read data using object values:
-                                    ## if (!is.null(fColTypes))
-                                    ##     types <- getTypes()
-                                    ## else types <- NULL
-                                    
                                     tmpData <<- suppressWarnings(suppressMessages({
                                         iNZightTools::iNZread(svalue(fname), extension = fext,
                                                               preview = preview, col.types = getTypes(),
@@ -163,7 +157,7 @@ iNZImportWin <- setRefClass("iNZImportWin",
                                             readData(preview = TRUE)
                                             ## set the preview
                                             svalue(prevLbl) <<- "Right-click column names to change the type (c = categorical, n = numeric)\n"
-                                            prev <<- gdf(head(tmpData, 10), container = prevGp)
+                                            prev <<- gdf(head(tmpData, 5), container = prevGp)
                                             invisible(prev$remove_popup_menu())
                                             invisible(prev$add_popup(function(col_index) {
                                                 j <- prev$get_column_index(col_index)
@@ -187,6 +181,7 @@ iNZImportWin <- setRefClass("iNZImportWin",
                                             svalue(prevLbl) <<- "Unable to read the file. Check the file type is correct and try again."
                                             print(e)
                                         }, finally = advancedOptions())
+                                        advancedOptions()
                                     } else {
                                         if (!is.null(prev))
                                             delete(prevGp, prev)
@@ -197,11 +192,7 @@ iNZImportWin <- setRefClass("iNZImportWin",
                                 },
                                 getTypes = function() {
                                     if (is.null(fColTypes) || all(fColTypes == "auto")) return(NULL)
-                                    return(fColTypes)
-                                    #sapply(fColTypes, function(x) switch(x,
-                                    #                                     "auto" = readr::col_guess(),
-                                    #                                     "numeric" = readr::col_number(),
-                                    #                                     "categorical" = readr::col_character()))
+                                    sapply(fColTypes, function(x) switch(x, "categorical" = "factor", x))
                                 },
                                 advancedOptions = function() {
                                     ## populate the Advanced Options panel (advGp) with extra options for various data sets.
