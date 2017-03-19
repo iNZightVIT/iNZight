@@ -449,7 +449,7 @@ iNZGUI <- setRefClass(
                     icon = "symbol_diamond",
                     handler = function(h, ...) {
                         ign <- gwindow("...", visible = FALSE)
-                        
+
                         tag(ign, "dataSet") <- getActiveData()
                         curMod <- getActiveDoc()$getModel()
                         if (!is.null(curMod$dataDesign))
@@ -760,6 +760,12 @@ iNZGUI <- setRefClass(
                     ## 51
                     label = "Save ...", icon = "save",
                     handler = function(h, ...) iNZLoadSaveWin$new(.self, action = "save")
+                ),
+                importBeta = gaction(
+                    ## 52
+                    label = "Import Data (Beta) ...", icon = "symbol_diamond",
+                    tooltip = "Import a new Dataset (new interface)",
+                    handler = function(h, ...) iNZImportWinBeta$new(.self)
                 )
             )
             ## home button is disabled if package 'vit' is not loaded
@@ -784,6 +790,8 @@ iNZGUI <- setRefClass(
                     actionList[[2]],
                     gseparator(),
                     actionList[[48]],
+                    gseparator(),
+                    actionList[[52]],
                     gseparator(),
                     actionList[[36]],
                     actionList[[37]]
