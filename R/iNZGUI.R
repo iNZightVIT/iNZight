@@ -766,6 +766,12 @@ iNZGUI <- setRefClass(
                     label = "Import Data (Beta) ...", icon = "symbol_diamond",
                     tooltip = "Import a new Dataset (new interface)",
                     handler = function(h, ...) iNZImportWinBeta$new(.self)
+                ),
+                modelFittingDev = gaction(
+                    ## 53
+                    label = "Model Fitting (dev version) ...", icon = "symbol_diamond",
+                    tooltip = "Fit regression models",
+                    handler = function(h, ...) iNZightModules::iNZightRegMod$new(.self)
                 )
             )
             ## home button is disabled if package 'vit' is not loaded
@@ -827,7 +833,9 @@ iNZGUI <- setRefClass(
                     actionList[[17]],
                     actionList[[18]],
                     actionList[[32]],
-                    actionList[[47]]
+                    actionList[[47]],
+                    gseparator(),
+                    actionList[[53]]
                     ),
                 "Help" = list(
                     actionList[[33]],

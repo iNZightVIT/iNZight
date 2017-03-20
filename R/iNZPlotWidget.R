@@ -42,15 +42,15 @@ iNZPlotWidget <- setRefClass(
             ## iNZSaveWin$new(GUI, type = "plot",
             ##                which = tabDevLink[svalue(plotNb)]
             ##                )
-            
+
             w <- gwindow("Save plot", parent = GUI$win, width = 500, height = 250)
             g <- gvbox(spacing = 15, container = w)
-            
+
             g$set_borderwidth(15)
-            
+
             tbl <- glayout()
             ii <- 1
-            
+
             lbl <- glabel("File type :")
             font(lbl) <- list(weight = "bold")
             filetypes <- list("JPEG (.jpg)" = jpeg,
@@ -60,13 +60,13 @@ iNZPlotWidget <- setRefClass(
                               "PDF (.pdf)" = pdf,
                               "SVG (.svg)" = iNZightPlots:::exportSVG.function,
                               "Interactive HTML (.html)" = iNZightPlots:::exportHTML.function)
-            
+
             fileType <- gcombobox(names(filetypes))
             tbl[ii, 1, anchor = c(1, 0), expand = TRUE] <- lbl
             tbl[ii, 2:6, expand = TRUE] <- fileType
             ii <- ii + 1
-            
-            
+
+
             lbl <- glabel("Save location :")
             font(lbl) <- list(weight = "bold")
             initial.dir <- switch(GUI$OS,
@@ -96,7 +96,7 @@ iNZPlotWidget <- setRefClass(
             tbl[ii, 2:4, anchor = c(-1, 0), expand = TRUE] <- fLoc
             tbl[ii, 5:6, expand = TRUE] <- fBrowse
             ii <- ii + 1
-            
+
 
             lbl <- glabel("File name :")
             font(lbl) <- list(weight = "bold")
@@ -106,17 +106,17 @@ iNZPlotWidget <- setRefClass(
             tbl[ii, 2:4, expand = TRUE] <- fName
             tbl[ii, 5, anchor = c(-1, 0), expand = TRUE] <- fExt
             ii <- ii + 1
-            
+
             add(g, tbl)
 
             addSpace(g, 10)
             glabel("Developmental - only working for base plots.\nDoesn't check for existing file.", container = g)
-            
+
             addSpring(g)
             btnGrp <- ggroup(container = g)
 
             e <- environment()
-            
+
             addSpring(btnGrp)
             cnclBtn <- gbutton("Cancel", handler = function(h, ...) dispose(w), container = btnGrp, expand = TRUE)
             saveBtn <- gbutton("Save", container = btnGrp, expand = TRUE,
@@ -125,12 +125,12 @@ iNZPlotWidget <- setRefClass(
                                        gmessage("No file name", icon = "error", parent = w)
                                        return()
                                    }
-                                   
+
                                    f <- file.path(svalue(fLoc), paste0(svalue(fName), svalue(fExt)))
 
                                    if (grepl("html|svg", svalue(fileType))) {
                                        filetypes[[svalue(fileType)]](fun, f)
-                                   } else {   
+                                   } else {
                                        switch(svalue(fileType),
                                               "PDF (.pdf)" = {
                                                   dim <- dev.size("in")
