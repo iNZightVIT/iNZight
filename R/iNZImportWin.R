@@ -145,6 +145,11 @@ iNZImportWinBeta <- setRefClass("iNZImportWinBeta",
                                     mainGp <- gvbox(container = importFileWin, expand = TRUE, fill = TRUE)
                                     mainGp$set_borderwidth(10)
 
+                                    glabel(paste(sep = "\n",
+                                                 "Beta Development Version: please be aware that this import window is currently under development.",
+                                                 "Please report any bugs to us (if you can include the data set that would extremely helpful)",
+                                                 "so we can fix them. inzight_support@stat.auckland.ac.nz"), container = mainGp, fill = TRUE)
+
                                     ## Select file (and extension)
                                     fileGp <- gframe("Select File to Import", pos = 0, horizontal = FALSE, container = mainGp)
                                     fileGp$set_borderwidth(10)

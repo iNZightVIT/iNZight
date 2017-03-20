@@ -1477,7 +1477,7 @@ iNZGUI <- setRefClass(
             ## The default iNZight settings:
             list(track = "ask", track.id = NULL,
                  check.updates = TRUE,
-                 window.size = c(1020, 700),
+                 window.size = c(1250, 850),
                  popout = FALSE)
         },
         checkPrefs = function(prefs) {
