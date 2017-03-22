@@ -23,6 +23,19 @@ t-tests performed on request.
 - Fix a bug in inference output where reorded factors' confidence intervals and p-values were _not_ reordered!
 - Fix issue where confidence intervals for two-way table row proportions were ordered incorrectly
 
+
+## Patches
+
+### Patch 3.1.1 - 24/03/2017
+
+- Additions:
+  - Time Series module update to new UI
+  - Added Import Data (Beta) module (alongside existing one)
+  - Save plots as SVG or Interactive HTML (Beta)
+- Update Gapminder data
+- Various other bug fixes in supporting packages
+
+
 ***
 
 # Version 3.0
