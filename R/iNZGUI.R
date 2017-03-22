@@ -49,7 +49,9 @@ iNZGUI <- setRefClass(
                    plotType = "ANY",
                    OS = "character",
                    prefs.location = "character",
-                   preferences = "list"
+                   preferences = "list",
+                   ## allow modules to attach data to the GUI
+                   moduledata = "list"
                    ),
                prototype = list(
                    activeDoc = 1,
