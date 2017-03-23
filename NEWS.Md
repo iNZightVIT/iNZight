@@ -26,13 +26,14 @@ t-tests performed on request.
 
 ## Patches
 
-### Patch 3.1.1 - 24/03/2017
+### Patch 3.1.1 - 23/03/2017
 
 - Additions:
   - Time Series module update to new UI
   - Added Import Data (Beta) module (alongside existing one)
   - Save plots as SVG or Interactive HTML (Beta)
 - Update Gapminder data
+- Survey design object is now passed to Model Fitting module (will soon be depreciated)
 - Various other bug fixes in supporting packages
 
 
