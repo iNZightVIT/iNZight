@@ -37,6 +37,7 @@ Suggests:
     iNZightModules,
     png,
     viridis,
-    RColorBrewer
+    RColorBrewer,
+    FutureLearnData
 LazyData: true
 RoxygenNote: 5.0.1
