@@ -837,8 +837,8 @@ iNZGUI <- setRefClass(
                     actionList[[32]],
                     actionList[[47]]
                     ## The new iNZightModelFitting module (under development)
-                    ## gseparator(),
-                    ## actionList[[53]]
+                    gseparator(),
+                    actionList[[53]]
                     ),
                 "Help" = list(
                     actionList[[33]],
