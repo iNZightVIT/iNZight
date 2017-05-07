@@ -325,6 +325,15 @@ iNZGUI <- setRefClass(
 
             ## add what is done upon closing the gui
             closerHandler(disposeR)
+
+            ## add resize handler to redraw plot
+            if (!popOut) {
+                resizetimer <- NULL
+                addHandler(win, "check-resize", function(h, ...) {
+                    if (!is.null(resizetimer) && resizetimer$started) resizetimer$stop_timer()
+                    resizetimer <- gtimer(200, function(...) updatePlot(), one.shot = TRUE)
+                })
+            }
         },
         ## set up the menu bar widget
         initializeMenu = function(cont, disposeR) {
