@@ -24,6 +24,7 @@ iNZGUI <- setRefClass(
                    gp1 = "ANY",
                    ## middle group
                    gp2 = "ANY",
+                   popOut = "logical",
 
                    ## the Widget containing the 2 data views
                    dataViewWidget = "ANY",
@@ -252,7 +253,7 @@ iNZGUI <- setRefClass(
             #     }
             # }
 
-            popOut <- preferences$popout
+            popOut <<- preferences$popout
 
             win <<- gwindow(win.title, visible = FALSE,
                             width = if (popOut) NULL else preferences$window.size[1],
