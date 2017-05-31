@@ -129,7 +129,8 @@ iNZPlotWidget <- setRefClass(
                                    f <- file.path(svalue(fLoc), paste0(svalue(fName), svalue(fExt)))
 
                                    if (grepl("html|svg", svalue(fileType))) {
-                                       filetypes[[svalue(fileType)]](fun, f)
+                                       fp <- filetypes[[svalue(fileType)]](fun, f)
+                                       print(fp) ## `fp` is of class `inzHTML` and has a print method that'll open it in a browser
                                    } else {
                                        switch(svalue(fileType),
                                               "PDF (.pdf)" = {
