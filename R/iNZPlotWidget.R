@@ -155,7 +155,7 @@ iNZPlotWidget <- setRefClass(
                                                           anchor = c(-1, 1))
                                                    addSpace(ggg, 10)
                                                    addSpace(gg, 10)
-                                                   install.packages("iNZightPlots", dependencies = "Suggests")
+                                                   install.packages("iNZightPlots", dependencies = TRUE)
                                                    dispose(w)
                                                    gmessage("Done! You can try saving as HTML or SVG again.",
                                                             title = "Installing packages complete",
