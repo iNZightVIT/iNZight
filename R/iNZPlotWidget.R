@@ -109,7 +109,27 @@ iNZPlotWidget <- setRefClass(
 
             add(g, tbl)
 
-            addSpace(g, 10)
+            addSpace(g, 5)
+
+            ## Additional options for various components (scatter plots)
+            gHTML <- gvbox(container = g)
+            visible(gHTML) <- FALSE
+            if (GUI$plotType %in% c("scatter")) {
+                labHTML <- glabel("Select additional variables to export", container = gHTML)
+                font(labHTML) <- list(size = 12, weight = "bold")
+                
+                tabHTML <- gtable(data.frame(Variable = colnames(GUI$getActiveData())),
+                          container = gHTML, multiple = TRUE)
+                size(tabHTML) <- c(-1, 160)
+                subHTML <- glabel("Hold CTRL to select multiple", container = gHTML)
+                font(subHTML) <- list(size = 9)
+                addHandlerChanged(fileType, function(h, ...) {
+                    visible(gHTML) <- grepl("html", svalue(h$obj))
+                })
+            }
+
+            
+            addSpace(g, 5)
             glabel("Developmental - only working for base plots.\nDoesn't check for existing file.", container = g)
 
             addSpring(g)
@@ -134,7 +154,14 @@ iNZPlotWidget <- setRefClass(
                                        ## if they'd like to install the packages.
                                        fp <- ""
                                        tryCatch({
-                                           fp <- filetypes[[svalue(fileType)]](fun, f)
+                                           if (visible(gHTML) && length(svalue(tabHTML)) > 0) {
+                                               dat <- GUI$getActiveData()
+                                               vars <- as.character(svalue(tabHTML))
+                                           } else {
+                                               dat <- NULL
+                                               vars <- NULL
+                                           }
+                                           fp <- filetypes[[svalue(fileType)]](fun, f, data = dat, extra.vars = vars)
                                        },
                                        error = function(e) {
                                            if (grepl("Required packages aren't installed", e$message)) {
@@ -163,7 +190,7 @@ iNZPlotWidget <- setRefClass(
                                                }
                                            } else {
                                                gmessage(paste("There was an error trying to save the plot as HTML.",
-                                                              "Try restarting iNZight, and if you continue to see this message, copy the contents of the R Console and send a copy to inzight_support@stat.auckland.ac.nz, along with an explanation of what you were trying to do."),
+                                                              "Try restarting iNZight, and if you continue to see this message, copy the contents of the R Console and send a copy to inzight_support@stat.auckland.ac.nz, along with an explanation of what you were trying to do.", sep = "\n\n"),
                                                         parent = GUI$win, icon = "error")
                                                print(e$message)
                                            }
