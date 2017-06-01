@@ -36,7 +36,7 @@ t-tests performed on request.
 - Survey design object is now passed to Model Fitting module (will soon be depreciated)
 - Various other bug fixes in supporting packages
 
-### Patch 3.2.1 - 02/06/2017
+### Patch 3.1.2 - 02/06/2017
 
 - Integrate changes in `iNZightPlots`
 
