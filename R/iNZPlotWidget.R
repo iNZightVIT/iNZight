@@ -129,8 +129,52 @@ iNZPlotWidget <- setRefClass(
                                    f <- file.path(svalue(fLoc), paste0(svalue(fName), svalue(fExt)))
 
                                    if (grepl("html|svg", svalue(fileType))) {
-                                       fp <- filetypes[[svalue(fileType)]](fun, f)
-                                       print(fp) ## `fp` is of class `inzHTML` and has a print method that'll open it in a browser
+                                       ## exportXXX will produce a warning if the required packages aren't installed.
+                                       ## If that is the case, we need to catch the error and ask the user
+                                       ## if they'd like to install the packages.
+                                       fp <- ""
+                                       tryCatch({
+                                           fp <- filetypes[[svalue(fileType)]](fun, f)
+                                       },
+                                       error = function(e) {
+                                           if (grepl("Required packages aren't installed", e$message)) {
+                                               ## Ask use if they want to install:
+                                               conf <- gconfirm(paste("To export HTML and SVG, you need to install a few additional packages.",
+                                                                      "Would you like to do that now?", sep = "\n\n"),
+                                                                title = "Install dependencies?",
+                                                                parent = GUI$win)
+                                               if (conf) {
+                                                   ## Display confirmation message while packages are installed
+                                                   w <- gbasicdialog("Installing packages", do.buttons = FALSE, container = GUI$win)
+                                                   gg <- gvbox(container = w)
+                                                   addSpace(gg, 10)
+                                                   ggg <- ggroup(spacing = 15, container = gg)
+                                                   addSpace(ggg, 0)
+                                                   gimage(stock.id = "gtk-info", size="dialog", cont=ggg)
+                                                   glabel("Please wait while packages are installed...", container = ggg,
+                                                          anchor = c(-1, 1))
+                                                   addSpace(ggg, 10)
+                                                   addSpace(gg, 10)
+                                                   install.packages("iNZightPlots", dependencies = "Suggests")
+                                                   dispose(w)
+                                                   gmessage("Done! You can try saving as HTML or SVG again.",
+                                                            title = "Installing packages complete",
+                                                            parent = GUI$win)
+                                               }
+                                           } else {
+                                               gmessage(paste("There was an error trying to save the plot as HTML.",
+                                                              "Try restarting iNZight, and if you continue to see this message, copy the contents of the R Console and send a copy to inzight_support@stat.auckland.ac.nz, along with an explanation of what you were trying to do."),
+                                                        parent = GUI$win, icon = "error")
+                                               print(e$message)
+                                           }
+                                       },
+                                       finally = {
+                                           ## I don't really know what to do here
+                                       })
+                                       
+                                       if (fp == "") return()
+                                       ## `fp` is of class `inzHTML` and has a print method that'll open it in a browser
+                                       print(fp)
                                    } else {
                                        switch(svalue(fileType),
                                               "PDF (.pdf)" = {
