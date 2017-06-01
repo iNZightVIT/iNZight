@@ -109,7 +109,24 @@ iNZPlotWidget <- setRefClass(
 
             add(g, tbl)
 
-            addSpace(g, 10)
+            addSpace(g, 5)
+
+            ## Additional options for various components
+            gHTML <- gvbox(container = g)
+            visible(gHTML) <- FALSE
+            labHTML <- glabel("Select additional variables to export", container = gHTML)
+            font(labHTML) <- list(size = 12, weight = "bold")
+            
+            tabHTML <- gtable(data.frame(Variable = colnames(GUI$getActiveData())),
+                          container = gHTML, multiple = TRUE)
+            size(tabHTML) <- c(-1, 160)
+            subHTML <- glabel("Hold CTRL to select multiple", container = gHTML)
+            font(subHTML) <- list(size = 9)
+            addHandlerChanged(fileType, function(h, ...) {
+                visible(gHTML) <- grepl("html", svalue(h$obj))
+            })
+
+            addSpace(g, 5)
             glabel("Developmental - only working for base plots.\nDoesn't check for existing file.", container = g)
 
             addSpring(g)
@@ -134,7 +151,9 @@ iNZPlotWidget <- setRefClass(
                                        ## if they'd like to install the packages.
                                        fp <- ""
                                        tryCatch({
-                                           fp <- filetypes[[svalue(fileType)]](fun, f)
+                                           dat <- GUI$getActiveData()
+                                           vars <- as.character(svalue(tabHTML))
+                                           fp <- filetypes[[svalue(fileType)]](fun, f, data = dat, extra.vars = vars)
                                        },
                                        error = function(e) {
                                            if (grepl("Required packages aren't installed", e$message)) {
