@@ -20,4 +20,3 @@ Starts iNZight
 \author{
 Marco Kuper
 }
-

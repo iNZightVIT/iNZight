@@ -10,6 +10,57 @@
   \item{Region.Geo}{geographical region}
   \item{Continent}{continent name}
   \item{Region}{region name}
+  \item{Year}{year of observation}
+  \item{Year_cat}{year of observation, as a factor}
+  \item{AgriculturalLand}{amount of agricultural land}
+  \item{BodyMassIndex_M}{average BMI for males}
+  \item{BodyMassIndex_F}{average BMI for females}
+  \item{Cellphones}{}
+  \item{ChildrenPerWoman}{}
+  \item{CO2Emissions}{}
+  \item{DemocracyScore}{}
+  \item{EnergyUsePerPerson}{}
+  \item{Exports}{}
+  \item{Femalesaged25to54labourforceparticipationrate}{}
+  \item{Forestarea}{}
+  \item{GDPpercapita}{}
+  \item{Governmenthealthspendingperpersontotal}{}
+  \item{Hightotechnologyexports}{}
+  \item{Hourlycompensation}{}
+  \item{Imports}{}
+  \item{IncomePerPerson}{}
+  \item{Incomeshareofpoorest10pct}{}
+  \item{Incomeshareofrichest10pct}{}
+  \item{Infantmortality}{}
+  \item{Inflation}{}
+  \item{Internetusers}{}
+  \item{LifeExpectancy}{}
+  \item{Literacyrateadulttotal}{}
+  \item{Literacyrateyouthtotal}{}
+  \item{Longtermunemploymentrate}{}
+  \item{Medianage}{}
+  \item{MedicalDoctors}{}
+  \item{Murder}{}
+  \item{Murderedmen}{}
+  \item{Murderedwomen}{}
+  \item{Oilconsumptionperperson}{}
+  \item{Populationgrowth}{}
+  \item{Populationtotal}{}
+  \item{Populationdensity}{}
+  \item{Poverty}{}
+  \item{Ratioofgirlstoboysinprimaryandsecondaryeducation}{}
+  \item{Renewablewater}{}
+  \item{Residentialelectricityuseperperson}{}
+  \item{Suicideage15to29}{}
+  \item{Taxrevenue}{}
+  \item{Teenfertilityrate}{}
+  \item{TotalGDPUS}{}
+  \item{TotalhealthspendingperpersonUS}{}
+  \item{Tradebalance}{}
+  \item{Trafficdeaths}{}
+  \item{UrbanpopulationTotal}{}
+  \item{Urbanpopulationgrowth}{}
+  \item{YearlyCO2emission}{}
 }}
 \usage{
 gapminder
@@ -18,4 +69,3 @@ gapminder
 A dataset containing variables for countries over several years.
 }
 \keyword{datasets}
-

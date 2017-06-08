@@ -23,7 +23,6 @@ Imports:
     grDevices,
     methods,
     grid,
-    gdata,
     gWidgets2RGtk2,
     iNZightPlots,
     iNZightTools,
@@ -40,4 +39,4 @@ Suggests:
     RColorBrewer,
     FutureLearnData
 LazyData: true
-RoxygenNote: 5.0.1
+RoxygenNote: 6.0.1

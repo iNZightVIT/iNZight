@@ -4,3 +4,6 @@
 
 .Rproj.user
 *.Rproj
+revdep
+*.Rcheck
+*.tar.gz

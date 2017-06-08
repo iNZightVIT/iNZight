@@ -58,13 +58,12 @@ iNZDataViewWidget <- setRefClass(
         createDfView = function() {
             dataSet <- GUI$getActiveData()
             dfView <<- ggroup(container = dataGp, expand = TRUE)
-            
+
             ## only create the gdf if the dataset is small enough
             if (nrow(dataSet) * ncol(dataSet) <= dataThreshold) {
                 visible(dfView) <<- FALSE
                 dfWidget <- gdf(dataSet, expand = TRUE)
                 ## dfWidget$remove_popup_menu() ## - called by $add_dnd_columns()
-                assign("Obj", dfWidget, envir = .GlobalEnv)
                 dfWidget$add_dnd_columns()
                 add(dfView, dfWidget, expand = TRUE)
                 ## if the data.frame gets edited, update the iNZDocument
@@ -94,7 +93,7 @@ iNZDataViewWidget <- setRefClass(
             vtypes <- ifelse(sapply(dataSet, is.numeric), "(n)", "(c)")
 
             vnames <- paste(vtypes, vnames)
-                        
+
             # if(length(names(dataSet)) > N && length(names(dataSet)) < 80) {
             if(length(dataSet) < 100000 && length(names(dataSet)) > 80) {
                 varWidget <- list(
