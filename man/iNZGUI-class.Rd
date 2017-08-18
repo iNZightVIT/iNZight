@@ -2,8 +2,8 @@
 % Please edit documentation in R/iNZGUI.R
 \docType{class}
 \name{iNZGUI-class}
-\alias{iNZGUI}
 \alias{iNZGUI-class}
+\alias{iNZGUI}
 \title{iNZight GUI Class}
 \description{
 Main class that builds the iNZight GUI
@@ -15,6 +15,7 @@ Main class that builds the iNZight GUI
 
 \item{\code{activeDoc}}{The numeric ID of the currently active document}
 }}
+
 \section{Methods}{
 
 \describe{

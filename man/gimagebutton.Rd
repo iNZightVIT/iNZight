@@ -31,4 +31,3 @@ and a 'tooltip' that appears in the status bar.
 \author{
 Tom Elliott
 }
-

@@ -1,8 +1,8 @@
 Package: iNZight
 Type: Package
 Title: iNZight GUI for Data Exploration and Visualisation
-Version: 3.1.2
-Date: 2017-06-02
+Version: 3.1.3
+Date: 2017-08-18
 Authors@R: c(person("Tom", "Elliott", role = c("aut", "cre"),
                     email = "tom.elliott@auckland.ac.nz"),
              person("Dineika", "Chandrananda", role = "ctb"),
@@ -23,7 +23,6 @@ Imports:
     grDevices,
     methods,
     grid,
-    gdata,
     gWidgets2RGtk2,
     iNZightPlots,
     iNZightTools,
@@ -40,4 +39,4 @@ Suggests:
     RColorBrewer,
     FutureLearnData
 LazyData: true
-RoxygenNote: 5.0.1
+RoxygenNote: 6.0.1

@@ -781,7 +781,7 @@ iNZGUI <- setRefClass(
                 ),
                 modelFittingDev = gaction(
                     ## 53
-                    label = "Model Fitting (dev version) ...", icon = "symbol_diamond",
+                    label = "[Beta Version] Model Fitting ...", icon = "symbol_diamond",
                     tooltip = "Fit regression models",
                     handler = function(h, ...) iNZightModules::iNZightRegMod$new(.self)
                 )
@@ -845,10 +845,10 @@ iNZGUI <- setRefClass(
                     actionList[[17]],
                     actionList[[18]],
                     actionList[[32]],
-                    actionList[[47]]#,
+                    actionList[[47]],
                     ## The new iNZightModelFitting module (under development)
-                    #gseparator(),
-                    #actionList[[53]]
+                    gseparator(),
+                    actionList[[53]]
                     ),
                 "Help" = list(
                     actionList[[33]],

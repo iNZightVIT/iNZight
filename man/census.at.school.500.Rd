@@ -28,4 +28,3 @@ A dataset containing 500 observations from a New Zealand census of school
 students.
 }
 \keyword{datasets}
-
