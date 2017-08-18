@@ -40,6 +40,12 @@ t-tests performed on request.
 
 - Integrate changes in `iNZightPlots`
 
+
+### Patch 3.1.3 - 18/08/2017
+
+- Fixes for Interactive plots
+- BETA release of new Model Fitting module
+
 ***
 
 # Version 3.0
