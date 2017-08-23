@@ -52,7 +52,9 @@ iNZGUI <- setRefClass(
                    prefs.location = "character",
                    preferences = "list",
                    ## allow modules to attach data to the GUI
-                   moduledata = "list"
+                   moduledata = "list",
+                   ## keep a track of R code history
+                   rhistory = "character"
                    ),
                prototype = list(
                    activeDoc = 1,
@@ -179,80 +181,6 @@ iNZGUI <- setRefClass(
                 }, silent = TRUE)
             }
 
-            # if (FALSE) {
-            #     ## DON'T ASK UNTIL DATABSE UP ONLINE
-            #     ## if (preferences$track == "ask") {
-            #     if (FALSE) {
-            #         preferences$track <<-
-            #             gconfirm("iNZight would like to use anonymous usage information. Are you ok for us to collect this information?",
-            #                      title = "Share usage information?", icon = "question")
-            #         savePreferences()
-            #     }
-            #
-            #
-            #
-            #     ## --- TURNED OFF PERMANENTLY UNTIL DATABASE BACK ONLINE
-            #     ## if (preferences$track) {
-            #     if (FALSE) {
-            #         try({
-            #             version = packageVersion("iNZight")
-            #             os <- "Linux"
-            #             if (.Platform$OS == "windows") {
-            #                 os = "Windows"
-            #             } else if (Sys.info()["sysname"] == "Darwin") {
-            #                 os = "Mac OS X"
-            #                 osx.version <- try(system("sw_vers -productVersion", intern = TRUE), silent = TRUE)
-            #                 if (!inherits(osx.version, "try-error")) {
-            #                     os = paste("Mac OS X", osx.version)
-            #                 }
-            #             }
-            #
-            #
-            #             ## have they updated before?
-            #             if (is.null(preferences$track.id)) {
-            #                 ## compatibility mode ---
-            #                 hash.id <- "new"
-            #
-            #                 if (os == "Windows") {
-            #                     libp <- "prog_files"
-            #                 } else if (os != "Linux") {
-            #                     ## i.e., mac
-            #                     libp <- "Library"
-            #                 } else {
-            #                     ## linux - save in library..
-            #                     libp <- .libPaths()[which(sapply(.libPaths(), function(p)
-            #                                                      "iNZight" %in% list.files(p)))[1]]
-            #                 }
-            #
-            #                 if (file.exists(file.path(libp, "id.txt"))) {
-            #                     hash.id <- readLines(file.path(libp, "id.txt"))
-            #                     unlink(file.path(libp, "id.txt"))  ## delete the old one
-            #                 }
-            #
-            #                 ## only if not already tracking
-            #                 if (hash.id == "new") {
-            #                     track.url <- paste0("http://r.docker.stat.auckland.ac.nz/R/tracker/index.php?track&v=",
-            #                                         version, "&os=", gsub(" ", "%20", os), "&hash=", hash.id)
-            #                     f <- try(url(track.url,  open = "r"), TRUE)
-            #
-            #                     ## write the hash code to their installation:
-            #                     hash.id <- readLines(f)
-            #
-            #
-            #                     ## try(writeLines(hash.id, file.path(libp, "id.txt")), silent = TRUE)
-            #                 }
-            #
-            #                 preferences$track.id <<- hash.id
-            #                 savePreferences()
-            #             } else {
-            #                 hash.id <- preferences$track.id
-            #                 try(url(paste0("http://r.docker.stat.auckland.ac.nz/R/tracker/index.php?track&v=",
-            #                                version, "&os=", gsub(" ", "%20", os), "&hash=", hash.id), open = "r"), TRUE)
-            #             }
-            #         })
-            #     }
-            # }
-
             popOut <<- preferences$popout
 
             win <<- gwindow(win.title, visible = FALSE,
@@ -327,15 +255,28 @@ iNZGUI <- setRefClass(
             ## add what is done upon closing the gui
             closerHandler(disposeR)
 
-            ## add resize handler to redraw plot
-            ## if (!popOut) {
-            ##     resizetimer <- NULL
-            ##     addHandler(win, "check-resize", function(h, ...) {
-            ##         if (!is.null(resizetimer) && resizetimer$started) resizetimer$stop_timer()
-            ##         resizetimer <- gtimer(200, function(...) updatePlot(), one.shot = TRUE)
-            ##     })
-            ## }
-        },
+            ## and start tracking history
+            addHistory(c("# iNZight Code History",
+                         "",
+                         sprintf("## This script was automatically generated by iNZight v%s", packageVersion("iNZight")),
+                         "",
+                         "## BETA WARNING: we're still working on making this as accurate",
+                         "##               as possible, so please ... ",
+                         "##  - expect 'gaps' in the generated code (i.e., missing actions), and",
+                         "##  - LET US KNOW if you think something's missing",
+                         "##    (if you can give a minimal step-by-step to reproduce the problem, that would be incredibly useful!)",
+                         "##    email: inzight_support@stat.auckland.ac.nz",
+                         "",
+                         "## ----------------------------------------------------------------------- ##",
+                         "",
+                         "## This script assumes you have various iNZight packages installed. Uncomment the following lines if you don't:",
+                         "",
+                         "# install.packages(c('iNZightPlots', 'iNZightMR', 'iNZightTools'), ",
+                         "#                  repos = c('http://r.docker.stat.auckland.ac.nz/R', 'https://cran.rstudio.com'))",
+                         "",
+                         "## ----------------------------------------------------------------------- ##",
+                         ""))
+        }, ## end initialization
         ## set up the menu bar widget
         initializeMenu = function(cont, disposeR) {
             actionList <- list(
@@ -1613,5 +1554,8 @@ iNZGUI <- setRefClass(
 
                 grDevices::dev.flush()
             }
+        },
+        addHistory = function(overwrite = TRUE) {
+
         })
     )
