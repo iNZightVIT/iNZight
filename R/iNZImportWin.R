@@ -225,6 +225,11 @@ iNZImportWinBeta <- setRefClass("iNZImportWinBeta",
                                                          function(i) tmpData[[i]] <<- factor(tmpData[[i]])))
                                         GUI$setDocument(iNZDocument$new(data = as.data.frame(tmpData, stringsAsFactors = TRUE)))
 
+                                        ## save the history ...
+                                        if ("code" %in% names(attributes(tmpData))) {
+                                            GUI$addHistory(c("data <- ", attr(tmpData, "code")))
+                                        }
+
                                         ## dunno why but need to delete gdf ...
                                         #if (!is.null(prev)) delete(prevGp, prev)
                                         dispose(importFileWin)
@@ -242,10 +247,16 @@ iNZImportWinBeta <- setRefClass("iNZImportWinBeta",
                                 readData = function(preview = FALSE) {
                                     ## Read data using object values:
                                     tmpData <<- suppressWarnings(suppressMessages({
-                                        iNZightTools::iNZread(svalue(fname), extension = fext,
-                                                              preview = preview, col.types = getTypes(),
-                                                              delim = switch(fext, "csv" = csvdelim, "txt" = txtdelim, NULL),
-                                                              decimal.mark = decMark, grouping.mark = bigMark)
+                                        code <- ~iNZightTools::iNZread(NAME, extension = EXT, preview = PREV, col.types = TYPES,
+                                                                       delim = DELIM, decimal.mark = DECM, grouping.mark = GRPM)
+                                        interpolate(code,
+                                                    NAME = svalue(fname),
+                                                    EXT = fext,
+                                                    PREV = preview,
+                                                    TYPES = getTypes(),
+                                                    DELIM = switch(fext, "csv" = csvdelim, "txt" = txtdelim, NULL),
+                                                    DECM = decMark,
+                                                    GRPM = bigMark)
                                     }))
 
                                     ## do a check that col classes match requested ...

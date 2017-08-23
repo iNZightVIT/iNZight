@@ -188,3 +188,41 @@ modifyList <- function (x, val, keep.null = FALSE)
     }
     x
 }
+
+
+
+
+
+
+
+## Saving R history:
+as_call <- function(x) {
+    if (inherits(x, "formula")) {
+        stopifnot(length(x) == 2)
+        x[[2]]
+    } else if (is.atomic(x) || is.name(x) || is.call(x)) {
+        x
+    } else {
+        stop("Unknown input")
+    }
+}
+ 
+interpolate <- function(code, ..., `_env` = parent.frame()) {
+    if (length(list(...)) > 0) {
+        args <- lapply(list(...), as_call)
+        expr <- methods::substituteDirect(as_call(code), args)
+    } else {
+        expr <- as_call(code)
+    }
+    res <- eval(expr, `_env`)
+    attr(res, "code") <- capture.output(expr)
+    res
+}
+ 
+ 
+## foo = function(x, cond) {
+##     z=~x %>% subset(cond)  
+##     interpolate(z,
+##                 cond=match.call()$cond
+##                 )
+## }

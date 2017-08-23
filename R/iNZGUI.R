@@ -264,18 +264,21 @@ iNZGUI <- setRefClass(
                          "##               as possible, so please ... ",
                          "##  - expect 'gaps' in the generated code (i.e., missing actions), and",
                          "##  - LET US KNOW if you think something's missing",
-                         "##    (if you can give a minimal step-by-step to reproduce the problem, that would be incredibly useful!)",
+                         "##    (if you can give a minimal step-by-step to reproduce the problem, ",
+                         "##     that would be incredibly useful!)",
                          "##    email: inzight_support@stat.auckland.ac.nz",
                          "",
-                         "## ----------------------------------------------------------------------- ##",
+                         "## -------------------------------------------------------------------------- ##",
                          "",
-                         "## This script assumes you have various iNZight packages installed. Uncomment the following lines if you don't:",
+                         "## This script assumes you have various iNZight packages installed.",
+                         "## Uncomment the following lines if you don't:",
                          "",
                          "# install.packages(c('iNZightPlots', 'iNZightMR', 'iNZightTools'), ",
-                         "#                  repos = c('http://r.docker.stat.auckland.ac.nz/R', 'https://cran.rstudio.com'))",
+                         "#     repos = c('http://r.docker.stat.auckland.ac.nz/R',",
+                         "#               'https://cran.rstudio.com'))",
                          "",
-                         "## ----------------------------------------------------------------------- ##",
-                         ""))
+                         "## -------------------------------------------------------------------------- ##",
+                         ""), tidy = FALSE)
         }, ## end initialization
         ## set up the menu bar widget
         initializeMenu = function(cont, disposeR) {
@@ -725,6 +728,14 @@ iNZGUI <- setRefClass(
                     label = "[Beta Version] Model Fitting ...", icon = "symbol_diamond",
                     tooltip = "Fit regression models",
                     handler = function(h, ...) iNZightModules::iNZightRegMod$new(.self)
+                ),
+                showRhistory = gaction(
+                    ## 54
+                    label = "[Beta] Show R Code History", icon = "symbol_diamond",
+                    tooltip = "Show R history to reproduce results from R",
+                    handler = function(h, ...) {
+                        showHistory()
+                    }
                 )
             )
             ## home button is disabled if package 'vit' is not loaded
@@ -789,7 +800,8 @@ iNZGUI <- setRefClass(
                     actionList[[47]],
                     ## The new iNZightModelFitting module (under development)
                     gseparator(),
-                    actionList[[53]]
+                    actionList[[53]],
+                    actionList[[54]]
                     ),
                 "Help" = list(
                     actionList[[33]],
@@ -1555,7 +1567,21 @@ iNZGUI <- setRefClass(
                 grDevices::dev.flush()
             }
         },
-        addHistory = function(overwrite = TRUE) {
-
+        addHistory = function(x, newline = TRUE, tidy = TRUE) {
+            ## newline argument lets you overwrite the last line (e.g., a plot call)
+            if (!newline) rhistory <<- rhistory[-length(rhistory)]
+            if (tidy && requireNamespace("formatR", quietly = TRUE)) {
+                x <- capture.output(formatR::tidy_source(text = x, width.cutoff = 60))
+            }
+            rhistory <<- c(rhistory, x)
+            
+            invisible(NULL)
+        },
+        showHistory = function() {
+            wh <- gwindow("R Code History", parent = .self$win,
+                          width = 700, height = 500)
+            gh <- gvbox(container = wh)
+            th <- gtext(container = gh, expand = TRUE, fill = TRUE, wrap = FALSE)
+            insert(th, rhistory, font.attr = list(family = "monospace"))
         })
     )
