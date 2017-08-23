@@ -155,29 +155,12 @@ iNZGUI <- setRefClass(
             getPreferences()
 
             ## Check for updates ... need to use try incase it fails (no connection etc)
-            ## RCurl no longer supports R < 3, so it wont be available on Mac SL version.
-            # if (requireNamespace("RCurl", quietly = TRUE)) {
-            #     connected <- RCurl::url.exists("r.docker.stat.auckland.ac.nz")
-            # } else connected <- FALSE
-
             if (preferences$check.updates) {
-              # ap <- suppressWarnings(try(numeric_version(available.packages(
-              #     contriburl = contrib.url("http://r.docker.stat.auckland.ac.nz/R",
-              #         getOption("pkgType")))[,"Version"]), TRUE))
-              # if (!inherits(ap, "try-error")) {
-              #     if (length(ap) > 0) {
-              #         ip <- try(numeric_version(installed.packages()[names(ap), "Version"]), TRUE)
-              #         if (!inherits(ip, "try-error")) {
-              #             if (any(ap > ip))
-              #                 win.title <- paste(win.title, " [updates available]")
-              #         }
-              #     }
-              # }
-              try({
-                oldpkg <- old.packages(repos = "http://r.docker.stat.auckland.ac.nz/R")
-                if (nrow(oldpkg) > 0) {
-                  win.title <- paste(win.title, " [updates available]")
-                }
+                try({
+                    oldpkg <- old.packages(repos = "http://r.docker.stat.auckland.ac.nz/R")
+                    if (nrow(oldpkg) > 0) {
+                        win.title <- paste(win.title, " [updates available]")
+                    }
                 }, silent = TRUE)
             }
 
@@ -378,6 +361,8 @@ iNZGUI <- setRefClass(
                     label = "Restore Dataset",
                     icon = "symbol_diamond",
                     handler = function(h, ...) {
+                        ## NOTE: look into this - best way of 'restoring'? (why not just revert activeDoc??)
+                        ## code should just start using `data` instead of `dataX`
                       setDocument(iNZDocument$new(data = getActiveDoc()$getModel()$origDataSet))
                         #getActiveDoc()$getModel()$updateData(
                         #    getActiveDoc()$getModel()$origDataSet)
