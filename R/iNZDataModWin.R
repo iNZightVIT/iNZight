@@ -131,17 +131,18 @@ iNZconToCatWin <- setRefClass(
             if (name == "" || !is.character(name))
                 gmessage("Please choose a non-empty name for the new variable")
             else {
-                #out <- as.factor(varData)
-                
-                #index <- which(names(GUI$getActiveData()) == orgVar)
-
                 name <- gsub('\\n+', "", name, perl = TRUE)
-                .DATANAME <- GUI$getActiveData()
-                exp <- as.formula(sprintf(
-                    "~.DATANAME %%>%% tibble::add_column(%s = as.factor(%s), .after = varname)",
-                    name, paste0(".DATANAME$", orgVar)))
+                .dataset <- GUI$getActiveData()
+                data <- iNZightTools::numToCat(.dataset, orgVar, name)
+                
 
-                data <- interpolate(exp, var = varData, varname = orgVar)
+
+                ## exp <- as.formula(sprintf(
+                ##     "~.DATANAME %%>%% tibble::add_column(%s = as.factor(%s), .after = varname)",
+                ##     name, paste0(".DATANAME$", orgVar)))
+
+                ## data <- interpolate(exp, var = varData, varname = orgVar)
+                
                 updateData(data)
                 
                 #insertData(out, name, index, closeAfter = FALSE,

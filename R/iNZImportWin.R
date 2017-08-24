@@ -247,14 +247,17 @@ iNZImportWinBeta <- setRefClass("iNZImportWinBeta",
                                     tmpData <<- suppressWarnings(suppressMessages({
                                         code <- ~iNZightTools::iNZread(NAME, extension = EXT, preview = PREV, col.types = TYPES,
                                                                        delim = DELIM, decimal.mark = DECM, grouping.mark = GRPM)
-                                        interpolate(code,
-                                                    NAME = svalue(fname),
-                                                    EXT = fext,
-                                                    PREV = preview,
-                                                    TYPES = getTypes(),
-                                                    DELIM = switch(fext, "csv" = csvdelim, "txt" = txtdelim, NULL),
-                                                    DECM = decMark,
-                                                    GRPM = bigMark)
+                                        ## THIS WILL BECOME REDUNDANT...
+                                        iNZightTools:::interpolate(
+                                            code,
+                                            NAME = svalue(fname),
+                                            EXT = fext,
+                                            PREV = preview,
+                                            TYPES = getTypes(),
+                                            DELIM = switch(fext, "csv" = csvdelim, "txt" = txtdelim, NULL),
+                                            DECM = decMark,
+                                            GRPM = bigMark
+                                        )
                                     }))
 
                                     ## do a check that col classes match requested ...

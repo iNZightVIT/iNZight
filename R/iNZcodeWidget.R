@@ -16,7 +16,7 @@ iNZcodeWidget <- setRefClass(
             if (tidy && requireNamespace("formatR", quietly = TRUE)) 
                 x <- capture.output(formatR::tidy_source(text = x, width.cutoff = 60))
             if (!keep.last) history <<- history[-length(history)]
-            history <<- c(history, list(x))
+            history <<- c(history, list(c("", x)))
             keep.last <<- keep
             ## append any new packages ...?
             if (any(grepl("::", x))) {
@@ -36,11 +36,13 @@ iNZcodeWidget <- setRefClass(
             code <- GUI$getActiveDoc()$getCode()
             if (!is.null(code)) {
                 dname <- sprintf("data%s", ifelse(GUI$activeDoc == 1, "", GUI$activeDoc))
-                code <- gsub(".DATANAME", dname, code, fixed = TRUE)
-                code[1] <- paste0(dname, " <- ", code[1])
+                code <- gsub(".dataset", dname, code, fixed = TRUE)
+                ## append data<- to first non-comment line
+                cmmt <- grepl("^#", code)
+                code[which(!cmmt)[1]] <- paste0(dname, " <- ", code[which(!cmmt)[1]])
                 add(code, keep = TRUE)
             } else {
-                add("# missing code")
+                add("## NOTE:  missing code")
             }
         },
         header = function() {
