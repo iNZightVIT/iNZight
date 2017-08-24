@@ -91,6 +91,11 @@ iNZDataModel <- setRefClass(
         },
         getDesign = function() {
             dataDesign
+        },
+        getCode = function() {
+            code <- attr(dataSet, "code")
+            attr(dataSet, "code") <<- NULL
+            code
         }
         )
     )
@@ -189,6 +194,9 @@ iNZDocument <- setRefClass(
                 settings$y <- getData()[[settings$varnames$y]]
             }
             setSettings(settings)
+        },
+        getCode = function() {
+            dataModel$getCode()
         },
         addDataObserver = function(FUN, ...) {
             dataModel$addDataObserver(FUN, ...)

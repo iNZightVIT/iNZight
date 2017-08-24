@@ -35,35 +35,42 @@ iNZDataModWin <- setRefClass(
         },
         ## insert a column with a certain name at specified index
         ## success msg is optional
-        insertData = function(data, name, index, msg = NULL, closeAfter = TRUE) {
-                ## insert the new variable in the column after the old variable
-                ## or at the end if the old variable is the last column in the
-                ## data
-                if (index != length(names(GUI$getActiveData()))) {
-                    newData <- data.frame(
-                        GUI$getActiveData()[, 1:index],
-                        data,
-                        GUI$getActiveData()[, (index+1):ncol(GUI$getActiveData())]
-                        )
-                    newNames <- c(
-                        names(GUI$getActiveData())[1:index],
-                        name,
-                        names(GUI$getActiveData())[(index+1):ncol(GUI$getActiveData())]
-                        )
-                    newNames <- make.names(newNames, unique = TRUE)
-                    names(newData) <- newNames
-                } else {
-                    newData <- data.frame(GUI$getActiveData(), data)
-                    names(newData) <- make.names(c(names(GUI$getActiveData()),
-                                                   name), unique = TRUE)
-                }
+        insertData = function(data, name, index, msg = NULL, closeAfter = TRUE, code = NULL) {
+            ## insert the new variable in the column after the old variable
+            ## or at the end if the old variable is the last column in the
+            ## data
+            if (index != length(names(GUI$getActiveData()))) {
+                newData <- data.frame(
+                    GUI$getActiveData()[, 1:index],
+                    data,
+                    GUI$getActiveData()[, (index+1):ncol(GUI$getActiveData())]
+                )
+                newNames <- c(
+                    names(GUI$getActiveData())[1:index],
+                    name,
+                    names(GUI$getActiveData())[(index+1):ncol(GUI$getActiveData())]
+                )
+                newNames <- make.names(newNames, unique = TRUE)
+                names(newData) <- newNames
+            } else {
+                newData <- data.frame(GUI$getActiveData(), data)
+                names(newData) <- make.names(c(names(GUI$getActiveData()),
+                                               name), unique = TRUE)
+            }
+            
+            if (!is.null(msg))
+                do.call(gmessage, msg)
 
-                if (!is.null(msg))
-                    do.call(gmessage, msg)
-
-                GUI$getActiveDoc()$getModel()$updateData(newData)
-                if (closeAfter)
-                    dispose(GUI$modWin)
+            ## round-about way...
+            attr(newData, "code") <- code
+            print(code)
+            
+            GUI$getActiveDoc()$getModel()$updateData(newData)
+            if (closeAfter)
+                dispose(GUI$modWin)
+        },
+        updateData = function(newdata) {
+            GUI$getActiveDoc()$getModel()$updateData(newdata)
         })
     )
 
@@ -124,11 +131,21 @@ iNZconToCatWin <- setRefClass(
             if (name == "" || !is.character(name))
                 gmessage("Please choose a non-empty name for the new variable")
             else {
-                out <- as.factor(varData)
-                name <- gsub('\\n+', "", name, perl = TRUE)
-                index <- which(names(GUI$getActiveData()) == orgVar)
+                #out <- as.factor(varData)
+                
+                #index <- which(names(GUI$getActiveData()) == orgVar)
 
-                insertData(out, name, index, closeAfter = FALSE)
+                name <- gsub('\\n+', "", name, perl = TRUE)
+                .DATANAME <- GUI$getActiveData()
+                exp <- as.formula(sprintf(
+                    "~.DATANAME %%>%% tibble::add_column(%s = as.factor(%s), .after = varname)",
+                    name, paste0(".DATANAME$", orgVar)))
+
+                data <- interpolate(exp, var = varData, varname = orgVar)
+                updateData(data)
+                
+                #insertData(out, name, index, closeAfter = FALSE,
+                #           code = sprintf("newdata # MODIFY: data$%s <- as.factor(data$%s)", name, orgVar))
             }
         })
     )

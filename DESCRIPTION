@@ -17,7 +17,8 @@ Depends:
     objectProperties,
     RGtk2,
     gWidgets2,
-    cairoDevice
+    cairoDevice,
+	magrittr
 Imports:
     utils,
     grDevices,
@@ -37,6 +38,7 @@ Suggests:
     png,
     viridis,
     RColorBrewer,
-    FutureLearnData
+    FutureLearnData,
+	formatR
 LazyData: true
 RoxygenNote: 6.0.1

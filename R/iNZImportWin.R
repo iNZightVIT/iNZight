@@ -220,15 +220,13 @@ iNZImportWinBeta <- setRefClass("iNZImportWinBeta",
                                     okBtn <- gbutton("Import", handler = function(h, ...) {
                                         if (is.null(tmpData) || iNZightTools::isPreview(tmpData)) readData()
 
+                                        ## give the dataset a name ...
+                                        attr(tmpData, "name") <<- tools::file_path_sans_ext(basename(svalue(fname)))
+
                                         ## coerce character to factor
                                         invisible(sapply(which(sapply(tmpData, class) == "character"),
                                                          function(i) tmpData[[i]] <<- factor(tmpData[[i]])))
                                         GUI$setDocument(iNZDocument$new(data = as.data.frame(tmpData, stringsAsFactors = TRUE)))
-
-                                        ## save the history ...
-                                        if ("code" %in% names(attributes(tmpData))) {
-                                            GUI$addHistory(c("data <- ", attr(tmpData, "code")))
-                                        }
 
                                         ## dunno why but need to delete gdf ...
                                         #if (!is.null(prev)) delete(prevGp, prev)
