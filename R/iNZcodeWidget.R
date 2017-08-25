@@ -12,7 +12,8 @@ iNZcodeWidget <- setRefClass(
                        packages = c("iNZightPlots", "magrittr"))
             history <<- list()
         },
-        add = function(x, keep = FALSE, tidy = TRUE) {
+        add = function(x, keep = TRUE, tidy = TRUE) {
+            x <- gsub("^SEP$", sep(), x) 
             if (tidy && requireNamespace("formatR", quietly = TRUE)) 
                 x <- capture.output(formatR::tidy_source(text = x, width.cutoff = 60))
             if (!keep.last) history <<- history[-length(history)]
@@ -23,6 +24,13 @@ iNZcodeWidget <- setRefClass(
                 sapply(x[grepl("::", x)], function(y) {
                     m <- regexpr("\ [a-zA-Z0-9]+::", y)
                     pkg <- substr(y, m + 1, m + attr(m, "match.length") - 3)
+                    if (!pkg %in% packages) packages <<- c(packages, pkg)
+                })
+            }
+            if (any(grepl("library\\([a-zA-Z0-9]+\\)", x))) {
+                sapply(x[grepl("library\\([a-zA-Z0-9]+\\)", x)], function(y) {
+                    m <- regexpr("library\\([a-zA-Z0-9]+\\)", y)
+                    pkg <- gsub(".*library\\(|\\).*", "", substr(y, m, m + attr(m, "match.length")))
                     if (!pkg %in% packages) packages <<- c(packages, pkg)
                 })
             }
@@ -58,7 +66,7 @@ iNZcodeWidget <- setRefClass(
               "##     that would be incredibly useful!)",
               "##    email: inzight_support@stat.auckland.ac.nz",
               "",
-              "## -------------------------------------------------------------------------- ##",
+              sep(),
               "",
               "## This script assumes you have various iNZight packages installed.",
               "## Uncomment the following lines if you don't:",
@@ -67,8 +75,11 @@ iNZcodeWidget <- setRefClass(
               "#     repos = c('http://r.docker.stat.auckland.ac.nz/R',",
               "#               'https://cran.rstudio.com'))",
               "",
-              "## -------------------------------------------------------------------------- ##",
+              sep(),
               "")
+        },
+        sep = function(width = 80) {
+            paste("##", paste(rep("-", width - 6), collapse = ""), "##")
         }
     )
 )
