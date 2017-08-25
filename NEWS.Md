@@ -46,6 +46,11 @@ t-tests performed on request.
 - Fixes for Interactive plots
 - BETA release of new Model Fitting module
 
+### Patch 3.1.4 - 25/08/2017
+
+- Add basic code history to model fitting module
+- few bug fixes
+
 ***
 
 # Version 3.0
