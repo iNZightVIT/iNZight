@@ -220,6 +220,9 @@ iNZImportWinBeta <- setRefClass("iNZImportWinBeta",
                                     okBtn <- gbutton("Import", handler = function(h, ...) {
                                         if (is.null(tmpData) || iNZightTools::isPreview(tmpData)) readData()
 
+                                        ## give the dataset a name ...
+                                        attr(tmpData, "name") <<- tools::file_path_sans_ext(basename(svalue(fname)))
+
                                         ## coerce character to factor
                                         invisible(sapply(which(sapply(tmpData, class) == "character"),
                                                          function(i) tmpData[[i]] <<- factor(tmpData[[i]])))
@@ -242,10 +245,19 @@ iNZImportWinBeta <- setRefClass("iNZImportWinBeta",
                                 readData = function(preview = FALSE) {
                                     ## Read data using object values:
                                     tmpData <<- suppressWarnings(suppressMessages({
-                                        iNZightTools::iNZread(svalue(fname), extension = fext,
-                                                              preview = preview, col.types = getTypes(),
-                                                              delim = switch(fext, "csv" = csvdelim, "txt" = txtdelim, NULL),
-                                                              decimal.mark = decMark, grouping.mark = bigMark)
+                                        code <- ~iNZightTools::iNZread(NAME, extension = EXT, preview = PREV, col.types = TYPES,
+                                                                       delim = DELIM, decimal.mark = DECM, grouping.mark = GRPM)
+                                        ## THIS WILL BECOME REDUNDANT...
+                                        iNZightTools:::interpolate(
+                                            code,
+                                            NAME = svalue(fname),
+                                            EXT = fext,
+                                            PREV = preview,
+                                            TYPES = getTypes(),
+                                            DELIM = switch(fext, "csv" = csvdelim, "txt" = txtdelim, NULL),
+                                            DECM = decMark,
+                                            GRPM = bigMark
+                                        )
                                     }))
 
                                     ## do a check that col classes match requested ...

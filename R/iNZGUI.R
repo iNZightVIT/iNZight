@@ -3,7 +3,7 @@
 #' Main class that builds the iNZight GUI
 #' @field iNZDocuments A list of documents containing data, plot settings, etc.
 #' @field activeDoc The numeric ID of the currently active document
-#' @import methods utils grDevices colorspace
+#' @import methods utils grDevices colorspace magrittr
 #' @export iNZGUI
 #' @exportClass iNZGUI
 iNZGUI <- setRefClass(
@@ -52,7 +52,9 @@ iNZGUI <- setRefClass(
                    prefs.location = "character",
                    preferences = "list",
                    ## allow modules to attach data to the GUI
-                   moduledata = "list"
+                   moduledata = "list",
+                   ## keep a track of R code history
+                   rhistory = "ANY"
                    ),
                prototype = list(
                    activeDoc = 1,
@@ -153,105 +155,14 @@ iNZGUI <- setRefClass(
             getPreferences()
 
             ## Check for updates ... need to use try incase it fails (no connection etc)
-            ## RCurl no longer supports R < 3, so it wont be available on Mac SL version.
-            # if (requireNamespace("RCurl", quietly = TRUE)) {
-            #     connected <- RCurl::url.exists("r.docker.stat.auckland.ac.nz")
-            # } else connected <- FALSE
-
             if (preferences$check.updates) {
-              # ap <- suppressWarnings(try(numeric_version(available.packages(
-              #     contriburl = contrib.url("http://r.docker.stat.auckland.ac.nz/R",
-              #         getOption("pkgType")))[,"Version"]), TRUE))
-              # if (!inherits(ap, "try-error")) {
-              #     if (length(ap) > 0) {
-              #         ip <- try(numeric_version(installed.packages()[names(ap), "Version"]), TRUE)
-              #         if (!inherits(ip, "try-error")) {
-              #             if (any(ap > ip))
-              #                 win.title <- paste(win.title, " [updates available]")
-              #         }
-              #     }
-              # }
-              try({
-                oldpkg <- old.packages(repos = "http://r.docker.stat.auckland.ac.nz/R")
-                if (nrow(oldpkg) > 0) {
-                  win.title <- paste(win.title, " [updates available]")
-                }
+                try({
+                    oldpkg <- old.packages(repos = "http://r.docker.stat.auckland.ac.nz/R")
+                    if (nrow(oldpkg) > 0) {
+                        win.title <- paste(win.title, " [updates available]")
+                    }
                 }, silent = TRUE)
             }
-
-            # if (FALSE) {
-            #     ## DON'T ASK UNTIL DATABSE UP ONLINE
-            #     ## if (preferences$track == "ask") {
-            #     if (FALSE) {
-            #         preferences$track <<-
-            #             gconfirm("iNZight would like to use anonymous usage information. Are you ok for us to collect this information?",
-            #                      title = "Share usage information?", icon = "question")
-            #         savePreferences()
-            #     }
-            #
-            #
-            #
-            #     ## --- TURNED OFF PERMANENTLY UNTIL DATABASE BACK ONLINE
-            #     ## if (preferences$track) {
-            #     if (FALSE) {
-            #         try({
-            #             version = packageVersion("iNZight")
-            #             os <- "Linux"
-            #             if (.Platform$OS == "windows") {
-            #                 os = "Windows"
-            #             } else if (Sys.info()["sysname"] == "Darwin") {
-            #                 os = "Mac OS X"
-            #                 osx.version <- try(system("sw_vers -productVersion", intern = TRUE), silent = TRUE)
-            #                 if (!inherits(osx.version, "try-error")) {
-            #                     os = paste("Mac OS X", osx.version)
-            #                 }
-            #             }
-            #
-            #
-            #             ## have they updated before?
-            #             if (is.null(preferences$track.id)) {
-            #                 ## compatibility mode ---
-            #                 hash.id <- "new"
-            #
-            #                 if (os == "Windows") {
-            #                     libp <- "prog_files"
-            #                 } else if (os != "Linux") {
-            #                     ## i.e., mac
-            #                     libp <- "Library"
-            #                 } else {
-            #                     ## linux - save in library..
-            #                     libp <- .libPaths()[which(sapply(.libPaths(), function(p)
-            #                                                      "iNZight" %in% list.files(p)))[1]]
-            #                 }
-            #
-            #                 if (file.exists(file.path(libp, "id.txt"))) {
-            #                     hash.id <- readLines(file.path(libp, "id.txt"))
-            #                     unlink(file.path(libp, "id.txt"))  ## delete the old one
-            #                 }
-            #
-            #                 ## only if not already tracking
-            #                 if (hash.id == "new") {
-            #                     track.url <- paste0("http://r.docker.stat.auckland.ac.nz/R/tracker/index.php?track&v=",
-            #                                         version, "&os=", gsub(" ", "%20", os), "&hash=", hash.id)
-            #                     f <- try(url(track.url,  open = "r"), TRUE)
-            #
-            #                     ## write the hash code to their installation:
-            #                     hash.id <- readLines(f)
-            #
-            #
-            #                     ## try(writeLines(hash.id, file.path(libp, "id.txt")), silent = TRUE)
-            #                 }
-            #
-            #                 preferences$track.id <<- hash.id
-            #                 savePreferences()
-            #             } else {
-            #                 hash.id <- preferences$track.id
-            #                 try(url(paste0("http://r.docker.stat.auckland.ac.nz/R/tracker/index.php?track&v=",
-            #                                version, "&os=", gsub(" ", "%20", os), "&hash=", hash.id), open = "r"), TRUE)
-            #             }
-            #         })
-            #     }
-            # }
 
             popOut <<- preferences$popout
 
@@ -327,15 +238,9 @@ iNZGUI <- setRefClass(
             ## add what is done upon closing the gui
             closerHandler(disposeR)
 
-            ## add resize handler to redraw plot
-            ## if (!popOut) {
-            ##     resizetimer <- NULL
-            ##     addHandler(win, "check-resize", function(h, ...) {
-            ##         if (!is.null(resizetimer) && resizetimer$started) resizetimer$stop_timer()
-            ##         resizetimer <- gtimer(200, function(...) updatePlot(), one.shot = TRUE)
-            ##     })
-            ## }
-        },
+            ## and start tracking history
+            initializeCodeHistory()
+        }, ## end initialization
         ## set up the menu bar widget
         initializeMenu = function(cont, disposeR) {
             actionList <- list(
@@ -434,6 +339,8 @@ iNZGUI <- setRefClass(
                     label = "Restore Dataset",
                     icon = "symbol_diamond",
                     handler = function(h, ...) {
+                        ## NOTE: look into this - best way of 'restoring'? (why not just revert activeDoc??)
+                        ## code should just start using `data` instead of `dataX`
                       setDocument(iNZDocument$new(data = getActiveDoc()$getModel()$origDataSet))
                         #getActiveDoc()$getModel()$updateData(
                         #    getActiveDoc()$getModel()$origDataSet)
@@ -784,6 +691,14 @@ iNZGUI <- setRefClass(
                     label = "[Beta Version] Model Fitting ...", icon = "symbol_diamond",
                     tooltip = "Fit regression models",
                     handler = function(h, ...) iNZightModules::iNZightRegMod$new(.self)
+                ),
+                showRhistory = gaction(
+                    ## 54
+                    label = "[Beta] Show R Code History", icon = "symbol_diamond",
+                    tooltip = "Show R history to reproduce results from R",
+                    handler = function(h, ...) {
+                        showHistory()
+                    }
                 )
             )
             ## home button is disabled if package 'vit' is not loaded
@@ -848,7 +763,8 @@ iNZGUI <- setRefClass(
                     actionList[[47]],
                     ## The new iNZightModelFitting module (under development)
                     gseparator(),
-                    actionList[[53]]
+                    actionList[[53]]#,
+                    #actionList[[54]]
                     ),
                 "Help" = list(
                     actionList[[33]],
@@ -1391,6 +1307,8 @@ iNZGUI <- setRefClass(
             ctrlWidget$resetWidget()
             ## add a iNZDocument to the end of the doc list
             iNZDocuments <<- c(iNZDocuments, list(document))
+            ## clean up any 'empty' datasets ..
+            iNZDocuments <<- iNZDocuments[sapply(iNZDocuments, function(d) !all(dim(d$dataModel$dataSet) == 1))]
             ## set the active document to the one we added
             activeDoc <<- length(iNZDocuments)
             ## if the dataSet changes, update the variable View
@@ -1400,9 +1318,9 @@ iNZGUI <- setRefClass(
                 function() {
                     dataViewWidget$updateWidget()
                     getActiveDoc()$updateSettings()
-
-                    ## Also, update list of variables in drop-downs:
                     ctrlWidget$updateVariables()
+                    dataNameWidget$updateWidget()
+                    rhistory$update()
                 }
                 )
             ## if plotSettings change, update the plot
@@ -1448,37 +1366,6 @@ iNZGUI <- setRefClass(
                          title = "Inappropriate data type", icon = "error")
             }
         },
-        ## ## initialize module window
-        ## initializeModule = function(module) {
-        ##     ## If module is already installed load it,
-        ##     ## otherwise ask for a download then install & load
-        ##     if (module %in% rownames(installed.packages())) {
-        ##         require(module, character.only = TRUE)
-        ##     } else {
-        ##         install = gconfirm("The module is not found. Would you like to download it?")
-        ##         if (install) {
-        ##             install.packages(module, repo = "http://r.docker.stat.auckland.ac.nz/R")
-        ##             require(mod, character.only = TRUE)
-        ##         }
-        ##     }
-
-        ##     ## once module is loaded, check data
-        ##     if (checkData(module)) {
-        ##         ## if there is not a module open,
-        ##         ## initialize and open a module window
-        ##         if (length(leftMain$children) == 1) {
-        ##             initializeModuleWindow()
-        ##             source(paste0("../iNZightModules/R/", module, ".R"))
-        ##             cmd = paste0(module, "$new(.self)")
-        ##             eval(parse(text = cmd))
-        ##             visible(moduleWindow) <<- TRUE
-        ##         } else {
-        ##             newModuleWindow(module)
-        ##         }
-        ##     } else {
-        ##         return()
-        ##     }
-        ## },
         ## create a gvbox object into the module window (ie, initialize it)
         ## NOTE: should be run every time when a new module is open
         initializeModuleWindow = function(mod) {
@@ -1492,6 +1379,18 @@ iNZGUI <- setRefClass(
 
             if (!missing(mod))
                 activeModule <<- mod
+        },
+        initializeCodeHistory = function() {
+            rhistory <<- iNZcodeWidget$new(.self)
+            
+            addActDocObs(
+                function() {
+                    rhistory$update()
+                })
+            getActiveDoc()$addDataObserver(
+                function() {
+                    rhistory$update()
+                })
         },
         ## --- PREFERENCES SETTINGS and LOCATIONS etc ...
         defaultPrefs = function() {
@@ -1613,5 +1512,12 @@ iNZGUI <- setRefClass(
 
                 grDevices::dev.flush()
             }
+        },
+        showHistory = function() {
+            wh <- gwindow("R Code History", parent = .self$win,
+                          width = 700, height = 500)
+            gh <- gvbox(container = wh)
+            th <- gtext(container = gh, expand = TRUE, fill = TRUE, wrap = FALSE)
+            insert(th, rhistory$get(), font.attr = list(family = "monospace"))
         })
     )
