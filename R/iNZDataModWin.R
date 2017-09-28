@@ -84,30 +84,51 @@ iNZconToCatWin <- setRefClass(
     methods = list(
         initialize = function(gui) {
             callSuper(gui)
+            
             svalue(GUI$modWin) <<- "Convert to Categorical"
             size(GUI$modWin) <<- c(200, 250)
-            mainGroup <- ggroup(horizontal = FALSE)
+            mainGroup <- gvbox()
             mainGroup$set_borderwidth(15)
-            lbl1 <- glabel("1. Drag and drop a variable name onto the\nlabel below  to create a categorical version\nof that variable")
-            font(lbl1) <- list(weight="bold", family = "normal")
+
+            tbl <- glayout(container = mainGroup)
+            ii <- 1
+
+            lbl <- glabel(paste("1. Drag and drop a variable name onto the",
+                                "label below  to create a categorical version",
+                                "of that variable", sep = "\n"))
+            font(lbl) <- list(weight = "bold", family = "normal")
+            tbl[ii, 1, anchor = c(-1, 0), expand = TRUE] <- lbl
+            ii <- ii + 1
+
+            tbl[ii, 1] <- gseparator()
+            ii <- ii + 1
+            
             dropLbl <- glabel("DROP VARIABLE HERE")
             font(dropLbl) <- list(size = 14)
-            lbl2 <- glabel("2. Type name for the new variable: ")
-            font(lbl2) <- list(weight="bold", family = "normal")
-            name.txt <- gedit("N/A", width = 20)
+            tbl[ii, 1] <- dropLbl
+            ii <- ii + 1
+
+            tbl[ii, 1] <- gseparator()
+            ii <- ii + 1
+
+            lbl <- glabel("2. Type name for the new variable: ")
+            font(lbl) <- list(weight = "bold", family = "normal")
+            tbl[ii, 1, encho = c(-1, 0), expand = TRUE] <- lbl
+            ii <- ii + 1
+            
+            name.txt <- gedit("No Variable Selected", width = 20)
+            tbl[ii, 1] <- name.txt
+            ii <- ii + 1
+            
             okButton <- gbutton("Update Data",
                                 handler = function(h, ...) {
                                     convert(svalue(name.txt), svalue(dropLbl))
                                 })
-            font(okButton) = list(weight="bold", family = "normal")
-            tbl <- glayout(container = mainGroup)
-            tbl[1, 1, expand = TRUE, anchor = c(-1, 0)] <- lbl1
-            tbl[2, 1] <- gseparator()
-            tbl[3, 1] <- dropLbl
-            tbl[4, 1] <- gseparator()
-            tbl[5, 1, expand = TRUE, anchor = c(-1, 0)] <- lbl2
-            tbl[6, 1] <- name.txt
-            tbl[7, 1] <- okButton
+            font(okButton) <- list(weight="bold", family = "normal")
+            tbl[ii, 1] <- okButton
+            ii <- ii + 1
+            
+
             addDropTarget(dropLbl,
                           handler = function(h, ...) {
                               dropData <- GUI$getActiveDoc()$getData()[h$dropdata][[1]]
@@ -121,7 +142,7 @@ iNZconToCatWin <- setRefClass(
                                   varData <<- dropData
                               }
                           })
-            add(mainGroup, tbl)
+
             add(GUI$modWin, mainGroup, expand = TRUE)
             visible(GUI$modWin) <<- TRUE
         },
