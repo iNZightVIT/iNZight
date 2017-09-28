@@ -218,6 +218,18 @@ iNZImportWinBeta <- setRefClass("iNZImportWinBeta",
                                     addSpring(btnGp)
                                     cancelBtn <- gbutton("Cancel", handler = function(h, ...) dispose(importFileWin), container = btnGp)
                                     okBtn <- gbutton("Import", handler = function(h, ...) {
+                                        infw <- gwindow("Loading data ...", width = 320, height = 80, visible = FALSE, parent = GUI$win)
+                                        infg <- gvbox(container = infw)
+                                        addSpace(infg, 10)
+                                        infl <- glabel("Please wait while iNZight loads your data.\nIt make take some time depending on the size.",
+                                                       container = infg, anchor = c(0, -1))
+                                        font(infl) <- list(weight = "bold")
+                                        visible(infw) <- TRUE
+
+                                        ## without this, the text doesn't load before the next call is made,
+                                        ## which means the message is pointless ...
+                                        Sys.sleep(0.1) 
+                                        
                                         if (is.null(tmpData) || iNZightTools::isPreview(tmpData)) readData()
 
                                         ## give the dataset a name ...
@@ -227,6 +239,8 @@ iNZImportWinBeta <- setRefClass("iNZImportWinBeta",
                                         invisible(sapply(which(sapply(tmpData, class) == "character"),
                                                          function(i) tmpData[[i]] <<- factor(tmpData[[i]])))
                                         GUI$setDocument(iNZDocument$new(data = as.data.frame(tmpData, stringsAsFactors = TRUE)))
+
+                                        dispose(infw)
 
                                         ## dunno why but need to delete gdf ...
                                         #if (!is.null(prev)) delete(prevGp, prev)
