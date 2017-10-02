@@ -3,7 +3,8 @@
 #' Main class that builds the iNZight GUI
 #' @field iNZDocuments A list of documents containing data, plot settings, etc.
 #' @field activeDoc The numeric ID of the currently active document
-#' @import methods utils grDevices colorspace magrittr
+#' @import methods utils grDevices colorspace
+#' @importFrom magrittr %>%
 #' @export iNZGUI
 #' @exportClass iNZGUI
 iNZGUI <- setRefClass(
@@ -1382,7 +1383,7 @@ iNZGUI <- setRefClass(
         },
         initializeCodeHistory = function() {
             rhistory <<- iNZcodeWidget$new(.self)
-            
+
             addActDocObs(
                 function() {
                     rhistory$update()

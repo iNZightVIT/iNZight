@@ -11,7 +11,7 @@ Authors@R: c(person("Tom", "Elliott", role = c("aut", "cre"),
                     email = "MarcoKuper42@gmail.com"),
              person("David", "Banks", role = "ctb"))
 Description: An interactive GUI for easy visual exploration of datasets.
-License: GPL-3
+License: GPL-3 | file LICENSE
 Depends:
     R (>= 3.0),
     objectProperties,
@@ -30,7 +30,8 @@ Imports:
     reshape2,
     plyr,
     survey,
-    colorspace
+    colorspace,
+    magrittr
 Suggests:
     RODBC,
     iNZightMR,
