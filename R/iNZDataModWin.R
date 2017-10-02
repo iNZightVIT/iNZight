@@ -84,30 +84,51 @@ iNZconToCatWin <- setRefClass(
     methods = list(
         initialize = function(gui) {
             callSuper(gui)
+            
             svalue(GUI$modWin) <<- "Convert to Categorical"
             size(GUI$modWin) <<- c(200, 250)
-            mainGroup <- ggroup(horizontal = FALSE)
+            mainGroup <- gvbox()
             mainGroup$set_borderwidth(15)
-            lbl1 <- glabel("1. Drag and drop a variable name onto the\nlabel below  to create a categorical version\nof that variable")
-            font(lbl1) <- list(weight="bold", family = "normal")
+
+            tbl <- glayout(container = mainGroup)
+            ii <- 1
+
+            lbl <- glabel(paste("1. Drag and drop a variable name onto the",
+                                "label below  to create a categorical version",
+                                "of that variable", sep = "\n"))
+            font(lbl) <- list(weight = "bold", family = "normal")
+            tbl[ii, 1, anchor = c(-1, 0), expand = TRUE] <- lbl
+            ii <- ii + 1
+
+            tbl[ii, 1] <- gseparator()
+            ii <- ii + 1
+            
             dropLbl <- glabel("DROP VARIABLE HERE")
             font(dropLbl) <- list(size = 14)
-            lbl2 <- glabel("2. Type name for the new variable: ")
-            font(lbl2) <- list(weight="bold", family = "normal")
-            name.txt <- gedit("N/A", width = 20)
+            tbl[ii, 1] <- dropLbl
+            ii <- ii + 1
+
+            tbl[ii, 1] <- gseparator()
+            ii <- ii + 1
+
+            lbl <- glabel("2. Type name for the new variable: ")
+            font(lbl) <- list(weight = "bold", family = "normal")
+            tbl[ii, 1, encho = c(-1, 0), expand = TRUE] <- lbl
+            ii <- ii + 1
+            
+            name.txt <- gedit("No Variable Selected", width = 20)
+            tbl[ii, 1] <- name.txt
+            ii <- ii + 1
+            
             okButton <- gbutton("Update Data",
                                 handler = function(h, ...) {
                                     convert(svalue(name.txt), svalue(dropLbl))
                                 })
-            font(okButton) = list(weight="bold", family = "normal")
-            tbl <- glayout(container = mainGroup)
-            tbl[1, 1, expand = TRUE, anchor = c(-1, 0)] <- lbl1
-            tbl[2, 1] <- gseparator()
-            tbl[3, 1] <- dropLbl
-            tbl[4, 1] <- gseparator()
-            tbl[5, 1, expand = TRUE, anchor = c(-1, 0)] <- lbl2
-            tbl[6, 1] <- name.txt
-            tbl[7, 1] <- okButton
+            font(okButton) <- list(weight="bold", family = "normal")
+            tbl[ii, 1] <- okButton
+            ii <- ii + 1
+            
+
             addDropTarget(dropLbl,
                           handler = function(h, ...) {
                               dropData <- GUI$getActiveDoc()$getData()[h$dropdata][[1]]
@@ -121,7 +142,7 @@ iNZconToCatWin <- setRefClass(
                                   varData <<- dropData
                               }
                           })
-            add(mainGroup, tbl)
+
             add(GUI$modWin, mainGroup, expand = TRUE)
             visible(GUI$modWin) <<- TRUE
         },
@@ -134,19 +155,7 @@ iNZconToCatWin <- setRefClass(
                 name <- gsub('\\n+', "", name, perl = TRUE)
                 .dataset <- GUI$getActiveData()
                 data <- iNZightTools::numToCat(.dataset, orgVar, name)
-                
-
-
-                ## exp <- as.formula(sprintf(
-                ##     "~.DATANAME %%>%% tibble::add_column(%s = as.factor(%s), .after = varname)",
-                ##     name, paste0(".DATANAME$", orgVar)))
-
-                ## data <- interpolate(exp, var = varData, varname = orgVar)
-                
                 updateData(data)
-                
-                #insertData(out, name, index, closeAfter = FALSE,
-                #           code = sprintf("newdata # MODIFY: data$%s <- as.factor(data$%s)", name, orgVar))
             }
         })
     )
@@ -160,47 +169,50 @@ iNZtrnsWin <- setRefClass(
             callSuper(gui)
             ## need to specify the methods that we want to use in
             ## do.call later on
-            usingMethods(trnsfrm, sqr, recip)
+            #usingMethods(trnsfrm, sqr, recip)
             svalue(GUI$modWin) <<- "Transform Variables"
             mainGroup <- ggroup(horizontal = FALSE)
             mainGroup$set_borderwidth(15)
-            lbl1 <- glabel("Drag and drop variable names onto the labels below\nto create new transformed variables")
+            lbl1 <- glabel("Drag and drop variable names onto the labels below\nto create new transformed variables.")
             font(lbl1) <- list(weight="bold", family = "normal", size = 11)
-            lnLbl <- glabel("LOG (e)")
-            font(lnLbl) <- list(weight="bold", family = "normal",
-                                size = 14, color = "navy")
-            logLbl <- glabel("LOG (10)")
-            font(logLbl) <- list(weight="bold", family = "normal",
-                                 size = 14, color = "navy")
-            expLbl <- glabel("EXPONENTIAL")
-            font(expLbl) <- list(weight="bold", family = "normal",
-                                 size = 14, color = "navy")
-            sqrLbl <- glabel("SQUARE")
-            font(sqrLbl) <- list(weight="bold", family = "normal",
-                                 size = 14, color = "navy")
-            rootLbl <- glabel("SQUARE ROOT")
-            font(rootLbl) <- list(weight="bold", family = "normal",
-                                  size = 14, color = "navy")
-            recLbl <- glabel("RECIPROCAL")
-            font(recLbl) <- list(weight="bold", family = "normal",
-                                 size = 14, color = "navy")
-            addTransformation(lnLbl, "log", "log.e")
-            addTransformation(logLbl, "log10", "log.10")
-            addTransformation(expLbl, "exp", "exp")
-            addTransformation(sqrLbl, "sqr", "sqr")
-            addTransformation(rootLbl, "sqrt", "root")
-            addTransformation(recLbl, "recip", "recip")
 
             tbl <- glayout(container = mainGroup)
-            tbl[1, 1, expand = TRUE, anchor = c(-1, 0)] <- lbl1
-            tbl[2, 1] <- gseparator()
-            tbl[3, 1, expand = TRUE, anchor = c(0, 0)] <- lnLbl
-            tbl[4, 1, expand = TRUE, anchor = c(0, 0)] <- logLbl
-            tbl[5, 1, expand = TRUE, anchor = c(0, 0)] <- expLbl
-            tbl[6, 1, expand = TRUE, anchor = c(0, 0)] <- sqrLbl
-            tbl[7, 1, expand = TRUE, anchor = c(0, 0)] <- rootLbl
-            tbl[8, 1, expand = TRUE, anchor = c(0, 0)] <- recLbl
-            add(mainGroup, tbl)
+            ii <- 1
+            
+            tbl[ii, 1, expand = TRUE, anchor = c(-1, 0)] <- lbl1
+            ii <- ii + 1
+            
+            tbl[ii, 1] <- gseparator()
+            ii <- ii + 1
+
+            ## function names: the X will be converted to the variable name (e.g., log.height, height.squared, etc)
+            ##                  Display name           new name     function
+            transforms <- list("LOG (e)"          = c("log.e.X",   "log"),
+                               "LOG (10)"         = c("log.10.X",  "log10"),
+                               "EXPONENTIAL"      = c("exp.X",     "exp"),
+                               "SQUARE (X^2)"     = c("X.squared", "square"),
+                               "SQUARE ROOT"      = c("root.X",    "sqrt"),
+                               "RECIPROCAL (1/X)" = c("recip.X",   "recip"))
+            
+            trLbls <- sapply(seq_along(transforms), function(i) {
+                lbl <- glabel(names(transforms)[i])
+                font(lbl) <- list(weight = "bold", family = "normal", size = 14, color = "navy")
+                tbl[ii + i - 1, 1, expand = TRUE, anchor = c(0, 0)] <- lbl
+                
+                addDropTarget(lbl, handler = function(h, ...) {
+                    var <- h$dropdata
+                    dropData <- GUI$getActiveDoc()$getData()[var][[1]]
+                    ## check whether we can transform this variable
+                    if (checkData(dropData)) {
+                        name <- gsub("X", var, transforms[[i]][1])
+                        fn <- transforms[[i]][2]
+                        .dataset <- GUI$getActiveData()
+                        data <- iNZightTools::transform(.dataset, var, fn, name)
+                        updateData(data)
+                    }
+                })
+            })
+            
             add(GUI$modWin, mainGroup, expand = TRUE)
             visible(GUI$modWin) <<- TRUE
         },
@@ -213,44 +225,8 @@ iNZtrnsWin <- setRefClass(
                 FALSE
             } else
                 TRUE
-        },
-        ## add a drop target to a transformation field
-        ## obj: the glabel object to be used as dropTarget
-        ## fn: the function used for transformation
-        ## nameAdd: the string that is pasted on to the var name
-        addTransformation = function(obj, fn, nameAdd) {
-            addDropTarget(obj, handler = function(h, ...) {
-                dropData <- GUI$getActiveDoc()$getData()[h$dropdata][[1]]
-                ## check whether we can transform this variable
-                if (checkData(dropData)) {
-                    trnsform <- do.call(trnsfrm, list(varData = dropData,
-                                                      varName = h$dropdata,
-                                                      trnsFn = fn,
-                                                      trnsName = nameAdd))
-                    do.call(insertData, modifyList(trnsform, list(
-                        index = which(names(GUI$getActiveData()) == h$dropdata),
-                        closeAfter = FALSE))
-                            )
-                }
-            })
-        },
-        ## transform a vector and its name
-        ## varData: the vector to be transformed
-        ## varName: the original name of the column
-        ## trnsFn: the function used for transformation
-        ## trnsName: the string added on to the varName
-        trnsfrm = function(varData, varName, trnsFn, trnsName) {
-            out <- round(do.call(trnsFn, list(varData)), 3)
-            name <- paste(trnsName, ".", varName, sep = "")
-            list(data = out, name = name)
-        },
-        sqr = function(x) {
-            x^2
-        },
-        recip = function(x) {
-            1/x
-        })
-    )
+        }
+    ))
 
 ## collapse multiple factor levels into one
 iNZcllpsWin <- setRefClass(
