@@ -51,6 +51,10 @@ t-tests performed on request.
 - Add basic code history to model fitting module
 - few bug fixes
 
+### Patch 3.1.5 - 02/10/2017
+
+- More bug fixes/minor improvements
+
 ***
 
 # Version 3.0
