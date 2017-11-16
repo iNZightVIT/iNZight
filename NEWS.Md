@@ -1,3 +1,7 @@
+# Latest fixes (unreleased):
+
+- [BUGFIX] saving residuals/predicted values works if you select only quadratic or cubic
+
 # Version 3.1
 __Release date:__ 13 December, 2016
 

@@ -917,7 +917,7 @@ iNZGUI <- setRefClass(
                                 fittedLbl <- glabel("")
                                 fittedName <- gedit(sprintf("%s.%s", curSet$varnames[[ifelse(is.numeric(curSet$y), "y", "x")]], varType),
                                                     width = 25)
-                                if (is.factor(curSet$x) || is.factor(curSet$y) || length(curSet$trend) == 1) {
+                                if (is.factor(curSet$x) || is.factor(curSet$y)) { ##} || length(curSet$trend) == 1) {
                                     tbl[ii, 1:3, anchor = c(1, 0), expand = TRUE] <- fittedLbl
                                     tbl[ii, 4:6, expand = TRUE] <- fittedName
                                     ii <- ii + 1
@@ -925,9 +925,10 @@ iNZGUI <- setRefClass(
 
                                 ## Predicted values for LINEAR trend:
                                 fittedLbl.lin <- glabel(ifelse(length(curSet$trend) > 1, "Linear :", ""))
-                                fittedName.lin <- gedit(sprintf("%s.%s.linear", curSet$varnames$y, varType),
+                                fittedName.lin <- gedit(sprintf("%s.%s%s", curSet$varnames$y, varType,
+                                                                 ifelse(length(curSet$trend) > 1, ".linear", "")),
                                                         width = 25)
-                                if (length(curSet$trend) > 1 && "linear" %in% curSet$trend) {
+                                if (length(curSet$trend) >= 1 && "linear" %in% curSet$trend) {
                                     tbl[ii, 1:3, anchor = c(1, 0), expand = TRUE] <- fittedLbl.lin
                                     tbl[ii, 4:6, expand = TRUE] <- fittedName.lin
                                     ii <- ii + 1
@@ -935,9 +936,10 @@ iNZGUI <- setRefClass(
 
                                 ## Predicted values for QUADRATIC trend:
                                 fittedLbl.quad <- glabel(ifelse(length(curSet$trend) > 1, "Quadratic :", ""))
-                                fittedName.quad <- gedit(sprintf("%s.%s.quadratic", curSet$varnames$y, varType),
+                                fittedName.quad <- gedit(sprintf("%s.%s%s", curSet$varnames$y, varType,
+                                                                 ifelse(length(curSet$trend) > 1, ".quadratic", "")),
                                                          width = 25)
-                                if (length(curSet$trend) > 1 && "quadratic" %in% curSet$trend) {
+                                if (length(curSet$trend) >= 1 && "quadratic" %in% curSet$trend) {
                                     tbl[ii, 1:3, anchor = c(1, 0), expand = TRUE] <- fittedLbl.quad
                                     tbl[ii, 4:6, expand = TRUE] <- fittedName.quad
                                     ii <- ii + 1
@@ -945,9 +947,10 @@ iNZGUI <- setRefClass(
 
                                 ## Predicted values for CUBIC trend:
                                 fittedLbl.cub <- glabel(ifelse(length(curSet$trend) > 1, "Cubic :", ""))
-                                fittedName.cub <- gedit(sprintf("%s.%s.cubic", curSet$varnames$y, varType),
+                                fittedName.cub <- gedit(sprintf("%s.%s%s", curSet$varnames$y, varType,
+                                                                 ifelse(length(curSet$trend) > 1, ".cubic", "")),
                                                         width = 25)
-                                if (length(curSet$trend) > 1 && "cubic" %in% curSet$trend) {
+                                if (length(curSet$trend) >= 1 && "cubic" %in% curSet$trend) {
                                     tbl[ii, 1:3, anchor = c(1, 0), expand = TRUE] <- fittedLbl.cub
                                     tbl[ii, 4:6, expand = TRUE] <- fittedName.cub
                                     ii <- ii + 1
@@ -975,12 +978,12 @@ iNZGUI <- setRefClass(
                                                                     residuals(object)
 
                                                      pred <- NULL
-                                                     if (is.factor(curSet$x) || is.factor(curSet$y) || length(curSet$trend) == 1) {
+                                                     if (is.factor(curSet$x) || is.factor(curSet$y)) { #} || length(curSet$trend) == 1) {
                                                          ## just the one
                                                          fit <- with(curSet, lm(if (is.numeric(curSet$y)) y ~ x else x ~ y, na.action = na.exclude))
                                                          pred <- data.frame(FUN(fit))
                                                          colnames(pred) <- svalue(fittedName)
-                                                     } else if (length(curSet$trend) > 1) {
+                                                     } else if (length(curSet$trend) >= 1) {
                                                          ## for each trend line
                                                          fits <- lapply(curSet$trend, function(ord) {
                                                              with(curSet, switch(ord,
