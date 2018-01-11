@@ -876,7 +876,9 @@ iNZGUI <- setRefClass(
                             curSet$design <- curMod$createSurveyObject()
                         }
 
-                        w <- gwindow("Summary", width = 850, height = 400,
+                        w <- gwindow("Summary", 
+                                     width = 800 * preferences$font.size / 10, 
+                                     height = 400 * preferences$font.size / 10,
                                      visible = FALSE, parent = win)
                         g <- gvbox(container = w)
                         txtSmry <- gtext(text = paste(do.call(
@@ -884,7 +886,8 @@ iNZGUI <- setRefClass(
                                              curSet),
                                              collapse = "\n"),
                                          expand = TRUE, container = g, wrap = FALSE,
-                                         font.attr = list(family = "monospace"))
+                                         font.attr = list(family = "monospace", 
+                                                          size = preferences$font.size))
 
                         ## if regression OR anova is going on:
                         if (is.null(curSet$g1) && is.null(curSet$g2) &&
@@ -917,7 +920,7 @@ iNZGUI <- setRefClass(
                                 fittedLbl <- glabel("")
                                 fittedName <- gedit(sprintf("%s.%s", curSet$varnames[[ifelse(is.numeric(curSet$y), "y", "x")]], varType),
                                                     width = 25)
-                                if (is.factor(curSet$x) || is.factor(curSet$y) || length(curSet$trend) == 1) {
+                                if (is.factor(curSet$x) || is.factor(curSet$y)) { ##} || length(curSet$trend) == 1) {
                                     tbl[ii, 1:3, anchor = c(1, 0), expand = TRUE] <- fittedLbl
                                     tbl[ii, 4:6, expand = TRUE] <- fittedName
                                     ii <- ii + 1
@@ -925,9 +928,10 @@ iNZGUI <- setRefClass(
 
                                 ## Predicted values for LINEAR trend:
                                 fittedLbl.lin <- glabel(ifelse(length(curSet$trend) > 1, "Linear :", ""))
-                                fittedName.lin <- gedit(sprintf("%s.%s.linear", curSet$varnames$y, varType),
+                                fittedName.lin <- gedit(sprintf("%s.%s%s", curSet$varnames$y, varType,
+                                                                 ifelse(length(curSet$trend) > 1, ".linear", "")),
                                                         width = 25)
-                                if (length(curSet$trend) > 1 && "linear" %in% curSet$trend) {
+                                if (length(curSet$trend) >= 1 && "linear" %in% curSet$trend) {
                                     tbl[ii, 1:3, anchor = c(1, 0), expand = TRUE] <- fittedLbl.lin
                                     tbl[ii, 4:6, expand = TRUE] <- fittedName.lin
                                     ii <- ii + 1
@@ -935,9 +939,10 @@ iNZGUI <- setRefClass(
 
                                 ## Predicted values for QUADRATIC trend:
                                 fittedLbl.quad <- glabel(ifelse(length(curSet$trend) > 1, "Quadratic :", ""))
-                                fittedName.quad <- gedit(sprintf("%s.%s.quadratic", curSet$varnames$y, varType),
+                                fittedName.quad <- gedit(sprintf("%s.%s%s", curSet$varnames$y, varType,
+                                                                 ifelse(length(curSet$trend) > 1, ".quadratic", "")),
                                                          width = 25)
-                                if (length(curSet$trend) > 1 && "quadratic" %in% curSet$trend) {
+                                if (length(curSet$trend) >= 1 && "quadratic" %in% curSet$trend) {
                                     tbl[ii, 1:3, anchor = c(1, 0), expand = TRUE] <- fittedLbl.quad
                                     tbl[ii, 4:6, expand = TRUE] <- fittedName.quad
                                     ii <- ii + 1
@@ -945,9 +950,10 @@ iNZGUI <- setRefClass(
 
                                 ## Predicted values for CUBIC trend:
                                 fittedLbl.cub <- glabel(ifelse(length(curSet$trend) > 1, "Cubic :", ""))
-                                fittedName.cub <- gedit(sprintf("%s.%s.cubic", curSet$varnames$y, varType),
+                                fittedName.cub <- gedit(sprintf("%s.%s%s", curSet$varnames$y, varType,
+                                                                 ifelse(length(curSet$trend) > 1, ".cubic", "")),
                                                         width = 25)
-                                if (length(curSet$trend) > 1 && "cubic" %in% curSet$trend) {
+                                if (length(curSet$trend) >= 1 && "cubic" %in% curSet$trend) {
                                     tbl[ii, 1:3, anchor = c(1, 0), expand = TRUE] <- fittedLbl.cub
                                     tbl[ii, 4:6, expand = TRUE] <- fittedName.cub
                                     ii <- ii + 1
@@ -975,12 +981,12 @@ iNZGUI <- setRefClass(
                                                                     residuals(object)
 
                                                      pred <- NULL
-                                                     if (is.factor(curSet$x) || is.factor(curSet$y) || length(curSet$trend) == 1) {
+                                                     if (is.factor(curSet$x) || is.factor(curSet$y)) { #} || length(curSet$trend) == 1) {
                                                          ## just the one
                                                          fit <- with(curSet, lm(if (is.numeric(curSet$y)) y ~ x else x ~ y, na.action = na.exclude))
                                                          pred <- data.frame(FUN(fit))
                                                          colnames(pred) <- svalue(fittedName)
-                                                     } else if (length(curSet$trend) > 1) {
+                                                     } else if (length(curSet$trend) >= 1) {
                                                          ## for each trend line
                                                          fits <- lapply(curSet$trend, function(ord) {
                                                              with(curSet, switch(ord,
@@ -1203,7 +1209,9 @@ iNZGUI <- setRefClass(
                                 visible(wBoots) <- TRUE
                             }
 
-                            w2 <- gwindow(infTitle, width = 850, height = 400,
+                            w2 <- gwindow(infTitle, 
+                                          width = 800 * preferences$font.size / 10, 
+                                          height = 400 * preferences$font.size / 10,
                                           visible = FALSE, parent = win)
                             g2 <- gtext(
                                 paste(
@@ -1212,7 +1220,7 @@ iNZGUI <- setRefClass(
                                         sets),
                                     collapse = "\n"),
                                 expand = TRUE, cont = w2, wrap = FALSE,
-                                font.attr = list(family = "monospace"))
+                                font.attr = list(family = "monospace", size = preferences$font.size))
                             visible(w2) <- TRUE
                             try(dispose(wBoots), silent = TRUE)
                         })
@@ -1399,10 +1407,12 @@ iNZGUI <- setRefClass(
             list(track = "ask", track.id = NULL,
                  check.updates = TRUE,
                  window.size = c(1250, 850),
-                 popout = FALSE)
+                 popout = FALSE,
+                 font.size = 10)
         },
         checkPrefs = function(prefs) {
-            allowed.names <- c("track", "track.id", "check.updates", "window.size", "popout")
+            allowed.names <- c("track", "track.id", "check.updates", 
+                               "window.size", "popout", "font.size")
 
             ## Only keep allowed preferences --- anything else is discarded
             prefs <- prefs[names(prefs) %in% allowed.names]
@@ -1433,6 +1443,11 @@ iNZGUI <- setRefClass(
                 if (is.null(prefs$popout)) defs$popout
                 else if (is.logical(prefs$popout)) prefs$popout
                 else defs$popout
+
+            ## font size
+            prefs$font.size <-
+                if (is.null(prefs$font.size) || !is.numeric(prefs$font.size)) defs$font.size
+                else prefs$font.size
 
             prefs
 

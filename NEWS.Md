@@ -1,3 +1,7 @@
+# Latest fixes (unreleased):
+
+- [BUGFIX] saving residuals/predicted values works if you select only quadratic or cubic
+
 # Version 3.1
 __Release date:__ 13 December, 2016
 
@@ -54,6 +58,10 @@ t-tests performed on request.
 ### Patch 3.1.5 - 02/10/2017
 
 - More bug fixes/minor improvements
+
+### Patch 3.1.6 - 12/01/2018
+
+- Add font size option to preferences for the Get Summary/Inference windows
 
 ***
 
