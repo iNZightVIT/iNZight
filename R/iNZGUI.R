@@ -876,7 +876,9 @@ iNZGUI <- setRefClass(
                             curSet$design <- curMod$createSurveyObject()
                         }
 
-                        w <- gwindow("Summary", width = 850, height = 400,
+                        w <- gwindow("Summary", 
+                                     width = 800 * preferences$font.size / 10, 
+                                     height = 400 * preferences$font.size / 10,
                                      visible = FALSE, parent = win)
                         g <- gvbox(container = w)
                         txtSmry <- gtext(text = paste(do.call(
@@ -884,7 +886,8 @@ iNZGUI <- setRefClass(
                                              curSet),
                                              collapse = "\n"),
                                          expand = TRUE, container = g, wrap = FALSE,
-                                         font.attr = list(family = "monospace"))
+                                         font.attr = list(family = "monospace", 
+                                                          size = preferences$font.size))
 
                         ## if regression OR anova is going on:
                         if (is.null(curSet$g1) && is.null(curSet$g2) &&
@@ -1206,7 +1209,9 @@ iNZGUI <- setRefClass(
                                 visible(wBoots) <- TRUE
                             }
 
-                            w2 <- gwindow(infTitle, width = 850, height = 400,
+                            w2 <- gwindow(infTitle, 
+                                          width = 800 * preferences$font.size / 10, 
+                                          height = 400 * preferences$font.size / 10,
                                           visible = FALSE, parent = win)
                             g2 <- gtext(
                                 paste(
@@ -1215,7 +1220,7 @@ iNZGUI <- setRefClass(
                                         sets),
                                     collapse = "\n"),
                                 expand = TRUE, cont = w2, wrap = FALSE,
-                                font.attr = list(family = "monospace"))
+                                font.attr = list(family = "monospace", size = preferences$font.size))
                             visible(w2) <- TRUE
                             try(dispose(wBoots), silent = TRUE)
                         })
@@ -1402,10 +1407,12 @@ iNZGUI <- setRefClass(
             list(track = "ask", track.id = NULL,
                  check.updates = TRUE,
                  window.size = c(1250, 850),
-                 popout = FALSE)
+                 popout = FALSE,
+                 font.size = 10)
         },
         checkPrefs = function(prefs) {
-            allowed.names <- c("track", "track.id", "check.updates", "window.size", "popout")
+            allowed.names <- c("track", "track.id", "check.updates", 
+                               "window.size", "popout", "font.size")
 
             ## Only keep allowed preferences --- anything else is discarded
             prefs <- prefs[names(prefs) %in% allowed.names]
@@ -1436,6 +1443,11 @@ iNZGUI <- setRefClass(
                 if (is.null(prefs$popout)) defs$popout
                 else if (is.logical(prefs$popout)) prefs$popout
                 else defs$popout
+
+            ## font size
+            prefs$font.size <-
+                if (is.null(prefs$font.size) || !is.numeric(prefs$font.size)) defs$font.size
+                else prefs$font.size
 
             prefs
 

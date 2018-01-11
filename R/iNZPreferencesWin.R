@@ -60,6 +60,20 @@ iNZPrefsWin <- setRefClass(
 
                addSpace(g, 30)
 
+               gfontSize <- ggroup(container = g)
+               glabel("Font size (for summary and inference windows):", container = gfontSize)
+               fsizebtn <- gspinbutton(5, 30, by = 1, value = prefs$font.size, container = gfontSize)
+               fsizeprv <- gtext("Preview text", height = 40, width = 200, container = gfontSize,
+                                 font.attr = list(size = svalue(fsizebtn)))
+               addHandlerChanged(fsizebtn, function(h, ...) {
+                  # this doesn't work [yet] for numeric size values
+                  # fsizeprv$set_font(list(size = svalue(h$obj)))
+                  svalue(fsizeprv) <- ""
+                  insert(fsizeprv, "Preview text", font.attr = list(size = svalue(h$obj)))
+               })
+
+               addSpace(g, 30)
+
                popoutWin <- gcheckbox(
                    "Use dual-window display mode (strongly advised for Windows users who are not computer novices",
                    checked = prefs$popout)
@@ -96,7 +110,8 @@ iNZPrefsWin <- setRefClass(
                                                           check.updates = svalue(updOpt),
                                                           window.size =
                                                           as.numeric(c(svalue(winWd), svalue(winHt))),
-                                                          popout = svalue(popoutWin))
+                                                          popout = svalue(popoutWin),
+                                                          font.size = svalue(fsizebtn))
                                  GUI$savePreferences()
                                  dispose(GUI$modWin)
                              })
