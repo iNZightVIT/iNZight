@@ -59,6 +59,10 @@ t-tests performed on request.
 
 - More bug fixes/minor improvements
 
+### Patch 3.1.6 - 12/01/2018
+
+- Add font size option to preferences for the Get Summary/Inference windows
+
 ***
 
 # Version 3.0
