@@ -700,6 +700,12 @@ iNZGUI <- setRefClass(
                     handler = function(h, ...) {
                         showHistory()
                     }
+                ),
+                newMapsModule = gaction(
+                    ## 55
+                    label = "[Beta] New Maps Module", icon = "symbol_diamond",
+                    tooltip = "Load the new Maps module",
+                    handler = function(h, ...) iNZightModules::iNZightMap2Mod$new(.self)
                 )
             )
             ## home button is disabled if package 'vit' is not loaded
@@ -764,8 +770,9 @@ iNZGUI <- setRefClass(
                     actionList[[47]],
                     ## The new iNZightModelFitting module (under development)
                     gseparator(),
-                    actionList[[53]]#,
+                    actionList[[53]],
                     #actionList[[54]]
+                    actionList[[55]]
                     ),
                 "Help" = list(
                     actionList[[33]],
