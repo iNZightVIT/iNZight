@@ -154,7 +154,7 @@ iNZconToCatWin <- setRefClass(
             else {
                 name <- gsub('\\n+', "", name, perl = TRUE)
                 .dataset <- GUI$getActiveData()
-                data <- iNZightTools::numToCat(.dataset, orgVar, name)
+                data <- iNZightTools::convertToCat(.dataset, orgVar, name)
                 updateData(data)
             }
         })
@@ -192,7 +192,7 @@ iNZtrnsWin <- setRefClass(
                                "EXPONENTIAL"      = c("exp.X",     "exp"),
                                "SQUARE (X^2)"     = c("X.squared", "square"),
                                "SQUARE ROOT"      = c("root.X",    "sqrt"),
-                               "RECIPROCAL (1/X)" = c("recip.X",   "recip"))
+                               "RECIPROCAL (1/X)" = c("recip.X",   "reciprocal"))
             
             trLbls <- sapply(seq_along(transforms), function(i) {
                 lbl <- glabel(names(transforms)[i])
@@ -207,7 +207,7 @@ iNZtrnsWin <- setRefClass(
                         name <- gsub("X", var, transforms[[i]][1])
                         fn <- transforms[[i]][2]
                         .dataset <- GUI$getActiveData()
-                        data <- iNZightTools::transform(.dataset, var, fn, name)
+                        data <- iNZightTools::transformVar(.dataset, var, fn, name)
                         updateData(data)
                     }
                 })
@@ -1053,19 +1053,10 @@ iNZstdVarWin <- setRefClass(
             names(numVar) <- "Variables"
             stdButton <- gbutton("Standardise", handler = function(h, ...) {
                 if (length(svalue(numVar)) > 0) {
-                    index <- which(numIndices)[svalue(numVar, index = TRUE)]
-                    newVar <- scale(GUI$getActiveData()[, index],
-                                    center = TRUE, scale = TRUE)
-                    newNames <- paste(names(GUI$getActiveData())[index],
-                                      ".std", sep = "")
-                    insertData(data = newVar,
-                               name = newNames,
-                               index = ncol(GUI$getActiveData()),
-                               msg = list(
-                                   msg = "The new variables are added to the end of the dataset",
-                                   icon = "info"
-                                   ),
-                               closeAfter = TRUE)
+                    varnames <- svalue(numVar)
+                    .dataset <- GUI$getActiveData()
+                    data <- iNZightTools::standardizeVars(.dataset, varnames)
+                    updateData(data)
                 }
             })
             add(mainGroup, lbl1)
@@ -1222,25 +1213,10 @@ iNZrankNumWin <- setRefClass(
       names(numVar) <- "Variables"
       rankButton <- gbutton("Rank", handler = function(h, ...) {
         if (length(svalue(numVar)) > 0) {
-          index <- which(numIndices)[svalue(numVar, index = TRUE)]
-          data <- GUI$getActiveData()[, index]
-          if (length(index)>1){
-          newVar <- sapply(data, rank, ties.method = "min", na.last = "keep")
-          }
-          else 
-            newVar <- rank(data, ties.method = "min", na.last = "keep")
-          
-          newNames <- paste(names(GUI$getActiveData())[index],
-                            ".rank", sep = "")
-          
-          insertData(data = newVar,
-                     name = newNames,
-                     index = ncol(GUI$getActiveData()),
-                     msg = list(
-                       msg = "The new variables are added to the end of the dataset",
-                       icon = "info"
-                     ),
-                     closeAfter = TRUE)        
+            vars <- svalue(numVar)
+            .dataset <- GUI$getActiveData()
+            data <- iNZightTools::rankVars(.dataset, vars)
+            updateData(data)    
         }
         else {
           gmessage("Select at leat one variable!",
@@ -1281,22 +1257,10 @@ iNZctocatmulWin <- setRefClass(
       names(numVar) <- "Variables"
       ctmcButton <- gbutton("Convert", handler = function(h, ...) {
         if (length(svalue(numVar)) > 0) {
-          index <- which(numIndices)[svalue(numVar, index = TRUE)]
-          
-          if (length(index) > 1)
-            newData <- sapply(GUI$getActiveData()[, index], as.factor)
-          else
-            newData <- as.factor(GUI$getActiveData()[, index])
-          newNames <- paste(names(GUI$getActiveData())[index],
-                            ".cat", sep = "")
-          insertData(data = newData,
-                     name = newNames,
-                     index = ncol(GUI$getActiveData()),
-                     msg = list(
-                       msg = "The new variables are added to the end of the dataset",
-                       icon = "info"
-                     ),
-                     closeAfter = TRUE)
+            varnames <- svalue(numVar)
+            .dataset <- GUI$getActiveData()
+            data <- iNZightTools::convertToCat(.dataset, varnames)
+            updateData(data)
         }
       })
       add(mainGroup, lbl1)
