@@ -12,10 +12,10 @@ iNZcodeWidget <- setRefClass(
                        packages = c("iNZightPlots", "magrittr"))
             history <<- list()
         },
-        add = function(x, keep = TRUE, tidy = TRUE) {
+        add = function(x, keep = TRUE, tidy = FALSE) {
             x <- gsub("^SEP$", sep(), x) 
-            # if (tidy && requireNamespace("formatR", quietly = TRUE)) 
-            #     x <- capture.output(formatR::tidy_source(text = x, width.cutoff = 60))
+            if (tidy && requireNamespace("formatR", quietly = TRUE)) 
+                x <- capture.output(formatR::tidy_source(text = x, width.cutoff = 60))
             if (!keep.last) history <<- history[-length(history)]
             history <<- c(history, list(c("", x)))
             keep.last <<- keep
@@ -44,18 +44,24 @@ iNZcodeWidget <- setRefClass(
             code <- GUI$getActiveDoc()$getCode()
             if (!is.null(code)) {
                 dname <- sprintf("data%s", ifelse(GUI$activeDoc == 1, "", GUI$activeDoc))
-                code <- gsub("\ +", " ", # one or more spaces with just one space!
-                  paste(gsub(".dataset", dname, code, fixed = TRUE), collapse = ""))
-                code <- gsub(" %>% ", " %>% \n    ", code)
-                ## replace data %>% foo() with data %<>% foo()
-                ## before the first one, add a comment explaining what %<>% does
-                asgnpipe <- paste(dname, "%<>% ")
-                if (!any(sapply(history, function(x) any(grepl('%<>%', x)))))
-                  asgnpipe <- paste(collapse = "\n",
-                    c("## The `%<>%` operator pipes and assigns, and is the equivalent of",
-                      "## data <- data %>% function()", "", asgnpipe))
-                code <- gsub(paste0(dname, " %>% \n    "), asgnpipe, code)
-                add(code, keep = TRUE)
+                if (!any(grepl(".dataset", code))) {
+                  code <- c(sprintf("%s <- ", dname), code)
+                  add(code, keep = TRUE, tidy = TRUE)
+                } else {
+                  code <- gsub("\ +", " ", # one or more spaces with just one space!
+                    paste(gsub(".dataset", dname, code, fixed = TRUE), collapse = ""))
+                  code <- gsub(" %>% ", " %>% \n    ", code)
+                  ## replace data %>% foo() with data %<>% foo()
+                  ## before the first one, add a comment explaining what %<>% does
+                  asgnpipe <- paste(dname, "%<>% ")
+                  if (!any(sapply(history, function(x) any(grepl('%<>%', x)))))
+                    asgnpipe <- paste(collapse = "\n",
+                      c("## The `%<>%` operator pipes and assigns, and is the equivalent of",
+                        "## data <- data %>% function(...), which is the equivalent of",
+                        "## data <- function(data, ...)", "", asgnpipe))
+                  code <- gsub(paste0(dname, " %>% \n    "), asgnpipe, code)
+                  add(code, keep = TRUE)
+                }
             } else {
                 add("## NOTE:  missing code")
             }
