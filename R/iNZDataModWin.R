@@ -462,167 +462,121 @@ iNZreorderWin <- setRefClass(
             
             mainGroup <- ggroup(expand = TRUE, horizontal = FALSE)
             mainGroup$set_borderwidth(15)
-            ## instructions through glabels
-            lbl1 <- glabel("Variable to reorder:")
-            font(lbl1) <- list(weight = "bold",
-                               family = "normal")
-            lbl2 <- glabel("Name of the new variable:")
-            font(lbl2) <- list(weight = "bold",
-                               family = "normal")
-            ## choose a factor column from the dataset and display
-            ## its levels together with their order
+
+            tbl <- glayout()
+
+            ## Choose variable to reorder:
+            tbl[1, 1, expand = TRUE, anchor = c(1, 0)] <- glabel("Variable to reorder:")
             factorIndices <- sapply(GUI$getActiveData(), is.factor)
             factorMenu <- gcombobox(names(GUI$getActiveData())[factorIndices],
                                     selected = 0)
-            addHandlerChanged(factorMenu, handler = function(h, ...) {
-                svalue(factorName) <- paste(svalue(factorMenu),
-                                            ".reord", sep = "")
-                displayLevels(tbl,
-                              GUI$getActiveData()[svalue(factorMenu)][[1]])
-                ## block the handlers before changing the sortby dropdown
-                ## because the signal order is messed up, which causes
-                ## the wrong signal to be emitted first
-                blockHandlers(sortMenu)
-                svalue(sortMenu, index = TRUE) <- 1
-                unblockHandlers(sortMenu)
-            })
+            tbl[1, 2, expand = TRUE] <- factorMenu
+
+            ## Name for the new variable
+            tbl[2, 1, expand = TRUE, anchor = c(1, 0)] <- glabel("New variable name:")
             factorName <- gedit("")
-            reorderButton <- gbutton("-REORDER-", handler = function(h, ...) {
-                newFactor <- changeLevels(
-                    tbl,
-                    GUI$getActiveData()[svalue(factorMenu)][[1]])
-                ## newFactor will be FALSE, if the user input was wrong
-                #if (all(newFactor != FALSE))
-                    insertData(data = newFactor,
-                               name = svalue(factorName),
-                               index = which(names(
-                                   GUI$getActiveData()) == svalue(factorMenu)),
-                               msg = list(
-                                   msg = paste("The new factor can be found under the name '",
-                                       svalue(factorName), "'", sep = ""),
-                                   icon = "info"),
-                               closeAfter = FALSE
-                               )
+            tbl[2, 2] <- factorName
+
+            ## Sort method: frequency (default), or manual
+            tbl[3, 1, expand = TRUE, anchor = c(1, 0)] <- glabel("Sort levels ")
+            sortMenu <- gcombobox(c("by frequency", "manually"), selected = 1)
+            tbl[3, 2, expand = TRUE] <- sortMenu
+            
+            ## For manual ordering, gdf or gtable with up/down arrows ...
+            levelGrp <- ggroup()
+            levelOrder <- gtable(data.frame(), container = levelGrp)
+            size(levelOrder) <- c(-1, 280)
+            tbl[4:5, 2, expand = TRUE] <- levelGrp
+
+            levelBtnGrp <- gvbox()
+            addSpace(levelBtnGrp, 20)
+            levelUp <- iNZight:::gimagebutton("up", container = levelBtnGrp, size = 'LARGE_TOOLBAR',
+                                              expand = FALSE, anchor = c(1, 0))
+            levelDown <- iNZight:::gimagebutton("down", container = levelBtnGrp, size = 'LARGE_TOOLBAR',
+                                                expand = FALSE, anchor = c(1, 0))
+            tbl[4:5, 1, anchor = c(1, 1)] <- levelBtnGrp
+
+            visible(levelBtnGrp) <- visible(levelGrp) <- FALSE
+            
+            
+            ## Done button
+            reorderButton <- gbutton("-REORDER-")
+            tbl[6, 2, expand = TRUE] <- reorderButton
+
+            ## Add everything to main window
+            add(mainGroup, tbl)
+
+            ## HANDLERS
+            addHandlerChanged(factorMenu, handler = function(h, ...) {
+                svalue(factorName) <- sprintf("%s.reord", svalue(factorMenu))
+                levelOrder$set_items(data.frame(Levels = 
+                    levels(GUI$getActiveData()[, svalue(factorMenu)])))
             })
-            tbl <- glayout()
-            tbl[1, 1, expand = TRUE, anchor = c(-1, 0)] <- lbl1
-            tbl[1, 2, expand = TRUE, anchor = c(1, 0)] <- factorMenu
-            tbl[2, 1:2, expand = TRUE, anchor = c(-1, 0)] <- lbl2
-            tbl[3, 1:2, expand = TRUE] <- factorName
-            sortGrp <- ggroup()
-            sortLbl <- glabel("Sort by:", cont = sortGrp, expand = TRUE)
-            sortMenu <- gcombobox(c("Manual", "Frequency"),
-                                  selected = 1, cont = sortGrp, expand = TRUE)
+
             addHandlerChanged(sortMenu, handler = function(h, ...) {
-                if (length(tbl$children) > 4) {
-                    if (svalue(sortMenu, index = TRUE) == 2) {
-                        sortByFreq(tbl,
-                                   GUI$getActiveData()[svalue(factorMenu)][[1]])
-                    }
-                }
+                visible(levelBtnGrp) <- visible(levelGrp) <- svalue(sortMenu, index = TRUE) == 2
             })
-            add(mainGroup, tbl, expand = TRUE)
-            add(mainGroup, sortGrp)
-            add(mainGroup, reorderButton)
-            ## method of gtkScrolledWindow to add a GtkWidget (not a gWidgets2 class)
-            ## as a child using a viewport
+
+            addHandlerClicked(levelUp, function(h, ...) {
+                blockHandlers(levelUp)
+                blockHandlers(levelDown)
+                i <- svalue(levelOrder, index = TRUE)
+                if (length(i) == 0) {
+                    gmessage('Select a level, then use the arrows to shift it up/down')
+                    return()
+                }
+                lvls <- levelOrder$get_items()
+                if (i == 1) return()
+                li <- lvls[i]
+                lvls[i] <- lvls[i-1]
+                lvls[i-1] <- li
+                levelOrder$set_items(data.frame(Levels = lvls))
+                svalue(levelOrder) <- li
+                unblockHandlers(levelUp)
+                unblockHandlers(levelDown)
+            })
+            addHandlerClicked(levelDown, function(h, ...) {
+                blockHandlers(levelUp)
+                blockHandlers(levelDown)
+                i <- svalue(levelOrder, index = TRUE)
+                if (length(i) == 0) {
+                    gmessage('Select a level, then use the arrows to shift it up/down')
+                    return()
+                }
+                lvls <- levelOrder$get_items()
+                if (i == length(lvls)) return()
+                li <- lvls[i]
+                lvls[i] <- lvls[i+1]
+                lvls[i+1] <- li
+                levelOrder$set_items(data.frame(Levels = lvls))
+                svalue(levelOrder) <- li
+                unblockHandlers(levelUp)
+                unblockHandlers(levelDown)
+            })
+
+            addHandlerClicked(reorderButton, function(h, ...) {
+                var <- svalue(factorMenu)
+                varname <- svalue(factorName)
+                .dataset <- GUI$getActiveData()
+
+                if (svalue(sortMenu, TRUE) == 1)
+                    data <- iNZightTools::reorderLevels(.dataset, var, freq = TRUE, name = varname)
+                else {
+                    levels <- levelOrder$get_items()
+                    data <- iNZightTools::reorderLevels(.dataset, var, levels, name = varname)
+                }
+                updateData(data)
+            })
+
+            
+            ## final few details
             scrolledWindow$addWithViewport(mainGroup$widget)
             add(GUI$modWin, scrolledWindow, expand = TRUE, fill = TRUE)
+            size(GUI$modWin) <<- c(300, 500)
             visible(GUI$modWin) <<- TRUE
-        },
-        displayLevels = function(tbl, factorData) {
-            ## try to delete currently displayed levels
-            ## the first 4 children of tbl refer to the permanent ones
-            ## i.e. everything up to and including the gedit to rename
-            ## the factor
-            if (length(tbl$children) > 4) {
-                childEntries <- which(sapply(
-                    tbl$child_positions, function(child) child$x) > 4)
-                try(invisible(
-                    sapply(tbl$child_positions[childEntries],
-                           function(entry) tbl$remove_child(entry$child)))
-                    )
-            }
-
-            lbl3 <- glabel("Levels")
-            font(lbl3) <- list(weight = "bold",
-                               family = "normal")
-            lbl4 <- glabel("Order")
-            font(lbl4) <- list(weight = "bold",
-                               family = "normal")
-            tbl[4, 1, expand = TRUE, anchor = c(-1, 0)] <- lbl3
-            tbl[4, 2, expand = TRUE, anchor = c(-1, 0)] <- lbl4
-            invisible(sapply(levels(factorData), function(x) {
-                pos <- which(levels(factorData) == x)
-                tbl[4 + pos, 1, expand = TRUE, anchor = c(-1, 0)] <- glabel(x)
-                tbl[4 + pos, 2] <- gedit(pos)
-            }))
-        },
-        changeLevels = function(tbl, factorData) {
-            if (length(tbl$children) < 5) {
-                return(gmessage(msg = "Please choose a factor to reorder",
-                         icon = "error",
-                         parent = GUI$modWin))
-                
-            }
-            ## the first 4 children dont refer to the factor levels
-            ## each factor lvl has 2 entries in the glayout
-            ## the 5th entry refers to the glabels "Levels" and "Order"
-            childEntries <- which(sapply(
-                tbl$child_positions, function(child) child$x) > 4)
-            ## gWidets2 reorders the children of glayout in some weird way,
-            ## so we find the order by x value, then y value (i.e. as entries
-            ## tbl[4,1], tbl[4,2], tbl[5,2], ...)
-            origOrder <- order(
-                sapply(tbl$child_positions[childEntries], function(child) child$x),
-                sapply(tbl$child_positions[childEntries], function(child) child$y))
-            facLevels <- sapply(
-                tbl$child_positions[childEntries][origOrder[seq(
-                    1, length(origOrder), by = 2)]],
-                function(child) svalue(child$child))
-            facOrder <- sapply(
-                tbl$child_positions[childEntries][origOrder[seq(
-                    2, length(origOrder), by = 2)]],
-                function(child) svalue(child$child))
-            facOrder <- as.integer(facOrder)
-            facOrder <- sapply(1:length(facLevels), function(x) which(facOrder == x))
-            ## check if all order numbers are unique
-            if (anyDuplicated(facOrder) > 0) {
-                return(gmessage(msg = "Please choose a unique order for the levels",
-                         icon = "error",
-                         parent = GUI$modWin))
-                
-            }
-            else if (max(facOrder) > length(facOrder)) {
-                return(gmessage(msg = "Please remove holes from the order sequence",
-                         icon = "error",
-                         parent = GUI$modWin))
-                
-            }
-            else {
-                newFactor <- factor(factorData, levels = facLevels[facOrder])
-                newFactor
-            }
-        },
-        sortByFreq = function(tbl, factorData) {
-            tb <- table(factorData)
-            tb <- names(tb[order(tb, decreasing = TRUE)])
-            newOrder <- sapply(levels(factorData),
-                               function(x) which(x == tb))
-            invisible(
-                sapply(
-                    1:length(newOrder),
-                    function(i) {
-                        xEntries <- sapply(tbl$child_positions,
-                                           function(entry) entry$x) == (4 + i)
-                        yEntries <- sapply(tbl$child_positions[xEntries],
-                                           function(entry) entry$y) == 2
-                        svalue(tbl$child_positions[[which(
-                            xEntries)[yEntries]]]$child) <- newOrder[i]
-                    }
-                    ))
-        })
+        }
     )
+)
 
 
 ## combine categorical variables
