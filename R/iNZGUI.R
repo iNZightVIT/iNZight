@@ -771,7 +771,7 @@ iNZGUI <- setRefClass(
                     ## The new iNZightModelFitting module (under development)
                     gseparator(),
                     actionList[[53]],
-                    #actionList[[54]]
+                    actionList[[54]],
                     actionList[[55]]
                     ),
                 "Help" = list(
@@ -1538,7 +1538,7 @@ iNZGUI <- setRefClass(
         },
         showHistory = function() {
             wh <- gwindow("R Code History", parent = .self$win,
-                          width = 700, height = 500)
+                          width = 800, height = 500)
             gh <- gvbox(container = wh)
             th <- gtext(container = gh, expand = TRUE, fill = TRUE, wrap = FALSE)
             insert(th, rhistory$get(), font.attr = list(family = "monospace"))

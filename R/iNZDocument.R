@@ -94,7 +94,7 @@ iNZDataModel <- setRefClass(
         },
         getCode = function() {
             code <- attr(dataSet, "code")
-            attr(dataSet, "code") <<- NULL
+            # attr(dataSet, "code") <<- ""
             code
         }
         )
