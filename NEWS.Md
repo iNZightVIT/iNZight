@@ -1,7 +1,24 @@
-# Latest fixes (unreleased):
+# Version 3.2
+__Release date:__ 18 January 2018
 
-- [BUGFIX] saving residuals/predicted values works if you select only quadratic or cubic
+## New Features
 
+- New developmental __code writing__ feature has been added, which writes tidyverse code
+  for common data/variable manipulations
+- Added the ability to control font size in Summary/Inference windows via File > Preferences
+
+
+## Minor Changes
+
+- The __Reorder Levels__ window has been reconfigured to, hopefully, make it easier to use
+
+
+
+## Bug Fixes
+- saving residuals/predicted values works if you select only quadratic or cubic
+
+
+***
 # Version 3.1
 __Release date:__ 13 December, 2016
 
