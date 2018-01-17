@@ -151,6 +151,8 @@ iNZconToCatWin <- setRefClass(
         convert = function(name, orgVar) {
             if (name == "" || !is.character(name))
                 gmessage("Please choose a non-empty name for the new variable")
+            else if (orgVar == "DROP VARIABLE HERE")
+                gmessage("Please choose a variable to convert")
             else {
                 name <- gsub('\\n+', "", name, perl = TRUE)
                 .dataset <- GUI$getActiveData()
