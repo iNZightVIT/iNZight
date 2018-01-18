@@ -1,0 +1,20 @@
+# R for travis: see documentation at https://docs.travis-ci.com/user/languages/r
+
+language: R
+sudo: true
+
+r:
+  - release
+
+repos:
+  docker: http://r.docker.stat.auckland.ac.nz/R
+
+r_install_binaries:
+  - RGtk2
+  - cairoDevice
+
+r_packages:
+  - devtools
+  - car
+  - sparsem
+  - quantreg
