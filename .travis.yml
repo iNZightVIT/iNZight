@@ -9,12 +9,12 @@ r:
 repos:
   docker: http://r.docker.stat.auckland.ac.nz/R
 
-r_install_binaries:
-  - RGtk2
-  - cairoDevice
+apt_packages:
+  - libgtk2.0-dev
+  - xorg-dev
+  - libxml2-dev
+  - libnlopt-dev
+  - r-cran-rodbc
+  - r-cran-rgtk2
+  - r-cran-cairodevice
 
-r_packages:
-  - devtools
-  - car
-  - sparsem
-  - quantreg
