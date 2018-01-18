@@ -2,9 +2,15 @@
 
 language: R
 sudo: true
+cache: packages
 
 r:
   - release
+
+before_script:
+  - "export DISPLAY=:99.0"
+  - "sh -e /etc/init.d/xvfb start"
+  - sleep 3 # give xvfb some time to start
 
 repos:
   docker: http://r.docker.stat.auckland.ac.nz/R
