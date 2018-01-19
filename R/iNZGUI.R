@@ -1320,7 +1320,8 @@ iNZGUI <- setRefClass(
         ## set a new iNZDocument and make it the active one
         setDocument = function(document) {
             ## reset control widget
-            ctrlWidget$resetWidget()
+            ## soft = !has the number of columns changed?
+            ctrlWidget$resetWidget(soft = TRUE) ## <--- can we do this better?
             ## add a iNZDocument to the end of the doc list
             iNZDocuments <<- c(iNZDocuments, list(document))
             ## clean up any 'empty' datasets ..

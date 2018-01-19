@@ -483,9 +483,13 @@ iNZControlWidget <- setRefClass(
         },
         ## reset the widget to its original state
         ## (same as triggering all 4 clear buttons)
-        resetWidget = function() {
+        resetWidget = function(soft = FALSE) {
+          if (soft) {
+            ## CHECKING each box ...
+          } else {
             invisible(sapply(c(1,3,5,7), function(x) {
                 ctrlGp$children[[1]][x, 7]$invoke_change_handler()
             }))
+          }
         })
     )

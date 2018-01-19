@@ -114,7 +114,7 @@ iNZPlotWidget <- setRefClass(
             ## Additional options for various components (scatter plots)
             gHTML <- gvbox(container = g)
             visible(gHTML) <- FALSE
-            if (GUI$plotType %in% c("dot", "scatter")) {
+            if (GUI$plotType %in% c("dot", "scatter", "roadmap")) {
                 labHTML <- glabel("Select additional variables to export", container = gHTML)
                 font(labHTML) <- list(size = 12, weight = "bold")
                 
