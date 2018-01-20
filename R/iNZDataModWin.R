@@ -745,32 +745,38 @@ iNZcrteVarWin <- setRefClass(
             newVarName = gedit("new.variable", width = 15) ## name of the new variable
             newVarExp = gedit("  ") ## expression used to create new var
             submitButton = gbutton(" - SUBMIT -", handler = function(h,...) {
-                dataSet <- GUI$getActiveData()
-                newValues = try(eval(parse(
-                    text = paste("with(dataSet,",
-                        gsub(pattern = '\\n+', "", svalue(newVarExp), perl = TRUE),
-                        ")"))))
-                if(class(newValues)[1] == "try-error")
-                    gmessage(title = "ERROR",
-                             msg = "Error in expression!",
-                             icon = "error", parent = GUI$modWin)
-                else {
-                    newName = gsub(
-                        pattern = '\\n+', "",
-                        svalue(newVarName), perl = TRUE)
-                    insertData(
-                        data = newValues,
-                        name = newName,
-                        index = ncol(GUI$getActiveData()),
-                        msg = list(
-                            msg = paste("The new variable",
-                                newName,
-                                "will be inserted as the last column of the dataset"),
-                            icon = "info",
-                            parent = GUI$modWin
-                            ),
-                        closeAfter = TRUE)
-                }
+                expr <- svalue(newVarExp)
+                name <- svalue(newVarName)
+                .dataset <- GUI$getActiveData()
+                data <- iNZightTools::createNewVar(.dataset, name, expr)
+                updateData(data)
+                dispose(GUI$modWin)
+                # dataSet <- GUI$getActiveData()
+                # newValues = try(eval(parse(
+                #     text = paste("with(dataSet,",
+                #         gsub(pattern = '\\n+', "", svalue(newVarExp), perl = TRUE),
+                #         ")"))))
+                # if(class(newValues)[1] == "try-error")
+                #     gmessage(title = "ERROR",
+                #              msg = "Error in expression!",
+                #              icon = "error", parent = GUI$modWin)
+                # else {
+                #     newName = gsub(
+                #         pattern = '\\n+', "",
+                #         svalue(newVarName), perl = TRUE)
+                #     insertData(
+                #         data = newValues,
+                #         name = newName,
+                #         index = ncol(GUI$getActiveData()),
+                #         msg = list(
+                #             msg = paste("The new variable",
+                #                 newName,
+                #                 "will be inserted as the last column of the dataset"),
+                #             icon = "info",
+                #             parent = GUI$modWin
+                #             ),
+                #         closeAfter = TRUE)
+                # }
             })
             tbl <- glayout()
             tbl[1,2, anchor = c(-1,1)] = "av.height"
@@ -1021,8 +1027,15 @@ iNZrnmVarWin <- setRefClass(
             }))
             renameButton <- gbutton('- RENAME -',
                                     handler = function(h, ...) {
-                newNames <- sapply(tbl[, 2], svalue)
-                GUI$getActiveDoc()$getModel()$setNames(newNames[-1])
+                onames <- names(GUI$getActiveData())
+                vnames <- sapply(tbl[-1, 2], svalue)
+                ## only pass through variables that change
+                w <- vnames != onames
+                namelist <- as.list(vnames[w])
+                names(namelist) <- onames[w]
+                .dataset <- GUI$getActiveData()
+                data <- iNZightTools::renameVars(.dataset, namelist)
+                updateData(data)
                 dispose(GUI$modWin)
             })
             add(mainGroup, tbl)
