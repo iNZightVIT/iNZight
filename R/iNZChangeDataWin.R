@@ -364,6 +364,9 @@ iNZFilterWin <- setRefClass(
           GUI$getActiveDoc()$getModel()$updateData(newData)
           if (closeAfter)
             dispose(GUI$modWin)
+        },
+        updateData = function(newdata) {
+            GUI$getActiveDoc()$getModel()$updateData(newdata)
         })
 )
 
@@ -399,8 +402,10 @@ iNZReshapeDataWin <- setRefClass(
                     if (ncol(GUI$getActiveData()) <= 1)
                         gmessage("Unable to reshape datasets with a single column", "Error", icon = "error")
                     else {
-                        GUI$getActiveDoc()$getModel()$updateData(
-                            wide.to.tall(GUI$getActiveData()))
+                        .dataset <- GUI$getActiveData()
+                        vars <- names(.dataset)
+                        data <- iNZightTools::stackVars(.dataset, vars, 'variable', 'value')
+                        GUI$getActiveDoc()$getModel()$updateData(data)
                         dispose(GUI$modWin)
                     }
 
@@ -412,15 +417,6 @@ iNZReshapeDataWin <- setRefClass(
             add(btnGrp, reshapeButton)
             visible(GUI$modWin) <<- TRUE
             }
-        },
-        wide.to.tall = function(data) {
-            varnames <- names(data)
-            values <- unlist(data)
-            names(values) <- NULL
-            group.labels <- factor(rep(varnames, each = nrow(data)), levels = names(data))
-            data <- data.frame(group.labels, values)
-            names(data) <- c("group", "value")
-            data
         })
 )
 

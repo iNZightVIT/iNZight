@@ -1111,22 +1111,20 @@ iNZdeleteVarWin <- setRefClass(
             deleteButton = gbutton(
                 "- Delete -",
                 handler = function(h,...) {
-                    if (length(svalue(listOfVars)) > 0) {
+                    vars <- svalue(listOfVars)
+                    if (length(vars) > 0) {
                         confirmDel <- gconfirm(
                             title = "Are you sure?",
                             msg = paste(
-                                "Do you want to delete the",
+                                "You are about to delete the",
                                 "following variables:\n",
-                                paste(svalue(listOfVars),
-                                      collapse = "\n")
+                                paste(vars, collapse = "\n")
                                 ),
                             icon = "question")
                         if (confirmDel) {
-                            dataSet <- GUI$getActiveData()
-                            dataSet <- dataSet[, !(names(dataSet) %in%
-                                                   svalue(listOfVars)),
-                                               drop = FALSE]
-                            GUI$getActiveDoc()$getModel()$updateData(dataSet)
+                            .dataset <- GUI$getActiveData()
+                            data <- iNZightTools::deleteVars(.dataset, vars)
+                            GUI$getActiveDoc()$getModel()$updateData(data)
                             dispose(GUI$modWin)
                         }
                     }
@@ -1162,42 +1160,12 @@ iNZmissCatWin <- setRefClass(
                 "- Convert -",
                 handler = function(h,...) {
                     if (length(svalue(listOfVars)) > 0) {
-                        dataToConvert <- GUI$getActiveData()[, svalue(listOfVars,
-                                                                      index = TRUE),
-                                                             drop = FALSE]
-                        facIndices <- sapply(dataToConvert, is.factor)
-                        ## replace NA with 'missing' and 'observed' otherwise
-                        ## for non-factors
-                        dataToConvert[, !facIndices][!is.na(
-                            dataToConvert)[, !facIndices]] <- "observed"
-                        dataToConvert[,!facIndices][is.na(
-                            dataToConvert)[, !facIndices]] <- "missing"
-
-                        ## replace NA with 'missing' for factors
-                        dataToConvert[, facIndices] <- sapply(
-                            dataToConvert[, facIndices],
-                            function(x) {
-                                levels(x) <- c(levels(x), "missing")
-                                x[is.na(x)] <- "missing"
-                                x
-                            })
-                        ## convert non-factors to factors
-                        dataToConvert[, !facIndices] <- do.call(
-                            cbind.data.frame,
-                            lapply(dataToConvert[, !facIndices, drop = FALSE],
-                                   factor))
-
-                        newNames <- paste(names(
-                            GUI$getActiveData())[svalue(listOfVars, index = TRUE)],
-                                          "_miss", sep = "")
-                        insertData(data = dataToConvert,
-                                   name = newNames,
-                                   index = ncol(GUI$getActiveData()),
-                                   msg = list(
-                                       msg = "The new variables are added to the end of the dataset",
-                                       icon = "info"
-                                       ),
-                                   closeAfter = TRUE)
+                        vars <- svalue(listOfVars)
+                        names <- makeNames(paste0(vars, "_miss"))
+                        .dataset <- GUI$getActiveData()
+                        data <- iNZightTools::missingToCat(.dataset, vars, names)
+                        updateData(data)
+                        dispose(GUI$modWin)
                     }
                 })
             add(mainGroup, lbl1)
