@@ -1320,8 +1320,8 @@ iNZGUI <- setRefClass(
         ## set a new iNZDocument and make it the active one
         setDocument = function(document) {
             ## reset control widget
-            ## soft = !has the number of columns changed?
-            ctrlWidget$resetWidget(soft = TRUE) ## <--- can we do this better?
+            # state <- ctrlWidget$getState()
+            ctrlWidget$resetWidget()
             ## add a iNZDocument to the end of the doc list
             iNZDocuments <<- c(iNZDocuments, list(document))
             ## clean up any 'empty' datasets ..
@@ -1342,6 +1342,7 @@ iNZGUI <- setRefClass(
                 )
             ## if plotSettings change, update the plot
             getActiveDoc()$addSettingsObserver(function() updatePlot())
+            # ctrlWidget$setState(state)
         },
         getActiveDoc = function() {
             iNZDocuments[[activeDoc]]

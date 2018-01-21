@@ -74,14 +74,13 @@ iNZFilterWin <- setRefClass(
                 "-Filter Data-",
                 handler = function(h, ...) {
                     if (length(svalue(factorLvls)) > 0) {
-                      originalD <- GUI$getActiveDoc()$getModel()$origDataSet
-                      ActiveData <- GUI$getActiveData()
-#                      attr(ActiveData, "tag") <- "filtered"
-                      idx <- GUI$getActiveData()[[svalue(factorMenu)]] %in%
-                        svalue(factorLvls)
-                      GUI$setDocument(iNZDocument$new(data = originalD))
-                      GUI$getActiveDoc()$getModel()$updateData(
-                        droplevels(ActiveData[idx,]))
+                      var <- svalue(factorMenu)
+                      lvls <- svalue(factorLvls)
+                      .dataset <- GUI$getActiveData()
+                      data <- iNZightTools::filterLevels(.dataset, var, lvls)
+                      attr(data, "filtered") <- 1
+                      GUI$setDocument(iNZDocument$new(data = GUI$getActiveData()))
+                      GUI$getActiveDoc()$getModel()$updateData(data)
                       dispose(GUI$modWin)
                     }
                 })
@@ -134,29 +133,15 @@ iNZFilterWin <- setRefClass(
             submitButton <- gbutton(
                 "Submit",
                 handler = function(h, ...) {
-                  originalD <- GUI$getActiveDoc()$getModel()$origDataSet
-                  ActiveData <- GUI$getActiveData()
-                  subsetExpression <- paste(svalue(numMenu),
-                                            svalue(operator),
-                                            gsub(pattern = '\\n+', "",
-                                                 svalue(expr),
-                                                 perl = TRUE))
-                  subsetData <- try(
-                    droplevels(subset(GUI$getActiveData(),
-                           eval(parse(text = eval(subsetExpression)))))
-                  )
-                  if(class(subsetData)[1] == "try-error"){
-                    gmessage(title = "ERROR",
-                             msg = "Error in expression!",
-                             icon = "error",
-                             parent = GUI$modWin)
-                  } else {
-
-                    GUI$setDocument(iNZDocument$new(data = originalD))
-                    GUI$getActiveDoc()$getModel()$updateData(
-                      subsetData)
-                    dispose(GUI$modWin)
-                    }
+                  var <- svalue(numMenu)
+                  op <- svalue(operator)
+                  val <- svalue(expr)
+                  .dataset <- GUI$getActiveData()
+                  data <- iNZightTools::filterNumeric(.dataset, var, op, val)
+                  attr(data, "filtered") <- 1
+                  GUI$setDocument(iNZDocument$new(data = GUI$getActiveData()))
+                  GUI$getActiveDoc()$getModel()$updateData(data)
+                  dispose(GUI$modWin)
                 })
             tbl <- glayout()
             tbl[1, 1:7, expand = TRUE, anchor = c(-1, 0)] <- lbl1
@@ -192,46 +177,53 @@ iNZFilterWin <- setRefClass(
             submitButton <- gbutton(
                 "Submit",
                 handler = function(h, ...) {
-                  originalD <- GUI$getActiveDoc()$getModel()$origDataSet
-                  ActiveData <- GUI$getActiveData()
-                  rowNumbers <- try(
-                    strsplit(gsub(pattern = '\\s+',
-                                  replacement = "",
-                                  svalue(unwantedObs),
-                                  perl = TRUE),
-                             ",", fixed = TRUE)[[1]]
-                  )
-                  if (inherits(rowNumbers,"try-error") ||
-                        is.na(rowNumbers)) {
-                    gmessage(title = "ERROR",
-                             msg = "Error in typed values.\nCheck for missing commas or non-existing Row.names",
-                             icon = "error",
-                             parent = GUI$modWin)
-                  } else {
-                    ranges <- grep(":", rowNumbers)
-                    if (length(ranges) > 0) {
-                      rowRanges <- rowNumbers[ranges]
-                      rowNumbers <- as.numeric(rowNumbers[-ranges])
-                      rowRanges <- as.vector(sapply(
-                        rowRanges, function(m) eval(parse(text=m))))
-                      rowNumbers <- unique(c(rowNumbers, rowRanges))
-                    }
-                    if(!all(rowNumbers %in%
-                              as.numeric(row.names(GUI$getActiveData()))))
-                      gmessage(title = "ERROR",
-                               msg = "You have entered one or more non-existing Row.names",
-                               icon = "error",
-                               parent = GUI$modWin)
-                    else {
-                      GUI$setDocument(iNZDocument$new(data = originalD))
-                      idx <- !rownames(ActiveData) %in% rowNumbers
-                      ## please notice iNZdataViewWidget/createDfView to show small number of row even when the original data is large
-                      GUI$getActiveDoc()$getModel()$updateData(
-                        droplevels(ActiveData[idx, ]))
-                      # so after the above step, we may update the gdf panel in iNZdataViewWidget
-                      dispose(GUI$modWin)
-                    }
-                  }
+                  rows <- sprintf("c(%s)", svalue(unwantedObs))
+                  .dataset <- GUI$getActiveData()
+                  data <- iNZightTools::filterRows(.dataset, rows)
+                  attr(data, "filtered") <- 1
+                  GUI$setDocument(iNZDocument$new(data = GUI$getActiveData()))
+                  GUI$getActiveDoc()$getModel()$updateData(data)
+                  dispose(GUI$modWin)
+                  # originalD <- GUI$getActiveDoc()$getModel()$origDataSet
+                  # ActiveData <- GUI$getActiveData()
+                  # rowNumbers <- try(
+                  #   strsplit(gsub(pattern = '\\s+',
+                  #                 replacement = "",
+                  #                 svalue(unwantedObs),
+                  #                 perl = TRUE),
+                  #            ",", fixed = TRUE)[[1]]
+                  # )
+                  # if (inherits(rowNumbers,"try-error") ||
+                  #       is.na(rowNumbers)) {
+                  #   gmessage(title = "ERROR",
+                  #            msg = "Error in typed values.\nCheck for missing commas or non-existing Row.names",
+                  #            icon = "error",
+                  #            parent = GUI$modWin)
+                  # } else {
+                  #   ranges <- grep(":", rowNumbers)
+                  #   if (length(ranges) > 0) {
+                  #     rowRanges <- rowNumbers[ranges]
+                  #     rowNumbers <- as.numeric(rowNumbers[-ranges])
+                  #     rowRanges <- as.vector(sapply(
+                  #       rowRanges, function(m) eval(parse(text=m))))
+                  #     rowNumbers <- unique(c(rowNumbers, rowRanges))
+                  #   }
+                  #   if(!all(rowNumbers %in%
+                  #             as.numeric(row.names(GUI$getActiveData()))))
+                  #     gmessage(title = "ERROR",
+                  #              msg = "You have entered one or more non-existing Row.names",
+                  #              icon = "error",
+                  #              parent = GUI$modWin)
+                  #   else {
+                  #     GUI$setDocument(iNZDocument$new(data = originalD))
+                  #     idx <- !rownames(ActiveData) %in% rowNumbers
+                  #     ## please notice iNZdataViewWidget/createDfView to show small number of row even when the original data is large
+                  #     GUI$getActiveDoc()$getModel()$updateData(
+                  #       droplevels(ActiveData[idx, ]))
+                  #     # so after the above step, we may update the gdf panel in iNZdataViewWidget
+                  #     dispose(GUI$modWin)
+                  #   }
+                  # }
                 })
             add(mainGrp, lbl1)
             add(mainGrp, lbl2)
