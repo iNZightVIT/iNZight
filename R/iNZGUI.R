@@ -717,6 +717,11 @@ iNZGUI <- setRefClass(
             }
             if (!requireNamespace("iNZightMR", quietly = TRUE))
                 enabled(actionList[[24]]) <- FALSE
+
+            ## if R version is lower than 3.3, disable new maps module
+            if (getRversion() < numeric_version(3.3))
+                enabled(actionList[[55]]) <- FALSE
+
             menuBarList <- list(
                 "File" = list(
                     actionList[[50]],
