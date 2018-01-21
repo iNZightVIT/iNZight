@@ -184,46 +184,6 @@ iNZFilterWin <- setRefClass(
                   GUI$setDocument(iNZDocument$new(data = GUI$getActiveData()))
                   GUI$getActiveDoc()$getModel()$updateData(data)
                   dispose(GUI$modWin)
-                  # originalD <- GUI$getActiveDoc()$getModel()$origDataSet
-                  # ActiveData <- GUI$getActiveData()
-                  # rowNumbers <- try(
-                  #   strsplit(gsub(pattern = '\\s+',
-                  #                 replacement = "",
-                  #                 svalue(unwantedObs),
-                  #                 perl = TRUE),
-                  #            ",", fixed = TRUE)[[1]]
-                  # )
-                  # if (inherits(rowNumbers,"try-error") ||
-                  #       is.na(rowNumbers)) {
-                  #   gmessage(title = "ERROR",
-                  #            msg = "Error in typed values.\nCheck for missing commas or non-existing Row.names",
-                  #            icon = "error",
-                  #            parent = GUI$modWin)
-                  # } else {
-                  #   ranges <- grep(":", rowNumbers)
-                  #   if (length(ranges) > 0) {
-                  #     rowRanges <- rowNumbers[ranges]
-                  #     rowNumbers <- as.numeric(rowNumbers[-ranges])
-                  #     rowRanges <- as.vector(sapply(
-                  #       rowRanges, function(m) eval(parse(text=m))))
-                  #     rowNumbers <- unique(c(rowNumbers, rowRanges))
-                  #   }
-                  #   if(!all(rowNumbers %in%
-                  #             as.numeric(row.names(GUI$getActiveData()))))
-                  #     gmessage(title = "ERROR",
-                  #              msg = "You have entered one or more non-existing Row.names",
-                  #              icon = "error",
-                  #              parent = GUI$modWin)
-                  #   else {
-                  #     GUI$setDocument(iNZDocument$new(data = originalD))
-                  #     idx <- !rownames(ActiveData) %in% rowNumbers
-                  #     ## please notice iNZdataViewWidget/createDfView to show small number of row even when the original data is large
-                  #     GUI$getActiveDoc()$getModel()$updateData(
-                  #       droplevels(ActiveData[idx, ]))
-                  #     # so after the above step, we may update the gdf panel in iNZdataViewWidget
-                  #     dispose(GUI$modWin)
-                  #   }
-                  # }
                 })
             add(mainGrp, lbl1)
             add(mainGrp, lbl2)
@@ -251,66 +211,14 @@ iNZFilterWin <- setRefClass(
             submitButton <- gbutton(
                 "Submit",
                 handler = function(h, ...) {
-                  originalD <- GUI$getActiveDoc()$getModel()$origDataSet
-                  ActiveData <- GUI$getActiveData()
-                  sSize <- as.numeric(svalue(sampleSize))
-                  if (svalue(numSample) == 1){
-                    if (is.na(sSize) || sSize > nrow(GUI$getActiveData()))
-                      gmessage(title = "ERROR",
-                               msg = "Number of Samples X Sample Size cannot exceed Total
-                                 number of rows",
-                               icon = "error",
-                               parent = GUI$modWin)
-                    else {
-                      rdmSample <- sample(1:nrow(GUI$getActiveData()),
-                                          size = sSize)
-                      GUI$setDocument(iNZDocument$new(data = originalD))
-                      GUI$getActiveDoc()$getModel()$updateData(
-                        droplevels(ActiveData[rdmSample, ]))
-                      dispose(GUI$modWin)
-                    }
-                  }
-                  else{
-                    if (is.na(sSize) || sSize > nrow(GUI$getActiveData()))
-                      gmessage(title = "ERROR",
-                               msg = "T",
-                               icon = "error",
-                               parent = GUI$modWin)
-                    else {
-                      rdmSample <- numeric(0)
-
-
-                      if (sSize*svalue(numSample) < nrow(GUI$getActiveData()))
-                        rdmSample = sample(1:nrow(GUI$getActiveData()),
-                                           size = sSize*svalue(numSample))
-                      else
-                        return(gmessage(title = "ERROR",
-                                        msg = "The total sample number is greater than the sample size",
-                                        icon = "error",
-                                        parent = GUI$modWin))
-
-                      GUI$setDocument(iNZDocument$new(data = originalD))
-                      GUI$getActiveDoc()$getModel()$updateData(
-                        droplevels(ActiveData[rdmSample, ]))
-
-                      newVar <- as.character(rep(1:svalue(numSample) , each = sSize))
-
-                      newNames <- "Sample Number"
-
-                      insertData(data = newVar,
-                                 name = newNames,
-                                 index = ncol(GUI$getActiveData()),
-                                 msg = list(
-                                   msg = "The new variables are added to the end of the dataset",
-                                   icon = "info"
-                                 ),
-                                 closeAfter = TRUE)
-
-
-
-                      #dispose(GUI$modWin)
-                    }
-                  }
+                  nsample <- svalue(numSample)
+                  size <- svalue(sampleSize)
+                  .dataset <- GUI$getActiveData()
+                  data <- iNZightTools::filterRandom(.dataset, nsample, size)
+                  attr(data, "filtered") <- 1
+                  GUI$setDocument(iNZDocument$new(data = GUI$getActiveData()))
+                  GUI$getActiveDoc()$getModel()$updateData(data)
+                  dispose(GUI$modWin)
                 })
             tbl <- glayout()
             tbl[1,1:2] <- lbl1
@@ -440,30 +348,17 @@ iNZSortbyDataWin <- setRefClass(
         SortByButton <- gbutton(
           "Sort Now",
           handler = function(h, ...) {
-            dataSet <- GUI$getActiveData()
-            argList <- list()
-            for (i in 1:4) {
-              con <- eval(parse(text=paste(c("svalue(droplist_var",i, ")"), collapse="")))
-              con2 <- eval(parse(text=paste(c("svalue(radio_var",i, ")"), collapse="")))
-              if (con != "") {
-                datai <- dataSet[, con]
-                if (inherits(datai, "character") | inherits(datai, "factor"))
-                  datai <- xtfrm(datai)
-                if (con2 != "increasing")
-                  datai <- -datai
-                argList[[length(argList) + 1]] <- datai
-              }
-            }
-
-            if (identical(argList,list()))
-              return(gmessage("Select at leat one variable!",
-                              parent = GUI$win))
-            idx <- do.call("order", argList)
-            GUI$getActiveDoc()$getModel()$updateData(
-              GUI$getActiveData()[idx, ])
+            vars <- sapply(tbl[, 2], svalue)
+            asc <- sapply(tbl[, 3], svalue, index = TRUE) == 1
+            wi <- vars != ""
+            
+            .dataset <- GUI$getActiveData()
+            data <- iNZightTools::sortVars(.dataset, vars[wi], asc[wi])
+            GUI$setDocument(iNZDocument$new(data = GUI$getActiveData()))
+            GUI$getActiveDoc()$getModel()$updateData(data)
             dispose(GUI$modWin)
-
-          })
+          }
+        )
 
         label_var1 <- glabel("1st")
         label_var2 <- glabel("2nd")
@@ -530,39 +425,15 @@ iNZAgraDataWin <- setRefClass(
         AgraButton <- gbutton(
           "Aggregate Now",
           handler = function(h, ...) {
-            originalD <- GUI$getActiveDoc()$getModel()$origDataSet
-            dataSet <- GUI$getActiveData()
-            con <- c(svalue(droplist_var1), svalue(droplist_var2), svalue(droplist_var3))
-            if (all(con %in% ""))
-              return(gmessage("Select at leat one variable!",
-                              parent = GUI$win))
-            con <- con[which(con!="")]
-            con2 <- c("mean","median","sum","sd","IQR","length")[svalue(func.table, index=TRUE)]
-            if(length(con2) == 0)
-              return(gmessage("Select at leat one function!",
-                              parent = GUI$win))
-
-
-            out <- ddply(na.omit(dataSet), as.quoted(con), numcolwise(con2[1]))
-            nameVec <- c(con, paste0(names(Filter(is.numeric, dataSet)), ".", con2[1]))
-            names(out) <- nameVec
-
-            if (length(con2) > 1) {
-              for (i in 2:length(con2)){
-                out1 <- ddply(na.omit(dataSet), as.quoted(con), numcolwise(con2[i]))
-                nameVec <- c(con, paste0(names(Filter(is.numeric, dataSet)), ".", con2[i]))
-                names(out1) <- nameVec
-                out = join(out,out1, by=con)
-              }
-            }
-            id = sort(names(out)[-(1:length(con))])
-            GUI$setDocument(iNZDocument$new(data = originalD))
-            GUI$getActiveDoc()$getModel()$updateData(out[, c(con, id)])
-
-
+            vars <- sapply(tbl[2:4, 2], svalue)
+            vars <- vars[vars != ""]
+            smrs <- svalue(func.table)
+            
+            .dataset <- GUI$getActiveData()
+            data <- iNZightTools::aggregateData(.dataset, vars, smrs)
+            GUI$setDocument(iNZDocument$new(data = GUI$getActiveData()))
+            GUI$getActiveDoc()$getModel()$updateData(data)
             dispose(GUI$modWin)
-
-
           })
         label_var1 <- glabel("1st")
         label_var2 <- glabel("2nd")
@@ -570,8 +441,8 @@ iNZAgraDataWin <- setRefClass(
         droplist_var1 <- gcombobox(c("",nameList), selected = 1)
         droplist_var2 <- gcombobox(c("",nameList), selected= 1)
         droplist_var3 <- gcombobox(c("",nameList), selected = 1)
-        func.frame <- data.frame(c("Mean", "Median", "Sum", "Sd", "IQR", "Count"))
-        names(func.frame) <- "Summeries: "
+        func.frame <- data.frame("Summaries:" = c("Mean", "Median", "Sum", "Sd", "IQR"),
+                                 stringsAsFactors = FALSE)
         func.table <- gtable(func.frame, multiple=TRUE)
         func.table$remove_popup_menu() # remove the popup menu from gtable()
         tbl <- glayout()
@@ -623,14 +494,12 @@ iNZstackVarWin <- setRefClass(
         names(numVar) <- "Variables"
         StackButton <- gbutton("Stack", handler = function(h, ...) {
           if (length(svalue(numVar)) > 0) {
-            measure.vars <- svalue(numVar)
-            dat <- GUI$getActiveData()
-            out <- reshape2:::melt.data.frame(dat, measure.vars = measure.vars,
-                                              variable.name = "stack.variable",
-                                              value.name = "stack.value")
-            GUI$getActiveDoc()$getModel()$updateData(out)
-
-
+            vars <- svalue(numVar)
+            
+            .dataset <- GUI$getActiveData()
+            data <- iNZightTools::stackVars(.dataset, vars)
+            GUI$setDocument(iNZDocument$new(data = GUI$getActiveData()))
+            GUI$getActiveDoc()$getModel()$updateData(data)
             dispose(GUI$modWin)
           }
         })
