@@ -78,9 +78,11 @@ iNZFilterWin <- setRefClass(
                       lvls <- svalue(factorLvls)
                       .dataset <- GUI$getActiveData()
                       data <- iNZightTools::filterLevels(.dataset, var, lvls)
-                      attr(data, "filtered") <- 1
-                      GUI$setDocument(iNZDocument$new(data = GUI$getActiveData()))
-                      GUI$getActiveDoc()$getModel()$updateData(data)
+                      attr(data, "name") <- paste(attr(.dataset, "name"), "filtered", sep = ".")
+                      ## .dataset %>% foo() becomes mydata.filtered %>% foo()
+                      attr(data, "code") <- gsub(".dataset", attr(.dataset, "name"), attr(data, "code"))
+                      GUI$setDocument(iNZDocument$new(data = data))
+                      # GUI$getActiveDoc()$getModel()$updateData(data)
                       dispose(GUI$modWin)
                     }
                 })
@@ -137,10 +139,18 @@ iNZFilterWin <- setRefClass(
                   op <- svalue(operator)
                   val <- svalue(expr)
                   .dataset <- GUI$getActiveData()
-                  data <- iNZightTools::filterNumeric(.dataset, var, op, val)
-                  attr(data, "filtered") <- 1
-                  GUI$setDocument(iNZDocument$new(data = GUI$getActiveData()))
-                  GUI$getActiveDoc()$getModel()$updateData(data)
+                  data <- try(iNZightTools::filterNumeric(.dataset, var, op, val), silent = TRUE)
+                  if (inherits(data, 'try-error')) {
+                    # err <- strsplit(data, "\n")[[1]]
+                    # ew <- grepl('Evaluation error', err, fixed = TRUE)
+                    # err <- ifelse(any(ew), gsub('Evaluation error:', '', err[ew]), '')
+                    gmessage('Invalid numeric condition.',#paste(sep = "\n\n", 'Invalid condition:', err), 
+                        icon = 'error', parent = GUI$modWin)
+                    return()
+                  }
+                  attr(data, "name") <- paste(attr(.dataset, "name"), "filtered", sep = ".")
+                  attr(data, "code") <- gsub(".dataset", attr(.dataset, "name"), attr(data, "code"))
+                  GUI$setDocument(iNZDocument$new(data = data))
                   dispose(GUI$modWin)
                 })
             tbl <- glayout()
@@ -179,10 +189,15 @@ iNZFilterWin <- setRefClass(
                 handler = function(h, ...) {
                   rows <- sprintf("c(%s)", svalue(unwantedObs))
                   .dataset <- GUI$getActiveData()
-                  data <- iNZightTools::filterRows(.dataset, rows)
-                  attr(data, "filtered") <- 1
-                  GUI$setDocument(iNZDocument$new(data = GUI$getActiveData()))
-                  GUI$getActiveDoc()$getModel()$updateData(data)
+                  data <- try(iNZightTools::filterRows(.dataset, rows), silent = TRUE)
+                  if (inherits(data, 'try-error')) {
+                    gmessage('Invalid row numbers.',
+                        icon = 'error', parent = GUI$modWin)
+                    return()
+                  }
+                  attr(data, "name") <- paste(attr(.dataset, "name"), "filtered", sep = ".")
+                  attr(data, "code") <- gsub(".dataset", attr(.dataset, "name"), attr(data, "code"))
+                  GUI$setDocument(iNZDocument$new(data = data))
                   dispose(GUI$modWin)
                 })
             add(mainGrp, lbl1)
@@ -206,7 +221,7 @@ iNZFilterWin <- setRefClass(
             btnGrp <- ggroup(horizontal = TRUE)
             lbl1 <- glabel("Specify the size of your sample")
             font(lbl1) <- list(weight = "bold", style = "normal")
-            numSample <- gspinbutton(from = 1, to = 99999, by = 1)
+            numSample <- gspinbutton(from = 1, to = nrow(GUI$getActiveData()), by = 1)
             sampleSize <- gedit("", width =4)
             submitButton <- gbutton(
                 "Submit",
@@ -214,10 +229,23 @@ iNZFilterWin <- setRefClass(
                   nsample <- svalue(numSample)
                   size <- svalue(sampleSize)
                   .dataset <- GUI$getActiveData()
+                  N <- suppressWarnings(as.numeric(nsample))
+                  if (is.na(N)) {
+                    gmessage('Sample size must be a number.', icon = 'warning', parent = GUI$modWin)
+                    return()
+                  }
+                  if (N * as.numeric(size) > nrow(.dataset)) {
+                    gmessage(
+                      paste(sep = "\n",
+                        'Unable to sample that many rows.',
+                        'Please make sure Sample Size x Number of Samples < Number of Rows'),
+                      title = 'Sample size too big', parent = GUI$modWin, icon = 'warning')
+                    return()
+                  }
                   data <- iNZightTools::filterRandom(.dataset, nsample, size)
-                  attr(data, "filtered") <- 1
-                  GUI$setDocument(iNZDocument$new(data = GUI$getActiveData()))
-                  GUI$getActiveDoc()$getModel()$updateData(data)
+                  attr(data, "name") <- paste(attr(.dataset, "name"), "filtered", sep = ".")
+                  attr(data, "code") <- gsub(".dataset", attr(.dataset, "name"), attr(data, "code"))
+                  GUI$setDocument(iNZDocument$new(data = data))
                   dispose(GUI$modWin)
                 })
             tbl <- glayout()
@@ -305,7 +333,9 @@ iNZReshapeDataWin <- setRefClass(
                         .dataset <- GUI$getActiveData()
                         vars <- names(.dataset)
                         data <- iNZightTools::stackVars(.dataset, vars, 'variable', 'value')
-                        GUI$getActiveDoc()$getModel()$updateData(data)
+                        attr(data, "name") <- paste(attr(.dataset, "name"), "stacked", sep = ".")
+                        attr(data, "code") <- gsub(".dataset", attr(.dataset, "name"), attr(data, "code"))
+                        GUI$setDocument(iNZDocument$new(data = data))
                         dispose(GUI$modWin)
                     }
 
@@ -354,8 +384,9 @@ iNZSortbyDataWin <- setRefClass(
             
             .dataset <- GUI$getActiveData()
             data <- iNZightTools::sortVars(.dataset, vars[wi], asc[wi])
-            GUI$setDocument(iNZDocument$new(data = GUI$getActiveData()))
-            GUI$getActiveDoc()$getModel()$updateData(data)
+            attr(data, "name") <- paste(attr(.dataset, "name"), "sorted", sep = ".")
+            attr(data, "code") <- gsub(".dataset", attr(.dataset, "name"), attr(data, "code"))
+            GUI$setDocument(iNZDocument$new(data = data))
             dispose(GUI$modWin)
           }
         )
@@ -431,8 +462,9 @@ iNZAgraDataWin <- setRefClass(
             
             .dataset <- GUI$getActiveData()
             data <- iNZightTools::aggregateData(.dataset, vars, smrs)
-            GUI$setDocument(iNZDocument$new(data = GUI$getActiveData()))
-            GUI$getActiveDoc()$getModel()$updateData(data)
+            attr(data, "name") <- paste(attr(.dataset, "name"), "aggregated", sep = ".")
+            attr(data, "code") <- gsub(".dataset", attr(.dataset, "name"), attr(data, "code"))
+            GUI$setDocument(iNZDocument$new(data = data))
             dispose(GUI$modWin)
           })
         label_var1 <- glabel("1st")
@@ -498,8 +530,9 @@ iNZstackVarWin <- setRefClass(
             
             .dataset <- GUI$getActiveData()
             data <- iNZightTools::stackVars(.dataset, vars)
-            GUI$setDocument(iNZDocument$new(data = GUI$getActiveData()))
-            GUI$getActiveDoc()$getModel()$updateData(data)
+            attr(data, "name") <- paste(attr(.dataset, "name"), "stacked", sep = ".")
+            attr(data, "code") <- gsub(".dataset", attr(.dataset, "name"), attr(data, "code"))
+            GUI$setDocument(iNZDocument$new(data = data))
             dispose(GUI$modWin)
           }
         })

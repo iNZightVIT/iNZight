@@ -198,7 +198,7 @@ iNZGUI <- setRefClass(
             add(gp1, .self$initializeViewSwitcher(dataThreshold)$viewGroup)
 
             ## display the name of the data set
-            add(gp1, .self$initializeDataNameWidget()$nameLabel)
+            add(gp1, .self$initializeDataNameWidget()$widget)
 
             ## display the data
             add(gp1, dataViewWidget$dataGp, expand = TRUE)
@@ -342,9 +342,7 @@ iNZGUI <- setRefClass(
                     handler = function(h, ...) {
                         ## NOTE: look into this - best way of 'restoring'? (why not just revert activeDoc??)
                         ## code should just start using `data` instead of `dataX`
-                      setDocument(iNZDocument$new(data = getActiveDoc()$getModel()$origDataSet))
-                        #getActiveDoc()$getModel()$updateData(
-                        #    getActiveDoc()$getModel()$origDataSet)
+                        setDocument(iNZDocument$new(data = iNZDocuments[[1]]$getModel()$origDataSet))
                     }
                     ),
                 home = gaction(

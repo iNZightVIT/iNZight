@@ -43,7 +43,9 @@ iNZcodeWidget <- setRefClass(
             ## look at the data - has it got code? update the history with the code!
             code <- GUI$getActiveDoc()$getCode()
             if (!is.null(code)) {
-                dname <- sprintf("data%s", ifelse(GUI$activeDoc == 1, "", GUI$activeDoc))
+                dname <- attr(GUI$getActiveData(), "name")
+                if (is.null(dname) || dname == "")
+                  dname <- sprintf("data%s", ifelse(GUI$activeDoc == 1, "", GUI$activeDoc))
                 if (!any(grepl(".dataset", code))) {
                   code <- c(sprintf("%s <- ", dname), code)
                   add(code, keep = TRUE, tidy = TRUE)

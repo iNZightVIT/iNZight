@@ -87,7 +87,8 @@ iNZDataModWin <- setRefClass(
             if (any(w <- var %in% names(GUI$getActiveData()))) {
                 if (length(var == 0)) {
                     gmessage('A variable with that name already exists. Please choose another one.',
-                             title = 'Variable name already exists', icon = 'error')
+                             title = 'Variable name already exists', icon = 'error',
+                             parent = GUI$modWin)
                 } else {
                     gmessage(paste(sep = "\n",
                                 "The follow variable names already exist:",
@@ -95,13 +96,12 @@ iNZDataModWin <- setRefClass(
                                 "Please choose new names."),
                             title = "Variable names already exist", icon = 'error')
                 }
-                # res <- gconfirm('A variable with that name already exists. Do you want to overwrite it?',
-                #     title = 'Variable name exists')
                 return(FALSE)
             }
             return(TRUE)
         },
         updateData = function(newdata) {
+            attr(newdata, "name") <- attr(GUI$getActiveData(), "name")
             GUI$getActiveDoc()$getModel()$updateData(newdata)
         })
     )
@@ -126,7 +126,7 @@ iNZconToCatWin <- setRefClass(
             ii <- 1
 
             lbl <- glabel(paste("1. Drag and drop a variable name onto the",
-                                "label below  to create a categorical version",
+                                "label below to create a categorical version",
                                 "of that variable", sep = "\n"))
             font(lbl) <- list(weight = "bold", family = "normal")
             tbl[ii, 1, anchor = c(-1, 0), expand = TRUE] <- lbl
@@ -157,9 +157,11 @@ iNZconToCatWin <- setRefClass(
                                     orgVar <- svalue(dropLbl)
                                     name <- gsub('\\n+', "", svalue(name.txt), perl = TRUE)
                                     if (name == "" || !is.character(name))
-                                        gmessage("Please choose a non-empty name for the new variable")
+                                        gmessage("Please choose a non-empty name for the new variable",
+                                                 title = "Invalid variable choice", parent = GUI$modWin)
                                     else if (orgVar == "DROP VARIABLE HERE")
-                                        gmessage("Please choose a variable to convert")
+                                        gmessage("Please choose a variable to convert",
+                                                 title = "Invalid variable choice", parent = GUI$modWin)
                                     else if (checkNames(name)) {
                                         .dataset <- GUI$getActiveData()
                                         data <- iNZightTools::convertToCat(.dataset, orgVar, name)
@@ -178,7 +180,7 @@ iNZconToCatWin <- setRefClass(
                               dropData <- GUI$getActiveDoc()$getData()[h$dropdata][[1]]
                               if (all(is.factor(dropData)))
                                   gmessage("Already a categorical variable!",
-                                           parent = GUI$win)
+                                           parent = GUI$win, icon = 'warning')
                               else {
                                   svalue(h$obj) <- h$dropdata
                                   svalue(name.txt) <- makeNames(paste0(h$dropdata, ".cat"))
@@ -188,11 +190,6 @@ iNZconToCatWin <- setRefClass(
 
             add(GUI$modWin, mainGroup, expand = TRUE)
             visible(GUI$modWin) <<- TRUE
-        },
-        ## convert the variable with name 'orgVar' to a factor
-        ## with name 'name' and insert into data
-        convert = function(name, orgVar) {
-            
         })
     )
 
@@ -205,7 +202,6 @@ iNZtrnsWin <- setRefClass(
             callSuper(gui)
             ## need to specify the methods that we want to use in
             ## do.call later on
-            #usingMethods(trnsfrm, sqr, recip)
             svalue(GUI$modWin) <<- "Transform Variables"
             mainGroup <- ggroup(horizontal = FALSE)
             mainGroup$set_borderwidth(15)
@@ -314,7 +310,14 @@ iNZcllpsWin <- setRefClass(
                         lvls <- svalue(factorLvls)
                         name <- svalue(newVarname)
                         lvlname <- svalue(newLvlname)
-                        if (checkNames(name)) {
+                        if (lvlname %in% levels(GUI$getActiveData()[[var]]) &&
+                            !lvlname %in% lvls) {
+                            ## checking that the new level name isn't one of the other
+                            ## level names (excluding those being collapsed)
+                            gmessage("That level name already exists. Please choose another.",
+                                     title = 'Invalid level name', parent = GUI$modWin,
+                                     icon = 'warning')
+                        } else if (checkNames(name)) {
                             .dataset <- GUI$getActiveData()
                             data <- iNZightTools::collapseLevels(.dataset, var, lvls, lvlname, name)
                             updateData(data)
@@ -348,16 +351,6 @@ iNZcllpsWin <- setRefClass(
                 FALSE
             } else
                 TRUE
-        },
-        ## collapse two or more levels into one, return the new factor
-        ## varData: the original vector
-        ## levels: the levels to collapse
-        collapse = function(varData, levels) {
-            newLevel <- paste(levels, collapse = "_")
-            newFactor <- as.character(varData)
-            newFactor[varData %in% levels] <- newLevel
-            newFactor <- as.factor(newFactor)
-            newFactor
         })
     )
 
@@ -460,9 +453,6 @@ iNZrenameWin <- setRefClass(
             facLevels <- sapply(tbl[5:(5+nrLevels-1), 1], svalue)
             newFacLevels <- sapply(tbl[5:(5+nrLevels-1), 2], svalue)
             names(facLevels) <- newFacLevels
-            # for (i in rev(seq_along(facLevels))) {
-            #     if (newFacLevels[i] == facLevels[i]) facLevels[[i]] <- NULL
-            # }
             ## check if all order numbers are unique
             if (anyDuplicated(newFacLevels) > 0) {
                 gmessage(msg = "Please choose unique names for the levels",
@@ -475,14 +465,6 @@ iNZrenameWin <- setRefClass(
                     newFacLevels[i] != facLevels[i])
                 return(as.list(facLevels)[changed])
             }
-        },
-        sortByFreq = function(tbl, factorData) {
-            tb <- table(factorData)
-            tb <- names(tb[order(tb, decreasing = TRUE)])
-            newOrder <- sapply(levels(factorData),
-                               function(x) which(x == tb))
-            invisible(sapply(1:length(tb),
-                             function(i) svalue(tbl[4 + i, 2]) <- newOrder[i]))
         })
     )
 
@@ -718,12 +700,6 @@ iNZcmbCatWin <- setRefClass(
                 FALSE
             } else
                 TRUE
-        },
-        ## combine two or more factors into one, return the new factor
-        ## facNames: the original factor names
-        combine = function(facNames) {
-            factor(do.call(mapply, c(as.list(GUI$getActiveData()[facNames]),
-                                    FUN = paste, sep = ".")))
         })
     )
 
@@ -748,35 +724,17 @@ iNZcrteVarWin <- setRefClass(
                 expr <- svalue(newVarExp)
                 name <- svalue(newVarName)
                 .dataset <- GUI$getActiveData()
-                data <- iNZightTools::createNewVar(.dataset, name, expr)
+                data <- try(iNZightTools::createNewVar(.dataset, name, expr), silent = TRUE)
+                if (inherits(data, 'try-error')) {
+                    err <- strsplit(data, "\n")[[1]]
+                    ew <- grepl('Evaluation error', err, fixed = TRUE)
+                    err <- ifelse(any(ew), gsub('Evaluation error:', '', err[ew]), '')
+                    gmessage(paste(sep = "\n\n", 'Invalid expression:', err), 
+                        icon = 'error', parent = GUI$modWin)
+                    return()
+                }
                 updateData(data)
                 dispose(GUI$modWin)
-                # dataSet <- GUI$getActiveData()
-                # newValues = try(eval(parse(
-                #     text = paste("with(dataSet,",
-                #         gsub(pattern = '\\n+', "", svalue(newVarExp), perl = TRUE),
-                #         ")"))))
-                # if(class(newValues)[1] == "try-error")
-                #     gmessage(title = "ERROR",
-                #              msg = "Error in expression!",
-                #              icon = "error", parent = GUI$modWin)
-                # else {
-                #     newName = gsub(
-                #         pattern = '\\n+', "",
-                #         svalue(newVarName), perl = TRUE)
-                #     insertData(
-                #         data = newValues,
-                #         name = newName,
-                #         index = ncol(GUI$getActiveData()),
-                #         msg = list(
-                #             msg = paste("The new variable",
-                #                 newName,
-                #                 "will be inserted as the last column of the dataset"),
-                #             icon = "info",
-                #             parent = GUI$modWin
-                #             ),
-                #         closeAfter = TRUE)
-                # }
             })
             tbl <- glayout()
             tbl[1,2, anchor = c(-1,1)] = "av.height"
@@ -1006,7 +964,7 @@ iNZrnmVarWin <- setRefClass(
         initialize = function(gui) {
             callSuper(gui)
             svalue(GUI$modWin) <<- "Rename Variables"
-            size(GUI$modWin) <<- c(600, 200)
+            # size(GUI$modWin) <<- c(500, 400)
             ## ggroup does not automatically add scrollbars and gWidget2 does not
             ## have a function to do so. We therefore wrap the RGtk2 class
             ## gtkScrolledWindow around the ggroup
@@ -1029,6 +987,12 @@ iNZrnmVarWin <- setRefClass(
                                     handler = function(h, ...) {
                 onames <- names(GUI$getActiveData())
                 vnames <- sapply(tbl[-1, 2], svalue)
+                if (any(table(vnames) > 1)) {
+                    gmessage("You have duplicated some variable names.",
+                        title = "Duplicated variable names", icon = 'warning',
+                        parent = GUI$modWin)
+                    return()
+                }
                 ## only pass through variables that change
                 w <- vnames != onames
                 namelist <- as.list(vnames[w])
@@ -1044,6 +1008,7 @@ iNZrnmVarWin <- setRefClass(
             ## as a child using a viewport
             scrolledWindow$addWithViewport(mainGroup$widget)
             add(GUI$modWin, scrolledWindow, expand = TRUE, fill = TRUE)
+            size(GUI$modWin) <<- c(500, -1)
             visible(GUI$modWin) <<- TRUE
         })
     )
@@ -1113,6 +1078,11 @@ iNZdeleteVarWin <- setRefClass(
                 handler = function(h,...) {
                     vars <- svalue(listOfVars)
                     if (length(vars) > 0) {
+                        if (length(vars) == length(names(GUI$getActiveData()))) {
+                            gmessage("You can't delete all of the variables ... you'll have nothing left!",
+                                title = 'Oops...', icon = 'error', parent = GUI$modWin)
+                            return()
+                        }
                         confirmDel <- gconfirm(
                             title = "Are you sure?",
                             msg = paste(
