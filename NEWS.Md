@@ -1,17 +1,18 @@
 # Version 3.2
-__Release date:__ 18 January 2018
+__Release date:__ 23 January 2018
 
 ## New Features
 
 - New developmental __code writing__ feature has been added, which writes tidyverse code
   for common data/variable manipulations
+- Manage your datasets with the updated data set widget, just above the data set view!
 - Added the ability to control font size in Summary/Inference windows via File > Preferences
-
 
 ## Minor Changes
 
 - The __Reorder Levels__ window has been reconfigured to, hopefully, make it easier to use
-
+- Filtering no longer clears the slots 
+- Import data [beta] is ... no longer beta!
 
 
 ## Bug Fixes

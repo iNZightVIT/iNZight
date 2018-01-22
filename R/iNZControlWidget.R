@@ -518,12 +518,14 @@ iNZControlWidget <- setRefClass(
             ## set variable 3 to whatever it's supposed to be
             svalue(G1box) <<- set$varnames$g1
             set$g1 <- data[[set$varnames$g1]]
-            # sld1 <- ctrlGp$children[[1]][6, 1]
-            # if (!is.null(set$g1.level) && 
-            #     set$g1.level %in% levels(svalue(sld1))) {
-                
-            #     svalue(sld1) <- set$g1.level
-            # }
+            g1level <- set$g1.level
+            set$g1.level <- NULL
+            sld1 <- ctrlGp$children[[1]][6, 1]
+            if (!is.null(g1level) && 
+                g1level %in% levels(svalue(sld1))) {
+                svalue(sld1) <- g1level
+                set$g1.level <- g1level
+            }
           } else {
             ## remove variable 3
             set$g1 <- NULL
@@ -531,13 +533,21 @@ iNZControlWidget <- setRefClass(
             set$varnames$g1 <- NULL
           }
           if (!is.null(set$g2) && set$varnames$g2 %in% vars) {
-            ## set variable 4 to whatever it's supposed to be
+            ## set variable 3 to whatever it's supposed to be
             svalue(G2box) <<- set$varnames$g2
             set$g2 <- data[[set$varnames$g2]]
-
+            g2level <- set$g2.level
+            set$g2.level <- NULL
+            sld2 <- ctrlGp$children[[1]][8, 1]
+            if (!is.null(g2level) && 
+                g2level %in% levels(svalue(sld2))) {
+                svalue(sld2) <- g2level
+                set$g2.level <- g2level
+            }
           } else {
-            ## remove variable 4
+            ## remove variable 3
             set$g2 <- NULL
+            set$g2.level <- NULL
             set$varnames$g2 <- NULL
           }
 

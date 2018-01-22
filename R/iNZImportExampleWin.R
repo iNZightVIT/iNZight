@@ -98,12 +98,15 @@ iNZImportExampleWin <-
 
                                      ## Set the name to the title (or Item if title missing)
                                      data <- tmp.env[[dname]]
-                                     attr(data, "name") <- dname
-                                         # ifelse(datasets[ind, "Title"] == "", dname, datasets[ind, "Title"])
-                                     attr(data, "code") <- 
-                                        sprintf("## Load example data set\ndata(.dataset, package = '%s')", pkgname)
+                                     GUI$rhistory$add(
+                                        sprintf("## Load example data set\ndata(%s, package = '%s')", 
+                                                dname, pkgname),
+                                        keep = TRUE)
 
-                                     GUI$setDocument(iNZDocument$new(data = data))
+                                     attr(data, "name") <- sprintf("%s_ex", dname)
+                                     attr(data, "code") <- sprintf(".dataset <- %s", dname)
+
+                                     GUI$setDocument(iNZDocument$new(data = data), reset = TRUE)
 
                                      ## clean up
                                      rm("tmp.env")
