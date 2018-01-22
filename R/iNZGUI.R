@@ -1319,6 +1319,7 @@ iNZGUI <- setRefClass(
         setDocument = function(document) {
             ## reset control widget
             # state <- ctrlWidget$getState()
+            pset <- getActiveDoc()$getSettings()
             ctrlWidget$resetWidget()
             ## add a iNZDocument to the end of the doc list
             iNZDocuments <<- c(iNZDocuments, list(document))
@@ -1340,7 +1341,8 @@ iNZGUI <- setRefClass(
                 )
             ## if plotSettings change, update the plot
             getActiveDoc()$addSettingsObserver(function() updatePlot())
-            # ctrlWidget$setState(state)
+
+            ctrlWidget$setState(pset)
         },
         getActiveDoc = function() {
             iNZDocuments[[activeDoc]]

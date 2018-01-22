@@ -232,8 +232,13 @@ iNZDataNameWidget <- setRefClass(
             addSpace(widget, 50)
             add(widget, glabel("Data set: "))
             nameLabel <<- gcombobox(.self$datName, handler = function(h, ...) {
+                ## prevent code writing ...
+                pset <- GUI$getActiveDoc()$getSettings()
+                # GUI$ctrlWidget$resetWidget()
+                GUI$rhistory$disabled <<- TRUE
                 GUI$activeDoc <<- svalue(h$obj, index = TRUE)
-                ## update stuff.
+                GUI$rhistory$disabled <<- FALSE
+                GUI$ctrlWidget$setState(pset)
             })
             add(widget, nameLabel, expand = TRUE)
             enabled(nameLabel) <<- FALSE

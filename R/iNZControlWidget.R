@@ -488,53 +488,60 @@ iNZControlWidget <- setRefClass(
               ctrlGp$children[[1]][x, 7]$invoke_change_handler()
           }))
         },
-        getState = function() {
-          getVal <- function(x) ifelse(svalue(x, index = TRUE) == 1, NA, svalue(x))
+        setState = function(set) {
+          data <- GUI$getActiveData()
+          vars <- names(data)
 
-          state <- list(v1 = getVal(V1box),
-                        v2 = getVal(V2box),
-                        v3 = c(getVal(G1box), NA),
-                        v4 = c(getVal(G2box), NA))
-          if (!is.na(state$v3[1])) {
-            s1 <- ctrlGp$children[[1]][6, 1]
-            if (class(s1) == 'GSlider')
-              state$v3[2] <- svalue(s1)
-          }
-          if (!is.na(state$v4[1])) {# && nrow(ctrlGp$children[[1]]) == 8) {
-            s2 <- ctrlGp$children[[1]][8, 1]
-            if (!is.na(s2) && class(s2) == 'GSlider')
-              state$v4[2] <- svalue(s2)
-          }
-          state
-        },
-        setState = function(state) {
-          vars <- names(GUI$getActiveData())
-
-          newPlotList <- list(varnames = list())          
-          if (!is.na(state$v1) && state$v1 %in% vars) {
+          if (!is.null(set$x) && set$varnames$x %in% vars) {
+            ## set variable 1 to whatever it's supposed to be
             blockHandlers(V1box)
-            svalue(V1box) <<- state$v1
+            svalue(V1box) <<- set$varnames$x
             unblockHandlers(V1box)
-            newPlotList$x <- state$v1
-            newPlotList$varnames$x <- state$v1
+            set$x <- data[[set$varnames$x]]
+          } else {
+            ## remove variable 1
+            set$x <- NULL
+            set$varnames$x <- NULL
           }
-          if (!is.na(state$v2) && state$v2 %in% vars) {
+          if (!is.null(set$y) && set$varnames$y %in% vars) {
+            ## set variable 2 to whatever it's supposed to be
             blockHandlers(V2box)
-            svalue(V2box) <<- state$v2
-            unblockHandlers(V2box)
-            newPlotList$y <- state$v2
-            newPlotList$varnames$y <- state$v2
+            svalue(V2box) <<- set$varnames$y
+            unblockHandlers(V1box)
+            set$y <- data[[set$varnames$y]]
+          } else {
+            ## remove variable 1
+            set$y <- NULL
+            set$varnames$y <- NULL
           }
-          # if (!is.na(state$v3) && state$v3 %in% vars) {
-          #   svalue(G1box) <<- state$v3
-          #   newPlotList$g1 <- state$v3
-          #   newPlotList$varnames$g1 <- state$v3
-          # }
-          # if (!is.na(state$v4) && state$v4 %in% vars) {
-          #   svalue(G2box) <<- state$v4
-          #   newPlotList$g2 <- state$v4
-          #   newPlotList$varnames$g2 <- state$v4
-          # }
-          changePlotSettings(newPlotList, reset = TRUE)
+          if (!is.null(set$g1) && set$varnames$g1 %in% vars) {
+            ## set variable 3 to whatever it's supposed to be
+            svalue(G1box) <<- set$varnames$g1
+            set$g1 <- data[[set$varnames$g1]]
+            # sld1 <- ctrlGp$children[[1]][6, 1]
+            # if (!is.null(set$g1.level) && 
+            #     set$g1.level %in% levels(svalue(sld1))) {
+                
+            #     svalue(sld1) <- set$g1.level
+            # }
+          } else {
+            ## remove variable 3
+            set$g1 <- NULL
+            set$g1.level <- NULL
+            set$varnames$g1 <- NULL
+          }
+          if (!is.null(set$g2) && set$varnames$g2 %in% vars) {
+            ## set variable 4 to whatever it's supposed to be
+            svalue(G2box) <<- set$varnames$g2
+            set$g2 <- data[[set$varnames$g2]]
+
+          } else {
+            ## remove variable 4
+            set$g2 <- NULL
+            set$varnames$g2 <- NULL
+          }
+
+          GUI$getActiveDoc()$setSettings(set)
+          GUI$updatePlot()
         })
     )
