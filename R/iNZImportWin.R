@@ -233,7 +233,8 @@ iNZImportWinBeta <- setRefClass("iNZImportWinBeta",
                                         if (is.null(tmpData) || iNZightTools::isPreview(tmpData)) readData()
 
                                         ## give the dataset a name ...
-                                        attr(tmpData, "name") <<- tools::file_path_sans_ext(basename(svalue(fname)))
+                                        attr(tmpData, "name") <<- 
+                                            make.names(tools::file_path_sans_ext(basename(svalue(fname))))
 
                                         ## coerce character to factor
                                         invisible(sapply(which(sapply(tmpData, class) == "character"),

@@ -484,8 +484,57 @@ iNZControlWidget <- setRefClass(
         ## reset the widget to its original state
         ## (same as triggering all 4 clear buttons)
         resetWidget = function() {
-            invisible(sapply(c(1,3,5,7), function(x) {
-                ctrlGp$children[[1]][x, 7]$invoke_change_handler()
-            }))
+          invisible(sapply(c(1,3,5,7), function(x) {
+              ctrlGp$children[[1]][x, 7]$invoke_change_handler()
+          }))
+        },
+        getState = function() {
+          getVal <- function(x) ifelse(svalue(x, index = TRUE) == 1, NA, svalue(x))
+
+          state <- list(v1 = getVal(V1box),
+                        v2 = getVal(V2box),
+                        v3 = c(getVal(G1box), NA),
+                        v4 = c(getVal(G2box), NA))
+          if (!is.na(state$v3[1])) {
+            s1 <- ctrlGp$children[[1]][6, 1]
+            if (class(s1) == 'GSlider')
+              state$v3[2] <- svalue(s1)
+          }
+          if (!is.na(state$v4[1])) {# && nrow(ctrlGp$children[[1]]) == 8) {
+            s2 <- ctrlGp$children[[1]][8, 1]
+            if (!is.na(s2) && class(s2) == 'GSlider')
+              state$v4[2] <- svalue(s2)
+          }
+          state
+        },
+        setState = function(state) {
+          vars <- names(GUI$getActiveData())
+
+          newPlotList <- list(varnames = list())          
+          if (!is.na(state$v1) && state$v1 %in% vars) {
+            blockHandlers(V1box)
+            svalue(V1box) <<- state$v1
+            unblockHandlers(V1box)
+            newPlotList$x <- state$v1
+            newPlotList$varnames$x <- state$v1
+          }
+          if (!is.na(state$v2) && state$v2 %in% vars) {
+            blockHandlers(V2box)
+            svalue(V2box) <<- state$v2
+            unblockHandlers(V2box)
+            newPlotList$y <- state$v2
+            newPlotList$varnames$y <- state$v2
+          }
+          # if (!is.na(state$v3) && state$v3 %in% vars) {
+          #   svalue(G1box) <<- state$v3
+          #   newPlotList$g1 <- state$v3
+          #   newPlotList$varnames$g1 <- state$v3
+          # }
+          # if (!is.na(state$v4) && state$v4 %in% vars) {
+          #   svalue(G2box) <<- state$v4
+          #   newPlotList$g2 <- state$v4
+          #   newPlotList$varnames$g2 <- state$v4
+          # }
+          changePlotSettings(newPlotList, reset = TRUE)
         })
     )

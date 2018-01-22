@@ -61,15 +61,47 @@ iNZDataModWin <- setRefClass(
             if (!is.null(msg))
                 do.call(gmessage, msg)
 
-            ## round-about way...
-            attr(newData, "code") <- code
-            print(code)
-            
             GUI$getActiveDoc()$getModel()$updateData(newData)
             if (closeAfter)
                 dispose(GUI$modWin)
         },
+        ## this is used to autogenerate names for variables
+        makeNames = function(vars) {
+            vnames <- names(GUI$getActiveData())
+            names <- character(length(vars))
+            for (v in seq_along(vars)) {
+                if (vars[v] %in% vnames) {
+                    i = 1
+                    while (paste0(vars[v], i) %in% vnames) i <- i + 1
+                    vv <- paste0(vars[v], i)
+                } else {
+                    vv <- vars[v]
+                }
+                vnames <- c(vnames, vv)
+                names[v] <- vv
+            }
+            names
+        },
+        ## this checks names exist; returns TRUE if everything is OK
+        checkNames = function(var) {
+            if (any(w <- var %in% names(GUI$getActiveData()))) {
+                if (length(var == 0)) {
+                    gmessage('A variable with that name already exists. Please choose another one.',
+                             title = 'Variable name already exists', icon = 'error',
+                             parent = GUI$modWin)
+                } else {
+                    gmessage(paste(sep = "\n",
+                                "The follow variable names already exist:",
+                                paste(collapse = ", ", var[w]),
+                                "Please choose new names."),
+                            title = "Variable names already exist", icon = 'error')
+                }
+                return(FALSE)
+            }
+            return(TRUE)
+        },
         updateData = function(newdata) {
+            attr(newdata, "name") <- attr(GUI$getActiveData(), "name")
             GUI$getActiveDoc()$getModel()$updateData(newdata)
         })
     )
@@ -94,7 +126,7 @@ iNZconToCatWin <- setRefClass(
             ii <- 1
 
             lbl <- glabel(paste("1. Drag and drop a variable name onto the",
-                                "label below  to create a categorical version",
+                                "label below to create a categorical version",
                                 "of that variable", sep = "\n"))
             font(lbl) <- list(weight = "bold", family = "normal")
             tbl[ii, 1, anchor = c(-1, 0), expand = TRUE] <- lbl
@@ -122,7 +154,21 @@ iNZconToCatWin <- setRefClass(
             
             okButton <- gbutton("Update Data",
                                 handler = function(h, ...) {
-                                    convert(svalue(name.txt), svalue(dropLbl))
+                                    orgVar <- svalue(dropLbl)
+                                    name <- gsub('\\n+', "", svalue(name.txt), perl = TRUE)
+                                    if (name == "" || !is.character(name))
+                                        gmessage("Please choose a non-empty name for the new variable",
+                                                 title = "Invalid variable choice", parent = GUI$modWin)
+                                    else if (orgVar == "DROP VARIABLE HERE")
+                                        gmessage("Please choose a variable to convert",
+                                                 title = "Invalid variable choice", parent = GUI$modWin)
+                                    else if (checkNames(name)) {
+                                        .dataset <- GUI$getActiveData()
+                                        data <- iNZightTools::convertToCat(.dataset, orgVar, name)
+                                        updateData(data)
+                                        svalue(dropLbl) <- "DROP VARIABLE HERE"
+                                        svalue(name.txt) <- "No Variable Selected"
+                                    }
                                 })
             font(okButton) <- list(weight="bold", family = "normal")
             tbl[ii, 1] <- okButton
@@ -134,29 +180,16 @@ iNZconToCatWin <- setRefClass(
                               dropData <- GUI$getActiveDoc()$getData()[h$dropdata][[1]]
                               if (all(is.factor(dropData)))
                                   gmessage("Already a categorical variable!",
-                                           parent = GUI$win)
+                                           parent = GUI$win, icon = 'warning')
                               else {
                                   svalue(h$obj) <- h$dropdata
-                                  svalue(name.txt) <- paste(h$dropdata, ".cat",
-                                                            sep = "")
+                                  svalue(name.txt) <- makeNames(paste0(h$dropdata, ".cat"))
                                   varData <<- dropData
                               }
                           })
 
             add(GUI$modWin, mainGroup, expand = TRUE)
             visible(GUI$modWin) <<- TRUE
-        },
-        ## convert the variable with name 'orgVar' to a factor
-        ## with name 'name' and insert into data
-        convert = function(name, orgVar) {
-            if (name == "" || !is.character(name))
-                gmessage("Please choose a non-empty name for the new variable")
-            else {
-                name <- gsub('\\n+', "", name, perl = TRUE)
-                .dataset <- GUI$getActiveData()
-                data <- iNZightTools::numToCat(.dataset, orgVar, name)
-                updateData(data)
-            }
         })
     )
 
@@ -169,7 +202,6 @@ iNZtrnsWin <- setRefClass(
             callSuper(gui)
             ## need to specify the methods that we want to use in
             ## do.call later on
-            #usingMethods(trnsfrm, sqr, recip)
             svalue(GUI$modWin) <<- "Transform Variables"
             mainGroup <- ggroup(horizontal = FALSE)
             mainGroup$set_borderwidth(15)
@@ -192,7 +224,7 @@ iNZtrnsWin <- setRefClass(
                                "EXPONENTIAL"      = c("exp.X",     "exp"),
                                "SQUARE (X^2)"     = c("X.squared", "square"),
                                "SQUARE ROOT"      = c("root.X",    "sqrt"),
-                               "RECIPROCAL (1/X)" = c("recip.X",   "recip"))
+                               "RECIPROCAL (1/X)" = c("recip.X",   "reciprocal"))
             
             trLbls <- sapply(seq_along(transforms), function(i) {
                 lbl <- glabel(names(transforms)[i])
@@ -204,11 +236,13 @@ iNZtrnsWin <- setRefClass(
                     dropData <- GUI$getActiveDoc()$getData()[var][[1]]
                     ## check whether we can transform this variable
                     if (checkData(dropData)) {
-                        name <- gsub("X", var, transforms[[i]][1])
-                        fn <- transforms[[i]][2]
-                        .dataset <- GUI$getActiveData()
-                        data <- iNZightTools::transform(.dataset, var, fn, name)
-                        updateData(data)
+                        name <- makeNames(gsub("X", var, transforms[[i]][1]))
+                        if (checkNames(name)) {
+                            fn <- transforms[[i]][2]
+                            .dataset <- GUI$getActiveData()
+                            data <- iNZightTools::transformVar(.dataset, var, fn, name)
+                            updateData(data)
+                        }
                     }
                 })
             })
@@ -236,7 +270,7 @@ iNZcllpsWin <- setRefClass(
         initialize = function(gui) {
             callSuper(gui)
             svalue(GUI$modWin) <<- "Collapse Levels"
-            size(GUI$modWin) <<- c(100, 100)
+            size(GUI$modWin) <<- c(400, 350)
             mainGroup <- ggroup(expand = TRUE, horizontal = FALSE)
             mainGroup$set_borderwidth(15)
             ## instructions through glabels
@@ -249,6 +283,8 @@ iNZcllpsWin <- setRefClass(
             lbl3 <- glabel("(Hold Ctrl to choose many)")
             font(lbl3) <- list(weight = "bold",
                                family = "normal")
+            lbl4 <- glabel("New variable name: ")
+            lbl5 <- glabel("Collapsed level name: ")
             ## choose a factor column from the dataset and display
             ## its level in a gtable
             factorIndices <- sapply(GUI$getActiveData(), is.factor)
@@ -256,32 +292,36 @@ iNZcllpsWin <- setRefClass(
                                     selected = 0)
             addHandlerChanged(factorMenu, handler = function(h, ...) {
                 factorLvls[] <- levels(GUI$getActiveData()[svalue(factorMenu)][[1]])
+                svalue(newVarname) <- makeNames(sprintf("%s.coll", svalue(h$obj)))
             })
             factorLvls <- gtable("", multiple = TRUE, expand = TRUE)
             names(factorLvls) <- "Levels"
+            addHandlerSelectionChanged(factorLvls, handler = function(h, ...) {
+                svalue(newLvlname) <- paste(svalue(h$obj), collapse = "_")
+            })
+            ## name boxes
+            newVarname <- gedit('')
+            newLvlname <- gedit('')
             cllpsButton <- gbutton(
                 " - COLLAPSE -",
                 handler = function(h, ...) {
                     if (checkLevels(svalue(factorLvls))) {
-                        cnf <- gconfirm(
-                            parent = GUI$modWin,
-                            msg = paste("Collapse the levels\n",
-                                paste(svalue(factorLvls), collapse = " + "),
-                                "\ninto one level with the name\n'",
-                                paste(svalue(factorLvls), collapse = "_"),
-                                "'?")
-                            )
-                        if (cnf) {
-                            insertData(
-                                data = collapse(GUI$getActiveData()[
-                                    svalue(factorMenu)][[1]],
-                                    svalue(factorLvls)),
-                                name = paste(
-                                    svalue(factorMenu),
-                                    ".coll", sep = ""),
-                                index = which(names(
-                                    GUI$getActiveData()) == svalue(factorMenu)),
-                                closeAfter = TRUE)
+                        var <- svalue(factorMenu)
+                        lvls <- svalue(factorLvls)
+                        name <- svalue(newVarname)
+                        lvlname <- svalue(newLvlname)
+                        if (lvlname %in% levels(GUI$getActiveData()[[var]]) &&
+                            !lvlname %in% lvls) {
+                            ## checking that the new level name isn't one of the other
+                            ## level names (excluding those being collapsed)
+                            gmessage("That level name already exists. Please choose another.",
+                                     title = 'Invalid level name', parent = GUI$modWin,
+                                     icon = 'warning')
+                        } else if (checkNames(name)) {
+                            .dataset <- GUI$getActiveData()
+                            data <- iNZightTools::collapseLevels(.dataset, var, lvls, lvlname, name)
+                            updateData(data)
+                            dispose(GUI$modWin)
                         }
                     }
                 })
@@ -290,6 +330,12 @@ iNZcllpsWin <- setRefClass(
             add(mainGroup, lbl2)
             add(mainGroup, lbl3)
             add(mainGroup, factorLvls, expand = TRUE)
+            tbl <- glayout()
+            tbl[1, 1, expand = TRUE, anchor = c(1, 0)] <- lbl4
+            tbl[1, 2, expand = TRUE] <- newVarname
+            tbl[2, 1, expand = TRUE, anchor = c(1, 0)] <- lbl5
+            tbl[2, 2, expand = TRUE] <- newLvlname
+            add(mainGroup, tbl)
             add(mainGroup, cllpsButton)
             add(GUI$modWin, mainGroup, expand = TRUE, fill = TRUE)
             visible(GUI$modWin) <<- TRUE
@@ -305,16 +351,6 @@ iNZcllpsWin <- setRefClass(
                 FALSE
             } else
                 TRUE
-        },
-        ## collapse two or more levels into one, return the new factor
-        ## varData: the original vector
-        ## levels: the levels to collapse
-        collapse = function(varData, levels) {
-            newLevel <- paste(levels, collapse = "_")
-            newFactor <- as.character(varData)
-            newFactor[varData %in% levels] <- newLevel
-            newFactor <- as.factor(newFactor)
-            newFactor
         })
     )
 
@@ -326,7 +362,7 @@ iNZrenameWin <- setRefClass(
         initialize = function(gui) {
             callSuper(gui)
             svalue(GUI$modWin) <<- "Rename Factor Levels"
-            size(GUI$modWin) <<- c(600, 200)
+            size(GUI$modWin) <<- c(400, 500)
             ## ggroup does not automatically add scrollbars and gWidget2 does not
             ## have a function to do so. We therefore wrap around the RGtk2 class
             ## gtkScrolledWindow around the ggroup
@@ -336,7 +372,7 @@ iNZrenameWin <- setRefClass(
             mainGroup <- ggroup(expand = TRUE, horizontal = FALSE)
             mainGroup$set_borderwidth(15)
             ## instructions through glabels
-            lbl1 <- glabel("Variable to rename:")
+            lbl1 <- glabel("Choose variable: ")
             font(lbl1) <- list(weight = "bold",
                                family = "normal")
             lbl2 <- glabel("Name of the new variable:")
@@ -348,28 +384,22 @@ iNZrenameWin <- setRefClass(
             factorMenu <- gcombobox(names(GUI$getActiveData())[factorIndices],
                                     selected = 0)
             addHandlerChanged(factorMenu, handler = function(h, ...) {
-                svalue(factorName) <- paste(svalue(factorMenu),
-                                            ".rename", sep = "")
+                svalue(factorName) <- makeNames(paste0(svalue(factorMenu), ".rename"))
                 displayLevels(tbl,
                               GUI$getActiveData()[svalue(factorMenu)][[1]])
             })
             factorName <- gedit("")
             renameButton <- gbutton("-RENAME-", handler = function(h, ...) {
-                newFactor <- changeLevels(
-                    tbl,
-                    GUI$getActiveData()[svalue(factorMenu)][[1]])
+                var <- svalue(factorMenu)
+                newlvls <- changeLevels(tbl, GUI$getActiveData()[var][[1]])
                 ## newFactor will be FALSE, if the user input was wrong
-                if (newFactor)
-                    insertData(data = newFactor,
-                               name = svalue(factorName),
-                               index = which(names(
-                                   GUI$getActiveData()) == svalue(factorMenu)),
-                               msg = list(
-                                   msg = paste("The new factor can be found under the name '",
-                                       svalue(factorName), "'", sep = ""),
-                                   icon = "info"),
-                               closeAfter = FALSE
-                               )
+                name <- svalue(factorName)
+                if (is.list(newlvls) && checkNames(name)) {
+                    .dataset <- GUI$getActiveData()
+                    data <- iNZightTools::renameLevels(.dataset, var, newlvls, name)
+                    updateData(data)
+                    dispose(GUI$modWin)
+                }
             })
             tbl <- glayout()
             tbl[1, 1, expand = TRUE, anchor = c(-1, 0)] <- lbl1
@@ -398,7 +428,7 @@ iNZrenameWin <- setRefClass(
             lbl3 <- glabel("Levels")
             font(lbl3) <- list(weight = "bold",
                                family = "normal")
-            lbl4 <- glabel("Order")
+            lbl4 <- glabel("New Name")
             font(lbl4) <- list(weight = "bold",
                                family = "normal")
             tbl[4, 1, expand = TRUE, anchor = c(-1, 0)] <- lbl3
@@ -428,20 +458,13 @@ iNZrenameWin <- setRefClass(
                 gmessage(msg = "Please choose unique names for the levels",
                          icon = "error",
                          parent = GUI$modWin)
-                FALSE
+                return(FALSE)
             }
             else {
-                levels(factorData) <- as.list(facLevels)
-                factorData
+                changed <- sapply(seq_along(facLevels), function(i)
+                    newFacLevels[i] != facLevels[i])
+                return(as.list(facLevels)[changed])
             }
-        },
-        sortByFreq = function(tbl, factorData) {
-            tb <- table(factorData)
-            tb <- names(tb[order(tb, decreasing = TRUE)])
-            newOrder <- sapply(levels(factorData),
-                               function(x) which(x == tb))
-            invisible(sapply(1:length(tb),
-                             function(i) svalue(tbl[4 + i, 2]) <- newOrder[i]))
         })
     )
 
@@ -462,167 +485,126 @@ iNZreorderWin <- setRefClass(
             
             mainGroup <- ggroup(expand = TRUE, horizontal = FALSE)
             mainGroup$set_borderwidth(15)
-            ## instructions through glabels
-            lbl1 <- glabel("Variable to reorder:")
-            font(lbl1) <- list(weight = "bold",
-                               family = "normal")
-            lbl2 <- glabel("Name of the new variable:")
-            font(lbl2) <- list(weight = "bold",
-                               family = "normal")
-            ## choose a factor column from the dataset and display
-            ## its levels together with their order
+
+            tbl <- glayout()
+
+            ## Choose variable to reorder:
+            tbl[1, 1, expand = TRUE, anchor = c(1, 0)] <- glabel("Variable to reorder:")
             factorIndices <- sapply(GUI$getActiveData(), is.factor)
             factorMenu <- gcombobox(names(GUI$getActiveData())[factorIndices],
                                     selected = 0)
-            addHandlerChanged(factorMenu, handler = function(h, ...) {
-                svalue(factorName) <- paste(svalue(factorMenu),
-                                            ".reord", sep = "")
-                displayLevels(tbl,
-                              GUI$getActiveData()[svalue(factorMenu)][[1]])
-                ## block the handlers before changing the sortby dropdown
-                ## because the signal order is messed up, which causes
-                ## the wrong signal to be emitted first
-                blockHandlers(sortMenu)
-                svalue(sortMenu, index = TRUE) <- 1
-                unblockHandlers(sortMenu)
-            })
+            tbl[1, 2, expand = TRUE] <- factorMenu
+
+            ## Name for the new variable
+            tbl[2, 1, expand = TRUE, anchor = c(1, 0)] <- glabel("New variable name:")
             factorName <- gedit("")
-            reorderButton <- gbutton("-REORDER-", handler = function(h, ...) {
-                newFactor <- changeLevels(
-                    tbl,
-                    GUI$getActiveData()[svalue(factorMenu)][[1]])
-                ## newFactor will be FALSE, if the user input was wrong
-                #if (all(newFactor != FALSE))
-                    insertData(data = newFactor,
-                               name = svalue(factorName),
-                               index = which(names(
-                                   GUI$getActiveData()) == svalue(factorMenu)),
-                               msg = list(
-                                   msg = paste("The new factor can be found under the name '",
-                                       svalue(factorName), "'", sep = ""),
-                                   icon = "info"),
-                               closeAfter = FALSE
-                               )
+            tbl[2, 2] <- factorName
+
+            ## Sort method: frequency (default), or manual
+            tbl[3, 1, expand = TRUE, anchor = c(1, 0)] <- glabel("Sort levels ")
+            sortMenu <- gcombobox(c("by frequency", "manually"), selected = 1)
+            tbl[3, 2, expand = TRUE] <- sortMenu
+            
+            ## For manual ordering, gdf or gtable with up/down arrows ...
+            levelGrp <- ggroup()
+            levelOrder <- gtable(data.frame(), container = levelGrp)
+            size(levelOrder) <- c(-1, 280)
+            tbl[4:5, 2, expand = TRUE] <- levelGrp
+
+            levelBtnGrp <- gvbox()
+            addSpace(levelBtnGrp, 20)
+            levelUp <- iNZight:::gimagebutton("up", container = levelBtnGrp, size = 'LARGE_TOOLBAR',
+                                              expand = FALSE, anchor = c(1, 0))
+            levelDown <- iNZight:::gimagebutton("down", container = levelBtnGrp, size = 'LARGE_TOOLBAR',
+                                                expand = FALSE, anchor = c(1, 0))
+            levelHelp <- glabel("Select level, then\nuse arrows to reorder.", 
+                    container = levelBtnGrp, anchor = c(1, 0))
+            tbl[4:5, 1, anchor = c(1, 1)] <- levelBtnGrp
+
+            visible(levelBtnGrp) <- visible(levelGrp) <- FALSE
+            
+            
+            ## Done button
+            reorderButton <- gbutton("-REORDER-")
+            tbl[6, 2, expand = TRUE] <- reorderButton
+
+            ## Add everything to main window
+            add(mainGroup, tbl)
+
+            ## HANDLERS
+            addHandlerChanged(factorMenu, handler = function(h, ...) {
+                svalue(factorName) <- makeNames(sprintf("%s.reord", svalue(factorMenu)))
+                levelOrder$set_items(data.frame(Levels = 
+                    levels(GUI$getActiveData()[, svalue(factorMenu)])))
             })
-            tbl <- glayout()
-            tbl[1, 1, expand = TRUE, anchor = c(-1, 0)] <- lbl1
-            tbl[1, 2, expand = TRUE, anchor = c(1, 0)] <- factorMenu
-            tbl[2, 1:2, expand = TRUE, anchor = c(-1, 0)] <- lbl2
-            tbl[3, 1:2, expand = TRUE] <- factorName
-            sortGrp <- ggroup()
-            sortLbl <- glabel("Sort by:", cont = sortGrp, expand = TRUE)
-            sortMenu <- gcombobox(c("Manual", "Frequency"),
-                                  selected = 1, cont = sortGrp, expand = TRUE)
+
             addHandlerChanged(sortMenu, handler = function(h, ...) {
-                if (length(tbl$children) > 4) {
-                    if (svalue(sortMenu, index = TRUE) == 2) {
-                        sortByFreq(tbl,
-                                   GUI$getActiveData()[svalue(factorMenu)][[1]])
+                visible(levelBtnGrp) <- visible(levelGrp) <- svalue(sortMenu, index = TRUE) == 2
+            })
+
+            addHandlerClicked(levelUp, function(h, ...) {
+                # blockHandlers(levelUp)
+                # blockHandlers(levelDown)
+                i <- svalue(levelOrder, index = TRUE)
+                if (length(i) == 0) {
+                    gmessage('Select a level, then use the arrows to shift it up/down')
+                    return()
+                }
+                lvls <- levelOrder$get_items()
+                if (i == 1) return()
+                li <- lvls[i]
+                lvls[i] <- lvls[i-1]
+                lvls[i-1] <- li
+                levelOrder$set_items(data.frame(Levels = lvls))
+                svalue(levelOrder) <- li
+                # unblockHandlers(levelUp)
+                # unblockHandlers(levelDown)
+            })
+            addHandlerClicked(levelDown, function(h, ...) {
+                # blockHandlers(levelUp)
+                # blockHandlers(levelDown)
+                i <- svalue(levelOrder, index = TRUE)
+                if (length(i) == 0) {
+                    gmessage('Select a level, then use the arrows to shift it up/down')
+                    return()
+                }
+                lvls <- levelOrder$get_items()
+                if (i == length(lvls)) return()
+                li <- lvls[i]
+                lvls[i] <- lvls[i+1]
+                lvls[i+1] <- li
+                levelOrder$set_items(data.frame(Levels = lvls))
+                svalue(levelOrder) <- li
+                # unblockHandlers(levelUp)
+                # unblockHandlers(levelDown)
+            })
+
+            addHandlerClicked(reorderButton, function(h, ...) {
+                var <- svalue(factorMenu)
+                varname <- svalue(factorName)
+                .dataset <- GUI$getActiveData()
+
+                if (checkNames(varname)) {
+                    if (svalue(sortMenu, TRUE) == 1)
+                        data <- iNZightTools::reorderLevels(.dataset, var, freq = TRUE, name = varname)
+                    else {
+                        levels <- as.character(levelOrder$get_items())
+                        data <- iNZightTools::reorderLevels(.dataset, var, levels, name = varname)
                     }
+                    updateData(data)
+                    dispose(GUI$modWin)
                 }
             })
-            add(mainGroup, tbl, expand = TRUE)
-            add(mainGroup, sortGrp)
-            add(mainGroup, reorderButton)
-            ## method of gtkScrolledWindow to add a GtkWidget (not a gWidgets2 class)
-            ## as a child using a viewport
+
+            
+            ## final few details
             scrolledWindow$addWithViewport(mainGroup$widget)
             add(GUI$modWin, scrolledWindow, expand = TRUE, fill = TRUE)
+            size(GUI$modWin) <<- c(300, 500)
             visible(GUI$modWin) <<- TRUE
-        },
-        displayLevels = function(tbl, factorData) {
-            ## try to delete currently displayed levels
-            ## the first 4 children of tbl refer to the permanent ones
-            ## i.e. everything up to and including the gedit to rename
-            ## the factor
-            if (length(tbl$children) > 4) {
-                childEntries <- which(sapply(
-                    tbl$child_positions, function(child) child$x) > 4)
-                try(invisible(
-                    sapply(tbl$child_positions[childEntries],
-                           function(entry) tbl$remove_child(entry$child)))
-                    )
-            }
-
-            lbl3 <- glabel("Levels")
-            font(lbl3) <- list(weight = "bold",
-                               family = "normal")
-            lbl4 <- glabel("Order")
-            font(lbl4) <- list(weight = "bold",
-                               family = "normal")
-            tbl[4, 1, expand = TRUE, anchor = c(-1, 0)] <- lbl3
-            tbl[4, 2, expand = TRUE, anchor = c(-1, 0)] <- lbl4
-            invisible(sapply(levels(factorData), function(x) {
-                pos <- which(levels(factorData) == x)
-                tbl[4 + pos, 1, expand = TRUE, anchor = c(-1, 0)] <- glabel(x)
-                tbl[4 + pos, 2] <- gedit(pos)
-            }))
-        },
-        changeLevels = function(tbl, factorData) {
-            if (length(tbl$children) < 5) {
-                return(gmessage(msg = "Please choose a factor to reorder",
-                         icon = "error",
-                         parent = GUI$modWin))
-                
-            }
-            ## the first 4 children dont refer to the factor levels
-            ## each factor lvl has 2 entries in the glayout
-            ## the 5th entry refers to the glabels "Levels" and "Order"
-            childEntries <- which(sapply(
-                tbl$child_positions, function(child) child$x) > 4)
-            ## gWidets2 reorders the children of glayout in some weird way,
-            ## so we find the order by x value, then y value (i.e. as entries
-            ## tbl[4,1], tbl[4,2], tbl[5,2], ...)
-            origOrder <- order(
-                sapply(tbl$child_positions[childEntries], function(child) child$x),
-                sapply(tbl$child_positions[childEntries], function(child) child$y))
-            facLevels <- sapply(
-                tbl$child_positions[childEntries][origOrder[seq(
-                    1, length(origOrder), by = 2)]],
-                function(child) svalue(child$child))
-            facOrder <- sapply(
-                tbl$child_positions[childEntries][origOrder[seq(
-                    2, length(origOrder), by = 2)]],
-                function(child) svalue(child$child))
-            facOrder <- as.integer(facOrder)
-            facOrder <- sapply(1:length(facLevels), function(x) which(facOrder == x))
-            ## check if all order numbers are unique
-            if (anyDuplicated(facOrder) > 0) {
-                return(gmessage(msg = "Please choose a unique order for the levels",
-                         icon = "error",
-                         parent = GUI$modWin))
-                
-            }
-            else if (max(facOrder) > length(facOrder)) {
-                return(gmessage(msg = "Please remove holes from the order sequence",
-                         icon = "error",
-                         parent = GUI$modWin))
-                
-            }
-            else {
-                newFactor <- factor(factorData, levels = facLevels[facOrder])
-                newFactor
-            }
-        },
-        sortByFreq = function(tbl, factorData) {
-            tb <- table(factorData)
-            tb <- names(tb[order(tb, decreasing = TRUE)])
-            newOrder <- sapply(levels(factorData),
-                               function(x) which(x == tb))
-            invisible(
-                sapply(
-                    1:length(newOrder),
-                    function(i) {
-                        xEntries <- sapply(tbl$child_positions,
-                                           function(entry) entry$x) == (4 + i)
-                        yEntries <- sapply(tbl$child_positions[xEntries],
-                                           function(entry) entry$y) == 2
-                        svalue(tbl$child_positions[[which(
-                            xEntries)[yEntries]]]$child) <- newOrder[i]
-                    }
-                    ))
-        })
+        }
     )
+)
 
 
 ## combine categorical variables
@@ -637,15 +619,13 @@ iNZcmbCatWin <- setRefClass(
             mainGroup <- ggroup(expand = TRUE, horizontal = FALSE)
             mainGroup$set_borderwidth(15)
             ## instructions through glabels
-            lbl1 <- glabel("Choose a variables you want to combine")
+            lbl1 <- glabel("Choose 2 or more variables you want to combine")
             font(lbl1) <- list(weight = "bold",
                                family = "normal")
             lbl2 <- glabel("(Hold Ctrl to choose many)")
             font(lbl2) <- list(weight = "bold",
                                family = "normal")
             lbl3 <- glabel("New Variable Name")
-            font(lbl3) <- list(weight = "bold",
-                               family = "normal")
             ## choose a factor column from the dataset and display
             ## its level in a gtable
             factorIndices <- sapply(GUI$getActiveData(), is.factor)
@@ -653,43 +633,52 @@ iNZcmbCatWin <- setRefClass(
                                   multiple = TRUE, expand = TRUE)
             names(factorNames) <- "Categorical Variables"
             newName <- gedit()
+            ## separator (. or _ for now ...)
+            lbl4 <- glabel("Value separator")
+            varSep <- gcombobox(c(".", "_"), selected = 1)
             ## automatically fill the name field when variables are selected
             addHandlerSelectionChanged(factorNames, handler = function(h, ...) {
-                if (length(svalue(factorNames)) > 0)
-                    svalue(newName) <- paste(svalue(factorNames), collapse = ".")
+                if (length(svalue(factorNames)) > 1)
+                    svalue(newName) <- makeNames(paste(svalue(factorNames), 
+                                                       collapse = svalue(varSep)))
+                else svalue(newName) <- ""
+            })
+            addHandlerChanged(varSep, function(h, ...) {
+                if (length(svalue(factorNames)) <= 1) return()
+                sep <- svalue(h$obj)
+                osep <- switch(sep, "_" = ".", "." = "_")
+                oname <- makeNames(paste(svalue(factorNames), collapse = osep))
+                if (svalue(newName) == oname) {
+                    ## user hasn't changed the name, so update it
+                    svalue(newName) <- makeNames(paste(svalue(factorNames), collapse = sep))
+                }
             })
             cmbButton <- gbutton(
-                " - COMBINE-",
+                " - COMBINE - ",
                 handler = function(h, ...) {
                     if (checkSelection(svalue(factorNames),
                                        svalue(newName))) {
-                        cnf <- gconfirm(
-                            parent = GUI$modWin,
-                            msg = paste("Combine the variables\n",
-                                paste(svalue(factorNames), collapse = " + "),
-                                "\ninto one variable with the name\n'",
-                                svalue(newName),
-                                "'?", sep = "")
-                            )
-                        if (cnf) {
-                            insertData(
-                                data = combine(svalue(factorNames)),
-                                name = svalue(newName),
-                                index = ncol(GUI$getActiveData()),
-                                msg = list(
-                                    msg = "The new factor was added to the end of the data",
-                                    icon = "info",
-                                    parent = GUI$modWin
-                                    ),
-                                closeAfter = TRUE)
+                        vars <- svalue(factorNames)
+                        name <- svalue(newName)
+                        sep <- svalue(varSep)
+
+                        if (checkNames(name)) {
+                            .dataset <- GUI$getActiveData()
+                            data <- iNZightTools::combineCatVars(.dataset, vars, sep, name)
+                            updateData(data)
+                            dispose(GUI$modWin)
                         }
                     }
                 })
             add(mainGroup, lbl1)
             add(mainGroup, lbl2)
             add(mainGroup, factorNames, expand = TRUE)
-            add(mainGroup, lbl3)
-            add(mainGroup, newName)
+            tbl <- glayout()
+            tbl[1, 1, anchor = c(1, 0), expand = TRUE] <- lbl3
+            tbl[1, 2, expand = TRUE] <- newName
+            tbl[2, 1, anchor = c(1, 0), expand = TRUE] <- lbl4
+            tbl[2, 2, expand = TRUE] <- varSep
+            add(mainGroup, tbl)
             add(mainGroup, cmbButton)
             add(GUI$modWin, mainGroup, expand = TRUE, fill = TRUE)
             visible(GUI$modWin) <<- TRUE
@@ -711,12 +700,6 @@ iNZcmbCatWin <- setRefClass(
                 FALSE
             } else
                 TRUE
-        },
-        ## combine two or more factors into one, return the new factor
-        ## facNames: the original factor names
-        combine = function(facNames) {
-            factor(do.call(mapply, c(as.list(GUI$getActiveData()[facNames]),
-                                    FUN = paste, sep = ".")))
         })
     )
 
@@ -738,32 +721,20 @@ iNZcrteVarWin <- setRefClass(
             newVarName = gedit("new.variable", width = 15) ## name of the new variable
             newVarExp = gedit("  ") ## expression used to create new var
             submitButton = gbutton(" - SUBMIT -", handler = function(h,...) {
-                dataSet <- GUI$getActiveData()
-                newValues = try(eval(parse(
-                    text = paste("with(dataSet,",
-                        gsub(pattern = '\\n+', "", svalue(newVarExp), perl = TRUE),
-                        ")"))))
-                if(class(newValues)[1] == "try-error")
-                    gmessage(title = "ERROR",
-                             msg = "Error in expression!",
-                             icon = "error", parent = GUI$modWin)
-                else {
-                    newName = gsub(
-                        pattern = '\\n+', "",
-                        svalue(newVarName), perl = TRUE)
-                    insertData(
-                        data = newValues,
-                        name = newName,
-                        index = ncol(GUI$getActiveData()),
-                        msg = list(
-                            msg = paste("The new variable",
-                                newName,
-                                "will be inserted as the last column of the dataset"),
-                            icon = "info",
-                            parent = GUI$modWin
-                            ),
-                        closeAfter = TRUE)
+                expr <- svalue(newVarExp)
+                name <- svalue(newVarName)
+                .dataset <- GUI$getActiveData()
+                data <- try(iNZightTools::createNewVar(.dataset, name, expr), silent = TRUE)
+                if (inherits(data, 'try-error')) {
+                    err <- strsplit(data, "\n")[[1]]
+                    ew <- grepl('Evaluation error', err, fixed = TRUE)
+                    err <- ifelse(any(ew), gsub('Evaluation error:', '', err[ew]), '')
+                    gmessage(paste(sep = "\n\n", 'Invalid expression:', err), 
+                        icon = 'error', parent = GUI$modWin)
+                    return()
                 }
+                updateData(data)
+                dispose(GUI$modWin)
             })
             tbl <- glayout()
             tbl[1,2, anchor = c(-1,1)] = "av.height"
@@ -993,7 +964,7 @@ iNZrnmVarWin <- setRefClass(
         initialize = function(gui) {
             callSuper(gui)
             svalue(GUI$modWin) <<- "Rename Variables"
-            size(GUI$modWin) <<- c(600, 200)
+            # size(GUI$modWin) <<- c(500, 400)
             ## ggroup does not automatically add scrollbars and gWidget2 does not
             ## have a function to do so. We therefore wrap the RGtk2 class
             ## gtkScrolledWindow around the ggroup
@@ -1014,8 +985,21 @@ iNZrnmVarWin <- setRefClass(
             }))
             renameButton <- gbutton('- RENAME -',
                                     handler = function(h, ...) {
-                newNames <- sapply(tbl[, 2], svalue)
-                GUI$getActiveDoc()$getModel()$setNames(newNames[-1])
+                onames <- names(GUI$getActiveData())
+                vnames <- sapply(tbl[-1, 2], svalue)
+                if (any(table(vnames) > 1)) {
+                    gmessage("You have duplicated some variable names.",
+                        title = "Duplicated variable names", icon = 'warning',
+                        parent = GUI$modWin)
+                    return()
+                }
+                ## only pass through variables that change
+                w <- vnames != onames
+                namelist <- as.list(vnames[w])
+                names(namelist) <- onames[w]
+                .dataset <- GUI$getActiveData()
+                data <- iNZightTools::renameVars(.dataset, namelist)
+                updateData(data)
                 dispose(GUI$modWin)
             })
             add(mainGroup, tbl)
@@ -1024,6 +1008,7 @@ iNZrnmVarWin <- setRefClass(
             ## as a child using a viewport
             scrolledWindow$addWithViewport(mainGroup$widget)
             add(GUI$modWin, scrolledWindow, expand = TRUE, fill = TRUE)
+            size(GUI$modWin) <<- c(500, -1)
             visible(GUI$modWin) <<- TRUE
         })
     )
@@ -1053,19 +1038,12 @@ iNZstdVarWin <- setRefClass(
             names(numVar) <- "Variables"
             stdButton <- gbutton("Standardise", handler = function(h, ...) {
                 if (length(svalue(numVar)) > 0) {
-                    index <- which(numIndices)[svalue(numVar, index = TRUE)]
-                    newVar <- scale(GUI$getActiveData()[, index],
-                                    center = TRUE, scale = TRUE)
-                    newNames <- paste(names(GUI$getActiveData())[index],
-                                      ".std", sep = "")
-                    insertData(data = newVar,
-                               name = newNames,
-                               index = ncol(GUI$getActiveData()),
-                               msg = list(
-                                   msg = "The new variables are added to the end of the dataset",
-                                   icon = "info"
-                                   ),
-                               closeAfter = TRUE)
+                    varnames <- svalue(numVar)
+                    names <- makeNames(paste0(varnames, ".std"))
+                    print(names)
+                    .dataset <- GUI$getActiveData()
+                    data <- iNZightTools::standardizeVars(.dataset, varnames, names)
+                    updateData(data)
                 }
             })
             add(mainGroup, lbl1)
@@ -1098,22 +1076,25 @@ iNZdeleteVarWin <- setRefClass(
             deleteButton = gbutton(
                 "- Delete -",
                 handler = function(h,...) {
-                    if (length(svalue(listOfVars)) > 0) {
+                    vars <- svalue(listOfVars)
+                    if (length(vars) > 0) {
+                        if (length(vars) == length(names(GUI$getActiveData()))) {
+                            gmessage("You can't delete all of the variables ... you'll have nothing left!",
+                                title = 'Oops...', icon = 'error', parent = GUI$modWin)
+                            return()
+                        }
                         confirmDel <- gconfirm(
                             title = "Are you sure?",
                             msg = paste(
-                                "Do you want to delete the",
+                                "You are about to delete the",
                                 "following variables:\n",
-                                paste(svalue(listOfVars),
-                                      collapse = "\n")
+                                paste(vars, collapse = "\n")
                                 ),
                             icon = "question")
                         if (confirmDel) {
-                            dataSet <- GUI$getActiveData()
-                            dataSet <- dataSet[, !(names(dataSet) %in%
-                                                   svalue(listOfVars)),
-                                               drop = FALSE]
-                            GUI$getActiveDoc()$getModel()$updateData(dataSet)
+                            .dataset <- GUI$getActiveData()
+                            data <- iNZightTools::deleteVars(.dataset, vars)
+                            GUI$getActiveDoc()$getModel()$updateData(data)
                             dispose(GUI$modWin)
                         }
                     }
@@ -1149,42 +1130,12 @@ iNZmissCatWin <- setRefClass(
                 "- Convert -",
                 handler = function(h,...) {
                     if (length(svalue(listOfVars)) > 0) {
-                        dataToConvert <- GUI$getActiveData()[, svalue(listOfVars,
-                                                                      index = TRUE),
-                                                             drop = FALSE]
-                        facIndices <- sapply(dataToConvert, is.factor)
-                        ## replace NA with 'missing' and 'observed' otherwise
-                        ## for non-factors
-                        dataToConvert[, !facIndices][!is.na(
-                            dataToConvert)[, !facIndices]] <- "observed"
-                        dataToConvert[,!facIndices][is.na(
-                            dataToConvert)[, !facIndices]] <- "missing"
-
-                        ## replace NA with 'missing' for factors
-                        dataToConvert[, facIndices] <- sapply(
-                            dataToConvert[, facIndices],
-                            function(x) {
-                                levels(x) <- c(levels(x), "missing")
-                                x[is.na(x)] <- "missing"
-                                x
-                            })
-                        ## convert non-factors to factors
-                        dataToConvert[, !facIndices] <- do.call(
-                            cbind.data.frame,
-                            lapply(dataToConvert[, !facIndices, drop = FALSE],
-                                   factor))
-
-                        newNames <- paste(names(
-                            GUI$getActiveData())[svalue(listOfVars, index = TRUE)],
-                                          "_miss", sep = "")
-                        insertData(data = dataToConvert,
-                                   name = newNames,
-                                   index = ncol(GUI$getActiveData()),
-                                   msg = list(
-                                       msg = "The new variables are added to the end of the dataset",
-                                       icon = "info"
-                                       ),
-                                   closeAfter = TRUE)
+                        vars <- svalue(listOfVars)
+                        names <- makeNames(paste0(vars, "_miss"))
+                        .dataset <- GUI$getActiveData()
+                        data <- iNZightTools::missingToCat(.dataset, vars, names)
+                        updateData(data)
+                        dispose(GUI$modWin)
                     }
                 })
             add(mainGroup, lbl1)
@@ -1222,25 +1173,10 @@ iNZrankNumWin <- setRefClass(
       names(numVar) <- "Variables"
       rankButton <- gbutton("Rank", handler = function(h, ...) {
         if (length(svalue(numVar)) > 0) {
-          index <- which(numIndices)[svalue(numVar, index = TRUE)]
-          data <- GUI$getActiveData()[, index]
-          if (length(index)>1){
-          newVar <- sapply(data, rank, ties.method = "min", na.last = "keep")
-          }
-          else 
-            newVar <- rank(data, ties.method = "min", na.last = "keep")
-          
-          newNames <- paste(names(GUI$getActiveData())[index],
-                            ".rank", sep = "")
-          
-          insertData(data = newVar,
-                     name = newNames,
-                     index = ncol(GUI$getActiveData()),
-                     msg = list(
-                       msg = "The new variables are added to the end of the dataset",
-                       icon = "info"
-                     ),
-                     closeAfter = TRUE)        
+            vars <- svalue(numVar)
+            .dataset <- GUI$getActiveData()
+            data <- iNZightTools::rankVars(.dataset, vars)
+            updateData(data)    
         }
         else {
           gmessage("Select at leat one variable!",
@@ -1281,22 +1217,10 @@ iNZctocatmulWin <- setRefClass(
       names(numVar) <- "Variables"
       ctmcButton <- gbutton("Convert", handler = function(h, ...) {
         if (length(svalue(numVar)) > 0) {
-          index <- which(numIndices)[svalue(numVar, index = TRUE)]
-          
-          if (length(index) > 1)
-            newData <- sapply(GUI$getActiveData()[, index], as.factor)
-          else
-            newData <- as.factor(GUI$getActiveData()[, index])
-          newNames <- paste(names(GUI$getActiveData())[index],
-                            ".cat", sep = "")
-          insertData(data = newData,
-                     name = newNames,
-                     index = ncol(GUI$getActiveData()),
-                     msg = list(
-                       msg = "The new variables are added to the end of the dataset",
-                       icon = "info"
-                     ),
-                     closeAfter = TRUE)
+            varnames <- svalue(numVar)
+            .dataset <- GUI$getActiveData()
+            data <- iNZightTools::convertToCat(.dataset, varnames)
+            updateData(data)
         }
       })
       add(mainGroup, lbl1)

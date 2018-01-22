@@ -198,7 +198,7 @@ iNZGUI <- setRefClass(
             add(gp1, .self$initializeViewSwitcher(dataThreshold)$viewGroup)
 
             ## display the name of the data set
-            add(gp1, .self$initializeDataNameWidget()$nameLabel)
+            add(gp1, .self$initializeDataNameWidget()$widget)
 
             ## display the data
             add(gp1, dataViewWidget$dataGp, expand = TRUE)
@@ -342,9 +342,7 @@ iNZGUI <- setRefClass(
                     handler = function(h, ...) {
                         ## NOTE: look into this - best way of 'restoring'? (why not just revert activeDoc??)
                         ## code should just start using `data` instead of `dataX`
-                      setDocument(iNZDocument$new(data = getActiveDoc()$getModel()$origDataSet))
-                        #getActiveDoc()$getModel()$updateData(
-                        #    getActiveDoc()$getModel()$origDataSet)
+                        setDocument(iNZDocument$new(data = iNZDocuments[[1]]$getModel()$origDataSet))
                     }
                     ),
                 home = gaction(
@@ -700,6 +698,12 @@ iNZGUI <- setRefClass(
                     handler = function(h, ...) {
                         showHistory()
                     }
+                ),
+                newMapsModule = gaction(
+                    ## 55
+                    label = "[Beta] New Maps Module", icon = "symbol_diamond",
+                    tooltip = "Load the new Maps module",
+                    handler = function(h, ...) iNZightModules::iNZightMap2Mod$new(.self)
                 )
             )
             ## home button is disabled if package 'vit' is not loaded
@@ -764,8 +768,9 @@ iNZGUI <- setRefClass(
                     actionList[[47]],
                     ## The new iNZightModelFitting module (under development)
                     gseparator(),
-                    actionList[[53]]#,
-                    #actionList[[54]]
+                    actionList[[53]],
+                    actionList[[54]],
+                    actionList[[55]]
                     ),
                 "Help" = list(
                     actionList[[33]],
@@ -1313,6 +1318,7 @@ iNZGUI <- setRefClass(
         ## set a new iNZDocument and make it the active one
         setDocument = function(document) {
             ## reset control widget
+            # state <- ctrlWidget$getState()
             ctrlWidget$resetWidget()
             ## add a iNZDocument to the end of the doc list
             iNZDocuments <<- c(iNZDocuments, list(document))
@@ -1334,6 +1340,7 @@ iNZGUI <- setRefClass(
                 )
             ## if plotSettings change, update the plot
             getActiveDoc()$addSettingsObserver(function() updatePlot())
+            # ctrlWidget$setState(state)
         },
         getActiveDoc = function() {
             iNZDocuments[[activeDoc]]
@@ -1531,7 +1538,7 @@ iNZGUI <- setRefClass(
         },
         showHistory = function() {
             wh <- gwindow("R Code History", parent = .self$win,
-                          width = 700, height = 500)
+                          width = 800, height = 500)
             gh <- gvbox(container = wh)
             th <- gtext(container = gh, expand = TRUE, fill = TRUE, wrap = FALSE)
             insert(th, rhistory$get(), font.attr = list(family = "monospace"))

@@ -4,7 +4,8 @@ iNZDataModel <- setRefClass(
                    dataSet = "ANY",
                    origDataSet = "ANY",
                    rowDataSet = "ANY",
-                   dataDesign = "ANY"),
+                   dataDesign = "ANY",
+                   name = "character"),
                prototype = list(
                    dataSet = data.frame(empty = " "),
                    origDataSet = data.frame(empty = " "),
@@ -24,6 +25,7 @@ iNZDataModel <- setRefClass(
             rowData <- data.frame(Row.names = 1:nrow(data), data,
                                   check.names = TRUE)
             rowDataSet <<- rowData
+            name <<- attr(data, "name")
         },
         updateData = function(data) {
             dataSet <<- data
@@ -94,7 +96,7 @@ iNZDataModel <- setRefClass(
         },
         getCode = function() {
             code <- attr(dataSet, "code")
-            attr(dataSet, "code") <<- NULL
+            # attr(dataSet, "code") <<- ""
             code
         }
         )
@@ -219,28 +221,41 @@ iNZDataNameWidget <- setRefClass(
     fields = list(
         GUI = "ANY",  ## the iNZight GUI object
         datName = "ANY", ## the string for the data set name
+        widget = "ANY",
         nameLabel = "ANY"
         ),
     methods = list(
         initialize = function(gui) {
             initFields(GUI = gui,
                        datName = "No data loaded")
-            nameLabel <<- glabel(.self$datName)
+            widget <<- ggroup()
+            addSpace(widget, 50)
+            add(widget, glabel("Data set: "))
+            nameLabel <<- gcombobox(.self$datName, handler = function(h, ...) {
+                GUI$activeDoc <<- svalue(h$obj, index = TRUE)
+                ## update stuff.
+            })
+            add(widget, nameLabel, expand = TRUE)
+            enabled(nameLabel) <<- FALSE
         },
         updateWidget = function() {
             dataSet <- GUI$getActiveData()
-
             if(is.null(dataSet)){
                 datName <<- "No data loaded"
+                enabled(nameLabel) <<- FALSE
             } else {
                 if((names(dataSet)[1] == "empty"))
                     datName <<- "No data loaded"
                 else {
                     datName <<- attr(dataSet, "name", exact = TRUE)
                 }
+                enabled(nameLabel) <<- TRUE
             }
-
-            svalue(nameLabel) <<- .self$datName
+            names <- sapply(GUI$iNZDocuments, function(d) attr(d$getData(), "name"))
+            blockHandlers(nameLabel)
+            nameLabel$set_items(names)
+            svalue(nameLabel, index = TRUE) <<- GUI$activeDoc
+            unblockHandlers(nameLabel)
         }
         )
     )
