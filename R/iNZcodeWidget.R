@@ -4,12 +4,13 @@ iNZcodeWidget <- setRefClass(
         GUI = "ANY",
         history = "list",      ## each list is a vector of commands
         keep.last = "logical", ## if FALSE, the last element of history is replaced on update
-        packages = "character"
+        packages = "character",
+        disabled = "logical"
     ),
     methods = list(
         initialize = function(gui) {
             initFields(GUI = gui, keep.last = TRUE,
-                       packages = c("iNZightPlots", "magrittr"))
+                       packages = c("iNZightPlots", "magrittr"), disabled = FALSE)
             history <<- list()
         },
         add = function(x, keep = TRUE, tidy = FALSE) {
@@ -40,6 +41,7 @@ iNZcodeWidget <- setRefClass(
             return(c(header(), do.call(c, history)))
         },
         update = function() {
+            if (disabled) return()
             ## look at the data - has it got code? update the history with the code!
             code <- GUI$getActiveDoc()$getCode()
             if (!is.null(code)) {

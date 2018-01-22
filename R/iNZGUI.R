@@ -247,8 +247,8 @@ iNZGUI <- setRefClass(
             actionList <- list(
                 import = gaction(
                   #1
-                    label = "Import Data...", icon = "symbol_diamond",
-                    tooltip = "Import a new Dataset",
+                    label = "Import Data (pre v3.1 version) ...", icon = "symbol_diamond",
+                    tooltip = "Import a new Dataset using the legacy import window",
                     handler = function(h, ...) iNZImportWin$new(.self)
                     ),
                 export = gaction(
@@ -337,11 +337,9 @@ iNZGUI <- setRefClass(
                     ),
                 rstrData = gaction(
                   #15
-                    label = "Restore Dataset",
+                    label = "Restore Original Dataset",
                     icon = "symbol_diamond",
                     handler = function(h, ...) {
-                        ## NOTE: look into this - best way of 'restoring'? (why not just revert activeDoc??)
-                        ## code should just start using `data` instead of `dataX`
                         setDocument(iNZDocument$new(data = iNZDocuments[[1]]$getModel()$origDataSet))
                     }
                     ),
@@ -681,8 +679,8 @@ iNZGUI <- setRefClass(
                 ),
                 importBeta = gaction(
                     ## 52
-                    label = "Import Data (Beta) ...", icon = "symbol_diamond",
-                    tooltip = "Import a new Dataset (new interface)",
+                    label = "Import Data  ...", icon = "symbol_diamond",
+                    tooltip = "Import a new Dataset",
                     handler = function(h, ...) iNZImportWinBeta$new(.self)
                 ),
                 modelFittingDev = gaction(
@@ -704,6 +702,58 @@ iNZGUI <- setRefClass(
                     label = "[Beta] New Maps Module", icon = "symbol_diamond",
                     tooltip = "Load the new Maps module",
                     handler = function(h, ...) iNZightModules::iNZightMap2Mod$new(.self)
+                ),
+                deleteDocument = gaction(
+                    ## 56
+                    label = "Delete current dataset", icon = "symbol_diamond",
+                    tooltip = "Remove the currently selected dataset",
+                    handler = function(h, ...) {
+                      if (activeDoc == 1) {
+                        gmessage("Sorry, but you can't delete this dataset (it's the original, afterall!).",
+                          title = "Unable to delete original data set", icon = "warning", parent = .self$win)
+                      } else {
+                        conf <- gconfirm(
+                          paste0("You are about to delete (permanently!) ",
+                                 "the currently selected dataset:\n\n",
+                                 attr(iNZDocuments[[activeDoc]]$getData(), "name"), "\n\n",
+                                 "Are you sure you want to continue?"),
+                          title = "You sure you want to delete this data?", icon = "question",
+                          parent = .self$win)
+                        if (conf) {
+                          todelete <- activeDoc
+                          activeDoc <<- activeDoc - 1
+                          iNZDocuments <<- iNZDocuments[-todelete]
+                          dataNameWidget$updateWidget()
+                        }
+                      }
+                    }
+                ),
+                renameDataset = gaction(
+                    ## 57
+                    label = "Rename dataset", icon = "symbol_diamond",
+                    tooltip = "Give the current dataset a better name",
+                    handler = function(h, ...) {
+                      curname <- attr(getActiveData(), "name")
+                      newname <- ""
+                      while(newname == "") {
+                        newname <- ginput("What would you like to call the dataset?",
+                          text = curname, title = "Rename dataset",
+                          icon = "question", parent = .self$win)
+                        if (length(newname) == 0) break
+                        if (newname != curname && newname %in% dataNameWidget$nameLabel$get_items()) {
+                          gmessage('Oops... that name exists. Try another!', icon = 'error',
+                                   parent = win)
+                          newname <- ""
+                        }
+                      }
+                      if (length(newname) == 1 && newname != "") {
+                        rhistory$disabled <<- TRUE
+                        attr(iNZDocuments[[activeDoc]]$dataModel$dataSet, "name") <<- newname
+                        rhistory$disabled <<- FALSE
+                        attr(iNZDocuments[[activeDoc]]$dataModel$dataSet, "code") <<-
+                          sprintf(".dataset <- %s", curname)
+                      }
+                    }
                 )
             )
             ## home button is disabled if package 'vit' is not loaded
@@ -717,6 +767,11 @@ iNZGUI <- setRefClass(
             }
             if (!requireNamespace("iNZightMR", quietly = TRUE))
                 enabled(actionList[[24]]) <- FALSE
+
+            ## if R version is lower than 3.3, disable new maps module
+            if (getRversion() < numeric_version(3.3))
+                enabled(actionList[[55]]) <- FALSE
+
             menuBarList <- list(
                 "File" = list(
                     actionList[[50]],
@@ -724,12 +779,12 @@ iNZGUI <- setRefClass(
                     gseparator(),
                     actionList[[16]],
                     gseparator(),
-                    actionList[[1]],
+                    actionList[[52]],
                     actionList[[2]],
                     gseparator(),
                     actionList[[48]],
                     gseparator(),
-                    actionList[[52]],
+                    actionList[[1]],
                     gseparator(),
                     actionList[[36]],
                     actionList[[37]]
@@ -739,7 +794,10 @@ iNZGUI <- setRefClass(
                     actionList[[27]],
                     actionList[[28]],
                     actionList[[31]],
+                    gseparator(),
+                    actionList[[57]],
                     actionList[[15]],
+                    actionList[[56]],
                     gseparator(),
                     actionList[[45]],
                     actionList[[46]],
@@ -1316,12 +1374,32 @@ iNZGUI <- setRefClass(
             invisible(rawpl)
         },
         ## set a new iNZDocument and make it the active one
-        setDocument = function(document) {
-            ## reset control widget
-            # state <- ctrlWidget$getState()
-            ctrlWidget$resetWidget()
-            ## add a iNZDocument to the end of the doc list
-            iNZDocuments <<- c(iNZDocuments, list(document))
+        setDocument = function(document, reset = FALSE) {
+            if (reset) {
+                ## delete all documents; start from scratch.
+                ctrlWidget$resetWidget()
+                iNZDocuments <<- list(document)
+                rhistory$add(c("SEP", 
+                  sprintf("## Exploring the '%s' dataset", attr(document$getData(), "name"))
+                  ))
+            } else {
+              ## give the new document a good name
+              names <- sapply(iNZDocuments, function(d) attr(d$getData(), "name"))
+              i <- 2
+              newname <- attr(document$getData(), "name")
+              while (newname %in% names) {
+                newname <- sprintf("%s_%s", newname, i)
+                i <- i + 1
+              }
+              attr(document$dataModel$dataSet, "name") <- newname
+              ## reset control widget
+              # state <- ctrlWidget$getState()
+              pset <- getActiveDoc()$getSettings()
+              ctrlWidget$resetWidget()
+              ## add a iNZDocument to the end of the doc list
+              iNZDocuments <<- c(iNZDocuments, list(document))
+              ## add a separator to code history 
+            }
             ## clean up any 'empty' datasets ..
             iNZDocuments <<- iNZDocuments[sapply(iNZDocuments, function(d) !all(dim(d$dataModel$dataSet) == 1))]
             ## set the active document to the one we added
@@ -1340,7 +1418,8 @@ iNZGUI <- setRefClass(
                 )
             ## if plotSettings change, update the plot
             getActiveDoc()$addSettingsObserver(function() updatePlot())
-            # ctrlWidget$setState(state)
+
+            if (!reset) ctrlWidget$setState(pset)
         },
         getActiveDoc = function() {
             iNZDocuments[[activeDoc]]

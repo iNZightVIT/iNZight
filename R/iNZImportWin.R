@@ -239,7 +239,9 @@ iNZImportWinBeta <- setRefClass("iNZImportWinBeta",
                                         ## coerce character to factor
                                         invisible(sapply(which(sapply(tmpData, class) == "character"),
                                                          function(i) tmpData[[i]] <<- factor(tmpData[[i]])))
-                                        GUI$setDocument(iNZDocument$new(data = as.data.frame(tmpData, stringsAsFactors = TRUE)))
+                                        GUI$setDocument(iNZDocument$new(
+                                                data = as.data.frame(tmpData, stringsAsFactors = TRUE)),
+                                            reset = TRUE)
 
                                         dispose(infw)
 
