@@ -459,7 +459,7 @@ iNZPlotModWin <- setRefClass(
                 if (!is.null(curSet$g2))
                     isNA <- isNA | is.na(curSet$g2)
 
-                dp <- grid.get(ifelse(dot, "DOTPOINTS", "SCATTERPOINTS"))
+                dp <- grid.get(ifelse(dot, "inz-DOTPOINTS.1.1.1", "inz-SCATTERPOINTS.1.1"))
                 d <- d[w & !isNA, ]
                 d$x <- as.numeric(dp$x)
                 d$y <- as.numeric(dp$y)

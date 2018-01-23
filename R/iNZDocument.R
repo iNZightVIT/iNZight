@@ -144,8 +144,11 @@ iNZPlotSettings <- setRefClass(
         ## extract a sub-list of a settings list
         ## than can be used to merge with defaultSettings
         extractDefaults = function(theSettings) {
-            defaultFields <- c("cex", "bg", "col.pt", "col.pt", "cex.pt", "cex.dotpt",
-                               "alpha", "fill.pt", "pch", "internal.labels")
+            # defaultFields <- c("cex", "bg", "col.pt", "col.pt", "cex.pt", "cex.dotpt",
+            #                    "alpha", "fill.pt", "pch", "internal.labels", "trend")
+            defaultFields <- names(defaultSettings)
+            forget <- c('plottype')
+            defaultFields <- defaultFields[!defaultFields %in% forget]
             theSettings[defaultFields]
         },
         addSettingsObserver = function(FUN, ...) {

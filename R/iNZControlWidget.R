@@ -551,6 +551,26 @@ iNZControlWidget <- setRefClass(
             set$varnames$g2 <- NULL
           }
 
+          ## other things ...
+          if (!is.null(set$sizeby) && set$varnames$sizeby %in% vars) {
+            set$sizeby <- data[[set$varnames$sizeby]]
+          } else {
+            set$sizeby <- NULL
+            set$varnames$sizeby = NULL
+          }
+          if (!is.null(set$colby) && set$varnames$colby %in% vars) {
+            set$colby <- data[[set$varnames$colby]]
+          } else {
+            set$colby <- NULL
+            set$varnames$colby = NULL
+          }
+          if (!is.null(set$symbolby) && set$varnames$symbolby %in% vars) {
+            set$symbolby <- data[[set$varnames$symbolby]]
+          } else {
+            set$symbolby <- NULL
+            set$varnames$symbolby = NULL
+          }
+
           GUI$getActiveDoc()$setSettings(set)
           GUI$updatePlot()
         })

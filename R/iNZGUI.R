@@ -754,6 +754,14 @@ iNZGUI <- setRefClass(
                           sprintf(".dataset <- %s", curname)
                       }
                     }
+                ),
+                changelog = gaction(
+                    ## 58
+                    label = "Change history", icon = "symbol_diamond",
+                    tooltip = "Jump over to our website to see a list of changes",
+                    handler = function(h, ...)
+                      browseURL(
+                        'https://www.stat.auckland.ac.nz/~wild/iNZight/support/changelog/?pkg=iNZight')
                 )
             )
             ## home button is disabled if package 'vit' is not loaded
@@ -832,8 +840,9 @@ iNZGUI <- setRefClass(
                     ),
                 "Help" = list(
                     actionList[[33]],
-                    actionList[[38]],
+                    # actionList[[38]],
                     "User Guides" = actionList[39:44],
+                    actionList[[58]],
                     actionList[[34]],
                     actionList[[35]]
                     )
@@ -1368,7 +1377,7 @@ iNZGUI <- setRefClass(
                 })
                 plotType <<- attr(curPlot, "plottype")
             } else {
-                rawpl <- iNZightPlots:::resetPlot()
+                rawpl <- plotSplashScreen() ## iNZightPlots:::resetPlot()
                 plotType <<- "none"
             }
             invisible(rawpl)
@@ -1378,27 +1387,28 @@ iNZGUI <- setRefClass(
             if (reset) {
                 ## delete all documents; start from scratch.
                 ctrlWidget$resetWidget()
+                Nk <- length(iNZDocuments)
                 iNZDocuments <<- list(document)
+                ## add a separator to code history 
                 rhistory$add(c("SEP", 
                   sprintf("## Exploring the '%s' dataset", attr(document$getData(), "name"))
                   ))
             } else {
-              ## give the new document a good name
-              names <- sapply(iNZDocuments, function(d) attr(d$getData(), "name"))
-              i <- 2
-              newname <- attr(document$getData(), "name")
-              while (newname %in% names) {
-                newname <- sprintf("%s_%s", newname, i)
-                i <- i + 1
-              }
-              attr(document$dataModel$dataSet, "name") <- newname
-              ## reset control widget
-              # state <- ctrlWidget$getState()
-              pset <- getActiveDoc()$getSettings()
-              ctrlWidget$resetWidget()
-              ## add a iNZDocument to the end of the doc list
-              iNZDocuments <<- c(iNZDocuments, list(document))
-              ## add a separator to code history 
+                ## give the new document a good name
+                names <- sapply(iNZDocuments, function(d) attr(d$getData(), "name"))
+                i <- 2
+                newname <- attr(document$getData(), "name")
+                while (newname %in% names) {
+                  newname <- sprintf("%s_%s", newname, i)
+                  i <- i + 1
+                }
+                attr(document$dataModel$dataSet, "name") <- newname
+                ## reset control widget
+                # state <- ctrlWidget$getState()
+                pset <- getActiveDoc()$getSettings()
+                ctrlWidget$resetWidget()
+                ## add a iNZDocument to the end of the doc list
+                iNZDocuments <<- c(iNZDocuments, list(document))
             }
             ## clean up any 'empty' datasets ..
             iNZDocuments <<- iNZDocuments[sapply(iNZDocuments, function(d) !all(dim(d$dataModel$dataSet) == 1))]
@@ -1420,6 +1430,14 @@ iNZGUI <- setRefClass(
             getActiveDoc()$addSettingsObserver(function() updatePlot())
 
             if (!reset) ctrlWidget$setState(pset)
+            else {
+                dataViewWidget$updateWidget()
+                getActiveDoc()$updateSettings()
+                ctrlWidget$updateVariables()
+                dataNameWidget$updateWidget()
+                rhistory$update()
+            }
+            updatePlot()
         },
         getActiveDoc = function() {
             iNZDocuments[[activeDoc]]
@@ -1607,10 +1625,95 @@ iNZGUI <- setRefClass(
         },
         plotSplashScreen = function() {
             if (requireNamespace("png", quietly = TRUE)) {
-                img <- png::readPNG(system.file("images/inzight_splash.png", package = "iNZight"))
+                img <- png::readPNG(system.file("images/inzight_transp.png", package = "iNZight"))
                 grid::grid.newpage()
-                grid::pushViewport(grid::viewport())
+                grid::pushViewport(grid::viewport(
+                    height = unit(0.8, "npc"),
+                    layout = grid::grid.layout(nrow = 3, ncol = 1,
+                                               heights = unit.c(unit(0.2, "npc"),
+                                                                unit(2.5, "lines"),
+                                                                unit(1, "null")))
+                ))
+
+                grid::pushViewport(grid::viewport(layout.pos.row = 1))
                 grid::grid.raster(img)
+                grid::upViewport()
+
+                grid::pushViewport(grid::viewport(layout.pos.row = 2))
+                grid::grid.text("Version 3.2",
+                                x = unit(0.8, "npc"), y = unit(0.75, "npc"),
+                                just = 'right')
+                grid::grid.text("Release date: 23 Jan 2018",
+                                x = unit(0.8, "npc"), y = unit(0.25, "npc"),
+                                just = 'right', gp = gpar(fontsize = 9))
+                grid::upViewport()
+
+                grid::pushViewport(grid::viewport(layout.pos.row = 3))
+                grid::pushViewport(grid::viewport(
+                    y = unit(0.45, "npc"),
+                    width = unit(0.8, "npc"), height = unit(0.9, "npc")))
+                
+                if (all(dim(getActiveData()) == 1)) {
+                    grid::grid.text(
+                        "Kia ora and welcome! To get started, import some data.",
+                        y = 1, x = 0, just = c("left", "top"), 
+                        gp = gpar(fontsize = 12, fontface = 'bold'))
+                    grid::grid.text(
+                        paste0("Not sure where to go? Try the File menu!\n",
+                               "There are some example datasets there ",
+                               "if you just want to explore the program."),
+                        y = unit(1, "npc") - unit(3, "lines"), x = 0, just = c("left", "top"),
+                        gp = gpar(fontsize = 11))
+
+                    grid::grid.text(
+                        paste(sep = "\n", "What's changed? Y'know, in case you're interested ...", 
+                              "",
+                              "- iNZight now speaks tidyverse! ",
+                              "  The data operations in the Data and Variables menus now write tidyverse code,",
+                              "  which you can see by going to Advanced > Show R code history.",
+                              "  Note that this is a new feature and still being developed.", 
+                              "",
+                              "- As well as tracking filtering and other dataset operations,",
+                              "  iNZight now lets you switch between them!",
+                              "  Just use the drop down menu above the data spreadsheet.",
+                              "  iNZight will also attempt to retain the chosen variables and settings! Hurrah!",
+                              "",
+                              "- Time series module plots have been prettified (somewhat).",
+                              "",
+                              "- A bunch of other bug fixes and tweaks.",
+                              "  For more details, head to Help > Changes."),
+                        y = unit(1, "npc") - unit(8, "lines"), 
+                        x = 0, c(just = "left", "top"),
+                        gp = gpar(fontsize = 11))
+
+                } else {
+                    grid::grid.text("That's some fine looking data ... ",
+                        y = 1, x = 0, just = c("left", "top"), 
+                        gp = gpar(fontsize = 12, fontface = 'bold'))
+
+                    grid::grid.text(
+                        paste(sep = "\n",
+                              "Drag a variable into the Variable 1 slot to start exploring!",
+                              "", "",
+                              "Some helpful tips:",
+                              "",
+                              "- Click on one of the Variable boxes and use the up/down arrow keys",
+                              "  to step through the variables in the data set!",
+                              "",
+                              "- Use Add to Plot (the blue bar-graph icon with a plus)",
+                              "  to add a splash of colour to your graph.",
+                              "",
+                              "- Not sure what something does? Click it and find out!",
+                              "  The worst you can do is crash the program, and if that happens",
+                              "  it would be super helpful to you, me, and everyone else if you",
+                              "  sent off a bug report explaining what you did and what happened.",
+                              "  (See the Help Menu)",
+                              "",
+                              "- Most importantly, have fun!"),
+                        y = unit(1, "npc") - unit(3, "lines"), 
+                        x = 0, c(just = "left", "top"),
+                        gp = gpar(fontsize = 12))                    
+                }
 
                 grDevices::dev.flush()
             }
