@@ -13,6 +13,7 @@ __Release date:__ 23 January 2018
 - The __Reorder Levels__ window has been reconfigured to, hopefully, make it easier to use
 - Filtering no longer clears the slots 
 - Import data [beta] is ... no longer beta!
+- Updated the splash screen to be up-to-date, and attempt to be friendly ...
 
 
 ## Bug Fixes
