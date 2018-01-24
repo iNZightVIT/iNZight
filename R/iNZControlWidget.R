@@ -507,7 +507,7 @@ iNZControlWidget <- setRefClass(
             ## set variable 2 to whatever it's supposed to be
             blockHandlers(V2box)
             svalue(V2box) <<- set$varnames$y
-            unblockHandlers(V1box)
+            unblockHandlers(V2box)
             set$y <- data[[set$varnames$y]]
           } else {
             ## remove variable 1
