@@ -1217,10 +1217,12 @@ iNZctocatmulWin <- setRefClass(
       names(numVar) <- "Variables"
       ctmcButton <- gbutton("Convert", handler = function(h, ...) {
         if (length(svalue(numVar)) > 0) {
-            varnames <- svalue(numVar)
+            vars <- svalue(numVar)
+            varnames <- makeNames(paste(vars, "cat", sep = "."))
             .dataset <- GUI$getActiveData()
-            data <- iNZightTools::convertToCat(.dataset, varnames)
+            data <- iNZightTools::convertToCat(.dataset, vars, varnames)
             updateData(data)
+            dispose(GUI$modWin)
         }
       })
       add(mainGroup, lbl1)
