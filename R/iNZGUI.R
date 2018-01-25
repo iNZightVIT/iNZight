@@ -722,7 +722,9 @@ iNZGUI <- setRefClass(
                         if (conf) {
                           todelete <- activeDoc
                           activeDoc <<- activeDoc - 1
+                          rhistory$disabled <<- TRUE
                           iNZDocuments <<- iNZDocuments[-todelete]
+                          rhistory$disabled <<- FALSE
                           dataNameWidget$updateWidget()
                         }
                       }
