@@ -263,7 +263,8 @@ iNZImportWinBeta <- setRefClass("iNZImportWinBeta",
                                     ## Read data using object values:
                                     tmpData <<- suppressWarnings(suppressMessages({
                                         code <- ~iNZightTools::iNZread(NAME, extension = EXT, preview = PREV, col.types = TYPES,
-                                                                       delim = DELIM, decimal.mark = DECM, grouping.mark = GRPM)
+                                                                       delim = DELIM, decimal.mark = DECM, grouping.mark = GRPM,
+                                                                       encoding.style = encoding)
                                         ## THIS WILL BECOME REDUNDANT...
                                         iNZightTools:::interpolate(
                                             code,
@@ -400,6 +401,7 @@ iNZImportWinBeta <- setRefClass("iNZImportWinBeta",
                                                encOpt <- gcombobox(encodings,
                                                                    selected = match(encoding, encodings),
                                                                    handler = function(h, ...) {
+                                                                       # encoding <<- strsplit(svalue(h$obj), "/")[[1]][1]
                                                                        encoding <<- svalue(h$obj)
                                                                        generatePreview(h, ...)
                                                                    })

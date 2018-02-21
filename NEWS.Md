@@ -20,6 +20,12 @@ __Release date:__ 23 January 2018
 - saving residuals/predicted values works if you select only quadratic or cubic
 
 
+## Patches
+
+### Patch 3.2.1 - 21/02/2018
+- fix small issue in import module that prevented reading of non-UTF-8 csv files
+
+
 ***
 # Version 3.1
 __Release date:__ 13 December, 2016
