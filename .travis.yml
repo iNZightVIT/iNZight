@@ -4,7 +4,9 @@ language: R
 sudo: true
 
 r:
+  - oldrel
   - release
+  - devel
 
 before_script:
   - "export DISPLAY=:99.0"
@@ -19,7 +21,4 @@ apt_packages:
   - xorg-dev
   - libxml2-dev
   - libnlopt-dev
-  - r-cran-rodbc
-  - r-cran-rgtk2
-  - r-cran-cairodevice
 
