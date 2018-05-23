@@ -16,9 +16,13 @@ before_script:
 repos:
   docker: http://r.docker.stat.auckland.ac.nz/R
 
-apt_packages:
-  - libgtk2.0-dev
-  - xorg-dev
-  - libxml2-dev
-  - libnlopt-dev
+addons:
+  apt:
+    update: true
+    packages:
+      - xvfb
+      - libgtk2.0-dev
+      - xorg-dev
+      - libxml2-dev
+      - libnlopt-dev
 
