@@ -107,7 +107,7 @@ iNZImportWinBeta <- setRefClass("iNZImportWinBeta",
                                 GUI = "ANY",
                                 importFileWin = "ANY",
                                 filetypes = "list",
-                                fname = "ANY",
+                                fname = "character", filename = "ANY",
                                 fext = "ANY",
                                 fColTypes = "ANY",
                                 prevGp = "ANY",
@@ -157,40 +157,41 @@ iNZImportWinBeta <- setRefClass("iNZImportWinBeta",
                                     ii <- 1
 
                                     lbl <- glabel("File Name :")
-                                    fname <<- gedit("", width = 40)
+                                    font(lbl) <- list(weight = "bold")
+                                    filename <<- glabel("")
                                     browseBtn <- gbutton("Browse",
                                                          handler = function(h, ...) {
-                                                             svalue(fname) <<- gfile(text = "Choose a file",
-                                                                                     initial.dir = file.path(".", "data"),
-                                                                                     filter = filetypes, quote = FALSE,
-                                                                                     container = fileGp)
+                                                             fname <<- gfile(text = "Choose a file",
+                                                                             initial.dir = file.path(".", "data"),
+                                                                             filter = filetypes, quote = FALSE,
+                                                                             container = fileGp)
+                                                             svalue(filename) <<- basename(fname)
+
+                                                             fext <<- tools::file_ext(fname)
+                                                             
+                                                             blockHandlers(filetype)
+                                                             match <- which(sapply(filetypes[-1], function(ft) grepl(paste0(ft$patterns, "$"), paste0(".", fext))))
+                                                             svalue(filetype, index = TRUE) <- if (length(match) > 0) match else 0
+                                                             unblockHandlers(filetype)
+                                                             
+                                                             generatePreview(h, ...)
                                                          })
-                                    fileTbl[ii, 1, anchor = c(1, 0), expand = TRUE] <- lbl
-                                    fileTbl[ii, 2:5, expand = TRUE] <- fname
-                                    fileTbl[ii, 6] <- browseBtn
+                                    fileTbl[ii, 1, anchor = c(1, 0)] <- lbl
+                                    font(lbl) <- list(weight = "bold")
+                                    fileTbl[ii, 2:4, expand = TRUE, anchor = c(-1, 0)] <- filename
+                                    fileTbl[ii, 5] <- browseBtn
                                     ii <- ii + 1
 
                                     ## --- Extension
                                     lbl <- glabel("File Type :")
+                                    font(lbl) <- list(weight = "bold")
                                     filetype <- gcombobox(c(names(filetypes)[-1]), selected = 0)
-                                    fileTbl[ii, 1, anchor = c(1, 0), expand = TRUE] <- lbl
+                                    fileTbl[ii, 1, anchor = c(1, 0)] <- lbl
                                     fileTbl[ii, 2:5, expand = TRUE] <- filetype
                                     ii <- ii + 1
 
 
                                     ## Change handlers:
-                                    addHandlerChanged(fname, function(h, ...) {
-                                        fext <<- tools::file_ext(svalue(h$obj))
-
-                                        blockHandlers(filetype)
-                                        match <- which(sapply(filetypes[-1], function(ft) grepl(paste0(ft$patterns, "$"), paste0(".", fext))))
-                                        svalue(filetype, index = TRUE) <- if (length(match) > 0) match else 0
-                                        unblockHandlers(filetype)
-
-                                        generatePreview(h, ...)
-                                    })
-                                    addHandlerKeystroke(fname, function(h, ...) h$obj$invoke_change_handler())
-
                                     addHandlerChanged(filetype, function(h, ...) {
                                         ## set the file extension
                                         fext <<- gsub("[*.]", "", filetypes[[svalue(h$obj, index = TRUE) + 1]]$patterns)
@@ -221,7 +222,7 @@ iNZImportWinBeta <- setRefClass("iNZImportWinBeta",
                                         infw <- gwindow("Loading data ...", width = 320, height = 80, visible = FALSE, parent = GUI$win)
                                         infg <- gvbox(container = infw)
                                         addSpace(infg, 10)
-                                        infl <- glabel("Please wait while iNZight loads your data.\nIt make take some time depending on the size.",
+                                        infl <- glabel("Please wait while iNZight loads your data.\nIt might take some time depending on the size.",
                                                        container = infg, anchor = c(0, -1))
                                         font(infl) <- list(weight = "bold")
                                         visible(infw) <- TRUE
@@ -230,11 +231,21 @@ iNZImportWinBeta <- setRefClass("iNZImportWinBeta",
                                         ## which means the message is pointless ...
                                         Sys.sleep(0.1) 
                                         
-                                        if (is.null(tmpData) || iNZightTools::isPreview(tmpData)) readData()
+                                        if (is.null(tmpData) || iNZightTools::isPreview(tmpData)) {
+                                            readx <- try(readData(), silent = TRUE)
+
+                                            if (inherits(readx, "try-error")) {
+                                                dispose(infw)
+                                                gmessage("There was an error loading the data.", icon = "error",
+                                                         title = "Unable to load data.",
+                                                         parent = importFileWin)
+                                                return()
+                                            }
+                                        }
 
                                         ## give the dataset a name ...
                                         attr(tmpData, "name") <<- 
-                                            make.names(tools::file_path_sans_ext(basename(svalue(fname))))
+                                            make.names(tools::file_path_sans_ext(basename(fname)))
 
                                         ## coerce character to factor
                                         invisible(sapply(which(sapply(tmpData, class) == "character"),
@@ -268,7 +279,7 @@ iNZImportWinBeta <- setRefClass("iNZImportWinBeta",
                                         ## THIS WILL BECOME REDUNDANT...
                                         iNZightTools:::interpolate(
                                             code,
-                                            NAME = svalue(fname),
+                                            NAME = fname,
                                             EXT = fext,
                                             PREV = preview,
                                             TYPES = getTypes(),
@@ -284,7 +295,7 @@ iNZImportWinBeta <- setRefClass("iNZImportWinBeta",
                                 },
                                 ## Generate a preview
                                 generatePreview = function(h, ..., reload = FALSE) {
-                                    if (length(svalue(fname)) && file.exists(svalue(fname))) {
+                                    if (length(fname) && file.exists(fname)) {
                                         if (!is.null(prev)) {
                                             delete(prevGp, prev)
                                             prev <<- NULL

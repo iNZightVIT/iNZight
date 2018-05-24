@@ -10,6 +10,7 @@
 ##' @param ... additional arguments passed to `gimage`
 ##' @return a gimage with extra effects
 ##' @author Tom Elliott
+##' @export
 gimagebutton <- function(stock.id = NULL, filename, old_cursor = NULL, tooltip = NULL,
                          ...) {
     img <- if (is.null(stock.id)) gimage(filename = filename, ...)
