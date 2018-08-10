@@ -271,7 +271,12 @@ iNZImportWinBeta <- setRefClass("iNZImportWinBeta",
                                 readData = function(preview = FALSE) {
                                     ## Read data using object values:
                                     tmpData <<- suppressWarnings(suppressMessages({
-                                        iNZightTools::smart_read(fname, preview = preview)#, column_types = getTypes())
+                                        iNZightTools::smart_read(fname, fext, preview = preview,
+                                            encoding = encoding,
+                                            delimiter = switch(fext, "csv" = csvdelim, "txt" = txtdelim, NULL),
+                                            decimal_mark = decMark,
+                                            grouping_mark = bigMark)
+                                            #, column_types = getTypes())
                                         ## THIS WILL BECOME REDUNDANT...
                                         # iNZightTools:::interpolate(
                                         #     code,
