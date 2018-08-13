@@ -244,8 +244,9 @@ iNZImportWinBeta <- setRefClass("iNZImportWinBeta",
                                         }
 
                                         ## give the dataset a name ...
-                                        attr(tmpData, "name") <<- 
-                                            make.names(tools::file_path_sans_ext(basename(fname)))
+                                        if (is.null(attr(tmpData, "name")))
+                                            attr(tmpData, "name") <<- 
+                                                make.names(tools::file_path_sans_ext(basename(fname)))
 
                                         ## coerce character to factor
                                         GUI$setDocument(iNZDocument$new(

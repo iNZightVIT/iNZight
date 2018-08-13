@@ -49,6 +49,7 @@ iNZcodeWidget <- setRefClass(
                 dname <- attr(GUI$getActiveData(), "name")
                 if (is.null(dname) || dname == "")
                   dname <- sprintf("data%s", ifelse(GUI$activeDoc == 1, "", GUI$activeDoc))
+                dname <- iNZightTools:::create_varname(dname)
                 if (!any(grepl(".dataset", code))) {
                   code <- c(sprintf("%s <- ", dname), code)
                   add(code, keep = TRUE, tidy = TRUE)
