@@ -94,9 +94,10 @@ iNZDataModel <- setRefClass(
         getDesign = function() {
             dataDesign
         },
-        getCode = function() {
+        getCode = function(remove = TRUE) {
             code <- attr(dataSet, "code")
-            # attr(dataSet, "code") <<- ""
+            if (remove)
+                attr(dataSet, "code") <<- ""
             code
         }
         )
