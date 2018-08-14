@@ -128,7 +128,7 @@ iNZImportWinBeta <- setRefClass("iNZImportWinBeta",
                                                                 "Comma Separated Values (.csv)" = list(patterns = c("*.csv")),
                                                                 "Tab-delimited Text Files (.txt)" = list(patterns = c("*.txt")),
                                                                 "SPSS Files (.sav)" = list(patterns = c("*.sav")),
-                                                                #"SAS Files (.sas)" = list(patterns = c("*.sas")),
+                                                                "SAS Files (.sas)" = list(patterns = c("*.sas")),
                                                                 "97-2003 Excel Files (.xls)" = list(patterns = c("*.xls")),
                                                                 "2007 Excel Files (.xlsx)" = list(patterns = c("*.xlsx")),
                                                                 "STATA Files (.dta)" = list(patterns = c("*.dta"))),
@@ -230,8 +230,8 @@ iNZImportWinBeta <- setRefClass("iNZImportWinBeta",
                                         ## without this, the text doesn't load before the next call is made,
                                         ## which means the message is pointless ...
                                         Sys.sleep(0.1) 
-                                        
-                                        if (is.null(tmpData) || iNZightTools::isPreview(tmpData)) {
+
+                                        if (is.null(tmpData) || iNZightTools::is_preview(tmpData)) {
                                             readx <- try(readData(), silent = TRUE)
 
                                             if (inherits(readx, "try-error")) {
@@ -244,12 +244,11 @@ iNZImportWinBeta <- setRefClass("iNZImportWinBeta",
                                         }
 
                                         ## give the dataset a name ...
-                                        attr(tmpData, "name") <<- 
-                                            make.names(tools::file_path_sans_ext(basename(fname)))
+                                        if (is.null(attr(tmpData, "name")))
+                                            attr(tmpData, "name") <<- 
+                                                make.names(tools::file_path_sans_ext(basename(fname)))
 
                                         ## coerce character to factor
-                                        invisible(sapply(which(sapply(tmpData, class) == "character"),
-                                                         function(i) tmpData[[i]] <<- factor(tmpData[[i]])))
                                         GUI$setDocument(iNZDocument$new(
                                                 data = as.data.frame(tmpData, stringsAsFactors = TRUE)),
                                             reset = TRUE)
@@ -273,20 +272,23 @@ iNZImportWinBeta <- setRefClass("iNZImportWinBeta",
                                 readData = function(preview = FALSE) {
                                     ## Read data using object values:
                                     tmpData <<- suppressWarnings(suppressMessages({
-                                        code <- ~iNZightTools::iNZread(NAME, extension = EXT, preview = PREV, col.types = TYPES,
-                                                                       delim = DELIM, decimal.mark = DECM, grouping.mark = GRPM,
-                                                                       encoding.style = encoding)
+                                        iNZightTools::smart_read(fname, fext, preview = preview,
+                                            encoding = encoding,
+                                            delimiter = switch(fext, "csv" = csvdelim, "txt" = txtdelim, NULL),
+                                            decimal_mark = decMark,
+                                            grouping_mark = bigMark)
+                                            #, column_types = getTypes())
                                         ## THIS WILL BECOME REDUNDANT...
-                                        iNZightTools:::interpolate(
-                                            code,
-                                            NAME = fname,
-                                            EXT = fext,
-                                            PREV = preview,
-                                            TYPES = getTypes(),
-                                            DELIM = switch(fext, "csv" = csvdelim, "txt" = txtdelim, NULL),
-                                            DECM = decMark,
-                                            GRPM = bigMark
-                                        )
+                                        # iNZightTools:::interpolate(
+                                        #     code,
+                                        #     NAME = fname,
+                                        #     EXT = fext,
+                                        #     PREV = preview,
+                                        #     TYPES = getTypes(),
+                                        #     DELIM = switch(fext, "csv" = csvdelim, "txt" = txtdelim, NULL),
+                                        #     DECM = decMark,
+                                        #     GRPM = bigMark
+                                        # )
                                     }))
 
                                     ## do a check that col classes match requested ...
@@ -341,8 +343,14 @@ iNZImportWinBeta <- setRefClass("iNZImportWinBeta",
                                     }
                                 },
                                 getTypes = function() {
-                                    if (is.null(fColTypes) || all(fColTypes == "auto")) return(NULL)
-                                    sapply(fColTypes, function(x) switch(x, "categorical" = "factor", x))
+                                    if (is.null(fColTypes)) 
+                                        return(NULL)
+                                    types <- lapply(fColTypes, function(x) 
+                                        switch(x, "numeric" = "n", "factor" = "c", NULL))
+                                    # names(types) names(fColTypes)
+                                    types
+                                    # if (is.null(fColTypes) || all(fColTypes == "auto")) return(NULL)
+                                    # sapply(fColTypes, function(x) switch(x, "categorical" = "factor", x))
                                 },
                                 advancedOptions = function() {
                                     ## populate the Advanced Options panel (advGp) with extra options for various data sets.

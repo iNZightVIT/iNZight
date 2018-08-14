@@ -779,8 +779,8 @@ iNZGUI <- setRefClass(
                 enabled(actionList[[24]]) <- FALSE
 
             ## if R version is lower than 3.3, disable new maps module
-            if (getRversion() < numeric_version(3.3))
-                enabled(actionList[[55]]) <- FALSE
+            # if (getRversion() < numeric_version(3.3))
+            #     enabled(actionList[[55]]) <- FALSE
 
             menuBarList <- list(
                 "File" = list(
@@ -838,7 +838,7 @@ iNZGUI <- setRefClass(
                     gseparator(),
                     actionList[[53]],
                     actionList[[54]],
-                    actionList[[55]]
+                    if (getRversion() >= numeric_version(3.3)) actionList[[55]] else gseparator()
                     ),
                 "Help" = list(
                     actionList[[33]],
