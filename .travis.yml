@@ -2,6 +2,7 @@
 
 language: R
 sudo: true
+latex: false
 
 r:
   - oldrel
