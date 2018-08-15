@@ -1,3 +1,15 @@
+# Version 3.3
+__Release date:__ 15 August 2018
+
+## Major Changes
+
+- import data now uses updated functions which return the file-specified code,
+  available from Advanced > R Code history
+- maps module completely renovated
+- interactive plots have recieved more updates and fixes
+
+
+***
 # Version 3.2
 __Release date:__ 23 January 2018
 
