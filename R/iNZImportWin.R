@@ -244,7 +244,7 @@ iNZImportWinBeta <- setRefClass("iNZImportWinBeta",
                                         }
 
                                         ## give the dataset a name ...
-                                        if (is.null(attr(tmpData, "name")))
+                                        if (is.null(attr(tmpData, "name", exact = TRUE)))
                                             attr(tmpData, "name") <<- 
                                                 make.names(tools::file_path_sans_ext(basename(fname)))
 

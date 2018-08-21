@@ -78,9 +78,9 @@ iNZFilterWin <- setRefClass(
                       lvls <- svalue(factorLvls)
                       .dataset <- GUI$getActiveData()
                       data <- iNZightTools::filterLevels(.dataset, var, lvls)
-                      attr(data, "name") <- paste(attr(.dataset, "name"), "filtered", sep = ".")
+                      attr(data, "name") <- paste(attr(.dataset, "name", exact = TRUE), "filtered", sep = ".")
                       ## .dataset %>% foo() becomes mydata.filtered %>% foo()
-                      attr(data, "code") <- gsub(".dataset", attr(.dataset, "name"), attr(data, "code"))
+                      attr(data, "code") <- gsub(".dataset", attr(.dataset, "name", exact = TRUE), attr(data, "code"))
                       GUI$setDocument(iNZDocument$new(data = data))
                       # GUI$getActiveDoc()$getModel()$updateData(data)
                       dispose(GUI$modWin)
@@ -148,8 +148,8 @@ iNZFilterWin <- setRefClass(
                         icon = 'error', parent = GUI$modWin)
                     return()
                   }
-                  attr(data, "name") <- paste(attr(.dataset, "name"), "filtered", sep = ".")
-                  attr(data, "code") <- gsub(".dataset", attr(.dataset, "name"), attr(data, "code"))
+                  attr(data, "name") <- paste(attr(.dataset, "name", exact = TRUE), "filtered", sep = ".")
+                  attr(data, "code") <- gsub(".dataset", attr(.dataset, "name", exact = TRUE), attr(data, "code"))
                   GUI$setDocument(iNZDocument$new(data = data))
                   dispose(GUI$modWin)
                 })
@@ -195,8 +195,8 @@ iNZFilterWin <- setRefClass(
                         icon = 'error', parent = GUI$modWin)
                     return()
                   }
-                  attr(data, "name") <- paste(attr(.dataset, "name"), "filtered", sep = ".")
-                  attr(data, "code") <- gsub(".dataset", attr(.dataset, "name"), attr(data, "code"))
+                  attr(data, "name") <- paste(attr(.dataset, "name", exact = TRUE), "filtered", sep = ".")
+                  attr(data, "code") <- gsub(".dataset", attr(.dataset, "name", exact = TRUE), attr(data, "code"))
                   GUI$setDocument(iNZDocument$new(data = data))
                   dispose(GUI$modWin)
                 })
@@ -243,8 +243,8 @@ iNZFilterWin <- setRefClass(
                     return()
                   }
                   data <- iNZightTools::filterRandom(.dataset, nsample, size)
-                  attr(data, "name") <- paste(attr(.dataset, "name"), "filtered", sep = ".")
-                  attr(data, "code") <- gsub(".dataset", attr(.dataset, "name"), attr(data, "code"))
+                  attr(data, "name") <- paste(attr(.dataset, "name", exact = TRUE), "filtered", sep = ".")
+                  attr(data, "code") <- gsub(".dataset", attr(.dataset, "name", exact = TRUE), attr(data, "code"))
                   GUI$setDocument(iNZDocument$new(data = data))
                   dispose(GUI$modWin)
                 })
@@ -333,8 +333,8 @@ iNZReshapeDataWin <- setRefClass(
                         .dataset <- GUI$getActiveData()
                         vars <- names(.dataset)
                         data <- iNZightTools::stackVars(.dataset, vars, 'variable', 'value')
-                        attr(data, "name") <- paste(attr(.dataset, "name"), "stacked", sep = ".")
-                        attr(data, "code") <- gsub(".dataset", attr(.dataset, "name"), attr(data, "code"))
+                        attr(data, "name") <- paste(attr(.dataset, "name", exact = TRUE), "stacked", sep = ".")
+                        attr(data, "code") <- gsub(".dataset", attr(.dataset, "name", exact = TRUE), attr(data, "code"))
                         GUI$setDocument(iNZDocument$new(data = data))
                         dispose(GUI$modWin)
                     }
@@ -384,8 +384,8 @@ iNZSortbyDataWin <- setRefClass(
             
             .dataset <- GUI$getActiveData()
             data <- iNZightTools::sortVars(.dataset, vars[wi], asc[wi])
-            attr(data, "name") <- paste(attr(.dataset, "name"), "sorted", sep = ".")
-            attr(data, "code") <- gsub(".dataset", attr(.dataset, "name"), attr(data, "code"))
+            attr(data, "name") <- paste(attr(.dataset, "name", exact = TRUE), "sorted", sep = ".")
+            attr(data, "code") <- gsub(".dataset", attr(.dataset, "name", exact = TRUE), attr(data, "code"))
             GUI$setDocument(iNZDocument$new(data = data))
             dispose(GUI$modWin)
           }
@@ -462,8 +462,8 @@ iNZAgraDataWin <- setRefClass(
             
             .dataset <- GUI$getActiveData()
             data <- iNZightTools::aggregateData(.dataset, vars, smrs)
-            attr(data, "name") <- paste(attr(.dataset, "name"), "aggregated", sep = ".")
-            attr(data, "code") <- gsub(".dataset", attr(.dataset, "name"), attr(data, "code"))
+            attr(data, "name") <- paste(attr(.dataset, "name", exact = TRUE), "aggregated", sep = ".")
+            attr(data, "code") <- gsub(".dataset", attr(.dataset, "name", exact = TRUE), attr(data, "code"))
             GUI$setDocument(iNZDocument$new(data = data))
             dispose(GUI$modWin)
           })
@@ -530,8 +530,8 @@ iNZstackVarWin <- setRefClass(
             
             .dataset <- GUI$getActiveData()
             data <- iNZightTools::stackVars(.dataset, vars)
-            attr(data, "name") <- paste(attr(.dataset, "name"), "stacked", sep = ".")
-            attr(data, "code") <- gsub(".dataset", attr(.dataset, "name"), attr(data, "code"))
+            attr(data, "name") <- paste(attr(.dataset, "name", exact = TRUE), "stacked", sep = ".")
+            attr(data, "code") <- gsub(".dataset", attr(.dataset, "name", exact = TRUE), attr(data, "code"))
             GUI$setDocument(iNZDocument$new(data = data))
             dispose(GUI$modWin)
           }
