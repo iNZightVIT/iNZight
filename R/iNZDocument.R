@@ -25,7 +25,7 @@ iNZDataModel <- setRefClass(
             rowData <- data.frame(Row.names = 1:nrow(data), data,
                                   check.names = TRUE)
             rowDataSet <<- rowData
-            name <<- attr(data, "name")
+            name <<- attr(data, "name", exact = TRUE)
         },
         updateData = function(data) {
             dataSet <<- data
@@ -260,7 +260,7 @@ iNZDataNameWidget <- setRefClass(
                 }
                 enabled(nameLabel) <<- TRUE
             }
-            names <- sapply(GUI$iNZDocuments, function(d) attr(d$getData(), "name"))
+            names <- sapply(GUI$iNZDocuments, function(d) attr(d$getData(), "name", exact = TRUE))
             blockHandlers(nameLabel)
             nameLabel$set_items(names)
             svalue(nameLabel, index = TRUE) <<- GUI$activeDoc

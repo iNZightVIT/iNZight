@@ -715,7 +715,7 @@ iNZGUI <- setRefClass(
                         conf <- gconfirm(
                           paste0("You are about to delete (permanently!) ",
                                  "the currently selected dataset:\n\n",
-                                 attr(iNZDocuments[[activeDoc]]$getData(), "name"), "\n\n",
+                                 attr(iNZDocuments[[activeDoc]]$getData(), "name", exact = TRUE), "\n\n",
                                  "Are you sure you want to continue?"),
                           title = "You sure you want to delete this data?", icon = "question",
                           parent = .self$win)
@@ -735,7 +735,7 @@ iNZGUI <- setRefClass(
                     label = "Rename dataset", icon = "symbol_diamond",
                     tooltip = "Give the current dataset a better name",
                     handler = function(h, ...) {
-                      curname <- attr(getActiveData(), "name")
+                      curname <- attr(getActiveData(), "name", exact = TRUE)
                       newname <- ""
                       while(newname == "") {
                         newname <- ginput("What would you like to call the dataset?",
@@ -750,7 +750,7 @@ iNZGUI <- setRefClass(
                       }
                       if (length(newname) == 1 && newname != "") {
                         rhistory$disabled <<- TRUE
-                        attr(iNZDocuments[[activeDoc]]$dataModel$dataSet, "name") <<- newname
+                        attr(iNZDocuments[[activeDoc]]$dataModel$dataSet, "name", exact = TRUE) <<- newname
                         rhistory$disabled <<- FALSE
                         attr(iNZDocuments[[activeDoc]]$dataModel$dataSet, "code") <<-
                           sprintf(".dataset <- %s", curname)
@@ -1393,13 +1393,13 @@ iNZGUI <- setRefClass(
                 iNZDocuments <<- list(document)
                 ## add a separator to code history 
                 rhistory$add(c("SEP", 
-                  sprintf("## Exploring the '%s' dataset", attr(document$getData(), "name"))
+                  sprintf("## Exploring the '%s' dataset", attr(document$getData(), "name", exact = TRUE))
                   ))
             } else {
                 ## give the new document a good name
-                names <- sapply(iNZDocuments, function(d) attr(d$getData(), "name"))
+                names <- sapply(iNZDocuments, function(d) attr(d$getData(), "name", exact = TRUE))
                 i <- 2
-                newname <- attr(document$getData(), "name")
+                newname <- attr(document$getData(), "name", exact = TRUE)
                 while (newname %in% names) {
                   newname <- sprintf("%s_%s", newname, i)
                   i <- i + 1
