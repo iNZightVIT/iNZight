@@ -1643,10 +1643,12 @@ iNZGUI <- setRefClass(
                 grid::upViewport()
 
                 grid::pushViewport(grid::viewport(layout.pos.row = 2))
-                grid::grid.text("Version 3.2",
+                grid::grid.text(sprintf("Version %s", packageVersion('iNZight')),
                                 x = unit(0.8, "npc"), y = unit(0.75, "npc"),
                                 just = 'right')
-                grid::grid.text("Release date: 23 Jan 2018",
+                grid::grid.text(sprintf("Release date: %s",
+                                        format(as.Date(packageDescription('iNZight')$Date), 
+                                               '%d %b %Y')),
                                 x = unit(0.8, "npc"), y = unit(0.25, "npc"),
                                 just = 'right', gp = gpar(fontsize = 9))
                 grid::upViewport()
