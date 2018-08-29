@@ -779,8 +779,9 @@ iNZGUI <- setRefClass(
                 enabled(actionList[[24]]) <- FALSE
 
             ## if R version is lower than 3.3, disable new maps module
-            # if (getRversion() < numeric_version(3.3))
-            #     enabled(actionList[[55]]) <- FALSE
+            if (getRversion() < numeric_version(3.3) || 
+                (OS == "mac" && getRversion < numeric_version(3.4)))
+                enabled(actionList[[55]]) <- FALSE
 
             menuBarList <- list(
                 "File" = list(
