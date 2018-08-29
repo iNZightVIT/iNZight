@@ -91,7 +91,7 @@ iNZcodeWidget <- setRefClass(
               "## Uncomment the following lines if you don't:",
               "",
               sprintf("# install.packages(c('%s'), ", paste(packages, collapse = "',\n#                    '")),
-              "#     repos = c('http://r.docker.stat.auckland.ac.nz/R',",
+              "#     repos = c('https://r.docker.stat.auckland.ac.nz',",
               "#               'https://cran.rstudio.com'))",
               "",
               sep(),
