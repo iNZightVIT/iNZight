@@ -8,6 +8,10 @@ __Release date:__ 15 August 2018
 - maps module completely renovated
 - interactive plots have recieved more updates and fixes
 
+## Patches
+
+### Patch 3.3.1 - 10/09/2018
+- fix bug in reading non-csv files
 
 ***
 # Version 3.2
