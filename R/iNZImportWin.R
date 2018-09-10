@@ -146,9 +146,9 @@ iNZImportWinBeta <- setRefClass("iNZImportWinBeta",
                                     mainGp$set_borderwidth(10)
 
                                     glabel(paste(sep = "\n",
-                                                 "Beta Development Version: please be aware that this import window is currently under development.",
-                                                 "Please report any bugs to us (if you can include the data set that would extremely helpful)",
-                                                 "so we can fix them. inzight_support@stat.auckland.ac.nz"), container = mainGp, fill = TRUE)
+                                                 "Please let us know if you have difficulty importing data (if you can include the data",
+                                                 "that would extremely helpful). Email: inzight_support@stat.auckland.ac.nz"), 
+                                           container = mainGp, fill = TRUE)
 
                                     ## Select file (and extension)
                                     fileGp <- gframe("Select File to Import", pos = 0, horizontal = FALSE, container = mainGp)
@@ -271,25 +271,23 @@ iNZImportWinBeta <- setRefClass("iNZImportWinBeta",
                                 },
                                 readData = function(preview = FALSE) {
                                     ## Read data using object values:
-                                    tmpData <<- suppressWarnings(suppressMessages({
-                                        iNZightTools::smart_read(fname, fext, preview = preview,
-                                            encoding = encoding,
-                                            delimiter = switch(fext, "csv" = csvdelim, "txt" = txtdelim, NULL),
-                                            decimal_mark = decMark,
-                                            grouping_mark = bigMark)
-                                            #, column_types = getTypes())
-                                        ## THIS WILL BECOME REDUNDANT...
-                                        # iNZightTools:::interpolate(
-                                        #     code,
-                                        #     NAME = fname,
-                                        #     EXT = fext,
-                                        #     PREV = preview,
-                                        #     TYPES = getTypes(),
-                                        #     DELIM = switch(fext, "csv" = csvdelim, "txt" = txtdelim, NULL),
-                                        #     DECM = decMark,
-                                        #     GRPM = bigMark
-                                        # )
-                                    }))
+                                    ## this needs to be conditionally constructed ..
+                                    switch(fext,
+                                        "csv" = ,
+                                        "txt" = {
+                                            tmpData <<- suppressWarnings(suppressMessages({
+                                                iNZightTools::smart_read(fname, fext, preview = preview,
+                                                    encoding = encoding,
+                                                    delimiter = switch(fext, "csv" = csvdelim, "txt" = txtdelim, NULL),
+                                                    decimal_mark = decMark,
+                                                    grouping_mark = bigMark)
+                                                    #, column_types = getTypes())
+                                            }))
+                                        },
+                                        {
+                                            tmpData <<- iNZightTools::smart_read(fname, fext, preview = preview)
+                                        }
+                                    )
 
                                     ## do a check that col classes match requested ...
                                     if (is.null(fColTypes) || length(fColTypes) != ncol(tmpData))
