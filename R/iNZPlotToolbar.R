@@ -17,7 +17,8 @@ iNZPlotToolbar <- setRefClass(
         popOut = "ANY",
         toolbarcont = "ANY",
         iconbar = "ANY",
-        altbar = "ANY"
+        altbar = "ANY",
+        exportplotBtn = "ANY"
         ),
     methods = list(
         initialize = function(gui, cont) {
@@ -53,7 +54,7 @@ iNZPlotToolbar <- setRefClass(
             visible(iconbar) <<- TRUE
         },
         ## create the toolbar!
-        makeToolbar = function(btns = c("add", "rmv", "inf"),
+        makeToolbar = function(btns = c("add", "rmv", "inf", "export"),
                                refresh.fn = NULL,
             extra, cont = iconbar) {
 
@@ -69,6 +70,7 @@ iNZPlotToolbar <- setRefClass(
             img.add2plot <- system.file("images/toolbar-add.png", package = "iNZight")
             img.rmvplot <- system.file("images/toolbar-remove.png", package = "iNZight")
             img.infinfo <- system.file("images/toolbar-inference.png", package = "iNZight")
+            img.export <- system.file("images/toolbar-add.png", package = "iNZight")
 
             newplotBtn <- gimagebutton(stock.id = "newplot", size = "button", name = "newplotbutton",
                                        tooltip = "New Graphics Window")
@@ -79,7 +81,7 @@ iNZPlotToolbar <- setRefClass(
             addHandlerClicked(newtabBtn, function(h, ...) plotWidget$addPlot())
 
             refreshplotBtn <- gimagebutton(stock.id = "refresh", size = "button",
-                                           tooltip = "Redraw Plot")
+                                           tooiconltip = "Redraw Plot")
             addHandlerClicked(refreshplotBtn, function(h, ...) refreshFn())
 
             renametabBtn <- gimagebutton(stock.id = "editor", size = "button",
@@ -109,6 +111,10 @@ iNZPlotToolbar <- setRefClass(
                                          tooltip = "Add Inference Information")
             addHandlerClicked(inferenceBtn, function(h, ...) addInf())
 
+            exportplotBtn <<- gimagebutton(filename = img.export, size = "button",
+                                          tooltip = "Export Interacive Plot")
+            addHandlerClicked(exportplotBtn, function(h, ...) plotWidget$exportPlot())
+            enabled(exportplotBtn) <<- FALSE
 
             addSpace(cont, 10)
 
@@ -133,6 +139,9 @@ iNZPlotToolbar <- setRefClass(
             if ("inf" %in% btns)
                 add(cont, inferenceBtn)
 
+            if ("export" %in% btns)
+                add(cont, exportplotBtn)
+
             if (!missing(extra)) {
                 addSpace(cont, 10)
                 lapply(extra, function(x) add(cont, x))
@@ -142,7 +151,7 @@ iNZPlotToolbar <- setRefClass(
 
         },
         ## Plot Menu
-        setPlotMenu = function(btns = c("add", "rmv", "inf"),
+        setPlotMenu = function(btns = c("add", "rmv", "inf", "export"),
                                refresh.fn = NULL,
                                extra) {
 
@@ -177,7 +186,7 @@ iNZPlotToolbar <- setRefClass(
             if (popOut)
                 curMenu[["Plot"]][5:8] <- NULL
 
-            curMenu[["Plot"]][which(!c("add", "rmv", "inf") %in% btns)] <- NULL
+            curMenu[["Plot"]][which(!c("add", "rmv", "inf", "export") %in% btns)] <- NULL
 
             svalue(GUI$menubar) <<- curMenu
 

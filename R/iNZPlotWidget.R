@@ -227,5 +227,13 @@ iNZPlotWidget <- setRefClass(
             addHandlerChanged(fileType, function(h, ...) {
                                   svalue(fExt) <- gsub(".+\\(|\\)", "", svalue(fileType))
                               })
+        },
+        exportPlot = function() {
+            print(class(GUI$curPlot))
+            if (iNZightPlots::can.interact(GUI$curPlot)) {
+                print("OK")
+            } else {
+                print("Nope ...")
+            }
         })
     )
