@@ -228,12 +228,13 @@ iNZPlotWidget <- setRefClass(
                                   svalue(fExt) <- gsub(".+\\(|\\)", "", svalue(fileType))
                               })
         },
-        exportPlot = function() {
-            print(class(GUI$curPlot))
-            if (iNZightPlots::can.interact(GUI$curPlot)) {
-                print("OK")
-            } else {
-                print("Nope ...")
-            }
+        exportPlot = function(fun) {
+            ## 1. pop up window asking for additional variables to export along the the plot
+
+            ## 2. export the plot and open it in a temp file
+            try({
+                tmpurl <- iNZightPlots::exportHTML(fun, file = tempfile(fileext = ".html"))
+                browseURL(tmpurl)
+            })
         })
     )

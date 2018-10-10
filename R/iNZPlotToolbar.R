@@ -113,7 +113,7 @@ iNZPlotToolbar <- setRefClass(
 
             exportplotBtn <<- gimagebutton(filename = img.export, size = "button",
                                           tooltip = "Export Interacive Plot")
-            addHandlerClicked(exportplotBtn, function(h, ...) plotWidget$exportPlot())
+            addHandlerClicked(exportplotBtn, function(h, ...) plotWidget$exportPlot(refreshFn))
             enabled(exportplotBtn) <<- FALSE
 
             addSpace(cont, 10)

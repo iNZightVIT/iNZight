@@ -1382,7 +1382,8 @@ iNZGUI <- setRefClass(
                 })
                 plotType <<- attr(curPlot, "plottype")
             } else {
-                rawpl <- plotSplashScreen() ## iNZightPlots:::resetPlot()
+                rawpl <- plotSplashScreen()
+                curPlot <<- NULL
                 plotType <<- "none"
             }
             invisible(rawpl)
