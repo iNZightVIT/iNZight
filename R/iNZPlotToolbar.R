@@ -83,7 +83,7 @@ iNZPlotToolbar <- setRefClass(
             img.add2plot <- system.file("images/toolbar-add.png", package = "iNZight")
             img.rmvplot <- system.file("images/toolbar-remove.png", package = "iNZight")
             img.infinfo <- system.file("images/toolbar-inference.png", package = "iNZight")
-            img.export <- system.file("images/toolbar-add.png", package = "iNZight")
+            img.export <- system.file("images/toolbar-interact.png", package = "iNZight")
 
             newplotBtn <- gimagebutton(stock.id = "newplot", size = "button", name = "newplotbutton",
                                        tooltip = "New Graphics Window")
