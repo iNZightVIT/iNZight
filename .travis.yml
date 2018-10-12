@@ -10,7 +10,7 @@ r:
 
 before_script:
   - sudo apt update 
-  - sudo apt install libgtk2.0-dev xorg-dev
+  - sudo apt install -qq libgtk2.0-dev xorg-dev
   - "export DISPLAY=:99.0"
   - sh -e /etc/init.d/xvfb start
   - sleep 10 # give xvfb some time to start
