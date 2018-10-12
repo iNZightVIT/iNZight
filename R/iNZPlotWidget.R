@@ -227,14 +227,5 @@ iNZPlotWidget <- setRefClass(
             addHandlerChanged(fileType, function(h, ...) {
                                   svalue(fExt) <- gsub(".+\\(|\\)", "", svalue(fileType))
                               })
-        },
-        exportPlot = function(fun) {
-            ## 1. pop up window asking for additional variables to export along the the plot
-
-            ## 2. export the plot and open it in a temp file
-            try({
-                tmpurl <- iNZightPlots::exportHTML(fun, file = tempfile(fileext = ".html"))
-                browseURL(tmpurl)
-            })
         })
     )
