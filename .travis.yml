@@ -2,6 +2,7 @@
 
 language: R
 sudo: true
+cache: packages
 latex: false
 
 r:
@@ -10,20 +11,24 @@ r:
   - devel
 
 before_script:
+  - sudo apt update 
+  - sudo apt install -qq libgtk2.0-dev xorg-dev
   - "export DISPLAY=:99.0"
-  - "sh -e /etc/init.d/xvfb start"
-  - sleep 3 # give xvfb some time to start
+  - sh -e /etc/init.d/xvfb start
+  - sleep 10 # give xvfb some time to start
 
 repos:
-  docker: http://r.docker.stat.auckland.ac.nz/R
+  docker: https://r.docker.stat.auckland.ac.nz
 
 addons:
   apt:
     update: true
     packages:
-      - xvfb
       - libgtk2.0-dev
       - xorg-dev
       - libxml2-dev
       - libnlopt-dev
+      - r-cran-rodbc
+      - r-cran-rgtk2
+      - r-cran-cairodevice
 
