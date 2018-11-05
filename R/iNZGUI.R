@@ -1108,8 +1108,17 @@ iNZGUI <- setRefClass(
 
                         visible(w) <- TRUE
                     } else {
-                        gmessage("Please select at least one variable",
-                                 parent = win)
+                        w <- gwindow("Summary", 
+                                     width = 800 * preferences$font.size / 10, 
+                                     height = 400 * preferences$font.size / 10,
+                                     visible = FALSE, parent = win)
+                        g <- gvbox(container = w)
+                        txtSmry <- gtext(text = paste(iNZightPlots::getPlotSummary(getActiveData()),
+                                                      collapse = "\n"),
+                                         expand = TRUE, container = g, wrap = FALSE,
+                                         font.attr = list(family = "monospace", 
+                                                          size = preferences$font.size))
+                        visible(w) <- TRUE
                     }
                 })
             infBtn <<- gbutton(
