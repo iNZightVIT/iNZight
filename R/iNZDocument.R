@@ -82,13 +82,14 @@ iNZDataModel <- setRefClass(
                       paste0(
                           "svydesign(",
                           "id = ", id, ", ",
-                          "strata = ", strata, ", ",
-                          "weights = ", weights, ", ",
-                          "fpc = ", fpcs, ", ",
-                          "nest = ", des$nest, ", ",
+                          if (!is.null(des$strata)) sprintf("strata = %s, ", strata),
+                          if (!is.null(des$wt)) sprintf("weights = %s, ", weights),
+                          if (!is.null(des$fpc)) sprintf("fpc = %s, ", fpcs),
+                          if (!is.null(des$nest) && des$nest) "nest = TRUE, ",
                           "data = dataSet)"
                           )
                       )
+
             eval(obj)
         },
         getDesign = function() {
