@@ -1,3 +1,6 @@
+- [add] show dataset summary from Get Summary when no variables selected
+- [fix] remove NULL arguments from survey design call
+
 # Version 3.3
 __Release date:__ 15 August 2018
 
