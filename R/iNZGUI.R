@@ -16,6 +16,7 @@ iNZGUI <- setRefClass(
                    activeDoc = "numeric",
                    ## the main GUI window
                    win = "ANY",
+                   menuBarWidget = "ANY", 
                    menubar = "ANY",
 
                    ## left group
@@ -71,7 +72,7 @@ iNZGUI <- setRefClass(
         ## methods of the GUI class.
         initializeGui = function(data = NULL, disposeR = FALSE) {
             "Initiates the GUI"
-            iNZDocuments <<- list(iNZDocument$new(data = data))
+            iNZDocuments <<- list(iNZDocument$new(.self, data = data))
             win.title <- paste("iNZight (v",
                                packageDescription("iNZight")$Version,
                                ")", sep = "")
@@ -175,6 +176,7 @@ iNZGUI <- setRefClass(
                            use.scrollwindow = FALSE)
             menugrp <- ggroup(container = gtop)
             initializeMenu(menugrp, disposeR)
+            
             g <- gpanedgroup(container = gtop, expand = TRUE)
 
             ## Left side group
@@ -222,6 +224,7 @@ iNZGUI <- setRefClass(
             size(plotToolbar) <<- if (popOut) c(-1, -1) else c(-1, 45)
             initializePlotToolbar(plotToolbar)
 
+
             visible(win) <<- TRUE
 
             ## ensures that all plot control btns are visible on startup
@@ -244,619 +247,628 @@ iNZGUI <- setRefClass(
         }, ## end initialization
         ## set up the menu bar widget
         initializeMenu = function(cont, disposeR) {
-            actionList <- list(
-                import = gaction(
-                  #1
-                    label = "Import Data (pre v3.1 version) ...", icon = "symbol_diamond",
-                    tooltip = "Import a new Dataset using the legacy import window",
-                    handler = function(h, ...) iNZImportWin$new(.self)
-                    ),
-                export = gaction(
-                  #2
-                    label = "Export Data...", icon = "symbol_diamond",
-                    handler = function(h, ...) iNZSaveWin$new(.self,
-                        type = "data",
-                        data = .self$getActiveData())
-                    ),
-                conToCat = gaction(
-                  #3
-                    label = "Convert to Categorical...",
-                    icon = "symbol_diamond",
-                    tooltip = "Convert a variable to a categorical type",
-                    handler = function(h, ...) iNZconToCatWin$new(.self)
-                    ),
-                trns = gaction(
-                  #4
-                    label = "Transform Variables...",
-                    icon = "symbol_diamond",
-                    tooltip = "Transform a variable using a function",
-                    handler = function(h, ...) iNZtrnsWin$new(.self)
-                    ),
-                clps = gaction(
-                  #5
-                    label = "Collapse Levels...",
-                    icon = "symbol_diamond",
-                    handler = function(h, ...) iNZcllpsWin$new(.self)
-                    ),
-                reordLvl = gaction(
-                  #6
-                    label = "Reorder Levels...",
-                    icon = "symbol_diamond",
-                    handler = function(h, ...) iNZreorderWin$new(.self)
-                    ),
-                renmLvl = gaction(
-                  #7
-                    label = "Rename Levels...",
-                    icon = "symbol_diamond",
-                    handler = function(h, ...) iNZrenameWin$new(.self)
-                    ),
-                cmbnCat = gaction(
-                  #8
-                    label = "Combine Categorical Variables...",
-                    icon = "symbol_diamond",
-                    handler = function(h, ...) iNZcmbCatWin$new(.self)
-                    ),
-                create = gaction(
-                  #9
-                    label = "Create New Variables...",
-                    icon = "symbol_diamond",
-                    handler = function(h, ...) iNZcrteVarWin$new(.self)
-                    ),
-                ## The code for displaying this window is already there
-                ## just the functionality of forming the intervals is
-                ## left to be implemented
-                 frmInt = gaction(
-                   #10
-                   label = "Form Class Intervals...",
-                     icon = "symbol_diamond",
-                     handler = function(h, ...) iNZfrmIntWin$new(.self)
-                     ),
-                renmVar = gaction(
-                  #11
-                    label = "Rename Variables...",
-                    icon = "symbol_diamond",
-                    handler = function(h, ...) iNZrnmVarWin$new(.self)
-                    ),
-                stdVar = gaction(
-                  #12
-                    label = "Standardize Variables...",
-                    icon = "symbol_diamond",
-                    handler = function(h, ...) iNZstdVarWin$new(.self)
-                    ),
-                slctCases = gaction(
-                  #13
-                    label = "Filter Dataset...",
-                    icon = "symbol_diamond",
-                    handler = function(h, ...) iNZFilterWin$new(.self)
-                    ),
-                rshpData = gaction(
-                  #14
-                    label = "Reshape Dataset...",
-                    icon = "symbol_diamond",
-                    handler = function(h, ...) iNZReshapeDataWin$new(.self)
-                    ),
-                rstrData = gaction(
-                  #15
-                    label = "Restore Original Dataset",
-                    icon = "symbol_diamond",
-                    handler = function(h, ...) {
-                        setDocument(iNZDocument$new(data = iNZDocuments[[1]]$getModel()$origDataSet))
-                    }
-                    ),
-                home = gaction(
-                  #16
-                    label = "iNZightVIT Home",
-                    icon = "symbold_diamond",
-                    handler = function(h, ...) {
-                        dispose(win)
-                        iNZightVIT(disposeR = disposeR)
-                    }),
-                tsMod = gaction(
-                  #17
-                    label = "Time Series...",
-                    icon = "symbol_diamond",
-                    handler = function(h, ...) {
-                        iNZightModules::iNZightTSMod$new(.self)
-                    }
-                    ),
-                modelFit = gaction(
-                  #18
-                    label = "Model Fitting...",
-                    icon = "symbol_diamond",
-                    handler = function(h, ...) {
-                        ign <- gwindow("...", visible = FALSE)
-
-                        tag(ign, "dataSet") <- getActiveData()
-                        curMod <- getActiveDoc()$getModel()
-                        if (!is.null(curMod$dataDesign))
-                            tag(ign, "design") <- curMod$createSurveyObject()
-                        e <- list(obj = ign)
-                        e$win <- win
-                        iNZightModules::modelFitting(e)
-                    }
-                    ),
-                threeDPlot = gaction(
-                  #19
-                    label = "3D Plot...",
-                    icon = "symbol_diamond",
-                    handler = function(h, ...) {
-                        ign <- gwindow("...", visible = FALSE)
-                        tag(ign, "dataSet") <- getActiveData()
-                        e <- list(obj = ign)
-                        e$win <- win
-                        iNZightModules::plot3D(e)
-                    }
-                    ),
-                scatterMatrix = gaction(
-                  #20
-                    label = "Pairs...",
-                    icon = "symbol_diamond",
-                    handler = function(h, ...) {
-                        iNZscatterMatrix$new(.self)
-                    }
-                    ),
-                deleteVariables = gaction(
-                  #21
-                    label = "Delete Variables...",
-                    icon = "symbol_diamond",
-                    handler = function(h, ...) {
-                        iNZdeleteVarWin$new(.self)
-                    }
-                    ),
-                allPlots = gaction(
-                  #22
-                    label = "All 1-variable Plots",
-                    icon = "symbol_diamond",
-                    handler = function(h, ...) {
-                       iNZallPlots$new(.self)
-                    }
-                    ),
-                allSummaries = gaction(
-                  #23
-                    label = "All 1-variable Summaries",
-                    icon = "symbol_diamond",
-                    handler = function(h, ...) {
-                        iNZallSummaries$new(.self)
-                    }
-                    ),
-                exploreMissingness = gaction(
-                  #24
-                    label = "Missing Values",
-                    icon = "symbol_diamond",
-                    handler = function(h, ...) {
-                        iNZExploreMissing$new(.self)
-                    }
-                    ),
-                missToCat = gaction(
-                  #25
-                    label = "Missing to Categorical...",
-                    icon = "symbol_diamond",
-                    handler = function(h, ...) iNZmissCatWin$new(.self)
-                    ),
-                all2Plots = gaction(
-                  #26
-                    label = "Explore 2-variable Plots...",
-                    icon = "symbol_diamond",
-                    handler = function(h, ...) {
-                        iNZall2Plots$new(.self)
-                    }
-                    ),
-                sortBy = gaction(
-                  #27
-                  label = "Sort data by variables...",
-                  icon = "symbol_diamond",
-                  handler = function(h, ...){
-                    iNZSortbyDataWin$new(.self)
-                  }
-                ),
-                agraData = gaction(
-                  #28
-                  label = "Aggregate data...",
-                  icon = "symbol_diamond",
-                  handler = function(h, ...){
-                      iNZAgraDataWin$new(.self)
-                  }
-                ),
-                rankNum = gaction(
-                  #29
-                  label = "Rank Numerical Variables...",
-                  icon = "symbol_diamond",
-                  handler = function(h, ...) iNZrankNumWin$new(.self)
-                  ),
-                convert2mc = gaction(
-                  #30
-                  label = "Convert to Categorial (Multiple)...",
-                  icon = "symbol_diamond",
-                  handler = function(h, ...) iNZctocatmulWin$new(.self)
-                  ),
-                stackVar = gaction(
-                  #31
-                    label = "Stack variables...",
-                    icon = "symbol_diamond",
-                    handler = function(h, ...) iNZstackVarWin$new(.self)
-                ),
-                multipleResponse = gaction(
-                    ## 32
-                    label = "Multiple Response...",
-                    icon = "symbol_diamond",
-                    handler = function(h, ...) {
-                        iNZightModules::iNZightMultiRes$new(.self)
-                    }
-                ),
-                aboutiNZight = gaction(
-                    ## 33
-                    label = "About",
-                    icon = "symbol_diamond",
-                    handler = function(h, ...) {
-                        w <- gwindow("About iNZight", width = 500, height = 400, visible = TRUE, parent = win)
-                        g <- gvbox(expand = FALSE, cont = w, spacing = 5)
-                        g$set_borderwidth(10)
-                        mainlbl <- glabel("iNZight", container = g)
-                        font(mainlbl) <- list(weight = "bold", family = "normal", size = 20)
-                        verlbl <- glabel(sprintf("Version %s - Released %s",
-                                                 packageDescription("iNZight")$Version,
-                                                 format(as.POSIXct(packageDescription("iNZight")$Date),
-                                                        "%d %B, %Y")), container = g)
-                        font(verlbl) <- list(weight = "normal", family = "normal", size = 10)
-                        rverlbl <- glabel(sprintf("Running on R version %s", getRversion()), container = g)
-                        font(rverlbl) <- list(weight = "normal", family = "normal", size = 10)
-                        addSpace(g, 10)
-                        gpltxt <- gtext(expand = TRUE, cont = g, wrap = TRUE)
-                        insert(gpltxt, paste("\n\nThis program is free software; you can redistribute it and/or",
-                                             "modify it under the terms of the GNU General Public License",
-                                             "as published by the Free Software Foundation; either version 2",
-                                             "of the License, or (at your option) any later version.\n"),
-                               font.attr = list(size = 9)) -> l1
-                        insert(gpltxt, paste("This program is distributed in the hope that it will be useful,",
-                                             "but WITHOUT ANY WARRANTY; without even the implied warranty of",
-                                             "MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the",
-                                             "GNU General Public License for more details.\n"),
-                               font.attr = list(size = 9)) -> l2
-                        insert(gpltxt, paste("You should have received a copy of the GNU General Public License",
-                                             "along with this program; if not, write to the Free Software",
-                                             "Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.\n"),
-                               font.attr = list(size = 9)) -> l3
-                        insert(gpltxt, paste("You can view the full licence here:\nhttp://www.gnu.org/licenses/gpl-2.0-standalone.html"),
-                               font.attr = list(size = 9)) -> l4
-                        addSpace(g, 5)
-                        contactlbl <- glabel("For help, contact inzight_support@stat.auckland.ac.nz", container = g)
-                        font(contactlbl) <- list(weight = "normal", family = "normal", size = 8)
-                        visible(w) <- TRUE
-                    }
-                ),
-                faqPage = gaction(
-                    ## 34
-                    label = "FAQ",
-                    icon  = "symbol_diamond",
-                    handler = function(h, ...) {
-                        browseURL("https://www.stat.auckland.ac.nz/~wild/iNZight/support/faq/")
-                    }
-                ),
-                contactPage = gaction(
-                    ## 35
-                    label = "Contact Support/Report a Bug",
-                    icon  = "symbol_diamond",
-                    handler = function(h, ...) {
-                        browseURL("https://www.stat.auckland.ac.nz/~wild/iNZight/support/contact/")
-                    }
-                ),
-                prefs = gaction (
-                    ## 36
-                    label = "Preferences",
-                    icon = "symbol_diamond",
-                    handler = function(h, ...) iNZPrefsWin$new(.self)
-                ),
-                exit = gaction(
-                    ## 37
-                    label = "Exit",
-                    icon = "symbold_diamond",
-                    handler = function(h, ...) if (disposeR) q(save = "no") else dispose(win)
-                ),
-                aboutiNZight = gaction(
-                    ## 38
-                    label = "Privacy",
-                    icon = "symbol_diamond",
-                    handler = function(h, ...) {
-                        w <- gwindow("Privacy", width = 500, height = 250, visible = TRUE, parent = win)
-                        g <- gvbox(expand = FALSE, cont = w, spacing = 5)
-                        g$set_borderwidth(10)
-
-                        mainlbl <- glabel("iNZight User Privacy", container = g)
-                        font(mainlbl) <- list(weight = "bold", family = "normal", size = 20)
-
-                        gpltxt <- gtext(expand = TRUE, cont = g, wrap = TRUE)
-                        insert(gpltxt, paste("\n\nTo provide us with information about our users and their behaviour,",
-                                             "we collect ANONYMOUS information about iNZight, such as the version number",
-                                             "you are using, the operating system, and how frequently iNZight is updated.",
-                                             "We collect ABSOLUTELY NO personal information from your computer. We place",
-                                             "a unique cookie that allows us to identify unique users, however this is not",
-                                             "in any way connected to your personal information.\n"),
-                               font.attr = list(size = 9)) -> l1
-                        insert(gpltxt, paste("If you wish to remain completely anonymous, then you can turn off the sharing of",
-                                             "usage information by going to 'File' > 'Preferences' and deselecting the appropriate box.\n"),
-                               font.attr = list(size = 9)) -> l2
-                        visible(w) <- TRUE
-                    }
-                ),
-                guideBasics = gaction(
-                    ## 39
-                    label = "The Basics",
-                    icon = "symbol_diamond",
-                    handler = function(h, ...) {
-                        browseURL("https://www.stat.auckland.ac.nz/~wild/iNZight/user_guides/basics/")
-                    }
-                ),
-                guideInterface = gaction(
-                    ## 40
-                    label = "The Interface",
-                    icon = "symbol_diamond",
-                    handler = function(h, ...) {
-                        browseURL("https://www.stat.auckland.ac.nz/~wild/iNZight/user_guides/interface/")
-                    }
-                ),
-                guidePlotOptions = gaction(
-                    ## 41
-                    label = "Plot Options",
-                    icon = "symbol_diamond",
-                    handler = function(h, ...) {
-                        browseURL("https://www.stat.auckland.ac.nz/~wild/iNZight/user_guides/plot_options/")
-                    }
-                ),
-                guideVariables = gaction(
-                    ## 42
-                    label = "Variables Menu",
-                    icon = "symbol_diamond",
-                    handler = function(h, ...) {
-                        browseURL("https://www.stat.auckland.ac.nz/~wild/iNZight/user_guides/variables/")
-                    }
-                ),
-                guideDataOptions = gaction(
-                    ## 43
-                    label = "Dataset Menu",
-                    icon = "symbol_diamond",
-                    handler = function(h, ...) {
-                        browseURL("https://www.stat.auckland.ac.nz/~wild/iNZight/user_guides/data_options/")
-                    }
-                ),
-                guideAdditional = gaction(
-                    ## 44
-                    label = "Advanced Menu",
-                    icon = "symbol_diamond",
-                    handler = function(h, ...) {
-                        browseURL("https://www.stat.auckland.ac.nz/~wild/iNZight/user_guides/add_ons/")
-                    }
-                ),
-                specifyDesign = gaction(
-                    ## 45
-                    label = "[BETA] Specify Survey Design ...",
-                    icon = "symbol_diamond",
-                    handler = function(h, ...) iNZSurveyDesign$new(.self)
-                ),
-                removeDesign = gaction(
-                    ## 46
-                    label = "Remove Design",
-                    icon = "symbol_diamond",
-                    handler = function(h, ...) {
-                        .self$getActiveDoc()$getModel()$setDesign()
-                        ## ENABLE A WHOLE LOT OF STUFF
-                        enabled(menubar$menu_list[["Dataset"]][[3]]) <<- TRUE
-                        enabled(menubar$menu_list[["Variables"]][["Numeric Variables"]][[2]]) <<- TRUE
-                        enabled(menubar$menu_list[["Plot"]][[3]]) <<- TRUE
-                        enabled(sumBtn) <<- TRUE
-                        enabled(infBtn) <<- TRUE
-                    }
-                ),
-                ############ MAPS ############
-                maps = gaction(
-                    ## 47
-                    label = "Maps...",
-                    icon = "symbol_diamond",
-                    handler = function(h, ...) {
-                        iNZightModules::iNZightMapMod$new(.self)
-                    }
-                ),
-                import = gaction(
-                    ## 48
-                    label = "Example data...", icon = "symbol_diamond",
-                    tooltip = "Load Example Data",
-                    handler = function(h, ...) iNZImportExampleWin$new(.self)
-                ),
-                convTbl = gaction(
-                    ## 49
-                    label = "Expand Table ...",
-                    icon = "symbol_diamond",
-                    handler = function(h, ...) iNZexpandTblWin$new(.self)
-                ),
-                load = gaction(
-                    ## 50
-                    label = "Load ...", icon = "symbol_diamond",
-                    handler = function(h, ...) iNZLoadSaveWin$new(.self, action = "load")
-                ),
-                save = gaction(
-                    ## 51
-                    label = "Save ...", icon = "save",
-                    handler = function(h, ...) iNZLoadSaveWin$new(.self, action = "save")
-                ),
-                importBeta = gaction(
-                    ## 52
-                    label = "Import Data  ...", icon = "symbol_diamond",
-                    tooltip = "Import a new Dataset",
-                    handler = function(h, ...) iNZImportWinBeta$new(.self)
-                ),
-                modelFittingDev = gaction(
-                    ## 53
-                    label = "[Beta Version] Model Fitting ...", icon = "symbol_diamond",
-                    tooltip = "Fit regression models",
-                    handler = function(h, ...) iNZightModules::iNZightRegMod$new(.self)
-                ),
-                showRhistory = gaction(
-                    ## 54
-                    label = "[Beta] Show R Code History", icon = "symbol_diamond",
-                    tooltip = "Show R history to reproduce results from R",
-                    handler = function(h, ...) {
-                        showHistory()
-                    }
-                ),
-                newMapsModule = gaction(
-                    ## 55
-                    label = "[Beta] New Maps Module", icon = "symbol_diamond",
-                    tooltip = "Load the new Maps module",
-                    handler = function(h, ...) iNZightModules::iNZightMap2Mod$new(.self)
-                ),
-                deleteDocument = gaction(
-                    ## 56
-                    label = "Delete current dataset", icon = "symbol_diamond",
-                    tooltip = "Remove the currently selected dataset",
-                    handler = function(h, ...) {
-                      if (activeDoc == 1) {
-                        gmessage("Sorry, but you can't delete this dataset (it's the original, afterall!).",
-                          title = "Unable to delete original data set", icon = "warning", parent = .self$win)
-                      } else {
-                        conf <- gconfirm(
-                          paste0("You are about to delete (permanently!) ",
-                                 "the currently selected dataset:\n\n",
-                                 attr(iNZDocuments[[activeDoc]]$getData(), "name", exact = TRUE), "\n\n",
-                                 "Are you sure you want to continue?"),
-                          title = "You sure you want to delete this data?", icon = "question",
-                          parent = .self$win)
-                        if (conf) {
-                          todelete <- activeDoc
-                          activeDoc <<- activeDoc - 1
-                          rhistory$disabled <<- TRUE
-                          iNZDocuments <<- iNZDocuments[-todelete]
-                          rhistory$disabled <<- FALSE
-                          dataNameWidget$updateWidget()
-                        }
-                      }
-                    }
-                ),
-                renameDataset = gaction(
-                    ## 57
-                    label = "Rename dataset", icon = "symbol_diamond",
-                    tooltip = "Give the current dataset a better name",
-                    handler = function(h, ...) {
-                      curname <- attr(getActiveData(), "name", exact = TRUE)
-                      newname <- ""
-                      while(newname == "") {
-                        newname <- ginput("What would you like to call the dataset?",
-                          text = curname, title = "Rename dataset",
-                          icon = "question", parent = .self$win)
-                        if (length(newname) == 0) break
-                        if (newname != curname && newname %in% dataNameWidget$nameLabel$get_items()) {
-                          gmessage('Oops... that name exists. Try another!', icon = 'error',
-                                   parent = win)
-                          newname <- ""
-                        }
-                      }
-                      if (length(newname) == 1 && newname != "") {
-                        rhistory$disabled <<- TRUE
-                        attr(iNZDocuments[[activeDoc]]$dataModel$dataSet, "name", exact = TRUE) <<- newname
-                        rhistory$disabled <<- FALSE
-                        attr(iNZDocuments[[activeDoc]]$dataModel$dataSet, "code") <<-
-                          sprintf(".dataset <- %s", curname)
-                      }
-                    }
-                ),
-                changelog = gaction(
-                    ## 58
-                    label = "Change history", icon = "symbol_diamond",
-                    tooltip = "Jump over to our website to see a list of changes",
-                    handler = function(h, ...)
-                      browseURL(
-                        'https://www.stat.auckland.ac.nz/~wild/iNZight/support/changelog/?pkg=iNZight')
-                )
+            menuBarWidget <<- iNZMenuBarWidget$new(.self, cont, disposeR)
+            
+            addActDocObs(function() {
+                    menuBarWidget$defaultMenu()
+                }
             )
-            ## home button is disabled if package 'vit' is not loaded
-            if (!'package:vit' %in% search())
-                enabled(actionList[[16]]) <- FALSE
 
-            ## disable modules if packages are not loaded
-            if (!requireNamespace("iNZightModules", quietly = TRUE)) {
-                invisible(sapply(actionList[c(19,17,18,32,47)], function(x) {
-                                     enabled(x) <- FALSE}))
-            }
-            if (!requireNamespace("iNZightMR", quietly = TRUE))
-                enabled(actionList[[24]]) <- FALSE
+            return()
 
-            ## if R version is lower than 3.3, disable new maps module
-            if (getRversion() < numeric_version(3.3) || 
-                (OS == "mac" && getRversion < numeric_version(3.4)))
-                enabled(actionList[[55]]) <- FALSE
+            # actionList <- list(
+            #     import = gaction(
+            #       #1
+            #         label = "Import Data (pre v3.1 version) ...", icon = "symbol_diamond",
+            #         tooltip = "Import a new Dataset using the legacy import window",
+            #         handler = function(h, ...) iNZImportWin$new(.self)
+            #         ),
+            #     export = gaction(
+            #       #2
+            #         label = "Export Data...", icon = "symbol_diamond",
+            #         handler = function(h, ...) iNZSaveWin$new(.self,
+            #             type = "data",
+            #             data = .self$getActiveData())
+            #         ),
+            #     conToCat = gaction(
+            #       #3
+            #         label = "Convert to Categorical...",
+            #         icon = "symbol_diamond",
+            #         tooltip = "Convert a variable to a categorical type",
+            #         handler = function(h, ...) iNZconToCatWin$new(.self)
+            #         ),
+            #     trns = gaction(
+            #       #4
+            #         label = "Transform Variables...",
+            #         icon = "symbol_diamond",
+            #         tooltip = "Transform a variable using a function",
+            #         handler = function(h, ...) iNZtrnsWin$new(.self)
+            #         ),
+            #     clps = gaction(
+            #       #5
+            #         label = "Collapse Levels...",
+            #         icon = "symbol_diamond",
+            #         handler = function(h, ...) iNZcllpsWin$new(.self)
+            #         ),
+            #     reordLvl = gaction(
+            #       #6
+            #         label = "Reorder Levels...",
+            #         icon = "symbol_diamond",
+            #         handler = function(h, ...) iNZreorderWin$new(.self)
+            #         ),
+            #     renmLvl = gaction(
+            #       #7
+            #         label = "Rename Levels...",
+            #         icon = "symbol_diamond",
+            #         handler = function(h, ...) iNZrenameWin$new(.self)
+            #         ),
+            #     cmbnCat = gaction(
+            #       #8
+            #         label = "Combine Categorical Variables...",
+            #         icon = "symbol_diamond",
+            #         handler = function(h, ...) iNZcmbCatWin$new(.self)
+            #         ),
+            #     create = gaction(
+            #       #9
+            #         label = "Create New Variables...",
+            #         icon = "symbol_diamond",
+            #         handler = function(h, ...) iNZcrteVarWin$new(.self)
+            #         ),
+            #     ## The code for displaying this window is already there
+            #     ## just the functionality of forming the intervals is
+            #     ## left to be implemented
+            #      frmInt = gaction(
+            #        #10
+            #        label = "Form Class Intervals...",
+            #          icon = "symbol_diamond",
+            #          handler = function(h, ...) iNZfrmIntWin$new(.self)
+            #          ),
+            #     renmVar = gaction(
+            #       #11
+            #         label = "Rename Variables...",
+            #         icon = "symbol_diamond",
+            #         handler = function(h, ...) iNZrnmVarWin$new(.self)
+            #         ),
+            #     stdVar = gaction(
+            #       #12
+            #         label = "Standardize Variables...",
+            #         icon = "symbol_diamond",
+            #         handler = function(h, ...) iNZstdVarWin$new(.self)
+            #         ),
+            #     slctCases = gaction(
+            #       #13
+            #         label = "Filter Dataset...",
+            #         icon = "symbol_diamond",
+            #         handler = function(h, ...) iNZFilterWin$new(.self)
+            #         ),
+            #     rshpData = gaction(
+            #       #14
+            #         label = "Reshape Dataset...",
+            #         icon = "symbol_diamond",
+            #         handler = function(h, ...) iNZReshapeDataWin$new(.self)
+            #         ),
+            #     rstrData = gaction(
+            #       #15
+            #         label = "Restore Original Dataset",
+            #         icon = "symbol_diamond",
+            #         handler = function(h, ...) {
+            #             setDocument(iNZDocument$new(data = iNZDocuments[[1]]$getModel()$origDataSet))
+            #         }
+            #         ),
+            #     home = gaction(
+            #       #16
+            #         label = "iNZightVIT Home",
+            #         icon = "symbold_diamond",
+            #         handler = function(h, ...) {
+            #             dispose(win)
+            #             iNZightVIT(disposeR = disposeR)
+            #         }),
+            #     tsMod = gaction(
+            #       #17
+            #         label = "Time Series...",
+            #         icon = "symbol_diamond",
+            #         handler = function(h, ...) {
+            #             iNZightModules::iNZightTSMod$new(.self)
+            #         }
+            #         ),
+            #     modelFit = gaction(
+            #       #18
+            #         label = "Model Fitting...",
+            #         icon = "symbol_diamond",
+            #         handler = function(h, ...) {
+            #             ign <- gwindow("...", visible = FALSE)
 
-            menuBarList <- list(
-                "File" = list(
-                    actionList[[50]],
-                    actionList[[51]],
-                    gseparator(),
-                    actionList[[16]],
-                    gseparator(),
-                    actionList[[52]],
-                    actionList[[2]],
-                    gseparator(),
-                    actionList[[48]],
-                    gseparator(),
-                    actionList[[1]],
-                    gseparator(),
-                    actionList[[36]],
-                    actionList[[37]]
-                    ),
-                "Dataset" = list(
-                    actionList[[13]],
-                    actionList[[27]],
-                    actionList[[28]],
-                    actionList[[31]],
-                    gseparator(),
-                    actionList[[57]],
-                    actionList[[15]],
-                    actionList[[56]],
-                    gseparator(),
-                    actionList[[45]],
-                    actionList[[46]],
-                    gseparator(),
-                    actionList[[49]]
-                    ),
-                "Variables" = list(
-                    actionList[[3]],
-                    "Categorical Variables" = actionList[c(6,5,7,8)],
-                    "Numeric Variables" = actionList[c(4,12,10, 29,30)],
-                    actionList[[11]],
-                    actionList[[9]],
-                    actionList[[25]],
-                    actionList[[14]],
-                    actionList[[21]]
-                    ),
-                "Plot" = list(
-                    ),
-                "Advanced" = list(
-                    ## This will be automated in future
-                    "Quick Explore" = actionList[c(24, 22, 23, 26, 20)],
-                    actionList[[19]],
-                    actionList[[17]],
-                    actionList[[18]],
-                    actionList[[32]],
-                    actionList[[47]],
-                    ## The new iNZightModelFitting module (under development)
-                    gseparator(),
-                    actionList[[53]],
-                    actionList[[54]],
-                    if (getRversion() >= numeric_version(3.3)) actionList[[55]] else gseparator()
-                    ),
-                "Help" = list(
-                    actionList[[33]],
-                    # actionList[[38]],
-                    "User Guides" = actionList[39:44],
-                    actionList[[58]],
-                    actionList[[34]],
-                    actionList[[35]]
-                    )
-                )
+            #             tag(ign, "dataSet") <- getActiveData()
+            #             curMod <- getActiveDoc()$getModel()
+            #             if (!is.null(curMod$dataDesign))
+            #                 tag(ign, "design") <- curMod$createSurveyObject()
+            #             e <- list(obj = ign)
+            #             e$win <- win
+            #             iNZightModules::modelFitting(e)
+            #         }
+            #         ),
+            #     threeDPlot = gaction(
+            #       #19
+            #         label = "3D Plot...",
+            #         icon = "symbol_diamond",
+            #         handler = function(h, ...) {
+            #             ign <- gwindow("...", visible = FALSE)
+            #             tag(ign, "dataSet") <- getActiveData()
+            #             e <- list(obj = ign)
+            #             e$win <- win
+            #             iNZightModules::plot3D(e)
+            #         }
+            #         ),
+            #     scatterMatrix = gaction(
+            #       #20
+            #         label = "Pairs...",
+            #         icon = "symbol_diamond",
+            #         handler = function(h, ...) {
+            #             iNZscatterMatrix$new(.self)
+            #         }
+            #         ),
+            #     deleteVariables = gaction(
+            #       #21
+            #         label = "Delete Variables...",
+            #         icon = "symbol_diamond",
+            #         handler = function(h, ...) {
+            #             iNZdeleteVarWin$new(.self)
+            #         }
+            #         ),
+            #     allPlots = gaction(
+            #       #22
+            #         label = "All 1-variable Plots",
+            #         icon = "symbol_diamond",
+            #         handler = function(h, ...) {
+            #            iNZallPlots$new(.self)
+            #         }
+            #         ),
+            #     allSummaries = gaction(
+            #       #23
+            #         label = "All 1-variable Summaries",
+            #         icon = "symbol_diamond",
+            #         handler = function(h, ...) {
+            #             iNZallSummaries$new(.self)
+            #         }
+            #         ),
+            #     exploreMissingness = gaction(
+            #       #24
+            #         label = "Missing Values",
+            #         icon = "symbol_diamond",
+            #         handler = function(h, ...) {
+            #             iNZExploreMissing$new(.self)
+            #         }
+            #         ),
+            #     missToCat = gaction(
+            #       #25
+            #         label = "Missing to Categorical...",
+            #         icon = "symbol_diamond",
+            #         handler = function(h, ...) iNZmissCatWin$new(.self)
+            #         ),
+            #     all2Plots = gaction(
+            #       #26
+            #         label = "Explore 2-variable Plots...",
+            #         icon = "symbol_diamond",
+            #         handler = function(h, ...) {
+            #             iNZall2Plots$new(.self)
+            #         }
+            #         ),
+            #     sortBy = gaction(
+            #       #27
+            #       label = "Sort data by variables...",
+            #       icon = "symbol_diamond",
+            #       handler = function(h, ...){
+            #         iNZSortbyDataWin$new(.self)
+            #       }
+            #     ),
+            #     agraData = gaction(
+            #       #28
+            #       label = "Aggregate data...",
+            #       icon = "symbol_diamond",
+            #       handler = function(h, ...){
+            #           iNZAgraDataWin$new(.self)
+            #       }
+            #     ),
+            #     rankNum = gaction(
+            #       #29
+            #       label = "Rank Numerical Variables...",
+            #       icon = "symbol_diamond",
+            #       handler = function(h, ...) iNZrankNumWin$new(.self)
+            #       ),
+            #     convert2mc = gaction(
+            #       #30
+            #       label = "Convert to Categorial (Multiple)...",
+            #       icon = "symbol_diamond",
+            #       handler = function(h, ...) iNZctocatmulWin$new(.self)
+            #       ),
+            #     stackVar = gaction(
+            #       #31
+            #         label = "Stack variables...",
+            #         icon = "symbol_diamond",
+            #         handler = function(h, ...) iNZstackVarWin$new(.self)
+            #     ),
+            #     multipleResponse = gaction(
+            #         ## 32
+            #         label = "Multiple Response...",
+            #         icon = "symbol_diamond",
+            #         handler = function(h, ...) {
+            #             iNZightModules::iNZightMultiRes$new(.self)
+            #         }
+            #     ),
+            #     aboutiNZight = gaction(
+            #         ## 33
+            #         label = "About",
+            #         icon = "symbol_diamond",
+            #         handler = function(h, ...) {
+            #             w <- gwindow("About iNZight", width = 500, height = 400, visible = TRUE, parent = win)
+            #             g <- gvbox(expand = FALSE, cont = w, spacing = 5)
+            #             g$set_borderwidth(10)
+            #             mainlbl <- glabel("iNZight", container = g)
+            #             font(mainlbl) <- list(weight = "bold", family = "normal", size = 20)
+            #             verlbl <- glabel(sprintf("Version %s - Released %s",
+            #                                      packageDescription("iNZight")$Version,
+            #                                      format(as.POSIXct(packageDescription("iNZight")$Date),
+            #                                             "%d %B, %Y")), container = g)
+            #             font(verlbl) <- list(weight = "normal", family = "normal", size = 10)
+            #             rverlbl <- glabel(sprintf("Running on R version %s", getRversion()), container = g)
+            #             font(rverlbl) <- list(weight = "normal", family = "normal", size = 10)
+            #             addSpace(g, 10)
+            #             gpltxt <- gtext(expand = TRUE, cont = g, wrap = TRUE)
+            #             insert(gpltxt, paste("\n\nThis program is free software; you can redistribute it and/or",
+            #                                  "modify it under the terms of the GNU General Public License",
+            #                                  "as published by the Free Software Foundation; either version 2",
+            #                                  "of the License, or (at your option) any later version.\n"),
+            #                    font.attr = list(size = 9)) -> l1
+            #             insert(gpltxt, paste("This program is distributed in the hope that it will be useful,",
+            #                                  "but WITHOUT ANY WARRANTY; without even the implied warranty of",
+            #                                  "MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the",
+            #                                  "GNU General Public License for more details.\n"),
+            #                    font.attr = list(size = 9)) -> l2
+            #             insert(gpltxt, paste("You should have received a copy of the GNU General Public License",
+            #                                  "along with this program; if not, write to the Free Software",
+            #                                  "Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.\n"),
+            #                    font.attr = list(size = 9)) -> l3
+            #             insert(gpltxt, paste("You can view the full licence here:\nhttp://www.gnu.org/licenses/gpl-2.0-standalone.html"),
+            #                    font.attr = list(size = 9)) -> l4
+            #             addSpace(g, 5)
+            #             contactlbl <- glabel("For help, contact inzight_support@stat.auckland.ac.nz", container = g)
+            #             font(contactlbl) <- list(weight = "normal", family = "normal", size = 8)
+            #             visible(w) <- TRUE
+            #         }
+            #     ),
+            #     faqPage = gaction(
+            #         ## 34
+            #         label = "FAQ",
+            #         icon  = "symbol_diamond",
+            #         handler = function(h, ...) {
+            #             browseURL("https://www.stat.auckland.ac.nz/~wild/iNZight/support/faq/")
+            #         }
+            #     ),
+            #     contactPage = gaction(
+            #         ## 35
+            #         label = "Contact Support/Report a Bug",
+            #         icon  = "symbol_diamond",
+            #         handler = function(h, ...) {
+            #             browseURL("https://www.stat.auckland.ac.nz/~wild/iNZight/support/contact/")
+            #         }
+            #     ),
+            #     prefs = gaction (
+            #         ## 36
+            #         label = "Preferences",
+            #         icon = "symbol_diamond",
+            #         handler = function(h, ...) iNZPrefsWin$new(.self)
+            #     ),
+            #     exit = gaction(
+            #         ## 37
+            #         label = "Exit",
+            #         icon = "symbold_diamond",
+            #         handler = function(h, ...) if (disposeR) q(save = "no") else dispose(win)
+            #     ),
+            #     aboutiNZight = gaction(
+            #         ## 38
+            #         label = "Privacy",
+            #         icon = "symbol_diamond",
+            #         handler = function(h, ...) {
+            #             w <- gwindow("Privacy", width = 500, height = 250, visible = TRUE, parent = win)
+            #             g <- gvbox(expand = FALSE, cont = w, spacing = 5)
+            #             g$set_borderwidth(10)
 
-            if (!"package:vit" %in% search()) { # remove ...
-                menuBarList[[1]][[5]] <- NULL  ## gseparator
-                menuBarList[[1]][[4]] <- NULL  ## iNZightVIT Home
-            }
+            #             mainlbl <- glabel("iNZight User Privacy", container = g)
+            #             font(mainlbl) <- list(weight = "bold", family = "normal", size = 20)
 
-            menubar <<- gmenu(menuBarList, container = cont)
+            #             gpltxt <- gtext(expand = TRUE, cont = g, wrap = TRUE)
+            #             insert(gpltxt, paste("\n\nTo provide us with information about our users and their behaviour,",
+            #                                  "we collect ANONYMOUS information about iNZight, such as the version number",
+            #                                  "you are using, the operating system, and how frequently iNZight is updated.",
+            #                                  "We collect ABSOLUTELY NO personal information from your computer. We place",
+            #                                  "a unique cookie that allows us to identify unique users, however this is not",
+            #                                  "in any way connected to your personal information.\n"),
+            #                    font.attr = list(size = 9)) -> l1
+            #             insert(gpltxt, paste("If you wish to remain completely anonymous, then you can turn off the sharing of",
+            #                                  "usage information by going to 'File' > 'Preferences' and deselecting the appropriate box.\n"),
+            #                    font.attr = list(size = 9)) -> l2
+            #             visible(w) <- TRUE
+            #         }
+            #     ),
+            #     guideBasics = gaction(
+            #         ## 39
+            #         label = "The Basics",
+            #         icon = "symbol_diamond",
+            #         handler = function(h, ...) {
+            #             browseURL("https://www.stat.auckland.ac.nz/~wild/iNZight/user_guides/basics/")
+            #         }
+            #     ),
+            #     guideInterface = gaction(
+            #         ## 40
+            #         label = "The Interface",
+            #         icon = "symbol_diamond",
+            #         handler = function(h, ...) {
+            #             browseURL("https://www.stat.auckland.ac.nz/~wild/iNZight/user_guides/interface/")
+            #         }
+            #     ),
+            #     guidePlotOptions = gaction(
+            #         ## 41
+            #         label = "Plot Options",
+            #         icon = "symbol_diamond",
+            #         handler = function(h, ...) {
+            #             browseURL("https://www.stat.auckland.ac.nz/~wild/iNZight/user_guides/plot_options/")
+            #         }
+            #     ),
+            #     guideVariables = gaction(
+            #         ## 42
+            #         label = "Variables Menu",
+            #         icon = "symbol_diamond",
+            #         handler = function(h, ...) {
+            #             browseURL("https://www.stat.auckland.ac.nz/~wild/iNZight/user_guides/variables/")
+            #         }
+            #     ),
+            #     guideDataOptions = gaction(
+            #         ## 43
+            #         label = "Dataset Menu",
+            #         icon = "symbol_diamond",
+            #         handler = function(h, ...) {
+            #             browseURL("https://www.stat.auckland.ac.nz/~wild/iNZight/user_guides/data_options/")
+            #         }
+            #     ),
+            #     guideAdditional = gaction(
+            #         ## 44
+            #         label = "Advanced Menu",
+            #         icon = "symbol_diamond",
+            #         handler = function(h, ...) {
+            #             browseURL("https://www.stat.auckland.ac.nz/~wild/iNZight/user_guides/add_ons/")
+            #         }
+            #     ),
+            #     specifyDesign = gaction(
+            #         ## 45
+            #         label = "[BETA] Specify Survey Design ...",
+            #         icon = "symbol_diamond",
+            #         handler = function(h, ...) iNZSurveyDesign$new(.self)
+            #     ),
+            #     removeDesign = gaction(
+            #         ## 46
+            #         label = "Remove Design",
+            #         icon = "symbol_diamond",
+            #         handler = function(h, ...) {
+            #             .self$getActiveDoc()$getModel()$setDesign()
+            #             ## ENABLE A WHOLE LOT OF STUFF
+            #             enabled(menubar$menu_list[["Dataset"]][[3]]) <<- TRUE
+            #             enabled(menubar$menu_list[["Variables"]][["Numeric Variables"]][[2]]) <<- TRUE
+            #             enabled(menubar$menu_list[["Plot"]][[3]]) <<- TRUE
+            #             enabled(sumBtn) <<- TRUE
+            #             enabled(infBtn) <<- TRUE
+            #         }
+            #     ),
+            #     ############ MAPS ############
+            #     maps = gaction(
+            #         ## 47
+            #         label = "Maps...",
+            #         icon = "symbol_diamond",
+            #         handler = function(h, ...) {
+            #             iNZightModules::iNZightMapMod$new(.self)
+            #         }
+            #     ),
+            #     import = gaction(
+            #         ## 48
+            #         label = "Example data...", icon = "symbol_diamond",
+            #         tooltip = "Load Example Data",
+            #         handler = function(h, ...) iNZImportExampleWin$new(.self)
+            #     ),
+            #     convTbl = gaction(
+            #         ## 49
+            #         label = "Expand Table ...",
+            #         icon = "symbol_diamond",
+            #         handler = function(h, ...) iNZexpandTblWin$new(.self)
+            #     ),
+            #     load = gaction(
+            #         ## 50
+            #         label = "Load ...", icon = "symbol_diamond",
+            #         handler = function(h, ...) iNZLoadSaveWin$new(.self, action = "load")
+            #     ),
+            #     save = gaction(
+            #         ## 51
+            #         label = "Save ...", icon = "save",
+            #         handler = function(h, ...) iNZLoadSaveWin$new(.self, action = "save")
+            #     ),
+            #     importBeta = gaction(
+            #         ## 52
+            #         label = "Import Data  ...", icon = "symbol_diamond",
+            #         tooltip = "Import a new Dataset",
+            #         handler = function(h, ...) iNZImportWinBeta$new(.self)
+            #     ),
+            #     modelFittingDev = gaction(
+            #         ## 53
+            #         label = "[Beta Version] Model Fitting ...", icon = "symbol_diamond",
+            #         tooltip = "Fit regression models",
+            #         handler = function(h, ...) iNZightModules::iNZightRegMod$new(.self)
+            #     ),
+            #     showRhistory = gaction(
+            #         ## 54
+            #         label = "[Beta] Show R Code History", icon = "symbol_diamond",
+            #         tooltip = "Show R history to reproduce results from R",
+            #         handler = function(h, ...) {
+            #             showHistory()
+            #         }
+            #     ),
+            #     newMapsModule = gaction(
+            #         ## 55
+            #         label = "[Beta] New Maps Module", icon = "symbol_diamond",
+            #         tooltip = "Load the new Maps module",
+            #         handler = function(h, ...) iNZightModules::iNZightMap2Mod$new(.self)
+            #     ),
+            #     deleteDocument = gaction(
+            #         ## 56
+            #         label = "Delete current dataset", icon = "symbol_diamond",
+            #         tooltip = "Remove the currently selected dataset",
+            #         handler = function(h, ...) {
+            #           if (activeDoc == 1) {
+            #             gmessage("Sorry, but you can't delete this dataset (it's the original, afterall!).",
+            #               title = "Unable to delete original data set", icon = "warning", parent = .self$win)
+            #           } else {
+            #             conf <- gconfirm(
+            #               paste0("You are about to delete (permanently!) ",
+            #                      "the currently selected dataset:\n\n",
+            #                      attr(iNZDocuments[[activeDoc]]$getData(), "name", exact = TRUE), "\n\n",
+            #                      "Are you sure you want to continue?"),
+            #               title = "You sure you want to delete this data?", icon = "question",
+            #               parent = .self$win)
+            #             if (conf) {
+            #               todelete <- activeDoc
+            #               activeDoc <<- activeDoc - 1
+            #               rhistory$disabled <<- TRUE
+            #               iNZDocuments <<- iNZDocuments[-todelete]
+            #               rhistory$disabled <<- FALSE
+            #               dataNameWidget$updateWidget()
+            #             }
+            #           }
+            #         }
+            #     ),
+            #     renameDataset = gaction(
+            #         ## 57
+            #         label = "Rename dataset", icon = "symbol_diamond",
+            #         tooltip = "Give the current dataset a better name",
+            #         handler = function(h, ...) {
+            #           curname <- attr(getActiveData(), "name", exact = TRUE)
+            #           newname <- ""
+            #           while(newname == "") {
+            #             newname <- ginput("What would you like to call the dataset?",
+            #               text = curname, title = "Rename dataset",
+            #               icon = "question", parent = .self$win)
+            #             if (length(newname) == 0) break
+            #             if (newname != curname && newname %in% dataNameWidget$nameLabel$get_items()) {
+            #               gmessage('Oops... that name exists. Try another!', icon = 'error',
+            #                        parent = win)
+            #               newname <- ""
+            #             }
+            #           }
+            #           if (length(newname) == 1 && newname != "") {
+            #             rhistory$disabled <<- TRUE
+            #             attr(iNZDocuments[[activeDoc]]$dataModel$dataSet, "name", exact = TRUE) <<- newname
+            #             rhistory$disabled <<- FALSE
+            #             attr(iNZDocuments[[activeDoc]]$dataModel$dataSet, "code") <<-
+            #               sprintf(".dataset <- %s", curname)
+            #           }
+            #         }
+            #     ),
+            #     changelog = gaction(
+            #         ## 58
+            #         label = "Change history", icon = "symbol_diamond",
+            #         tooltip = "Jump over to our website to see a list of changes",
+            #         handler = function(h, ...)
+            #           browseURL(
+            #             'https://www.stat.auckland.ac.nz/~wild/iNZight/support/changelog/?pkg=iNZight')
+            #     )
+            # )
+            # ## home button is disabled if package 'vit' is not loaded
+            # if (!'package:vit' %in% search())
+            #     enabled(actionList[[16]]) <- FALSE
+
+            # ## disable modules if packages are not loaded
+            # if (!requireNamespace("iNZightModules", quietly = TRUE)) {
+            #     invisible(sapply(actionList[c(19,17,18,32,47)], function(x) {
+            #                          enabled(x) <- FALSE}))
+            # }
+            # if (!requireNamespace("iNZightMR", quietly = TRUE))
+            #     enabled(actionList[[24]]) <- FALSE
+
+            # ## if R version is lower than 3.3, disable new maps module
+            # if (getRversion() < numeric_version(3.3) || 
+            #     (OS == "mac" && getRversion < numeric_version(3.4)))
+            #     enabled(actionList[[55]]) <- FALSE
+
+            # menuBarList <- list(
+            #     "File" = list(
+            #         actionList[[50]],
+            #         actionList[[51]],
+            #         gseparator(),
+            #         actionList[[16]],
+            #         gseparator(),
+            #         actionList[[52]],
+            #         actionList[[2]],
+            #         gseparator(),
+            #         actionList[[48]],
+            #         gseparator(),
+            #         actionList[[1]],
+            #         gseparator(),
+            #         actionList[[36]],
+            #         actionList[[37]]
+            #         ),
+            #     "Dataset" = list(
+            #         actionList[[13]],
+            #         actionList[[27]],
+            #         actionList[[28]],
+            #         actionList[[31]],
+            #         gseparator(),
+            #         actionList[[57]],
+            #         actionList[[15]],
+            #         actionList[[56]],
+            #         gseparator(),
+            #         actionList[[45]],
+            #         actionList[[46]],
+            #         gseparator(),
+            #         actionList[[49]]
+            #         ),
+            #     "Variables" = list(
+            #         actionList[[3]],
+            #         "Categorical Variables" = actionList[c(6,5,7,8)],
+            #         "Numeric Variables" = actionList[c(4,12,10, 29,30)],
+            #         actionList[[11]],
+            #         actionList[[9]],
+            #         actionList[[25]],
+            #         actionList[[14]],
+            #         actionList[[21]]
+            #         ),
+            #     "Plot" = list(
+            #         ),
+            #     "Advanced" = list(
+            #         ## This will be automated in future
+            #         "Quick Explore" = actionList[c(24, 22, 23, 26, 20)],
+            #         actionList[[19]],
+            #         actionList[[17]],
+            #         actionList[[18]],
+            #         actionList[[32]],
+            #         actionList[[47]],
+            #         ## The new iNZightModelFitting module (under development)
+            #         gseparator(),
+            #         actionList[[53]],
+            #         actionList[[54]],
+            #         if (getRversion() >= numeric_version(3.3)) actionList[[55]] else gseparator()
+            #         ),
+            #     "Help" = list(
+            #         actionList[[33]],
+            #         # actionList[[38]],
+            #         "User Guides" = actionList[39:44],
+            #         actionList[[58]],
+            #         actionList[[34]],
+            #         actionList[[35]]
+            #         )
+            #     )
+
+            # if (!"package:vit" %in% search()) { # remove ...
+            #     menuBarList[[1]][[5]] <- NULL  ## gseparator
+            #     menuBarList[[1]][[4]] <- NULL  ## iNZightVIT Home
+            # }
+
+            # menubar <<- gmenu(menuBarList, container = cont)
 
             ## if (all(dim(.self$getActiveData()) == 1)) {
             ##     one day, get around to disabling the menu bar before data is loaded
