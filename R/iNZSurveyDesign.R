@@ -98,7 +98,7 @@ iNZSurveyDesign <- setRefClass("iNZSurveyDesign",
                                            clus2 <- svalue(clus2Var, index = FALSE)
                                            wts <- svalue(wtVar, index = FALSE)
                                            fpc <- svalue(fpcVar, index = FALSE)
-                                           nest <- as.character(svalue(nestChk))
+                                           nest <- as.logical(svalue(nestChk))
 
                                            if (strat == "") strat <- NULL
                                            if (clus1 == "") clus1 <- NULL
