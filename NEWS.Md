@@ -17,6 +17,7 @@ __Release date:__ 15 August 2018
 - add dataset summary information to Get Summary (when no variables selected)
 - add interact button 
 - fix call for survey design objects (remove NULL arguments)
+- fix bug that prevented iNZight to launch on some macs
 
 ***
 # Version 3.2
