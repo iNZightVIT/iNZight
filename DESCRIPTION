@@ -42,4 +42,5 @@ Suggests:
     FutureLearnData,
     testthat
 LazyData: true
+Encoding: UTF-8
 RoxygenNote: 6.1.0.9000
