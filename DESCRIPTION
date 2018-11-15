@@ -39,6 +39,7 @@ Suggests:
     png,
     viridis,
     RColorBrewer,
-    FutureLearnData
+    FutureLearnData,
+    testthat
 LazyData: true
 RoxygenNote: 6.1.0.9000

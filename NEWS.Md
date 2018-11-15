@@ -1,3 +1,5 @@
+- [dev] add tests
+
 - [add] show dataset summary from Get Summary when no variables selected
 - [fix] remove NULL arguments from survey design call
 

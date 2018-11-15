@@ -241,6 +241,8 @@ iNZGUI <- setRefClass(
 
             ## and start tracking history
             initializeCodeHistory()
+
+            invisible(0)
         }, ## end initialization
         ## set up the menu bar widget
         initializeMenu = function(cont, disposeR) {
