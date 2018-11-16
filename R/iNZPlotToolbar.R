@@ -17,7 +17,8 @@ iNZPlotToolbar <- setRefClass(
         popOut = "ANY",
         toolbarcont = "ANY",
         iconbar = "ANY",
-        altbar = "ANY"
+        altbar = "ANY",
+        exportplotBtn = "ANY"
         ),
     methods = list(
         initialize = function(gui, cont) {
@@ -34,7 +35,7 @@ iNZPlotToolbar <- setRefClass(
         },
         ## update the toolbar (as opposed to initialize it)
         update = function(btns = c("add", "rmv", "inf"),
-                          refresh = NULL,
+                          refresh = NULL, export = NULL,
                           extra = NULL) {
 
             visible(iconbar) <<- FALSE
@@ -45,7 +46,7 @@ iNZPlotToolbar <- setRefClass(
             altbar <<- ggroup(horizontal = !popOut,container = toolbarcont, spacing = 15,
                               fill = TRUE, expand = TRUE)
 
-            makeToolbar(btns, refresh.fn = refresh, extra, cont = altbar)
+            makeToolbar(btns, refresh.fn = refresh, export.fn = export, extra, cont = altbar)
         },
         restore = function() {
             setPlotMenu()
@@ -53,9 +54,11 @@ iNZPlotToolbar <- setRefClass(
             visible(iconbar) <<- TRUE
         },
         ## create the toolbar!
-        makeToolbar = function(btns = c("add", "rmv", "inf"),
+        makeToolbar = function(btns = c("add", "rmv", "inf", "export"),
                                refresh.fn = NULL,
-            extra, cont = iconbar) {
+                               export.fn = NULL,
+                               extra, 
+                               cont = iconbar) {
 
             ## link the menu:
             setPlotMenu(btns, refresh.fn, extra)
@@ -66,9 +69,21 @@ iNZPlotToolbar <- setRefClass(
                 refreshFn = GUI$activeModule[[refresh.fn]]
             }
 
+            if (is.null(export.fn)) {
+                exportFn = function() {
+                    try({
+                        tmpurl <- iNZightPlots::exportHTML(refreshFn, file = tempfile(fileext = ".html"))
+                        browseURL(tmpurl)
+                    })
+                }
+            } else {
+                exportFn = export.fn
+            }
+
             img.add2plot <- system.file("images/toolbar-add.png", package = "iNZight")
             img.rmvplot <- system.file("images/toolbar-remove.png", package = "iNZight")
             img.infinfo <- system.file("images/toolbar-inference.png", package = "iNZight")
+            img.export <- system.file("images/toolbar-interact.png", package = "iNZight")
 
             newplotBtn <- gimagebutton(stock.id = "newplot", size = "button", name = "newplotbutton",
                                        tooltip = "New Graphics Window")
@@ -79,7 +94,7 @@ iNZPlotToolbar <- setRefClass(
             addHandlerClicked(newtabBtn, function(h, ...) plotWidget$addPlot())
 
             refreshplotBtn <- gimagebutton(stock.id = "refresh", size = "button",
-                                           tooltip = "Redraw Plot")
+                                           tooiconltip = "Redraw Plot")
             addHandlerClicked(refreshplotBtn, function(h, ...) refreshFn())
 
             renametabBtn <- gimagebutton(stock.id = "editor", size = "button",
@@ -109,6 +124,13 @@ iNZPlotToolbar <- setRefClass(
                                          tooltip = "Add Inference Information")
             addHandlerClicked(inferenceBtn, function(h, ...) addInf())
 
+            exportplotBtn <<- gimagebutton(filename = img.export, size = "button",
+                                          tooltip = "Export Interacive Plot")
+            addHandlerClicked(exportplotBtn, function(h, ...) {
+                if (!enabled(h$obj)) return()
+                exportFn()
+            })
+            enabled(exportplotBtn) <<- FALSE
 
             addSpace(cont, 10)
 
@@ -133,6 +155,9 @@ iNZPlotToolbar <- setRefClass(
             if ("inf" %in% btns)
                 add(cont, inferenceBtn)
 
+            if ("export" %in% btns)
+                add(cont, exportplotBtn)
+
             if (!missing(extra)) {
                 addSpace(cont, 10)
                 lapply(extra, function(x) add(cont, x))
@@ -142,7 +167,7 @@ iNZPlotToolbar <- setRefClass(
 
         },
         ## Plot Menu
-        setPlotMenu = function(btns = c("add", "rmv", "inf"),
+        setPlotMenu = function(btns = c("add", "rmv", "inf", "export"),
                                refresh.fn = NULL,
                                extra) {
 
@@ -177,7 +202,7 @@ iNZPlotToolbar <- setRefClass(
             if (popOut)
                 curMenu[["Plot"]][5:8] <- NULL
 
-            curMenu[["Plot"]][which(!c("add", "rmv", "inf") %in% btns)] <- NULL
+            curMenu[["Plot"]][which(!c("add", "rmv", "inf", "export") %in% btns)] <- NULL
 
             svalue(GUI$menubar) <<- curMenu
 

@@ -158,7 +158,7 @@ iNZGUI <- setRefClass(
             ## Check for updates ... need to use try incase it fails (no connection etc)
             if (preferences$check.updates) {
                 try({
-                    oldpkg <- old.packages(repos = "http://r.docker.stat.auckland.ac.nz/R")
+                    oldpkg <- old.packages(repos = "https://r.docker.stat.auckland.ac.nz")
                     if (nrow(oldpkg) > 0) {
                         win.title <- paste(win.title, " [updates available]")
                     }
@@ -780,7 +780,7 @@ iNZGUI <- setRefClass(
 
             ## if R version is lower than 3.3, disable new maps module
             if (getRversion() < numeric_version(3.3) || 
-                (OS == "mac" && getRversion < numeric_version(3.4)))
+                (OS == "mac" && getRversion() < numeric_version(3.4)))
                 enabled(actionList[[55]]) <- FALSE
 
             menuBarList <- list(
@@ -1108,8 +1108,17 @@ iNZGUI <- setRefClass(
 
                         visible(w) <- TRUE
                     } else {
-                        gmessage("Please select at least one variable",
-                                 parent = win)
+                        w <- gwindow("Summary", 
+                                     width = 800 * preferences$font.size / 10, 
+                                     height = 400 * preferences$font.size / 10,
+                                     visible = FALSE, parent = win)
+                        g <- gvbox(container = w)
+                        txtSmry <- gtext(text = paste(iNZightPlots::getPlotSummary(getActiveData()),
+                                                      collapse = "\n"),
+                                         expand = TRUE, container = g, wrap = FALSE,
+                                         font.attr = list(family = "monospace", 
+                                                          size = preferences$font.size))
+                        visible(w) <- TRUE
                     }
                 })
             infBtn <<- gbutton(
@@ -1373,14 +1382,17 @@ iNZGUI <- setRefClass(
 
                 ## Suppress the warnings produced by iNZightPlot ...
                 suppressWarnings({
+                    ## Generate the plot ... and update the interaction button
                     curPlot <<- unclass(rawpl <- do.call(iNZightPlot, curPlSet))
                     if (allow.redraw & !is.null(attr(curPlot, "dotplot.redraw")))
                         if (attr(curPlot, "dotplot.redraw"))
                             curPlot <<- unclass(rawpl <- do.call(iNZightPlot, curPlSet))
+                    enabled(plotToolbar$exportplotBtn) <<- can.interact(rawpl)
                 })
                 plotType <<- attr(curPlot, "plottype")
             } else {
-                rawpl <- plotSplashScreen() ## iNZightPlots:::resetPlot()
+                rawpl <- plotSplashScreen()
+                curPlot <<- NULL
                 plotType <<- "none"
             }
             invisible(rawpl)
