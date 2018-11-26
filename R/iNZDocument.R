@@ -1,16 +1,20 @@
 iNZDataModel <- setRefClass(
     "iNZDataModel",
-    properties(fields = list(
-                   dataSet = "ANY",
-                   origDataSet = "ANY",
-                   rowDataSet = "ANY",
-                   dataDesign = "ANY",
-                   name = "character"),
-               prototype = list(
-                   dataSet = data.frame(empty = " "),
-                   origDataSet = data.frame(empty = " "),
-                   rowDataSet = data.frame(Row.names = 1, empty = " "),
-                   dataDesign = NULL)),
+    properties(
+        fields = list(
+            dataSet = "ANY",
+            origDataSet = "ANY",
+            rowDataSet = "ANY",
+            dataDesign = "ANY",
+            name = "character",
+        ),
+        prototype = list(
+            dataSet = data.frame(empty = " "),
+            origDataSet = data.frame(empty = " "),
+            rowDataSet = data.frame(Row.names = 1, empty = " "),
+            dataDesign = NULL
+        )
+    ),
     contains = "PropertySet", ## need this to add observer to object
     methods = list(
         initialize = function(data = NULL) {
@@ -101,7 +105,7 @@ iNZDataModel <- setRefClass(
                 attr(dataSet, "code") <<- ""
             code
         },
-        setName = function(x, gui) {
+        setName = function(x) {
             newdata <- dataSet
             attr(newdata, "name") <- x
             attr(newdata, "code") <- sprintf(".dataset <- %s", name)

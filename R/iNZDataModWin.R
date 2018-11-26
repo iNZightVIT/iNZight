@@ -1262,7 +1262,7 @@ iNZrenameDataWin <- setRefClass(
                 } else if (newname %in% GUI$dataNameWidget$nameLabel$get_items()) {
                     gmessage("Oops... that name is used by another dataset. Try something else!")
                 } else {
-                    GUI$getActiveDoc()$dataModel$setName(newname, GUI)
+                    GUI$getActiveDoc()$dataModel$setName(newname)
                     dispose(GUI$modWin)
                 }
             })
