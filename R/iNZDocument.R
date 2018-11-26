@@ -7,12 +7,14 @@ iNZDataModel <- setRefClass(
             rowDataSet = "ANY",
             dataDesign = "ANY",
             name = "character",
+            oldname = "character"
         ),
         prototype = list(
             dataSet = data.frame(empty = " "),
             origDataSet = data.frame(empty = " "),
             rowDataSet = data.frame(Row.names = 1, empty = " "),
-            dataDesign = NULL
+            dataDesign = NULL,
+            name = "", oldname = ""
         )
     ),
     contains = "PropertySet", ## need this to add observer to object
@@ -29,6 +31,7 @@ iNZDataModel <- setRefClass(
             rowData <- data.frame(Row.names = 1:nrow(data), data,
                                   check.names = TRUE)
             rowDataSet <<- rowData
+            oldname <<- name
             name <<- attr(data, "name", exact = TRUE)
         },
         updateData = function(data) {
@@ -46,6 +49,9 @@ iNZDataModel <- setRefClass(
         },
         addDataObserver = function(FUN, ...) {
             .self$dataSetChanged$connect(FUN, ...)
+        },
+        addNameObserver = function(FUN, ...) {
+            .self$nameChanged$connect(FUN, ...)
         },
         addObjObserver = function(FUN, ...) {
             .self$changed$connect(FUN, ...)
@@ -101,25 +107,25 @@ iNZDataModel <- setRefClass(
         },
         getCode = function(remove = TRUE) {
             code <- attr(dataSet, "code")
-            if (remove)
+            if (remove) {
+                .dataSetChanged$block()
                 attr(dataSet, "code") <<- ""
+                .dataSetChanged$unblock()
+            }
             code
         },
         setName = function(x) {
-            newdata <- dataSet
-            attr(newdata, "name") <- x
-            attr(newdata, "code") <- sprintf(".dataset <- %s", name)
-            
-            updateData(newdata)
+            if (x == "") return()
 
-            # gui$rhistory$disable()
-            # cn <- attr(dataSet, "name", exact = TRUE)
-            # attr(dataSet, "name") <<- x
-            # gui$rhistory$enable()
-            # attr(dataSet, "code") <<- 
-            # gui$rhistory$update()
-            # gui$rhistory$add(sprintf(".dataset <- %s", cn))
-            # gui$rhistory$update()
+            oldname <<- name
+            ## set the dataset's name
+            .dataSetChanged$block()
+            attr(dataSet, "name") <<- x
+            if (oldname != "")
+                attr(dataSet, "code") <<- sprintf(".dataset <- %s", oldname)
+            .dataSetChanged$unblock()
+
+            name <<- x
         }
         )
     )
@@ -287,25 +293,5 @@ iNZDataNameWidget <- setRefClass(
             svalue(nameLabel, index = TRUE) <<- GUI$activeDoc
             unblockHandlers(nameLabel)
         }
-        # rename = function() {
-        #     print("hi")
-        #     curname <- attr(GUI$getActiveData(), "name", exact = TRUE)
-        #     newname <- ""
-        #     while(newname == "") {
-        #         newname <- ginput("What would you like to call the dataset?",
-        #             text = curname, title = "Rename dataset",
-        #             icon = "question", parent = GUI$win)
-        #         if (length(newname) == 0) break
-        #         if (newname != curname && newname %in% nameLabel$get_items()) {
-        #             gmessage('Oops... that name exists. Try another!', 
-        #                 icon = 'error',
-        #                 parent = win)
-        #             newname <- ""
-        #         }
-        #     }
-        #     if (length(newname) == 1 && newname != "") {
-        #         GUI$getActiveDoc()$dataModel$setName(newname, GUI)
-        #     }
-        # }
         )
     )

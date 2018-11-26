@@ -894,6 +894,13 @@ iNZGUI <- setRefClass(
                     dataNameWidget$updateWidget()
                 }
             )
+            ## if the name changes, update the value
+            getActiveDoc()$getModel()$addNameObserver(
+                function() {
+                    dataNameWidget$updateWidget()
+                    rhistory$update()
+                }
+            )
             .self$dataNameWidget
         },
         ## set up the widget to display/edit the loaded dataSet
@@ -1453,6 +1460,13 @@ iNZGUI <- setRefClass(
                     rhistory$update()
                 }
                 )
+            ## if the name changes, update the value
+            getActiveDoc()$getModel()$addNameObserver(
+                function() {
+                    dataNameWidget$updateWidget()
+                    rhistory$update()
+                }
+            )
             ## if plotSettings change, update the plot
             getActiveDoc()$addSettingsObserver(function() updatePlot())
 

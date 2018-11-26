@@ -41,12 +41,11 @@ iNZcodeWidget <- setRefClass(
             return(c(header(), do.call(c, history)))
         },
         update = function() {
-            print("BOOM")
             if (disabled) return()
             ## look at the data - has it got code? update the history with the code!
             code <- GUI$getActiveDoc()$getCode()
             if (!is.null(code)) {
-                if (code == "") return()
+                if (length(code) == 1 && code == "") return()
                 dname <- attr(GUI$getActiveData(), "name", exact = TRUE)
                 if (is.null(dname) || dname == "")
                   dname <- sprintf("data%s", ifelse(GUI$activeDoc == 1, "", GUI$activeDoc))
