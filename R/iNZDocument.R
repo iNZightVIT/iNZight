@@ -100,6 +100,22 @@ iNZDataModel <- setRefClass(
             if (remove)
                 attr(dataSet, "code") <<- ""
             code
+        },
+        setName = function(x, gui) {
+            newdata <- dataSet
+            attr(newdata, "name") <- x
+            attr(newdata, "code") <- sprintf(".dataset <- %s", name)
+            
+            updateData(newdata)
+
+            # gui$rhistory$disable()
+            # cn <- attr(dataSet, "name", exact = TRUE)
+            # attr(dataSet, "name") <<- x
+            # gui$rhistory$enable()
+            # attr(dataSet, "code") <<- 
+            # gui$rhistory$update()
+            # gui$rhistory$add(sprintf(".dataset <- %s", cn))
+            # gui$rhistory$update()
         }
         )
     )
@@ -267,5 +283,25 @@ iNZDataNameWidget <- setRefClass(
             svalue(nameLabel, index = TRUE) <<- GUI$activeDoc
             unblockHandlers(nameLabel)
         }
+        # rename = function() {
+        #     print("hi")
+        #     curname <- attr(GUI$getActiveData(), "name", exact = TRUE)
+        #     newname <- ""
+        #     while(newname == "") {
+        #         newname <- ginput("What would you like to call the dataset?",
+        #             text = curname, title = "Rename dataset",
+        #             icon = "question", parent = GUI$win)
+        #         if (length(newname) == 0) break
+        #         if (newname != curname && newname %in% nameLabel$get_items()) {
+        #             gmessage('Oops... that name exists. Try another!', 
+        #                 icon = 'error',
+        #                 parent = win)
+        #             newname <- ""
+        #         }
+        #     }
+        #     if (length(newname) == 1 && newname != "") {
+        #         GUI$getActiveDoc()$dataModel$setName(newname, GUI)
+        #     }
+        # }
         )
     )

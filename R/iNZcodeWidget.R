@@ -41,6 +41,7 @@ iNZcodeWidget <- setRefClass(
             return(c(header(), do.call(c, history)))
         },
         update = function() {
+            print("BOOM")
             if (disabled) return()
             ## look at the data - has it got code? update the history with the code!
             code <- GUI$getActiveDoc()$getCode()
@@ -99,6 +100,8 @@ iNZcodeWidget <- setRefClass(
         },
         sep = function(width = 80) {
             paste("##", paste(rep("-", width - 6), collapse = ""), "##")
-        }
+        },
+        enable = function() disabled <<- FALSE,
+        disable = function() disabled <<- TRUE
     )
 )

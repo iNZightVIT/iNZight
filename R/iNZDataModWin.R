@@ -17,6 +17,7 @@
 ## iNZmissCatWin: Missing as Cat
 ## iNZrankNumWin: Rank the numerical variables X (vector, matrix)
 ## iNZctocatmulWin: Convert multiple variables to categorical type in the same time
+## iNZrenameDataWin: Rename the dataset
 ## -------------------------------------------
 iNZDataModWin <- setRefClass(
     "iNZDataModWin",
@@ -1232,4 +1233,51 @@ iNZctocatmulWin <- setRefClass(
       add(GUI$modWin, mainGroup, expand = TRUE, fill = TRUE)
       visible(GUI$modWin) <<- TRUE
     })
+)
+
+iNZrenameDataWin <- setRefClass(
+    "iNZrenameDataWin",
+    contains = "iNZDataModWin",
+    methods = list (
+        initialize = function(gui) {
+            callSuper(gui)
+            svalue(GUI$modWin) <<- "Rename dataset"
+            size(GUI$modWin) <<- c(250, 150)
+
+            mainGroup <- ggroup(expand = TRUE, horizontal = FALSE)
+            mainGroup$set_borderwidth(15)
+            
+            lbl <- glabel("Enter a new name for the current dataset")
+            font(lbl) <- list(weight = "bold", family = "normal")
+
+            curname <- attr(GUI$getActiveData(), "name", exact = TRUE)
+            if (length(curname) == 0) curname <- ""
+            name <- gedit(curname)
+
+            okbtn <- gbutton("OK")
+            addHandlerClicked(okbtn, function(h, ...) {
+                newname <- svalue(name)
+                if (newname == "") {
+                    gmessage("Please enter a name", icon = "error", parent = GUI$win)
+                } else if (newname %in% GUI$dataNameWidget$nameLabel$get_items()) {
+                    gmessage("Oops... that name is used by another dataset. Try something else!")
+                } else {
+                    GUI$getActiveDoc()$dataModel$setName(newname, GUI)
+                    dispose(GUI$modWin)
+                }
+            })
+
+            cancelbtn <- gbutton("Cancel")
+            addHandlerClicked(cancelbtn, function(h, ...) dispose(GUI$modWin))
+
+            add(mainGroup, lbl)
+            add(mainGroup, name)
+            add(mainGroup, okbtn)
+            add(mainGroup, cancelbtn)
+
+            add(GUI$modWin, mainGroup, expand = TRUE, fill = TRUE)
+
+            visible(GUI$modWin) <<- TRUE
+        }
+    )
 )
