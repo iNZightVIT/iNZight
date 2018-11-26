@@ -102,9 +102,13 @@ iNZMenuBarWidget <- setRefClass(
                         icon = "symbol_diamond",
                         handler = function(h, ...) iNZrenameDataWin$new(GUI)),
                 restore = 
-                    gaction("Restore original dataset"),
+                    gaction("Restore original dataset",
+                        icon = "symbol_diamond",
+                        handler = function(h, ...) GUI$restoreDataset()),
                 delete = 
-                    gaction("Delete current dataset"),
+                    gaction("Delete current dataset",
+                        icon = "symbol_diamond",
+                        handler = function(h, ...) GUI$deleteDataset()),
                 gseparator(),
                 surveydesign = 
                     gaction("Specify survey design [beta] ..."),

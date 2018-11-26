@@ -1510,6 +1510,34 @@ iNZGUI <- setRefClass(
 
             return(ret)
         },
+        restoreDataset = function() {
+            setDocument(iNZDocument$new(
+                data = iNZDocuments[[1]]$getModel()$origDataSet))
+        },
+        ## delete the current dataset
+        deleteDataset = function() {
+            if (activeDoc == 1) {
+                gmessage("Sorry, but you can't delete this dataset (it's the original, afterall!).",
+                    title = "Unable to delete original data set", icon = "warning", parent = .self$win)
+            } else {
+                conf <- gconfirm(
+                    paste0("You are about to delete (permanently!) ",
+                        "the currently selected dataset:\n\n",
+                        attr(iNZDocuments[[activeDoc]]$getData(), "name", exact = TRUE), "\n\n",
+                        "Are you sure you want to continue?"),
+                    title = "You sure you want to delete this data?", 
+                    icon = "question",
+                    parent = .self$win)
+                if (conf) {
+                    todelete <- activeDoc
+                    activeDoc <<- activeDoc - 1
+                    rhistory$disabled <<- TRUE
+                    iNZDocuments <<- iNZDocuments[-todelete]
+                    rhistory$disabled <<- FALSE
+                    dataNameWidget$updateWidget()
+                }
+            }
+        },
         ## display warning message
         displayMsg = function(module, type) {
             if (type == 1) {
