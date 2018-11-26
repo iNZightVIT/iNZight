@@ -1538,6 +1538,16 @@ iNZGUI <- setRefClass(
                 }
             }
         },
+        removeDesign = function() {
+            getActiveDoc()$getModel()$setDesign()
+            updatePlot()
+            ## ENABLE A WHOLE LOT OF STUFF
+            # enabled(menubar$menu_list[["Dataset"]][[3]]) <<- TRUE
+            # enabled(menubar$menu_list[["Variables"]][["Numeric Variables"]][[2]]) <<- TRUE
+            # enabled(menubar$menu_list[["Plot"]][[3]]) <<- TRUE
+            # enabled(sumBtn) <<- TRUE
+            # enabled(infBtn) <<- TRUE
+        },
         ## display warning message
         displayMsg = function(module, type) {
             if (type == 1) {

@@ -111,12 +111,18 @@ iNZMenuBarWidget <- setRefClass(
                         handler = function(h, ...) GUI$deleteDataset()),
                 gseparator(),
                 surveydesign = 
-                    gaction("Specify survey design [beta] ..."),
+                    gaction("Specify survey design [beta] ...",
+                        icon = "symbol_diamond",
+                        handler = function(h, ...) iNZSurveyDesign$new(GUI)),
                 removedesign = 
-                    gaction("Remove design"),
+                    gaction("Remove design",
+                        icon = "symbol_diamond",
+                        handler = function(h, ...) GUI$removeDesign()),
                 gseparator(),
                 expandtable = 
-                    gaction("Expand table")
+                    gaction("Expand table",
+                        icon = "symbol_diamond",
+                        handler = function(h, ...) iNZexpandTblWin$new(GUI))
             )
         },
         VariablesMenu = function() {
