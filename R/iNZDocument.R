@@ -90,7 +90,7 @@ iNZDataModel <- setRefClass(
             obj <-
                 parse(text =
                       paste0(
-                          "svydesign(",
+                          "survey::svydesign(",
                           "id = ", id, ", ",
                           if (!is.null(des$strata)) sprintf("strata = %s, ", strata),
                           if (!is.null(des$wt)) sprintf("weights = %s, ", weights),

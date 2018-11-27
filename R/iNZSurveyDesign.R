@@ -130,6 +130,14 @@ iNZSurveyDesign <- setRefClass(
 
                         dispose(designWin)
                     }
+
+                    ## write design call
+                    call <- deparse(setOK$call)
+                    call <- gsub("dataSet", GUI$getActiveDoc()$getModel()$name, call)
+                    GUI$rhistory$add(c("## create survey design object", call),
+                        tidy = TRUE)
+
+                    ## update plot 
                     GUI$updatePlot()
                 } else {
                     gmessage(paste0(
