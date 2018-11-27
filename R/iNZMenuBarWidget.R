@@ -128,7 +128,70 @@ iNZMenuBarWidget <- setRefClass(
         VariablesMenu = function() {
             if (!hasData()) return(placeholder("Variables"))
             list(
-                transform = gaction("Transform")
+                cont2cat = 
+                    gaction("Convert to categorical ...",
+                        icon = "symbol_diamond",
+                        tooltip = "Convert a variable to a categorical type",
+                        handler = function(h, ...) iNZconToCatWin$new(GUI)),
+                "Categorical Variables" = list(
+                    reorder = 
+                        gaction("Reorder levels ...",
+                            icon = "symbol_diamond",
+                            tooltip = "Reorder the levels of a categorical variable",
+                            handler = function(h, ...) iNZreorderWin$new(GUI)),
+                    collapse = 
+                        gaction("Collapse levels ...",
+                            icon = "symbol_diamond",
+                            tooltip = "Collapse two or more levels into one",
+                            handler = function(h, ...) iNZcllpsWin$new(GUI)),
+                    rename = 
+                        gaction("Rename levels ...",
+                            icon = "symbol_diamond",
+                            tooltip = "Rename a categorical variable's levels",
+                            handler = function(h, ...) iNZrenameWin$new(GUI)),
+                    combine = 
+                        gaction("Combine categorical variables ...",
+                            icon = "symbol_diamond",
+                            tooltip = "Combine two or more categorical variables",
+                            handler = function(h, ...) iNZcmbCatWin$new(GUI))
+                    ),
+                "Numeric Variables" = list(
+                    transform = 
+                        gaction("Transform ...",
+                            icon = "symbol_diamond",
+                            tooltip = "Transform a variable using a function",
+                            handler = function(h, ...) iNZtrnsWin$new(GUI)),
+                    standardise = 
+                        gaction("Standardise ...",
+                            icon = "symbol_diamond",
+                            tooltip = "Standardise a numeric variable",
+                            handler = function(h, ...) iNZstdVarWin$new(GUI)),
+                    class = 
+                        gaction("Form class intervals ...",
+                            icon = "symbol_diamond",
+                            tooltip = "",
+                            handler = function(h, ...) iNZfrmIntWin$new(GUI)),
+                    rank = 
+                        gaction("Rank numeric variables ...",
+                            icon = "symbol_diamond",
+                            tooltip = "",
+                            handler = function(h, ...) iNZrankNumWin$new(GUI)),
+                    cat = 
+                        gaction("Convert to categorical (multiple) ...",
+                            icon = "symbol_diamond",
+                            tooltip = "",
+                            handler = function(h, ...) iNZctocatmulWin$new(GUI))
+                    ),
+                rename =
+                    gaction("Rename variables ..."),
+                create =
+                    gaction("Create new variables ..."),
+                miss2cat =
+                    gaction("Missing to categorical ..."),
+                reshape = 
+                    gaction("Reshape dataset ..."),
+                delete = 
+                    gaction("Delete variables ...")
             )
         },
         PlotMenu = function() {

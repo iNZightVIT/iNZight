@@ -102,7 +102,7 @@ iNZDataModWin <- setRefClass(
             return(TRUE)
         },
         updateData = function(newdata) {
-            attr(newdata, "name") <- attr(GUI$getActiveData(), "name", exact = TRUE)
+            attr(newdata, "name") <- GUI$getActiveDoc()$getModel()$name
             GUI$getActiveDoc()$getModel()$updateData(newdata)
         })
     )

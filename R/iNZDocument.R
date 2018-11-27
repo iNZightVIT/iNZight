@@ -14,7 +14,7 @@ iNZDataModel <- setRefClass(
             origDataSet = data.frame(empty = " "),
             rowDataSet = data.frame(Row.names = 1, empty = " "),
             dataDesign = NULL,
-            name = "", oldname = ""
+            name = "data", oldname = ""
         )
     ),
     contains = "PropertySet", ## need this to add observer to object
@@ -31,11 +31,17 @@ iNZDataModel <- setRefClass(
             rowData <- data.frame(Row.names = 1:nrow(data), data,
                                   check.names = TRUE)
             rowDataSet <<- rowData
-            oldname <<- name
+            oldname <<- ""
+            if (is.null(attr(data, "name", exact = TRUE)))
+                attr(data, "name") <- "data"
             name <<- attr(data, "name", exact = TRUE)
         },
         updateData = function(data) {
+            if (is.null(attr(data, "name", exact = TRUE)))
+                attr(data, "name") <- "data"
+            print(attributes(data))
             dataSet <<- data
+            name <<- attr(data, "name", exact = TRUE)
         },
         setNames = function(newNames) {
             newNames <- make.names(newNames, unique = TRUE)
@@ -273,6 +279,8 @@ iNZDataNameWidget <- setRefClass(
             })
             add(widget, nameLabel, expand = TRUE)
             enabled(nameLabel) <<- FALSE
+
+            updateWidget()
         },
         updateWidget = function() {
             dataSet <- GUI$getActiveData()
@@ -287,7 +295,7 @@ iNZDataNameWidget <- setRefClass(
                 }
                 enabled(nameLabel) <<- TRUE
             }
-            names <- sapply(GUI$iNZDocuments, function(d) attr(d$getData(), "name", exact = TRUE))
+            names <- sapply(GUI$iNZDocuments, function(d) d$getModel()$name)
             blockHandlers(nameLabel)
             nameLabel$set_items(names)
             svalue(nameLabel, index = TRUE) <<- GUI$activeDoc
