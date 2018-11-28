@@ -65,7 +65,6 @@ iNZViewSwitcher <- setRefClass(
         ## check wich view is activate and the current data size
         ## and enable the buttongs accordingly
         updateWidget = function() {
-            print(" -- update ViewSwitcherWidget")
             dataSet <- GUI$getActiveData()
             if (nrow(dataSet) * ncol(dataSet) >= dataThreshold) {
                 enabled(listBtn) <<- FALSE

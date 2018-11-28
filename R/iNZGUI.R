@@ -72,7 +72,7 @@ iNZGUI <- setRefClass(
         ## methods of the GUI class.
         initializeGui = function(data = NULL, disposeR = FALSE) {
             "Initiates the GUI"
-            iNZDocuments <<- list(iNZDocument$new(.self, data = data))
+            iNZDocuments <<- list(iNZDocument$new(data = data))
             win.title <- paste("iNZight (v",
                                packageDescription("iNZight")$Version,
                                ")", sep = "")
@@ -889,12 +889,11 @@ iNZGUI <- setRefClass(
                 dataNameWidget$updateWidget()
             })
             ## if the dataSet changes, update the data set name
-            # getActiveDoc()$addDataObserver(
-            #     function() {
-            #         print("a--")
-            #         dataNameWidget$updateWidget()
-            #     }
-            # )
+            getActiveDoc()$addDataObserver(
+                function() {
+                    dataNameWidget$updateWidget()
+                }
+            )
             ## if the name changes, update the value
             getActiveDoc()$getModel()$addNameObserver(
                 function() {

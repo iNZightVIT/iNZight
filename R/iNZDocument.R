@@ -25,16 +25,20 @@ iNZDataModel <- setRefClass(
             }
         },
         setData = function(data) {
+            ## validate names
             names(data) <- make.names(names(data), unique = TRUE)
+
+            ## set data name (default = "data")
+            if (is.null(attr(data, "name", exact = TRUE)))
+                attr(data, "name") <- "data"
+
             dataSet <<- data
             origDataSet <<- data
             rowData <- data.frame(Row.names = 1:nrow(data), data,
                                   check.names = TRUE)
             rowDataSet <<- rowData
-            oldname <<- ""
-            if (is.null(attr(data, "name", exact = TRUE)))
-                attr(data, "name") <- "data"
             name <<- attr(data, "name", exact = TRUE)
+            oldname <<- ""
         },
         updateData = function(data) {
             if (is.null(attr(data, "name", exact = TRUE)))
@@ -56,7 +60,7 @@ iNZDataModel <- setRefClass(
             .self$dataSetChanged$connect(FUN, ...)
         },
         addNameObserver = function(FUN, ...) {
-            # .self$nameChanged$connect(FUN, ...)
+            .self$nameChanged$connect(FUN, ...)
         },
         addObjObserver = function(FUN, ...) {
             .self$changed$connect(FUN, ...)
@@ -224,7 +228,6 @@ iNZDocument <- setRefClass(
         ## update the settings to take in current x,y values
         ## from the dataset
         updateSettings = function() {
-            print(" -- update activeDocSettings")
             settings <- plotSettings$settings
             if (!is.null(settings$x) && !is.null(settings$varnames$x)) {
                 settings$x <- getData()[[settings$varnames$x]]
@@ -283,7 +286,6 @@ iNZDataNameWidget <- setRefClass(
             updateWidget()
         },
         updateWidget = function() {
-            print(" -- update dataNameWidget")
             dataSet <- GUI$getActiveData()
             if(is.null(dataSet)){
                 datName <<- "No data loaded"
