@@ -9,61 +9,62 @@
 #' @exportClass iNZGUI
 iNZGUI <- setRefClass(
     "iNZGUI",
-    properties(fields = list(
-                   ## list of iNZDocuments (contain data, plotSettings)
-                   iNZDocuments = "list",
-                   ## the active document of the iNZDocuments list
-                   activeDoc = "numeric",
-                   ## the main GUI window
-                   win = "ANY",
-                   menuBarWidget = "ANY", 
-                   menubar = "ANY",
+    properties(
+        fields = list(
+            ## list of iNZDocuments (contain data, plotSettings)
+            iNZDocuments = "list",
+            ## the active document of the iNZDocuments list
+            activeDoc = "numeric",
+            ## the main GUI window
+            win = "ANY",
+            menuBarWidget = "ANY", 
+            menubar = "ANY",
 
-                   ## left group
-                   leftMain = "ANY",
-                   moduleWindow = "ANY",
-                   activeModule = "ANY",
-                   gp1 = "ANY",
-                   ## middle group
-                   gp2 = "ANY",
-                   popOut = "logical",
+            ## left group
+            leftMain = "ANY",
+            moduleWindow = "ANY",
+            activeModule = "ANY",
+            gp1 = "ANY",
+            ## middle group
+            gp2 = "ANY",
+            popOut = "logical",
 
-                   ## the Widget containing the 2 data views
-                   dataViewWidget = "ANY",
-                   ## the widget handling the switching between the
-                   ## 2 data views
-                   viewSwitcherWidget = "ANY",
-                   dataNameWidget = "ANY",
-                   ## widget that handles the plot notebook
-                   plotWidget = "ANY",
-                   plotToolbar = "ANY",
-                   ## widget that handles the drag/drop buttons
-                   ## under the dataViewWidget
-                   ctrlWidget = "ANY",
-                   ## Save the summary and inference buttons to allow disabling
-                   sumBtn = "ANY",
-                   infBtn = "ANY",
-                   ## every window that modifies plot/data
-                   ## this way we can ensure to only have one
-                   ## open at the time
-                   modWin = "ANY",
-                   ## the current plot and its type (scatter, dot, etc...)
-                   curPlot = "ANY",
-                   plotType = "ANY",
-                   OS = "character",
-                   prefs.location = "character",
-                   preferences = "list",
-                   ## allow modules to attach data to the GUI
-                   moduledata = "list",
-                   ## keep a track of R code history
-                   rhistory = "ANY",
-                   disposer = "logical"
-                   ),
-               prototype = list(
-                   activeDoc = 1,
-                   plotType = "none"
-                   )
-               ),
+            ## the Widget containing the 2 data views
+            dataViewWidget = "ANY",
+            ## the widget handling the switching between the
+            ## 2 data views
+            viewSwitcherWidget = "ANY",
+            dataNameWidget = "ANY",
+            ## widget that handles the plot notebook
+            plotWidget = "ANY",
+            plotToolbar = "ANY",
+            ## widget that handles the drag/drop buttons
+            ## under the dataViewWidget
+            ctrlWidget = "ANY",
+            ## Save the summary and inference buttons to allow disabling
+            sumBtn = "ANY",
+            infBtn = "ANY",
+            ## every window that modifies plot/data
+            ## this way we can ensure to only have one
+            ## open at the time
+            modWin = "ANY",
+            ## the current plot and its type (scatter, dot, etc...)
+            curPlot = "ANY",
+            plotType = "ANY",
+            OS = "character",
+            prefs.location = "character",
+            preferences = "list",
+            ## allow modules to attach data to the GUI
+            moduledata = "list",
+            ## keep a track of R code history
+            rhistory = "ANY",
+            disposer = "logical"
+        ),
+        prototype = list(
+            activeDoc = 1,
+            plotType = "none"
+        )
+    ),
     methods = list(
         ## Start the iNZight GUI
         ##   data: data.frame, starts the gui with data already in it
