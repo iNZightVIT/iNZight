@@ -1,3 +1,7 @@
+- [change] menu reacts to context (disabled when no data, etc)
+- [fix] survey design writes code
+
+
 # Version 3.3
 __Release date:__ 15 August 2018
 

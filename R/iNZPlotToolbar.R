@@ -177,8 +177,7 @@ iNZPlotToolbar <- setRefClass(
                 refreshFn = GUI$activeModule[[refresh.fn]]
             }
 
-            curMenu <- svalue(GUI$menubar)
-            curMenu[["Plot"]] <- list(
+            pmenu <- list(
                 gaction("Add to plot ...",
                                              handler = function(h, ...) addToPlot()),
                 gaction("Remove additions ...", handler = function(h, ...) iNZPlotRmveModWin$new(GUI)),
@@ -200,12 +199,11 @@ iNZPlotToolbar <- setRefClass(
                 )
 
             if (popOut)
-                curMenu[["Plot"]][5:8] <- NULL
+                pmenu[5:8] <- NULL
 
-            curMenu[["Plot"]][which(!c("add", "rmv", "inf", "export") %in% btns)] <- NULL
+            pmenu[which(!c("add", "rmv", "inf", "export") %in% btns)] <- NULL
 
-            svalue(GUI$menubar) <<- curMenu
-
+            GUI$menuBarWidget$setPlotMenu(pmenu)
         },
         ## function to open a new plot window
         newPlotWindow = function(f) {

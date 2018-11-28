@@ -1,16 +1,23 @@
 iNZDataModel <- setRefClass(
     "iNZDataModel",
-    properties(fields = list(
-                   dataSet = "ANY",
-                   origDataSet = "ANY",
-                   rowDataSet = "ANY",
-                   dataDesign = "ANY",
-                   name = "character"),
-               prototype = list(
-                   dataSet = data.frame(empty = " "),
-                   origDataSet = data.frame(empty = " "),
-                   rowDataSet = data.frame(Row.names = 1, empty = " "),
-                   dataDesign = NULL)),
+    properties(
+        fields = list(
+            dataSet = "ANY",
+            origDataSet = "ANY",
+            rowDataSet = "ANY",
+            dataDesign = "ANY",
+            dataDesignName = "character",
+            name = "character",
+            oldname = "character"
+        ),
+        prototype = list(
+            dataSet = data.frame(empty = " "),
+            origDataSet = data.frame(empty = " "),
+            rowDataSet = data.frame(Row.names = 1, empty = " "),
+            dataDesign = NULL,
+            name = "data", oldname = ""
+        )
+    ),
     contains = "PropertySet", ## need this to add observer to object
     methods = list(
         initialize = function(data = NULL) {
@@ -19,16 +26,26 @@ iNZDataModel <- setRefClass(
             }
         },
         setData = function(data) {
+            ## validate names
             names(data) <- make.names(names(data), unique = TRUE)
+
+            ## set data name (default = "data")
+            if (is.null(attr(data, "name", exact = TRUE)))
+                attr(data, "name") <- "data"
+
             dataSet <<- data
             origDataSet <<- data
             rowData <- data.frame(Row.names = 1:nrow(data), data,
                                   check.names = TRUE)
             rowDataSet <<- rowData
             name <<- attr(data, "name", exact = TRUE)
+            oldname <<- ""
         },
         updateData = function(data) {
+            if (is.null(attr(data, "name", exact = TRUE)))
+                attr(data, "name") <- "data"
             dataSet <<- data
+            name <<- attr(data, "name", exact = TRUE)
         },
         setNames = function(newNames) {
             newNames <- make.names(newNames, unique = TRUE)
@@ -42,6 +59,9 @@ iNZDataModel <- setRefClass(
         },
         addDataObserver = function(FUN, ...) {
             .self$dataSetChanged$connect(FUN, ...)
+        },
+        addNameObserver = function(FUN, ...) {
+            .self$nameChanged$connect(FUN, ...)
         },
         addObjObserver = function(FUN, ...) {
             .self$changed$connect(FUN, ...)
@@ -59,6 +79,7 @@ iNZDataModel <- setRefClass(
                                     fpc    = fpc,
                                     nest   = nest)
             }
+            dataDesignName <<- sprintf("%s.svy", name)
         },
         createSurveyObject = function() {
             des <- getDesign()
@@ -80,7 +101,7 @@ iNZDataModel <- setRefClass(
             obj <-
                 parse(text =
                       paste0(
-                          "svydesign(",
+                          "survey::svydesign(",
                           "id = ", id, ", ",
                           if (!is.null(des$strata)) sprintf("strata = %s, ", strata),
                           if (!is.null(des$wt)) sprintf("weights = %s, ", weights),
@@ -97,9 +118,25 @@ iNZDataModel <- setRefClass(
         },
         getCode = function(remove = TRUE) {
             code <- attr(dataSet, "code")
-            if (remove)
+            if (remove) {
+                .dataSetChanged$block()
                 attr(dataSet, "code") <<- ""
+                .dataSetChanged$unblock()
+            }
             code
+        },
+        setName = function(x) {
+            if (x == "") return()
+
+            oldname <<- name
+            ## set the dataset's name
+            .dataSetChanged$block()
+            attr(dataSet, "name") <<- x
+            if (oldname != "")
+                attr(dataSet, "code") <<- sprintf(".dataset <- %s", oldname)
+            .dataSetChanged$unblock()
+
+            name <<- x
         }
         )
     )
@@ -247,6 +284,8 @@ iNZDataNameWidget <- setRefClass(
             })
             add(widget, nameLabel, expand = TRUE)
             enabled(nameLabel) <<- FALSE
+
+            updateWidget()
         },
         updateWidget = function() {
             dataSet <- GUI$getActiveData()
@@ -261,7 +300,7 @@ iNZDataNameWidget <- setRefClass(
                 }
                 enabled(nameLabel) <<- TRUE
             }
-            names <- sapply(GUI$iNZDocuments, function(d) attr(d$getData(), "name", exact = TRUE))
+            names <- sapply(GUI$iNZDocuments, function(d) d$getModel()$name)
             blockHandlers(nameLabel)
             nameLabel$set_items(names)
             svalue(nameLabel, index = TRUE) <<- GUI$activeDoc
