@@ -56,7 +56,8 @@ iNZGUI <- setRefClass(
                    ## allow modules to attach data to the GUI
                    moduledata = "list",
                    ## keep a track of R code history
-                   rhistory = "ANY"
+                   rhistory = "ANY",
+                   disposer = "logical"
                    ),
                prototype = list(
                    activeDoc = 1,
@@ -73,6 +74,7 @@ iNZGUI <- setRefClass(
         initializeGui = function(data = NULL, disposeR = FALSE) {
             "Initiates the GUI"
             iNZDocuments <<- list(iNZDocument$new(data = data))
+            disposer <<- disposeR
             win.title <- paste("iNZight (v",
                                packageDescription("iNZight")$Version,
                                ")", sep = "")
@@ -1805,5 +1807,8 @@ iNZGUI <- setRefClass(
             gh <- gvbox(container = wh)
             th <- gtext(container = gh, expand = TRUE, fill = TRUE, wrap = FALSE)
             insert(th, rhistory$get(), font.attr = list(family = "monospace"))
+        },
+        close = function() {
+            if (disposer) q(save = "no") else dispose(win)
         })
     )

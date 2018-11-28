@@ -74,7 +74,7 @@ iNZMenuBarWidget <- setRefClass(
                 exit = 
                     gaction("Exit",
                         icon = "symbol_diamond",
-                        handler = function(h, ...) if (disposeR) q(save = "no") else dispose(GUI$win))
+                        handler = function(h, ...) GUI$close())
             )
         },
         DataMenu = function() {
