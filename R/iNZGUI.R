@@ -886,7 +886,6 @@ iNZGUI <- setRefClass(
 
              ## if the list of active document changes, update the data set name
             addActDocObs(function() {
-                print("b--")
                 dataNameWidget$updateWidget()
             })
             ## if the dataSet changes, update the data set name
@@ -899,7 +898,6 @@ iNZGUI <- setRefClass(
             ## if the name changes, update the value
             getActiveDoc()$getModel()$addNameObserver(
                 function() {
-                    print("c--")
                     dataNameWidget$updateWidget()
                     rhistory$update()
                 }

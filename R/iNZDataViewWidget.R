@@ -26,6 +26,7 @@ iNZDataViewWidget <- setRefClass(
         },
         ## recreate both views with active dataset
         updateWidget = function() {
+            print(" -- update dataViewWidget")
             view <- visible(dfView)
             ## delete the currently displayed views
             try(invisible(sapply(dataGp$children,
