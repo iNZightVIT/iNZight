@@ -6,6 +6,7 @@ iNZDataModel <- setRefClass(
             origDataSet = "ANY",
             rowDataSet = "ANY",
             dataDesign = "ANY",
+            dataDesignName = "character",
             name = "character",
             oldname = "character"
         ),
@@ -78,6 +79,7 @@ iNZDataModel <- setRefClass(
                                     fpc    = fpc,
                                     nest   = nest)
             }
+            dataDesignName <<- sprintf("%s.svy", name)
         },
         createSurveyObject = function() {
             des <- getDesign()
