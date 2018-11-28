@@ -32,3 +32,5 @@ addons:
       - r-cran-rgtk2
       - r-cran-cairodevice
 
+after_success:
+  - Rscript -e 'covr::codecov()'

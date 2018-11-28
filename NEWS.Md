@@ -1,7 +1,10 @@
 - [dev] add tests
-
 - [add] show dataset summary from Get Summary when no variables selected
 - [fix] remove NULL arguments from survey design call
+- [change] menu reacts to context (disabled when no data, etc)
+- [fix] survey design writes code
+
+
 
 # Version 3.3
 __Release date:__ 15 August 2018
@@ -17,6 +20,12 @@ __Release date:__ 15 August 2018
 
 ### Patch 3.3.1 - 10/09/2018
 - fix bug in reading non-csv files
+
+### Patch 3.3.2 - 15/11/2018
+- add dataset summary information to Get Summary (when no variables selected)
+- add interact button 
+- fix call for survey design objects (remove NULL arguments)
+- fix bug that prevented iNZight to launch on some macs
 
 ***
 # Version 3.2

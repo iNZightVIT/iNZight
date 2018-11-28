@@ -255,6 +255,9 @@ iNZImportWinBeta <- setRefClass("iNZImportWinBeta",
 
                                         dispose(infw)
 
+                                        ## and activate menu
+                                        GUI$menuBarWidget$setMenu()
+
                                         ## dunno why but need to delete gdf ...
                                         #if (!is.null(prev)) delete(prevGp, prev)
                                         dispose(importFileWin)
