@@ -15,7 +15,7 @@ cache:
   - C:\gtk
 
 environment:
-  RGTK2_GTK2_PATH: C:\gtk
+  GTK_PATH: C:\gtk
 
 # Adapt as necessary starting from here
 
