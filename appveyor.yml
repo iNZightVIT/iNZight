@@ -16,6 +16,7 @@ cache:
 
 environment:
   GTK_PATH: C:\gtk
+  RGTK2_GTK2_PATH: C:\gtk
 
 # Adapt as necessary starting from here
 
@@ -27,8 +28,6 @@ build_script:
   - 7z x ..\gtk.zip > nul
   - cd ..
   - mv gtk C:\
-  - cd C:\gtk
-  - dir
 
 test_script:
   - travis-tool.sh run_tests
