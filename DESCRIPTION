@@ -41,6 +41,7 @@ Suggests:
     RColorBrewer,
     FutureLearnData,
     testthat
+Additional_repositories: https://r.docker.stat.auckland.ac.nz
 LazyData: true
 Encoding: UTF-8
 RoxygenNote: 6.1.0.9000
