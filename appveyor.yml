@@ -17,6 +17,11 @@ cache:
 
 build_script:
   - travis-tool.sh install_deps
+  - cd C:\RLibrary\RGtk2
+  - md gtk
+  - cd gtk
+  - appveyor DownloadFile "http://ftp.gnome.org/pub/gnome/binaries/win64/gtk+/2.22/gtk+-bundle_2.22.1-20101229_win64.zip" -FileName gtk.zip
+  - 7z x gtk.zip > nul
 
 test_script:
   - travis-tool.sh run_tests
