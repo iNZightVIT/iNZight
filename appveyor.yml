@@ -22,10 +22,12 @@ environment:
 
 build_script:
   - travis-tool.sh install_deps
-  - appveyor DownloadFile "http://ftp.gnome.org/pub/gnome/binaries/win64/gtk+/2.22/gtk+-bundle_2.22.1-20101229_win64.zip" -FileName gtk.zip
+  - appveyor DownloadFile "http://ftp.gnome.org/pub/gnome/binaries/win32/gtk+/2.22/gtk+-bundle_2.22.1-20101227_win32.zip" -FileName gtk32.zip
+  - appveyor DownloadFile "http://ftp.gnome.org/pub/gnome/binaries/win64/gtk+/2.22/gtk+-bundle_2.22.1-20101229_win64.zip" -FileName gtk64.zip
   - md gtk
   - cd gtk
-  - 7z x ..\gtk.zip > nul
+  - 7z x ..\gtk32.zip > nul
+  - 7z x ..\gtk64.zip > nul
   - cd ..
   - mv gtk C:\
 
