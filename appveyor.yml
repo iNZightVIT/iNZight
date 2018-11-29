@@ -30,8 +30,7 @@ build_script:
   - mv gtk C:\
 
 test_script:
-  - echo %GTK_PATH%
-  - echo %RGTK2_GTK2_PATH%
+  - set PATH=C:\gtk\bin;%PATH%
   - travis-tool.sh run_tests
 
 on_failure:
