@@ -28,11 +28,11 @@ build_script:
   - cd gtk
   - md i386
   - cd i386
-  - 7z x ..\gtk32.zip > nul
+  - 7z x ..\..\gtk32.zip > nul
   - cd ..
   - md x64
   - cd x64
-  - 7z x ..\gtk64.zip > nul
+  - 7z x ..\..\gtk64.zip > nul
   - cd ..
   - cd ..
   - mv gtk C:\
