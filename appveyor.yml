@@ -26,11 +26,14 @@ build_script:
   - appveyor DownloadFile "http://ftp.gnome.org/pub/gnome/binaries/win64/gtk+/2.22/gtk+-bundle_2.22.1-20101229_win64.zip" -FileName gtk64.zip
   - md gtk
   - cd gtk
-  - dir
+  - md i386
+  - cd i386
   - 7z x ..\gtk32.zip > nul
-  - dir
+  - cd ..
+  - md x64
+  - cd x64
   - 7z x ..\gtk64.zip > nul
-  - dir
+  - cd ..
   - cd ..
   - mv gtk C:\
 
