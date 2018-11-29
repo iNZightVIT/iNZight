@@ -26,13 +26,16 @@ build_script:
   - appveyor DownloadFile "http://ftp.gnome.org/pub/gnome/binaries/win64/gtk+/2.22/gtk+-bundle_2.22.1-20101229_win64.zip" -FileName gtk64.zip
   - md gtk
   - cd gtk
+  - dir
   - 7z x ..\gtk32.zip > nul
+  - dir
   - 7z x ..\gtk64.zip > nul
+  - dir
   - cd ..
   - mv gtk C:\
 
 test_script:
-  - set PATH=C:\gtk\bin;%PATH%
+  # - set PATH=C:\gtk\bin;%PATH%
   - travis-tool.sh run_tests
 
 on_failure:
