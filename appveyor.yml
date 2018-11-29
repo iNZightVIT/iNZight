@@ -21,8 +21,8 @@ build_script:
   - md gtk
   - cd gtk
   - 7z x ..\gtk.zip > nul
-  - mv gtk C:\RLibrary\RGtk2
   - cd ..
+  - mv gtk C:\RLibrary\RGtk2
 
 test_script:
   - travis-tool.sh run_tests
