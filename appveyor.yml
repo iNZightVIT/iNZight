@@ -32,6 +32,7 @@ build_script:
   - 7z x ..\..\gtk64.zip > nul
   - cd ..
   - cd ..
+  - rd /s /q "C:\RLibrary\RGtk2\gtk"
   - mv gtk C:\RLibrary\RGtk2
   - del gtk32.zip
   - del gtk64.zip
