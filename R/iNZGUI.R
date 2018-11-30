@@ -124,9 +124,9 @@ iNZGUI <- setRefClass(
                         }  
                     }
 
-                    ## Set the library path if it exists
+                    ## Add the module library path if it exists
                     if (file.exists(file.path("~", "iNZightVIT", "modules")))
-                        .libPaths(file.path("~", "iNZightVIT", "modules"))
+                        .libPaths(c(file.path("~", "iNZightVIT", "modules"), .libPaths()))
                 },
                 "mac" = {
                     done <- FALSE
