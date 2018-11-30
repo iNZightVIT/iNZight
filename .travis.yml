@@ -2,8 +2,9 @@
 
 language: R
 sudo: true
-cache: packages
-  directories:
+cache: 
+  - packages
+  - directories:
     - $HOME/Library/Caches/Homebrew
 latex: false
 pandoc: false
