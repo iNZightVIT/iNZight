@@ -14,9 +14,9 @@ matrix:
       r: release
     - os: linux
       r: devel
-    # - os: osx
-    #   r: 3.3
-    #   brew_packages: libgit2
+# - os: osx
+#   r: 3.3
+#   brew_packages: libgit2
 
 # before_script:
 #   # without these, it doesn't seem to work
@@ -45,10 +45,10 @@ addons:
       - r-cran-cairodevice
 
 before_install:
-  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then 
+  - if [ "$TRAVIS_OS_NAME" == "osx" ]; then 
       sudo chown -R $(whoami) /usr/local/share; 
     else
-      "export DISPLAY=:99.0";
+      export DISPLAY=:99.0;
       sh -e /etc/init.d/xvfb start;
       sleep 10; # give xvfb some time to start
     fi
