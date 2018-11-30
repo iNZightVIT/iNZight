@@ -14,19 +14,11 @@ matrix:
       r: release
     - os: linux
       r: devel
-# - os: osx
-#   r: 3.3
-#   brew_packages: libgit2
-
-# before_script:
-#   # without these, it doesn't seem to work
-#   - if [[ "$TRAVIS_OS_NAME" = "osx" ]]; then
-#       # on osx
-#     else
-#       sudo apt update;
-#       sudo apt install -qq libgtk2.0-dev xorg-dev;
-      
-#     fi
+    - os: osx
+      r: 3.3
+      brew_packages: libgit2
+  allow_failures:
+    - os: osx
 
 repos:
   docker: https://r.docker.stat.auckland.ac.nz
@@ -43,10 +35,12 @@ addons:
       - r-cran-rodbc
       - r-cran-rgtk2
       - r-cran-cairodevice
+  homebrew:
+
 
 before_install:
   - if [ "$TRAVIS_OS_NAME" == "osx" ]; then 
-      sudo chown -R $(whoami) /usr/local/share; 
+      sudo chown -R $(whoami) /usr/local/share;
     else
       export DISPLAY=:99.0;
       sh -e /etc/init.d/xvfb start;
