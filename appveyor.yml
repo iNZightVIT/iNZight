@@ -37,7 +37,7 @@ build_script:
   - del gtk64.zip
 
 test_script:
-  - md ~\iNZightVIT
+  - md C:\Users\appveyor\Documents\iNZightVIT
   - travis-tool.sh run_tests
 
 on_failure:
