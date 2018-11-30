@@ -4,21 +4,33 @@ language: R
 sudo: true
 cache: packages
 latex: false
+pandoc: false
 
-r:
-  - oldrel
-  - release
-  - devel
+matrix:
+  include:
+    - os: linux
+      r: oldrel
+    - os: linux
+      r: release
+    - os: linux
+      r: devel
+    # - os: osx
+    #   r: 3.3
+    #   brew_packages: libgit2
 
-before_script:
-  - sudo apt update 
-  - sudo apt install -qq libgtk2.0-dev xorg-dev
-  - "export DISPLAY=:99.0"
-  - sh -e /etc/init.d/xvfb start
-  - sleep 10 # give xvfb some time to start
+# before_script:
+#   # without these, it doesn't seem to work
+#   - if [[ "$TRAVIS_OS_NAME" = "osx" ]]; then
+#       # on osx
+#     else
+#       sudo apt update;
+#       sudo apt install -qq libgtk2.0-dev xorg-dev;
+      
+#     fi
 
 repos:
   docker: https://r.docker.stat.auckland.ac.nz
+
 
 addons:
   apt:
@@ -31,6 +43,15 @@ addons:
       - r-cran-rodbc
       - r-cran-rgtk2
       - r-cran-cairodevice
+
+before_install:
+  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then 
+      sudo chown -R $(whoami) /usr/local/share; 
+    else
+      "export DISPLAY=:99.0";
+      sh -e /etc/init.d/xvfb start;
+      sleep 10; # give xvfb some time to start
+    fi
 
 after_success:
   - Rscript -e 'covr::codecov()'
