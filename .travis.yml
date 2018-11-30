@@ -45,7 +45,8 @@ before_install:
       brew uninstall --force cairo --ignore-dependencies;
       brew cask install xquartz;
       brew install --with-x11 cairo;
-      brew install --with-gdktarget=x11 --enable-x11-backend --verbose gtk+;
+      brew install --with-gdktarget=x11 --enable-x11-backend --build-from-source gtk+;
+      echo "export PKG_CONFIG_PATH=/usr/local/lib/pkgconfig:/usr/local/lib/pkgconfig/gtk+-2.0.pc:/opt/X11/lib/pkgconfig" >> ~/.bash_profile
     else
       export DISPLAY=:99.0;
       sh -e /etc/init.d/xvfb start;
