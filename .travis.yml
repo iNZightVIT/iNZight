@@ -19,6 +19,7 @@ matrix:
       r: devel
     - os: osx
       r: 3.3
+      brew_packages: libgit2
   allow_failures:
     - os: osx
 
@@ -37,9 +38,6 @@ addons:
       - r-cran-rodbc
       - r-cran-rgtk2
       - r-cran-cairodevice
-  homebrew:
-    packages:
-      - libgit2
 
 before_install:
   - if [ "$TRAVIS_OS_NAME" == "osx" ]; then 
@@ -47,7 +45,7 @@ before_install:
       brew uninstall --force cairo --ignore-dependencies;
       brew cask install xquartz;
       brew install --with-x11 cairo;
-      brew install gtk+;
+      brew install --with-gdktarget=x11 --enable-x11-backend --verbose gtk+;
     else
       export DISPLAY=:99.0;
       sh -e /etc/init.d/xvfb start;
