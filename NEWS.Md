@@ -4,6 +4,7 @@
 - [change] menu reacts to context (disabled when no data, etc)
 - [fix] survey design writes code
 
+- [fix] modules path is prepended to libPaths
 
 
 # Version 3.3
