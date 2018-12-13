@@ -54,6 +54,7 @@ iNZGUI <- setRefClass(
             OS = "character",
             prefs.location = "character",
             preferences = "list",
+            statusbar = "ANY",
             ## allow modules to attach data to the GUI
             moduledata = "list",
             ## keep a track of R code history
@@ -260,6 +261,9 @@ iNZGUI <- setRefClass(
 
             ## and start tracking history
             initializeCodeHistory()
+
+            ## init statusbar
+            statusbar <<- gstatusbar("iNZight is ready", container = win)
 
             invisible(0)
         }, ## end initialization
