@@ -409,7 +409,8 @@ iNZAboutWidget <- setRefClass(
 )
 
 InstallMaps <- function(gui) {
-    if (requireNamespace("iNZightMaps", quietly = TRUE)) {
+    check.maps <- 'requireNamespace("iNZightMaps", quietly = TRUE)'
+    if (eval(parse(text = check.maps))) {
         gmessage("The maps package is already installed!", parent = gui$win)
         return()
     }
@@ -421,7 +422,7 @@ InstallMaps <- function(gui) {
         dependencies = TRUE
     )
 
-    if (!requireNamespace("iNZightMaps", quietly = TRUE)) {
+    if (!eval(parse(text = check.maps))) {
         svalue(gui$statusbar) <- "Error installing the maps module"
         gmessage("Unable to install package. Please check the website.", parent = gui$win)
         return()
