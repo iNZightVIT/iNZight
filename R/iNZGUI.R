@@ -739,10 +739,47 @@ iNZGUI <- setRefClass(
                                 else svalue(h$obj)
                         })
 
+                        if (INFTYPE == "regression") {
+                            lbl <- glabel("Trend options (select at least one)")
+                            font(lbl) <- list(weight = "bold")
+                            tbl[ii, 1:6, anchor = c(-1, 0), expand = TRUE] <- lbl
+                            ii <- ii + 1
+
+                            ## clicking each will update plot settings
+                            addCurve <- function(h, ...) {
+                                newtrend <- character()
+                                if (svalue(trendLinearChk)) newtrend <- c(newtrend, "linear")
+                                if (svalue(trendQuadChk)) newtrend <- c(newtrend, "quadratic")
+                                if (svalue(trendCubicChk)) newtrend <- c(newtrend, "cubic")
+                                getActiveDoc()$setSettings(list(trend = newtrend))
+                            }
+                            curtrend <- curSet$trend
+                            trendLinearChk <- gcheckbox(
+                                "Linear trend", 
+                                checked = "linear" %in% curtrend, 
+                                handler = addCurve
+                            )
+                            tbl[ii, 2:6] <- trendLinearChk
+                            ii <- ii + 1
+                            trendQuadChk <- gcheckbox(
+                                "Quadratic trend", 
+                                checked = "quadratic" %in% curtrend, 
+                                handler = addCurve
+                            )
+                            tbl[ii, 2:6] <- trendQuadChk
+                            ii <- ii + 1
+                            trendCubicChk <- gcheckbox(
+                                "Cubic trend", 
+                                checked = "cubic" %in% curtrend, 
+                                handler = addCurve
+                            )
+                            tbl[ii, 2:6] <- trendCubicChk
+                            ii <- ii + 1
+                        }
 
                         btn <- gbutton("OK", handler = function(h, ...) {
                             infType <- svalue(infMthd, index = TRUE)
-                            sets <- curSet
+                            sets <- getActiveDoc()$getSettings()
                             sets <- modifyList(
                                 sets,
                                 list(bs.inference = infType == 2,
@@ -784,6 +821,15 @@ iNZGUI <- setRefClass(
                                     list(hypothesis = NULL), 
                                     keep.null = TRUE
                                 )
+                            }
+
+                            if (INFTYPE == "regression") {
+                                tr <- getActiveDoc()$getSettings()$trend
+                                if (is.null(tr) || length(tr) == 0) {
+                                    gmessage("Please choose at least one trend option", icon = "error",
+                                        title = "No trend selected", parent = win)
+                                    return()
+                                }
                             }
 
                             ## Close setup window and display results
