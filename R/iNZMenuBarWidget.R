@@ -218,8 +218,20 @@ iNZMenuBarWidget <- setRefClass(
             updateMenu("Plot", PlotMenu())
         },
         AdvancedMenu = function() {
-            if (!hasData()) return(placeholder("Advanced"))
-            adv <- list(
+            if (!hasData()) {
+                ## just provide the ability to install modules
+                return(list(
+                    "Maps" = list(
+                        installmaps =
+                            gaction("Install",
+                                icon = "symbol_diamond",
+                                "tooltip" = "Install the Maps module",
+                                handler = function(h, ...) InstallMaps(GUI))
+                    )
+                ))
+            }
+
+            list(
                 "Quick Explore" = list(
                     missing = 
                         gaction("Missing values",
@@ -413,3 +425,29 @@ iNZAboutWidget <- setRefClass(
         }
     )
 )
+
+InstallMaps <- function(gui) {
+    check.maps <- 'requireNamespace("iNZightMaps", quietly = TRUE)'
+    if (eval(parse(text = check.maps))) {
+        gmessage("The maps package is already installed!", parent = gui$win)
+        return()
+    }
+
+    svalue(gui$statusbar) <- "Installing maps module ..."
+    utils::install.packages(
+        "iNZightMaps", 
+        repos = c("https://r.docker.stat.auckland.ac.nz", "https://cran.stat.auckland.ac.nz"),
+        dependencies = TRUE
+    )
+
+    if (!eval(parse(text = check.maps))) {
+        svalue(gui$statusbar) <- "Error installing the maps module"
+        gmessage("Unable to install package. Please check the website.", parent = gui$win)
+        return()
+    }
+
+    ## reload the menu ...?
+    svalue(gui$statusbar) <- "Maps module installed successfully"
+    gui$menuBarWidget$defaultMenu()
+    gmessage("The Maps package has been installed.", parent = gui$win)
+}
