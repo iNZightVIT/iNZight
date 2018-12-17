@@ -285,19 +285,10 @@ iNZMenuBarWidget <- setRefClass(
                         icon = "symbol_diamond",
                         tooltip = "Start the multiple response module",
                         handler = function(h, ...) iNZightModules::iNZightMultiRes$new(GUI)),
-                ## this will become a single option at some point ...
-                "Maps" = list(
-                    points = 
-                        gaction("Latitude/longitude points ...",
-                            icon = "symbol_diamond",
-                            tooltip = "Start the maps module for lat/lon point data",
-                            handler = function(h, ...) iNZightModules::iNZightMapMod$new(GUI)),
-                    regions =
-                        gaction("Regions/countries ...",
-                            icon = "symbol_diamond",
-                            tooltip = "Start the maps module for regional data",
-                            handler = function(h, ...) iNZightModules::iNZightMap2Mod$new(GUI))
-                ),
+                maps = 
+                    gaction("Maps ...",
+                        icon = "symbol_diamond",
+                        handler = function(h, ...) iNZightModules::iNZightMapLanding$new(GUI)),
                 gseparator(),
                 rcode = 
                     gaction("R code history [beta] ...",
