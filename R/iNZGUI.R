@@ -263,7 +263,7 @@ iNZGUI <- setRefClass(
             initializeCodeHistory()
 
             ## init statusbar
-            statusbar <<- gstatusbar("iNZight is ready", container = win)
+            statusbar <<- gstatusbar("iNZight is ready")# , container = win) ## disabled
 
             invisible(0)
         }, ## end initialization
