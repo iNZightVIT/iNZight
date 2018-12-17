@@ -231,7 +231,7 @@ iNZMenuBarWidget <- setRefClass(
                 ))
             }
 
-            list(
+            adv <- list(
                 "Quick Explore" = list(
                     missing = 
                         gaction("Missing values",
