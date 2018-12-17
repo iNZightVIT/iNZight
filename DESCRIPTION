@@ -39,6 +39,10 @@ Suggests:
     png,
     viridis,
     RColorBrewer,
-    FutureLearnData
+    FutureLearnData,
+    testthat,
+    covr
+Additional_repositories: https://r.docker.stat.auckland.ac.nz
 LazyData: true
-RoxygenNote: 6.1.0.9000
+Encoding: UTF-8
+RoxygenNote: 6.1.1
