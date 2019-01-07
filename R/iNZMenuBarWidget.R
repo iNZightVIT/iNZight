@@ -299,11 +299,12 @@ iNZMenuBarWidget <- setRefClass(
                         tooltip = "Show the R code history for your session",
                         handler = function(h, ...) GUI$showHistory())
             )
-            modules <- iNZightModules:::getModules(load = TRUE)
+            modules <- iNZightModules:::getModules()
             if (length(modules)) {
                 instindex <- which(names(adv) == "install")
                 mods <- lapply(modules, function(mod) {
                     gaction(mod, handler = function(h, ...) {
+                        mod$load()
                         x <- sprintf("%s$new(GUI)", tools::file_path_sans_ext(mod))
                         eval(parse(text = x))
                     })    
