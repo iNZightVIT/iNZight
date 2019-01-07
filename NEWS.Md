@@ -6,6 +6,7 @@
 
 - [fix] modules path is prepended to libPaths
 
+- [update] maps landing
 
 # Version 3.3
 __Release date:__ 15 August 2018
