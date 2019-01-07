@@ -12,6 +12,9 @@ install:
 
 cache:
   - C:\RLibrary
+  
+environment:
+  USE_RTOOLS: true
 
 
 # Adapt as necessary starting from here
