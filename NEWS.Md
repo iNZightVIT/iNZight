@@ -1,13 +1,32 @@
-- [dev] add tests
-- [add] show dataset summary from Get Summary when no variables selected
-- [fix] remove NULL arguments from survey design call
-- [change] menu reacts to context (disabled when no data, etc)
-- [fix] survey design writes code
+# Patch 3.3.3 - 07/11/2018
 
-- [fix] modules path is prepended to libPaths
+## Small changes
 
-- [update] maps landing
+- menu now reacts to the environment (plus major internal code refactoring)
+- now showing a dataset summary under Get Summary when no variables selected
+- updated the maps landing page
+- specifying survey design now writes code history
 
+## Bug fixes
+- remove NULL arguments from survey design call
+- modules path is prepended to libPaths
+
+## Other
+- added unit testing
+
+***
+# Patch 3.3.2 - 15/11/2018
+
+- add dataset summary information to Get Summary (when no variables selected)
+- add interact button 
+- fix call for survey design objects (remove NULL arguments)
+- fix bug that prevented iNZight to launch on some macs
+
+***
+# Patch 3.3.1 - 10/09/2018
+- fix bug in reading non-csv files
+
+***
 # Version 3.3
 __Release date:__ 15 August 2018
 
@@ -18,16 +37,16 @@ __Release date:__ 15 August 2018
 - maps module completely renovated
 - interactive plots have recieved more updates and fixes
 
-## Patches
+***
 
-### Patch 3.3.1 - 10/09/2018
-- fix bug in reading non-csv files
+# Patch 3.2.2 - 25/05/2018
+- fix bug in import window where some character encodings were being distorted
+- fix typo in import window info box
+- catch import errors, so the "please wait" dialog hopefully doesn't stay open forever
 
-### Patch 3.3.2 - 15/11/2018
-- add dataset summary information to Get Summary (when no variables selected)
-- add interact button 
-- fix call for survey design objects (remove NULL arguments)
-- fix bug that prevented iNZight to launch on some macs
+***
+# Patch 3.2.1 - 21/02/2018
+- fix small issue in import module that prevented reading of non-UTF-8 csv files
 
 ***
 # Version 3.2
@@ -53,14 +72,6 @@ __Release date:__ 23 January 2018
 
 
 ## Patches
-
-### Patch 3.2.1 - 21/02/2018
-- fix small issue in import module that prevented reading of non-UTF-8 csv files
-
-### Patch 3.2.2 - 25/05/2018
-- fix bug in import window where some character encodings were being distorted
-- fix typo in import window info box
-- catch import errors, so the "please wait" dialog hopefully doesn't stay open forever
 
 ***
 # Version 3.1
