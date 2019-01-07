@@ -11,7 +11,7 @@ install:
   ps: Bootstrap
 
 cache:
-  - C:\RLibrary
+  - c:\RLibrary
   
 environment:
   USE_RTOOLS: true
@@ -35,8 +35,8 @@ build_script:
   - 7z x ..\..\gtk64.zip > nul
   - cd ..
   - cd ..
-  - rd /s /q "C:\RLibrary\RGtk2\gtk"
-  - mv gtk C:\RLibrary\RGtk2
+  - if exist c:\RLibrary\RGtk2\gtk\ rd /s /q c:\RLibrary\RGtk2\gtk
+  - mv gtk c:\RLibrary\RGtk2
   - del gtk32.zip
   - del gtk64.zip
 
