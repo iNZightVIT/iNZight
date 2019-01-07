@@ -1,5 +1,7 @@
 # iNZight
 [![Travis-CI Build Status](https://travis-ci.org/iNZightVIT/iNZight.svg?branch=master)](https://travis-ci.org/iNZightVIT/iNZight)
+[![AppVeyor build status](https://ci.appveyor.com/api/projects/status/github/iNZightVIT/iNZight?branch=master&svg=true)](https://ci.appveyor.com/project/iNZightVIT/iNZight)
+[![codecov](https://codecov.io/gh/iNZightVIT/iNZight/branch/master/graph/badge.svg)](https://codecov.io/gh/iNZightVIT/iNZight)
 [![License: GPL v3](https://img.shields.io/badge/License-GPL%20v3-blue.svg)](http://www.gnu.org/licenses/gpl-3.0)
 
 iNZight as a whole is a simple data analysis system which encourages exploring what data is saying without the distractions of driving complex software. While it was initially designed for New Zealand high schools, iNZight now extends to multivariable graphics, time series and linear models.
