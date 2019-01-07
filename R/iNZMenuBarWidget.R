@@ -218,7 +218,19 @@ iNZMenuBarWidget <- setRefClass(
             updateMenu("Plot", PlotMenu())
         },
         AdvancedMenu = function() {
-            if (!hasData()) return(placeholder("Advanced"))
+            if (!hasData()) {
+                ## just provide the ability to install modules
+                return(list(
+                    "Maps" = list(
+                        installmaps =
+                            gaction("Install",
+                                icon = "symbol_diamond",
+                                "tooltip" = "Install the Maps module",
+                                handler = function(h, ...) InstallMaps(GUI))
+                    )
+                ))
+            }
+
             adv <- list(
                 "Quick Explore" = list(
                     missing = 
@@ -273,19 +285,10 @@ iNZMenuBarWidget <- setRefClass(
                         icon = "symbol_diamond",
                         tooltip = "Start the multiple response module",
                         handler = function(h, ...) iNZightModules::iNZightMultiRes$new(GUI)),
-                ## this will become a single option at some point ...
-                "Maps" = list(
-                    points = 
-                        gaction("Latitude/longitude points ...",
-                            icon = "symbol_diamond",
-                            tooltip = "Start the maps module for lat/lon point data",
-                            handler = function(h, ...) iNZightModules::iNZightMapMod$new(GUI)),
-                    regions =
-                        gaction("Regions/countries ...",
-                            icon = "symbol_diamond",
-                            tooltip = "Start the maps module for regional data",
-                            handler = function(h, ...) iNZightModules::iNZightMap2Mod$new(GUI))
-                ),
+                maps = 
+                    gaction("Maps ...",
+                        icon = "symbol_diamond",
+                        handler = function(h, ...) iNZightModules::iNZightMapLanding$new(GUI)),
                 gseparator(),
                 install = 
                     gaction("Add or remove modules ...",
@@ -414,3 +417,29 @@ iNZAboutWidget <- setRefClass(
         }
     )
 )
+
+InstallMaps <- function(gui) {
+    check.maps <- 'requireNamespace("iNZightMaps", quietly = TRUE)'
+    if (eval(parse(text = check.maps))) {
+        gmessage("The maps package is already installed!", parent = gui$win)
+        return()
+    }
+
+    svalue(gui$statusbar) <- "Installing maps module ..."
+    utils::install.packages(
+        "iNZightMaps", 
+        repos = c("https://r.docker.stat.auckland.ac.nz", "https://cran.stat.auckland.ac.nz"),
+        dependencies = TRUE
+    )
+
+    if (!eval(parse(text = check.maps))) {
+        svalue(gui$statusbar) <- "Error installing the maps module"
+        gmessage("Unable to install package. Please check the website.", parent = gui$win)
+        return()
+    }
+
+    ## reload the menu ...?
+    svalue(gui$statusbar) <- "Maps module installed successfully"
+    gui$menuBarWidget$defaultMenu()
+    gmessage("The Maps package has been installed.", parent = gui$win)
+}

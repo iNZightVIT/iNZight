@@ -2,6 +2,9 @@ R := R --slave
 document:
 	@$(R) -e "devtools::document()"
 
+test:
+	@$(R) -e "devtools::test()"
+
 check:
 	@$(R) -e "devtools::check()"
 
