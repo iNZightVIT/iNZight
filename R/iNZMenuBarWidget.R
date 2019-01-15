@@ -70,7 +70,7 @@ iNZMenuBarWidget <- setRefClass(
                     gaction ("Preferences ...",
                         icon = "symbol_diamond",
                         tooltip = "Customise iNZight",
-                        handler = function(h, ...) iNZPrefsWin$new(.self)),
+                        handler = function(h, ...) iNZPrefsWin$new(GUI)),
                 exit = 
                     gaction("Exit",
                         icon = "symbol_diamond",
