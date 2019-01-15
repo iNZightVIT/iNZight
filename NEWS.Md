@@ -1,3 +1,9 @@
+## iNZight 3.3.4
+__Release date:__ 16 January 2019
+
+- fix a bug in which the preferences menu wouldn't open up
+
+
 ## iNZight 3.3.3
 __Release date:__ 07 January 2019
 
