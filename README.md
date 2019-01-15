@@ -1,4 +1,4 @@
-# iNZight <img src="inst/images/inzight_transp.png" align="right" width="240" />
+# iNZight <img src="inst/images/inzight_transp.png" align="right" width="320" />
 
 [![Travis-CI Build Status](https://travis-ci.org/iNZightVIT/iNZight.svg?branch=master)](https://travis-ci.org/iNZightVIT/iNZight)
 [![AppVeyor build status](https://ci.appveyor.com/api/projects/status/ks5p7takochbhhsq/branch/master?svg=true)](https://ci.appveyor.com/project/tmelliott/inzight/branch/master)
