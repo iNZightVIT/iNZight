@@ -182,6 +182,20 @@ iNZMenuBarWidget <- setRefClass(
                             tooltip = "Convert multiple numeric variables to categorical",
                             handler = function(h, ...) iNZctocatmulWin$new(GUI))
                     ),
+                
+                "Dates and Times" = list(
+                  convert = 
+                    gaction("Convert to ...",
+                            icon = "symbol_diamond",
+                            tooltip = "Convert a variable to a dates and times type",
+                            handler = function(h, ...) iNZconTodtWin$new(GUI)),
+                  extract = 
+                    gaction("Extract from ...",
+                            icon = "symbol_diamond",
+                            tooltip = "Extract parts from a dates and times variable",
+                            handler = function(h, ...) iNZExtfromdtWin$new(GUI))
+                ),
+                
                 rename =
                     gaction("Rename variables ...",
                         icon = "symbol_diamond",
