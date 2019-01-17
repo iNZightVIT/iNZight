@@ -1313,10 +1313,6 @@ iNZconTodtWin <- setRefClass(
           convertedview$set_items("")
           svalue(newVarname) = ""
         } else {
-          if (length(factorname) == 1 && is.numeric(GUI$getActiveData()[[factorname]]) == TRUE) {
-            print("hi")
-            var2$set_items(c(dt.formats, "Number of days since 1970-01-01"))
-          }
           varx = ""
           new_name = ""
           for (num in 1:length(factorname)) {
@@ -1324,6 +1320,57 @@ iNZconTodtWin <- setRefClass(
             varx = paste(varx, GUI$getActiveData()[[name]])
             new_name = paste(new_name, name, ".", sep = "")
           }
+          dfview$set_items(data.frame(Original = varx))
+          svalue(newVarname) = makeNames(paste(new_name, "dt", sep = ""))
+          
+          if (svalue(var2) == ""){
+            return()
+          } else{
+            convname = svalue(var2)
+            .dataset = GUI$getActiveData()
+            name = svalue(newVarname)
+            data = iNZightTools::convert_to_datetime(.dataset, factorname, convname, name)
+            if (all(is.na(data[[svalue(newVarname)]]))){
+              convertedview$set_items(data.frame(Converted = "Invalid format"))
+            } else{
+              convertedview$set_items(data.frame(Converted = data[[svalue(newVarname)]]))
+            }
+          }
+        }
+      })
+      
+      ## from extract
+      var1 <- gcombobox(items = c("", names(dplyr::select_if(GUI$getActiveData(), lubridate::is.POSIXct))), container = mainGroup, handler = function(h,...){
+        if (svalue(var1) == "") {
+          dfview$set_items(data.frame(Original = ""))
+        } else {
+          varname = svalue(var1)
+          varx = GUI$getActiveData()[[varname]]
+          dfview$set_items(data.frame(Original = as.character(varx)))
+          if (svalue(var2) == "") {
+            return()
+          } else {
+            part = svalue(var2)
+            name = svalue(newVarname)
+            exp = iNZightTools::extract_part(GUI$getActiveData(), varname, part, name)
+            extractedview$set_items(data.frame(Extracted = as.character(exp[[svalue(newVarname)]])))
+          }
+        }
+      })
+      
+      
+      ## Dropdown
+      var1 = gcombobox(names(GUI$getActiveData()), cont = mainGroup)
+      addHandlerSelectionChanged(var1, function(h, ...) {
+        varname = svalue(var1)
+        if (varname == "") {
+          dfview$set_items
+          convertedview$set_items("")
+          svalue(newVarname) = ""
+        } else {
+          varx = ""
+          new_name = ""
+
           dfview$set_items(data.frame(Original = varx))
           svalue(newVarname) = makeNames(paste(new_name, "dt", sep = ""))
           
@@ -1354,7 +1401,8 @@ iNZconTodtWin <- setRefClass(
                       "year month date Hour Minute Second pm/am", 
                       "day month year", 
                       "day month year Hour Minute Second", 
-                      "day month year Hour Minute Second pm/am")
+                      "day month year Hour Minute Second pm/am",
+                      "Unix timestamp (secs from 1970)")
       
       ## UNIX timestamp (seconds since 1970-01-01)
       

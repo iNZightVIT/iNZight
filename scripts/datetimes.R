@@ -3,7 +3,6 @@
 
 library(devtools)
 
-
 document("~/iNZightTools")
 
 load_all("~/iNZightTools")
@@ -29,30 +28,16 @@ load_all("~/iNZight")
 kk = iNZGUI$new()
 kk$initializeGui(data)
 
-##transform var
 
-var.dt = c(lubridate::ymd(19970113), lubridate::ymd(19871105), lubridate::ymd(20190103))
-x = lubridate::ymd(var.dt)
-var.dt = chron::times(strftime(x, "%H:%M:%S", tz = "UTC"))
-var.dt = as.character(var.dt)
-if (all(var.dt == "00:00:00")) {
-  print("hi")
-}
-var.dt
-all(var.dt == "00:00:00")
+## Convert
+## Add UNIX timestamp to dropdown DONE
+## Add in check box to let the user choose between dropdown and multiple field DONE
 
-data
-lubridate::month(data$`Time stamp`)
-lubridate::hours(data$`Time stamp`)
+## Extract
+## Change extract drop down to a compressed version
+## Add in hour/minute/second DONE but start from Sunday or Monday?
 
-var.dt = chron::times(strftime(data$`Time stamp`, "%H:%M:%S", tz = "UTC"))
-var.dt
+## Tests to be written
+## Code history to be written
 
-x = as.character(var.dt)
-
-sapply(strsplit(x,":"),
-       function(x) {
-         x <- as.numeric(x)
-         x[1]+(x[2]+x[3]*60)/60
-       }
-)
+## Time zone
