@@ -127,12 +127,12 @@ iNZPlotModWin <- setRefClass(
             if (!is.null(GUI)) {
                 updateSettings()
 
-                GUI$initializeModuleWindow()
+                modwin <- GUI$initializeModuleWindow(scroll = FALSE)
+                mainGrp <- modwin$body
 
-                mainGrp <- gvbox(container = GUI$moduleWindow, expand = TRUE, fill = TRUE)
-                mainGrp$set_borderwidth(5)
-                topGrp <- ggroup(horizontal = TRUE,
-                                 container = mainGrp)
+                # mainGrp <- gvbox(container = GUI$moduleWindow$body, expand = TRUE, fill = TRUE)
+
+                topGrp <- modwin$header
                 lbl <- glabel("Add to Plot :")
                 font(lbl) <- list(weight="bold",
                                   family = "normal",
@@ -163,8 +163,7 @@ iNZPlotModWin <- setRefClass(
                     visible(updateBtn) <- !svalue(h$obj)
                 })
                 
-                btnGrp <- ggroup(horizontal = TRUE,
-                                 expand = FALSE)
+                btnGrp <- modwin$footer
 
                 helpButton <- gbutton("Help", expand = TRUE, fill = TRUE,
                                       cont = btnGrp,
@@ -181,12 +180,6 @@ iNZPlotModWin <- setRefClass(
                                          visible(GUI$gp1) <<- TRUE
                                      })
 
-
-                add(mainGrp, btnGrp, expand = FALSE, fill = "x", anchor = c(0, -1))
-
-
-
-                visible(GUI$moduleWindow) <<- TRUE
             }
         },
         ## up the curSet class variable
