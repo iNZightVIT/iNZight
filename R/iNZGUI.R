@@ -1149,17 +1149,45 @@ iNZGUI <- setRefClass(
         },
         ## create a gvbox object into the module window (ie, initialize it)
         ## NOTE: should be run every time when a new module is open
-        initializeModuleWindow = function(mod) {
+        initializeModuleWindow = function(mod, title, scroll = FALSE, border = 0) {
             ## delete any old ones:
             if (length(.self$leftMain$children) > 1) {
                 delete(.self$leftMain, .self$leftMain$children[[2]])
             }
             ## create a gvbox in moduleWindow
-            moduleWindow <<- gvbox(container = leftMain, expand = TRUE)
+            # to improve between-module similarity, set up here with
+            # -> head, body, footer (for buttons)
+            modContainer <- gvbox(container = leftMain, expand = TRUE)
+
+            moduleWindow <<- 
+                list(
+                    header = 
+                        gvbox(container = modContainer),
+                    body =
+                        gvbox(
+                            spacing = 10,
+                            use.scrollwindow = ifelse(scroll, "y", FALSE),
+                            container = modContainer,
+                            expand = TRUE
+                        ),
+                    footer = 
+                        ggroup(container = modContainer)
+                )
+
+            if (!missing(title)) {
+                title <- glabel(title)
+                font(title) <- list(weight = "bold", size = 12)
+                add(moduleWindow$header, title, anchor = c(0, 0))
+            }
+
+            if (border > 0) moduleWindow$body$set_borderwidth(border)
+
             visible(gp1) <<- FALSE
 
             if (!missing(mod))
                 activeModule <<- mod
+
+            invisible(moduleWindow)
         },
         initializeCodeHistory = function() {
             rhistory <<- iNZcodeWidget$new(.self)

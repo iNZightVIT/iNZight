@@ -127,23 +127,16 @@ iNZPlotRmveModWin <- setRefClass(
                 }
                 
                 ## open in leftMain
-                if (length(GUI$leftMain$children) > 1) {
-                    delete(GUI$leftMain, GUI$leftMain$children[[2]])
-                }
-                GUI$initializeModuleWindow()
+                modwin <- GUI$initializeModuleWindow(title = "Remove additions", scroll = TRUE)
                 
-                mainGrp <- gvbox(container = GUI$moduleWindow, expand = TRUE)
-                
-                lbl <- glabel("Remove additions")
-                font(lbl) <- list(weight = "bold", family = "normal", size = 9)
-                add(mainGrp, lbl)
+                mainGrp <- modwin$body
                 
                 selectGrp <- ggroup(horizontal = FALSE,
                                     container = mainGrp,
                                     expand = FALSE)
                 
-                addSpring(mainGrp)
-                btnGrp <- ggroup(container = mainGrp, horizontal = TRUE)
+                
+                btnGrp <- modwin$footer
                 mainGrp$set_borderwidth(5)
 
                 add(btnGrp, proceedButton, expand = TRUE, fill = TRUE)
@@ -166,7 +159,6 @@ iNZPlotRmveModWin <- setRefClass(
                     function() removeAdditions(TRUE)
                     )
                 
-                visible(GUI$moduleWindow) <<- TRUE
             }
         },
         ## remove plot additions from the plot settings
