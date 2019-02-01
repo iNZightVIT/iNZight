@@ -62,7 +62,7 @@ iNZFilterWin <- setRefClass(
             lbl3 = glabel("(Hold Ctrl to choose many)")
             ## choose a factor column from the dataset and display
             ## its levels together with their order
-            factorIndices <- sapply(GUI$getActiveData(), is_fact)
+            factorIndices <- sapply(GUI$getActiveData(), is_cat)
             factorMenu <- gcombobox(names(GUI$getActiveData())[factorIndices],
                                     selected = 0)
             addHandlerChanged(factorMenu, handler = function(h, ...) {
@@ -127,7 +127,7 @@ iNZFilterWin <- setRefClass(
             lbl3 = glabel("eg: X == 20")
             lbl4 = glabel("Choose observations in the dataset where :")
             font(lbl4) = list(weight = "bold", style = "normal")
-            numIndices <- sapply(GUI$getActiveData(), function(x) !is_fact(x))
+            numIndices <- sapply(GUI$getActiveData(), function(x) !is_cat(x))
             numMenu <- gcombobox(names(GUI$getActiveData())[numIndices],
                                  selected = 0)
             operator <- gedit("", width = 2)
@@ -450,7 +450,7 @@ iNZAgraDataWin <- setRefClass(
                           expand = TRUE)
         mainGrp$set_borderwidth(15)
         btnGrp <- ggroup(horizontal = TRUE)
-        nameList <- names(Filter(is_fact,GUI$getActiveData()))
+        nameList <- names(Filter(is_cat,GUI$getActiveData()))
         heading <- glabel("Aggregate over variables:")
         font(heading) <- list(weight = "bold", style = "normal")
         AgraButton <- gbutton(
@@ -520,7 +520,7 @@ iNZstackVarWin <- setRefClass(
         font(lbl2) <- list(weight = "bold",
                            family = "normal")
         ## display only numeric variables
-        numIndices <- sapply(GUI$getActiveData(), function(x) !is_fact(x))
+        numIndices <- sapply(GUI$getActiveData(), function(x) !is_cat(x))
         numVar <- gtable(names(GUI$getActiveData())[numIndices],
                          multiple = TRUE)
         names(numVar) <- "Variables"

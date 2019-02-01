@@ -448,7 +448,7 @@ iNZGUI <- setRefClass(
                                     width = 25
                                 )
 
-                                if (is_fact(curSet$x) || is_fact(curSet$y)) { ##} || length(curSet$trend) == 1) {
+                                if (is_cat(curSet$x) || is_cat(curSet$y)) { ##} || length(curSet$trend) == 1) {
                                     tbl[ii, 1:3, anchor = c(1, 0), expand = TRUE] <- fittedLbl
                                     tbl[ii, 4:6, expand = TRUE] <- fittedName
                                     ii <- ii + 1
@@ -530,7 +530,7 @@ iNZGUI <- setRefClass(
                                                     residuals(object)
 
                                         pred <- NULL
-                                        if (is_fact(curSet$x) || is_fact(curSet$y)) { #} || length(curSet$trend) == 1) {
+                                        if (is_cat(curSet$x) || is_cat(curSet$y)) { #} || length(curSet$trend) == 1) {
                                             ## just the one
                                             fit <- with(curSet, lm(if (is_num(curSet$y)) y ~ x else x ~ y, na.action = na.exclude))
                                             pred <- data.frame(FUN(fit))
