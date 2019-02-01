@@ -2058,8 +2058,8 @@ iNZPlotMod <- setRefClass(
               }
 
               lbl <- glabel("x axis :")
-              xlower <- gedit(xlim[1], width = 8)
-              xupper <- gedit(xlim[2], width = 8)
+              xlower <- gedit(xlim[1], width = 20)
+              xupper <- gedit(xlim[2], width = 20)
               tbl[ii, 1:2, expand = TRUE, anchor = c(1, 0)] <- lbl
               tbl[ii, 3:4, expand = TRUE] <- xlower
               tbl[ii, 5:6, expand = TRUE] <- xupper
@@ -2111,12 +2111,20 @@ iNZPlotMod <- setRefClass(
                     }
                 } else {
                   err <- FALSE
-                  xl <- suppressWarnings(as.numeric(svalue(xlower)))
+                  if (vartype(curSet[[ifelse(PLOTTYPE %in% c("scatter", "hex", "grid"), "y", "x")]]) == "dt") {
+                      xl <- suppressWarnings(as.numeric(as.POSIXct(svalue(xlower))))
+                  } else {
+                      xl <- suppressWarnings(as.numeric(svalue(xlower)))
+                  }
                   if (is.na(xl)) {
                       xl <- if (svalue(xlower) == "") xrange[1] else xlim[1]
                       if (svalue(xlower) != "") err <- TRUE
                   }
-                  xu <- suppressWarnings(as.numeric(svalue(xupper)))
+                  if (vartype(curSet[[ifelse(PLOTTYPE %in% c("scatter", "hex", "grid"), "y", "x")]]) == "dt") {
+                      xu <- suppressWarnings(as.numeric(as.POSIXct(svalue(xupper))))
+                  } else {
+                      xu <- suppressWarnings(as.numeric(svalue(xupper)))
+                  }
                   if (is.na(xu)) {
                       xu <- if (svalue(xupper) == "") xrange[2] else xlim[2]
                       if (svalue(xupper) != "") err <- TRUE
@@ -2127,12 +2135,21 @@ iNZPlotMod <- setRefClass(
                   }
 
                   if (PLOTTYPE %in% c("scatter", "hex", "grid")) {
-                    yl <- suppressWarnings(as.numeric(svalue(ylower)))
+                    ## this is the y-axis - which is the variable 1 (x) var
+                    if (vartype(curSet$x) == "dt") {
+                        yl <- suppressWarnings(as.numeric(as.POSIXct(svalue(ylower))))
+                    } else {
+                        yl <- suppressWarnings(as.numeric(svalue(ylower)))
+                    }
                     if (is.na(yl)) {
                         yl <- if (svalue(ylower) == "") yrange[1] else ylim[1]
                         if (svalue(ylower) != "") err <- TRUE
                     }
-                    yu <- suppressWarnings(as.numeric(svalue(yupper)))
+                    if (vartype(curSet$x) == "dt") {
+                        yu <- suppressWarnings(as.numeric(as.POSIXct(svalue(yupper))))
+                    } else {
+                        yu <- suppressWarnings(as.numeric(svalue(yupper)))
+                    }
                     if (is.na(yu)) {
                         yu <- if (svalue(yupper) == "") yrange[2] else ylim[2]
                         if (svalue(yupper) != "") err <- TRUE
