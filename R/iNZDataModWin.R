@@ -179,7 +179,7 @@ iNZconToCatWin <- setRefClass(
             addDropTarget(dropLbl,
                           handler = function(h, ...) {
                               dropData <- GUI$getActiveDoc()$getData()[h$dropdata][[1]]
-                              if (all(is.factor(dropData)))
+                              if (all(is_fact(dropData)))
                                   gmessage("Already a categorical variable!",
                                            parent = GUI$win, icon = 'warning')
                               else {
@@ -253,7 +253,7 @@ iNZtrnsWin <- setRefClass(
         },
         ## check whether the data is illegible for transformation
         checkData = function(varData) {
-            if (all(is.factor(varData))) {
+            if (all(is_fact(varData))) {
                 gmessage(title = "ERROR",
                          msg = "Categorical variables cannot be transformed",
                          parent = GUI$modWin)
@@ -288,7 +288,7 @@ iNZcllpsWin <- setRefClass(
             lbl5 <- glabel("Collapsed level name: ")
             ## choose a factor column from the dataset and display
             ## its level in a gtable
-            factorIndices <- sapply(GUI$getActiveData(), is.factor)
+            factorIndices <- sapply(GUI$getActiveData(), is_fact)
             factorMenu <- gcombobox(names(GUI$getActiveData())[factorIndices],
                                     selected = 0)
             addHandlerChanged(factorMenu, handler = function(h, ...) {
@@ -381,7 +381,7 @@ iNZrenameWin <- setRefClass(
                                family = "normal")
             ## choose a factor column from the dataset and display
             ## its levels together with their order
-            factorIndices <- sapply(GUI$getActiveData(), is.factor)
+            factorIndices <- sapply(GUI$getActiveData(), is_fact)
             factorMenu <- gcombobox(names(GUI$getActiveData())[factorIndices],
                                     selected = 0)
             addHandlerChanged(factorMenu, handler = function(h, ...) {
@@ -491,7 +491,7 @@ iNZreorderWin <- setRefClass(
 
             ## Choose variable to reorder:
             tbl[1, 1, expand = TRUE, anchor = c(1, 0)] <- glabel("Variable to reorder:")
-            factorIndices <- sapply(GUI$getActiveData(), is.factor)
+            factorIndices <- sapply(GUI$getActiveData(), is_fact)
             factorMenu <- gcombobox(names(GUI$getActiveData())[factorIndices],
                                     selected = 0)
             tbl[1, 2, expand = TRUE] <- factorMenu
@@ -629,7 +629,7 @@ iNZcmbCatWin <- setRefClass(
             lbl3 <- glabel("New Variable Name")
             ## choose a factor column from the dataset and display
             ## its level in a gtable
-            factorIndices <- sapply(GUI$getActiveData(), is.factor)
+            factorIndices <- sapply(GUI$getActiveData(), is_fact)
             factorNames <- gtable(names(GUI$getActiveData())[factorIndices],
                                   multiple = TRUE, expand = TRUE)
             names(factorNames) <- "Categorical Variables"
@@ -780,7 +780,7 @@ iNZfrmIntWin <- setRefClass(
             font(lbl5) = list(weight = "bold", style = "normal")
             newVarName = gedit("")
             ## choose a numeric column from the dataset
-            numIndices <- sapply(GUI$getActiveData(), function(x) !is.factor(x))
+            numIndices <- sapply(GUI$getActiveData(), function(x) !is_fact(x))
             NumericListMenu = gcombobox(names(GUI$getActiveData())[numIndices],
                 selected = 0, handler = function(h,...) {
                     svalue(newVarName) = paste(svalue(h$obj),"f", sep = ".")
@@ -1033,7 +1033,7 @@ iNZstdVarWin <- setRefClass(
             font(lbl2) <- list(weight = "bold",
                                family = "normal")
             ## display only numeric variables
-            numIndices <- sapply(GUI$getActiveData(), function(x) !is.factor(x))
+            numIndices <- sapply(GUI$getActiveData(), function(x) !is_fact(x))
             numVar <- gtable(names(GUI$getActiveData())[numIndices],
                              multiple = TRUE)
             names(numVar) <- "Variables"
@@ -1168,7 +1168,7 @@ iNZrankNumWin <- setRefClass(
       font(lbl2) <- list(weight = "bold",
                          family = "normal")
       ## display only numeric variables
-      numIndices <- sapply(GUI$getActiveData(), function(x) !is.factor(x))
+      numIndices <- sapply(GUI$getActiveData(), function(x) !is_fact(x))
       numVar <- gtable(names(GUI$getActiveData())[numIndices],
                        multiple = TRUE)
       names(numVar) <- "Variables"
@@ -1212,7 +1212,7 @@ iNZctocatmulWin <- setRefClass(
       font(lbl2) <- list(weight = "bold",
                          family = "normal")
       ## display only numeric variables
-      numIndices <- sapply(GUI$getActiveData(), function(x) !is.factor(x))
+      numIndices <- sapply(GUI$getActiveData(), function(x) !is_fact(x))
       numVar <- gtable(names(GUI$getActiveData())[numIndices],
                        multiple = TRUE)
       names(numVar) <- "Variables"

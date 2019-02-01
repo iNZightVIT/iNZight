@@ -361,7 +361,7 @@ iNZGUI <- setRefClass(
                 handler = function(h, ...) {
                     curSet <- getActiveDoc()$getSettings()
                     if (!is.null(curSet$x)) {
-                        if (is.numeric(curSet$x) & is.numeric(curSet$y)) {
+                        if (is_num(curSet$x) & is_num(curSet$y)) {
                             tmp.x <- curSet$y
                             curSet$y <- curSet$x
                             curSet$x <- tmp.x
@@ -403,9 +403,9 @@ iNZGUI <- setRefClass(
                         if (is.null(curSet$g1) && 
                             is.null(curSet$g2) &&
                             !is.null(curSet$y) && 
-                            (is.numeric(curSet$x) | is.numeric(curSet$y)) &&
+                            (is_num(curSet$x) | is_num(curSet$y)) &&
                             (!is.null(curSet$trend) | curSet$smooth > 0 | 
-                             !is.numeric(curSet$x) | !is.numeric(curSet$y))) {
+                             !is_num(curSet$x) | !is_num(curSet$y))) {
                             btngrp <- ggroup(container = g)
                             addSpace(btngrp, 5)
 
@@ -443,12 +443,12 @@ iNZGUI <- setRefClass(
                                 fittedName <- gedit(
                                     sprintf(
                                         "%s.%s", 
-                                        curSet$varnames[[ifelse(is.numeric(curSet$y), "y", "x")]], 
+                                        curSet$varnames[[ifelse(is_num(curSet$y), "y", "x")]], 
                                         varType),
                                     width = 25
                                 )
 
-                                if (is.factor(curSet$x) || is.factor(curSet$y)) { ##} || length(curSet$trend) == 1) {
+                                if (is_fact(curSet$x) || is_fact(curSet$y)) { ##} || length(curSet$trend) == 1) {
                                     tbl[ii, 1:3, anchor = c(1, 0), expand = TRUE] <- fittedLbl
                                     tbl[ii, 4:6, expand = TRUE] <- fittedName
                                     ii <- ii + 1
@@ -505,8 +505,8 @@ iNZGUI <- setRefClass(
                                     sprintf("%s.%s.smooth", curSet$varnames$y, varType),
                                     width = 25
                                 )
-                                if (curSet$smooth > 0 && is.numeric(curSet$x) && 
-                                    is.numeric(curSet$y)) {
+                                if (curSet$smooth > 0 && is_num(curSet$x) && 
+                                    is_num(curSet$y)) {
                                     tbl[ii, 1:3, anchor = c(1, 0), expand = TRUE] <- fittedLbl.smth
                                     tbl[ii, 4:6, expand = TRUE] <- fittedName.smth
                                     ii <- ii + 1
@@ -530,9 +530,9 @@ iNZGUI <- setRefClass(
                                                     residuals(object)
 
                                         pred <- NULL
-                                        if (is.factor(curSet$x) || is.factor(curSet$y)) { #} || length(curSet$trend) == 1) {
+                                        if (is_fact(curSet$x) || is_fact(curSet$y)) { #} || length(curSet$trend) == 1) {
                                             ## just the one
-                                            fit <- with(curSet, lm(if (is.numeric(curSet$y)) y ~ x else x ~ y, na.action = na.exclude))
+                                            fit <- with(curSet, lm(if (is_num(curSet$y)) y ~ x else x ~ y, na.action = na.exclude))
                                             pred <- data.frame(FUN(fit))
                                             colnames(pred) <- svalue(fittedName)
                                         } else if (length(curSet$trend) >= 1) {
@@ -557,7 +557,7 @@ iNZGUI <- setRefClass(
                                             newdata <- getActiveData()
 
 
-                                        if (curSet$smooth > 0 && is.numeric(curSet$x) && is.numeric(curSet$y)) {
+                                        if (curSet$smooth > 0 && is_num(curSet$x) && is_num(curSet$y)) {
                                             tmp <- data.frame(x = curSet$x, y = curSet$y)
                                             fit <- with(curSet, loess(y ~ x, span = curSet$smooth, family = "gaussian", degree = 1, na.action = "na.exclude"))
                                             pred <- data.frame(FUN(fit))
@@ -611,12 +611,12 @@ iNZGUI <- setRefClass(
                     curSet <- getActiveDoc()$getSettings()
                     if (!is.null(curSet$x)) {
                         ## Figure out what type of inference will be happening:
-                        xnum <- is.numeric(curSet$x)
+                        xnum <- is_num(curSet$x)
 
                         if (is.null(curSet$y)) {
                             INFTYPE <- ifelse(xnum, "onesample-ttest", "oneway-table")
                         } else {
-                            ynum <- is.numeric(curSet$y)
+                            ynum <- is_num(curSet$y)
                             if (xnum && ynum) {
                                 INFTYPE <- "regression"
                             } else if (xnum | ynum) {
@@ -945,7 +945,7 @@ iNZGUI <- setRefClass(
             curPlSet <- getActiveDoc()$getSettings()
             if(!is.null(curPlSet$x)) {
                 # Switch x and y:
-                if (is.numeric(curPlSet$x) & is.numeric(curPlSet$y)) {
+                if (is_num(curPlSet$x) & is_num(curPlSet$y)) {
                     x.tmp <- curPlSet$y
                     curPlSet$y <- curPlSet$x
                     curPlSet$x <- x.tmp
@@ -1240,7 +1240,7 @@ iNZGUI <- setRefClass(
             prefs$window.size <-
                 if (is.null(prefs$window.size)) defs$window.size
                 else if (length(prefs$window.size) != 2) defs$window.size
-                else if (is.numeric(prefs$window.size)) prefs$window.size
+                else if (is_num(prefs$window.size)) prefs$window.size
                 else defs$window.size
 
             ## pop-out layout = FALSE
@@ -1251,7 +1251,7 @@ iNZGUI <- setRefClass(
 
             ## font size
             prefs$font.size <-
-                if (is.null(prefs$font.size) || !is.numeric(prefs$font.size)) defs$font.size
+                if (is.null(prefs$font.size) || !is_num(prefs$font.size)) defs$font.size
                 else prefs$font.size
 
             prefs
