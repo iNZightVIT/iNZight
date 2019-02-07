@@ -49,8 +49,8 @@ iNZPlotRmveModWin <- setRefClass(
                 curAdditions <- c(
                     TRUE, ## all additiions
                     !is.null(curSet$colby) && ## colour coding dotplots
-                    (is.numeric(curSet$x) ||
-                     is.numeric(curSet$y)),
+                    (is_num(curSet$x) ||
+                     is_num(curSet$y)),
                     !is.null(curSet$sizeby), ## resize
                     !is.null(curSet$trend), ## trend
                     curSet$LOE, ## x=y line
@@ -59,7 +59,7 @@ iNZPlotRmveModWin <- setRefClass(
                     curSet$rugs != "", ## rugs
                     curSet$join, ## connecting lines
                     !is.null(curSet$colby) && ## colour coding barchart
-                    !is.numeric(curSet$x) &&
+                    !is_num(curSet$x) &&
                     is.null(curSet$y),
                     !is.null(curSet$inference.type) ||
                     curSet$bs.inference, ## confidence intervals
@@ -127,23 +127,16 @@ iNZPlotRmveModWin <- setRefClass(
                 }
                 
                 ## open in leftMain
-                if (length(GUI$leftMain$children) > 1) {
-                    delete(GUI$leftMain, GUI$leftMain$children[[2]])
-                }
-                GUI$initializeModuleWindow()
+                modwin <- GUI$initializeModuleWindow(title = "Remove additions", scroll = TRUE)
                 
-                mainGrp <- gvbox(container = GUI$moduleWindow, expand = TRUE)
-                
-                lbl <- glabel("Remove additions")
-                font(lbl) <- list(weight = "bold", family = "normal", size = 9)
-                add(mainGrp, lbl)
+                mainGrp <- modwin$body
                 
                 selectGrp <- ggroup(horizontal = FALSE,
                                     container = mainGrp,
                                     expand = FALSE)
                 
-                addSpring(mainGrp)
-                btnGrp <- ggroup(container = mainGrp, horizontal = TRUE)
+                
+                btnGrp <- modwin$footer
                 mainGrp$set_borderwidth(5)
 
                 add(btnGrp, proceedButton, expand = TRUE, fill = TRUE)
@@ -166,7 +159,6 @@ iNZPlotRmveModWin <- setRefClass(
                     function() removeAdditions(TRUE)
                     )
                 
-                visible(GUI$moduleWindow) <<- TRUE
             }
         },
         ## remove plot additions from the plot settings
