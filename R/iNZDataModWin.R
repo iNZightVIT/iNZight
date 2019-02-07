@@ -1293,106 +1293,93 @@ iNZconTodtWin <- setRefClass(
       callSuper(gui)
       svalue(GUI$modWin) <<- "Convert to Dates and Times"
       
-      ## Start my GUI
       mainGroup <- gvbox()
       mainGroup$set_borderwidth(15)
       
-      title <- glabel("Convert to Dates and Times", container = mainGroup)
+      title <- glabel("Convert to a Date-Time variable", container = mainGroup)
       font(title) <- list(size = 14, weight = "bold")
 
       addSpace(mainGroup, 5)
       
-      date_string <- glabel("Select a variable to convert", container = mainGroup, anchor = c(-1, 0))
+      date_string <- glabel("Select variable to convert from", container = mainGroup, anchor = c(-1, 0))
       
-      ## Multiple fields
-      factors = gtable(names(GUI$getActiveData()),multiple = TRUE, expand = TRUE, cont = mainGroup)
-      names(factors) = "Variables"
-      addHandlerSelectionChanged(factors, function(h, ...) {
-        factorname = svalue(factors)
-        if (length(factorname) == 0) {
+      ## Dropdown
+      var1 = gcombobox(c("", names(GUI$getActiveData())), cont = mainGroup, handler = function(h, ...) {
+        varname = svalue(var1)
+        print(varname)
+        if (varname == "") {
+          dfview$set_items("")
           convertedview$set_items("")
           svalue(newVarname) = ""
         } else {
-          varx = ""
-          new_name = ""
-          for (num in 1:length(factorname)) {
-            name = factorname[num]
-            varx = paste(varx, GUI$getActiveData()[[name]])
-            new_name = paste(new_name, name, ".", sep = "")
-          }
-          dfview$set_items(data.frame(Original = varx))
-          svalue(newVarname) = makeNames(paste(new_name, "dt", sep = ""))
-          
-          if (svalue(var2) == ""){
-            return()
-          } else{
-            convname = svalue(var2)
-            .dataset = GUI$getActiveData()
-            name = svalue(newVarname)
-            data = iNZightTools::convert_to_datetime(.dataset, factorname, convname, name)
-            if (all(is.na(data[[svalue(newVarname)]]))){
-              convertedview$set_items(data.frame(Converted = "Invalid format"))
-            } else{
-              convertedview$set_items(data.frame(Converted = data[[svalue(newVarname)]]))
-            }
-          }
-        }
-      })
-      
-      ## from extract
-      var1 <- gcombobox(items = c("", names(dplyr::select_if(GUI$getActiveData(), lubridate::is.POSIXct))), container = mainGroup, handler = function(h,...){
-        if (svalue(var1) == "") {
-          dfview$set_items(data.frame(Original = ""))
-        } else {
-          varname = svalue(var1)
           varx = GUI$getActiveData()[[varname]]
-          dfview$set_items(data.frame(Original = as.character(varx)))
+          svalue(newVarname) = makeNames(paste(varname, ".dt", sep = ""))
+          dfview$set_items(data.frame(Original = varx))
           if (svalue(var2) == "") {
             return()
           } else {
-            part = svalue(var2)
-            name = svalue(newVarname)
-            exp = iNZightTools::extract_part(GUI$getActiveData(), varname, part, name)
-            extractedview$set_items(data.frame(Extracted = as.character(exp[[svalue(newVarname)]])))
-          }
-        }
-      })
-      
-      
-      ## Dropdown
-      var1 = gcombobox(names(GUI$getActiveData()), cont = mainGroup)
-      addHandlerSelectionChanged(var1, function(h, ...) {
-        varname = svalue(var1)
-        if (varname == "") {
-          dfview$set_items
-          convertedview$set_items("")
-          svalue(newVarname) = ""
-        } else {
-          varx = ""
-          new_name = ""
-
-          dfview$set_items(data.frame(Original = varx))
-          svalue(newVarname) = makeNames(paste(new_name, "dt", sep = ""))
-          
-          if (svalue(var2) == ""){
-            return()
-          } else{
             convname = svalue(var2)
             .dataset = GUI$getActiveData()
             name = svalue(newVarname)
-            data = iNZightTools::convert_to_datetime(.dataset, factorname, convname, name)
+            data = iNZightTools::convert_to_datetime(.dataset, varname, convname, name)
             if (all(is.na(data[[svalue(newVarname)]]))){
               convertedview$set_items(data.frame(Converted = "Invalid format"))
             } else{
               convertedview$set_items(data.frame(Converted = data[[svalue(newVarname)]]))
             }
           }
+        }
+      })
+      
+      ## Multiple fields
+      factorsbox = gvbox(cont = mainGroup)
+      factors = gtable(names(GUI$getActiveData()),multiple = TRUE, expand = TRUE, cont = factorsbox)
+      names(factors) = "Variables"
+      addHandlerSelectionChanged(factors, function(h, ...) {
+        factorname = svalue(factors)
+        varx = ""
+        new_name = ""
+        for (num in 1:length(factorname)) {
+          name = factorname[num]
+          varx = paste(varx, GUI$getActiveData()[[name]])
+          new_name = paste(new_name, name, ".", sep = "")
+        }
+        dfview$set_items(data.frame(Original = varx))
+        svalue(newVarname) = makeNames(paste(new_name, "dt", sep = ""))
+        
+        if (svalue(var2) == ""){
+          return()
+        } else{
+          convname = svalue(var2)
+          .dataset = GUI$getActiveData()
+          name = svalue(newVarname)
+          data = iNZightTools::convert_to_datetime(.dataset, factorname, convname, name)
+          if (all(is.na(data[[svalue(newVarname)]]))){
+            convertedview$set_items(data.frame(Converted = "Invalid format"))
+          } else{
+            convertedview$set_items(data.frame(Converted = data[[svalue(newVarname)]]))
+          }
+        }
+      })
+      visible(factorsbox) = FALSE
+      size(factorsbox) = c(-1, 250)
+      
+      ## Check box
+      checkbox = gcheckbox(text = "Click to use multiple variables", cont = mainGroup, handler = function(h, ...) {
+        if (svalue(checkbox) == TRUE) {
+          visible(factorsbox) = TRUE
+          visible(var1) = FALSE
+          date_string$set_value("Select variables to convert from \n(Use CNTRL to add/remove)")
+        } else {
+          visible(factorsbox) = FALSE
+          visible(var1) = TRUE
+          date_string$set_value("Select variable to convert from")
         }
       })
       
       addSpace(mainGroup, 5)
       
-      date_string <- glabel("Name of the variable", container = mainGroup, anchor = c(-1, 0))
+      name_string <- glabel("Name for the new variable", container = mainGroup, anchor = c(-1, 0))
       newVarname = gedit("", cont = mainGroup)
       
       dt.formats <- c("",
@@ -1409,8 +1396,13 @@ iNZconTodtWin <- setRefClass(
       for.var <- glabel("Select the order format of your data", container = mainGroup, anchor = c(-1, 0))
       
       var2 <- gcombobox(items = dt.formats, container = mainGroup, editable = TRUE, handler = function(h,...){
-        factorname = svalue(factors)
+        if (svalue(checkbox) == TRUE) {
+          factorname = svalue(factors)
+        } else {
+          factorname = svalue(var1)
+        }
         convname = svalue(var2)
+        print(convname)
         if (length(factorname) != 0 & convname == "") {
           convertedview$set_items("")
         } else {
@@ -1425,7 +1417,7 @@ iNZconTodtWin <- setRefClass(
         }
       })
       
-      g2 <- gexpandgroup(container = mainGroup, text = "Advanced functions")
+      g2 <- gexpandgroup(container = mainGroup, text = "Advanced selection")
       visible(g2) <- FALSE
       
       tbl = glayout(cont = g2, expand = TRUE)
@@ -1453,7 +1445,11 @@ iNZconTodtWin <- setRefClass(
       size(convertedview) = c(-1, 250)
       
       okbtn <- gbutton("Convert", container = mainGroup, handler = function(h,...) {
-        factorname = svalue(factors)
+        if (svalue(checkbox) == TRUE) {
+          factorname = svalue(factors)
+        } else {
+          factorname = svalue(var1)
+        }
         convname = svalue(var2)
         name = svalue(newVarname)
         var.dt = iNZightTools::convert_to_datetime(GUI$getActiveData(), factorname, convname, name)
@@ -1480,12 +1476,14 @@ iNZExtfromdtWin <- setRefClass(
       mainGroup <- gvbox()
       mainGroup$set_borderwidth(15)
       
-      title <- glabel("Extract parts of the datetime", container = mainGroup)
+      title <- glabel("Extract parts of the datetime",
+                      container = mainGroup)
       font(title) <- list(size = 14, weight = "bold")
       
       addSpace(mainGroup, 5)
       
-      date_string <- glabel("Select a variable to extract from", container = mainGroup, anchor = c(-1, 0))
+      date_string <- glabel("Select variable to extract information from", 
+                             container = mainGroup, anchor = c(-1, 0))
       
       var1 <- gcombobox(items = c("", names(dplyr::select_if(GUI$getActiveData(), lubridate::is.POSIXct))), container = mainGroup, handler = function(h,...){
         if (svalue(var1) == "") {
@@ -1494,10 +1492,10 @@ iNZExtfromdtWin <- setRefClass(
           varname = svalue(var1)
           varx = GUI$getActiveData()[[varname]]
           dfview$set_items(data.frame(Original = as.character(varx)))
-          if (svalue(var2) == "") {
+          part = svalue(atree)[length(svalue(atree))]
+          if (part  == NULL) {
             return()
           } else {
-            part = svalue(var2)
             name = svalue(newVarname)
             exp = iNZightTools::extract_part(GUI$getActiveData(), varname, part, name)
             extractedview$set_items(data.frame(Extracted = as.character(exp[[svalue(newVarname)]])))
@@ -1507,30 +1505,41 @@ iNZExtfromdtWin <- setRefClass(
       
       addSpace(mainGroup, 5)
       
-      dt.formats <- c("",
-                      "Date only",
-                      "Time only",
-                      "Year", 
-                      "Year quarter",
-                      "Quarter",
-                      "Year month",
-                      "Month (full)", 
-                      "Month (abbreviated)", 
-                      "Month (number)",
-                      "Week of the year",
-                      "Day of the year",
-                      "Day of the week (name)", 
-                      "Day",
-                      "Hours (decimal)")
+      for.var <- glabel("Select elements to extract \n(click + of lowest-level information for options)", container = mainGroup, anchor = c(-1, 0))
       
-      for.var <- glabel("Select the part you want to extract", container = mainGroup, anchor = c(-1, 0))
+      ## gtree list
+      offspring <- function(path=character(0), lst, ...) {
+        if(length(path))
+          obj <- lst[[path]]
+        else
+          obj <- lst
+        nms <- names(obj)
+        hasOffspring <- sapply(nms, function(i) {
+          newobj <- obj[[i]]
+          is.recursive(newobj) && !is.null(names(newobj))
+        })
+        data.frame(Name=nms, hasOffspring=hasOffspring, ## fred=nms,
+                   stringsAsFactors=FALSE)
+      }
       
-      var2 <- gcombobox(items = dt.formats, container = mainGroup, handler = function(h, ...){
+      l <- list(Date = list("Date only" = "Date only", 
+                            Year = list("Year" = "Year", "Century" = "Century"), 
+                            Quarter = list("Year Quarter" = "Year Quarter", "Quarter" = "Quarter"),
+                            Month = list("Year Month" = "Year Month", "Month (full)" = "Month (full)", "Month (abbreviated)" = "Month (abbreviated)", "Month (number)" = "Month (number)"),
+                            Week = list("Week of the year" = "Week of the year"),
+                            Day = list("Day of the year" = "Day of the year", "Day of the week (name)" = "Day of the week (name)", "Day of the week (number)" = "Day of the week (number)", "Day" = "Day")),
+                Time = list("Time only" = "Time only", "Hours (decimal)" = "Hours (decimal)", "Hour" = "Hour", "Minute" = "Minute", "Second" = "Second")
+      )
+      
+      atree <- gtree(offspring=offspring, offspring.data=l, cont=mainGroup)
+      
+      addHandlerSelect(atree, function(h, ...) {
         varname = svalue(var1)
-        part = svalue(var2)
-        svalue(newVarname) = makeNames(paste(varname, ".", switch(part, "Month (abbreviated)" = "Month.cat", "Month (full)" = "Month.cat", "Year month" = "Year.month",
-                                    "Week of the year" = "Week.year", "Day of the year" = "Day.year", "Day of the week (name)" = "Day.week", "Month (number)" = "month.number",
-                                    "Date only" = "Date", "Time only" = "Time", "Year quarter" = "Year.quarter", "Hours (decimal)" = "Hour.decimal", part), sep = ""))
+        part = svalue(atree)[length(svalue(atree))]
+        svalue(newVarname) = makeNames(paste(varname, ".", switch(part, "Date only" = "Date", "Year Quarter" = "Year.Quarter", "Year Month" = "Year.Month", "Month (abbreviated)" = "Month.cat", 
+                                                                  "Month (full)" = "Month.cat", "Month (number)" = "Month.number", "Week of the year" = "Week.year", "Day of the year" = "Day.year", 
+                                                                  "Day of the week (name)" = "Day.week", "Day of the week (number)" = "Day.week.number", "Time only" = "Time",
+                                                                  "Hours (decimal)" = "Hour.decimal", part), sep = ""))
         if (varname != "" & part == "") {
           extractedview$set_items(data.frame(Extracted = ""))
         } else {
@@ -1539,6 +1548,14 @@ iNZExtfromdtWin <- setRefClass(
           extractedview$set_items(data.frame(Extracted = as.character(exp[[svalue(newVarname)]])))
         }
       })
+      size(atree) = c(-1, 250)
+      
+      addSpace(mainGroup, 5)
+      
+      date_string <- glabel("Name for new variable", container = mainGroup, anchor = c(-1, 0))
+      newVarname = gedit("", cont = mainGroup)
+      
+      preview_string = glabel("Preview", cont = mainGroup, anchor = c(-1, 0))
       
       g2 = ggroup(cont = mainGroup)
       dfview = gtable(data.frame(Original = ""), cont = g2)
@@ -1546,13 +1563,10 @@ iNZExtfromdtWin <- setRefClass(
       extractedview = gtable(data.frame(Extracted = ""), cont = g2)
       size(extractedview) = c(-1, 250)
       
-      date_string <- glabel("Name the new variable", container = mainGroup, anchor = c(-1, 0))
-      newVarname = gedit("", cont = mainGroup)
-      
       okbtn <- gbutton("Extract", container = mainGroup, handler = function(h,...) {
         .dataset = GUI$getActiveData()
         varname = svalue(var1)
-        part = svalue(var2)
+        part = svalue(atree)[length(svalue(atree))]
         name = svalue(newVarname)
         exp = iNZightTools::extract_part(.dataset, varname, part, name)
         updateData(exp)

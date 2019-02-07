@@ -3,10 +3,10 @@
 
 library(devtools)
 
-document("~/iNZightTools")
-
 load_all("~/iNZightTools")
 load_all("~/iNZight")
+
+document("~/iNZightTools")
 
 data = readr::read_csv("C:\\Users\\Yiwen\\Documents\\iNZight\\scripts\\paris1.csv")
 data
@@ -19,7 +19,6 @@ load_all("~/iNZight")
 kk = iNZGUI$new()
 kk$initializeGui(data)
 
-is.numeric(data$`#days`)
 
 ## Extract function
 data$`Time stamp` = lubridate::parse_date_time(data$`Time stamp`, "%m%d%y%H%M%p")
@@ -28,16 +27,23 @@ load_all("~/iNZight")
 kk = iNZGUI$new()
 kk$initializeGui(data)
 
+?str_c
 
-## Convert
-## Add UNIX timestamp to dropdown DONE
-## Add in check box to let the user choose between dropdown and multiple field DONE
-
-## Extract
-## Change extract drop down to a compressed version
-## Add in hour/minute/second DONE but start from Sunday or Monday?
-
-## Tests to be written
 ## Code history to be written
+## put inserted column after the selected column extract and convert
+
+## addhandlerchanged to gtree (change double click to single click)
+
+## Check week of the year
+## U means "Week of the year as decimal number (00¨C53) using Sunday as the first day 1 of the week 
+## and typically with the first Sunday of the year as day 1 of week 1). The US convention.
+## Using format.POSIXct to check (U, V and W)
+## Day of week
+## default value of a gtree
 
 ## Time zone
+
+
+## Code history
+## Convert
+## Extract
