@@ -91,7 +91,7 @@ iNZDataViewWidget <- setRefClass(
             vnames <- names(dataSet)
             ## These are explicitely removes by `gsub` in the addDropSource handler below
             vtypes <- sapply(dataSet, function(x) 
-                switch(vartype(x), 
+                switch(iNZightTools::vartype(x), 
                     'num' = '(n)', 
                     'cat' = '(c)', 
                     'dt' = '(t)'

@@ -2111,7 +2111,7 @@ iNZPlotMod <- setRefClass(
                     }
                 } else {
                   err <- FALSE
-                  if (vartype(curSet[[ifelse(PLOTTYPE %in% c("scatter", "hex", "grid"), "y", "x")]]) == "dt") {
+                  if (iNZightTools::vartype(curSet[[ifelse(PLOTTYPE %in% c("scatter", "hex", "grid"), "y", "x")]]) == "dt") {
                       xl <- suppressWarnings(as.numeric(as.POSIXct(svalue(xlower))))
                   } else {
                       xl <- suppressWarnings(as.numeric(svalue(xlower)))
@@ -2120,7 +2120,7 @@ iNZPlotMod <- setRefClass(
                       xl <- if (svalue(xlower) == "") xrange[1] else xlim[1]
                       if (svalue(xlower) != "") err <- TRUE
                   }
-                  if (vartype(curSet[[ifelse(PLOTTYPE %in% c("scatter", "hex", "grid"), "y", "x")]]) == "dt") {
+                  if (iNZightTools::vartype(curSet[[ifelse(PLOTTYPE %in% c("scatter", "hex", "grid"), "y", "x")]]) == "dt") {
                       xu <- suppressWarnings(as.numeric(as.POSIXct(svalue(xupper))))
                   } else {
                       xu <- suppressWarnings(as.numeric(svalue(xupper)))
@@ -2136,7 +2136,7 @@ iNZPlotMod <- setRefClass(
 
                   if (PLOTTYPE %in% c("scatter", "hex", "grid")) {
                     ## this is the y-axis - which is the variable 1 (x) var
-                    if (vartype(curSet$x) == "dt") {
+                    if (iNZightTools::vartype(curSet$x) == "dt") {
                         yl <- suppressWarnings(as.numeric(as.POSIXct(svalue(ylower))))
                     } else {
                         yl <- suppressWarnings(as.numeric(svalue(ylower)))
@@ -2145,7 +2145,7 @@ iNZPlotMod <- setRefClass(
                         yl <- if (svalue(ylower) == "") yrange[1] else ylim[1]
                         if (svalue(ylower) != "") err <- TRUE
                     }
-                    if (vartype(curSet$x) == "dt") {
+                    if (iNZightTools::vartype(curSet$x) == "dt") {
                         yu <- suppressWarnings(as.numeric(as.POSIXct(svalue(yupper))))
                     } else {
                         yu <- suppressWarnings(as.numeric(svalue(yupper)))

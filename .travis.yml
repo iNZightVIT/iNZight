@@ -26,6 +26,9 @@ matrix:
 repos:
   docker: https://r.docker.stat.auckland.ac.nz
 
+r_github_packages:
+  - iNZightVIT/iNZightTools@feature/datetimes
+  - iNZightVIT/iNZightPlots@feature/datetimes
 
 addons:
   apt:
