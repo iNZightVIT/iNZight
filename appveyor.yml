@@ -15,6 +15,9 @@ cache:
   
 environment:
   USE_RTOOLS: true
+  global:
+    WARNINGS_ARE_ERRORS:
+
 
 
 # Adapt as necessary starting from here
