@@ -599,38 +599,149 @@ iNZjoinDataWin <- setRefClass(
       if (!is.null(GUI)) {
         ## close any current mod windows
         try(dispose(GUI$modWin), silent = TRUE)
-        GUI$modWin <<- gwindow("Stack data by Variables",
-                               parent = GUI$win, visible = FALSE)
-        mainGroup <- ggroup(expand = TRUE, horizontal = FALSE)
-        ## instructions through glabels
-        lbl1 <- glabel("Choose variables to stack")
-        font(lbl1) <- list(weight = "bold",
-                           family = "normal")
-        lbl2 <- glabel("(Hold Ctrl to choose many)")
-        font(lbl2) <- list(weight = "bold",
-                           family = "normal")
-        ## display only numeric variables
-        numIndices <- sapply(GUI$getActiveData(), function(x) !is.factor(x))
-        numVar <- gtable(names(GUI$getActiveData())[numIndices],
-                         multiple = TRUE)
-        names(numVar) <- "Variables"
-        StackButton <- gbutton("Stack", handler = function(h, ...) {
-          if (length(svalue(numVar)) > 0) {
-            vars <- svalue(numVar)
-            
-            .dataset <- GUI$getActiveData()
-            data <- iNZightTools::stackVars(.dataset, vars)
-            attr(data, "name") <- paste(attr(.dataset, "name", exact = TRUE), "stacked", sep = ".")
-            attr(data, "code") <- gsub(".dataset", attr(.dataset, "name", exact = TRUE), attr(data, "code"))
-            GUI$setDocument(iNZDocument$new(data = data))
-            dispose(GUI$modWin)
-          }
+
+        ## start my window
+        GUI$modWin <<- gwindow("Join with another dataset",
+                                parent = GUI$win, visible = FALSE)
+        mainGroup <- ggroup(cont = GUI$modWin, expand = TRUE)
+        lyt <- glayout(cont = mainGroup)
+         
+        title_box = gvbox(cont = lyt)
+        left = gvbox(cont = lyt)
+        right = gvbox(cont = lyt)
+        join = gvbox(cont = lyt)
+        
+        lyt[1, 1:2] = title_box
+        lyt[2,1] <- left
+        lyt[2,2] <- right
+        lyt[3, 1:2] <- join
+        
+        ## Title
+        title_string = glabel("Join Datasets", cont = title_box)
+        font(title_string) = list(size = 14, weight = "bold")
+        
+        ## Left hand side
+        original_string = glabel("Preview of the original dataset", cont = left, anchor = c(-1, 0))
+        
+        originview = gtable(data.frame(GUI$getActiveData()), cont = left)
+        
+        join_string = glabel("Select join methods", cont = left, anchor = c(-1,0))
+        
+        var1 = gcombobox(items = c("Inner Join", "Left Join", "Full Join", "Semi Join", "Anti Join"), cont = left)
+        # addHandlerChanged(var1, function(h, ...) {
+        #   origin_col_name = svalue(var2)
+        #   imported_col_name = svalue(var3)
+        #   data2 = read.csv(svalue(data_name))
+        #   join_method = svalue(var1)
+        #   if (join_method == "Semi Join" | join_method == "Anti Join") {
+        #     joined = join_datasets(original_data, data2, "", join_method)
+        #     joinview$set_items(joined)
+        #   } else {
+        #     joined = join_datasets(original_data, data2, dsad, join_method)
+        #   }
+          
+          
+          # if ((join_method != "Semi_Join" & join_method != "Anti-Join") && !(col_name %in% names(original_data) & col_name %in% names(data2))) {
+          #   joinview$set_items("No common column found")
+          # } else {
+          #   joined = join_datasets(original_data, data2, col_name, join_method)
+          #   joinview$set_items(joined)
+          # }
+        # })
+        
+        
+        column_string = glabel("Select the column with common values of the two datasets", cont = left, anchor = c(-1, 0))
+        
+        var2 = gcombobox(items = c("", names(GUI$getActiveData())), cont = left)
+        # addHandlerChanged(var2, function(h, ...) {
+        #   col_name = svalue(var2)
+        #   data2 = read.csv(svalue(data_name))
+        #   join_method = svalue(var1)
+        #   print(col_name)
+        #   print(data2)
+        #   print(join_method)
+        #   if ((join_method != "Semi Join" & join_method != "Anti Join") && !(col_name %in% names(original_data) & col_name %in% names(data2))) {
+        #     joinview$set_items("No common column found")
+        #   } else {
+        #     joined = join_datasets(original_data, data2, col_name, join_method)
+        #     joinview$set_items(joined)
+        #   }
+        # })
+        
+        
+        ## Right hand side
+        Preview_string = glabel("Preview of the imported dataset", cont = right, anchor = c(-1, 0))
+        data2view = gtable(data.frame(""), cont = right)
+        size(data2view) = c(-1, 150)
+        
+        file_string = glabel("Import data", cont = right, anchor = c(-1,0))
+        data_name = gfilebrowse(text = "Specify a file", initial.dir = file.path(".", "data"), cont = right, handler = function(h, ...) {
+          data2 = read.csv(svalue(data_name))
+          data2view$set_items(data2)
+          var3$set_items(names(data2))
+          result = tryCatch({
+            inner_join(GUI$getActiveData(), data2)
+          }, error = function(e) {
+            if (e$message == "`by` required, because the data sources have no common variables"){
+              return("No common column found, please specify a common column")
+            }
+          })
+          joinview$set_items(result)
         })
-        add(mainGroup, lbl1)
-        add(mainGroup, lbl2)
-        add(mainGroup, numVar, expand = TRUE)
-        add(mainGroup, StackButton)
-        add(GUI$modWin, mainGroup, expand = TRUE, fill = TRUE)
+        
+        column_string2 = glabel("Select the column with common values of the two datasets", cont = right, anchor = c(-1, 0))
+        var3 = gcombobox(items = "", cont = right)
+        # addHandlerChanged(var2, function(h, ...) {
+        #   col_name = svalue(var2)
+        #   data2 = read.csv(svalue(data_name))
+        #   join_method = svalue(var1)
+        #   if ((join_method != "Semi Join" & join_method != "Anti Join") && !(col_name %in% names(original_data) & col_name %in% names(data2))) {
+        #     joinview$set_items("No common column found")
+        #   } else {
+        #     joined = join_datasets(original_data, data2, col_name, join_method)
+        #     joinview$set_items(joined)
+        #   }
+        # })
+        
+        ## Bottom join box
+        preview_string2 = glabel("Preview", cont = join, anchor = c(-1, 0))
+        joinview = gtable(data.frame(""), cont = join)
+        size(joinview) = c(-1, 150)
+        
+        joinbtn = gbutton("Join", cont = join)
+        
+        helpbtn = gbutton("Help", cont = join, handler = function(h, ...) {
+          helpwin = gwindow(title = "Help")
+          win = gvbox(cont = helpwin)
+          
+          inner_join = glabel("Inner Join", cont = win)
+          font(inner_join) = list(size = 12, weight = "bold")
+          inner_join_help = glabel("Keep all the matched rows within both datasets", cont = win)
+          addSpace(win, 5)
+          
+          left_join = glabel("Left Join", cont = win)
+          font(left_join) = list(size = 12, weight = "bold")
+          left_join_help = glabel("Keep every row in the original dataset and match them to the imported dataset", cont = win)
+          addSpace(win, 5)
+          
+          full_join = glabel("Full Join", cont = win)
+          font(full_join) = list(size = 12, weight = "bold")
+          full_join_help = glabel("Keep all the rows in both datasets", cont = win)
+          addSpace(win, 5)
+          
+          semi_join = glabel("Semi Join", cont = win)
+          font(semi_join) = list(size = 12, weight = "bold")
+          semi_join_help = glabel("Keep matched rows in the original dataset ONLY", cont = win)
+          addSpace(win, 5)
+          
+          anti_join = glabel("Anti Join", cont = win)
+          font(anti_join) = list(size = 12, weight = "bold")
+          anti_join_help = glabel("Return all rows in the original dataset which do not have a match in the imported dataset", cont = win)
+          addSpace(win, 5)
+        })
+        
+        
+
         visible(GUI$modWin) <<- TRUE
       }
     })
