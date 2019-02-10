@@ -109,6 +109,10 @@ iNZMenuBarWidget <- setRefClass(
                     gaction("Delete current dataset",
                         icon = "symbol_diamond",
                         handler = function(h, ...) GUI$deleteDataset()),
+                join = 
+                    gaction("Join with another dataset",
+                        icon = "symbol_diamond",
+                        handler = function(h, ...) iNZjoinDataWin$new(GUI)),
                 gseparator(),
                 surveydesign = 
                     gaction("Specify survey design [beta] ...",

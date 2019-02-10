@@ -587,3 +587,52 @@ iNZexpandTblWin <- setRefClass(
         }
     )
 )
+
+iNZjoinDataWin <- setRefClass(
+  "iNZjoinDataWin",
+  fields = list(
+    GUI = "ANY"
+  ),
+  methods = list(
+    initialize = function(gui = NULL) {
+      initFields(GUI = gui)
+      if (!is.null(GUI)) {
+        ## close any current mod windows
+        try(dispose(GUI$modWin), silent = TRUE)
+        GUI$modWin <<- gwindow("Stack data by Variables",
+                               parent = GUI$win, visible = FALSE)
+        mainGroup <- ggroup(expand = TRUE, horizontal = FALSE)
+        ## instructions through glabels
+        lbl1 <- glabel("Choose variables to stack")
+        font(lbl1) <- list(weight = "bold",
+                           family = "normal")
+        lbl2 <- glabel("(Hold Ctrl to choose many)")
+        font(lbl2) <- list(weight = "bold",
+                           family = "normal")
+        ## display only numeric variables
+        numIndices <- sapply(GUI$getActiveData(), function(x) !is.factor(x))
+        numVar <- gtable(names(GUI$getActiveData())[numIndices],
+                         multiple = TRUE)
+        names(numVar) <- "Variables"
+        StackButton <- gbutton("Stack", handler = function(h, ...) {
+          if (length(svalue(numVar)) > 0) {
+            vars <- svalue(numVar)
+            
+            .dataset <- GUI$getActiveData()
+            data <- iNZightTools::stackVars(.dataset, vars)
+            attr(data, "name") <- paste(attr(.dataset, "name", exact = TRUE), "stacked", sep = ".")
+            attr(data, "code") <- gsub(".dataset", attr(.dataset, "name", exact = TRUE), attr(data, "code"))
+            GUI$setDocument(iNZDocument$new(data = data))
+            dispose(GUI$modWin)
+          }
+        })
+        add(mainGroup, lbl1)
+        add(mainGroup, lbl2)
+        add(mainGroup, numVar, expand = TRUE)
+        add(mainGroup, StackButton)
+        add(GUI$modWin, mainGroup, expand = TRUE, fill = TRUE)
+        visible(GUI$modWin) <<- TRUE
+      }
+    })
+)
+
