@@ -1303,10 +1303,8 @@ iNZconTodtWin <- setRefClass(
       
       date_string <- glabel("Select variable to convert from", container = mainGroup, anchor = c(-1, 0))
       
-      ## Dropdown
       var1 = gcombobox(c("", names(GUI$getActiveData())), cont = mainGroup, handler = function(h, ...) {
         varname = svalue(var1)
-        print(varname)
         if (varname == "") {
           dfview$set_items("")
           convertedview$set_items("")
@@ -1330,8 +1328,7 @@ iNZconTodtWin <- setRefClass(
           }
         }
       })
-      
-      ## Multiple fields
+
       factorsbox = gvbox(cont = mainGroup)
       factors = gtable(names(GUI$getActiveData()),multiple = TRUE, expand = TRUE, cont = factorsbox)
       names(factors) = "Variables"
@@ -1346,7 +1343,6 @@ iNZconTodtWin <- setRefClass(
         }
         dfview$set_items(data.frame(Original = varx))
         svalue(newVarname) = makeNames(paste(new_name, "dt", sep = ""))
-        
         if (svalue(var2) == ""){
           return()
         } else{
@@ -1364,7 +1360,6 @@ iNZconTodtWin <- setRefClass(
       visible(factorsbox) = FALSE
       size(factorsbox) = c(-1, 250)
       
-      ## Check box
       checkbox = gcheckbox(text = "Click to use multiple variables", cont = mainGroup, handler = function(h, ...) {
         if (svalue(checkbox) == TRUE) {
           visible(factorsbox) = TRUE
@@ -1391,8 +1386,6 @@ iNZconTodtWin <- setRefClass(
                       "day month year Hour Minute Second pm/am",
                       "Unix timestamp (secs from 1970)")
       
-      ## UNIX timestamp (seconds since 1970-01-01)
-      
       for.var <- glabel("Select the order format of your data", container = mainGroup, anchor = c(-1, 0))
       
       var2 <- gcombobox(items = dt.formats, container = mainGroup, editable = TRUE, handler = function(h,...){
@@ -1402,7 +1395,6 @@ iNZconTodtWin <- setRefClass(
           factorname = svalue(var1)
         }
         convname = svalue(var2)
-        print(convname)
         if (length(factorname) != 0 & convname == "") {
           convertedview$set_items("")
         } else {
@@ -1472,7 +1464,6 @@ iNZExtfromdtWin <- setRefClass(
       callSuper(gui)
       svalue(GUI$modWin) <<- "Convert to Dates and Times"
 
-      ## Start my GUI
       mainGroup <- gvbox()
       mainGroup$set_borderwidth(15)
       
@@ -1488,18 +1479,19 @@ iNZExtfromdtWin <- setRefClass(
       var1 <- gcombobox(items = c("", names(dplyr::select_if(GUI$getActiveData(), lubridate::is.POSIXct))), container = mainGroup, handler = function(h,...){
         if (svalue(var1) == "") {
           dfview$set_items(data.frame(Original = ""))
+          extractedview$set_items(data.frame(Extracted = ""))
         } else {
           varname = svalue(var1)
           varx = GUI$getActiveData()[[varname]]
           dfview$set_items(data.frame(Original = as.character(varx)))
           part = svalue(atree)[length(svalue(atree))]
-          if (part  == NULL) {
-            return()
-          } else {
+          # if (part  == NULL) {
+          #   return()
+          # } else {
             name = svalue(newVarname)
             exp = iNZightTools::extract_part(GUI$getActiveData(), varname, part, name)
             extractedview$set_items(data.frame(Extracted = as.character(exp[[svalue(newVarname)]])))
-          }
+          # }
         }
       })
       
@@ -1507,7 +1499,6 @@ iNZExtfromdtWin <- setRefClass(
       
       for.var <- glabel("Select elements to extract \n(click + of lowest-level information for options)", container = mainGroup, anchor = c(-1, 0))
       
-      ## gtree list
       offspring <- function(path=character(0), lst, ...) {
         if(length(path))
           obj <- lst[[path]]
@@ -1540,13 +1531,9 @@ iNZExtfromdtWin <- setRefClass(
                                                                   "Month (full)" = "Month.cat", "Month (number)" = "Month.number", "Week of the year" = "Week.year", "Day of the year" = "Day.year", 
                                                                   "Day of the week (name)" = "Day.week", "Day of the week (number)" = "Day.week.number", "Time only" = "Time",
                                                                   "Hours (decimal)" = "Hour.decimal", part), sep = ""))
-        if (varname != "" & part == "") {
-          extractedview$set_items(data.frame(Extracted = ""))
-        } else {
-          name = svalue(newVarname)
-          exp = iNZightTools::extract_part(GUI$getActiveData(), varname, part, name)
-          extractedview$set_items(data.frame(Extracted = as.character(exp[[svalue(newVarname)]])))
-        }
+        name = svalue(newVarname)
+        exp = iNZightTools::extract_part(GUI$getActiveData(), varname, part, name)
+        extractedview$set_items(data.frame(Extracted = as.character(exp[[svalue(newVarname)]])))
       })
       size(atree) = c(-1, 250)
       
