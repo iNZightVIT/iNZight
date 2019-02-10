@@ -628,6 +628,17 @@ iNZjoinDataWin <- setRefClass(
         join_string = glabel("Select join methods", cont = left, anchor = c(-1,0))
         
         var1 = gcombobox(items = c("Inner Join", "Left Join", "Full Join", "Semi Join", "Anti Join"), cont = left)
+        addHandlerChanged(var1, function(h, ...) {
+          origin_col_name = svalue(var2)
+          imported_col_name = svalue(var3)
+          data2 = read.csv(svalue(data_name))
+          join_method = svalue(var1)
+          joined = iNZightTools::joindata(GUI$getActiveData(), data2, origin_col_name, imported_col_name, join_method, "Hi")
+          joinview$set_items(joined)
+        })
+        
+        
+        
         # addHandlerChanged(var1, function(h, ...) {
         #   origin_col_name = svalue(var2)
         #   imported_col_name = svalue(var3)

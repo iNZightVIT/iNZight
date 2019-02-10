@@ -1,10 +1,10 @@
 library(devtools)
 library(tidyverse)
+document("~/iNZightTools")
 
 load_all("~/iNZightTools")
 load_all("~/iNZight")
 
-document("~/iNZightTools")
 
 data = readr::read_csv("C:\\Users\\Yiwen\\Documents\\Join.csv")
 
