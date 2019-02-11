@@ -1,7 +1,3 @@
-## iNZight 3.3.6.9000
-__Release date__: TBA
-
-
 ## iNZight 3.3.6
 __Release date__: 12 February 2019
 
