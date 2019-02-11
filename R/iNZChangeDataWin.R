@@ -591,7 +591,8 @@ iNZexpandTblWin <- setRefClass(
 iNZjoinDataWin <- setRefClass(
   "iNZjoinDataWin",
   fields = list(
-    GUI = "ANY"
+    GUI = "ANY",
+    newdata = "ANY"
   ),
   methods = list(
     initialize = function(gui = NULL) {
@@ -631,9 +632,8 @@ iNZjoinDataWin <- setRefClass(
         addHandlerChanged(var1, function(h, ...) {
           origin_col_name = svalue(var2)
           imported_col_name = svalue(var3)
-          data2 = read.csv(svalue(data_name))
           join_method = svalue(var1)
-          joined = iNZightTools::joindata(GUI$getActiveData(), data2, origin_col_name, imported_col_name, join_method, "Hi")
+          joined = iNZightTools::joindata(GUI$getActiveData(), newdata, origin_col_name, imported_col_name, join_method, "Hi")
           joinview$set_items(joined)
         })
         
@@ -688,6 +688,7 @@ iNZjoinDataWin <- setRefClass(
         file_string = glabel("Import data", cont = right, anchor = c(-1,0))
         data_name = gfilebrowse(text = "Specify a file", initial.dir = file.path(".", "data"), cont = right, handler = function(h, ...) {
           data2 = read.csv(svalue(data_name))
+          newdata <<- data2
           data2view$set_items(data2)
           var3$set_items(names(data2))
           result = tryCatch({
