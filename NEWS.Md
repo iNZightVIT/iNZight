@@ -1,7 +1,7 @@
-## iNZight 3.3.3.9000
-__Release date__: TBA
+## iNZight 3.3.6
+__Release date__: 12 February 2019
 
-
+- fix a bug in Get Inference which showed x and y the wrong way around
 
 
 ## iNZight 3.3.5
