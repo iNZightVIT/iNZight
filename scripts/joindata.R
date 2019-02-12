@@ -14,5 +14,10 @@ load_all("~/iNZight")
 kk = iNZGUI$new()
 kk$initializeGui(data)
 
-# col names (suffix)
+
 # help
+# preview window size use head function
+# Logical values not working
+# joining with itself??
+
+# 
