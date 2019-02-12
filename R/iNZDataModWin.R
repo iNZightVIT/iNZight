@@ -1514,11 +1514,11 @@ iNZExtfromdtWin <- setRefClass(
       }
       
       l <- list(Date = list("Date only" = "Date only", 
-                            Year = list("Year" = "Year", "Century" = "Century"), 
+                            Year = list("Year" = "Year", "Century" = "Century", "Decimal Year" = "Decimal Year"), 
                             Quarter = list("Year Quarter" = "Year Quarter", "Quarter" = "Quarter"),
                             Month = list("Year Month" = "Year Month", "Month (full)" = "Month (full)", "Month (abbreviated)" = "Month (abbreviated)", "Month (number)" = "Month (number)"),
-                            Week = list("Week of the year" = "Week of the year"),
-                            Day = list("Day of the year" = "Day of the year", "Day of the week (name)" = "Day of the week (name)", "Day of the week (number)" = "Day of the week (number)", "Day" = "Day")),
+                            Week = list("Week of the year (Sunday as first day of the week)" = "Week of the year (Sunday as first day of the week)", "Week of the year (Monday as first day of the week)" = "Week of the year (Monday as first day of the week)"),
+                            Day = list("Day of the year" = "Day of the year", "Day of the week (name)" = "Day of the week (name)", "Day of the week (number, Monday as 1)" = "Day of the week (number, Monday as 1)", "Day of the week (number, Sunday as 0)" = "Day of the week (number, Sunday as 0)","Day" = "Day")),
                 Time = list("Time only" = "Time only", "Hours (decimal)" = "Hours (decimal)", "Hour" = "Hour", "Minute" = "Minute", "Second" = "Second")
       )
       
@@ -1527,9 +1527,21 @@ iNZExtfromdtWin <- setRefClass(
       addHandlerSelect(atree, function(h, ...) {
         varname = svalue(var1)
         part = svalue(atree)[length(svalue(atree))]
-        svalue(newVarname) = makeNames(paste(varname, ".", switch(part, "Date only" = "Date", "Year Quarter" = "Year.Quarter", "Year Month" = "Year.Month", "Month (abbreviated)" = "Month.cat", 
-                                                                  "Month (full)" = "Month.cat", "Month (number)" = "Month.number", "Week of the year" = "Week.year", "Day of the year" = "Day.year", 
-                                                                  "Day of the week (name)" = "Day.week", "Day of the week (number)" = "Day.week.number", "Time only" = "Time",
+        svalue(newVarname) = makeNames(paste(varname, ".", switch(part, "Date only" = "Date", 
+                                                                  "Decimal Year" = "Decimal.Year",
+                                                                  "Year Quarter" = "Year.Quarter", 
+                                                                  "Year Month" = "Year.Month", 
+                                                                  "Month (abbreviated)" = "Month.cat", 
+                                                                  "Month (full)" = "Month.cat", 
+                                                                  "Month (number)" = "Month.number", 
+                                                                  "Week of the year (Sunday as first day of the week)" = "Week.year", 
+                                                                  "Week of the year (Monday as first day of the week)" = "Week.year",
+                                                                  "Day of the year" = "Day.year", 
+                                                                  "Day of the week (name)" = "Day.week", 
+                                                                  "Day of the week (number)" = "Day.week.number", 
+                                                                  "Day of the week (number, Monday as 1)" = "Day.week.number",
+                                                                  "Day of the week (number, Sunday as 0)" = "Day.week.number",
+                                                                  "Time only" = "Time",
                                                                   "Hours (decimal)" = "Hour.decimal", part), sep = ""))
         name = svalue(newVarname)
         exp = iNZightTools::extract_part(GUI$getActiveData(), varname, part, name)

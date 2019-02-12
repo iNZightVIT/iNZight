@@ -25,17 +25,9 @@ kk = iNZGUI$new()
 kk$initializeGui(data)
 
 
-
 ## addhandlerchanged to gtree (change double click to single click)
-
-## Check week of the year
-## U means "Week of the year as decimal number (00?C53) using Sunday as the first day 1 of the week 
-## and typically with the first Sunday of the year as day 1 of week 1). The US convention.
-## Using format.POSIXct to check (U, V and W)
-## Day of week
-
 ## default value of a gtree
-
-## Time zone
-
-## Extract hours decimal
+## Extract hours decimal 
+## Window sizing?
+## Convert function trycatch
+## Timezone
