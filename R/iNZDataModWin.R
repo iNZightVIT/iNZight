@@ -1485,13 +1485,13 @@ iNZExtfromdtWin <- setRefClass(
           varx = GUI$getActiveData()[[varname]]
           dfview$set_items(data.frame(Original = as.character(varx)))
           part = svalue(atree)[length(svalue(atree))]
-          # if (part  == NULL) {
-          #   return()
-          # } else {
+          if (length(part)  == 0) {   
+            return()
+          } else {
             name = svalue(newVarname)
             exp = iNZightTools::extract_part(GUI$getActiveData(), varname, part, name)
             extractedview$set_items(data.frame(Extracted = as.character(exp[[svalue(newVarname)]])))
-          # }
+          }
         }
       })
       
@@ -1524,7 +1524,7 @@ iNZExtfromdtWin <- setRefClass(
       
       atree <- gtree(offspring=offspring, offspring.data=l, cont=mainGroup)
       
-      addHandlerSelect(atree, function(h, ...) {
+      addHandlerClicked(atree, function(h, ...) {
         varname = svalue(var1)
         part = svalue(atree)[length(svalue(atree))]
         svalue(newVarname) = makeNames(paste(varname, ".", switch(part, "Date only" = "Date", 

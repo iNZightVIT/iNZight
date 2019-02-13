@@ -25,9 +25,9 @@ kk = iNZGUI$new()
 kk$initializeGui(data)
 
 
-## addhandlerchanged to gtree (change double click to single click)
-## default value of a gtree
-## Extract hours decimal 
-## Window sizing?
+## addhandlerchanged to gtree (change double click to single click) done
+## default value of a gtree done
+## Extract hours decimal done
+## Window sizing? done
 ## Convert function trycatch
 ## Timezone
