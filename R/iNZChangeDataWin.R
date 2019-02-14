@@ -594,8 +594,11 @@ iNZjoinDataWin <- setRefClass(
     GUI = "ANY",
     newdata = "ANY",
     left_col = "ANY",
-    right_col = "ANY"
-    
+    right_col = "ANY",
+    join_method = "ANY",
+    left_name = "ANY",
+    right_name = "ANY",
+    joinview = "ANY"
   ),
   methods = list(
     initialize = function(gui = NULL) {
@@ -605,7 +608,7 @@ iNZjoinDataWin <- setRefClass(
         try(dispose(GUI$modWin), silent = TRUE)
 
         ## start my window
-        GUI$modWin <<- gwindow("Join with another dataset",
+        GUI$modWin <<- gwindow("Join with another dataset by column values",
                                 parent = GUI$win, visible = FALSE)
         mainGroup <- ggroup(cont = GUI$modWin, expand = TRUE)
         lyt <- glayout(cont = mainGroup)
@@ -631,34 +634,35 @@ iNZjoinDataWin <- setRefClass(
         
         join_string = glabel("Select join methods", cont = left, anchor = c(-1,0))
         
+        join_method <<- "inner_join"
         var1 = gcombobox(items = c("Inner Join", "Left Join", "Full Join", "Semi Join", "Anti Join"), cont = left)
         addHandlerChanged(var1, function(h, ...) {
-          origin_col_name = svalue(var2)
-          imported_col_name = svalue(var3)
-          join_method = svalue(var1)
-          left_name = svalue(left_name)
-          right_name = svalue(right_name)
-          joined = iNZightTools::joindata(GUI$getActiveData(), newdata, origin_col_name, imported_col_name, join_method, left_name, right_name)
-          joinview$set_items(joined)
+          join_method <<- switch(svalue(var1), "Inner Join" = "inner_join",
+                                                      "Left Join" = "left_join",
+                                                      "Full Join" = "full_join",
+                                                      "Semi Join" = "semi_join",
+                                                      "Anti Join" = "anti_join")
+          updatePreview()
         })
         
         column_string = glabel("Select the column with common values of the two datasets", cont = left, anchor = c(-1, 0))
         
+        left_col <<- ""
         var2 = gcombobox(items = c("", names(GUI$getActiveData())), cont = left)
         addHandlerChanged(var2, function(h, ...) {
-          origin_col_name = svalue(var2)
-          imported_col_name = svalue(var3)
-          join_method = svalue(var1)
-          left_name = svalue(left_name)
-          right_name = svalue(right_name)
-          joined = iNZightTools::joindata(GUI$getActiveData(), newdata, origin_col_name, imported_col_name, join_method, left_name, right_name)
-          joinview$set_items(joined)
+          left_col <<- svalue(var2)
+          updatePreview()
         })
+
         
         name_string = glabel("Name the suffix for the combined columns", cont = left, anchor = c(-1, 0))
         
-        left_name = gedit("Left", cont = left)
-        
+        left_name <<- "Left"
+        left_name_string = gedit("Left", cont = left)
+        addHandlerChanged(left_name_string, function(h, ...) {
+          left_name <<- svalue(left_name_string)
+          updatePreview()
+        })
         
         ## Right hand side
         Preview_string = glabel("Preview of the imported dataset", cont = right, anchor = c(-1, 0))
@@ -670,53 +674,43 @@ iNZjoinDataWin <- setRefClass(
           newdata <<- read.csv(svalue(data_name))
           data2view$set_items(newdata)
           var3$set_items(c("", names(newdata)))
-          result = tryCatch({
-            inner_join(GUI$getActiveData(), newdata)
-          }, error = function(e) {
-            if (e$message == "`by` required, because the data sources have no common variables"){
-              return("No common column found, please specify a common column")
-            }
-          })
-          if (nrow(inner_join(GUI$getActiveData(), newdata)) == 0){
-            result = "Automatically detected common column has no common values"
-          }
-          joinview$set_items(result)
+          updatePreview()
         })
         
+        right_col <<- ""
         column_string2 = glabel("Select the column with common values of the two datasets", cont = right, anchor = c(-1, 0))
         var3 = gcombobox(items = "", cont = right)
         addHandlerChanged(var3, function(h, ...) {
           right_col <<- svalue(var3)
           updatePreview()
-          
-          # origin_col_name = svalue(var2)
-          # imported_col_name = svalue(var3)
-          # join_method = svalue(var1)
-          # left_name = svalue(left_name)
-          # right_name = svalue(right_name)
-          # joined = iNZightTools::joindata(GUI$getActiveData(), newdata, origin_col_name, imported_col_name, join_method, left_name, right_name)
-          # joinview$set_items(joined)
         })
         
         name_string = glabel("Name the suffix for the combined columns", cont = right, anchor = c(-1, 0))
         
-        right_name = gedit("Right", cont = right)
+        right_name <<- "Right"
+        right_name_string = gedit("Right", cont = right)
+        addHandlerChanged(right_name_string, function(h, ...) {
+          right_name <<- svalue(right_name_string)
+          updatePreview()
+        })
         
         
         ## Bottom join box
         preview_string2 = glabel("Preview", cont = join, anchor = c(-1, 0))
-        joinview = gtable(data.frame(""), cont = join)
+        joinview <<- gtable(data.frame(""), cont = join)
         size(joinview) = c(-1, 150)
         
         joinbtn = gbutton("Join", cont = join)
         addHandlerChanged(joinbtn, function(h, ...) {
-          origin_col_name = svalue(var2)
-          imported_col_name = svalue(var3)
-          join_method = svalue(var1)
-          left_name = svalue(left_name)
-          right_name = svalue(right_name)
-          joined = iNZightTools::joindata(GUI$getActiveData(), newdata, origin_col_name, imported_col_name, join_method, left_name, right_name)
-          joinview$set_items(joined)
+          joined = iNZightTools::joindata(
+            GUI$getActiveData(), 
+            newdata, 
+            left_col, 
+            right_col, 
+            join_method, 
+            left_name, 
+            right_name
+          )
           GUI$setDocument(iNZDocument$new(data = joined))
           dispose(GUI$modWin)
         })
@@ -756,7 +750,18 @@ iNZjoinDataWin <- setRefClass(
     },
     updatePreview = function() {
       "update the preview window"
-      d <- joinData()
+      d = tryCatch(
+        joinData(),
+        error = function(e) {
+          joinview$set_items(e$message)
+        }
+      )
+      d = joinData()
+      if (nrow(d) == 0) {
+        joinview$set_items("Joined dataset has 0 row")
+      } else {
+        joinview$set_items(d)
+      }
       # update the svalue(preview)
     },
     joinData = function() {
@@ -774,3 +779,40 @@ iNZjoinDataWin <- setRefClass(
   )
 )
 
+
+iNZappendrowWin <- setRefClass(
+  "iNZappendrowWin",
+  fields = list(GUI = "ANY",
+                newdata = "ANY"),
+  methods = list(
+    initialize = function(gui = NULL) {
+      initFields(GUI = gui)
+      if (!is.null(GUI)) {
+        ## close any current mod windows
+        try(dispose(GUI$modWin), silent = TRUE)
+        
+        ## start my window
+        GUI$modWin <<- gwindow("Append rows",
+                               parent = GUI$win, visible = FALSE)
+        mainGroup <- ggroup(cont = GUI$modWin, expand = TRUE, horizontal = FALSE)
+
+        title_string = glabel("Append rows", cont = mainGroup)
+        font(title_string) = list(size = 14, weight = "bold")
+        
+        file_string = glabel("Import data", cont = mainGroup, anchor = c(-1,0))
+        data_name = gfilebrowse(text = "Specify a file", initial.dir = file.path(".", "data"), cont = mainGroup, handler = function(h, ...) {
+          newdata <<- read.csv(svalue(data_name))
+        })
+        
+        appendbtn = gbutton("Append", cont = mainGroup)
+        addHandlerChanged(appendbtn, function(h, ...) {
+          data = iNZightTools::appendrows(GUI$getActiveData(), newdata)
+          GUI$setDocument(iNZDocument$new(data = data))
+          dispose(GUI$modWin)
+        })
+        
+        visible(GUI$modWin) <<- TRUE
+      }
+    }
+  )
+)
