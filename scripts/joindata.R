@@ -18,6 +18,12 @@ kk$initializeGui(data)
 # help
 # preview window size use head function
 # Logical values not working
-# joining with itself??
 
-# 
+
+## join method has to change in order to get join_method but the default is given in fun??  ----- problem with columns
+
+## fix suffix
+
+## check for things that cannot be joined
+
+## check button works
