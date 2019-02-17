@@ -1319,12 +1319,15 @@ iNZconTodtWin <- setRefClass(
             convname = svalue(var2)
             .dataset = GUI$getActiveData()
             name = svalue(newVarname)
-            data = iNZightTools::convert_to_datetime(.dataset, varname, convname, name)
-            if (all(is.na(data[[svalue(newVarname)]]))){
-              convertedview$set_items(data.frame(Converted = "Invalid format"))
-            } else{
-              convertedview$set_items(data.frame(Converted = data[[svalue(newVarname)]]))
-            }
+            data = tryCatch(
+              convertedview$set_items(data.frame(Converted = iNZightTools::convert_to_datetime(.dataset, varname, convname, name)[[svalue(newVarname)]])),
+              warning = function(w) {
+                if (w$message == "Failed to parse") {
+                    convertedview$set_items(data.frame(Converted = "Invalid format"))
+                } else {
+                    convertedview$set_items(data.frame(Converted = w$message))
+                }
+            })
           }
         }
       })
@@ -1349,12 +1352,15 @@ iNZconTodtWin <- setRefClass(
           convname = svalue(var2)
           .dataset = GUI$getActiveData()
           name = svalue(newVarname)
-          data = iNZightTools::convert_to_datetime(.dataset, factorname, convname, name)
-          if (all(is.na(data[[svalue(newVarname)]]))){
-            convertedview$set_items(data.frame(Converted = "Invalid format"))
-          } else{
-            convertedview$set_items(data.frame(Converted = data[[svalue(newVarname)]]))
-          }
+          data = tryCatch(
+            convertedview$set_items(data.frame(Converted = iNZightTools::convert_to_datetime(.dataset, factorname, convname, name)[[svalue(newVarname)]])),
+            warning = function(w) {
+              if (w$message == "Failed to parse") {
+                convertedview$set_items(data.frame(Converted = "Invalid format"))
+              } else {
+                convertedview$set_items(data.frame(Converted = w$message))
+              }
+            })
         }
       })
       visible(factorsbox) = FALSE
@@ -1400,12 +1406,15 @@ iNZconTodtWin <- setRefClass(
         } else {
           .dataset = GUI$getActiveData()
           name = svalue(newVarname)
-          data = iNZightTools::convert_to_datetime(.dataset, factorname, convname, name)
-          if (all(is.na(data[[svalue(newVarname)]]))){
-            convertedview$set_items(data.frame(Converted = "Invalid format"))
-          } else{
-            convertedview$set_items(data.frame(Converted = data[[svalue(newVarname)]]))
-          }
+          data = tryCatch(
+            convertedview$set_items(data.frame(Converted = iNZightTools::convert_to_datetime(.dataset, factorname, convname, name)[[svalue(newVarname)]])),
+            warning = function(w) {
+              if (w$message == "Failed to parse") {
+                convertedview$set_items(data.frame(Converted = "Invalid format"))
+              } else {
+                convertedview$set_items(data.frame(Converted = w$message))
+              }
+            })
         }
       })
       
