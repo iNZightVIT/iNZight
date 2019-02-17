@@ -630,7 +630,7 @@ iNZjoinDataWin <- setRefClass(
         ## Left hand side
         original_string = glabel("Preview of the original dataset", cont = left, anchor = c(-1, 0))
         
-        originview = gtable(data.frame(GUI$getActiveData()), cont = left)
+        originview = gtable(data.frame(head(GUI$getActiveData(),10)), cont = left)
         
         join_string = glabel("Select join methods", cont = left, anchor = c(-1,0))
         
@@ -645,7 +645,7 @@ iNZjoinDataWin <- setRefClass(
           updatePreview()
         })
         
-        column_string = glabel("Select the column with common values of the two datasets", cont = left, anchor = c(-1, 0))
+        column_string = glabel("Select column from original dataset to match ", cont = left, anchor = c(-1, 0))
         
         left_col <<- ""
         var2 = gcombobox(items = c("", names(GUI$getActiveData())), cont = left)
@@ -654,15 +654,15 @@ iNZjoinDataWin <- setRefClass(
           updatePreview()
         })
 
-        
-        name_string = glabel("Name the suffix for the combined columns", cont = left, anchor = c(-1, 0))
-        
-        left_name <<- "Left"
-        left_name_string = gedit("Left", cont = left)
+        left_name_box = gvbox(cont = left)
+        name_string = glabel("Duplicated cols: suffix for Original", cont = left_name_box, anchor = c(-1, 0))
+        left_name <<- "Orig"
+        left_name_string = gedit("Orig", cont = left_name_box)
         addHandlerChanged(left_name_string, function(h, ...) {
           left_name <<- svalue(left_name_string)
           updatePreview()
         })
+        visible(left_name_box) = FALSE
         
         ## Right hand side
         Preview_string = glabel("Preview of the imported dataset", cont = right, anchor = c(-1, 0))
@@ -672,27 +672,46 @@ iNZjoinDataWin <- setRefClass(
         file_string = glabel("Import data", cont = right, anchor = c(-1,0))
         data_name = gfilebrowse(text = "Specify a file", initial.dir = file.path(".", "data"), cont = right, handler = function(h, ...) {
           newdata <<- read.csv(svalue(data_name))
-          data2view$set_items(newdata)
+          data2view$set_items(head(newdata, 10))
           var3$set_items(c("", names(newdata)))
-          updatePreview()
+          col = list()
+          dup_cols = Reduce(intersect, list(colnames(GUI$getActiveData()), colnames(newdata)))
+          if (length(dup_cols) == 0) {
+            joinview$set_items("No common column name detected, please specify columns")
+          } else {
+            for (i in 1:length(dup_cols)) {
+              col_name = dup_cols[i]
+              left_dup = GUI$getActiveData()[[col_name]]
+              right_dup = newdata[[col_name]]
+              for (ii in 1:length(left_dup)) {
+                if (left_dup[i] %in% right_dup) {
+                  col = append(col, dup_cols[i])
+                } 
+              }
+            }
+            common_col = unique(col)
+            auto_join = iNZightTools::joindata(GUI$getActiveData(), newdata, common_col, common_col, join_method, left_name, right_name)
+            joinview$set_items(head(auto_join, 10))
+          }
         })
         
         right_col <<- ""
-        column_string2 = glabel("Select the column with common values of the two datasets", cont = right, anchor = c(-1, 0))
+        column_string2 = glabel("Select matching column in new dataset", cont = right, anchor = c(-1, 0))
         var3 = gcombobox(items = "", cont = right)
         addHandlerChanged(var3, function(h, ...) {
           right_col <<- svalue(var3)
           updatePreview()
         })
         
-        name_string = glabel("Name the suffix for the combined columns", cont = right, anchor = c(-1, 0))
-        
-        right_name <<- "Right"
-        right_name_string = gedit("Right", cont = right)
+        right_name_box = gvbox(cont = right)
+        name_string = glabel("Duplicated cols: suffix for New", cont = right_name_box, anchor = c(-1, 0))
+        right_name <<- "New"
+        right_name_string = gedit("New", cont = right_name_box)
         addHandlerChanged(right_name_string, function(h, ...) {
           right_name <<- svalue(right_name_string)
           updatePreview()
         })
+        visible(right_name_box) = FALSE
         
         
         ## Bottom join box
@@ -760,7 +779,7 @@ iNZjoinDataWin <- setRefClass(
       if (nrow(d) == 0) {
         joinview$set_items("Joined dataset has 0 row")
       } else {
-        joinview$set_items(d)
+        joinview$set_items(head(d, 10))
       }
       # update the svalue(preview)
     },
@@ -804,9 +823,12 @@ iNZappendrowWin <- setRefClass(
           newdata <<- read.csv(svalue(data_name))
         })
         
+        check_box = gcheckbox("Tick if you want to attach a timestamp to the appended rows", cont = mainGroup)
+        
         appendbtn = gbutton("Append", cont = mainGroup)
         addHandlerChanged(appendbtn, function(h, ...) {
-          data = iNZightTools::appendrows(GUI$getActiveData(), newdata)
+          date = svalue(check_box)
+          data = iNZightTools::appendrows(GUI$getActiveData(), newdata, date)
           GUI$setDocument(iNZDocument$new(data = data))
           dispose(GUI$modWin)
         })

@@ -6,7 +6,7 @@ load_all("~/iNZightTools")
 load_all("~/iNZight")
 
 
-data = readr::read_csv("C:\\Users\\Yiwen\\Documents\\Join.csv")
+data = readr::read_csv("C:\\Users\\Yiwen\\Documents\\parisjoin.csv")
 
 
 try(dispose(kk$win), TRUE)
@@ -17,13 +17,12 @@ kk$initializeGui(data)
 
 # help
 # preview window size use head function
-# Logical values not working
 
+# No common column found. Automatically mtach has common column with no common value DONE
+# Only show suffix window when there is duplicated column
+# Test on larger dataset DONE
+# testthat
 
-## join method has to change in order to get join_method but the default is given in fun??  ----- problem with columns
+# head() show only top 10 rows DONE
 
-## fix suffix
-
-## check for things that cannot be joined
-
-## check button works
+devtools::test
