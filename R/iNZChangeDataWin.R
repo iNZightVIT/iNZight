@@ -683,14 +683,23 @@ iNZjoinDataWin <- setRefClass(
               col_name = dup_cols[i]
               left_dup = GUI$getActiveData()[[col_name]]
               right_dup = newdata[[col_name]]
-              for (ii in 1:length(left_dup)) {
-                if (left_dup[i] %in% right_dup) {
-                  col = append(col, dup_cols[i])
-                } 
+              if (length(dplyr::intersect(left_dup, right_dup)) > 0) {
+                col = append(col, dup_cols[i])
               }
             }
-            common_col = unique(col)
-            auto_join = iNZightTools::joindata(GUI$getActiveData(), newdata, common_col, common_col, join_method, left_name, right_name)
+            
+            # for (i in 1:length(dup_cols)) {
+            #   col_name = dup_cols[i]
+            #   left_dup = GUI$getActiveData()[[col_name]]
+            #   right_dup = newdata[[col_name]]
+            #   for (ii in 1:length(left_dup)) {
+            #     if (left_dup[i] %in% right_dup) {
+            #       col = append(col, dup_cols[i])
+            #     } 
+            #   }
+            # }
+            # common_col = unique(col)
+            auto_join = iNZightTools::joindata(GUI$getActiveData(), newdata, col, col, join_method, left_name, right_name)
             joinview$set_items(head(auto_join, 10))
           }
         })
@@ -778,6 +787,7 @@ iNZjoinDataWin <- setRefClass(
       d = joinData()
       if (nrow(d) == 0) {
         joinview$set_items("Joined dataset has 0 row")
+        
       } else {
         joinview$set_items(head(d, 10))
       }
