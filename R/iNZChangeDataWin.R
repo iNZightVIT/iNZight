@@ -616,12 +616,14 @@ iNZjoinDataWin <- setRefClass(
         title_box = gvbox(cont = lyt)
         left = gvbox(cont = lyt)
         right = gvbox(cont = lyt)
+        dropdowns = gvbox(cont = lyt)
         join = gvbox(cont = lyt)
         
         lyt[1, 1:2] = title_box
         lyt[2,1] <- left
         lyt[2,2] <- right
-        lyt[3, 1:2] <- join
+        lyt[3, 1:2] <- dropdowns
+        lyt[4, 1:2] <- join
         
         ## Title
         title_string = glabel("Join Datasets", cont = title_box)
@@ -687,18 +689,6 @@ iNZjoinDataWin <- setRefClass(
                 col = append(col, dup_cols[i])
               }
             }
-            
-            # for (i in 1:length(dup_cols)) {
-            #   col_name = dup_cols[i]
-            #   left_dup = GUI$getActiveData()[[col_name]]
-            #   right_dup = newdata[[col_name]]
-            #   for (ii in 1:length(left_dup)) {
-            #     if (left_dup[i] %in% right_dup) {
-            #       col = append(col, dup_cols[i])
-            #     } 
-            #   }
-            # }
-            # common_col = unique(col)
             auto_join = iNZightTools::joindata(GUI$getActiveData(), newdata, col, col, join_method, left_name, right_name)
             joinview$set_items(head(auto_join, 10))
           }
@@ -721,6 +711,12 @@ iNZjoinDataWin <- setRefClass(
           updatePreview()
         })
         visible(right_name_box) = FALSE
+        
+        ## Dropdowns
+        coltable <- glayout(cont = dropdowns)
+        dropdown_string <<- glabel("Specify columns to match on from two datasets", cont = coltable, anchor = c(-1, 0))
+        lyt[1, 1:4] <- glabel("Specify columns to match on from two datasets", cont = coltable)
+        
         
         
         ## Bottom join box
