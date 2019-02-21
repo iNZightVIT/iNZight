@@ -595,10 +595,13 @@ iNZjoinDataWin <- setRefClass(
     newdata = "ANY",
     left_col = "ANY",
     right_col = "ANY",
+    auto_left_col = "ANY",
+    auto_right_col = "ANY",
     join_method = "ANY",
     left_name = "ANY",
     right_name = "ANY",
-    joinview = "ANY"
+    joinview = "ANY",
+    coltbl = "ANY"
   ),
   methods = list(
     initialize = function(gui = NULL) {
@@ -606,7 +609,7 @@ iNZjoinDataWin <- setRefClass(
       if (!is.null(GUI)) {
         ## close any current mod windows
         try(dispose(GUI$modWin), silent = TRUE)
-
+        
         ## start my window
         GUI$modWin <<- gwindow("Join with another dataset by column values",
                                 parent = GUI$win, visible = FALSE)
@@ -646,15 +649,8 @@ iNZjoinDataWin <- setRefClass(
                                                       "Anti Join" = "anti_join")
           updatePreview()
         })
-        
-        column_string = glabel("Select column from original dataset to match ", cont = left, anchor = c(-1, 0))
-        
+
         left_col <<- ""
-        var2 = gcombobox(items = c("", names(GUI$getActiveData())), cont = left)
-        addHandlerChanged(var2, function(h, ...) {
-          left_col <<- svalue(var2)
-          updatePreview()
-        })
 
         left_name_box = gvbox(cont = left)
         name_string = glabel("Duplicated cols: suffix for Original", cont = left_name_box, anchor = c(-1, 0))
@@ -670,37 +666,30 @@ iNZjoinDataWin <- setRefClass(
         Preview_string = glabel("Preview of the imported dataset", cont = right, anchor = c(-1, 0))
         data2view = gtable(data.frame(""), cont = right)
         size(data2view) = c(-1, 150)
-        
+
         file_string = glabel("Import data", cont = right, anchor = c(-1,0))
         data_name = gfilebrowse(text = "Specify a file", initial.dir = file.path(".", "data"), cont = right, handler = function(h, ...) {
           newdata <<- read.csv(svalue(data_name))
           data2view$set_items(head(newdata, 10))
-          var3$set_items(c("", names(newdata)))
-          col = list()
-          dup_cols = Reduce(intersect, list(colnames(GUI$getActiveData()), colnames(newdata)))
-          if (length(dup_cols) == 0) {
-            joinview$set_items("No common column name detected, please specify columns")
-          } else {
-            for (i in 1:length(dup_cols)) {
-              col_name = dup_cols[i]
-              left_dup = GUI$getActiveData()[[col_name]]
-              right_dup = newdata[[col_name]]
-              if (length(dplyr::intersect(left_dup, right_dup)) > 0) {
-                col = append(col, dup_cols[i])
+          left_col <<- ""
+          right_col <<- ""
+          d1 = tryCatch(
+            joinData(),
+            error = function(e) {
+              if (e$message == "`by` required, because the data sources have no common variables") {
+                a = tibble()
+                attr(a, "join_cols") = ""
               }
             }
-            auto_join = iNZightTools::joindata(GUI$getActiveData(), newdata, col, col, join_method, left_name, right_name)
-            joinview$set_items(head(auto_join, 10))
-          }
+          )
+          attr = attr(d1, "join_cols")
+          left_col <<- as.character(attr)
+          right_col <<- left_col
+          create_join_table()
+          updatePreview()
         })
         
         right_col <<- ""
-        column_string2 = glabel("Select matching column in new dataset", cont = right, anchor = c(-1, 0))
-        var3 = gcombobox(items = "", cont = right)
-        addHandlerChanged(var3, function(h, ...) {
-          right_col <<- svalue(var3)
-          updatePreview()
-        })
         
         right_name_box = gvbox(cont = right)
         name_string = glabel("Duplicated cols: suffix for New", cont = right_name_box, anchor = c(-1, 0))
@@ -713,11 +702,8 @@ iNZjoinDataWin <- setRefClass(
         visible(right_name_box) = FALSE
         
         ## Dropdowns
-        coltable <- glayout(cont = dropdowns)
-        dropdown_string <<- glabel("Specify columns to match on from two datasets", cont = coltable, anchor = c(-1, 0))
-        lyt[1, 1:4] <- glabel("Specify columns to match on from two datasets", cont = coltable)
-        
-        
+        coltbl <<- glayout(cont = dropdowns)
+        coltbl[1, 1:4] <- glabel("Please specify columns to match on from two datasets")
         
         ## Bottom join box
         preview_string2 = glabel("Preview", cont = join, anchor = c(-1, 0))
@@ -768,6 +754,10 @@ iNZjoinDataWin <- setRefClass(
           anti_join_help = glabel("Return all rows in the original dataset which do not have a match in the imported dataset", cont = win)
           addSpace(win, 5)
         })
+        
+        checkbtn = gbutton("check", cont = join, handler = function(h, ...) {
+          print(left_col)
+        })
 
         visible(GUI$modWin) <<- TRUE
       }
@@ -780,19 +770,16 @@ iNZjoinDataWin <- setRefClass(
           joinview$set_items(e$message)
         }
       )
-      d = joinData()
       if (nrow(d) == 0) {
         joinview$set_items("Joined dataset has 0 row")
-        
       } else {
         joinview$set_items(head(d, 10))
       }
       # update the svalue(preview)
     },
     joinData = function() {
-      "to do the actual join"
       iNZightTools::joindata(
-        GUI$getActiveData(), 
+        GUI$getActiveData(),
         newdata, 
         left_col, 
         right_col, 
@@ -800,6 +787,72 @@ iNZjoinDataWin <- setRefClass(
         left_name, 
         right_name
       )
+    },
+    ## Create join table
+    create_join_table = function() {
+      # print(length(coltbl$children))
+      # print(nrow(coltbl))
+      # if (nrow(coltbl) > 1) {
+      #   try(invisible(
+      #     sapply(coltbl[2:nrow(coltbl), 1:4])
+      #   ))
+      # }
+      if (length(coltbl$children) > 1) {
+        try(invisible(
+          sapply(coltbl$children[2:length(coltbl$children)],
+                 coltbl$remove_child)))
+      }
+      if (length(left_col) == 0) {
+        add_joinby_row(coltbl, 1)
+        return()
+      }
+      for (i in 1:length(left_col)) {
+        add_joinby_row(coltbl, i)
+        number = i + 1
+        coltbl[number, 1]$set_items(left_col[i])
+        svalue(coltbl[number, 1]) = left_col[i]
+        coltbl[number, 2]$set_items(right_col[i])
+        svalue(coltbl[number, 2]) = right_col[i]
+      }
+      print(left_col)
+      updatePreview()
+    },
+    # Add joinby row
+    add_joinby_row = function(coltbl, number) {
+      n = number + 1
+      coltbl[n, 1] = gcombobox(c("", setdiff(names(GUI$getActiveData()), left_col)), handler = function(h, ...) {
+        new_col = svalue(coltbl[n,1])
+        left_col[number] <<- new_col
+        updatePreview()
+      })
+      coltbl[n, 2] = gcombobox(c("", setdiff(names(newdata), right_col)), handler = function(h, ...) {
+        new_col = svalue(coltbl[n,2])
+        right_col[number] <<- new_col
+        updatePreview()
+      })
+      coltbl[n, 3] = gbutton('delete', handler = function(h, ...) {
+        remove_joinby_row(coltbl, n, left_col)
+      })
+      coltbl[n, 4] = gbutton('add', handler = function(h, ...) {
+        add_joinby_row(coltbl, length(left_col) + 1)
+      })
+    },
+    ## Remove joinby row
+    remove_joinby_row = function(coltbl, pos, left_col) {
+      ##
+      try(invisible(
+        for (i in 1:4) {
+          coltbl$remove_child(coltbl[pos,i])
+        }
+      ))
+      pos = pos - 1
+      left_col <<- left_col[-pos]
+      right_col <<- right_col[-pos]
+      # if (length(left_col) == 1) {
+      #   print("dasdsada")
+      #   add_joinby_row(coltbl, 1)
+      # }
+      create_join_table()
     }
   )
 )
