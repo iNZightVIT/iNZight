@@ -33,104 +33,55 @@ iNZPlotModWin <- setRefClass(
         ),
     methods = list(
         initialize = function(gui = NULL, which = 1,
-                              .viridis = requireNamespace("viridis", quietly = TRUE),
-                              .rcb = requireNamespace("RColorBrewer", quietly = TRUE)) {
-            initFields(GUI = gui,
-                       bgColours =
-                           list(white = "white",
-                                lightgrey = "#eeeeee",
-                                mediumgrey = "grey50",
-                                darkgrey = "grey20",
-                                black = "black",
-                                wheat = "wheat",
-                                bisque = "bisque",
-                                cornsilk = "cornsilk"),
-                       pointColours =
-                           list(grey = "grey50",
-                                darkgrey = "grey20",
-                                lightgrey = "grey80",
-                                blue = "#004b85",
-                                red = "red",
-                                green = "green4"),
-                       barColours =
-                           list(darkgreen = "darkgreen",
-                                lightgreen = "palegreen3",
-                                darkblue = "#004b85",
-                                lightblue = "steelblue2",
-                                red = "darkred",
-                                pink = "pink",
-                                lightgrey = "grey80",
-                                grey = "grey50",
-                                darkgrey = "grey20"),
-                       colourPalettes =
-                           list(cat = c(
-                                    if (.rcb)
-                                        list("contrast (max 8)" =
-                                                 function(n)
-                                                     if (n > 8) inzpar()$col.default$cat(n)
-                                                     else RColorBrewer::brewer.pal(n, "Set2")[1:n],
-                                             "bright (max 9)" =
-                                                 function(n)
-                                                     if (n > 9) inzpar()$col.default$cat(n)
-                                                     else RColorBrewer::brewer.pal(n, "Set1")[1:n],
-                                             "light (max 12)" =
-                                                 function(n)
-                                                     if (n > 12) inzpar()$col.default$cat(n)
-                                                     else RColorBrewer::brewer.pal(n, "Set3")[1:n]),
-                                    if (.viridis)
-                                        list(viridis = viridis::viridis,
-                                             magma = viridis::magma,
-                                             plasma = viridis::plasma,
-                                             inferno = viridis::inferno),
-                                    list("Colourblind Friendly" = inzpar()$col.default$cat,
-                                         'rainbow (hcl)' = function(n) hcl((1:n) / n * 360, c = 80, l = 50))
-                                   ),
-                                cont = c(
-                                    if (.viridis)
-                                        list(viridis = viridis::viridis,
-                                             magma = viridis::magma,
-                                             plasma = viridis::plasma,
-                                             inferno = viridis::inferno),
-                                    list('rainbow (hcl)' = function(n) hcl((1:n) / n * 320 + 60, c = 100, l = 50),
-                                         blue =
-                                             function(n) sequential_hcl(n, h = 260, c. = c(80, 10), l = c(30, 95), power = 0.7),
-                                         green =
-                                             function(n) sequential_hcl(n, h = 135, c. = c(50, 10), l = c(40, 95), power = 0.4),
-                                         red =
-                                             function(n) sequential_hcl(n, h = 10, c. = c(80, 10), l = c(30, 95), power = 0.7),
-                                         "green-yellow" =
-                                             function(n) terrain_hcl(n, h = c(130, 30), c. = c(65, 0), l = c(45, 90),
-                                                                     power = c(0.5, 1.5)),
-                                         "red-blue" =
-                                             function(n) terrain_hcl(n, h = c(0, -100), c. = c(80, 40), l = c(40, 75),
-                                                                     power = c(1, 1)),
-                                         terrain = terrain_hcl,
-                                         heat = heat_hcl,
-                                         "blue/white/pink" =
-                                             function(n) diverge_hcl(n, h = c(180, 330), c = 59, l = c(75, 95), power = 1.5),
-                                         "blue/white/red" =
-                                             function(n) diverge_hcl(n, h = c(260, 0), c = 100, l = c(50, 90), power = 1))
-                                   ),
-                                emphasize = function(n, k, cat = TRUE, ncat = 5,
-                                                     fn = if (cat) inzpar()$col.default$cat else inzpar()$col.default$cont) {
-                                    cols <- fn(n)
-                                    if (!cat) {
-                                        ks <- floor(seq(1, n, length = ncat + 1))
-                                        k <- ks[k]:ks[k+1]
-                                    }
-                                    #cols[k] <- iNZightPlots:::shade(cols[k], -0.4)
-                                    cols[-k] <- iNZightPlots:::shade(cols[-k], 0.7)
-                                    cols
-                                }),
-                       EMPH.LEVEL = 0,
-                       timer = NULL)
+                              .viridis =
+                                requireNamespace("viridis", quietly = TRUE),
+                              .rcb =
+                                requireNamespace("RColorBrewer", quietly = TRUE)) {
+            initFields(
+                GUI = gui,
+                bgColours = list(
+                    white = "white",
+                    lightgrey = "#eeeeee",
+                    mediumgrey = "grey50",
+                    darkgrey = "grey20",
+                    black = "black",
+                    wheat = "wheat",
+                    bisque = "bisque",
+                    cornsilk = "cornsilk"
+                ),
+                pointColours = list(
+                    grey = "grey50",
+                    darkgrey = "grey20",
+                    lightgrey = "grey80",
+                    blue = "#004b85",
+                    red = "red",
+                    green = "green4"
+                ),
+                barColours = list(
+                    darkgreen = "darkgreen",
+                    lightgreen = "palegreen3",
+                    darkblue = "#004b85",
+                    lightblue = "steelblue2",
+                    red = "darkred",
+                    pink = "pink",
+                    lightgrey = "grey80",
+                    grey = "grey50",
+                    darkgrey = "grey20"
+                ),
+                colourPalettes = list(
+                    cat = iNZightPlots::cat_palette_names(),
+                    cont = iNZightPlots::const_palette_names(),
+                    emphasize = iNZightPlots::emphasize_pal_colour
+                ),
+                EMPH.LEVEL = 0,
+                timer = NULL
+            ) # end initFields
+
             if (!is.null(GUI)) {
                 updateSettings()
 
                 modwin <- GUI$initializeModuleWindow(scroll = FALSE)
                 mainGrp <- modwin$body
-
-                # mainGrp <- gvbox(container = GUI$moduleWindow$body, expand = TRUE, fill = TRUE)
 
                 topGrp <- modwin$header
                 lbl <- glabel("Add to Plot :")
@@ -140,46 +91,59 @@ iNZPlotModWin <- setRefClass(
                 radioGrp <<- ggroup(horizontal = FALSE,
                                     expand = TRUE)
 
-                optGrp <<- ggroup(horizontal = FALSE, expand = TRUE, use.scrollwindow = "y")
+                optGrp <<- ggroup(
+                    horizontal = FALSE,
+                    expand = TRUE,
+                    use.scrollwindow = "y"
+                )
                 add(topGrp, lbl)
                 add(topGrp, radioGrp, expand = TRUE, fill = TRUE)
 
                 add(mainGrp, optGrp, expand = TRUE)
 
                 ## auto update checkbox
-                
-                ## If sample size is too big, use a button instead of automatically apply changes
+
+                ## If sample size is too big, use a button instead of
+                ## automatically apply changes
                 auto <<- nrow(GUI$getActiveData()) < 100000
                 autoGrp <- ggroup(horizontal = TRUE, fill = TRUE)
                 addSpring(autoGrp)
-                autoChk <- gcheckbox("Update automatically", checked = auto, cont = autoGrp)
-                updateBtn <- gbutton("Update Plot", fill = TRUE,
-                                     cont = autoGrp,
-                                     handler = function(h, ...) updateEverything(TRUE))
+                autoChk <- gcheckbox("Update automatically",
+                    checked = auto, cont = autoGrp)
+                updateBtn <- gbutton("Update Plot",
+                    fill = TRUE,
+                    cont = autoGrp,
+                    handler = function(h, ...) updateEverything(TRUE)
+                )
                 visible(updateBtn) <- !auto
                 add(mainGrp, autoGrp, expand = FALSE, anchor = c(0, 1))
                 addHandlerChanged(autoChk, handler = function(h, ...) {
                     auto <<- svalue(h$obj)
                     visible(updateBtn) <- !svalue(h$obj)
                 })
-                
+
                 btnGrp <- modwin$footer
 
-                helpButton <- gbutton("Help", expand = TRUE, fill = TRUE,
-                                      cont = btnGrp,
-                                      handler = function(h, ...) {
-                                          browseURL("https://www.stat.auckland.ac.nz/~wild/iNZight/user_guides/plot_options/?topic=add_to_plot")
-                                      })
+                helpButton <- gbutton("Help",
+                    expand = TRUE,
+                    fill = TRUE,
+                    cont = btnGrp,
+                    handler = function(h, ...) {
+                        browseURL("https://www.stat.auckland.ac.nz/~wild/iNZight/user_guides/plot_options/?topic=add_to_plot")
+                    }
+                )
 
-                okButton <<- gbutton("Home", expand = TRUE, fill = TRUE,
-                                     cont = btnGrp,
-                                     handler = function(h, ...) {
-                                         ## delete the module window
-                                         delete(GUI$leftMain, GUI$leftMain$children[[2]])
-                                         ## display the default view (data, variable, etc.)
-                                         visible(GUI$gp1) <<- TRUE
-                                     })
-
+                okButton <<- gbutton("Home",
+                    expand = TRUE,
+                    fill = TRUE,
+                    cont = btnGrp,
+                    handler = function(h, ...) {
+                        ## delete the module window
+                        delete(GUI$leftMain, GUI$leftMain$children[[2]])
+                        ## display the default view (data, variable, etc.)
+                        visible(GUI$gp1) <<- TRUE
+                    }
+                )
             }
         },
         ## up the curSet class variable
@@ -196,15 +160,18 @@ iNZPlotModWin <- setRefClass(
                 return()
             }
             ## remove random ordering of points ...
-            GUI$getActiveDoc()$setSettings(list(plot.features = list(order.first = -1)))
+            GUI$getActiveDoc()$setSettings(
+                list(plot.features = list(order.first = -1))
+            )
             updateSettings()
 
             locSet <<- curSet$locate.settings
 
-            updateEverything <<- function(locate = GUI$getActiveDoc()$getSettings()$locate,
-                                         id = GUI$getActiveDoc()$getSettings()$locate.id,
-                                         col = GUI$getActiveDoc()$getSettings()$locate.col,
-                                         ext = GUI$getActiveDoc()$getSettings()$locate.extreme) {
+            updateEverything <<-
+                function(locate = GUI$getActiveDoc()$getSettings()$locate,
+                        id = GUI$getActiveDoc()$getSettings()$locate.id,
+                        col = GUI$getActiveDoc()$getSettings()$locate.col,
+                        ext = GUI$getActiveDoc()$getSettings()$locate.extreme) {
                 if (is.null(id) & is.null(ext)) {
                     locate = NULL
                     id = NULL
@@ -237,7 +204,8 @@ iNZPlotModWin <- setRefClass(
                 curSet$locate.settings <<- locSet
 
                 if (locSet$matchChk) {
-                    levs <- unique(GUI$getActiveData()[highlight, locSet$matchVar])
+                    levs <-
+                        unique(GUI$getActiveData()[highlight, locSet$matchVar])
 
                     if (length(levs) > 1)
                         levs <- paste0("{", paste(levs, collapse = ", "), "}")
@@ -251,16 +219,16 @@ iNZPlotModWin <- setRefClass(
                     subt <- NULL
                 }
 
-                GUI$getActiveDoc()$setSettings(
-                                      list(locate = locate,
-                                           locate.id = unique(id),
-                                           locate.col = col,
-                                           locate.extreme = ext,
-                                           locate.settings = locSet,
-                                           highlight = highlight,
-                                           subtitle = subt,
-                                           plot.features = list(order.first = -1))
-                                  )
+                GUI$getActiveDoc()$setSettings(list(
+                    locate = locate,
+                    locate.id = unique(id),
+                    locate.col = col,
+                    locate.extreme = ext,
+                    locate.settings = locSet,
+                    highlight = highlight,
+                    subtitle = subt,
+                    plot.features = list(order.first = -1)
+                ))
                 updateSettings()
             }
 
@@ -273,7 +241,8 @@ iNZPlotModWin <- setRefClass(
             ii <- ii + 1
 
             txtLabs <- gcheckbox("Text Labels", checked = TRUE)
-            varmenu <- gcombobox(c("id", names(GUI$getActiveData())), selected = 1, expand = TRUE)
+            varmenu <- gcombobox(c("id", names(GUI$getActiveData())),
+                selected = 1, expand = TRUE)
             tbl[ii, 1] <- txtLabs
             tbl[ii, 2, expand = TRUE] <- varmenu
             ii <- ii + 1
@@ -284,7 +253,8 @@ iNZPlotModWin <- setRefClass(
                     svalue(varmenu) <- locSet$txtVar
 
             colLabs <- gcheckbox("Colour Points", checked = FALSE)
-            colmenu <- gcombobox(c("red", "blue", "green4"), selected = 1, editable = TRUE, expand = TRUE)
+            colmenu <- gcombobox(c("red", "blue", "green4"),
+                selected = 1, editable = TRUE, expand = TRUE)
             tbl[ii, 1] <- colLabs
             tbl[ii, 2, expand = TRUE] <- colmenu
             ii <- ii + 1
@@ -299,14 +269,18 @@ iNZPlotModWin <- setRefClass(
             addHandlerChanged(txtLabs, function(h, ...) {
                 enabled(varmenu) <- svalue(txtLabs)  #labMthd, TRUE) == 1
                 v <- svalue(varmenu)
-                locVar <- if (v == "id") 1:nrow(GUI$getActiveData()) else GUI$getActiveData()[, v]
+                locVar <-
+                    if (v == "id") 1:nrow(GUI$getActiveData())
+                    else GUI$getActiveData()[, v]
                 updateEverything(
                     locate = if (svalue(txtLabs)) locVar else NULL
                 )
             })
             addHandlerChanged(varmenu, function(h, ...) {
                 v <- svalue(varmenu)
-                locVar <- if (v == "id") 1:nrow(GUI$getActiveData()) else GUI$getActiveData()[, v]
+                locVar <-
+                    if (v == "id") 1:nrow(GUI$getActiveData())
+                    else GUI$getActiveData()[, v]
                 updateEverything(
                     locate = if (svalue(txtLabs)) locVar else NULL
                 )
@@ -348,7 +322,8 @@ iNZPlotModWin <- setRefClass(
                 if (svalue(matchChk)) {
                     ## Add all the points:
 
-                    matchVar <- as.character(GUI$getActiveData()[, svalue(matchVar)])
+                    matchVar <-
+                        as.character(GUI$getActiveData()[, svalue(matchVar)])
                     matchVar[is.na(matchVar)] <- "missing"
 
                     matchLvls <- unique(matchVar[locSet$ID])
@@ -363,7 +338,8 @@ iNZPlotModWin <- setRefClass(
             })
 
             addHandlerChanged(matchVar, function(h, ...) {
-                matchVar <- as.character(GUI$getActiveData()[, svalue(matchVar)])
+                matchVar <-
+                    as.character(GUI$getActiveData()[, svalue(matchVar)])
                 matchVar[is.na(matchVar)] <- "missing"
 
                 matchLvls <- unique(matchVar[locSet$ID])
@@ -423,13 +399,17 @@ iNZPlotModWin <- setRefClass(
                     if (v == "id") 1:nrow(GUI$getActiveData())
                     else GUI$getActiveData()[, v]
 
-                matchVar <- as.character(GUI$getActiveData()[, svalue(matchVar)])
+                matchVar <-
+                    as.character(GUI$getActiveData()[, svalue(matchVar)])
                 matchVar[is.na(matchVar)] <- "missing"
 
                 ## Entire data set - ignore missing values etc etc
-                d <- data.frame(x = curSet$x,
-                                locate = locVar, id = 1:nrow(GUI$getActiveData()),
-                                match = matchVar)
+                d <- data.frame(
+                    x = curSet$x,
+                    locate = locVar,
+                    id = 1:nrow(GUI$getActiveData()),
+                    match = matchVar
+                )
                 if (!dot)
                     d$y <- curSet$y
 
@@ -452,17 +432,24 @@ iNZPlotModWin <- setRefClass(
                 if (!is.null(curSet$g2))
                     isNA <- isNA | is.na(curSet$g2)
 
-                dp <- grid.get(ifelse(dot, "inz-DOTPOINTS.1.1.1", "inz-SCATTERPOINTS.1.1"))
+                dp <- grid.get(ifelse(dot,
+                    "inz-DOTPOINTS.1.1.1",
+                    "inz-SCATTERPOINTS.1.1"
+                ))
                 d <- d[w & !isNA, ]
                 d$x <- as.numeric(dp$x)
                 d$y <- as.numeric(dp$y)
 
                 if (dot) {
                     order <- attr(GUI$curPlot[[1]][[1]]$toplot[[1]], "order")
-                    d[, !colnames(d) %in% c("x", "y")] <- d[order, !colnames(d) %in% c("x", "y")]
+                    d[, !colnames(d) %in% c("x", "y")] <-
+                        d[order, !colnames(d) %in% c("x", "y")]
                 }
 
-                seekViewport(ifelse(dot, "VP:plotregion", "VP:locate.these.points"))
+                seekViewport(ifelse(dot,
+                    "VP:plotregion",
+                    "VP:locate.these.points"
+                ))
 
                 blockHandlers(btn)
                 oldVal <- svalue(btn)
@@ -512,7 +499,10 @@ iNZPlotModWin <- setRefClass(
                         pid <- o$id
                     }
 
-                    newID <- if (svalue(txtLabs) | !match.all) c(curSet$locate.id, pid) else pid
+                    newID <-
+                        if (svalue(txtLabs) | !match.all)
+                            c(curSet$locate.id, pid)
+                        else pid
                 }
 
                 updateEverything(
@@ -523,27 +513,46 @@ iNZPlotModWin <- setRefClass(
             }
 
             if (attr(GUI$curPlot, "nplots") > 1) {
-                locateButton <- glabel("Cannot locate using mouse for multiple graphs.", cont =
-                                                                                             selectGrp)
+                locateButton <-
+                    glabel("Cannot locate using mouse for multiple graphs.",
+                        cont = selectGrp)
                 svalue(selectMthd, TRUE) <- 2
             } else if (dot & is.factor(curSet$y)) {
-                locateButton <- glabel("Cannot locate when Variable 2 is a factor.", cont = selectGrp)
+                locateButton <-
+                    glabel("Cannot locate when Variable 2 is a factor.",
+                        cont = selectGrp)
                 svalue(selectMthd, TRUE) <- 2
             } else {
-                locateButton <- gbutton("Click to Locate ...", cont = selectGrp)
+                locateButton <- gbutton("Click to Locate ...",
+                    cont = selectGrp)
                 addHandlerClicked(locateButton, function(h, ...) {
                     locator(h, btn = locateButton, dot = dot)
                 })
             }
 
-            selectListGrp <- ggroup(FALSE, cont = selectGrp, expand = TRUE, fill = TRUE)
+            selectListGrp <- ggroup(FALSE,
+                cont = selectGrp,
+                expand = TRUE,
+                fill = TRUE
+            )
 
-            selectList <- ggroup(TRUE, cont = selectListGrp, expand = TRUE, fill = TRUE)
+            selectList <- ggroup(TRUE,
+                cont = selectListGrp,
+                expand = TRUE,
+                fill = TRUE
+            )
             selectLab <- glabel("Variable: ", cont = selectList)
-            selectVar <- gcombobox(colnames(GUI$getActiveData()), selected = 0, cont = selectList,
-                                   expand = TRUE)
+            selectVar <- gcombobox(colnames(GUI$getActiveData()),
+                selected = 0,
+                cont = selectList,
+                expand = TRUE
+            )
 
-            selectSlideGrp <- ggroup(TRUE, cont = selectListGrp, expand = FALSE, fill = TRUE)
+            selectSlideGrp <- ggroup(TRUE,
+                cont = selectListGrp,
+                expand = FALSE,
+                fill = TRUE
+            )
             selectGo <- gbutton("Select values ...", cont = selectList)
 
             enabled(selectGo) <- svalue(selectVar, TRUE) > 0
@@ -556,17 +565,32 @@ iNZPlotModWin <- setRefClass(
                     selectSlideGrp$remove_child(selectSlideGrp$children[[1]])
 
                 if (is.factor(selVar) | (length(unique(selVar)) <= 20)) {
-                    nn <- if (is.factor(selVar)) length(levels(selVar)) else length(unique(selVar))
-                    selectSlide <- gslider(if (is.factor(selVar)) levels(selVar) else unique(selVar),
-                                           cont = selectSlideGrp, expand = TRUE, fill = TRUE)
+                    nn <-
+                        if (is.factor(selVar)) length(levels(selVar))
+                        else length(unique(selVar))
+                    selectSlide <- gslider(
+                        if (is.factor(selVar)) levels(selVar)
+                        else unique(selVar),
+                        cont = selectSlideGrp,
+                        expand = TRUE,
+                        fill = TRUE
+                    )
 
                     addHandlerChanged(selectSlide, function(h, ...) {
-                        ids <- which(GUI$getActiveData()[, svalue(selectVar)] == svalue(selectSlide))
+                        ids <-
+                            which(GUI$getActiveData()[, svalue(selectVar)] ==
+                                svalue(selectSlide))
                         locSet$ID <<- ids
 
                         if (svalue(matchChk)) {
-                            levs <- unique(as.character(GUI$getActiveData()[ids, svalue(matchVar)]))
-                            ids <- which(GUI$getActiveData()[, svalue(matchVar)] %in% levs)
+                            levs <-
+                                unique(as.character(
+                                    GUI$getActiveData()[ids, svalue(matchVar)]
+                                ))
+                            ids <- which(
+                                GUI$getActiveData()[, svalue(matchVar)] %in%
+                                    levs
+                            )
                         }
 
                         v <- svalue(varmenu)
@@ -585,21 +609,29 @@ iNZPlotModWin <- setRefClass(
             })
 
 
-            extremeGrp <- ggroup(FALSE, cont = selectGrp, expand = TRUE, fill = TRUE)
+            extremeGrp <- ggroup(FALSE,
+                cont = selectGrp, expand = TRUE, fill = TRUE)
             if (dot) {
-                extremePts <- ggroup(FALSE, cont = extremeGrp, expand = TRUE, fill = TRUE)
+                extremePts <- ggroup(FALSE,
+                    cont = extremeGrp, expand = TRUE, fill = TRUE)
 
-                lowerG <- ggroup(cont = extremePts, expand = TRUE, fill = TRUE)
+                lowerG <- ggroup(
+                    cont = extremePts, expand = TRUE, fill = TRUE)
                 lowerLab <- glabel("N Lower: ", cont = lowerG)
-                nlowerSld <- gslider(0, 20, expand = TRUE, fill = TRUE, cont = lowerG)
+                nlowerSld <- gslider(0, 20,
+                    expand = TRUE, fill = TRUE, cont = lowerG)
 
-                upperG <- ggroup(cont = extremePts, expand = TRUE, fill = TRUE)
+                upperG <- ggroup(
+                    cont = extremePts, expand = TRUE, fill = TRUE)
                 upperLab <- glabel("N Upper: ", cont = upperG)
-                nupperSld <- gslider(0, 20, expand = TRUE, fill = TRUE, cont = upperG)
+                nupperSld <- gslider(0, 20,
+                    expand = TRUE, fill = TRUE, cont = upperG)
 
                 updateMe <- function(h, ...) {
                     v <- svalue(varmenu)
-                    locVar <- if (v == "id") 1:nrow(GUI$getActiveData()) else GUI$getActiveData()[, v]
+                    locVar <-
+                        if (v == "id") 1:nrow(GUI$getActiveData())
+                        else GUI$getActiveData()[, v]
                     updateEverything(
                         locate = if (svalue(txtLabs)) locVar else NULL,
                         id = NULL,
@@ -607,18 +639,23 @@ iNZPlotModWin <- setRefClass(
                         ext = c(svalue(nlowerSld), svalue(nupperSld))
                     )
 
-                    enabled(addPts) <- svalue(nlowerSld) > 0 | svalue(nupperSld) > 0
+                    enabled(addPts) <-
+                        svalue(nlowerSld) > 0 | svalue(nupperSld) > 0
                 }
                 addHandlerChanged(nlowerSld, updateMe)
                 addHandlerChanged(nupperSld, updateMe)
             } else {
-                extremePts <- ggroup(cont = extremeGrp, expand = TRUE, fill = TRUE)
+                extremePts <- ggroup(
+                    cont = extremeGrp, expand = TRUE, fill = TRUE)
                 extLab <- glabel("Number of points: ", cont = extremePts)
                 extN <- gslider(0, 20, cont = extremePts, expand = TRUE)
-                if (!is.null(curSet$locate.extreme)) svalue(extN) <- curSet$locate.extreme
+                if (!is.null(curSet$locate.extreme)) svalue(extN) <-
+                    curSet$locate.extreme
                 addHandlerChanged(extN, handler = function(h, ...) {
                     v <- svalue(varmenu)
-                    locVar <- if (v == "id") 1:nrow(GUI$getActiveData()) else GUI$getActiveData()[, v]
+                    locVar <-
+                        if (v == "id") 1:nrow(GUI$getActiveData())
+                        else GUI$getActiveData()[, v]
 
                     updateEverything(
                         locate = if (svalue(txtLabs)) locVar else NULL,
@@ -629,10 +666,18 @@ iNZPlotModWin <- setRefClass(
                     enabled(addPts) <- svalue(extN) > 0
                 })
             }
-            addPts <- gbutton("Save these points ...", cont = extremeGrp, expand = FALSE, anchor = c(0, 1))
-            enabled(addPts) <- if (dot) svalue(nlowerSld) > 0 | svalue(nupperSld) > 0 else svalue(extN) > 0
+            addPts <- gbutton("Save these points ...",
+                cont = extremeGrp, expand = FALSE, anchor = c(0, 1))
+            enabled(addPts) <-
+                if (dot) svalue(nlowerSld) > 0 | svalue(nupperSld) > 0
+                else svalue(extN) > 0
 
-            extLabel <- glabel("NOTE: related points wont be located until\nyou click the above button.")
+            extLabel <- glabel(
+                paste(sep = "\n",
+                    "NOTE: related points wont be located until",
+                    "you click the above button."
+                )
+            )
             font(extLabel) <- list(family = "normal", size = 7)
             add(extremeGrp, extLabel, anchor = c(-1, -1))
 
@@ -641,18 +686,24 @@ iNZPlotModWin <- setRefClass(
                 ## drop the last 3 pieces (gen, xlim, ylim)
                 cp <- cp[1:(length(cp) - 3)]
                 if (dot) {
-                    ids <- sapply(cp, function(p) sapply(p, function(q) sapply(q$toplot, function(r) r$extreme.ids)))
+                    ids <- sapply(cp, function(p)
+                        sapply(p, function(q) sapply(q$toplot, function(r)
+                            r$extreme.ids)))
                 } else {
-                    ids <- sapply(cp, function(p) sapply(p, function(q) q$extreme.ids))
+                    ids <- sapply(cp, function(p) sapply(p,
+                        function(q) q$extreme.ids))
                 }
                 ids <- sapply(ids[!sapply(ids, is.null)], function(x) x)
 
                 locSet$ID <<- ids
                 v <- svalue(varmenu)
-                locVar <- if (v == "id") 1:nrow(GUI$getActiveData()) else GUI$getActiveData()[, v]
+                locVar <-
+                    if (v == "id") 1:nrow(GUI$getActiveData())
+                    else GUI$getActiveData()[, v]
 
                 if (svalue(matchChk)) {
-                    mVar <- as.character(GUI$getActiveData()[, svalue(matchVar)])
+                    mVar <-
+                        as.character(GUI$getActiveData()[, svalue(matchVar)])
                     mVar[is.na(mVar)] <- "missing"
                     mLevs <- unique(mVar[ids])
                     ids <- which(mVar %in% mLevs)
@@ -674,22 +725,30 @@ iNZPlotModWin <- setRefClass(
 
             ## Bring up a new window to allow user to select levels to label:
             addHandlerClicked(selectGo, function(h, ...) {
-                ww <- gwindow("Select levels to label ...", visible = FALSE, width = 200, height = 400,
-                              parent = GUI$win)
+                ww <- gwindow("Select levels to label ...",
+                    visible = FALSE, width = 200, height = 400,
+                    parent = GUI$win)
                 wg <- ggroup(FALSE, cont = ww)
-                wlbl <- glabel("Select levels to label\n(ctrl for multiple)", cont = wg)
+                wlbl <- glabel("Select levels to label\n(ctrl for multiple)",
+                    cont = wg)
 
-                selectLevels <- gtable(levels(as.factor(GUI$getActiveData()[, svalue(selectVar)])),
-                                       multiple = TRUE, cont = wg, expand = TRUE)
+                selectLevels <- gtable(
+                    levels(as.factor(GUI$getActiveData()[, svalue(selectVar)])),
+                    multiple = TRUE, cont = wg, expand = TRUE)
 
                 wb <- gbutton("Done", cont = wg)
                 addHandlerClicked(wb, function(h, ...) {
-                    ids <-  which(GUI$getActiveData()[, svalue(selectVar)] %in% svalue(selectLevels))
+                    ids <-  which(GUI$getActiveData()[, svalue(selectVar)] %in%
+                        svalue(selectLevels))
                     locSet$ID <<- ids
 
                     if (svalue(matchChk)) {
-                        levs <- unique(as.character(GUI$getActiveData()[ids, svalue(matchVar)]))
-                        ids <- which(GUI$getActiveData()[, svalue(matchVar)] %in% levs)
+                        levs <- unique(as.character(
+                            GUI$getActiveData()[ids, svalue(matchVar)]
+                        ))
+                        ids <- which(
+                            GUI$getActiveData()[, svalue(matchVar)] %in% levs
+                        )
                     }
 
                     v <- svalue(varmenu)
@@ -751,7 +810,8 @@ iNZPlotModWin <- setRefClass(
                 return(NULL)
             } else {
                 lvls <- levels(var)
-                colWin <- gwindow("Select Colours", visible = FALSE, parent = GUI$win)
+                colWin <- gwindow("Select Colours",
+                    visible = FALSE, parent = GUI$win)
                 cgrp <- gvbox(spacing = 5, container = colWin)
                 cgrp$set_borderwidth(5)
                 tbl <- glayout()
@@ -769,8 +829,12 @@ iNZPlotModWin <- setRefClass(
                 current.cols <- GUI$curPlot$gen$col.args$f.cols
 
                 for (k in 1:length(lvls)) {
-                    tbl[jj, 1, expand = TRUE, anchor = c(1, 0)] <- glabel(lvls[k])
-                    tbl[jj, 2] <- gcombobox(items = c(current.cols[k], default.cols), editable = TRUE)
+                    tbl[jj, 1, expand = TRUE, anchor = c(1, 0)] <-
+                        glabel(lvls[k])
+                    tbl[jj, 2] <- gcombobox(
+                        items = c(current.cols[k], default.cols),
+                        editable = TRUE
+                    )
                     jj <- jj + 1
                 }
 
@@ -956,7 +1020,7 @@ iNZPlotMod <- setRefClass(
                 bgColours <<- c(bgColours, list(custom = curSet$bg))
                 bgCols <- c(bgCols, bgColours$custom)
             }
-            bgCol <- gcombobox(names(bgColours), selected = which(bgCols == curSet$bg), 
+            bgCol <- gcombobox(names(bgColours), selected = which(bgCols == curSet$bg),
                                editable = TRUE)
             tbl[ii, 1:2, anchor = c(1, 0), expand = TRUE] <- lbl
             tbl[ii, 3:6, expand = TRUE] <- bgCol
@@ -1136,8 +1200,8 @@ iNZPlotMod <- setRefClass(
                 }
 
                 ## dropdown for colour palette
-                palCont <- gcombobox(names(colourPalettes$cont))
-                palCat <- gcombobox(names(colourPalettes$cat))
+                palCont <- gcombobox(as.character(colourPalettes$cont))
+                palCat <- gcombobox(as.character(colourPalettes$cat))
                 palAdvanced <- gimagebutton(filename = system.file("images/gear.png",
                                                                    package = "iNZight"),
                                             size = "button",
@@ -1363,22 +1427,26 @@ iNZPlotMod <- setRefClass(
                           newSet$col.method <- ifelse(svalue(useRank), "rank", "linear")
                         }
                         newSet$reverse.palette <- svalue(revPal)
+                        palCatName <-
+                            names(colourPalettes$cat)[svalue(palCat, index = TRUE)]
+                        palContName <-
+                            names(colourPalettes$cont)[svalue(palCont, index = TRUE)]
                         if (bars) {
-                          newSet$col.fun <- colourPalettes$cat[[svalue(palCat)]]
+                          newSet$col.fun <- iNZightPlots::inzpalette(palCatName)
                         } else {
                           newSet$col.fun <-
                               if (EMPH.LEVEL > 0)
                                   function(n)
-                                      colourPalettes$emphasize(
+                                      iNZightPlots::emphasize_pal_colour(
                                           n, k = EMPH.LEVEL, cat = is.factor(newSet$colby),
                                           ncat = svalue(cycleN),
                                           fn = if (is.numeric(newSet$colby))
-                                                   colourPalettes$cont[[svalue(palCont)]]
-                                               else colourPalettes$cat[[svalue(palCat)]]
+                                                   iNZightPlots::inzpalette(palContName)
+                                               else iNZightPlots::inzpalette(palCatName)
                                       )
                               else if (is.numeric(newSet$colby))
-                                  colourPalettes$cont[[svalue(palCont)]]
-                              else colourPalettes$cat[[svalue(palCat)]]
+                                  iNZightPlots::inzpalette(palContName)
+                              else iNZightPlots::inzpalette(palCatName)
                         }
 
                         newSet$plot.features <- list(order.first = NULL)
@@ -1439,7 +1507,7 @@ iNZPlotMod <- setRefClass(
                         else
                             curSet$bar.fill
                 }
-                
+
                 if (PLOTTYPE %in% c("dot", "scatter")) {
                     newSet$alpha <- 1 - svalue(transpSlider) / 100
                 }
@@ -1482,7 +1550,7 @@ iNZPlotMod <- setRefClass(
                                       if (timer$started) timer$stop_timer()
                                   timer <<- gtimer(500, function(...) updateEverything(), one.shot = TRUE)
                               })
-            
+
             if (!PLOTTYPE %in% c("bar")) {
                 addHandlerChanged(cexPt,
                                   handler = function(h, ...) {
@@ -1492,12 +1560,12 @@ iNZPlotMod <- setRefClass(
                                       timer <<- gtimer(500, function(...) updateEverything(), one.shot = TRUE)
                                   })
             }
-            
+
             if (PLOTTYPE == "scatter") {
                 addHandlerChanged(sizeVar, handler = function(h, ...) {
                     visible(sizeDesc) <- visible(resizeLbl) <- visible(sizeMethod) <-
                         svalue(sizeVar, index = TRUE) > 1
-                    
+
                     updateEverything()
                 })
                 addHandlerChanged(sizeMethod, handler = function(h, ...) {
@@ -1508,7 +1576,7 @@ iNZPlotMod <- setRefClass(
             if (PLOTTYPE == "hex") {
                 addHandlerChanged(hexStyle, handler = function(h, ...) updateEverything())
             }
-            
+
             if (PLOTTYPE %in% c("scatter", "hex", "dot", "bar", "hist")) {
                 if (bars | hist) {
                     addHandlerChanged(barCol,
@@ -1575,7 +1643,7 @@ iNZPlotMod <- setRefClass(
                                       timer <<- gtimer(500, function(...) updateEverything(), one.shot = TRUE)
                                   })
             }
-            
+
             if (PLOTTYPE %in% c("scatter", "dot")) {
                 addHandlerChanged(pchMatch, handler = function(h, ...) {
                     enabled(symVar) <- enabled(symPch) <- !svalue(pchMatch)
@@ -1600,7 +1668,7 @@ iNZPlotMod <- setRefClass(
                 addHandlerChanged(symLwd, handler = function(h, ...) updateEverything())
                 addHandlerChanged(fillSym, handler = function(h, ...) updateEverything())
             }
-            
+
             add(optGrp, tbl)
         },
         features = function() {
@@ -1759,7 +1827,7 @@ iNZPlotMod <- setRefClass(
                 ## otherwise would have to block/unblock handlers
                 if (!update)
                     return()
-                
+
                 activateOptions()
 
                 ## Things that don't need checking:
@@ -1822,7 +1890,7 @@ iNZPlotMod <- setRefClass(
             addHandlerChanged(trendLinLTY, handler = function(h, ...) updateEverything())
             addHandlerChanged(trendQuadLTY, handler = function(h, ...) updateEverything())
             addHandlerChanged(trendCubLTY, handler = function(h, ...) updateEverything())
-            
+
             addHandlerChanged(trendLinCol,
                               handler = function(h, ...) {
                                   if (!is.null(timer))
@@ -1852,7 +1920,7 @@ iNZPlotMod <- setRefClass(
                                           updateEverything()
                                   }, one.shot = TRUE)
                               })
-            
+
             addHandlerChanged(smooth, function(h, ...) {
                 visible(qsmooth) <- visible(smoothF) <- svalue(smooth)
                 enabled(smoothF) <- !svalue(qsmooth)
@@ -1879,7 +1947,7 @@ iNZPlotMod <- setRefClass(
                                           updateEverything()
                                   }, one.shot = TRUE)
                               })
-            
+
             if (PLOTTYPE == "scatter") {
                 addHandlerChanged(joinPoints, function(h, ...) updateEverything())
                 addHandlerChanged(joinPointsCol,
@@ -1898,11 +1966,11 @@ iNZPlotMod <- setRefClass(
                 if (PLOTTYPE == "scatter")
                     addHandlerChanged(joinPointsBy, function(h, ...) updateEverything())
             }
-            
-            
+
+
             addHandlerChanged(lwdSpin, function(h, ...) updateEverything())
             addHandlerChanged(loe, function(h, ...) updateEverything())
-            
+
             add(optGrp, tbl)
         },
         axes = function() {
