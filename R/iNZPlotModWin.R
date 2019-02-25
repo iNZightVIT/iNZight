@@ -2104,49 +2104,84 @@ iNZPlotMod <- setRefClass(
                     ii <- ii + 1
                 }
             } else {
-              ## Axis Limits
-              tbl[ii,  1:2, anchor = c(-1,-1), expand = TRUE] <- sectionTitle("Axis Limits")
-              ii <- ii + 1
-
-              if (PLOTTYPE %in% c("scatter", "hex", "grid")) {
-                isNA <- is.na(curSet$x) | is.na(curSet$y)
-                xrange <- range(curSet$y[!isNA])
-                yrange <- range(curSet$x[!isNA])
-              } else {
-                isNA <- is.na(curSet$x)
-                xrange <- range(curSet$x[!isNA])
-              }
-
-              xlim <- curSet$xlim
-              if (is.null(xlim)) xlim <- xrange
-
-              if (PLOTTYPE %in% c("scatter", "hex", "grid")) {
-                ylim <- curSet$ylim
-                if (is.null(ylim)) ylim <- yrange
-              }
-
-              lbl <- glabel("x axis :")
-              xlower <- gedit(xlim[1], width = 8)
-              xupper <- gedit(xlim[2], width = 8)
-              tbl[ii, 1:2, expand = TRUE, anchor = c(1, 0)] <- lbl
-              tbl[ii, 3:4, expand = TRUE] <- xlower
-              tbl[ii, 5:6, expand = TRUE] <- xupper
-              ii <- ii + 1
-
-              if (PLOTTYPE %in% c("scatter", "hex", "grid")) {
-                lbl <- glabel("y axis :")
-                ylower <- gedit(ylim[1], width = 8)
-                yupper <- gedit(ylim[2], width = 8)
-                tbl[ii, 1:2, expand = TRUE, anchor = c(1, 0)] <- lbl
-                tbl[ii, 3:4, expand = TRUE] <- ylower
-                tbl[ii, 5:6, expand = TRUE] <- yupper
+                ## Axis Limits
+                tbl[ii,  1:2, anchor = c(-1,-1), expand = TRUE] <- sectionTitle("Axis Limits")
                 ii <- ii + 1
-              }
 
-              errlbl <- glabel("Limits must be numbers.")
-              tbl[ii, 3:6, expand = TRUE, anchor = c(-1, 0)] <- errlbl
-              visible(errlbl) <- FALSE
-              ii <- ii + 1
+                if (PLOTTYPE %in% c("scatter", "hex", "grid")) {
+                    isNA <- is.na(curSet$x) | is.na(curSet$y)
+                    xrange <- range(curSet$y[!isNA])
+                    yrange <- range(curSet$x[!isNA])
+                } else {
+                    isNA <- is.na(curSet$x)
+                    xrange <- range(curSet$x[!isNA])
+                }
+
+                xlim <- curSet$xlim
+                if (is.null(xlim)) xlim <- xrange
+
+                if (PLOTTYPE %in% c("scatter", "hex", "grid")) {
+                    ylim <- curSet$ylim
+                    if (is.null(ylim)) ylim <- yrange
+                }
+
+                lbl <- glabel("x axis :")
+                xlower <- gedit(xlim[1], width = 8)
+                xupper <- gedit(xlim[2], width = 8)
+                tbl[ii, 1:2, expand = TRUE, anchor = c(1, 0)] <- lbl
+                tbl[ii, 3:4, expand = TRUE] <- xlower
+                tbl[ii, 5:6, expand = TRUE] <- xupper
+                ii <- ii + 1
+
+                if (PLOTTYPE %in% c("scatter", "hex", "grid")) {
+                    lbl <- glabel("y axis :")
+                    ylower <- gedit(ylim[1], width = 8)
+                    yupper <- gedit(ylim[2], width = 8)
+                    tbl[ii, 1:2, expand = TRUE, anchor = c(1, 0)] <- lbl
+                    tbl[ii, 3:4, expand = TRUE] <- ylower
+                    tbl[ii, 5:6, expand = TRUE] <- yupper
+                    ii <- ii + 1
+                }
+
+                errlbl <- glabel("Limits must be numbers.")
+                tbl[ii, 3:6, expand = TRUE, anchor = c(-1, 0)] <- errlbl
+                visible(errlbl) <- FALSE
+                ii <- ii + 1
+
+                ## Transform axes (log)
+                tbl[ii,  1:2, anchor = c(-1,-1), expand = TRUE] <-
+                    sectionTitle("Axis Transformation")
+                ii <- ii + 1
+
+                lbl <- glabel("Log (base 10) :")
+                ctrans <- curSet$transform
+                cvn <- curSet$varnames$x
+                if (PLOTTYPE %in% c("scatter", "hex", "grid"))
+                    cvn <- c(cvn, curSet$varnames$y)
+                if (any(sapply(cvn, nchar) > 15)) {
+                    xLog <- gcheckbox("x-variable",
+                        checked = !is.null(ctrans$x) && ctrans$x == "log10"
+                    )
+                    if (PLOTTYPE %in% c("scatter", "hex", "grid"))
+                        yLog <- gcheckbox("y-variable",
+                            checked = !is.null(ctrans$y) && ctrans$x == "log10"
+                        )
+                } else {
+                    XY <- PLOTTYPE %in% c("scatter", "hex", "grid")
+                    xLog <- gcheckbox(curSet$varnames[[ifelse(XY, "y", "x")]],
+                        checked = !is.null(ctrans$x) && ctrans$x == "log10"
+                    )
+                    if (XY)
+                        yLog <- gcheckbox(curSet$varnames$x,
+                            checked = !is.null(ctrans$y) && ctrans$x == "log10"
+                        )
+                }
+                tbl[ii, 1:2, anchor = c(1, 0), expand = TRUE] <- lbl
+                tbl[ii, 3:4, anchor = c(-1, 0), expand = TRUE] <- xLog
+                if (PLOTTYPE %in% c("scatter", "hex", "grid"))
+                    tbl[ii, 5:6, anchor = c(-1, 0), expand = TRUE] <- yLog
+                ii <- ii + 1
+
             }
 
             updateEverything <<- function(update = auto) {
@@ -2156,8 +2191,16 @@ iNZPlotMod <- setRefClass(
                     return()
 
                 ## Things that don't need checking:
-                newSet <- list(main = if (svalue(labMain) == "") NULL else svalue(labMain),
-                               xlab = if (svalue(labXlab) == "") NULL else svalue(labXlab))
+                newSet <- list(
+                    main = if (svalue(labMain) == "") NULL else svalue(labMain),
+                    xlab = if (svalue(labXlab) == "") NULL else svalue(labXlab),
+                    transform = list(
+                        x = if (svalue(xLog)) "log10" else NULL
+                    )
+                )
+
+                if (PLOTTYPE %in% c("scatter", "hex", "grid"))
+                    newSet$transform$y <- if (svalue(yLog)) "log10" else NULL
 
                 if (YAX) newSet$ylab <- if (svalue(labYlab) == "") NULL else svalue(labYlab)
                 if (YAXlbl) newSet$internal.labels <- svalue(intLabs)
@@ -2213,9 +2256,11 @@ iNZPlotMod <- setRefClass(
 
                   visible(errlbl) <- err
                   newSet$xlim <- c(xl, xu)
+
                   if (PLOTTYPE %in% c("scatter", "hex", "grid")) newSet$ylim <- c(yl, yu)
                 }
 
+                print(newSet)
                 GUI$getActiveDoc()$setSettings(newSet)
                 updateSettings()
             }
@@ -2250,9 +2295,11 @@ iNZPlotMod <- setRefClass(
             } else {
               addHandlerKeystroke(xlower, updT)
               addHandlerKeystroke(xupper, updT)
+              addHandlerChanged(xLog, updateEverything())
               if (PLOTTYPE %in% c("scatter", "hex", "grid")) {
                 addHandlerKeystroke(ylower, updT)
                 addHandlerKeystroke(yupper, updT)
+                addHandlerChanged(yLog, updateEverything())
               }
             }
 
