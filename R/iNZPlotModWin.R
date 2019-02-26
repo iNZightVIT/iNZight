@@ -2060,6 +2060,24 @@ iNZPlotMod <- setRefClass(
 
             if (PLOTTYPE == "bar") {
                 ii <- ii + 1
+                tbl[ii, 1:2, anchor = c(-1, -1), expand = TRUE] <-
+                    sectionTitle("Y axis options")
+
+                ## percentages or counts
+                ii <- ii + 1
+                lbl <- glabel("Display values as: ")
+                ycounts <- gradio(
+                    c("Percentages (%)", "Counts"),
+                    selected = 1 + curSet$bar.counts,
+                    horizontal = TRUE
+                )
+                tbl[ii, 1:2,
+                    expand = TRUE,
+                    fill = TRUE,
+                    anchor = c(1, 0)] <- lbl
+                tbl[ii, 3:6, expand = TRUE] <- ycounts
+
+                ii <- ii + 1
                 if (length(levels(curSet$x)) > 2) {
                     ## Number of bars
                     tbl[ii,  1:2, anchor = c(-1,-1), expand = TRUE] <- sectionTitle("Number of Bars")
@@ -2208,6 +2226,7 @@ iNZPlotMod <- setRefClass(
                 }
 
                 if (PLOTTYPE == "bar") {
+                    newSet$bar.counts <- svalue(ycounts, index = TRUE) == 2
                     if (length(levels(curSet$x)) > 2) {
                         newSet$zoombars <-
                             if (svalue(NBARS) == length(levels(curSet$x)) & svalue(START, index = TRUE) == 1)
@@ -2295,45 +2314,46 @@ iNZPlotMod <- setRefClass(
                 timer <<- gtimer(800, function(...) updateEverything(), one.shot = TRUE)
             }
             if (PLOTTYPE == "bar") {
-              if (length(levels(curSet$x)) > 2) {
-                addHandlerChanged(NBARS, function(h, ...) updateEverything())
-                addHandlerChanged(START, function(h, ...) updateEverything())
-              }
+                addHandlerChanged(ycounts, function(h, ...) updateEverything())
+                if (length(levels(curSet$x)) > 2) {
+                    addHandlerChanged(NBARS, function(h, ...) updateEverything())
+                    addHandlerChanged(START, function(h, ...) updateEverything())
+                }
             } else {
-              addHandlerKeystroke(xlower, updT)
-              addHandlerKeystroke(xupper, updT)
-              addHandlerChanged(xLog, function(h, ...) {
-                # log/exp axis limits
-                blockHandlers(xlower)
-                blockHandlers(xupper)
-                svalue(xlower) <-
-                    if (svalue(xLog)) signif(log(as.numeric(svalue(xlower))), 5)
-                    else signif(exp(as.numeric(svalue(xlower))), 5)
-                svalue(xupper) <-
-                    if (svalue(xLog)) signif(log(as.numeric(svalue(xupper))), 5)
-                    else signif(exp(as.numeric(svalue(xupper))), 5)
-                unblockHandlers(xlower)
-                unblockHandlers(xupper)
-                updateEverything()
-              })
-              if (PLOTTYPE %in% c("scatter", "hex", "grid")) {
-                addHandlerKeystroke(ylower, updT)
-                addHandlerKeystroke(yupper, updT)
-                addHandlerChanged(yLog, function(h, ...) {
+                addHandlerKeystroke(xlower, updT)
+                addHandlerKeystroke(xupper, updT)
+                addHandlerChanged(xLog, function(h, ...) {
                     # log/exp axis limits
-                    blockHandlers(ylower)
-                    blockHandlers(yupper)
-                    svalue(ylower) <-
-                        if (svalue(yLog)) signif(log(as.numeric(svalue(ylower))), 5)
-                        else signif(exp(as.numeric(svalue(ylower))), 5)
-                    svalue(yupper) <-
-                        if (svalue(yLog)) signif(log(as.numeric(svalue(yupper))), 5)
-                        else signif(exp(as.numeric(svalue(yupper))), 5)
-                    unblockHandlers(ylower)
-                    unblockHandlers(yupper)
+                    blockHandlers(xlower)
+                    blockHandlers(xupper)
+                    svalue(xlower) <-
+                        if (svalue(xLog)) signif(log(as.numeric(svalue(xlower))), 5)
+                        else signif(exp(as.numeric(svalue(xlower))), 5)
+                    svalue(xupper) <-
+                        if (svalue(xLog)) signif(log(as.numeric(svalue(xupper))), 5)
+                        else signif(exp(as.numeric(svalue(xupper))), 5)
+                    unblockHandlers(xlower)
+                    unblockHandlers(xupper)
                     updateEverything()
                 })
-              }
+                if (PLOTTYPE %in% c("scatter", "hex", "grid")) {
+                    addHandlerKeystroke(ylower, updT)
+                    addHandlerKeystroke(yupper, updT)
+                    addHandlerChanged(yLog, function(h, ...) {
+                        # log/exp axis limits
+                        blockHandlers(ylower)
+                        blockHandlers(yupper)
+                        svalue(ylower) <-
+                            if (svalue(yLog)) signif(log(as.numeric(svalue(ylower))), 5)
+                            else signif(exp(as.numeric(svalue(ylower))), 5)
+                        svalue(yupper) <-
+                            if (svalue(yLog)) signif(log(as.numeric(svalue(yupper))), 5)
+                            else signif(exp(as.numeric(svalue(yupper))), 5)
+                        unblockHandlers(ylower)
+                        unblockHandlers(yupper)
+                        updateEverything()
+                    })
+                }
             }
 
             add(optGrp, tbl)
