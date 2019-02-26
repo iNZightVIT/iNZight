@@ -147,7 +147,7 @@ iNZPlotModWin <- setRefClass(
                 add(mainGrp, optGrp, expand = TRUE)
 
                 ## auto update checkbox
-                
+
                 ## If sample size is too big, use a button instead of automatically apply changes
                 auto <<- nrow(GUI$getActiveData()) < 100000
                 autoGrp <- ggroup(horizontal = TRUE, fill = TRUE)
@@ -162,7 +162,7 @@ iNZPlotModWin <- setRefClass(
                     auto <<- svalue(h$obj)
                     visible(updateBtn) <- !svalue(h$obj)
                 })
-                
+
                 btnGrp <- modwin$footer
 
                 helpButton <- gbutton("Help", expand = TRUE, fill = TRUE,
@@ -956,7 +956,7 @@ iNZPlotMod <- setRefClass(
                 bgColours <<- c(bgColours, list(custom = curSet$bg))
                 bgCols <- c(bgCols, bgColours$custom)
             }
-            bgCol <- gcombobox(names(bgColours), selected = which(bgCols == curSet$bg), 
+            bgCol <- gcombobox(names(bgColours), selected = which(bgCols == curSet$bg),
                                editable = TRUE)
             tbl[ii, 1:2, anchor = c(1, 0), expand = TRUE] <- lbl
             tbl[ii, 3:6, expand = TRUE] <- bgCol
@@ -1125,7 +1125,7 @@ iNZPlotMod <- setRefClass(
                     ii <- ii + 1
 
                     ## rank instead of linear scale
-                    useRank <- gcheckbox("Use Ranks", checked = curSet$col.method == "rank")
+                    useRank <- gcheckbox("Use Percentiles", checked = curSet$col.method == "rank")
                     tbl[ii, 5:6, anchor = c(-1, 0)] <- useRank
                     ii <- ii + 1
                 }
@@ -1439,7 +1439,7 @@ iNZPlotMod <- setRefClass(
                         else
                             curSet$bar.fill
                 }
-                
+
                 if (PLOTTYPE %in% c("dot", "scatter")) {
                     newSet$alpha <- 1 - svalue(transpSlider) / 100
                 }
@@ -1482,7 +1482,7 @@ iNZPlotMod <- setRefClass(
                                       if (timer$started) timer$stop_timer()
                                   timer <<- gtimer(500, function(...) updateEverything(), one.shot = TRUE)
                               })
-            
+
             if (!PLOTTYPE %in% c("bar")) {
                 addHandlerChanged(cexPt,
                                   handler = function(h, ...) {
@@ -1492,12 +1492,12 @@ iNZPlotMod <- setRefClass(
                                       timer <<- gtimer(500, function(...) updateEverything(), one.shot = TRUE)
                                   })
             }
-            
+
             if (PLOTTYPE == "scatter") {
                 addHandlerChanged(sizeVar, handler = function(h, ...) {
                     visible(sizeDesc) <- visible(resizeLbl) <- visible(sizeMethod) <-
                         svalue(sizeVar, index = TRUE) > 1
-                    
+
                     updateEverything()
                 })
                 addHandlerChanged(sizeMethod, handler = function(h, ...) {
@@ -1508,7 +1508,7 @@ iNZPlotMod <- setRefClass(
             if (PLOTTYPE == "hex") {
                 addHandlerChanged(hexStyle, handler = function(h, ...) updateEverything())
             }
-            
+
             if (PLOTTYPE %in% c("scatter", "hex", "dot", "bar", "hist")) {
                 if (bars | hist) {
                     addHandlerChanged(barCol,
@@ -1575,7 +1575,7 @@ iNZPlotMod <- setRefClass(
                                       timer <<- gtimer(500, function(...) updateEverything(), one.shot = TRUE)
                                   })
             }
-            
+
             if (PLOTTYPE %in% c("scatter", "dot")) {
                 addHandlerChanged(pchMatch, handler = function(h, ...) {
                     enabled(symVar) <- enabled(symPch) <- !svalue(pchMatch)
@@ -1600,7 +1600,7 @@ iNZPlotMod <- setRefClass(
                 addHandlerChanged(symLwd, handler = function(h, ...) updateEverything())
                 addHandlerChanged(fillSym, handler = function(h, ...) updateEverything())
             }
-            
+
             add(optGrp, tbl)
         },
         features = function() {
@@ -1759,7 +1759,7 @@ iNZPlotMod <- setRefClass(
                 ## otherwise would have to block/unblock handlers
                 if (!update)
                     return()
-                
+
                 activateOptions()
 
                 ## Things that don't need checking:
@@ -1822,7 +1822,7 @@ iNZPlotMod <- setRefClass(
             addHandlerChanged(trendLinLTY, handler = function(h, ...) updateEverything())
             addHandlerChanged(trendQuadLTY, handler = function(h, ...) updateEverything())
             addHandlerChanged(trendCubLTY, handler = function(h, ...) updateEverything())
-            
+
             addHandlerChanged(trendLinCol,
                               handler = function(h, ...) {
                                   if (!is.null(timer))
@@ -1852,7 +1852,7 @@ iNZPlotMod <- setRefClass(
                                           updateEverything()
                                   }, one.shot = TRUE)
                               })
-            
+
             addHandlerChanged(smooth, function(h, ...) {
                 visible(qsmooth) <- visible(smoothF) <- svalue(smooth)
                 enabled(smoothF) <- !svalue(qsmooth)
@@ -1879,7 +1879,7 @@ iNZPlotMod <- setRefClass(
                                           updateEverything()
                                   }, one.shot = TRUE)
                               })
-            
+
             if (PLOTTYPE == "scatter") {
                 addHandlerChanged(joinPoints, function(h, ...) updateEverything())
                 addHandlerChanged(joinPointsCol,
@@ -1898,11 +1898,11 @@ iNZPlotMod <- setRefClass(
                 if (PLOTTYPE == "scatter")
                     addHandlerChanged(joinPointsBy, function(h, ...) updateEverything())
             }
-            
-            
+
+
             addHandlerChanged(lwdSpin, function(h, ...) updateEverything())
             addHandlerChanged(loe, function(h, ...) updateEverything())
-            
+
             add(optGrp, tbl)
         },
         axes = function() {
