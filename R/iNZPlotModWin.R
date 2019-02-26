@@ -1189,7 +1189,7 @@ iNZPlotMod <- setRefClass(
                     ii <- ii + 1
 
                     ## rank instead of linear scale
-                    useRank <- gcheckbox("Use Ranks", checked = curSet$col.method == "rank")
+                    useRank <- gcheckbox("Use Percentiles", checked = curSet$col.method == "rank")
                     tbl[ii, 5:6, anchor = c(-1, 0)] <- useRank
                     ii <- ii + 1
                 }
