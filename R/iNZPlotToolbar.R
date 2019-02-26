@@ -57,7 +57,7 @@ iNZPlotToolbar <- setRefClass(
         makeToolbar = function(btns = c("add", "rmv", "inf", "export"),
                                refresh.fn = NULL,
                                export.fn = NULL,
-                               extra, 
+                               extra,
                                cont = iconbar) {
 
             ## link the menu:
@@ -225,6 +225,8 @@ iNZPlotToolbar <- setRefClass(
                          title = "No plot!")
             else
                 iNZPlotMod$new(GUI)
+
+            invisible(NULL)
         },
         addInf = function() {
             if (!is.null(GUI$getActiveDoc()$getModel()$getDesign())) {
