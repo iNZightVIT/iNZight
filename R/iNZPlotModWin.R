@@ -2118,11 +2118,11 @@ iNZPlotMod <- setRefClass(
                 }
 
                 xlim <- curSet$xlim
-                if (is.null(xlim)) xlim <- xrange
+                if (is.null(xlim)) xlim <- signif(xrange, 5)
 
                 if (PLOTTYPE %in% c("scatter", "hex", "grid")) {
                     ylim <- curSet$ylim
-                    if (is.null(ylim)) ylim <- yrange
+                    if (is.null(ylim)) ylim <- signif(yrange, 5)
                 }
 
                 lbl <- glabel("x axis :")
@@ -2194,13 +2194,8 @@ iNZPlotMod <- setRefClass(
                 newSet <- list(
                     main = if (svalue(labMain) == "") NULL else svalue(labMain),
                     xlab = if (svalue(labXlab) == "") NULL else svalue(labXlab),
-                    transform = list(
-                        x = if (svalue(xLog)) "log10" else NULL
-                    )
+                    transform = list()
                 )
-
-                if (PLOTTYPE %in% c("scatter", "hex", "grid"))
-                    newSet$transform$y <- if (svalue(yLog)) "log10" else NULL
 
                 if (YAX) newSet$ylab <- if (svalue(labYlab) == "") NULL else svalue(labYlab)
                 if (YAXlbl) newSet$internal.labels <- svalue(intLabs)
@@ -2221,46 +2216,58 @@ iNZPlotMod <- setRefClass(
                                 c(svalue(START, index = TRUE), svalue(NBARS))
                     }
                 } else {
-                  err <- FALSE
-                  xl <- suppressWarnings(as.numeric(svalue(xlower)))
-                  if (is.na(xl)) {
-                      xl <- if (svalue(xlower) == "") xrange[1] else xlim[1]
-                      if (svalue(xlower) != "") err <- TRUE
-                  }
-                  xu <- suppressWarnings(as.numeric(svalue(xupper)))
-                  if (is.na(xu)) {
-                      xu <- if (svalue(xupper) == "") xrange[2] else xlim[2]
-                      if (svalue(xupper) != "") err <- TRUE
-                  }
-                  if (xl == xu) {
-                      xl <- xrange[1]
-                      xu <- xrange[2]
-                  }
-
-                  if (PLOTTYPE %in% c("scatter", "hex", "grid")) {
-                    yl <- suppressWarnings(as.numeric(svalue(ylower)))
-                    if (is.na(yl)) {
-                        yl <- if (svalue(ylower) == "") yrange[1] else ylim[1]
-                        if (svalue(ylower) != "") err <- TRUE
+                    err <- FALSE
+                    xl <- suppressWarnings(as.numeric(svalue(xlower)))
+                    if (is.na(xl)) {
+                        xl <- if (svalue(xlower) == "") xrange[1] else xlim[1]
+                        if (svalue(xlower) != "") err <- TRUE
                     }
-                    yu <- suppressWarnings(as.numeric(svalue(yupper)))
-                    if (is.na(yu)) {
-                        yu <- if (svalue(yupper) == "") yrange[2] else ylim[2]
-                        if (svalue(yupper) != "") err <- TRUE
+                    xu <- suppressWarnings(as.numeric(svalue(xupper)))
+                    if (is.na(xu)) {
+                        xu <- if (svalue(xupper) == "") xrange[2] else xlim[2]
+                        if (svalue(xupper) != "") err <- TRUE
                     }
-                    if (yl == yu) {
-                        yl <- yrange[1]
-                        yu <- yrange[2]
+                    if (xl == xu) {
+                        xl <- xrange[1]
+                        xu <- xrange[2]
                     }
-                  }
 
-                  visible(errlbl) <- err
-                  newSet$xlim <- c(xl, xu)
+                    # need to explicitely add NULL to the list
+                    newSet$transform["x"] <- list(
+                        if (svalue(xLog)) "log10" else NULL
+                    )
 
-                  if (PLOTTYPE %in% c("scatter", "hex", "grid")) newSet$ylim <- c(yl, yu)
+                    if (PLOTTYPE %in% c("scatter", "hex", "grid")) {
+                        yl <- suppressWarnings(as.numeric(svalue(ylower)))
+                        if (is.na(yl)) {
+                            yl <- if (svalue(ylower) == "") yrange[1] else ylim[1]
+                            if (svalue(ylower) != "") err <- TRUE
+                        }
+                        yu <- suppressWarnings(as.numeric(svalue(yupper)))
+                        if (is.na(yu)) {
+                            yu <- if (svalue(yupper) == "") yrange[2] else ylim[2]
+                            if (svalue(yupper) != "") err <- TRUE
+                        }
+                        if (yl == yu) {
+                            yl <- yrange[1]
+                            yu <- yrange[2]
+                        }
+
+                        newSet$transform["y"] <- list(
+                            if (svalue(yLog)) "log10" else NULL
+                        )
+                    }
+
+                    visible(errlbl) <- err
+                    newSet$xlim <- c(xl, xu)
+
+                    if (PLOTTYPE %in% c("scatter", "hex", "grid"))
+                        newSet$ylim <- c(yl, yu)
+
+                    newSet$xlim <- NULL
+                    newSet$ylim <- NULL
                 }
 
-                print(newSet)
                 GUI$getActiveDoc()$setSettings(newSet)
                 updateSettings()
             }
@@ -2295,11 +2302,37 @@ iNZPlotMod <- setRefClass(
             } else {
               addHandlerKeystroke(xlower, updT)
               addHandlerKeystroke(xupper, updT)
-              addHandlerChanged(xLog, updateEverything())
+              addHandlerChanged(xLog, function(h, ...) {
+                # log/exp axis limits
+                blockHandlers(xlower)
+                blockHandlers(xupper)
+                svalue(xlower) <-
+                    if (svalue(xLog)) signif(log(as.numeric(svalue(xlower))), 5)
+                    else signif(exp(as.numeric(svalue(xlower))), 5)
+                svalue(xupper) <-
+                    if (svalue(xLog)) signif(log(as.numeric(svalue(xupper))), 5)
+                    else signif(exp(as.numeric(svalue(xupper))), 5)
+                unblockHandlers(xlower)
+                unblockHandlers(xupper)
+                updateEverything()
+              })
               if (PLOTTYPE %in% c("scatter", "hex", "grid")) {
                 addHandlerKeystroke(ylower, updT)
                 addHandlerKeystroke(yupper, updT)
-                addHandlerChanged(yLog, updateEverything())
+                addHandlerChanged(yLog, function(h, ...) {
+                    # log/exp axis limits
+                    blockHandlers(ylower)
+                    blockHandlers(yupper)
+                    svalue(ylower) <-
+                        if (svalue(yLog)) signif(log(as.numeric(svalue(ylower))), 5)
+                        else signif(exp(as.numeric(svalue(ylower))), 5)
+                    svalue(yupper) <-
+                        if (svalue(yLog)) signif(log(as.numeric(svalue(yupper))), 5)
+                        else signif(exp(as.numeric(svalue(yupper))), 5)
+                    unblockHandlers(ylower)
+                    unblockHandlers(yupper)
+                    updateEverything()
+                })
               }
             }
 
