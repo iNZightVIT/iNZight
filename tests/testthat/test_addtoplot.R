@@ -87,9 +87,76 @@ test_that("Axes and Labels - dot plots", {
     upd$invoke_change_handler()
 
     # logging x
-    # expect_equal(svalue(axtbl[[14]]), "Log (base 10) :")
-    # expect_false(svalue(axtbl[[15]]))
-    # svalue(axtbl[[15]]) <- TRUE
-    # upd$invoke_change_handler()
+    expect_equal(svalue(axtbl[[14]]), "Log (base 10) :")
+    expect_false(svalue(axtbl[[15]]))
+    svalue(axtbl[[15]]) <- TRUE
+    upd$invoke_change_handler()
+    expect_equal(ui$curPlot[[1]][[1]]$xlim, log10(c(100, 200)))
+
+    # unlogging x
+    svalue(axtbl[[15]]) <- FALSE
+    upd$invoke_change_handler()
+    expect_equal(ui$curPlot[[1]][[1]]$xlim, c(100, 200))
+
+    ui$moduleWindow$footer$children[[2]]$invoke_change_handler()
+    ui$getActiveDoc()$setSettings(list(xlim = NULL, ylim = NULL))
 })
 
+test_that("Axes and Labels - scatter plots", {
+    svalue(ui$ctrlWidget$V1box) <- "height"
+    svalue(ui$ctrlWidget$V2box) <- "armspan"
+    ui$plotToolbar$addToPlot(message = FALSE)
+    svalue(ui$moduleWindow$header$children[[2]]$children[[1]], TRUE) <- 3
+
+    axtbl <- ui$moduleWindow$body$children[[1]]$children[[1]]$children
+    # quick check that indices are valid
+    # note: future testing should detect these via iteration
+    #       to make it easier to modify in future
+    expect_equal(svalue(axtbl[[18]]), "x axis :")
+    expect_equal(svalue(axtbl[[21]]), "y axis :")
+    pl.xlims <- ui$curPlot[[1]][[1]]$xlim
+    pl.ylims <- ui$curPlot[[1]][[1]]$ylim
+    expect_equal(as.numeric(svalue(axtbl[[19]])), pl.xlims[1])
+    expect_equal(as.numeric(svalue(axtbl[[20]])), pl.xlims[2])
+    expect_equal(as.numeric(svalue(axtbl[[22]])), pl.ylims[1])
+    expect_equal(as.numeric(svalue(axtbl[[23]])), pl.ylims[2])
+
+    # update button
+    svalue(ui$moduleWindow$body$children[[2]]$children[[1]]) <- FALSE
+    upd <- ui$moduleWindow$body$children[[2]]$children[[2]]
+
+    # set new limits
+    svalue(axtbl[[19]]) <- "150"
+    svalue(axtbl[[20]]) <- "160"
+    svalue(axtbl[[22]]) <- "140"
+    svalue(axtbl[[23]]) <- "160"
+    upd$invoke_change_handler()
+    expect_equal(ui$getActiveDoc()$getSettings()$xlim, c(150, 160))
+    expect_equal(ui$getActiveDoc()$getSettings()$ylim, c(140, 160))
+
+    svalue(axtbl[[19]]) <- pl.xlims[1]
+    svalue(axtbl[[20]]) <- pl.xlims[2]
+    svalue(axtbl[[22]]) <- pl.ylims[1]
+    svalue(axtbl[[23]]) <- pl.ylims[2]
+    upd$invoke_change_handler()
+
+    # log x/y
+    expect_equal(svalue(axtbl[[26]]), "Log (base 10) :")
+    expect_false(svalue(axtbl[[27]]))
+    expect_false(svalue(axtbl[[28]]))
+    svalue(axtbl[[27]]) <- TRUE
+    svalue(axtbl[[28]]) <- TRUE
+    upd$invoke_change_handler()
+    expect_equal(ui$curPlot[[1]][[1]]$xlim, log10(c(20, 200)))
+    expect_equal(ui$curPlot[[1]][[1]]$ylim, log10(c(100, 200)))
+
+    # unlogging x/x
+    svalue(axtbl[[27]]) <- FALSE
+    svalue(axtbl[[28]]) <- FALSE
+    upd$invoke_change_handler()
+    expect_equal(ui$curPlot[[1]][[1]]$xlim, c(20, 200))
+    expect_equal(ui$curPlot[[1]][[1]]$ylim, c(100, 200))
+
+    ui$moduleWindow$footer$children[[2]]$invoke_change_handler()
+    ui$getActiveDoc()$setSettings(list(xlim = NULL, ylim = NULL))
+})

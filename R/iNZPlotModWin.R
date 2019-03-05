@@ -2327,11 +2327,11 @@ iNZPlotMod <- setRefClass(
                     blockHandlers(xlower)
                     blockHandlers(xupper)
                     svalue(xlower) <-
-                        if (svalue(xLog)) signif(log(as.numeric(svalue(xlower))), 5)
-                        else signif(exp(as.numeric(svalue(xlower))), 5)
+                        if (svalue(xLog)) signif(log10(as.numeric(svalue(xlower))), 5)
+                        else signif(10^(as.numeric(svalue(xlower))), 5)
                     svalue(xupper) <-
-                        if (svalue(xLog)) signif(log(as.numeric(svalue(xupper))), 5)
-                        else signif(exp(as.numeric(svalue(xupper))), 5)
+                        if (svalue(xLog)) signif(log10(as.numeric(svalue(xupper))), 5)
+                        else signif(10^(as.numeric(svalue(xupper))), 5)
                     unblockHandlers(xlower)
                     unblockHandlers(xupper)
                     updateEverything()
@@ -2344,11 +2344,11 @@ iNZPlotMod <- setRefClass(
                         blockHandlers(ylower)
                         blockHandlers(yupper)
                         svalue(ylower) <-
-                            if (svalue(yLog)) signif(log(as.numeric(svalue(ylower))), 5)
-                            else signif(exp(as.numeric(svalue(ylower))), 5)
+                            if (svalue(yLog)) signif(log10(as.numeric(svalue(ylower))), 5)
+                            else signif(10^(as.numeric(svalue(ylower))), 5)
                         svalue(yupper) <-
-                            if (svalue(yLog)) signif(log(as.numeric(svalue(yupper))), 5)
-                            else signif(exp(as.numeric(svalue(yupper))), 5)
+                            if (svalue(yLog)) signif(log10(as.numeric(svalue(yupper))), 5)
+                            else signif(10^(as.numeric(svalue(yupper))), 5)
                         unblockHandlers(ylower)
                         unblockHandlers(yupper)
                         updateEverything()
