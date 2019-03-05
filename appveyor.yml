@@ -47,6 +47,9 @@ test_script:
   - md C:\Users\appveyor\Documents\iNZightVIT
   - travis-tool.sh run_tests
 
+on_success:
+  - Rscript -e 'covr::codecov()'
+
 on_failure:
   - 7z a failure.zip *.Rcheck\*
   - appveyor PushArtifact failure.zip
