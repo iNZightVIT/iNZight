@@ -59,6 +59,8 @@ test_that("Add to Plot shows correct options by plot", {
     ## bar plot doesn't have plot type options, yet
     
     ui$moduleWindow$footer$children[[2]]$invoke_change_handler()
+    svalue(ui$ctrlWidget$V2box, TRUE) <- 1
+    svalue(ui$ctrlWidget$V1box, TRUE) <- 1
 })
 
 test_that("Axes and Labels - dot plots", {
@@ -100,6 +102,7 @@ test_that("Axes and Labels - dot plots", {
 
     ui$moduleWindow$footer$children[[2]]$invoke_change_handler()
     ui$getActiveDoc()$setSettings(list(xlim = NULL, ylim = NULL))
+    svalue(ui$ctrlWidget$V1box, TRUE) <- 1
 })
 
 test_that("Axes and Labels - scatter plots", {
@@ -159,4 +162,44 @@ test_that("Axes and Labels - scatter plots", {
 
     ui$moduleWindow$footer$children[[2]]$invoke_change_handler()
     ui$getActiveDoc()$setSettings(list(xlim = NULL, ylim = NULL))
+
+    svalue(ui$ctrlWidget$V2box, TRUE) <- 1
+    svalue(ui$ctrlWidget$V1box, TRUE) <- 1
+})
+
+test_that("Axes and Labels - bar plots", {
+    svalue(ui$ctrlWidget$V1box) <- "travel"
+    svalue(ui$ctrlWidget$V2box, TRUE) <- 1
+    ui$plotToolbar$addToPlot(message = FALSE)
+    svalue(ui$moduleWindow$header$children[[2]]$children[[1]], TRUE) <- 2
+
+    axtbl <- ui$moduleWindow$body$children[[1]]$children[[1]]$children
+    expect_equal(svalue(axtbl[[9]]), "Display values as: ")
+    expect_equal(svalue(axtbl[[10]]), "Percentages (%)")
+
+    svalue(axtbl[[10]], TRUE) <- 2
+    expect_equal(round(ui$curPlot$ylim), c(0, 229))
+
+    svalue(axtbl[[10]], TRUE) <- 1
+    expect_equal(round(ui$curPlot$ylim, 2), c(0, 0.46))
+
+    ui$moduleWindow$footer$children[[2]]$invoke_change_handler()
+
+    svalue(ui$ctrlWidget$V2box) <- "cellsource"
+    ui$plotToolbar$addToPlot(message = FALSE)
+    svalue(ui$moduleWindow$header$children[[2]]$children[[1]], TRUE) <- 2
+
+    axtbl <- ui$moduleWindow$body$children[[1]]$children[[1]]$children
+    expect_equal(svalue(axtbl[[9]]), "Display values as: ")
+    expect_equal(svalue(axtbl[[10]]), "Percentages (%)")
+
+    svalue(axtbl[[10]], TRUE) <- 2
+    expect_equal(round(ui$curPlot$ylim), c(0, 81))
+
+    svalue(axtbl[[10]], TRUE) <- 1
+    expect_equal(round(ui$curPlot$ylim, 2), c(0, 0.47))
+
+    ui$moduleWindow$footer$children[[2]]$invoke_change_handler()
+    svalue(ui$ctrlWidget$V2box, TRUE) <- 1
+    svalue(ui$ctrlWidget$V1box, TRUE) <- 1
 })
