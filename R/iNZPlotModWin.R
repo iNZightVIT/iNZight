@@ -2283,8 +2283,8 @@ iNZPlotMod <- setRefClass(
                     if (PLOTTYPE %in% c("scatter", "hex", "grid"))
                         newSet$ylim <- c(yl, yu)
 
-                    newSet$xlim <- NULL
-                    newSet$ylim <- NULL
+                    # newSet$xlim <- NULL
+                    # newSet$ylim <- NULL
                 }
 
                 GUI$getActiveDoc()$setSettings(newSet)
