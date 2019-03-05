@@ -26,6 +26,7 @@ matrix:
 repos:
   docker: https://r.docker.stat.auckland.ac.nz
 
+r_github_packages: iNZightVIT/iNZightPlots@dev
 
 addons:
   apt:
