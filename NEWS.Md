@@ -1,7 +1,8 @@
 ## iNZight 3.3.6.9000
 __Release date__: TBA
 
-
+- add axis transformation (log-10) for numeric variables
+- switch between counts/percentages in bar plots
 
 
 ## iNZight 3.3.6
