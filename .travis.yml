@@ -26,6 +26,12 @@ matrix:
 repos:
   docker: https://r.docker.stat.auckland.ac.nz
 
+env:
+  - R_REMOTES_NO_ERRORS_FROM_WARNINGS: true
+
+r_github_packages:
+  - iNZightVIT/iNZightTools@dev
+  - iNZightVIT/iNZightPlots@dev
 
 addons:
   apt:
