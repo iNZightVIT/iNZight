@@ -40,7 +40,7 @@ test_that("UI correctly displays the data", {
     expect_true(visible(ui$dataViewWidget$dataGp$children[[2]]))
 
     expect_equal(ui$dataViewWidget$dataGp$children[[2]]$children[[1]]$get_names(),
-        c("VARIABLES (n = numeric, c = categorical)"))
+        c("VARIABLES (n = numeric, c = categorical, t = time/date)"))
     expect_equal(ui$dataViewWidget$dataGp$children[[2]]$children[[1]]$get_items(),
         c("(n) A", "(c) B"))
     

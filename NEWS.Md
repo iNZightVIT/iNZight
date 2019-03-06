@@ -5,6 +5,10 @@ __Release date__: TBA
 - switch between counts/percentages in bar plots
 
 
+### Dates and times 
+- convert variables into datetimes (Variables > Dates and times) 
+- extract time information from a datetime variable (such as the hour, or year)
+
 ## iNZight 3.3.6
 __Release date__: 12 February 2019
 

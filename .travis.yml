@@ -22,12 +22,14 @@ matrix:
       brew_packages: libgit2
   allow_failures:
     - os: osx
+    
+env:
+  global:
+    - R_REMOTES_NO_ERRORS_FROM_WARNINGS: true
+    - _R_CHECK_SYSTEM_CLOCK_=FALSE
 
 repos:
   docker: https://r.docker.stat.auckland.ac.nz
-
-env:
-  - R_REMOTES_NO_ERRORS_FROM_WARNINGS: true
 
 r_github_packages:
   - iNZightVIT/iNZightTools@dev
