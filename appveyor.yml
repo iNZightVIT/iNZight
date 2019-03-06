@@ -42,9 +42,6 @@ build_script:
   - mv gtk c:\RLibrary\RGtk2
   - del gtk32.zip
   - del gtk64.zip
-  - travis-tool.sh install_deps
-  - travis-tool.sh install_github iNZightVIT/iNZightTools@feature/datetimes
-  - travis-tool.sh install_github iNZightVIT/iNZightPlots@feature/datetimes
 
 test_script:
   - md C:\Users\appveyor\Documents\iNZightVIT
