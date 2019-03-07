@@ -601,7 +601,8 @@ iNZjoinDataWin <- setRefClass(
     left_name = "ANY",
     right_name = "ANY",
     joinview = "ANY",
-    coltbl = "ANY"
+    coltbl = "ANY",
+    middle = "ANY"
   ),
   methods = list(
     initialize = function(gui = NULL) {
@@ -613,20 +614,17 @@ iNZjoinDataWin <- setRefClass(
         ## start my window
         GUI$modWin <<- gwindow("Join with another dataset by column values",
                                 parent = GUI$win, visible = FALSE)
-        mainGroup <- ggroup(cont = GUI$modWin, expand = TRUE)
-        lyt <- glayout(cont = mainGroup)
-         
-        title_box = gvbox(cont = lyt)
-        left = gvbox(cont = lyt)
-        right = gvbox(cont = lyt)
-        dropdowns = gvbox(cont = lyt)
-        join = gvbox(cont = lyt)
+        mainGroup <- ggroup(cont = GUI$modWin, expand = TRUE, horizontal = FALSE)
         
-        lyt[1, 1:2] = title_box
+        ## Top window
+        top = ggroup(cont = mainGroup, horizontal = FALSE)
+        lyt <- glayout(cont = top)
+        title_box <- ggroup(horizontal = FALSE)
+        left <- ggroup(horizontal = FALSE)
+        right <- ggroup(horizontal = FALSE)
+        lyt[1, 1:2] <- title_box
         lyt[2,1] <- left
         lyt[2,2] <- right
-        lyt[3, 1:2] <- dropdowns
-        lyt[4, 1:2] <- join
         
         ## Title
         title_string = glabel("Join Datasets", cont = title_box)
@@ -649,8 +647,6 @@ iNZjoinDataWin <- setRefClass(
                                                       "Anti Join" = "anti_join")
           updatePreview()
         })
-
-        left_col <<- ""
 
         left_name_box = gvbox(cont = left)
         name_string = glabel("Duplicated cols: suffix for Original", cont = left_name_box, anchor = c(-1, 0))
@@ -689,8 +685,6 @@ iNZjoinDataWin <- setRefClass(
           updatePreview()
         })
         
-        right_col <<- ""
-        
         right_name_box = gvbox(cont = right)
         name_string = glabel("Duplicated cols: suffix for New", cont = right_name_box, anchor = c(-1, 0))
         right_name <<- "New"
@@ -701,31 +695,25 @@ iNZjoinDataWin <- setRefClass(
         })
         visible(right_name_box) = FALSE
         
-        ## Dropdowns
-        coltbl <<- glayout(cont = dropdowns)
-        coltbl[1, 1:4] <- glabel("Please specify columns to match on from two datasets")
-        
-        ## Bottom join box
-        preview_string2 = glabel("Preview", cont = join, anchor = c(-1, 0))
-        joinview <<- gtable(data.frame(""), cont = join)
+        ## Middle box
+        middle <<- ggroup(cont = mainGroup, horizontal = FALSE)
+        coltbl <<- glayout(cont = middle)
+        coltbl[1, 1:4] <<- glabel("Please specify columns to match on from two datasets")
+
+        ## Bottom box
+        bottom = ggroup(cont = mainGroup, horizontal = FALSE)
+        preview_string2 = glabel("Preview", cont = bottom, anchor = c(-1, 0))
+        joinview <<- gtable(data.frame(""), cont = bottom)
         size(joinview) = c(-1, 150)
         
-        joinbtn = gbutton("Join", cont = join)
+        joinbtn = gbutton("Join", cont = bottom)
         addHandlerChanged(joinbtn, function(h, ...) {
-          joined = iNZightTools::joindata(
-            GUI$getActiveData(), 
-            newdata, 
-            left_col, 
-            right_col, 
-            join_method, 
-            left_name, 
-            right_name
-          )
+          joined = joinData()
           GUI$setDocument(iNZDocument$new(data = joined))
           dispose(GUI$modWin)
         })
         
-        helpbtn = gbutton("Help", cont = join, handler = function(h, ...) {
+        helpbtn = gbutton("Help", cont = bottom, handler = function(h, ...) {
           helpwin = gwindow(title = "Help")
           win = gvbox(cont = helpwin)
           
@@ -755,8 +743,20 @@ iNZjoinDataWin <- setRefClass(
           addSpace(win, 5)
         })
         
-        checkbtn = gbutton("check", cont = join, handler = function(h, ...) {
+        checkbtn = gbutton("check", cont = bottom, handler = function(h, ...) {
           print(left_col)
+          print(length(coltbl$children))
+        })
+        
+        removebtn = gbutton("remove", cont = bottom, handler = function(h, ...) {
+          middle$remove_child(coltbl)
+          print("fdasdasds")
+        })
+        
+        addbtn = gbutton("add", cont = bottom, handler = function(h, ...) {
+          coltbl <<- glayout()
+          coltbl[1, 1:4] <<- glabel("Please specify columns to match on from two datasets")
+          middle$add_child(coltbl, fill = TRUE)
         })
 
         visible(GUI$modWin) <<- TRUE
@@ -770,12 +770,12 @@ iNZjoinDataWin <- setRefClass(
           joinview$set_items(e$message)
         }
       )
+      if (length(d) == 0) return()
       if (nrow(d) == 0) {
         joinview$set_items("Joined dataset has 0 row")
       } else {
         joinview$set_items(head(d, 10))
       }
-      # update the svalue(preview)
     },
     joinData = function() {
       iNZightTools::joindata(
@@ -790,17 +790,11 @@ iNZjoinDataWin <- setRefClass(
     },
     ## Create join table
     create_join_table = function() {
-      # print(length(coltbl$children))
-      # print(nrow(coltbl))
-      # if (nrow(coltbl) > 1) {
-      #   try(invisible(
-      #     sapply(coltbl[2:nrow(coltbl), 1:4])
-      #   ))
-      # }
       if (length(coltbl$children) > 1) {
-        try(invisible(
-          sapply(coltbl$children[2:length(coltbl$children)],
-                 coltbl$remove_child)))
+        middle$remove_child(coltbl)
+        coltbl <<- glayout()
+        coltbl[1, 1:4] <<- glabel("Please specify columns to match on from two datasets")
+        middle$add_child(coltbl, fill = TRUE)
       }
       if (length(left_col) == 0) {
         add_joinby_row(coltbl, 1)
@@ -814,8 +808,6 @@ iNZjoinDataWin <- setRefClass(
         coltbl[number, 2]$set_items(right_col[i])
         svalue(coltbl[number, 2]) = right_col[i]
       }
-      print(left_col)
-      updatePreview()
     },
     # Add joinby row
     add_joinby_row = function(coltbl, number) {
@@ -839,19 +831,9 @@ iNZjoinDataWin <- setRefClass(
     },
     ## Remove joinby row
     remove_joinby_row = function(coltbl, pos, left_col) {
-      ##
-      try(invisible(
-        for (i in 1:4) {
-          coltbl$remove_child(coltbl[pos,i])
-        }
-      ))
       pos = pos - 1
       left_col <<- left_col[-pos]
       right_col <<- right_col[-pos]
-      # if (length(left_col) == 1) {
-      #   print("dasdsada")
-      #   add_joinby_row(coltbl, 1)
-      # }
       create_join_table()
     }
   )

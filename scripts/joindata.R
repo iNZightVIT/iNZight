@@ -6,7 +6,7 @@ load_all("~/iNZightTools")
 load_all("~/iNZight")
 
 
-data = readr::read_csv("C:\\Users\\Yiwen\\Documents\\join.csv")
+data = readr::read_csv("C:\\Users\\Yiwen\\Documents\\join2.csv")
 
 
 try(dispose(kk$win), TRUE)
@@ -15,15 +15,11 @@ kk = iNZGUI$new()
 kk$initializeGui(data)
 
 
-# help
-# preview window size use head function
 
-# No common column found. Automatically mtach has common column with no common value DONE
-# Only show suffix window when there is duplicated column
-# Test on larger dataset DONE
-# testthat
 
-# head() show only top 10 rows DONE
+# joinby rows are not deleted everytime loading in a new file
+# add and delete should be linked to function???
+
 
 
 data = readr::read_csv("C:\\Users\\Yiwen\\Documents\\parisjoin.csv") #original
