@@ -15,8 +15,8 @@ iNZcodeWidget <- setRefClass(
         },
         add = function(x, keep = TRUE, tidy = FALSE) {
             x <- gsub("^SEP$", sep(), x) 
-            if (tidy && requireNamespace("formatR", quietly = TRUE)) 
-                x <- capture.output(formatR::tidy_source(text = x, width.cutoff = 60))
+            #if (tidy && requireNamespace("formatR", quietly = TRUE)) 
+            #    x <- capture.output(formatR::tidy_source(text = x, width.cutoff = 60))
             if (!keep.last) history <<- history[-length(history)]
             history <<- c(history, list(c("", x)))
             keep.last <<- keep
@@ -38,7 +38,10 @@ iNZcodeWidget <- setRefClass(
             invisible(NULL)
         },
         get = function() {
-            return(c(header(), do.call(c, history)))
+	    code <- do.call(c, history)
+	    tidy <- try(iNZightTools::tidy_all_code(code))
+	    if (!inherits(tidy, "try-error")) code <- tidy
+            return(c(header(), code))
         },
         update = function() {
             if (disabled) return()
