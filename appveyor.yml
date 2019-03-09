@@ -16,13 +16,13 @@ install:
 environment:
   USE_RTOOLS: true
   R_REMOTES_NO_ERRORS_FROM_WARNINGS: true
+  PKGTYPE: binary
 
 
 # Adapt as necessary starting from here
 
 build_script:
   # - ps: iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
-  - travis-tool.sh install_r_binary RGtk2
   - travis-tool.sh install_deps
   - travis-tool.sh install_github iNZightVIT/iNZightTools@dev
   - travis-tool.sh install_github iNZightVIT/iNZightPlots@dev
