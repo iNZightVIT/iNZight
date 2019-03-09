@@ -53,13 +53,6 @@ addons:
 before_install:
   - if [ "$TRAVIS_OS_NAME" == "osx" ]; then 
       echo "Dependencies installed using travis setup";
-#       brew install gtk+;
-#       sudo chown -R $(whoami) /usr/local/share;
-#       brew uninstall --force cairo --ignore-dependencies;
-#       brew cask install xquartz;
-#       brew install --with-x11 cairo;
-#       brew install --with-gdktarget=x11 --enable-x11-backend gtk+;
-#       echo "export PKG_CONFIG_PATH=/usr/local/lib/pkgconfig:/usr/local/lib/pkgconfig/gtk+-2.0.pc:/opt/X11/lib/pkgconfig" >> ~/.bash_profile;
     else
       export DISPLAY=:99.0;
       sh -e /etc/init.d/xvfb start;
