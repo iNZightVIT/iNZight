@@ -19,7 +19,9 @@ matrix:
       r: devel
     - os: osx
       r: 3.3
-      brew_packages: libgit2
+      brew_packages: 
+        - libgit2
+        - gtk+
   allow_failures:
     - os: osx
     
@@ -30,6 +32,7 @@ env:
 
 repos:
   docker: https://r.docker.stat.auckland.ac.nz
+  macos: https://macos.rbind.org
 
 r_github_packages:
   - iNZightVIT/iNZightTools@dev
@@ -49,12 +52,14 @@ addons:
 
 before_install:
   - if [ "$TRAVIS_OS_NAME" == "osx" ]; then 
-      sudo chown -R $(whoami) /usr/local/share;
-      brew uninstall --force cairo --ignore-dependencies;
-      brew cask install xquartz;
-      brew install --with-x11 cairo;
-      brew install --with-gdktarget=x11 --enable-x11-backend gtk+;
-      echo "export PKG_CONFIG_PATH=/usr/local/lib/pkgconfig:/usr/local/lib/pkgconfig/gtk+-2.0.pc:/opt/X11/lib/pkgconfig" >> ~/.bash_profile;
+      echo "Dependencies installed using travis setup";
+#       brew install gtk+;
+#       sudo chown -R $(whoami) /usr/local/share;
+#       brew uninstall --force cairo --ignore-dependencies;
+#       brew cask install xquartz;
+#       brew install --with-x11 cairo;
+#       brew install --with-gdktarget=x11 --enable-x11-backend gtk+;
+#       echo "export PKG_CONFIG_PATH=/usr/local/lib/pkgconfig:/usr/local/lib/pkgconfig/gtk+-2.0.pc:/opt/X11/lib/pkgconfig" >> ~/.bash_profile;
     else
       export DISPLAY=:99.0;
       sh -e /etc/init.d/xvfb start;
