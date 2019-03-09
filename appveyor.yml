@@ -22,6 +22,7 @@ environment:
 
 build_script:
   # - ps: iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
+  - travis-tool.sh install_r_binary RGtk2
   - travis-tool.sh install_deps
   - travis-tool.sh install_github iNZightVIT/iNZightTools@dev
   - travis-tool.sh install_github iNZightVIT/iNZightPlots@dev
