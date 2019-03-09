@@ -18,7 +18,7 @@ matrix:
     - os: linux
       r: devel
     - os: osx
-      r: 3.3
+      r: release
       brew_packages: 
         - libgit2
         - gtk+
