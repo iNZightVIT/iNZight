@@ -1496,6 +1496,9 @@ iNZExtfromdtWin <- setRefClass(
         } else {
           varx = GUI$getActiveData()[[varname]]
           dfview$set_items(data.frame(Original = as.character(varx)))
+          if (component == "") {
+            return()
+          } 
           exp = iNZightTools::extract_part(GUI$getActiveData(), varname, component, newname)
           extractedview$set_items(data.frame(Extracted = as.character(exp[[newname]])))
         }
@@ -1530,6 +1533,127 @@ iNZExtfromdtWin <- setRefClass(
       
       atree <- gtree(offspring=offspring, offspring.data=l, cont=mainGroup)
       
+      component <<- ""
+      addHandlerClicked(atree, function(h, ...) {
+        component <<- svalue(atree)[length(svalue(atree))]
+        svalue(newVarname) = makeNames(paste(varname, ".", switch(component, "Date only" = "Date", 
+                                                                  "Decimal Year" = "Decimal.Year",
+                                                                  "Year Quarter" = "Year.Quarter", 
+                                                                  "Year Month" = "Year.Month", 
+                                                                  "Month (abbreviated)" = "Month.cat", 
+                                                                  "Month (full)" = "Month.cat", 
+                                                                  "Month (number)" = "Month.number", 
+                                                                  "Week of the year (Sunday as first day of the week)" = "Week.year", 
+                                                                  "Week of the year (Monday as first day of the week)" = "Week.year",
+                                                                  "Day of the year" = "Day.year", 
+                                                                  "Day of the week (name)" = "Day.week", 
+                                                                  "Day of the week (number)" = "Day.week.number", 
+                                                                  "Day of the week (number, Monday as 1)" = "Day.week.number",
+                                                                  "Day of the week (number, Sunday as 0)" = "Day.week.number",
+                                                                  "Time only" = "Time",
+                                                                  "Hours (decimal)" = "Hour.decimal", component), sep = ""))
+        exp = iNZightTools::extract_part(GUI$getActiveData(), varname, component, newname)
+        extractedview$set_items(data.frame(Extracted = as.character(exp[[newname]])))
+      })
+      size(atree) = c(-1, 250)
+      
+      addSpace(mainGroup, 5)
+      
+      date_string <- glabel("Name for new variable", container = mainGroup, anchor = c(-1, 0))
+      newVarname = gedit("", cont = mainGroup, handler = function(h, ...) {
+        newname <<- svalue(newVarname)
+      })
+      
+      preview_string = glabel("Preview", cont = mainGroup, anchor = c(-1, 0))
+      
+      g2 = ggroup(cont = mainGroup)
+      dfview = gtable(data.frame(Original = ""), cont = g2)
+      size(dfview) = c(-1, 250)
+      extractedview = gtable(data.frame(Extracted = ""), cont = g2)
+      size(extractedview) = c(-1, 250)
+      
+      okbtn <- gbutton("Extract", container = mainGroup, handler = function(h,...) {
+        .dataset = GUI$getActiveData()
+        exp = iNZightTools::extract_part(.dataset, varname, component, newname)
+        updateData(exp)
+        dispose(GUI$modWin)
+      })
+      
+      add(GUI$modWin, mainGroup, expand = TRUE)
+      visible(GUI$modWin) <<- TRUE
+    })
+)
+
+## Aggregate datetimes
+iNZExtfromdtWin <- setRefClass(
+  "iNZExtfromdtWin",
+  contains = "iNZDataModWin",
+  fields = list(
+    varname = "ANY",
+    component = "ANY",
+    newname = "ANY"
+  ),
+  methods = list(
+    initialize = function(gui) {
+      callSuper(gui)
+      svalue(GUI$modWin) <<- "Convert to Dates and Times"
+      
+      mainGroup <- gvbox()
+      mainGroup$set_borderwidth(15)
+      
+      title <- glabel("Extract parts of the datetime", container = mainGroup)
+      font(title) <- list(size = 14, weight = "bold")
+      
+      addSpace(mainGroup, 5)
+      
+      date_string <- glabel("Select variable to extract information from", container = mainGroup, anchor = c(-1, 0))
+      
+      var1 <- gcombobox(items = c("", names(dplyr::select_if(GUI$getActiveData(), lubridate::is.POSIXct))), container = mainGroup, handler = function(h,...){
+        varname <<- svalue(var1)
+        if (varname == "") {
+          dfview$set_items(data.frame(Original = ""))
+          extractedview$set_items(data.frame(Extracted = ""))
+        } else {
+          varx = GUI$getActiveData()[[varname]]
+          dfview$set_items(data.frame(Original = as.character(varx)))
+          if (component == "") {
+            return()
+          } 
+          exp = iNZightTools::extract_part(GUI$getActiveData(), varname, component, newname)
+          extractedview$set_items(data.frame(Extracted = as.character(exp[[newname]])))
+        }
+      })
+      
+      addSpace(mainGroup, 5)
+      
+      for.var <- glabel("Select elements to extract \n(click + of lowest-level information for options)", container = mainGroup, anchor = c(-1, 0))
+      
+      offspring <- function(path=character(0), lst, ...) {
+        if(length(path))
+          obj <- lst[[path]]
+        else
+          obj <- lst
+        nms <- names(obj)
+        hasOffspring <- sapply(nms, function(i) {
+          newobj <- obj[[i]]
+          is.recursive(newobj) && !is.null(names(newobj))
+        })
+        data.frame(Name=nms, hasOffspring=hasOffspring, ## fred=nms,
+                   stringsAsFactors=FALSE)
+      }
+      
+      l <- list(Date = list("Date only" = "Date only", 
+                            Year = list("Year" = "Year", "Century" = "Century", "Decimal Year" = "Decimal Year"), 
+                            Quarter = list("Year Quarter" = "Year Quarter", "Quarter" = "Quarter"),
+                            Month = list("Year Month" = "Year Month", "Month (full)" = "Month (full)", "Month (abbreviated)" = "Month (abbreviated)", "Month (number)" = "Month (number)"),
+                            Week = list("Week of the year (Sunday as first day of the week)" = "Week of the year (Sunday as first day of the week)", "Week of the year (Monday as first day of the week)" = "Week of the year (Monday as first day of the week)"),
+                            Day = list("Day of the year" = "Day of the year", "Day of the week (name)" = "Day of the week (name)", "Day of the week (number, Monday as 1)" = "Day of the week (number, Monday as 1)", "Day of the week (number, Sunday as 0)" = "Day of the week (number, Sunday as 0)","Day" = "Day")),
+                Time = list("Time only" = "Time only", "Hours (decimal)" = "Hours (decimal)", "Hour" = "Hour", "Minute" = "Minute", "Second" = "Second")
+      )
+      
+      atree <- gtree(offspring=offspring, offspring.data=l, cont=mainGroup)
+      
+      component <<- ""
       addHandlerClicked(atree, function(h, ...) {
         component <<- svalue(atree)[length(svalue(atree))]
         svalue(newVarname) = makeNames(paste(varname, ".", switch(component, "Date only" = "Date", 
