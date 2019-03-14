@@ -779,9 +779,19 @@ iNZGUI <- setRefClass(
 
                         btn <- gbutton("OK", handler = function(h, ...) {
                             infType <- svalue(infMthd, index = TRUE)
-                            sets <- getActiveDoc()$getSettings()
-                            sets <- modifyList(
-                                sets,
+                            curSet <- getActiveDoc()$getSettings()
+                            if (!is.null(curSet$x)) {
+                                if (is.numeric(curSet$x) & is.numeric(curSet$y)) {
+                                    tmp.x <- curSet$y
+                                    curSet$y <- curSet$x
+                                    curSet$x <- tmp.x
+                                    v <- curSet$varnames
+                                    curSet$varnames$x <- v$y
+                                    curSet$varnames$y <- v$x
+                                }
+                            }
+                            curSet <- modifyList(
+                                curSet,
                                 list(bs.inference = infType == 2,
                                      summary.type = "inference",
                                      inference.type = "conf",
@@ -796,8 +806,8 @@ iNZGUI <- setRefClass(
                                     )
                                     return()
                                 }
-                                sets <- modifyList(
-                                    sets,
+                                curSet <- modifyList(
+                                    curSet,
                                     list(
                                         hypothesis.value = as.numeric(svalue(hypVal)),
                                         hypothesis.alt = switch(
@@ -816,8 +826,8 @@ iNZGUI <- setRefClass(
                                     )
                                 )
                             } else {
-                                sets <- modifyList(
-                                    sets, 
+                                curSet <- modifyList(
+                                    curSet, 
                                     list(hypothesis = NULL), 
                                     keep.null = TRUE
                                 )
@@ -875,7 +885,7 @@ iNZGUI <- setRefClass(
                                 paste(
                                     do.call(
                                         iNZightPlots:::getPlotSummary,
-                                        sets
+                                        curSet
                                     ),
                                     collapse = "\n"
                                 ),
