@@ -21,3 +21,5 @@ try(dispose(kk$win), TRUE)
 load_all("~/iNZight")
 kk = iNZGUI$new()
 kk$initializeGui(data)
+
+?gather

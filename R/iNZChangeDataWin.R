@@ -308,7 +308,10 @@ iNZReshapeDataWin <- setRefClass(
   "iNZReshapeDataWin",
   fields = list(
     GUI = "ANY",
-    colname = "ANY"
+    colname = "ANY",
+    key = "ANY",
+    value = "ANY",
+    newview = "ANY"
   ),
   methods = list(
     initialize = function(gui = NULL) {
@@ -330,12 +333,14 @@ iNZReshapeDataWin <- setRefClass(
         
         var1 = gcombobox(c("", names(GUI$getActiveData())), cont = mainGroup, handler = function(h, ...){
           colname <<- svalue(var1)
+          updatePreview()
         })
         
         var2box = gvbox(cont = mainGroup)
         var2 = gtable(names(GUI$getActiveData()),multiple = TRUE, expand = TRUE, cont = var2box)
         addHandlerSelectionChanged(var2, function(h, ...){
           colname <<- svalue(var2)
+          updatePreview()
         })
         
         names(var2) = "Variables"
@@ -348,21 +353,31 @@ iNZReshapeDataWin <- setRefClass(
             visible(var1) = FALSE
             colname <<- svalue(var2)
             col_string$set_value("Select columns to expand on \n(Use CNTRL to add/remove)")
+            updatePreview()
           } else {
             visible(var2box) = FALSE
             visible(var1) = TRUE
             colname <<- svalue(var1)
             col_string$set_value("Select column to expand on")
+            # updatePreview()
           }
         })
 
+        key <<- "key"
         key_string <- glabel("Name the new column for old column names", cont = mainGroup)
-        keybox <- gedit("", cont = mainGroup)
+        keybox <- gedit("", cont = mainGroup, handler = function(h,...) {
+          key <<- svalue(keybox)
+          updatePreview()
+        })
         
+        value <<- "value"
         value_string <- glabel("Name the new column for old column value", cont = mainGroup)
-        valuebox <- gedit("", cont = mainGroup)
+        valuebox <- gedit("", cont = mainGroup, handler = function(h,...) {
+          value <<- svalue(valuebox)
+          updatePreview()
+        })
         
-        previewbox <- ggroup(cont = mainGroup, horizontal = TRUE, expand = TRUE)
+        previewbox <- ggroup(cont = mainGroup, horizontal = TRUE, fill = TRUE)
         left <- ggroup(horizontal = FALSE, cont = previewbox)
         right <- ggroup(horizontal = FALSE, cont = previewbox)
         
@@ -371,17 +386,23 @@ iNZReshapeDataWin <- setRefClass(
         size(originview) = c(-1, 250)
         
         string2 <- glabel("New dataset", cont = right)
-        newview = gtable(data.frame(""), cont = right)
-        size(newview) = c(-1, 250)
+        newview <<- gtable(data.frame(""), cont = right)
+        size(newview) <<- c(-1, 250)
         
-        checkbtn <- gbutton("check", cont = mainGroup, handler = function(h, ...) {
-          xx <- iNZightTools::reshape_data(GUI$getActiveData(), c("v1999", "v2000"), "year", "population")
-          print(xx)
+        reshapebtn <- gbutton("Reshape", cont = mainGroup, handler = function(h, ...) {
+          df = iNZightTools::reshape_data(GUI$getActiveData(), colname, key, value)
+          GUI$setDocument(iNZDocument$new(data = df))
+          dispose(GUI$modWin)
         })
         
         visible(GUI$modWin) <<- TRUE
       }
-    })
+    },
+    updatePreview = function() {
+      d = iNZightTools::reshape_data(GUI$getActiveData(), colname, key, value)
+      newview$set_items(d)
+    }
+    )
 )
 
 
