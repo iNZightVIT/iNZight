@@ -1468,6 +1468,11 @@ iNZconTodtWin <- setRefClass(
 iNZExtfromdtWin <- setRefClass(
   "iNZExtfromdtWin",
   contains = "iNZDataModWin",
+  fields = list(
+    varname = "ANY",
+    component = "ANY",
+    newname = "ANY"
+  ),
   methods = list(
     initialize = function(gui) {
       callSuper(gui)
@@ -1476,31 +1481,23 @@ iNZExtfromdtWin <- setRefClass(
       mainGroup <- gvbox()
       mainGroup$set_borderwidth(15)
       
-      title <- glabel("Extract parts of the datetime",
-                      container = mainGroup)
+      title <- glabel("Extract parts of the datetime", container = mainGroup)
       font(title) <- list(size = 14, weight = "bold")
       
       addSpace(mainGroup, 5)
       
-      date_string <- glabel("Select variable to extract information from", 
-                             container = mainGroup, anchor = c(-1, 0))
+      date_string <- glabel("Select variable to extract information from", container = mainGroup, anchor = c(-1, 0))
       
       var1 <- gcombobox(items = c("", names(dplyr::select_if(GUI$getActiveData(), lubridate::is.POSIXct))), container = mainGroup, handler = function(h,...){
-        if (svalue(var1) == "") {
+        varname <<- svalue(var1)
+        if (varname == "") {
           dfview$set_items(data.frame(Original = ""))
           extractedview$set_items(data.frame(Extracted = ""))
         } else {
-          varname = svalue(var1)
           varx = GUI$getActiveData()[[varname]]
           dfview$set_items(data.frame(Original = as.character(varx)))
-          part = svalue(atree)[length(svalue(atree))]
-          if (length(part)  == 0) {   
-            return()
-          } else {
-            name = svalue(newVarname)
-            exp = iNZightTools::extract_part(GUI$getActiveData(), varname, part, name)
-            extractedview$set_items(data.frame(Extracted = as.character(exp[[svalue(newVarname)]])))
-          }
+          exp = iNZightTools::extract_part(GUI$getActiveData(), varname, component, newname)
+          extractedview$set_items(data.frame(Extracted = as.character(exp[[newname]])))
         }
       })
       
@@ -1534,9 +1531,8 @@ iNZExtfromdtWin <- setRefClass(
       atree <- gtree(offspring=offspring, offspring.data=l, cont=mainGroup)
       
       addHandlerClicked(atree, function(h, ...) {
-        varname = svalue(var1)
-        part = svalue(atree)[length(svalue(atree))]
-        svalue(newVarname) = makeNames(paste(varname, ".", switch(part, "Date only" = "Date", 
+        component <<- svalue(atree)[length(svalue(atree))]
+        svalue(newVarname) = makeNames(paste(varname, ".", switch(component, "Date only" = "Date", 
                                                                   "Decimal Year" = "Decimal.Year",
                                                                   "Year Quarter" = "Year.Quarter", 
                                                                   "Year Month" = "Year.Month", 
@@ -1551,17 +1547,18 @@ iNZExtfromdtWin <- setRefClass(
                                                                   "Day of the week (number, Monday as 1)" = "Day.week.number",
                                                                   "Day of the week (number, Sunday as 0)" = "Day.week.number",
                                                                   "Time only" = "Time",
-                                                                  "Hours (decimal)" = "Hour.decimal", part), sep = ""))
-        name = svalue(newVarname)
-        exp = iNZightTools::extract_part(GUI$getActiveData(), varname, part, name)
-        extractedview$set_items(data.frame(Extracted = as.character(exp[[svalue(newVarname)]])))
+                                                                  "Hours (decimal)" = "Hour.decimal", component), sep = ""))
+        exp = iNZightTools::extract_part(GUI$getActiveData(), varname, component, newname)
+        extractedview$set_items(data.frame(Extracted = as.character(exp[[newname]])))
       })
       size(atree) = c(-1, 250)
       
       addSpace(mainGroup, 5)
       
       date_string <- glabel("Name for new variable", container = mainGroup, anchor = c(-1, 0))
-      newVarname = gedit("", cont = mainGroup)
+      newVarname = gedit("", cont = mainGroup, handler = function(h, ...) {
+        newname <<- svalue(newVarname)
+      })
       
       preview_string = glabel("Preview", cont = mainGroup, anchor = c(-1, 0))
       
@@ -1573,10 +1570,7 @@ iNZExtfromdtWin <- setRefClass(
       
       okbtn <- gbutton("Extract", container = mainGroup, handler = function(h,...) {
         .dataset = GUI$getActiveData()
-        varname = svalue(var1)
-        part = svalue(atree)[length(svalue(atree))]
-        name = svalue(newVarname)
-        exp = iNZightTools::extract_part(.dataset, varname, part, name)
+        exp = iNZightTools::extract_part(.dataset, varname, component, newname)
         updateData(exp)
         dispose(GUI$modWin)
       })
