@@ -307,7 +307,8 @@ iNZFilterWin <- setRefClass(
 iNZReshapeDataWin <- setRefClass(
   "iNZReshapeDataWin",
   fields = list(
-    GUI = "ANY"
+    GUI = "ANY",
+    colname = "ANY"
   ),
   methods = list(
     initialize = function(gui = NULL) {
@@ -315,39 +316,72 @@ iNZReshapeDataWin <- setRefClass(
       if (!is.null(GUI)) {
         ## close any current mod windows
         try(dispose(GUI$modWin), silent = TRUE)
-        GUI$modWin <<- gwindow("Filter data by numeric condition",
-                                   parent = GUI$win, visible = FALSE)
-            mainGrp <- ggroup(cont = GUI$modWin, horizontal = FALSE,
-                              expand = TRUE)
-            mainGrp$set_borderwidth(15)
-            btnGrp <- ggroup(horizontal = TRUE)
-            lbl1 <- glabel("Reshape your dataset so that groups\nas columns are transformed to cases by variables")
-            conv.image <- gimage(system.file("images/groups-wide-to-tall.png",
-                                             package = "iNZight"))
-            reshapeButton <- gbutton(
-                "Reshape",
-                handler = function(h, ...) {
-                    if (ncol(GUI$getActiveData()) <= 1)
-                        gmessage("Unable to reshape datasets with a single column", "Error", icon = "error")
-                    else {
-                        .dataset <- GUI$getActiveData()
-                        vars <- names(.dataset)
-                        data <- iNZightTools::stackVars(.dataset, vars, 'variable', 'value')
-                        attr(data, "name") <- paste(attr(.dataset, "name", exact = TRUE), "stacked", sep = ".")
-                        attr(data, "code") <- gsub(".dataset", attr(.dataset, "name", exact = TRUE), attr(data, "code"))
-                        GUI$setDocument(iNZDocument$new(data = data))
-                        dispose(GUI$modWin)
-                    }
-
-                })
-            add(mainGrp, lbl1)
-            add(mainGrp, conv.image)
-            add(mainGrp, btnGrp)
-            addSpring(btnGrp)
-            add(btnGrp, reshapeButton)
-            visible(GUI$modWin) <<- TRUE
-            }
+        
+        ## start my window
+        GUI$modWin <<- gwindow("Reshape dataset", parent = GUI$win, visible = FALSE)
+        mainGroup <- ggroup(cont = GUI$modWin, expand = TRUE, horizontal = FALSE)
+        
+        title_string = glabel("Reshape Dateset", cont = mainGroup)
+        font(title_string) = list(size = 14, weight = "bold")
+        
+        col_string = glabel("Select column to expand on", cont = mainGroup)
+        
+        colname <<- ""
+        
+        var1 = gcombobox(c("", names(GUI$getActiveData())), cont = mainGroup, handler = function(h, ...){
+          colname <<- svalue(var1)
         })
+        
+        var2box = gvbox(cont = mainGroup)
+        var2 = gtable(names(GUI$getActiveData()),multiple = TRUE, expand = TRUE, cont = var2box)
+        addHandlerSelectionChanged(var2, function(h, ...){
+          colname <<- svalue(var2)
+        })
+        
+        names(var2) = "Variables"
+        visible(var2box) = FALSE
+        size(var2box) = c(-1, 150)
+        
+        checkbox = gcheckbox(text = "Click to select multiple columns", cont = mainGroup, handler = function(h, ...) {
+          if (svalue(checkbox) == TRUE) {
+            visible(var2box) = TRUE
+            visible(var1) = FALSE
+            colname <<- svalue(var2)
+            col_string$set_value("Select columns to expand on \n(Use CNTRL to add/remove)")
+          } else {
+            visible(var2box) = FALSE
+            visible(var1) = TRUE
+            colname <<- svalue(var1)
+            col_string$set_value("Select column to expand on")
+          }
+        })
+
+        key_string <- glabel("Name the new column for old column names", cont = mainGroup)
+        keybox <- gedit("", cont = mainGroup)
+        
+        value_string <- glabel("Name the new column for old column value", cont = mainGroup)
+        valuebox <- gedit("", cont = mainGroup)
+        
+        previewbox <- ggroup(cont = mainGroup, horizontal = TRUE, expand = TRUE)
+        left <- ggroup(horizontal = FALSE, cont = previewbox)
+        right <- ggroup(horizontal = FALSE, cont = previewbox)
+        
+        string1 <- glabel("Original dataset", cont = left)
+        originview = gtable(data.frame(GUI$getActiveData()), cont = left)
+        size(originview) = c(-1, 250)
+        
+        string2 <- glabel("New dataset", cont = right)
+        newview = gtable(data.frame(""), cont = right)
+        size(newview) = c(-1, 250)
+        
+        checkbtn <- gbutton("check", cont = mainGroup, handler = function(h, ...) {
+          xx <- iNZightTools::reshape_data(GUI$getActiveData(), c("v1999", "v2000"), "year", "population")
+          print(xx)
+        })
+        
+        visible(GUI$modWin) <<- TRUE
+      }
+    })
 )
 
 
