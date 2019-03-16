@@ -311,7 +311,10 @@ iNZReshapeDataWin <- setRefClass(
     colname = "ANY",
     key = "ANY",
     value = "ANY",
-    newview = "ANY"
+    newview = "ANY",
+    col1 = "ANY",
+    col2 = "ANY",
+    type = "ANY"
   ),
   methods = list(
     initialize = function(gui = NULL) {
@@ -327,16 +330,37 @@ iNZReshapeDataWin <- setRefClass(
         title_string = glabel("Reshape Dateset", cont = mainGroup)
         font(title_string) = list(size = 14, weight = "bold")
         
-        col_string = glabel("Select column to expand on", cont = mainGroup)
+        format_string <- glabel("Select how you want to reshape your dataset", cont = mainGroup)
+        format <- gcombobox(items = c("", "Wide to long", "Long to wide"), cont = mainGroup, handler = function(h, ...){
+          type <<- svalue(format)
+          visible(previewbox) <- TRUE
+          visible(reshapebtn) <- TRUE
+          if (type == "Wide to long"){
+            visible(group1) = TRUE
+            visible(group2) = FALSE
+          } else if (type == "Long to wide") {
+            visible(group2) = TRUE
+            visible(group1) = FALSE
+          } else{
+            visible(group1) = FALSE
+            visible(group2) = FALSE
+            visible(previewbox) <- FALSE
+            visible(reshapebtn) <- FALSE
+          }
+        })
+        
+        ## Wide to long
+        group1 <- ggroup(cont = mainGroup, horizontal = FALSE)
+        
+        col_string = glabel("Select column to expand on", cont = group1)
         
         colname <<- ""
-        
-        var1 = gcombobox(c("", names(GUI$getActiveData())), cont = mainGroup, handler = function(h, ...){
+        var1 = gcombobox(c("", names(GUI$getActiveData())), cont = group1, handler = function(h, ...){
           colname <<- svalue(var1)
           updatePreview()
         })
         
-        var2box = gvbox(cont = mainGroup)
+        var2box = gvbox(cont = group1)
         var2 = gtable(names(GUI$getActiveData()),multiple = TRUE, expand = TRUE, cont = var2box)
         addHandlerSelectionChanged(var2, function(h, ...){
           colname <<- svalue(var2)
@@ -347,7 +371,7 @@ iNZReshapeDataWin <- setRefClass(
         visible(var2box) = FALSE
         size(var2box) = c(-1, 150)
         
-        checkbox = gcheckbox(text = "Click to select multiple columns", cont = mainGroup, handler = function(h, ...) {
+        checkbox = gcheckbox(text = "Click to select multiple columns", cont = group1, handler = function(h, ...) {
           if (svalue(checkbox) == TRUE) {
             visible(var2box) = TRUE
             visible(var1) = FALSE
@@ -359,24 +383,44 @@ iNZReshapeDataWin <- setRefClass(
             visible(var1) = TRUE
             colname <<- svalue(var1)
             col_string$set_value("Select column to expand on")
-            # updatePreview()
+            updatePreview()
           }
         })
 
         key <<- "key"
-        key_string <- glabel("Name the new column for old column names", cont = mainGroup)
-        keybox <- gedit("", cont = mainGroup, handler = function(h,...) {
+        key_string <- glabel("Name the new column for old column names", cont = group1)
+        keybox <- gedit("key", cont = group1, handler = function(h,...) {
           key <<- svalue(keybox)
           updatePreview()
         })
         
         value <<- "value"
-        value_string <- glabel("Name the new column for old column value", cont = mainGroup)
-        valuebox <- gedit("", cont = mainGroup, handler = function(h,...) {
+        value_string <- glabel("Name the new column for old column value", cont = group1)
+        valuebox <- gedit("value", cont = group1, handler = function(h,...) {
           value <<- svalue(valuebox)
           updatePreview()
         })
         
+        visible(group1) = FALSE
+        
+        ## Long to wide
+        group2 <- ggroup(cont = mainGroup, horizontal = FALSE)
+        
+        label1 <- glabel("Select the column to gather on", cont = group2)
+        col1box <- gcombobox(items = c("", names(GUI$getActiveData())), cont = group2, handler = function(h, ...) {
+          col1 <<- svalue(col1box)
+          updatePreview()
+        })
+        
+        label2 <- glabel("Select the column with values corresponding to the above column", cont = group2)
+        col2box <- gcombobox(items = c("", names(GUI$getActiveData())), cont = group2, handler = function(h,...) {
+          col2 <<- svalue(col2box)
+          updatePreview()
+        })
+        
+        visible(group2) = FALSE
+        
+        ## Preview window
         previewbox <- ggroup(cont = mainGroup, horizontal = TRUE, fill = TRUE)
         left <- ggroup(horizontal = FALSE, cont = previewbox)
         right <- ggroup(horizontal = FALSE, cont = previewbox)
@@ -390,19 +434,29 @@ iNZReshapeDataWin <- setRefClass(
         size(newview) <<- c(-1, 250)
         
         reshapebtn <- gbutton("Reshape", cont = mainGroup, handler = function(h, ...) {
-          df = iNZightTools::reshape_data(GUI$getActiveData(), colname, key, value)
+          df = reshape()
           GUI$setDocument(iNZDocument$new(data = df))
           dispose(GUI$modWin)
         })
+        
+        visible(previewbox) <- FALSE
+        visible(reshapebtn) <- FALSE
         
         visible(GUI$modWin) <<- TRUE
       }
     },
     updatePreview = function() {
-      d = iNZightTools::reshape_data(GUI$getActiveData(), colname, key, value)
+      d = reshape()
       newview$set_items(d)
+    },
+    reshape = function() {
+      if (type == "Wide to long"){
+        df = iNZightTools::reshape_data_wide_to_long(GUI$getActiveData(), colname, key, value)
+      } else if (type == "Long to wide") {
+        df = iNZightTools::reshape_data_long_to_wide(GUI$getActiveData(), col1, col2)
+      }
     }
-    )
+  )
 )
 
 
