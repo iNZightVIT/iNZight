@@ -1,7 +1,18 @@
-## iNZight 3.3.3.9000
+## iNZight 3.3.6.9000
 __Release date__: TBA
 
+- add axis transformation (log-10) for numeric variables
+- switch between counts/percentages in bar plots
 
+
+### Dates and times 
+- convert variables into datetimes (Variables > Dates and times) 
+- extract time information from a datetime variable (such as the hour, or year)
+
+## iNZight 3.3.6
+__Release date__: 12 February 2019
+
+- fix a bug in Get Inference which showed x and y the wrong way around
 
 
 ## iNZight 3.3.5
