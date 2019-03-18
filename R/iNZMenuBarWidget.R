@@ -115,6 +115,16 @@ iNZMenuBarWidget <- setRefClass(
                     gaction("Delete current dataset",
                         icon = "symbol_diamond",
                         handler = function(h, ...) GUI$deleteDataset()),
+                "Merge datasets" = list(
+                  joinbycol = 
+                    gaction("Join by column values",
+                            icon = "symbol_diamond",
+                            handler = function(h, ...) iNZjoinDataWin$new(GUI)),
+                  appendrows = 
+                    gaction("Append new rows",
+                            icon = "symbol_diamond",
+                            handler = function(h, ...) iNZappendrowWin$new(GUI))
+                ),
                 gseparator(),
                 surveydesign = 
                     gaction("Specify survey design [beta] ...",
@@ -188,6 +198,20 @@ iNZMenuBarWidget <- setRefClass(
                             tooltip = "Convert multiple numeric variables to categorical",
                             handler = function(h, ...) iNZctocatmulWin$new(GUI))
                     ),
+                
+                "Dates and Times" = list(
+                  convert = 
+                    gaction("Convert to ...",
+                            icon = "symbol_diamond",
+                            tooltip = "Convert a variable to a dates and times type",
+                            handler = function(h, ...) iNZconTodtWin$new(GUI)),
+                  extract = 
+                    gaction("Extract from ...",
+                            icon = "symbol_diamond",
+                            tooltip = "Extract parts from a dates and times variable",
+                            handler = function(h, ...) iNZExtfromdtWin$new(GUI))
+                ),
+                
                 rename =
                     gaction("Rename variables ...",
                         icon = "symbol_diamond",
