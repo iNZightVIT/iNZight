@@ -55,9 +55,6 @@ test_that("UI correctly displays the data", {
 
 })
 
-ui$close(); load_all()
-ui <- iNZGUI$new()
-ui$initializeGui()
 test_that("Example data menus work correctly", {
     exwin <- iNZImportExampleWin$new(ui)
     mod <- exwin$importFileWin$children[[1]]$children[[1]]$children[[2]]
