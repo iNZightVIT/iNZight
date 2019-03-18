@@ -144,7 +144,7 @@ iNZFilterWin <- setRefClass(
                     # err <- strsplit(data, "\n")[[1]]
                     # ew <- grepl('Evaluation error', err, fixed = TRUE)
                     # err <- ifelse(any(ew), gsub('Evaluation error:', '', err[ew]), '')
-                    gmessage('Invalid numeric condition.',#paste(sep = "\n\n", 'Invalid condition:', err), 
+                    gmessage('Invalid numeric condition.',#paste(sep = "\n\n", 'Invalid condition:', err),
                         icon = 'error', parent = GUI$modWin)
                     return()
                   }
@@ -322,14 +322,14 @@ iNZReshapeDataWin <- setRefClass(
       if (!is.null(GUI)) {
         ## close any current mod windows
         try(dispose(GUI$modWin), silent = TRUE)
-        
+
         ## start my window
         GUI$modWin <<- gwindow("Reshape dataset", parent = GUI$win, visible = FALSE)
         mainGroup <- ggroup(cont = GUI$modWin, expand = TRUE, horizontal = FALSE)
-        
+
         title_string = glabel("Reshape Dateset", cont = mainGroup)
         font(title_string) = list(size = 14, weight = "bold")
-        
+
         format_string <- glabel("Select how you want to reshape your dataset", cont = mainGroup)
         format <- gcombobox(items = c("", "Wide to long", "Long to wide"), cont = mainGroup, handler = function(h, ...){
           type <<- svalue(format)
@@ -348,29 +348,29 @@ iNZReshapeDataWin <- setRefClass(
             visible(reshapebtn) <- FALSE
           }
         })
-        
+
         ## Wide to long
         group1 <- ggroup(cont = mainGroup, horizontal = FALSE)
-        
+
         col_string = glabel("Select column to expand on", cont = group1)
-        
+
         colname <<- ""
         var1 = gcombobox(c("", names(GUI$getActiveData())), cont = group1, handler = function(h, ...){
           colname <<- svalue(var1)
           updatePreview()
         })
-        
+
         var2box = gvbox(cont = group1)
         var2 = gtable(names(GUI$getActiveData()),multiple = TRUE, expand = TRUE, cont = var2box)
         addHandlerSelectionChanged(var2, function(h, ...){
           colname <<- svalue(var2)
           updatePreview()
         })
-        
+
         names(var2) = "Variables"
         visible(var2box) = FALSE
         size(var2box) = c(-1, 150)
-        
+
         checkbox = gcheckbox(text = "Click to select multiple columns", cont = group1, handler = function(h, ...) {
           if (svalue(checkbox) == TRUE) {
             visible(var2box) = TRUE
@@ -393,55 +393,60 @@ iNZReshapeDataWin <- setRefClass(
           key <<- svalue(keybox)
           updatePreview()
         })
-        
+
         value <<- "value"
         value_string <- glabel("Name the new column for old column value", cont = group1)
         valuebox <- gedit("value", cont = group1, handler = function(h,...) {
           value <<- svalue(valuebox)
           updatePreview()
         })
-        
+
         visible(group1) = FALSE
-        
+
         ## Long to wide
         group2 <- ggroup(cont = mainGroup, horizontal = FALSE)
-        
+
         label1 <- glabel("Select the column to gather on", cont = group2)
         col1box <- gcombobox(items = c("", names(GUI$getActiveData())), cont = group2, handler = function(h, ...) {
           col1 <<- svalue(col1box)
           updatePreview()
         })
-        
+
         label2 <- glabel("Select the column with values corresponding to the above column", cont = group2)
         col2box <- gcombobox(items = c("", names(GUI$getActiveData())), cont = group2, handler = function(h,...) {
           col2 <<- svalue(col2box)
           updatePreview()
         })
-        
+
         visible(group2) = FALSE
-        
+
         ## Preview window
-        previewbox <- ggroup(cont = mainGroup, horizontal = TRUE, fill = TRUE)
-        left <- ggroup(horizontal = FALSE, cont = previewbox)
-        right <- ggroup(horizontal = FALSE, cont = previewbox)
-        
-        string1 <- glabel("Original dataset", cont = left)
-        originview = gtable(data.frame(GUI$getActiveData()), cont = left)
+        previewbox <- gvbox(cont = mainGroup)#, horizontal = TRUE, fill = TRUE)
+        prevTbl <- glayout(homogeneous = FALSE, container = previewbox)
+        # left <- ggroup(horizontal = FALSE, cont = previewbox)
+        # right <- ggroup(horizontal = FALSE, cont = previewbox)
+
+        string1 <- glabel("Original dataset")
+        originview = gtable(data.frame(GUI$getActiveData()))
+        prevTbl[1,1, expand = TRUE] <- string1
+        prevTbl[2,1, expand = TRUE] <- originview
         size(originview) = c(-1, 250)
-        
-        string2 <- glabel("New dataset", cont = right)
-        newview <<- gtable(data.frame(""), cont = right)
+
+        string2 <- glabel("New dataset")
+        newview <<- gtable(data.frame(""))
+        prevTbl[1,2, expand = TRUE] <- string2
+        prevTbl[2,2, expand = TRUE] <- newview
         size(newview) <<- c(-1, 250)
-        
+
         reshapebtn <- gbutton("Reshape", cont = mainGroup, handler = function(h, ...) {
           df = reshape()
           GUI$setDocument(iNZDocument$new(data = df))
           dispose(GUI$modWin)
         })
-        
+
         visible(previewbox) <- FALSE
         visible(reshapebtn) <- FALSE
-        
+
         visible(GUI$modWin) <<- TRUE
       }
     },
@@ -490,7 +495,7 @@ iNZSortbyDataWin <- setRefClass(
             vars <- sapply(tbl[, 2], svalue)
             asc <- sapply(tbl[, 3], svalue, index = TRUE) == 1
             wi <- vars != ""
-            
+
             .dataset <- GUI$getActiveData()
             data <- iNZightTools::sortVars(.dataset, vars[wi], asc[wi])
             attr(data, "name") <- paste(attr(.dataset, "name", exact = TRUE), "sorted", sep = ".")
@@ -568,7 +573,7 @@ iNZAgraDataWin <- setRefClass(
             vars <- sapply(tbl[2:4, 2], svalue)
             vars <- vars[vars != ""]
             smrs <- svalue(func.table)
-            
+
             .dataset <- GUI$getActiveData()
             data <- iNZightTools::aggregateData(.dataset, vars, smrs)
             attr(data, "name") <- paste(attr(.dataset, "name", exact = TRUE), "aggregated", sep = ".")
@@ -636,7 +641,7 @@ iNZstackVarWin <- setRefClass(
         StackButton <- gbutton("Stack", handler = function(h, ...) {
           if (length(svalue(numVar)) > 0) {
             vars <- svalue(numVar)
-            
+
             .dataset <- GUI$getActiveData()
             data <- iNZightTools::stackVars(.dataset, vars)
             attr(data, "name") <- paste(attr(.dataset, "name", exact = TRUE), "stacked", sep = ".")
