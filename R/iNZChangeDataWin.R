@@ -307,7 +307,14 @@ iNZFilterWin <- setRefClass(
 iNZReshapeDataWin <- setRefClass(
   "iNZReshapeDataWin",
   fields = list(
-    GUI = "ANY"
+    GUI = "ANY",
+    colname = "ANY",
+    key = "ANY",
+    value = "ANY",
+    newview = "ANY",
+    col1 = "ANY",
+    col2 = "ANY",
+    type = "ANY"
   ),
   methods = list(
     initialize = function(gui = NULL) {
@@ -315,39 +322,146 @@ iNZReshapeDataWin <- setRefClass(
       if (!is.null(GUI)) {
         ## close any current mod windows
         try(dispose(GUI$modWin), silent = TRUE)
-        GUI$modWin <<- gwindow("Filter data by numeric condition",
-                                   parent = GUI$win, visible = FALSE)
-            mainGrp <- ggroup(cont = GUI$modWin, horizontal = FALSE,
-                              expand = TRUE)
-            mainGrp$set_borderwidth(15)
-            btnGrp <- ggroup(horizontal = TRUE)
-            lbl1 <- glabel("Reshape your dataset so that groups\nas columns are transformed to cases by variables")
-            conv.image <- gimage(system.file("images/groups-wide-to-tall.png",
-                                             package = "iNZight"))
-            reshapeButton <- gbutton(
-                "Reshape",
-                handler = function(h, ...) {
-                    if (ncol(GUI$getActiveData()) <= 1)
-                        gmessage("Unable to reshape datasets with a single column", "Error", icon = "error")
-                    else {
-                        .dataset <- GUI$getActiveData()
-                        vars <- names(.dataset)
-                        data <- iNZightTools::stackVars(.dataset, vars, 'variable', 'value')
-                        attr(data, "name") <- paste(attr(.dataset, "name", exact = TRUE), "stacked", sep = ".")
-                        attr(data, "code") <- gsub(".dataset", attr(.dataset, "name", exact = TRUE), attr(data, "code"))
-                        GUI$setDocument(iNZDocument$new(data = data))
-                        dispose(GUI$modWin)
-                    }
 
-                })
-            add(mainGrp, lbl1)
-            add(mainGrp, conv.image)
-            add(mainGrp, btnGrp)
-            addSpring(btnGrp)
-            add(btnGrp, reshapeButton)
-            visible(GUI$modWin) <<- TRUE
-            }
+        ## start my window
+        GUI$modWin <<- gwindow("Reshape dataset", parent = GUI$win, visible = FALSE)
+        mainGroup <- ggroup(cont = GUI$modWin, expand = TRUE, horizontal = FALSE)
+
+        title_string = glabel("Reshape Dateset", cont = mainGroup)
+        font(title_string) = list(size = 14, weight = "bold")
+
+        format_string <- glabel("Select how you want to reshape your dataset", cont = mainGroup)
+        format <- gcombobox(items = c("", "Wide to long", "Long to wide"), cont = mainGroup, handler = function(h, ...){
+          type <<- svalue(format)
+          visible(previewbox) <- TRUE
+          visible(reshapebtn) <- TRUE
+          if (type == "Wide to long"){
+            visible(group1) = TRUE
+            visible(group2) = FALSE
+          } else if (type == "Long to wide") {
+            visible(group2) = TRUE
+            visible(group1) = FALSE
+          } else{
+            visible(group1) = FALSE
+            visible(group2) = FALSE
+            visible(previewbox) <- FALSE
+            visible(reshapebtn) <- FALSE
+          }
         })
+
+        ## Wide to long
+        group1 <- ggroup(cont = mainGroup, horizontal = FALSE)
+
+        col_string = glabel("Select column to expand on", cont = group1)
+
+        colname <<- ""
+        var1 = gcombobox(c("", names(GUI$getActiveData())), cont = group1, handler = function(h, ...){
+          colname <<- svalue(var1)
+          updatePreview()
+        })
+
+        var2box = gvbox(cont = group1)
+        var2 = gtable(names(GUI$getActiveData()),multiple = TRUE, expand = TRUE, cont = var2box)
+        addHandlerSelectionChanged(var2, function(h, ...){
+          colname <<- svalue(var2)
+          updatePreview()
+        })
+
+        names(var2) = "Variables"
+        visible(var2box) = FALSE
+        size(var2box) = c(-1, 150)
+
+        checkbox = gcheckbox(text = "Click to select multiple columns", cont = group1, handler = function(h, ...) {
+          if (svalue(checkbox) == TRUE) {
+            visible(var2box) = TRUE
+            visible(var1) = FALSE
+            colname <<- svalue(var2)
+            col_string$set_value("Select columns to expand on \n(Use CNTRL to add/remove)")
+            updatePreview()
+          } else {
+            visible(var2box) = FALSE
+            visible(var1) = TRUE
+            colname <<- svalue(var1)
+            col_string$set_value("Select column to expand on")
+            updatePreview()
+          }
+        })
+
+        key <<- "key"
+        key_string <- glabel("Name the new column for old column names", cont = group1)
+        keybox <- gedit("key", cont = group1, handler = function(h,...) {
+          key <<- svalue(keybox)
+          updatePreview()
+        })
+
+        value <<- "value"
+        value_string <- glabel("Name the new column for old column value", cont = group1)
+        valuebox <- gedit("value", cont = group1, handler = function(h,...) {
+          value <<- svalue(valuebox)
+          updatePreview()
+        })
+
+        visible(group1) = FALSE
+
+        ## Long to wide
+        group2 <- ggroup(cont = mainGroup, horizontal = FALSE)
+
+        label1 <- glabel("Select the column to gather on", cont = group2)
+        col1box <- gcombobox(items = c("", names(GUI$getActiveData())), cont = group2, handler = function(h, ...) {
+          col1 <<- svalue(col1box)
+          updatePreview()
+        })
+
+        label2 <- glabel("Select the column with values corresponding to the above column", cont = group2)
+        col2box <- gcombobox(items = c("", names(GUI$getActiveData())), cont = group2, handler = function(h,...) {
+          col2 <<- svalue(col2box)
+          updatePreview()
+        })
+
+        visible(group2) = FALSE
+
+        ## Preview window
+        previewbox <- gvbox(cont = mainGroup)#, horizontal = TRUE, fill = TRUE)
+        prevTbl <- glayout(homogeneous = FALSE, container = previewbox)
+        # left <- ggroup(horizontal = FALSE, cont = previewbox)
+        # right <- ggroup(horizontal = FALSE, cont = previewbox)
+
+        string1 <- glabel("Original dataset")
+        originview = gtable(data.frame(GUI$getActiveData()))
+        prevTbl[1,1, expand = TRUE] <- string1
+        prevTbl[2,1, expand = TRUE] <- originview
+        size(originview) = c(-1, 250)
+
+        string2 <- glabel("New dataset")
+        newview <<- gtable(data.frame(""))
+        prevTbl[1,2, expand = TRUE] <- string2
+        prevTbl[2,2, expand = TRUE] <- newview
+        size(newview) <<- c(-1, 250)
+
+        reshapebtn <- gbutton("Reshape", cont = mainGroup, handler = function(h, ...) {
+          df = reshape()
+          GUI$setDocument(iNZDocument$new(data = df))
+          dispose(GUI$modWin)
+        })
+
+        visible(previewbox) <- FALSE
+        visible(reshapebtn) <- FALSE
+
+        visible(GUI$modWin) <<- TRUE
+      }
+    },
+    updatePreview = function() {
+      d = reshape()
+      newview$set_items(d)
+    },
+    reshape = function() {
+      if (type == "Wide to long"){
+        df = iNZightTools::reshape_data_wide_to_long(GUI$getActiveData(), colname, key, value)
+      } else if (type == "Long to wide") {
+        df = iNZightTools::reshape_data_long_to_wide(GUI$getActiveData(), col1, col2)
+      }
+    }
+  )
 )
 
 
@@ -850,7 +964,6 @@ iNZappendrowWin <- setRefClass(
       if (!is.null(GUI)) {
         ## close any current mod windows
         try(dispose(GUI$modWin), silent = TRUE)
-
         ## start my window
         GUI$modWin <<- gwindow("Append rows",
                                parent = GUI$win, visible = FALSE)
@@ -858,7 +971,6 @@ iNZappendrowWin <- setRefClass(
 
         title_string = glabel("Append rows", cont = mainGroup)
         font(title_string) = list(size = 14, weight = "bold")
-
         file_string = glabel("Import data", cont = mainGroup, anchor = c(-1,0))
         data_name = gfilebrowse(text = "Specify a file", initial.dir = file.path(".", "data"), cont = mainGroup, handler = function(h, ...) {
           newdata <<- read.csv(svalue(data_name))

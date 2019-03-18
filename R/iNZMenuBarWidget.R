@@ -96,6 +96,12 @@ iNZMenuBarWidget <- setRefClass(
                     gaction("Stack ...",
                         icon = "symbol_diamond",
                         handler = function(h, ...) iNZstackVarWin$new(GUI)),
+                
+                reshape = 
+                  gaction("Reshape dataset ...",
+                          icon = "symbol_diamond",
+                          tooltip = "Transform from wide- to long-form data",
+                          handler = function(h, ...) iNZReshapeDataWin$new(GUI)),
                 gseparator(),
                 rename = 
                     gaction("Rename ...",
@@ -221,11 +227,6 @@ iNZMenuBarWidget <- setRefClass(
                         icon = "symbol_diamond",
                         tooltip = "Create a variable to include missingness information",
                         handler = function(h, ...) iNZmissCatWin$new(GUI)),
-                reshape = 
-                    gaction("Reshape dataset ...",
-                        icon = "symbol_diamond",
-                        tooltip = "Transform from wide- to long-form data",
-                        handler = function(h, ...) iNZReshapeDataWin$new(GUI)),
                 delete = 
                     gaction("Delete variables ...",
                         icon = "symbol_diamond",
