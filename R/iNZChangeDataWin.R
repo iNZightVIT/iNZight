@@ -724,12 +724,12 @@ iNZjoinDataWin <- setRefClass(
       if (!is.null(GUI)) {
         ## close any current mod windows
         try(dispose(GUI$modWin), silent = TRUE)
-        
+
         ## start my window
         GUI$modWin <<- gwindow("Join with another dataset by column values",
                                 parent = GUI$win, visible = FALSE)
         mainGroup <- ggroup(cont = GUI$modWin, expand = TRUE, horizontal = FALSE)
-        
+
         ## Top window
         top = ggroup(cont = mainGroup, horizontal = FALSE)
         lyt <- glayout(cont = top)
@@ -739,18 +739,18 @@ iNZjoinDataWin <- setRefClass(
         lyt[1, 1:2] <- title_box
         lyt[2,1] <- left
         lyt[2,2] <- right
-        
+
         ## Title
         title_string = glabel("Join Datasets", cont = title_box)
         font(title_string) = list(size = 14, weight = "bold")
-        
+
         ## Left hand side
         original_string = glabel("Preview of the original dataset", cont = left, anchor = c(-1, 0))
-        
+
         originview = gtable(data.frame(head(GUI$getActiveData(),10)), cont = left)
-        
+
         join_string = glabel("Select join methods", cont = left, anchor = c(-1,0))
-        
+
         join_method <<- "inner_join"
         var1 = gcombobox(items = c("Inner Join", "Left Join", "Full Join", "Semi Join", "Anti Join"), cont = left)
         addHandlerChanged(var1, function(h, ...) {
@@ -771,7 +771,7 @@ iNZjoinDataWin <- setRefClass(
           updatePreview()
         })
         visible(left_name_box) = FALSE
-        
+
         ## Right hand side
         Preview_string = glabel("Preview of the imported dataset", cont = right, anchor = c(-1, 0))
         data2view = gtable(data.frame(""), cont = right)
@@ -798,7 +798,7 @@ iNZjoinDataWin <- setRefClass(
           create_join_table()
           updatePreview()
         })
-        
+
         right_name_box = gvbox(cont = right)
         name_string = glabel("Duplicated cols: suffix for New", cont = right_name_box, anchor = c(-1, 0))
         right_name <<- "New"
@@ -808,7 +808,7 @@ iNZjoinDataWin <- setRefClass(
           updatePreview()
         })
         visible(right_name_box) = FALSE
-        
+
         ## Middle box
         middle <<- ggroup(cont = mainGroup, horizontal = FALSE)
         coltbl <<- glayout(cont = middle)
@@ -818,55 +818,55 @@ iNZjoinDataWin <- setRefClass(
         bottom = ggroup(cont = mainGroup, horizontal = FALSE)
         preview_string2 = glabel("Preview", cont = bottom, anchor = c(-1, 0))
         joinview <<- gtable(data.frame(""), cont = bottom)
-        size(joinview) = c(-1, 150)
-        
+        size(joinview) <<- c(-1, 150)
+
         joinbtn = gbutton("Join", cont = bottom)
         addHandlerChanged(joinbtn, function(h, ...) {
           joined = joinData()
           GUI$setDocument(iNZDocument$new(data = joined))
           dispose(GUI$modWin)
         })
-        
+
         helpbtn = gbutton("Help", cont = bottom, handler = function(h, ...) {
           helpwin = gwindow(title = "Help")
           win = gvbox(cont = helpwin)
-          
+
           inner_join = glabel("Inner Join", cont = win)
           font(inner_join) = list(size = 12, weight = "bold")
           inner_join_help = glabel("Keep all the matched rows within both datasets", cont = win)
           addSpace(win, 5)
-          
+
           left_join = glabel("Left Join", cont = win)
           font(left_join) = list(size = 12, weight = "bold")
           left_join_help = glabel("Keep every row in the original dataset and match them to the imported dataset", cont = win)
           addSpace(win, 5)
-          
+
           full_join = glabel("Full Join", cont = win)
           font(full_join) = list(size = 12, weight = "bold")
           full_join_help = glabel("Keep all the rows in both datasets", cont = win)
           addSpace(win, 5)
-          
+
           semi_join = glabel("Semi Join", cont = win)
           font(semi_join) = list(size = 12, weight = "bold")
           semi_join_help = glabel("Keep matched rows in the original dataset ONLY", cont = win)
           addSpace(win, 5)
-          
+
           anti_join = glabel("Anti Join", cont = win)
           font(anti_join) = list(size = 12, weight = "bold")
           anti_join_help = glabel("Return all rows in the original dataset which do not have a match in the imported dataset", cont = win)
           addSpace(win, 5)
         })
-        
+
         checkbtn = gbutton("check", cont = bottom, handler = function(h, ...) {
           print(left_col)
           print(length(coltbl$children))
         })
-        
+
         removebtn = gbutton("remove", cont = bottom, handler = function(h, ...) {
           middle$remove_child(coltbl)
           print("fdasdasds")
         })
-        
+
         addbtn = gbutton("add", cont = bottom, handler = function(h, ...) {
           coltbl <<- glayout()
           coltbl[1, 1:4] <<- glabel("Please specify columns to match on from two datasets")
@@ -894,11 +894,11 @@ iNZjoinDataWin <- setRefClass(
     joinData = function() {
       iNZightTools::joindata(
         GUI$getActiveData(),
-        newdata, 
-        left_col, 
-        right_col, 
-        join_method, 
-        left_name, 
+        newdata,
+        left_col,
+        right_col,
+        join_method,
+        left_name,
         right_name
       )
     },
@@ -918,28 +918,28 @@ iNZjoinDataWin <- setRefClass(
         add_joinby_row(coltbl, i)
         number = i + 1
         coltbl[number, 1]$set_items(left_col[i])
-        svalue(coltbl[number, 1]) = left_col[i]
+        svalue(coltbl[number, 1]) <<- left_col[i]
         coltbl[number, 2]$set_items(right_col[i])
-        svalue(coltbl[number, 2]) = right_col[i]
+        svalue(coltbl[number, 2]) <<- right_col[i]
       }
     },
     # Add joinby row
     add_joinby_row = function(coltbl, number) {
       n = number + 1
-      coltbl[n, 1] = gcombobox(c("", setdiff(names(GUI$getActiveData()), left_col)), handler = function(h, ...) {
+      coltbl[n, 1] <<- gcombobox(c("", setdiff(names(GUI$getActiveData()), left_col)), handler = function(h, ...) {
         new_col = svalue(coltbl[n,1])
         left_col[number] <<- new_col
         updatePreview()
       })
-      coltbl[n, 2] = gcombobox(c("", setdiff(names(newdata), right_col)), handler = function(h, ...) {
+      coltbl[n, 2] <<- gcombobox(c("", setdiff(names(newdata), right_col)), handler = function(h, ...) {
         new_col = svalue(coltbl[n,2])
         right_col[number] <<- new_col
         updatePreview()
       })
-      coltbl[n, 3] = gbutton('delete', handler = function(h, ...) {
+      coltbl[n, 3] <<- gbutton('delete', handler = function(h, ...) {
         remove_joinby_row(coltbl, n, left_col)
       })
-      coltbl[n, 4] = gbutton('add', handler = function(h, ...) {
+      coltbl[n, 4] <<- gbutton('add', handler = function(h, ...) {
         add_joinby_row(coltbl, length(left_col) + 1)
       })
     },
@@ -964,7 +964,6 @@ iNZappendrowWin <- setRefClass(
       if (!is.null(GUI)) {
         ## close any current mod windows
         try(dispose(GUI$modWin), silent = TRUE)
-        
         ## start my window
         GUI$modWin <<- gwindow("Append rows",
                                parent = GUI$win, visible = FALSE)
@@ -972,14 +971,13 @@ iNZappendrowWin <- setRefClass(
 
         title_string = glabel("Append rows", cont = mainGroup)
         font(title_string) = list(size = 14, weight = "bold")
-        
         file_string = glabel("Import data", cont = mainGroup, anchor = c(-1,0))
         data_name = gfilebrowse(text = "Specify a file", initial.dir = file.path(".", "data"), cont = mainGroup, handler = function(h, ...) {
           newdata <<- read.csv(svalue(data_name))
         })
-        
+
         check_box = gcheckbox("Tick if you want to attach a timestamp to the appended rows", cont = mainGroup)
-        
+
         appendbtn = gbutton("Append", cont = mainGroup)
         addHandlerChanged(appendbtn, function(h, ...) {
           date = svalue(check_box)
@@ -987,7 +985,7 @@ iNZappendrowWin <- setRefClass(
           GUI$setDocument(iNZDocument$new(data = data))
           dispose(GUI$modWin)
         })
-        
+
         visible(GUI$modWin) <<- TRUE
       }
     }

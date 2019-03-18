@@ -61,6 +61,7 @@ iNZImportExampleWin <- setRefClass("iNZImportExampleWin",
             addSpring(mainGrp)
 
             setDataMenu <- function() {
+                svalue(dsTitle) <- ""
                 pkgname <- names(pkgs)[svalue(dsPkg, index = TRUE)]
                 ds <- data(package = pkgname)$results
                 # filter out non-data.frame ones
@@ -72,70 +73,92 @@ iNZImportExampleWin <- setRefClass("iNZImportExampleWin",
                         x <- gsub(" \\(.+", "", x)
                     }
                     check <- sprintf("data(%s, package = '%s')", x, pkgname)
-                    is.data.frame(eval(parse(text = d)))
+                    eval(parse(text = check))
+                    eval(parse(text = sprintf("is.data.frame(%s)", d)))
                 })
-                datasets <<- ds[dfs, ]
+                datasets <<- ds[dfs, , drop = FALSE]
                 dsData$set_items(datasets[, "Item"])
             }
             setDataMenu()
 
             ## Change Handlers:
-            addHandlerChanged(dsPkg, function(h, ...) {
-                                  ## set the dataset menu
-                                  setDataMenu()
-                              })
-            addHandlerChanged(dsData, function(h, ...) {
-                                  svalue(dsTitle) <- datasets[svalue(dsData, index = TRUE), "Title"]
-                              })
+            addHandlerChanged(dsPkg,
+                function(h, ...) {
+                    ## set the dataset menu
+                    setDataMenu()
+                }
+            )
+            addHandlerChanged(dsData,
+                function(h, ...) {
+                    ttl <- datasets[svalue(dsData, index = TRUE), "Title"]
+                    if (ttl == "")
+                        ttl <- svalue(dsData)
+                    svalue(dsTitle) <- ttl
+                }
+            )
 
 
             ## OK / Cancel buttons
             btnGrp <- ggroup(cont = mainGrp)
             addSpring(btnGrp)
 
-            cancelBtn <- gbutton("Cancel", expand = TRUE, cont = btnGrp,
-                                 handler = function(h, ...) {
-                                     dispose(importFileWin)
-                                 })
+            cancelBtn <- gbutton("Cancel",
+                expand = TRUE,
+                cont = btnGrp,
+                handler = function(h, ...) {
+                    dispose(importFileWin)
+                }
+            )
 
-            okBtn <- gbutton("Ok", expand = TRUE, cont = btnGrp,
-                             handler = function(h, ...) {
-                                 ## Set the data - will need to 'load' it into an evironment, then
-                                 ## reassign it:
-                                 ind <- svalue(dsData, index = TRUE)
-                                 dataName <- dname <- datasets[ind, "Item"]
-                                 pkgname <- names(pkgs)[svalue(dsPkg, index = TRUE)]
+            okBtn <- gbutton("Ok",
+                expand = TRUE,
+                cont = btnGrp,
+                handler = function(h, ...) {
+                    ## Set the data - will need to 'load' it into an evironment, then
+                    ## reassign it:
+                    ind <- svalue(dsData, index = TRUE)
+                    dataName <- dname <- datasets[ind, "Item"]
+                    pkgname <- names(pkgs)[svalue(dsPkg, index = TRUE)]
 
-                                 if (pkgname == "survey") {
-                                     if (grepl('\\(.+\\)', dname)) {
-                                         dataName <- gsub("\\)", "", gsub(".+\\(", "", dataName))
-                                         dname <- gsub(" \\(.+", "", dname)
-                                     }
-                                 }
+                    if (pkgname == "survey") {
+                        if (grepl('\\(.+\\)', dname)) {
+                            dataName <- gsub("\\)", "", gsub(".+\\(", "", dataName))
+                            dname <- gsub(" \\(.+", "", dname)
+                        }
+                    }
 
-                                 tmp.env <- new.env()
-                                 data(list = dataName, package = pkgname, envir = tmp.env)
+                    tmp.env <- new.env()
+                    data(
+                        list = dataName,
+                        package = pkgname,
+                        envir = tmp.env
+                    )
 
-                                 ## Set the name to the title (or Item if title missing)
-                                 data <- tmp.env[[dname]]
-                                 GUI$rhistory$add(
-                                    sprintf("## Load example data set\ndata(%s, package = '%s')",
-                                            dname, pkgname),
-                                    keep = TRUE)
+                    ## Set the name to the title (or Item if title missing)
+                    data <- tmp.env[[dname]]
+                    GUI$rhistory$add(
+                        sprintf(
+                            "## Load example data set\ndata(%s, package = '%s')",
+                            dname,
+                            pkgname
+                        ),
+                        keep = TRUE
+                    )
 
-                                 attr(data, "name") <- sprintf("%s_ex", dname)
-                                 attr(data, "code") <- sprintf(".dataset <- %s", dname)
+                    attr(data, "name") <- sprintf("%s_ex", dname)
+                    attr(data, "code") <- sprintf(".dataset <- %s", dname)
 
-                                 GUI$setDocument(iNZDocument$new(data = data), reset = TRUE)
+                    GUI$setDocument(iNZDocument$new(data = data), reset = TRUE)
 
-                                 ## clean up
-                                 rm("tmp.env")
-                                 dispose(importFileWin)
-                             })
+                    ## clean up
+                    rm("tmp.env")
+                    dispose(importFileWin)
+                }
+            )
 
 
             visible(importFileWin) <<- TRUE
-
+            invisible(.self)
         } # initialize
     ) # methods list
 ) # setRefClass
