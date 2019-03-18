@@ -109,6 +109,16 @@ iNZMenuBarWidget <- setRefClass(
                     gaction("Delete current dataset",
                         icon = "symbol_diamond",
                         handler = function(h, ...) GUI$deleteDataset()),
+                "Merge datasets" = list(
+                  joinbycol = 
+                    gaction("Join by column values",
+                            icon = "symbol_diamond",
+                            handler = function(h, ...) iNZjoinDataWin$new(GUI)),
+                  appendrows = 
+                    gaction("Append new rows",
+                            icon = "symbol_diamond",
+                            handler = function(h, ...) iNZappendrowWin$new(GUI))
+                ),
                 gseparator(),
                 surveydesign = 
                     gaction("Specify survey design [beta] ...",
