@@ -1293,7 +1293,10 @@ iNZconTodtWin <- setRefClass(
       callSuper(gui)
       svalue(GUI$modWin) <<- "Convert to Dates and Times"
       
-      mainGroup <- gvbox()
+      scrolledWindow <- gtkScrolledWindow()
+      scrolledWindow$setPolicy("GTK_POLICY_AUTOMATIC","GTK_POLICY_AUTOMATIC")
+      
+      mainGroup <- ggroup(expand = TRUE, horizontal = FALSE)
       mainGroup$set_borderwidth(15)
       
       title <- glabel("Convert to a Date-Time variable", container = mainGroup)
@@ -1458,7 +1461,9 @@ iNZconTodtWin <- setRefClass(
         dispose(GUI$modWin)
       })
       
-      add(GUI$modWin, mainGroup, expand = TRUE)
+      scrolledWindow$addWithViewport(mainGroup$widget)
+      add(GUI$modWin, scrolledWindow, expand = TRUE, fill = TRUE)
+      size(GUI$modWin) <<- c(300, 600)
       visible(GUI$modWin) <<- TRUE
     })
 )
@@ -1471,7 +1476,8 @@ iNZExtfromdtWin <- setRefClass(
   fields = list(
     varname = "ANY",
     component = "ANY",
-    newname = "ANY"
+    newname = "ANY",
+    extractedview = "ANY"
   ),
   methods = list(
     initialize = function(gui) {
@@ -1499,8 +1505,7 @@ iNZExtfromdtWin <- setRefClass(
           if (component == "") {
             return()
           } 
-          exp = iNZightTools::extract_part(GUI$getActiveData(), varname, component, newname)
-          extractedview$set_items(data.frame(Extracted = as.character(exp[[newname]])))
+          updatePreview()
         }
       })
       
@@ -1552,8 +1557,7 @@ iNZExtfromdtWin <- setRefClass(
                                                                   "Day of the week (number, Sunday as 0)" = "Day.week.number",
                                                                   "Time only" = "Time",
                                                                   "Hours (decimal)" = "Hour.decimal", component), sep = ""))
-        exp = iNZightTools::extract_part(GUI$getActiveData(), varname, component, newname)
-        extractedview$set_items(data.frame(Extracted = as.character(exp[[newname]])))
+        updatePreview()
       })
       size(atree) = c(-1, 250)
       
@@ -1562,6 +1566,7 @@ iNZExtfromdtWin <- setRefClass(
       date_string <- glabel("Name for new variable", container = mainGroup, anchor = c(-1, 0))
       newVarname = gedit("", cont = mainGroup, handler = function(h, ...) {
         newname <<- svalue(newVarname)
+        updatePreview()
       })
       
       preview_string = glabel("Preview", cont = mainGroup, anchor = c(-1, 0))
@@ -1569,8 +1574,8 @@ iNZExtfromdtWin <- setRefClass(
       g2 = ggroup(cont = mainGroup)
       dfview = gtable(data.frame(Original = ""), cont = g2)
       size(dfview) = c(-1, 250)
-      extractedview = gtable(data.frame(Extracted = ""), cont = g2)
-      size(extractedview) = c(-1, 250)
+      extractedview <<- gtable(data.frame(Extracted = ""), cont = g2)
+      size(extractedview) <<- c(-1, 250)
       
       okbtn <- gbutton("Extract", container = mainGroup, handler = function(h,...) {
         .dataset = GUI$getActiveData()
@@ -1581,8 +1586,13 @@ iNZExtfromdtWin <- setRefClass(
       
       add(GUI$modWin, mainGroup, expand = TRUE)
       visible(GUI$modWin) <<- TRUE
-    })
-)
+    },
+  updatePreview = function() {
+    .dataset = GUI$getActiveData()
+    d = iNZightTools::extract_part(.dataset, varname, component, newname)
+    extractedview$set_items(data.frame(Extracted = as.character(d[[newname]])))
+  }
+))
 
 ## Aggregate datetimes
 iNZAggregatedtWin <- setRefClass(
