@@ -62,7 +62,7 @@ iNZFilterWin <- setRefClass(
             lbl3 = glabel("(Hold Ctrl to choose many)")
             ## choose a factor column from the dataset and display
             ## its levels together with their order
-            factorIndices <- sapply(GUI$getActiveData(), is.factor)
+            factorIndices <- sapply(GUI$getActiveData(), is_cat)
             factorMenu <- gcombobox(names(GUI$getActiveData())[factorIndices],
                                     selected = 0)
             addHandlerChanged(factorMenu, handler = function(h, ...) {
@@ -127,7 +127,7 @@ iNZFilterWin <- setRefClass(
             lbl3 = glabel("eg: X == 20")
             lbl4 = glabel("Choose observations in the dataset where :")
             font(lbl4) = list(weight = "bold", style = "normal")
-            numIndices <- sapply(GUI$getActiveData(), function(x) !is.factor(x))
+            numIndices <- sapply(GUI$getActiveData(), function(x) !is_cat(x))
             numMenu <- gcombobox(names(GUI$getActiveData())[numIndices],
                                  selected = 0)
             operator <- gedit("", width = 2)
@@ -144,7 +144,7 @@ iNZFilterWin <- setRefClass(
                     # err <- strsplit(data, "\n")[[1]]
                     # ew <- grepl('Evaluation error', err, fixed = TRUE)
                     # err <- ifelse(any(ew), gsub('Evaluation error:', '', err[ew]), '')
-                    gmessage('Invalid numeric condition.',#paste(sep = "\n\n", 'Invalid condition:', err), 
+                    gmessage('Invalid numeric condition.',#paste(sep = "\n\n", 'Invalid condition:', err),
                         icon = 'error', parent = GUI$modWin)
                     return()
                   }
@@ -307,7 +307,14 @@ iNZFilterWin <- setRefClass(
 iNZReshapeDataWin <- setRefClass(
   "iNZReshapeDataWin",
   fields = list(
-    GUI = "ANY"
+    GUI = "ANY",
+    colname = "ANY",
+    key = "ANY",
+    value = "ANY",
+    newview = "ANY",
+    col1 = "ANY",
+    col2 = "ANY",
+    type = "ANY"
   ),
   methods = list(
     initialize = function(gui = NULL) {
@@ -315,39 +322,146 @@ iNZReshapeDataWin <- setRefClass(
       if (!is.null(GUI)) {
         ## close any current mod windows
         try(dispose(GUI$modWin), silent = TRUE)
-        GUI$modWin <<- gwindow("Filter data by numeric condition",
-                                   parent = GUI$win, visible = FALSE)
-            mainGrp <- ggroup(cont = GUI$modWin, horizontal = FALSE,
-                              expand = TRUE)
-            mainGrp$set_borderwidth(15)
-            btnGrp <- ggroup(horizontal = TRUE)
-            lbl1 <- glabel("Reshape your dataset so that groups\nas columns are transformed to cases by variables")
-            conv.image <- gimage(system.file("images/groups-wide-to-tall.png",
-                                             package = "iNZight"))
-            reshapeButton <- gbutton(
-                "Reshape",
-                handler = function(h, ...) {
-                    if (ncol(GUI$getActiveData()) <= 1)
-                        gmessage("Unable to reshape datasets with a single column", "Error", icon = "error")
-                    else {
-                        .dataset <- GUI$getActiveData()
-                        vars <- names(.dataset)
-                        data <- iNZightTools::stackVars(.dataset, vars, 'variable', 'value')
-                        attr(data, "name") <- paste(attr(.dataset, "name", exact = TRUE), "stacked", sep = ".")
-                        attr(data, "code") <- gsub(".dataset", attr(.dataset, "name", exact = TRUE), attr(data, "code"))
-                        GUI$setDocument(iNZDocument$new(data = data))
-                        dispose(GUI$modWin)
-                    }
 
-                })
-            add(mainGrp, lbl1)
-            add(mainGrp, conv.image)
-            add(mainGrp, btnGrp)
-            addSpring(btnGrp)
-            add(btnGrp, reshapeButton)
-            visible(GUI$modWin) <<- TRUE
-            }
+        ## start my window
+        GUI$modWin <<- gwindow("Reshape dataset", parent = GUI$win, visible = FALSE)
+        mainGroup <- ggroup(cont = GUI$modWin, expand = TRUE, horizontal = FALSE)
+
+        title_string = glabel("Reshape Dateset", cont = mainGroup)
+        font(title_string) = list(size = 14, weight = "bold")
+
+        format_string <- glabel("Select how you want to reshape your dataset", cont = mainGroup)
+        format <- gcombobox(items = c("", "Wide to long", "Long to wide"), cont = mainGroup, handler = function(h, ...){
+          type <<- svalue(format)
+          visible(previewbox) <- TRUE
+          visible(reshapebtn) <- TRUE
+          if (type == "Wide to long"){
+            visible(group1) = TRUE
+            visible(group2) = FALSE
+          } else if (type == "Long to wide") {
+            visible(group2) = TRUE
+            visible(group1) = FALSE
+          } else{
+            visible(group1) = FALSE
+            visible(group2) = FALSE
+            visible(previewbox) <- FALSE
+            visible(reshapebtn) <- FALSE
+          }
         })
+
+        ## Wide to long
+        group1 <- ggroup(cont = mainGroup, horizontal = FALSE)
+
+        col_string = glabel("Select column to expand on", cont = group1)
+
+        colname <<- ""
+        var1 = gcombobox(c("", names(GUI$getActiveData())), cont = group1, handler = function(h, ...){
+          colname <<- svalue(var1)
+          updatePreview()
+        })
+
+        var2box = gvbox(cont = group1)
+        var2 = gtable(names(GUI$getActiveData()),multiple = TRUE, expand = TRUE, cont = var2box)
+        addHandlerSelectionChanged(var2, function(h, ...){
+          colname <<- svalue(var2)
+          updatePreview()
+        })
+
+        names(var2) = "Variables"
+        visible(var2box) = FALSE
+        size(var2box) = c(-1, 150)
+
+        checkbox = gcheckbox(text = "Click to select multiple columns", cont = group1, handler = function(h, ...) {
+          if (svalue(checkbox) == TRUE) {
+            visible(var2box) = TRUE
+            visible(var1) = FALSE
+            colname <<- svalue(var2)
+            col_string$set_value("Select columns to expand on \n(Use CNTRL to add/remove)")
+            updatePreview()
+          } else {
+            visible(var2box) = FALSE
+            visible(var1) = TRUE
+            colname <<- svalue(var1)
+            col_string$set_value("Select column to expand on")
+            updatePreview()
+          }
+        })
+
+        key <<- "key"
+        key_string <- glabel("Name the new column for old column names", cont = group1)
+        keybox <- gedit("key", cont = group1, handler = function(h,...) {
+          key <<- svalue(keybox)
+          updatePreview()
+        })
+
+        value <<- "value"
+        value_string <- glabel("Name the new column for old column value", cont = group1)
+        valuebox <- gedit("value", cont = group1, handler = function(h,...) {
+          value <<- svalue(valuebox)
+          updatePreview()
+        })
+
+        visible(group1) = FALSE
+
+        ## Long to wide
+        group2 <- ggroup(cont = mainGroup, horizontal = FALSE)
+
+        label1 <- glabel("Select the column to gather on", cont = group2)
+        col1box <- gcombobox(items = c("", names(GUI$getActiveData())), cont = group2, handler = function(h, ...) {
+          col1 <<- svalue(col1box)
+          updatePreview()
+        })
+
+        label2 <- glabel("Select the column with values corresponding to the above column", cont = group2)
+        col2box <- gcombobox(items = c("", names(GUI$getActiveData())), cont = group2, handler = function(h,...) {
+          col2 <<- svalue(col2box)
+          updatePreview()
+        })
+
+        visible(group2) = FALSE
+
+        ## Preview window
+        previewbox <- gvbox(cont = mainGroup)#, horizontal = TRUE, fill = TRUE)
+        prevTbl <- glayout(homogeneous = FALSE, container = previewbox)
+        # left <- ggroup(horizontal = FALSE, cont = previewbox)
+        # right <- ggroup(horizontal = FALSE, cont = previewbox)
+
+        string1 <- glabel("Original dataset")
+        originview = gtable(data.frame(GUI$getActiveData()))
+        prevTbl[1,1, expand = TRUE] <- string1
+        prevTbl[2,1, expand = TRUE] <- originview
+        size(originview) = c(-1, 250)
+
+        string2 <- glabel("New dataset")
+        newview <<- gtable(data.frame(""))
+        prevTbl[1,2, expand = TRUE] <- string2
+        prevTbl[2,2, expand = TRUE] <- newview
+        size(newview) <<- c(-1, 250)
+
+        reshapebtn <- gbutton("Reshape", cont = mainGroup, handler = function(h, ...) {
+          df = reshape()
+          GUI$setDocument(iNZDocument$new(data = df))
+          dispose(GUI$modWin)
+        })
+
+        visible(previewbox) <- FALSE
+        visible(reshapebtn) <- FALSE
+
+        visible(GUI$modWin) <<- TRUE
+      }
+    },
+    updatePreview = function() {
+      d = reshape()
+      newview$set_items(d)
+    },
+    reshape = function() {
+      if (type == "Wide to long"){
+        df = iNZightTools::reshape_data_wide_to_long(GUI$getActiveData(), colname, key, value)
+      } else if (type == "Long to wide") {
+        df = iNZightTools::reshape_data_long_to_wide(GUI$getActiveData(), col1, col2)
+      }
+    }
+  )
 )
 
 
@@ -381,7 +495,7 @@ iNZSortbyDataWin <- setRefClass(
             vars <- sapply(tbl[, 2], svalue)
             asc <- sapply(tbl[, 3], svalue, index = TRUE) == 1
             wi <- vars != ""
-            
+
             .dataset <- GUI$getActiveData()
             data <- iNZightTools::sortVars(.dataset, vars[wi], asc[wi])
             attr(data, "name") <- paste(attr(.dataset, "name", exact = TRUE), "sorted", sep = ".")
@@ -450,7 +564,7 @@ iNZAgraDataWin <- setRefClass(
                           expand = TRUE)
         mainGrp$set_borderwidth(15)
         btnGrp <- ggroup(horizontal = TRUE)
-        nameList <- names(Filter(is.factor,GUI$getActiveData()))
+        nameList <- names(Filter(is_cat,GUI$getActiveData()))
         heading <- glabel("Aggregate over variables:")
         font(heading) <- list(weight = "bold", style = "normal")
         AgraButton <- gbutton(
@@ -459,7 +573,7 @@ iNZAgraDataWin <- setRefClass(
             vars <- sapply(tbl[2:4, 2], svalue)
             vars <- vars[vars != ""]
             smrs <- svalue(func.table)
-            
+
             .dataset <- GUI$getActiveData()
             data <- iNZightTools::aggregateData(.dataset, vars, smrs)
             attr(data, "name") <- paste(attr(.dataset, "name", exact = TRUE), "aggregated", sep = ".")
@@ -520,14 +634,14 @@ iNZstackVarWin <- setRefClass(
         font(lbl2) <- list(weight = "bold",
                            family = "normal")
         ## display only numeric variables
-        numIndices <- sapply(GUI$getActiveData(), function(x) !is.factor(x))
+        numIndices <- sapply(GUI$getActiveData(), function(x) !is_cat(x))
         numVar <- gtable(names(GUI$getActiveData())[numIndices],
                          multiple = TRUE)
         names(numVar) <- "Variables"
         StackButton <- gbutton("Stack", handler = function(h, ...) {
           if (length(svalue(numVar)) > 0) {
             vars <- svalue(numVar)
-            
+
             .dataset <- GUI$getActiveData()
             data <- iNZightTools::stackVars(.dataset, vars)
             attr(data, "name") <- paste(attr(.dataset, "name", exact = TRUE), "stacked", sep = ".")
@@ -571,7 +685,7 @@ iNZexpandTblWin <- setRefClass(
                                         dat$Row <- rownames(dat)
                                         dat
                                     })
-                    numIndices <- sapply(dat, function(x) is.numeric(x))
+                    numIndices <- sapply(dat, function(x) is_num(x))
                     long <- reshape2:::melt.data.frame(
                         dat, measure.vars = colnames(dat)[numIndices],
                         variable.name = "Column", value.name = "Count", na.rm = TRUE)
@@ -586,4 +700,294 @@ iNZexpandTblWin <- setRefClass(
             }
         }
     )
+)
+
+iNZjoinDataWin <- setRefClass(
+  "iNZjoinDataWin",
+  fields = list(
+    GUI = "ANY",
+    newdata = "ANY",
+    left_col = "ANY",
+    right_col = "ANY",
+    auto_left_col = "ANY",
+    auto_right_col = "ANY",
+    join_method = "ANY",
+    left_name = "ANY",
+    right_name = "ANY",
+    joinview = "ANY",
+    coltbl = "ANY",
+    middle = "ANY"
+  ),
+  methods = list(
+    initialize = function(gui = NULL) {
+      initFields(GUI = gui)
+      if (!is.null(GUI)) {
+        ## close any current mod windows
+        try(dispose(GUI$modWin), silent = TRUE)
+
+        ## start my window
+        GUI$modWin <<- gwindow("Join with another dataset by column values",
+                                parent = GUI$win, visible = FALSE)
+        mainGroup <- ggroup(cont = GUI$modWin, expand = TRUE, horizontal = FALSE)
+
+        ## Top window
+        top = ggroup(cont = mainGroup, horizontal = FALSE)
+        lyt <- glayout(cont = top)
+        title_box <- ggroup(horizontal = FALSE)
+        left <- ggroup(horizontal = FALSE)
+        right <- ggroup(horizontal = FALSE)
+        lyt[1, 1:2] <- title_box
+        lyt[2,1] <- left
+        lyt[2,2] <- right
+
+        ## Title
+        title_string = glabel("Join Datasets", cont = title_box)
+        font(title_string) = list(size = 14, weight = "bold")
+
+        ## Left hand side
+        original_string = glabel("Preview of the original dataset", cont = left, anchor = c(-1, 0))
+
+        originview = gtable(data.frame(head(GUI$getActiveData(),10)), cont = left)
+
+        join_string = glabel("Select join methods", cont = left, anchor = c(-1,0))
+
+        join_method <<- "inner_join"
+        var1 = gcombobox(items = c("Inner Join", "Left Join", "Full Join", "Semi Join", "Anti Join"), cont = left)
+        addHandlerChanged(var1, function(h, ...) {
+          join_method <<- switch(svalue(var1), "Inner Join" = "inner_join",
+                                                      "Left Join" = "left_join",
+                                                      "Full Join" = "full_join",
+                                                      "Semi Join" = "semi_join",
+                                                      "Anti Join" = "anti_join")
+          updatePreview()
+        })
+
+        left_name_box = gvbox(cont = left)
+        name_string = glabel("Duplicated cols: suffix for Original", cont = left_name_box, anchor = c(-1, 0))
+        left_name <<- "Orig"
+        left_name_string = gedit("Orig", cont = left_name_box)
+        addHandlerChanged(left_name_string, function(h, ...) {
+          left_name <<- svalue(left_name_string)
+          updatePreview()
+        })
+        visible(left_name_box) = FALSE
+
+        ## Right hand side
+        Preview_string = glabel("Preview of the imported dataset", cont = right, anchor = c(-1, 0))
+        data2view = gtable(data.frame(""), cont = right)
+        size(data2view) = c(-1, 150)
+
+        file_string = glabel("Import data", cont = right, anchor = c(-1,0))
+        data_name = gfilebrowse(text = "Specify a file", initial.dir = file.path(".", "data"), cont = right, handler = function(h, ...) {
+          newdata <<- read.csv(svalue(data_name))
+          data2view$set_items(head(newdata, 10))
+          left_col <<- ""
+          right_col <<- ""
+          d1 = tryCatch(
+            joinData(),
+            error = function(e) {
+              if (e$message == "`by` required, because the data sources have no common variables") {
+                a = tibble()
+                attr(a, "join_cols") = ""
+              }
+            }
+          )
+          attr = attr(d1, "join_cols")
+          left_col <<- as.character(attr)
+          right_col <<- left_col
+          create_join_table()
+          updatePreview()
+        })
+
+        right_name_box = gvbox(cont = right)
+        name_string = glabel("Duplicated cols: suffix for New", cont = right_name_box, anchor = c(-1, 0))
+        right_name <<- "New"
+        right_name_string = gedit("New", cont = right_name_box)
+        addHandlerChanged(right_name_string, function(h, ...) {
+          right_name <<- svalue(right_name_string)
+          updatePreview()
+        })
+        visible(right_name_box) = FALSE
+
+        ## Middle box
+        middle <<- ggroup(cont = mainGroup, horizontal = FALSE)
+        coltbl <<- glayout(cont = middle)
+        coltbl[1, 1:4] <<- glabel("Please specify columns to match on from two datasets")
+
+        ## Bottom box
+        bottom = ggroup(cont = mainGroup, horizontal = FALSE)
+        preview_string2 = glabel("Preview", cont = bottom, anchor = c(-1, 0))
+        joinview <<- gtable(data.frame(""), cont = bottom)
+        size(joinview) <<- c(-1, 150)
+
+        joinbtn = gbutton("Join", cont = bottom)
+        addHandlerChanged(joinbtn, function(h, ...) {
+          joined = joinData()
+          GUI$setDocument(iNZDocument$new(data = joined))
+          dispose(GUI$modWin)
+        })
+
+        helpbtn = gbutton("Help", cont = bottom, handler = function(h, ...) {
+          helpwin = gwindow(title = "Help")
+          win = gvbox(cont = helpwin)
+
+          inner_join = glabel("Inner Join", cont = win)
+          font(inner_join) = list(size = 12, weight = "bold")
+          inner_join_help = glabel("Keep all the matched rows within both datasets", cont = win)
+          addSpace(win, 5)
+
+          left_join = glabel("Left Join", cont = win)
+          font(left_join) = list(size = 12, weight = "bold")
+          left_join_help = glabel("Keep every row in the original dataset and match them to the imported dataset", cont = win)
+          addSpace(win, 5)
+
+          full_join = glabel("Full Join", cont = win)
+          font(full_join) = list(size = 12, weight = "bold")
+          full_join_help = glabel("Keep all the rows in both datasets", cont = win)
+          addSpace(win, 5)
+
+          semi_join = glabel("Semi Join", cont = win)
+          font(semi_join) = list(size = 12, weight = "bold")
+          semi_join_help = glabel("Keep matched rows in the original dataset ONLY", cont = win)
+          addSpace(win, 5)
+
+          anti_join = glabel("Anti Join", cont = win)
+          font(anti_join) = list(size = 12, weight = "bold")
+          anti_join_help = glabel("Return all rows in the original dataset which do not have a match in the imported dataset", cont = win)
+          addSpace(win, 5)
+        })
+
+        checkbtn = gbutton("check", cont = bottom, handler = function(h, ...) {
+          print(left_col)
+          print(length(coltbl$children))
+        })
+
+        removebtn = gbutton("remove", cont = bottom, handler = function(h, ...) {
+          middle$remove_child(coltbl)
+          print("fdasdasds")
+        })
+
+        addbtn = gbutton("add", cont = bottom, handler = function(h, ...) {
+          coltbl <<- glayout()
+          coltbl[1, 1:4] <<- glabel("Please specify columns to match on from two datasets")
+          middle$add_child(coltbl, fill = TRUE)
+        })
+
+        visible(GUI$modWin) <<- TRUE
+      }
+    },
+    updatePreview = function() {
+      "update the preview window"
+      d = tryCatch(
+        joinData(),
+        error = function(e) {
+          joinview$set_items(e$message)
+        }
+      )
+      if (length(d) == 0) return()
+      if (nrow(d) == 0) {
+        joinview$set_items("Joined dataset has 0 row")
+      } else {
+        joinview$set_items(head(d, 10))
+      }
+    },
+    joinData = function() {
+      iNZightTools::joindata(
+        GUI$getActiveData(),
+        newdata,
+        left_col,
+        right_col,
+        join_method,
+        left_name,
+        right_name
+      )
+    },
+    ## Create join table
+    create_join_table = function() {
+      if (length(coltbl$children) > 1) {
+        middle$remove_child(coltbl)
+        coltbl <<- glayout()
+        coltbl[1, 1:4] <<- glabel("Please specify columns to match on from two datasets")
+        middle$add_child(coltbl, fill = TRUE)
+      }
+      if (length(left_col) == 0) {
+        add_joinby_row(coltbl, 1)
+        return()
+      }
+      for (i in 1:length(left_col)) {
+        add_joinby_row(coltbl, i)
+        number = i + 1
+        coltbl[number, 1]$set_items(left_col[i])
+        svalue(coltbl[number, 1]) <<- left_col[i]
+        coltbl[number, 2]$set_items(right_col[i])
+        svalue(coltbl[number, 2]) <<- right_col[i]
+      }
+    },
+    # Add joinby row
+    add_joinby_row = function(coltbl, number) {
+      n = number + 1
+      coltbl[n, 1] <<- gcombobox(c("", setdiff(names(GUI$getActiveData()), left_col)), handler = function(h, ...) {
+        new_col = svalue(coltbl[n,1])
+        left_col[number] <<- new_col
+        updatePreview()
+      })
+      coltbl[n, 2] <<- gcombobox(c("", setdiff(names(newdata), right_col)), handler = function(h, ...) {
+        new_col = svalue(coltbl[n,2])
+        right_col[number] <<- new_col
+        updatePreview()
+      })
+      coltbl[n, 3] <<- gbutton('delete', handler = function(h, ...) {
+        remove_joinby_row(coltbl, n, left_col)
+      })
+      coltbl[n, 4] <<- gbutton('add', handler = function(h, ...) {
+        add_joinby_row(coltbl, length(left_col) + 1)
+      })
+    },
+    ## Remove joinby row
+    remove_joinby_row = function(coltbl, pos, left_col) {
+      pos = pos - 1
+      left_col <<- left_col[-pos]
+      right_col <<- right_col[-pos]
+      create_join_table()
+    }
+  )
+)
+
+
+iNZappendrowWin <- setRefClass(
+  "iNZappendrowWin",
+  fields = list(GUI = "ANY",
+                newdata = "ANY"),
+  methods = list(
+    initialize = function(gui = NULL) {
+      initFields(GUI = gui)
+      if (!is.null(GUI)) {
+        ## close any current mod windows
+        try(dispose(GUI$modWin), silent = TRUE)
+        ## start my window
+        GUI$modWin <<- gwindow("Append rows",
+                               parent = GUI$win, visible = FALSE)
+        mainGroup <- ggroup(cont = GUI$modWin, expand = TRUE, horizontal = FALSE)
+
+        title_string = glabel("Append rows", cont = mainGroup)
+        font(title_string) = list(size = 14, weight = "bold")
+        file_string = glabel("Import data", cont = mainGroup, anchor = c(-1,0))
+        data_name = gfilebrowse(text = "Specify a file", initial.dir = file.path(".", "data"), cont = mainGroup, handler = function(h, ...) {
+          newdata <<- read.csv(svalue(data_name))
+        })
+
+        check_box = gcheckbox("Tick if you want to attach a timestamp to the appended rows", cont = mainGroup)
+
+        appendbtn = gbutton("Append", cont = mainGroup)
+        addHandlerChanged(appendbtn, function(h, ...) {
+          date = svalue(check_box)
+          data = iNZightTools::appendrows(GUI$getActiveData(), newdata, date)
+          GUI$setDocument(iNZDocument$new(data = data))
+          dispose(GUI$modWin)
+        })
+
+        visible(GUI$modWin) <<- TRUE
+      }
+    }
+  )
 )

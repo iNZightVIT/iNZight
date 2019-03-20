@@ -7,3 +7,4 @@
 revdep
 *.Rcheck
 *.tar.gz
+*.RData

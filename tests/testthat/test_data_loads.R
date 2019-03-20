@@ -34,16 +34,16 @@ test_that("UI correctly displays the data", {
     ## clicking list view chanes the data view
     expect_true(visible(ui$dataViewWidget$dataGp$children[[1]]))
     expect_false(visible(ui$dataViewWidget$dataGp$children[[2]]))
-    
+
     expect_silent(ui$viewSwitcherWidget$listBtn$invoke_change_handler())
     expect_false(visible(ui$dataViewWidget$dataGp$children[[1]]))
     expect_true(visible(ui$dataViewWidget$dataGp$children[[2]]))
 
     expect_equal(ui$dataViewWidget$dataGp$children[[2]]$children[[1]]$get_names(),
-        c("VARIABLES (n = numeric, c = categorical)"))
+        c("VARIABLES (n = numeric, c = categorical, t = time/date)"))
     expect_equal(ui$dataViewWidget$dataGp$children[[2]]$children[[1]]$get_items(),
         c("(n) A", "(c) B"))
-    
+
 
 
 
@@ -52,5 +52,45 @@ test_that("UI correctly displays the data", {
     expect_equal(ui$ctrlWidget$V2box$get_items()[-1], c("A", "B"))
     expect_equal(ui$ctrlWidget$G1box$get_items()[-1], c("A", "B"))
     expect_equal(ui$ctrlWidget$G2box$get_items()[-1], c("A", "B"))
+
+})
+
+test_that("Example data menus work correctly", {
+    exwin <- iNZImportExampleWin$new(ui)
+    mod <- exwin$importFileWin$children[[1]]$children[[1]]$children[[2]]
+    expect_equal(svalue(mod), "Default")
+    # expect_equal(mod$get_items(),
+    #     c("Default", "Multiple Response", "Time Series",
+    #       "Maps", "Survey", "FutureLearn")
+    # )
+    ds <- exwin$importFileWin$children[[1]]$children[[1]]$children[[4]]
+    expect_equal(svalue(ds), character())
+    expect_equal(length(ds$get_items()), 3)
+
+    # set a package
+    expect_silent(svalue(mod) <- "Time Series")
+    expect_equal(ds$get_items(),
+        c("seaice", "visitorsA2", "visitorsM2", "visitorsQ")
+    )
+    dn <- exwin$importFileWin$children[[1]]$children[[1]]$children[[6]]
+    expect_equal(svalue(dn), "")
+
+    # choose data
+    expect_silent(svalue(ds) <- "seaice")
+    expect_equal(svalue(dn), "Sea Ice")
+
+    # choose another package resets fields
+    expect_silent(svalue(mod) <- "Default")
+    expect_equal(svalue(ds, TRUE), 0)
+    expect_equal(svalue(dn), "")
+
+    expect_silent(svalue(ds) <- "census.at.school.500")
+    # expect_equal(svalue(dn), "Census at School 500")
+
+    # load it
+    expect_silent(
+        exwin$importFileWin$children[[1]]$children[[2]]$children[[2]]$invoke_change_handler()
+    )
+    expect_equal(ui$dataNameWidget$datName, "census.at.school.500_ex")
 
 })
