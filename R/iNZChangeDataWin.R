@@ -330,9 +330,10 @@ iNZReshapeDataWin <- setRefClass(
         title_string = glabel("Reshape Dateset", cont = mainGroup)
         font(title_string) = list(size = 14, weight = "bold")
 
-        format_string <- glabel("Select how you want to reshape your dataset", cont = mainGroup)
+        format_string <- glabel("Select reshape mode", cont = mainGroup)
         format <- gcombobox(items = c("", "Wide to long", "Long to wide"), cont = mainGroup, handler = function(h, ...){
           type <<- svalue(format)
+          newview$set_items("")
           visible(previewbox) <- TRUE
           visible(reshapebtn) <- TRUE
           if (type == "Wide to long"){
@@ -352,7 +353,7 @@ iNZReshapeDataWin <- setRefClass(
         ## Wide to long
         group1 <- ggroup(cont = mainGroup, horizontal = FALSE)
 
-        col_string = glabel("Select column to expand on", cont = group1)
+        col_string = glabel("Select column(s) to gather together", cont = group1)
 
         colname <<- ""
         var1 = gcombobox(c("", names(GUI$getActiveData())), cont = group1, handler = function(h, ...){
@@ -376,26 +377,24 @@ iNZReshapeDataWin <- setRefClass(
             visible(var2box) = TRUE
             visible(var1) = FALSE
             colname <<- svalue(var2)
-            col_string$set_value("Select columns to expand on \n(Use CNTRL to add/remove)")
             updatePreview()
           } else {
             visible(var2box) = FALSE
             visible(var1) = TRUE
             colname <<- svalue(var1)
-            col_string$set_value("Select column to expand on")
             updatePreview()
           }
         })
 
         key <<- "key"
-        key_string <- glabel("Name the new column for old column names", cont = group1)
+        key_string <- glabel("Name the new column containing the old column names", cont = group1)
         keybox <- gedit("key", cont = group1, handler = function(h,...) {
           key <<- svalue(keybox)
           updatePreview()
         })
 
         value <<- "value"
-        value_string <- glabel("Name the new column for old column value", cont = group1)
+        value_string <- glabel("Name the new column containing the old column values", cont = group1)
         valuebox <- gedit("value", cont = group1, handler = function(h,...) {
           value <<- svalue(valuebox)
           updatePreview()
@@ -406,13 +405,13 @@ iNZReshapeDataWin <- setRefClass(
         ## Long to wide
         group2 <- ggroup(cont = mainGroup, horizontal = FALSE)
 
-        label1 <- glabel("Select the column to gather on", cont = group2)
+        label1 <- glabel("Select the column to spread out to multiple columns", cont = group2)
         col1box <- gcombobox(items = c("", names(GUI$getActiveData())), cont = group2, handler = function(h, ...) {
           col1 <<- svalue(col1box)
           updatePreview()
         })
 
-        label2 <- glabel("Select the column with values corresponding to the above column", cont = group2)
+        label2 <- glabel("Select the column with the values to be put in these column", cont = group2)
         col2box <- gcombobox(items = c("", names(GUI$getActiveData())), cont = group2, handler = function(h,...) {
           col2 <<- svalue(col2box)
           updatePreview()
@@ -423,8 +422,6 @@ iNZReshapeDataWin <- setRefClass(
         ## Preview window
         previewbox <- gvbox(cont = mainGroup)#, horizontal = TRUE, fill = TRUE)
         prevTbl <- glayout(homogeneous = FALSE, container = previewbox)
-        # left <- ggroup(horizontal = FALSE, cont = previewbox)
-        # right <- ggroup(horizontal = FALSE, cont = previewbox)
 
         string1 <- glabel("Original dataset")
         originview = gtable(data.frame(GUI$getActiveData()))
@@ -439,11 +436,15 @@ iNZReshapeDataWin <- setRefClass(
         size(newview) <<- c(-1, 250)
 
         reshapebtn <- gbutton("Reshape", cont = mainGroup, handler = function(h, ...) {
-          df = reshape()
-          GUI$setDocument(iNZDocument$new(data = df))
+          .dataset <- GUI$getActiveData()
+          data <- reshape()
+          attr(data, "name") <- paste(attr(.dataset, "name", exact = TRUE), "reshaped", sep = ".")
+          attr(data, "code") <- gsub(".dataset", attr(.dataset, "name", exact = TRUE), attr(data, "code"))
+          GUI$setDocument(iNZDocument$new(data = data))
           dispose(GUI$modWin)
+          
         })
-
+        
         visible(previewbox) <- FALSE
         visible(reshapebtn) <- FALSE
 
@@ -822,8 +823,11 @@ iNZjoinDataWin <- setRefClass(
 
         joinbtn = gbutton("Join", cont = bottom)
         addHandlerChanged(joinbtn, function(h, ...) {
-          joined = joinData()
-          GUI$setDocument(iNZDocument$new(data = joined))
+          .dataset <- GUI$getActiveData()
+          data = joinData()
+          attr(data, "name") <- paste(attr(.dataset, "name", exact = TRUE), "joined", sep = ".")
+          attr(data, "code") <- gsub(".dataset", attr(.dataset, "name", exact = TRUE), attr(data, "code"))
+          GUI$setDocument(iNZDocument$new(data = data))
           dispose(GUI$modWin)
         })
 
@@ -856,23 +860,6 @@ iNZjoinDataWin <- setRefClass(
           anti_join_help = glabel("Return all rows in the original dataset which do not have a match in the imported dataset", cont = win)
           addSpace(win, 5)
         })
-
-        checkbtn = gbutton("check", cont = bottom, handler = function(h, ...) {
-          print(left_col)
-          print(length(coltbl$children))
-        })
-
-        removebtn = gbutton("remove", cont = bottom, handler = function(h, ...) {
-          middle$remove_child(coltbl)
-          print("fdasdasds")
-        })
-
-        addbtn = gbutton("add", cont = bottom, handler = function(h, ...) {
-          coltbl <<- glayout()
-          coltbl[1, 1:4] <<- glabel("Please specify columns to match on from two datasets")
-          middle$add_child(coltbl, fill = TRUE)
-        })
-
         visible(GUI$modWin) <<- TRUE
       }
     },
@@ -981,7 +968,10 @@ iNZappendrowWin <- setRefClass(
         appendbtn = gbutton("Append", cont = mainGroup)
         addHandlerChanged(appendbtn, function(h, ...) {
           date = svalue(check_box)
+          .dataset <- GUI$getActiveData()
           data = iNZightTools::appendrows(GUI$getActiveData(), newdata, date)
+          attr(data, "name") <- paste(attr(.dataset, "name", exact = TRUE), "appended", sep = ".")
+          attr(data, "code") <- gsub(".dataset", attr(.dataset, "name", exact = TRUE), attr(data, "code"))
           GUI$setDocument(iNZDocument$new(data = data))
           dispose(GUI$modWin)
         })
