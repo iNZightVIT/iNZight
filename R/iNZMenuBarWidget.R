@@ -96,12 +96,23 @@ iNZMenuBarWidget <- setRefClass(
                     gaction("Stack ...",
                         icon = "symbol_diamond",
                         handler = function(h, ...) iNZstackVarWin$new(GUI)),
-                
-                reshape = 
-                  gaction("Reshape dataset ...",
-                          icon = "symbol_diamond",
-                          tooltip = "Transform from wide- to long-form data",
-                          handler = function(h, ...) iNZReshapeDataWin$new(GUI)),
+                "Dataset operation" = list(
+                  reshape = 
+                    gaction("Reshape dataset ...",
+                            icon = "symbol_diamond",
+                            tooltip = "Transform from wide- to long-form data",
+                            handler = function(h, ...) iNZReshapeDataWin$new(GUI)),
+                  separate = 
+                    gaction("Separate column ...",
+                            icon = "symbol_diamond",
+                            tooltip = "Separate columns",
+                            handler = function(h, ...) iNZSeparateDataWin$new(GUI)),
+                  unite = 
+                    gaction("Unite columns ...",
+                            icon = "symbol_diamond",
+                            tooltip = "Unite columns",
+                            handler = function(h, ...) iNZUniteDataWin$new(GUI))
+                ),
                 gseparator(),
                 rename = 
                     gaction("Rename ...",

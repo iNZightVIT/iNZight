@@ -465,6 +465,214 @@ iNZReshapeDataWin <- setRefClass(
   )
 )
 
+## --------------------------------------------
+## Class that handles the separating of a dataset
+## --------------------------------------------
+iNZSeparateDataWin <- setRefClass(
+  "iNZSeparateDataWin",
+  fields = list(
+    GUI = "ANY",
+    type = "ANY",
+    col = "ANY",
+    left = "ANY",
+    right = "ANY",
+    sep = "ANY",
+    check = "ANY",
+    newview = "ANY"
+  ),
+  methods = list(
+    initialize = function(gui = NULL) {
+      initFields(GUI = gui)
+      if (!is.null(GUI)) {
+        ## close any current mod windows
+        try(dispose(GUI$modWin), silent = TRUE)
+        
+        ## start my window
+        GUI$modWin <<- gwindow("Separate columns", parent = GUI$win, visible = FALSE)
+        mainGroup <- ggroup(cont = GUI$modWin, expand = TRUE, horizontal = FALSE)
+        
+        title_string = glabel("Separate columns", cont = mainGroup)
+        font(title_string) = list(size = 14, weight = "bold")
+        
+        format_string <- glabel("Select separate mode", cont = mainGroup)
+        format <- gcombobox(items = c("", "Separate a column into several columns", "Separate a column to make several rows"), cont = mainGroup, handler = function(h, ...){
+          col <<- ""
+          left <<- "Left"
+          right <<- "Right"
+          sep <<- ""
+          var1$set_value(" ")
+          var2$set_value("")
+          leftVar$set_value("Left")
+          rightVar$set_value("Right")
+          newview$set_items("")
+          type <<- svalue(format)
+          if (type == "Separate a column into several columns"){
+            visible(namebox) <- TRUE
+            check <<- "Column"
+          } else if (type == "Separate a column to make several rows") {
+            visible(namebox) <- FALSE
+            check <<- "Row"
+          } else{
+            visible(namebox) <- FALSE
+          }
+        })
+        
+        col_string <- glabel("Select column to separate out", cont = mainGroup)
+        
+        var1 <- gcombobox(c(" ", names(GUI$getActiveData())), cont = mainGroup, handler = function(h, ...){
+          col <<- svalue(var1)
+          if (col != " ") {
+            updateView()
+          }
+        })
+        
+        namebox <- ggroup(cont = mainGroup, horizontal = FALSE)
+        
+        left_string <- glabel("Enter the name for separated variable at left", cont = namebox)
+        leftVar <- gedit("Left", cont = namebox, handler = function(h, ...){
+          left <<- svalue(leftVar)
+          updateView()
+        })
+        
+        right_string <- glabel("Enter the name for separated variable at right", cont = namebox)
+        rightVar <- gedit("Right", cont = namebox, handler = function(h, ...){
+          right <<- svalue(rightVar)
+          updateView()
+        })
+        
+        visible(namebox) <- FALSE
+        
+        sep_string <- glabel("Enter the separator between values", cont = mainGroup)
+        var2 <- gedit("", cont = mainGroup, handler = function(h ,...){
+          sep <<- svalue(var2)
+          updateView()
+        })
+        
+        prevTbl <- glayout(homogeneous = FALSE, container = mainGroup)
+        
+        string1 <- glabel("Original dataset")
+        originview = gtable(data.frame(GUI$getActiveData()))
+        prevTbl[1,1, expand = TRUE] <- string1
+        prevTbl[2,1, expand = TRUE] <- originview
+        size(originview) = c(-1, 250)
+        
+        string2 <- glabel("New dataset")
+        newview <<- gtable(data.frame(""))
+        prevTbl[1,2, expand = TRUE] <- string2
+        prevTbl[2,2, expand = TRUE] <- newview
+        size(newview) <<- c(-1, 250)
+        
+        seperatebtn <- gbutton("Separate", cont = mainGroup, handler = function(h, ...) {
+          .dataset <- GUI$getActiveData()
+          data <- iNZightTools::separate(.dataset, col, left, right, sep, check)
+          attr(data, "name") <- paste(attr(.dataset, "name", exact = TRUE), "separated", sep = ".")
+          attr(data, "code") <- gsub(".dataset", attr(.dataset, "name", exact = TRUE), attr(data, "code"))
+          GUI$setDocument(iNZDocument$new(data = data))
+          dispose(GUI$modWin)
+        })
+
+        visible(GUI$modWin) <<- TRUE
+      }
+    },
+    updateView = function() {
+      data = GUI$getActiveData()
+      df = iNZightTools::separate(data, col, left, right, sep, check)
+      newview$set_items(df)
+    }
+  )
+)
+
+## --------------------------------------------
+## Class that handles the uniting of a dataset
+## --------------------------------------------
+iNZUniteDataWin <- setRefClass(
+  "iNZUniteDataWin",
+  fields = list(
+    GUI = "ANY",
+    sep = "ANY",
+    col = "ANY",
+    name = "ANY"
+  ),
+  methods = list(
+    initialize = function(gui = NULL) {
+      initFields(GUI = gui)
+      if (!is.null(GUI)) {
+        ## close any current mod windows
+        try(dispose(GUI$modWin), silent = TRUE)
+        
+        ## start my window
+        GUI$modWin <<- gwindow("Unite columns", parent = GUI$win, visible = FALSE)
+        mainGroup <- ggroup(cont = GUI$modWin, expand = TRUE, horizontal = FALSE)
+        
+        title_string <- glabel("Unite columns", cont = mainGroup)
+        font(title_string) <- list(size = 14, weight = "bold")
+        
+        col_string <- glabel("Select columns to unite", cont = mainGroup)
+        
+        var1 <- gtable(names(GUI$getActiveData()),multiple = TRUE, expand = TRUE, cont = mainGroup)
+        addHandlerSelectionChanged(var1, function(h, ...){
+          col <<- svalue(var1)
+          name <<- ""
+          for (i in 1:length(col)) {
+            n = col[i]
+            name <<- paste(name, n, sep = ".")
+          }
+          svalue(var2) = name
+          updateView()
+        })
+        size(var1) <- c(-1, 250)
+        
+        name <<- svalue(var2)
+        name_string <- glabel("Name the new column", cont = mainGroup)
+        var2 <- gedit("", cont = mainGroup, handler = function(h, ...) {
+          name <<- svalue(var2)
+          updateView()
+        })
+        
+        sep <<- "_"
+        sep_string <- glabel("Enter the separator to use between values", cont = mainGroup)
+        var3 <- gedit("_", cont = mainGroup, handler = function(h, ...) {
+          sep <<- svalue(var3)
+          updateView()
+        })
+        
+        prevTbl <- glayout(homogeneous = FALSE, container = mainGroup)
+        
+        string1 <- glabel("Original dataset")
+        originview = gtable(data.frame(GUI$getActiveData()))
+        prevTbl[1,1, expand = TRUE] <- string1
+        prevTbl[2,1, expand = TRUE] <- originview
+        size(originview) = c(-1, 250)
+        
+        string2 <- glabel("New dataset")
+        newview <<- gtable(data.frame(""))
+        prevTbl[1,2, expand = TRUE] <- string2
+        prevTbl[2,2, expand = TRUE] <- newview
+        size(newview) <<- c(-1, 250)
+        
+        unitebtn <- gbutton("Unite", cont = mainGroup, handler = function(h, ...) {
+          .dataset <- GUI$getActiveData()
+          data <- iNZightTools::unite(.dataset, name, col, sep)
+          attr(data, "name") <- paste(attr(.dataset, "name", exact = TRUE), "united", sep = ".")
+          attr(data, "code") <- gsub(".dataset", attr(.dataset, "name", exact = TRUE), attr(data, "code"))
+          GUI$setDocument(iNZDocument$new(data = data))
+          dispose(GUI$modWin)
+        })
+        
+        visible(GUI$modWin) <<- TRUE
+      }
+    },
+    updateView = function() {
+      data <- GUI$getActiveData()
+      df <- iNZightTools::unite(data, name, col, sep)
+      newview$set_items(df)
+    }
+  )
+)
+
+
+
+
 
 ## --------------------------------------------
 ## Class that handles the sortby of a dataset
