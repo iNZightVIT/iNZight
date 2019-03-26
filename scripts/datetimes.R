@@ -31,3 +31,30 @@ kk$initializeGui(data)
 ## Window sizing? done
 ## Convert function trycatch
 ## Timezone
+
+?aggregate()
+
+data
+colnames(data)[1] <- "Time"
+iNZightTools::extract_part(data, "Time", "Year Quarter", "Y.Quarter")
+
+data %>% iNZightTools::extract_part("Time", "Year Quarter", "q")
+
+data
+lubridate::is.POSIXct(data$`Time stamp`)
+
+data = data %>% tibble::add_column("Weeks" = "2017 W05")
+data = data %>% tibble::add_column("Months" = "2006 M11")
+data = data %>% tibble::add_column("Quarters" = "2016 Q3")
+
+data$Monthly
+data$Weeks
+"W" %in% data$Weeks
+
+xx = "2007 W15"
+"W" %in% xx
+grepl("W", xx)
+grepl("W", data$Weeks)
+all(grepl("W", data$Weeks)) == TRUE
+all.
+data
