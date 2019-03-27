@@ -121,7 +121,7 @@ iNZImportWinBeta <- setRefClass("iNZImportWinBeta",
                                 bigMark = "ANY", bigmarks = "list",
                                 encoding = "ANY", encodings = "character",
                                 dateFormat = "ANY", dateformats = "character",
-                                okButton = "ANY", cancelBtn = "ANY"
+                                okBtn = "ANY", cancelBtn = "ANY"
                             ),
                             methods = list(
                                 initialize = function(GUI) {

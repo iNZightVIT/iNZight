@@ -101,5 +101,4 @@ test_that("CSV files load", {
     imp$setfile()
     expect_is(imp$prevGp$children[[2]], "GDf")
     expect_equal(imp$prevGp$children[[2]]$get_dim(), c(rows = 5, cols = 10))
-
 })
