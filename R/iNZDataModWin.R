@@ -1283,7 +1283,6 @@ iNZrenameDataWin <- setRefClass(
 )
 
 
-
 ## Convert variables to a date time type
 iNZconTodtWin <- setRefClass(
   "iNZconTodtWin",
@@ -1293,12 +1292,15 @@ iNZconTodtWin <- setRefClass(
       callSuper(gui)
       svalue(GUI$modWin) <<- "Convert to Dates and Times"
       
-      mainGroup <- gvbox()
+      scrolledWindow <- gtkScrolledWindow()
+      scrolledWindow$setPolicy("GTK_POLICY_AUTOMATIC","GTK_POLICY_AUTOMATIC")
+      
+      mainGroup <- ggroup(expand = TRUE, horizontal = FALSE)
       mainGroup$set_borderwidth(15)
       
       title <- glabel("Convert to a Date-Time variable", container = mainGroup)
       font(title) <- list(size = 14, weight = "bold")
-
+      
       addSpace(mainGroup, 5)
       
       date_string <- glabel("Select variable to convert from", container = mainGroup, anchor = c(-1, 0))
@@ -1323,15 +1325,15 @@ iNZconTodtWin <- setRefClass(
               convertedview$set_items(data.frame(Converted = iNZightTools::convert_to_datetime(.dataset, varname, convname, name)[[svalue(newVarname)]])),
               warning = function(w) {
                 if (w$message == "Failed to parse") {
-                    convertedview$set_items(data.frame(Converted = "Invalid format"))
+                  convertedview$set_items(data.frame(Converted = "Invalid format"))
                 } else {
-                    convertedview$set_items(data.frame(Converted = w$message))
+                  convertedview$set_items(data.frame(Converted = w$message))
                 }
-            })
+              })
           }
         }
       })
-
+      
       factorsbox = gvbox(cont = mainGroup)
       factors = gtable(names(GUI$getActiveData()),multiple = TRUE, expand = TRUE, cont = factorsbox)
       names(factors) = "Variables"
@@ -1458,7 +1460,9 @@ iNZconTodtWin <- setRefClass(
         dispose(GUI$modWin)
       })
       
-      add(GUI$modWin, mainGroup, expand = TRUE)
+      scrolledWindow$addWithViewport(mainGroup$widget)
+      add(GUI$modWin, scrolledWindow, expand = TRUE, fill = TRUE)
+      size(GUI$modWin) <<- c(300, 600)
       visible(GUI$modWin) <<- TRUE
     })
 )
@@ -1473,6 +1477,9 @@ iNZExtfromdtWin <- setRefClass(
       callSuper(gui)
       svalue(GUI$modWin) <<- "Convert to Dates and Times"
 
+      scrolledWindow <- gtkScrolledWindow()
+      scrolledWindow$setPolicy("GTK_POLICY_AUTOMATIC","GTK_POLICY_AUTOMATIC")
+      
       mainGroup <- gvbox()
       mainGroup$set_borderwidth(15)
       
@@ -1503,8 +1510,6 @@ iNZExtfromdtWin <- setRefClass(
           }
         }
       })
-      
-      addSpace(mainGroup, 5)
       
       for.var <- glabel("Select elements to extract \n(click + of lowest-level information for options)", container = mainGroup, anchor = c(-1, 0))
       
@@ -1556,10 +1561,8 @@ iNZExtfromdtWin <- setRefClass(
         exp = iNZightTools::extract_part(GUI$getActiveData(), varname, part, name)
         extractedview$set_items(data.frame(Extracted = as.character(exp[[svalue(newVarname)]])))
       })
-      size(atree) = c(-1, 250)
-      
-      addSpace(mainGroup, 5)
-      
+      size(atree) = c(-1, 100)
+
       date_string <- glabel("Name for new variable", container = mainGroup, anchor = c(-1, 0))
       newVarname = gedit("", cont = mainGroup)
       
@@ -1581,7 +1584,9 @@ iNZExtfromdtWin <- setRefClass(
         dispose(GUI$modWin)
       })
       
-      add(GUI$modWin, mainGroup, expand = TRUE)
+      scrolledWindow$addWithViewport(mainGroup$widget)
+      add(GUI$modWin, scrolledWindow, expand = TRUE, fill = TRUE)
+      size(GUI$modWin) <<- c(300, 900)
       visible(GUI$modWin) <<- TRUE
     })
 )
