@@ -1,14 +1,19 @@
-#install_deps("~/iNZightTools")
-#install_deps("~/iNZight", dependencies = TRUE)
+install_deps("~/iNZightTools", dependencies = TRUE)
+install_deps("~/iNZight", dependencies = TRUE)
+install_deps("~/iNZightPlots", dependencies = TRUE)
+
+install.packages("glue")
 
 library(devtools)
 
+# install_deps("~/iNZightPlots")
 load_all("~/iNZightTools")
+load_all("~/iNZightPlots")
 load_all("~/iNZight")
 
 document("~/iNZightTools")
 
-data = readr::read_csv("C:\\Users\\Yiwen\\Documents\\iNZight\\scripts\\paris1.csv")
+data = readr::read_csv("C:\\Users\\30576\\Documents\\iNZight\\scripts\\paris1.csv")
 
 ## Convert function
 try(dispose(kk$win), TRUE)
