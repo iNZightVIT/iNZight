@@ -6,4 +6,4 @@
 revdep
 *.Rcheck
 *.tar.gz
-.RData
+*.RData
