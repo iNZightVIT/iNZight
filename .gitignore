@@ -1,7 +1,6 @@
 *.Rhistory
 *~
 #*#
-
 .Rproj.user
 *.Rproj
 revdep

@@ -1085,6 +1085,24 @@ iNZjoinDataWin <- setRefClass(
           anti_join_help = glabel("Return all rows in the original dataset which do not have a match in the imported dataset", cont = win)
           addSpace(win, 5)
         })
+
+
+        checkbtn = gbutton("check", cont = bottom, handler = function(h, ...) {
+          print(left_col)
+          print(length(coltbl$children))
+        })
+
+        removebtn = gbutton("remove", cont = bottom, handler = function(h, ...) {
+          middle$remove_child(coltbl)
+          print("fdasdasds")
+        })
+
+        addbtn = gbutton("add", cont = bottom, handler = function(h, ...) {
+          coltbl <<- glayout()
+          coltbl[1, 1:4] <<- glabel("Please specify columns to match on from two datasets")
+          middle$add_child(coltbl, fill = TRUE)
+        })
+        
         visible(GUI$modWin) <<- TRUE
       }
     },
