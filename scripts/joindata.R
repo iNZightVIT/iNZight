@@ -1,4 +1,8 @@
 library(devtools)
+install_github("iNZightVIT/iNZightPlots@dev")
+install_github("iNZightVIT/iNZightTools@dev")
+
+
 library(tidyverse)
 document("~/iNZightTools")
 
@@ -6,7 +10,7 @@ load_all("~/iNZightTools")
 load_all("~/iNZight")
 
 
-data = readr::read_csv("C:\\Users\\Yiwen\\Documents\\join2.csv")
+data = readr::read_csv("scripts/Join2.csv")
 
 
 try(dispose(kk$win), TRUE)
