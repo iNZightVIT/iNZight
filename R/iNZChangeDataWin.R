@@ -1056,6 +1056,10 @@ iNZjoinDataWin <- setRefClass(
           dispose(GUI$modWin)
         })
         
+        checkbtn = gbutton("Check", cont = bottom, handler = function(h, ...) {
+          print(left_col)
+        })
+        
         helpbtn = gbutton("Help", cont = bottom, handler = function(h, ...) {
           helpwin = gwindow(title = "Help")
           win = gvbox(cont = helpwin)
@@ -1085,23 +1089,6 @@ iNZjoinDataWin <- setRefClass(
           anti_join_help = glabel("Return all rows in the original dataset which do not have a match in the imported dataset", cont = win)
           addSpace(win, 5)
         })
-
-
-        checkbtn = gbutton("check", cont = bottom, handler = function(h, ...) {
-          print(left_col)
-          print(length(coltbl$children))
-        })
-
-        removebtn = gbutton("remove", cont = bottom, handler = function(h, ...) {
-          middle$remove_child(coltbl)
-          print("fdasdasds")
-        })
-
-        addbtn = gbutton("add", cont = bottom, handler = function(h, ...) {
-          coltbl <<- glayout()
-          coltbl[1, 1:4] <<- glabel("Please specify columns to match on from two datasets")
-          middle$add_child(coltbl, fill = TRUE)
-        })
         
         visible(GUI$modWin) <<- TRUE
       }
@@ -1111,7 +1098,11 @@ iNZjoinDataWin <- setRefClass(
       d = tryCatch(
         joinData(),
         error = function(e) {
-          joinview$set_items(e$message)
+          if (error == "missing value where TRUE/FALSE needed") {
+            joinview$set_items("No mataching columns, please specify")
+          } else {
+            joinview$set_items(e$message)
+          }
         }
       )
       if (length(d) == 0) return()
@@ -1122,15 +1113,19 @@ iNZjoinDataWin <- setRefClass(
       }
     },
     joinData = function() {
-      iNZightTools::joindata(
-        GUI$getActiveData(),
-        newdata,
-        left_col,
-        right_col,
-        join_method,
-        left_name,
-        right_name
-      )
+      if (length(left_col) == length(right_col)) {
+        iNZightTools::joindata(
+          GUI$getActiveData(),
+          newdata,
+          left_col,
+          right_col,
+          join_method,
+          left_name,
+          right_name
+        )
+      } else {
+        joinview$set_items("Specify columns to join on")
+      }
     },
     ## Create join table
     create_join_table = function() {
@@ -1142,6 +1137,7 @@ iNZjoinDataWin <- setRefClass(
       }
       if (length(left_col) == 0) {
         add_joinby_row(coltbl, 1)
+        updatePreview()
         return()
       }
       for (i in 1:length(left_col)) {
