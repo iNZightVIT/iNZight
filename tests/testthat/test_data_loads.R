@@ -96,7 +96,7 @@ test_that("Example data menus work correctly", {
 })
 
 test_that("CSV files load", {
-    imp <- iNZImportWinBeta$new(ui)
+    imp <- iNZImportWin$new(ui)
     imp$fname <- "cas5.csv"
     imp$setfile()
     expect_is(imp$prevGp$children[[2]], "GDf")
