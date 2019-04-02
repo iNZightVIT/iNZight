@@ -29,7 +29,7 @@ iNZImportWin <- setRefClass(
                     "Comma Separated Values (.csv)" = list(patterns = c("*.csv")),
                     "Tab-delimited Text Files (.txt)" = list(patterns = c("*.txt")),
                     "SPSS Files (.sav)" = list(patterns = c("*.sav")),
-                    "SAS Files (.sas)" = list(patterns = c("*.sas")),
+                    "SAS Files (.sas7bdat)" = list(patterns = c("*.sas7bdat")),
                     "97-2003 Excel Files (.xls)" = list(patterns = c("*.xls")),
                     "2007 Excel Files (.xlsx)" = list(patterns = c("*.xlsx")),
                     "STATA Files (.dta)" = list(patterns = c("*.dta"))
