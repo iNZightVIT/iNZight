@@ -54,7 +54,7 @@ iNZMenuBarWidget <- setRefClass(
                     gaction("Import data ...",
                         icon = "symbol_diamond",
                         tooltip = "Import a new dataset",
-                        handler = function(h, ...) iNZImportWinBeta$new(GUI)),
+                        handler = function(h, ...) iNZImportWin$new(GUI)),
                 export =
                     gaction("Export data ...",
                         icon = "symbol_diamond",
