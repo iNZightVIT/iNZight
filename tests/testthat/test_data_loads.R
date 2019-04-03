@@ -99,7 +99,6 @@ test_that("CSV files load", {
     imp <- iNZImportWin$new(ui)
     imp$fname <- "cas5.csv"
     imp$setfile()
-    Sys.sleep(2)
     expect_is(imp$prevGp$children[[2]], "GDf")
     expect_equal(imp$prevGp$children[[2]]$get_dim(), c(rows = 5, cols = 10))
     expect_silent(imp$okBtn$invoke_change_handler())
@@ -114,11 +113,10 @@ test_that("CSV files load", {
     )
 })
 
-test_that("SAS (7bdat) files load", {
+test_that("SAS (.sas7bdat) files load", {
     imp <- iNZImportWin$new(ui)
     imp$fname <- "test.sas7bdat"
     imp$setfile()
-    Sys.sleep(2)
     expect_is(imp$prevGp$children[[2]], "GDf")
     expect_equal(imp$prevGp$children[[2]]$get_dim(), c(rows = 5, cols = 7))
     expect_silent(imp$okBtn$invoke_change_handler())
@@ -129,5 +127,22 @@ test_that("SAS (7bdat) files load", {
     expect_equal(
         dim(ui$getActiveData()),
         c(8, 7)
+    )
+})
+
+test_that("SAS Xport (.xpt) files load", {
+    imp <- iNZImportWin$new(ui)
+    imp$fname <- "cars.xpt"
+    imp$setfile()
+    expect_is(imp$prevGp$children[[2]], "GDf")
+    expect_equal(imp$prevGp$children[[2]]$get_dim(), c(rows = 5, cols = 5))
+    expect_silent(imp$okBtn$invoke_change_handler())
+    expect_equal(
+        names(ui$getActiveData()),
+        c("MAKE", "PRICE", "MPG", "REP78", "FOREIGN")
+    )
+    expect_equal(
+        dim(ui$getActiveData()),
+        c(26, 5)
     )
 })
