@@ -99,6 +99,9 @@ test_that("CSV files load", {
     imp <- iNZImportWin$new(ui)
     imp$fname <- "cas5.csv"
     imp$setfile()
+    skip_if(length(imp$prevGp$children) == 1,
+        message = "Preview did not load."
+    )
     expect_is(imp$prevGp$children[[2]], "GDf")
     expect_equal(imp$prevGp$children[[2]]$get_dim(), c(rows = 5, cols = 10))
     expect_silent(imp$okBtn$invoke_change_handler())
@@ -117,6 +120,9 @@ test_that("SAS (.sas7bdat) files load", {
     imp <- iNZImportWin$new(ui)
     imp$fname <- "test.sas7bdat"
     imp$setfile()
+    skip_if(length(imp$prevGp$children) == 1,
+        message = "Preview did not load."
+    )
     expect_is(imp$prevGp$children[[2]], "GDf")
     expect_equal(imp$prevGp$children[[2]]$get_dim(), c(rows = 5, cols = 7))
     expect_silent(imp$okBtn$invoke_change_handler())
@@ -134,6 +140,9 @@ test_that("SAS Xport (.xpt) files load", {
     imp <- iNZImportWin$new(ui)
     imp$fname <- "cars.xpt"
     imp$setfile()
+    skip_if(length(imp$prevGp$children) == 1,
+        message = "Preview did not load."
+    )
     expect_is(imp$prevGp$children[[2]], "GDf")
     expect_equal(imp$prevGp$children[[2]]$get_dim(), c(rows = 5, cols = 5))
     expect_silent(imp$okBtn$invoke_change_handler())
