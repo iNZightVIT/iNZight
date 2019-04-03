@@ -17,11 +17,11 @@ matrix:
       r: release
     - os: linux
       r: devel
-    - os: osx
-      r: 3.3
-      brew_packages: libgit2
-  allow_failures:
-    - os: osx
+#    - os: osx
+#      r: 3.3
+#      brew_packages: libgit2
+#  allow_failures:
+#    - os: osx
 
 env:
   global:
