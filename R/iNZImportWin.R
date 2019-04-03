@@ -235,6 +235,7 @@ iNZImportWin <- setRefClass(
         setfile = function(...) {
             svalue(filename) <<- basename(fname)
             fext <<- tools::file_ext(fname)
+            print(paste("The extension is", fext))
 
             blockHandlers(filetype)
             match <- which(sapply(filetypes[-1],
