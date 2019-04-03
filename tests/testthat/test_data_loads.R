@@ -99,6 +99,7 @@ test_that("CSV files load", {
     imp <- iNZImportWin$new(ui)
     imp$fname <- "cas5.csv"
     imp$setfile()
+    Sys.sleep(2)
     expect_is(imp$prevGp$children[[2]], "GDf")
     expect_equal(imp$prevGp$children[[2]]$get_dim(), c(rows = 5, cols = 10))
     expect_silent(imp$okBtn$invoke_change_handler())
@@ -117,6 +118,7 @@ test_that("SAS (7bdat) files load", {
     imp <- iNZImportWin$new(ui)
     imp$fname <- "test.sas7bdat"
     imp$setfile()
+    Sys.sleep(2)
     expect_is(imp$prevGp$children[[2]], "GDf")
     expect_equal(imp$prevGp$children[[2]]$get_dim(), c(rows = 5, cols = 7))
     expect_silent(imp$okBtn$invoke_change_handler())
