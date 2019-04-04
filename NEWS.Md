@@ -1,3 +1,16 @@
+## iNZight 3.3.7.9000
+__Release date__: TBA
+
+- add axis transformation (log-10) for numeric variables
+- switch between counts/percentages in bar plots
+- import SAS files (.sas7bdat and .xpt)
+
+
+### Dates and times
+- convert variables into datetimes (Variables > Dates and times)
+- extract time information from a datetime variable (such as the hour, or year)
+
+
 ## iNZight 3.3.7
 __Release date__: 05 April 2019
 
@@ -40,7 +53,7 @@ __Release date:__ 07 January 2019
 __Release date:__ 15 November 2018
 
 - add dataset summary information to Get Summary (when no variables selected)
-- add interact button 
+- add interact button
 - fix call for survey design objects (remove NULL arguments)
 - fix bug that prevented iNZight to launch on some macs
 
@@ -87,7 +100,7 @@ __Release date:__ 23 January 2018
 ### Minor Changes
 
 - The __Reorder Levels__ window has been reconfigured to, hopefully, make it easier to use
-- Filtering no longer clears the slots 
+- Filtering no longer clears the slots
 - Import data [beta] is ... no longer beta!
 - Updated the splash screen to be up-to-date, and attempt to be friendly ...
 

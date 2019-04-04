@@ -5,3 +5,5 @@
 ^.*\.Md$
 ^\.travis\.yml$
 ^revdep$
+^.*\.Rproj$
+^\.Rproj\.user$

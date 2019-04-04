@@ -14,9 +14,9 @@ iNZcodeWidget <- setRefClass(
             history <<- list()
         },
         add = function(x, keep = TRUE, tidy = FALSE) {
-            x <- gsub("^SEP$", sep(), x) 
-            if (tidy && requireNamespace("formatR", quietly = TRUE)) 
-                x <- capture.output(formatR::tidy_source(text = x, width.cutoff = 60))
+            x <- gsub("^SEP$", sep(), x)
+            #if (tidy && requireNamespace("formatR", quietly = TRUE))
+            #    x <- capture.output(formatR::tidy_source(text = x, width.cutoff = 60))
             if (!keep.last) history <<- history[-length(history)]
             history <<- c(history, list(c("", x)))
             keep.last <<- keep
@@ -38,7 +38,20 @@ iNZcodeWidget <- setRefClass(
             invisible(NULL)
         },
         get = function() {
-            return(c(header(), do.call(c, history)))
+            code <- do.call(c,
+                lapply(history, function(x) {
+                    return(x)
+                    y <- try({
+                        iNZightTools::tidy_all_code(
+                            paste(x, collapse = "\n"),
+                            width = 80,
+                            indent = 4
+                        )
+                    }, silent = TRUE)
+                    if (inherits(y, "try-error")) x else c(y, "")
+                })
+            )
+            return(c(header(), code))
         },
         update = function() {
             if (disabled) return()
@@ -60,11 +73,11 @@ iNZcodeWidget <- setRefClass(
                   ## replace data %>% foo() with data %<>% foo()
                   ## before the first one, add a comment explaining what %<>% does
                   asgnpipe <- paste(dname, "%<>% ")
-                  if (!any(sapply(history, function(x) any(grepl('%<>%', x)))))
-                    asgnpipe <- paste(collapse = "\n",
-                      c("## The `%<>%` operator pipes and assigns, and is the equivalent of",
-                        "## data <- data %>% function(...), which is the equivalent of",
-                        "## data <- function(data, ...)", "", asgnpipe))
+                  # if (!any(sapply(history, function(x) any(grepl('%<>%', x)))))
+                  #   asgnpipe <- paste(collapse = "\n",
+                  #     c("## The `%<>%` operator pipes and assigns, and is the equivalent of",
+                  #       "## data <- data %>% function(...), which is the equivalent of",
+                  #       "## data <- function(data, ...)", "", asgnpipe))
                   code <- gsub(paste0(dname, " %>% \n    "), asgnpipe, code)
                   add(code, keep = TRUE)
                 }

@@ -34,16 +34,16 @@ test_that("UI correctly displays the data", {
     ## clicking list view chanes the data view
     expect_true(visible(ui$dataViewWidget$dataGp$children[[1]]))
     expect_false(visible(ui$dataViewWidget$dataGp$children[[2]]))
-    
+
     expect_silent(ui$viewSwitcherWidget$listBtn$invoke_change_handler())
     expect_false(visible(ui$dataViewWidget$dataGp$children[[1]]))
     expect_true(visible(ui$dataViewWidget$dataGp$children[[2]]))
 
     expect_equal(ui$dataViewWidget$dataGp$children[[2]]$children[[1]]$get_names(),
-        c("VARIABLES (n = numeric, c = categorical)"))
+        c("VARIABLES (n = numeric, c = categorical, t = time/date)"))
     expect_equal(ui$dataViewWidget$dataGp$children[[2]]$children[[1]]$get_items(),
         c("(n) A", "(c) B"))
-    
+
 
 
 
@@ -53,4 +53,105 @@ test_that("UI correctly displays the data", {
     expect_equal(ui$ctrlWidget$G1box$get_items()[-1], c("A", "B"))
     expect_equal(ui$ctrlWidget$G2box$get_items()[-1], c("A", "B"))
 
+})
+
+test_that("Example data menus work correctly", {
+    exwin <- iNZImportExampleWin$new(ui)
+    mod <- exwin$importFileWin$children[[1]]$children[[1]]$children[[2]]
+    expect_equal(svalue(mod), "Default")
+    # expect_equal(mod$get_items(),
+    #     c("Default", "Multiple Response", "Time Series",
+    #       "Maps", "Survey", "FutureLearn")
+    # )
+    ds <- exwin$importFileWin$children[[1]]$children[[1]]$children[[4]]
+    expect_equal(svalue(ds), character())
+    expect_equal(length(ds$get_items()), 3)
+
+    # set a package
+    expect_silent(svalue(mod) <- "Time Series")
+    expect_equal(ds$get_items(),
+        c("seaice", "visitorsA2", "visitorsM2", "visitorsQ")
+    )
+    dn <- exwin$importFileWin$children[[1]]$children[[1]]$children[[6]]
+    expect_equal(svalue(dn), "")
+
+    # choose data
+    expect_silent(svalue(ds) <- "seaice")
+    expect_equal(svalue(dn), "Sea Ice")
+
+    # choose another package resets fields
+    expect_silent(svalue(mod) <- "Default")
+    expect_equal(svalue(ds, TRUE), 0)
+    expect_equal(svalue(dn), "")
+
+    expect_silent(svalue(ds) <- "census.at.school.500")
+    # expect_equal(svalue(dn), "Census at School 500")
+
+    # load it
+    expect_silent(
+        exwin$importFileWin$children[[1]]$children[[2]]$children[[2]]$invoke_change_handler()
+    )
+    expect_equal(ui$dataNameWidget$datName, "census.at.school.500_ex")
+
+})
+
+test_that("CSV files load", {
+    imp <- iNZImportWin$new(ui)
+    imp$fname <- "cas5.csv"
+    imp$setfile()
+    skip_if(length(imp$prevGp$children) == 1,
+        message = "Preview did not load."
+    )
+    expect_is(imp$prevGp$children[[2]], "GDf")
+    expect_equal(imp$prevGp$children[[2]]$get_dim(), c(rows = 5, cols = 10))
+    expect_silent(imp$okBtn$invoke_change_handler())
+    expect_equal(
+        names(ui$getActiveData()),
+        c("cellsource", "rightfoot", "travel", "getlunch", "height",
+            "gender", "age", "year", "armspan", "cellcost")
+    )
+    expect_equal(
+        dim(ui$getActiveData()),
+        c(5, 10)
+    )
+})
+
+test_that("SAS (.sas7bdat) files load", {
+    imp <- iNZImportWin$new(ui)
+    imp$fname <- "test.sas7bdat"
+    imp$setfile()
+    skip_if(length(imp$prevGp$children) == 1,
+        message = "Preview did not load."
+    )
+    expect_is(imp$prevGp$children[[2]], "GDf")
+    expect_equal(imp$prevGp$children[[2]]$get_dim(), c(rows = 5, cols = 7))
+    expect_silent(imp$okBtn$invoke_change_handler())
+    expect_equal(
+        names(ui$getActiveData()),
+        c("id", "workshop", "gender", "q1", "q2", "q3", "q4")
+    )
+    expect_equal(
+        dim(ui$getActiveData()),
+        c(8, 7)
+    )
+})
+
+test_that("SAS Xport (.xpt) files load", {
+    imp <- iNZImportWin$new(ui)
+    imp$fname <- "cars.xpt"
+    imp$setfile()
+    skip_if(length(imp$prevGp$children) == 1,
+        message = "Preview did not load."
+    )
+    expect_is(imp$prevGp$children[[2]], "GDf")
+    expect_equal(imp$prevGp$children[[2]]$get_dim(), c(rows = 5, cols = 5))
+    expect_silent(imp$okBtn$invoke_change_handler())
+    expect_equal(
+        names(ui$getActiveData()),
+        c("MAKE", "PRICE", "MPG", "REP78", "FOREIGN")
+    )
+    expect_equal(
+        dim(ui$getActiveData()),
+        c(26, 5)
+    )
 })
