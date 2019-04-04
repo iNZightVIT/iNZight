@@ -1,3 +1,9 @@
+## iNZight 3.3.7
+__Release date__: 05 April 2019
+
+- small change to patch bug in iNZightPlots package
+
+
 ## iNZight 3.3.6
 __Release date__: 12 February 2019
 
