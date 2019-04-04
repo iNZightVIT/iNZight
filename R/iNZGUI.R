@@ -590,7 +590,7 @@ iNZGUI <- setRefClass(
                         g <- gvbox(container = w)
                         txtSmry <- gtext(
                             text = paste(
-                                iNZightPlots::getPlotSummary(getActiveData()),
+                                iNZightPlots::getPlotSummary(data = getActiveData()),
                                 collapse = "\n"
                             ),
                             expand = TRUE, 
