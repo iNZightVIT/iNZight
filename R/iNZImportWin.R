@@ -318,8 +318,10 @@ iNZImportWin <- setRefClass(
                             " (",
                             sapply(tmpData, function(x)
                                 switch(class(x),
-                                    "integer" = , "numeric" = "n",
-                                    "factor" = , "character" = "c"
+                                    "integer" = ,
+                                    "numeric" = "n",
+                                    "factor" = ,
+                                    "character" = "c"
                                 )
                             ),
                             ")"
