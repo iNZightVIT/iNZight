@@ -1,4 +1,4 @@
-## iNZight 3.3.6.9000
+## iNZight 3.3.7.9000
 __Release date__: TBA
 
 - add axis transformation (log-10) for numeric variables
@@ -9,6 +9,13 @@ __Release date__: TBA
 ### Dates and times
 - convert variables into datetimes (Variables > Dates and times)
 - extract time information from a datetime variable (such as the hour, or year)
+
+
+## iNZight 3.3.7
+__Release date__: 05 April 2019
+
+- small change to patch bug in iNZightPlots package
+
 
 ## iNZight 3.3.6
 __Release date__: 12 February 2019
