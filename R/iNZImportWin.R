@@ -235,7 +235,6 @@ iNZImportWin <- setRefClass(
         setfile = function(...) {
             svalue(filename) <<- basename(fname)
             fext <<- tools::file_ext(fname)
-            print(paste("The extension is", fext))
 
             blockHandlers(filetype)
             match <- which(sapply(filetypes[-1],
@@ -247,6 +246,21 @@ iNZImportWin <- setRefClass(
 
             generatePreview(...)
         },
+        col_types = function() {
+            if (is.null(fColTypes)) return(NULL)
+            if (all(fColTypes == "auto")) return(NULL)
+
+            vnames <- colnames(tmpData)[fColTypes != "auto"]
+            vtypes <- sapply(fColTypes[fColTypes != "auto"], 
+                function(x) {
+                    switch(x, 
+                        "numeric" = "n",
+                        "categorical" = "c"
+                    )
+                }
+            )
+            structure(vtypes, .Names = vnames)
+        },
         readData = function(preview = FALSE) {
             ## Read data using object values:
             ## this needs to be conditionally constructed ..
@@ -257,6 +271,7 @@ iNZImportWin <- setRefClass(
                         iNZightTools::smart_read(fname,
                             fext,
                             preview = preview,
+                            column_types = col_types(),
                             encoding = encoding,
                             delimiter = switch(fext,
                                 "csv" = csvdelim,
@@ -318,8 +333,10 @@ iNZImportWin <- setRefClass(
                             " (",
                             sapply(tmpData, function(x)
                                 switch(class(x),
-                                    "integer" = , "numeric" = "n",
-                                    "factor" = , "character" = "c"
+                                    "integer" = ,
+                                    "numeric" = "n",
+                                    "factor" = ,
+                                    "character" = "c"
                                 )
                             ),
                             ")"

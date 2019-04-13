@@ -155,3 +155,35 @@ test_that("SAS Xport (.xpt) files load", {
         c(26, 5)
     )
 })
+
+test_that("Switching variable types works (csv)", {
+    imp <- iNZImportWin$new(ui)
+    imp$fname <- "cas5.csv"
+    imp$setfile()
+
+    skip_if(length(imp$prevGp$children) == 1,
+        message = "Preview did not load."
+    )
+    # convert YEAR to cat
+    expect_equal(
+        imp$prev$get_names(),
+        c(
+            "cellsource (c)", "rightfoot (n)", "travel (c)",
+            "getlunch (c)", "height (n)", "gender (c)",
+            "age (n)", "year (n)", "armspan (n)", "cellcost (n)"
+        )
+    )
+    imp$fColTypes[8] <- "categorical"
+    imp$generatePreview(NULL)
+    expect_equal(
+        imp$prev$get_names(),
+        c(
+            "cellsource (c)", "rightfoot (n)", "travel (c)",
+            "getlunch (c)", "height (n)", "gender (c)",
+            "age (n)", "year (c)", "armspan (n)", "cellcost (n)"
+        )
+    )
+
+    imp$okBtn$invoke_change_handler()
+    expect_is(ui$getActiveData()$year, "factor")
+})
