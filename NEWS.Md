@@ -5,6 +5,7 @@ __Release date__: TBA
 - switch between counts/percentages in bar plots
 - import SAS files (.sas7bdat and .xpt)
 - add dataset validation module
+- allow switching between categorical and numeric data types in import window
 
 
 ### Dates and times
