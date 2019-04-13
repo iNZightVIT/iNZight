@@ -113,6 +113,10 @@ iNZMenuBarWidget <- setRefClass(
                             tooltip = "Unite columns",
                             handler = function(h, ...) iNZUniteDataWin$new(GUI))
                 ),
+                validate = 
+                  gaction("Validate ...",
+                          icon = "symbol_diamond",
+                          handler = function(h, ...) iNZValidateWin$new(GUI)),
                 gseparator(),
                 rename =
                     gaction("Rename ...",
