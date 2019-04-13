@@ -109,7 +109,7 @@ iNZDataViewWidget <- setRefClass(
                 names(varWidget[[2]]) <- "...CONTINUED"
             } else {
                 varWidget <- list(gtable(vnames, expand = TRUE))
-                names(varWidget[[1]]) <- "VARIABLES (n = numeric, c = categorical, t = time/date)"
+                names(varWidget[[1]]) <- "VARIABLES (n = numeric, c = categorical, dt = date/time)"
             }
             ## use the variable view as dropsource and add to data group
             invisible(lapply(varWidget, function(x) {

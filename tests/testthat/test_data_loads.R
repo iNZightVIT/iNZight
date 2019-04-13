@@ -40,7 +40,7 @@ test_that("UI correctly displays the data", {
     expect_true(visible(ui$dataViewWidget$dataGp$children[[2]]))
 
     expect_equal(ui$dataViewWidget$dataGp$children[[2]]$children[[1]]$get_names(),
-        c("VARIABLES (n = numeric, c = categorical, t = time/date)"))
+        c("VARIABLES (n = numeric, c = categorical, dt = date/time)"))
     expect_equal(ui$dataViewWidget$dataGp$children[[2]]$children[[1]]$get_items(),
         c("(n) A", "(c) B"))
 
@@ -186,4 +186,22 @@ test_that("Switching variable types works (csv)", {
 
     imp$okBtn$invoke_change_handler()
     expect_is(ui$getActiveData()$year, "factor")
+})
+
+test_that("Date times are supported (csv)", {
+    imp <- iNZImportWin$new(ui)
+    imp$fname <- "dt.csv"
+    imp$setfile()
+    skip_if(length(imp$prevGp$children) == 1,
+        message = "Preview did not load."
+    )
+
+    expect_equal(
+        imp$prev$get_names(),
+        c("x (d)", "y (t)", "z (dt)")
+    )
+    imp$okBtn$invoke_change_handler()
+    expect_is(ui$getActiveData()$x, "Date")
+    expect_is(ui$getActiveData()$y, "hms")
+    expect_is(ui$getActiveData()$z, "POSIXct")
 })
