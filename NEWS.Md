@@ -4,6 +4,7 @@ __Release date__: TBA
 - add axis transformation (log-10) for numeric variables
 - switch between counts/percentages in bar plots
 - import SAS files (.sas7bdat and .xpt)
+- add dataset validation module
 
 
 ### Dates and times
