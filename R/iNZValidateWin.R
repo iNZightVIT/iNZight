@@ -26,7 +26,9 @@ iNZValidateWin <- setRefClass(
       add(gv, group.left, expand = TRUE, fill = TRUE)
       add(gv, group.right, expand = TRUE, fill = TRUE)
       
-      details.box <- gtext(text = "Double click on the results of a \nvalidation rule in the bottom-left \ntable to display a detailed summary \nhere.", wrap = FALSE)
+      details.default <- "Double click on the results of a \nvalidation rule in the bottom-left \ntable to display a detailed summary \nhere."
+      
+      details.box <- gtext(text = details.default, wrap = FALSE)
       font(details.box) <- c(family = "monospace")
       
       rules.box <- gtext(text = "", font.attr = list(family = "monospace"))
@@ -70,6 +72,9 @@ iNZValidateWin <- setRefClass(
           results.df <- results.df[order(results.df[["Fails"]] / results.df[["Total"]], decreasing = TRUE), ]
           
           results.box[] <- results.df
+          
+          svalue(details.box) <- details.default
+          font(details.box) <- c(family = "monospace")
         }, 
         error = function(e) {
           error.message <- sprintf("Error reading validation rules: \n  %s", e)
