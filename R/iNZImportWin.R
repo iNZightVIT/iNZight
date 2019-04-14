@@ -255,7 +255,10 @@ iNZImportWin <- setRefClass(
                 function(x) {
                     switch(x, 
                         "numeric" = "n",
-                        "categorical" = "c"
+                        "categorical" = "c",
+                        "date" = "D",
+                        "time" = "t",
+                        "datetime" = "T"
                     )
                 }
             )
@@ -311,12 +314,23 @@ iNZImportWin <- setRefClass(
                         readData(preview = TRUE)
                         ## set the preview
                         svalue(prevLbl) <<-
-                            "Right-click column names to change the type (c = categorical, n = numeric)\n"
+                            paste(
+                                "Right-click column names to change the type",
+                                "(c = categorical, n = numeric,",
+                                "d = date, t = time)\n"
+                            )
                         prev <<- gdf(head(tmpData, 5), container = prevGp)
                         invisible(prev$remove_popup_menu())
                         invisible(prev$add_popup(function(col_index) {
                             j <- prev$get_column_index(col_index)
-                            types <- c("auto", "numeric", "categorical")
+                            types <- c(
+                                "auto", 
+                                "numeric", 
+                                "categorical",
+                                "date",
+                                "time",
+                                "datetime"
+                            )
                             list(
                                 gradio(types,
                                     selected = match(fColTypes[j], types),
@@ -332,11 +346,14 @@ iNZImportWin <- setRefClass(
                             names(prev),
                             " (",
                             sapply(tmpData, function(x)
-                                switch(class(x),
+                                switch(class(x)[1],
                                     "integer" = ,
                                     "numeric" = "n",
                                     "factor" = ,
-                                    "character" = "c"
+                                    "character" = "c",
+                                    "Date" = "d",
+                                    "hms" = "t",
+                                    "POSIXct" = "dt"
                                 )
                             ),
                             ")"
@@ -362,11 +379,16 @@ iNZImportWin <- setRefClass(
             if (is.null(fColTypes))
                 return(NULL)
             types <- lapply(fColTypes, function(x)
-                switch(x, "numeric" = "n", "factor" = "c", NULL))
-            # names(types) names(fColTypes)
+                switch(x, 
+                    "numeric" = "n", 
+                    "factor" = "c", 
+                    "date" = "D",
+                    "time" = "t",
+                    "datetime" = "dt",
+                    NULL
+                )
+            )
             types
-            # if (is.null(fColTypes) || all(fColTypes == "auto")) return(NULL)
-            # sapply(fColTypes, function(x) switch(x, "categorical" = "factor", x))
         },
         advancedOptions = function() {
             ## populate the Advanced Options panel (advGp) with extra options for various data sets.
