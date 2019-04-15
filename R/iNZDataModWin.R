@@ -1606,7 +1606,8 @@ iNZAggregatedtWin <- setRefClass(
     method = "ANY",
     newview = "ANY",
     var = "ANY",
-    key = "ANY"
+    key = "ANY",
+    name = "ANY"
   ),
   methods = list(
     initialize = function(gui) {
