@@ -161,6 +161,22 @@ iNZPlotWidget <- setRefClass(
                                                dat <- NULL
                                                vars <- NULL
                                            }
+                                         
+                                           plot.settings <- GUI$getActiveDoc()$getSettings()
+                                           
+                                           if (isTRUE(length(plot.settings$locate.id) > 0)) {
+                                             print(plot.settings$locate.settings)
+                                             if (isTRUE(plot.settings$locate.settings$txtVar != "id")) {
+                                               dat <- GUI$getActiveData()
+                                               vars <- c(vars, plot.settings$locate.settings$txtVar)
+                                             }
+                                             
+                                             if (isTRUE(plot.settings$locate.settings$matchChk)) {
+                                               dat <- GUI$getActiveData()
+                                               vars <- c(vars, plot.settings$locate.settings$matchVar)
+                                             }
+                                           }
+                                         
                                            fp <- filetypes[[svalue(fileType)]](fun, f, data = dat, extra.vars = vars)
                                        },
                                        error = function(e) {
