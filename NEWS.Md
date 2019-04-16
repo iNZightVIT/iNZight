@@ -6,6 +6,7 @@ __Release date__: TBA
 - import SAS files (.sas7bdat and .xpt)
 - add dataset validation module
 - allow switching between categorical and numeric data types in import window
+- fixes, and export additional variables, for interactive maps
 
 
 ### Dates and times
