@@ -1,17 +1,22 @@
 ## iNZight 3.3.7.9000
 __Release date__: TBA
 
+### Dates and times
+- convert variables into datetimes (Variables > Dates and times)
+- extract time information from a datetime variable (such as the hour, or year)
+
+### Merging and reshaping data sets
+- reshape data from long to wide, and vice versa
+- merge data sets using `*_join()`
+- join data sets by appending rows
+
+### Other changes and fixes
 - add axis transformation (log-10) for numeric variables
 - switch between counts/percentages in bar plots
 - import SAS files (.sas7bdat and .xpt)
 - add dataset validation module
 - allow switching between categorical and numeric data types in import window
 - fixes, and export additional variables, for interactive maps
-
-
-### Dates and times
-- convert variables into datetimes (Variables > Dates and times)
-- extract time information from a datetime variable (such as the hour, or year)
 
 
 ## iNZight 3.3.7
