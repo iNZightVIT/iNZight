@@ -1606,7 +1606,8 @@ iNZAggregatedtWin <- setRefClass(
     method = "ANY",
     newview = "ANY",
     var = "ANY",
-    key = "ANY"
+    key = "ANY",
+    name = "ANY"
   ),
   methods = list(
     initialize = function(gui) {
@@ -1633,21 +1634,19 @@ iNZAggregatedtWin <- setRefClass(
           key <<- "dt"
           var2$set_items(formatlist)
         } else if (all(grepl("W", var)) == TRUE) {
-          key <<- "w"
+          key <<- "W"
           var2$set_items(c("", "Quarterly", "Yearly"))
         } else if (all(grepl("M", var)) == TRUE) {
-          key <<- "m"
+          key <<- "M"
           var2$set_items(c("", "Quarterly", "Yearly"))
         } else if (all(grepl("Q", var)) == TRUE) {
-          key <<- "q"
+          key <<- "Q"
           var2$set_items(c("", "Yearly"))
         } else {
           key <<- ""
           var2$set_items("")
-          newview$set_items("Select variable not supported")
+          newview$set_items("Selected variable not supported")
         }
-        updateView()
-        
       })
       
       formatlist <- c("", "Weekly", "Monthly", "Quarterly", "Yearly")
@@ -1658,17 +1657,25 @@ iNZAggregatedtWin <- setRefClass(
       var2 <- gcombobox(items = formatlist, cont = mainGroup)
       addHandlerChanged(var2, function(h, ...) {
         format <<- svalue(var2)
-        updateView()
+        if (format == "") {
+          newview$set_items()
+        }
+        if (format != "" & method != "" & col != "") {
+          updateView()
+        }
       })
       
       var3_string <- glabel("How to aggregate", cont = mainGroup)
       
       method <<- ""
-      var3 <- gtable(c("Sum", "Mean", "Median", "Minimum", "Maximum", "Count"), cont = mainGroup)
+      var3 <- gtable(c("Sum", "Mean", "Median"), cont = mainGroup)
       size(var3) <- c(-1, 150)
       addHandlerClicked(var3, function(h, ...) {
         method <<- svalue(var3)
+        updateView()
       })
+      
+      name <<- "newcol"
       
       prevTbl <- glayout(homogeneous = FALSE, container = mainGroup)
       
@@ -1684,34 +1691,37 @@ iNZAggregatedtWin <- setRefClass(
       prevTbl[2,2, expand = TRUE] <- newview
       size(newview) <<- c(-1, 250)
       
-      aggregatebtn <- gbutton("Aggregate", cont = mainGroup)
-
-      # okbtn <- gbutton("Extract", container = mainGroup, handler = function(h,...) {
-      #   .dataset = GUI$getActiveData()
-      #   exp = iNZightTools::extract_part(.dataset, varname, component, newname)
-      #   updateData(exp)
-      #   dispose(GUI$modWin)
-      # })
+      aggregatebtn <- gbutton("Aggregate", cont = mainGroup, handler = function(h,...) {
+        .dataset <- GUI$getActiveData()
+        data <- aggregate()
+        attr(data, "name") <- paste(attr(.dataset, "name", exact = TRUE), "aggregated", sep = ".")
+        attr(data, "code") <- gsub(".dataset", attr(.dataset, "name", exact = TRUE), attr(data, "code"))
+        GUI$setDocument(iNZDocument$new(data = data))
+        dispose(GUI$modWin)
+      })
       
       add(GUI$modWin, mainGroup, expand = TRUE)
       visible(GUI$modWin) <<- TRUE
     },
-  updateView = function() {
+  aggregate = function() {
     .dataset = GUI$getActiveData()
-    
     if (key == "dt" & format != "") {
       part = switch(format, "Weekly" = "Year Week",
                             "Monthly" = "Year Month",
                             "Quarterly" = "Year Quarter",
                             "Yearly" = "Year")
       df = iNZightTools::extract_part(.dataset, col, part, format)
-      print("aggregate on dt")
+      df = iNZightTools::aggregateData(df, format, method)
     } else if (key != "" & key != "dt" & format != "") {
-      print("create function that takes a check and aggregate based on this")
+      newdata <- iNZightTools::separate(.dataset, col, "left", "right", key, "Column")
+      df = iNZightTools::aggregatedt(newdata, format, key, format)
+      df = iNZightTools::aggregateData(df, format, method)
     }
-    
-    ## Write code to aggregate 
-    
-    # newview$set_items(df)
+  },
+  updateView = function() {
+    df = aggregate()
+    if (length(df) != 0) {
+      newview$set_items(df)
+    }
   }
 ))
