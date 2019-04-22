@@ -11,9 +11,12 @@ test_that("Strings are converted to factor", {
 })
 
 test_that("Saving as RDS works", {
-    expect_silent(iNZLoadSaveWin(ui, "save", "test2.rds"))
+    tmp <- tempfile(fileext = ".rds")
+    on.exit(unlink(tmp))
+
+    expect_silent(iNZLoadSaveWin(ui, "save", tmp))
     expect_equal(
-        readRDS("test2.rds"),
+        readRDS(tmp),
         structure(
             data.frame(
                 x = 1:5,
@@ -23,5 +26,4 @@ test_that("Saving as RDS works", {
             code = ""
         )
     )
-    unlink("test2.rds")
 })
