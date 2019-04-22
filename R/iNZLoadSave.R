@@ -11,22 +11,24 @@ iNZLoadSaveWin <-
             initialize = function(gui, what = c("load", "save"), f = NULL) {
                 initFields(GUI = gui, action = match.arg(what))
 
-                init.d <- file.path(
-                    "~", "Documents", "iNZightVIT", "Saved Data"
-                )
 
                 ## select a file name:
                 if (!is.null(f)) {
                     filename <<- f
                 } else {
+                    init.d <- file.path(
+                        "~", "Documents", "iNZightVIT", "Saved Data"
+                    )
                     filename <<- gfile("Select file",
                         type = switch(action,
                             "load" = "open",
                             "save" = "save"
                         ),
                         filter = list(
-                            "iNZight Save Files (.rds)" = list(patterns = "*.rds"),
-                            "All Files" = list(patterns = "*")
+                            "iNZight Save Files (.rds)" = 
+                                list(patterns = "*.rds"),
+                            "All Files" = 
+                                list(patterns = "*")
                         ),
                         parent = gui$win,
                         initial.dir = path.expand(init.d)
@@ -40,7 +42,7 @@ iNZLoadSaveWin <-
                         "save" = save()
                     )
 
-                return(invisible(NULL))
+                invisible(NULL)
             },
             load = function() {
                 d <- readRDS(filename)
