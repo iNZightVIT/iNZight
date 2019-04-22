@@ -17,13 +17,6 @@ test_that("Saving as RDS works", {
     expect_silent(iNZLoadSaveWin(ui, "save", tmp))
     expect_equal(
         readRDS(tmp),
-        structure(
-            data.frame(
-                x = 1:5,
-                y = as.factor(LETTERS[1:5])
-            ),
-            name = "data",
-            code = ""
-        )
+        ui$getActiveData()
     )
 })
