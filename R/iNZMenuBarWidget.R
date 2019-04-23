@@ -44,11 +44,11 @@ iNZMenuBarWidget <- setRefClass(
                 load =
                     gaction("Load ...",
                         icon = "symbol_diamond",
-                        handler = function(h, ...) iNZLoadSaveWin$new(GUI, action = "load")),
+                        handler = function(h, ...) iNZLoadSaveWin$new(GUI, what = "load")),
                 save =
                     gaction("Save ...",
                         icon = "save",
-                        handler = function(h, ...) iNZLoadSaveWin$new(GUI, action = "save")),
+                        handler = function(h, ...) iNZLoadSaveWin$new(GUI, what = "save")),
                 gseparator(),
                 import =
                     gaction("Import data ...",

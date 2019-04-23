@@ -17,6 +17,7 @@ __Release date__: TBA
 - add dataset validation module
 - allow switching between categorical and numeric data types in import window
 - fixes, and export additional variables, for interactive maps
+- when importing RDS files, character variables are converted to factors
 
 
 ## iNZight 3.3.7
