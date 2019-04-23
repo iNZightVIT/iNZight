@@ -125,7 +125,8 @@ test_that("SAS (.sas7bdat) files load", {
     )
     expect_is(imp$prevGp$children[[2]], "GDf")
     expect_equal(imp$prevGp$children[[2]]$get_dim(), c(rows = 5, cols = 7))
-    expect_silent(imp$okBtn$invoke_change_handler())
+    imp$okBtn$invoke_change_handler()
+    # expect_silent(imp$okBtn$invoke_change_handler())
     expect_equal(
         names(ui$getActiveData()),
         c("id", "workshop", "gender", "q1", "q2", "q3", "q4")
@@ -145,7 +146,8 @@ test_that("SAS Xport (.xpt) files load", {
     )
     expect_is(imp$prevGp$children[[2]], "GDf")
     expect_equal(imp$prevGp$children[[2]]$get_dim(), c(rows = 5, cols = 5))
-    expect_silent(imp$okBtn$invoke_change_handler())
+    imp$okBtn$invoke_change_handler()
+    # expect_silent(imp$okBtn$invoke_change_handler())
     expect_equal(
         names(ui$getActiveData()),
         c("MAKE", "PRICE", "MPG", "REP78", "FOREIGN")
