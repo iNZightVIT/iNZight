@@ -244,6 +244,9 @@ iNZImportWin <- setRefClass(
                 if (length(match) > 0) match else 0
             unblockHandlers(filetype)
 
+            # and reset some things about the dataset
+            fColTypes <<- NULL
+
             generatePreview(...)
         },
         col_types = function() {
