@@ -1,0 +1,3 @@
+# census.at.school.500
+age > 0
+age < 18
