@@ -1497,7 +1497,7 @@ iNZExtfromdtWin <- setRefClass(
       date_string <- glabel("Select variable to extract information from", 
                             container = mainGroup, anchor = c(-1, 0))
       
-      var1 <- gcombobox(items = c("", names(dplyr::select_if(GUI$getActiveData(), lubridate::is.POSIXct))), container = mainGroup, handler = function(h,...){
+      var1 <- gcombobox(items = c("", c(names(dplyr::select_if(GUI$getActiveData(), lubridate::is.Date)), names(dplyr::select_if(GUI$getActiveData(), lubridate::is.POSIXct)))), container = mainGroup, handler = function(h,...){
         varname <<- svalue(var1)
         if (varname == "") {
           dfview$set_items(data.frame(Original = ""))
@@ -1533,7 +1533,7 @@ iNZExtfromdtWin <- setRefClass(
                             Quarter = list("Year Quarter" = "Year Quarter", "Quarter" = "Quarter"),
                             Month = list("Year Month" = "Year Month", "Month (full)" = "Month (full)", "Month (abbreviated)" = "Month (abbreviated)", "Month (number)" = "Month (number)"),
                             Week = list("Week of the year (Sunday as first day of the week)" = "Week of the year (Sunday as first day of the week)", "Week of the year (Monday as first day of the week)" = "Week of the year (Monday as first day of the week)"),
-                            Day = list("Day of the year" = "Day of the year", "Day of the week (name)" = "Day of the week (name)", "Day of the week (number, Monday as 1)" = "Day of the week (number, Monday as 1)", "Day of the week (number, Sunday as 0)" = "Day of the week (number, Sunday as 0)","Day" = "Day")),
+                            Day = list("Day of the year" = "Day of the year", "Day of the week (name)" = "Day of the week (name)", "Day of the week (abbreviated)" = "Day of the week (abbreviated)", "Day of the week (number, Monday as 1)" = "Day of the week (number, Monday as 1)", "Day of the week (number, Sunday as 0)" = "Day of the week (number, Sunday as 0)","Day" = "Day")),
                 Time = list("Time only" = "Time only", "Hours (decimal)" = "Hours (decimal)", "Hour" = "Hour", "Minute" = "Minute", "Second" = "Second")
       )
       
@@ -1553,18 +1553,21 @@ iNZExtfromdtWin <- setRefClass(
                                                                   "Week of the year (Monday as first day of the week)" = "Week.year",
                                                                   "Day of the year" = "Day.year", 
                                                                   "Day of the week (name)" = "Day.week", 
+                                                                  "Day of the week (abbreviated)" = "Day.week.abbreviated",
                                                                   "Day of the week (number)" = "Day.week.number", 
                                                                   "Day of the week (number, Monday as 1)" = "Day.week.number",
                                                                   "Day of the week (number, Sunday as 0)" = "Day.week.number",
                                                                   "Time only" = "Time",
                                                                   "Hours (decimal)" = "Hour.decimal", component), sep = ""))
+        newname <<- svalue(newVarname)
         updatePreview()
       })
       size(atree) = c(-1, 100)
       
       date_string <- glabel("Name for new variable", container = mainGroup, anchor = c(-1, 0))
-      newVarname = gedit("", cont = mainGroup, handler = function(h, ...) {
-        newname <<- svalue(newVarname)
+      newVarname = gedit("", cont = mainGroup)
+      addHandlerKeystroke(newVarname, function(h, ...) {
+        newname <<- ifelse(svalue(newVarname)=="", "Extracted", svalue(newVarname))
         updatePreview()
       })
       
@@ -1630,7 +1633,7 @@ iNZAggregatedtWin <- setRefClass(
         col <<- svalue(var1)
         var <<- GUI$getActiveData()[[col]]
         newview$set_items("")
-        if (lubridate::is.POSIXct(var) == TRUE) {
+        if (lubridate::is.POSIXct(var) == TRUE | lubridate::is.Date(var) == TRUE) {
           key <<- "dt"
           var2$set_items(formatlist)
         } else if (all(grepl("W", var)) == TRUE) {
