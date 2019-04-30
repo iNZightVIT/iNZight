@@ -994,8 +994,6 @@ iNZjoinDataWin <- setRefClass(
     newdata = "ANY",
     left_col = "ANY",
     right_col = "ANY",
-    auto_left_col = "ANY",
-    auto_right_col = "ANY",
     join_method = "ANY",
     left_name = "ANY",
     right_name = "ANY",
@@ -1058,6 +1056,26 @@ iNZjoinDataWin <- setRefClass(
         data_name <- gfilebrowse(text = "Specify a file", initial.dir = file.path(".", "data"), handler = function(h, ...) {
           newdata <<- read.csv(svalue(data_name))
           impview$set_items(head(newdata, 10))
+          
+          ## checking for common columns that are of different types
+          cols_in_common <- intersect(colnames(GUI$getActiveData()), colnames(newdata))
+          list <- list()
+          if (length(cols_in_common) != 0) {
+            for (i in 1:length(cols_in_common)) {
+              orig_type <- class(GUI$getActiveData()[[cols_in_common[i]]])
+              new_type <- class(newdata[[cols_in_common[i]]])
+              if (orig_type == new_type|orig_type == "character" & new_type == "factor"|orig_type == "factor" & new_type == "character") {
+                list <- append(list, TRUE)
+              } else {
+                list <- append(list, FALSE)
+              }
+            }
+            if (!all(list == TRUE)) {
+              joinview$set_items("Join failed as two datasets contain columns that have the same names but different types")
+              return()
+            }
+          }
+
           left_col <<- ""
           right_col <<- ""
           d1 = tryCatch(
@@ -1072,9 +1090,6 @@ iNZjoinDataWin <- setRefClass(
           attr = attr(d1, "join_cols")
           left_col <<- as.character(attr)
           right_col <<- left_col
-          
-          print(left_col)
-          print(right_col)
           
           create_join_table()
           updatePreview()
@@ -1111,6 +1126,7 @@ iNZjoinDataWin <- setRefClass(
         addHandlerChanged(joinbtn, function(h, ...) {
           .dataset <- GUI$getActiveData()
           data = joinData()
+          if (length(data) == 0) {data = GUI$getActiveData()}
           attr(data, "name") <- paste(attr(.dataset, "name", exact = TRUE), "joined", sep = ".")
           attr(data, "code") <- gsub(".dataset", attr(.dataset, "name", exact = TRUE), attr(data, "code"))
           GUI$setDocument(iNZDocument$new(data = data))
@@ -1171,15 +1187,32 @@ iNZjoinDataWin <- setRefClass(
     joinData = function() {
       data <- GUI$getActiveData()
       if (length(left_col) == length(right_col)) {
-        iNZightTools::joindata(
-          GUI$getActiveData(),
-          newdata,
-          left_col,
-          right_col,
-          join_method,
-          left_name,
-          right_name
-        )
+        ## checking for column types
+        if (length(left_col) != 0) {
+          list <- list()
+          for (i in 1:length(left_col)) {
+            orig_type <- class(GUI$getActiveData()[[left_col[i]]])
+            new_type <- class(newdata[[right_col[i]]])
+            if (orig_type == new_type|orig_type == "character" & new_type == "factor"|orig_type == "factor" & new_type == "character") {
+              list <- append(list, TRUE)
+            } else {list <- append(list, FALSE)}
+          }
+        }
+        
+        if (all(list == TRUE)) {
+          iNZightTools::joindata(
+            GUI$getActiveData(),
+            newdata,
+            left_col,
+            right_col,
+            join_method,
+            left_name,
+            right_name
+          )
+        } else {
+          joinview$set_items("Selected columns are of different types")
+          return()
+        }
       } else {
         joinview$set_items("Specify columns to join on")
         return()
