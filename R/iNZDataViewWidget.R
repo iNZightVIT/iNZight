@@ -90,7 +90,12 @@ iNZDataViewWidget <- setRefClass(
             ## prefix variable type to variable names
             vnames <- names(dataSet)
             ## These are explicitely removes by `gsub` in the addDropSource handler below
-            vtypes <- ifelse(sapply(dataSet, is.numeric), "(n)", "(c)")
+            vtypes <- sapply(dataSet, function(x) 
+                switch(iNZightTools::vartype(x), 
+                    'num' = '(n)', 
+                    'cat' = '(c)', 
+                    'dt' = '(t)'
+                ))
 
             vnames <- paste(vtypes, vnames)
 
@@ -104,7 +109,7 @@ iNZDataViewWidget <- setRefClass(
                 names(varWidget[[2]]) <- "...CONTINUED"
             } else {
                 varWidget <- list(gtable(vnames, expand = TRUE))
-                names(varWidget[[1]]) <- "VARIABLES (n = numeric, c = categorical)"
+                names(varWidget[[1]]) <- "VARIABLES (n = numeric, c = categorical, dt = date/time)"
             }
             ## use the variable view as dropsource and add to data group
             invisible(lapply(varWidget, function(x) {
@@ -112,7 +117,7 @@ iNZDataViewWidget <- setRefClass(
                 x$remove_popup_menu()
                 addDropSource(x, handler = function(h, ...) {
                     ## Remove the variable type from the tag (otherwise `variable doesn't exist`)
-                    gsub("\\([cn]\\) ", "", svalue(h$obj))  # matches '(c) ' and '(n) '
+                    gsub("\\([a-z]\\) ", "", svalue(h$obj)) 
                 })}))
         },
         ## change the currently active View
