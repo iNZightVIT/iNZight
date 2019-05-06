@@ -1054,7 +1054,7 @@ iNZjoinDataWin <- setRefClass(
         impview <- gtable(data.frame(""))
         string4 <- glabel("Import data")
         data_name <- gfilebrowse(text = "Specify a file", initial.dir = file.path(".", "data"), handler = function(h, ...) {
-          newdata <<- read.csv(svalue(data_name))
+          newdata <<- iNZightTools::smart_read(svalue(data_name))
           impview$set_items(head(newdata, 10))
           
           ## checking for common columns that are of different types
@@ -1296,7 +1296,7 @@ iNZappendrowWin <- setRefClass(
         font(title_string) = list(size = 14, weight = "bold")
         file_string = glabel("Import data", cont = mainGroup, anchor = c(-1,0))
         data_name = gfilebrowse(text = "Specify a file", initial.dir = file.path(".", "data"), cont = mainGroup, handler = function(h, ...) {
-          newdata <<- read.csv(svalue(data_name))
+          newdata <<- iNZightTools::smart_read(svalue(data_name))
         })
         
         date <<- FALSE

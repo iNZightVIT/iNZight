@@ -1537,7 +1537,10 @@ iNZExtfromdtWin <- setRefClass(
                 Time = list("Time only" = "Time only", "Hours (decimal)" = "Hours (decimal)", "Hour" = "Hour", "Minute" = "Minute", "Second" = "Second")
       )
       
-      atree <- gtree(offspring=offspring, offspring.data=l, cont=mainGroup)
+      # scrollbox <- ggroup(cont = mainGroup, horizontal = FALSE, use.scrollwindow = TRUE)
+      # size(scrollbox) <- c(200, 200)
+      
+      atree <- gtree(offspring=offspring, offspring.data=l, cont = mainGroup)
       
       component <<- ""
       addHandlerClicked(atree, function(h, ...) {
@@ -1562,7 +1565,6 @@ iNZExtfromdtWin <- setRefClass(
         newname <<- svalue(newVarname)
         updatePreview()
       })
-      size(atree) = c(-1, 100)
       
       date_string <- glabel("Name for new variable", container = mainGroup, anchor = c(-1, 0))
       newVarname = gedit("", cont = mainGroup)
@@ -1588,7 +1590,7 @@ iNZExtfromdtWin <- setRefClass(
       
       scrolledWindow$addWithViewport(mainGroup$widget)
       add(GUI$modWin, scrolledWindow, expand = TRUE, fill = TRUE)
-      size(GUI$modWin) <<- c(300, 900)
+      size(GUI$modWin) <<- c(300, 700)
       visible(GUI$modWin) <<- TRUE
     },
   updatePreview = function() {
@@ -1673,7 +1675,7 @@ iNZAggregatedtWin <- setRefClass(
       method <<- ""
       var3 <- gtable(c("Sum", "Mean", "Median"), cont = mainGroup)
       size(var3) <- c(-1, 150)
-      addHandlerClicked(var3, function(h, ...) {
+      addHandlerSelectionChanged(var3, function(h, ...) {
         method <<- svalue(var3)
         updateView()
       })
@@ -1715,10 +1717,24 @@ iNZAggregatedtWin <- setRefClass(
                             "Yearly" = "Year")
       df = iNZightTools::extract_part(.dataset, col, part, format)
       df = iNZightTools::aggregateData(df, format, method)
+      colname = subset(colnames(df), grepl("[:.:]missing$",colnames(df)))
+      for (i in 1:length(colname)) {
+        if (all(df[[colname[i]]] == 0)) {
+          df[, colname[i]] <- NULL
+        }
+      }
+      return(df)
     } else if (key != "" & key != "dt" & format != "") {
       newdata <- iNZightTools::separate(.dataset, col, "left", "right", key, "Column")
       df = iNZightTools::aggregatedt(newdata, format, key, format)
       df = iNZightTools::aggregateData(df, format, method)
+      colname = subset(colnames(df), grepl("[:.:]missing$",colnames(df)))
+      for (i in 1:length(colname)) {
+        if (all(df[[colname[i]]] == 0)) {
+          df[, colname[i]] <- NULL
+        }
+      }
+      return(df)
     }
   },
   updateView = function() {
