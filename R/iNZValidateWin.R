@@ -62,9 +62,16 @@ iNZValidateWin <- setRefClass(
       validate.button <- gbutton("Validate Dataset", handler = function(h, ...) {
         rules <- unlist(strsplit(svalue(rules.box), "\\n"))
         rules <- rules[rules != ""]
+        has.labels <- grepl("^.*:.*", rules)
+        labels <- paste0("V", 1:length(rules))
+        labels[has.labels] <- unlist(lapply(strsplit(rules[has.labels], ":"), `[[`, 1))
         
         tryCatch({
-          vali <<- validate::validator(.data = data.frame(name = paste0("V", 1:length(rules)), rule = rules))
+          rules.df <- data.frame(
+            name = labels, 
+            rule = gsub("^.+:", "", rules)
+          )
+          vali <<- validate::validator(.data = rules.df)
           cf <<- validate::confront(GUI$getActiveData(), vali)
           
           results.df <- iNZightTools::validation_summary(cf)
