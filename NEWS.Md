@@ -1,5 +1,5 @@
-## iNZight 3.3.7.9000
-__Release date__: TBA
+# iNZight 3.4
+__Release date__: 30 April 2019
 
 ### Dates and times
 - convert variables into datetimes (Variables > Dates and times)
