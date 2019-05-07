@@ -1013,7 +1013,7 @@ iNZjoinDataWin <- setRefClass(
                                parent = GUI$win, width = 550, visible = FALSE)
         mainGroup <- ggroup(cont = GUI$modWin, expand = TRUE, horizontal = FALSE)
         
-        join_method <<- "inner_join"
+        join_method <<- "left_join"
         
         ## Title
         title_string = glabel("Join Datasets", cont = mainGroup)
@@ -1075,7 +1075,7 @@ iNZjoinDataWin <- setRefClass(
               return()
             }
           }
-
+          
           left_col <<- ""
           right_col <<- ""
           d1 = tryCatch(
@@ -1181,6 +1181,7 @@ iNZjoinDataWin <- setRefClass(
       if (nrow(d) == 0) {
         joinview$set_items("Joined dataset has 0 row")
       } else {
+        d[is.na(d)] <- "NA"
         joinview$set_items(head(d, 10))
       }
     },

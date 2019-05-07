@@ -1537,9 +1537,7 @@ iNZExtfromdtWin <- setRefClass(
                 Time = list("Time only" = "Time only", "Hours (decimal)" = "Hours (decimal)", "Hour" = "Hour", "Minute" = "Minute", "Second" = "Second")
       )
       
-      # scrollbox <- ggroup(cont = mainGroup, horizontal = FALSE, use.scrollwindow = TRUE)
-      # size(scrollbox) <- c(200, 200)
-      
+
       atree <- gtree(offspring=offspring, offspring.data=l, cont = mainGroup)
       
       component <<- ""
@@ -1593,12 +1591,20 @@ iNZExtfromdtWin <- setRefClass(
       size(GUI$modWin) <<- c(300, 700)
       visible(GUI$modWin) <<- TRUE
     },
-  updatePreview = function() {
-    .dataset = GUI$getActiveData()
-    d = iNZightTools::extract_part(.dataset, varname, component, newname)
-    extractedview$set_items(data.frame(Extracted = as.character(d[[newname]])))
-  }
-))
+    updatePreview = function() {
+      .dataset <- GUI$getActiveData()
+      list <- list("Date only", "Year", "Century", "Decimal Year", "Year Quarter", "Quarter", 
+                   "Year Month", "Month (full)", "Month (abbreviated)", "Month (number)", "Year Week", 
+                   "Week of the year (Monday as first day of the week)", "Week of the year (Sunday as first day of the week)", 
+                   "Day of the year", "Day of the week (name)", "Day of the week (abbreviated)", 
+                   "Day of the week (number, Monday as 1)", "Day of the week (number, Sunday as 0)", 
+                   "Day", "Time only", "Hours (decimal)", "Hour", "Minute", "Second")
+      if (component %in% list) {
+        d <- iNZightTools::extract_part(.dataset, varname, component, newname)
+        extractedview$set_items(data.frame(Extracted = as.character(d[[newname]])))
+      }
+    }
+  ))
 
 ## Aggregate datetimes
 iNZAggregatedtWin <- setRefClass(
@@ -1708,39 +1714,39 @@ iNZAggregatedtWin <- setRefClass(
       add(GUI$modWin, mainGroup, expand = TRUE)
       visible(GUI$modWin) <<- TRUE
     },
-  aggregate = function() {
-    .dataset = GUI$getActiveData()
-    if (key == "dt" & format != "") {
-      part = switch(format, "Weekly" = "Year Week",
-                            "Monthly" = "Year Month",
-                            "Quarterly" = "Year Quarter",
-                            "Yearly" = "Year")
-      df = iNZightTools::extract_part(.dataset, col, part, format)
-      df = iNZightTools::aggregateData(df, format, method)
-      colname = subset(colnames(df), grepl("[:.:]missing$",colnames(df)))
-      for (i in 1:length(colname)) {
-        if (all(df[[colname[i]]] == 0)) {
-          df[, colname[i]] <- NULL
+    aggregate = function() {
+      .dataset = GUI$getActiveData()
+      if (key == "dt" & format != "") {
+        part = switch(format, "Weekly" = "Year Week",
+                      "Monthly" = "Year Month",
+                      "Quarterly" = "Year Quarter",
+                      "Yearly" = "Year")
+        df = iNZightTools::extract_part(.dataset, col, part, format)
+        df = iNZightTools::aggregateData(df, format, method)
+        colname = subset(colnames(df), grepl("[:.:]missing$",colnames(df)))
+        for (i in 1:length(colname)) {
+          if (all(df[[colname[i]]] == 0)) {
+            df[, colname[i]] <- NULL
+          }
         }
-      }
-      return(df)
-    } else if (key != "" & key != "dt" & format != "") {
-      newdata <- iNZightTools::separate(.dataset, col, "left", "right", key, "Column")
-      df = iNZightTools::aggregatedt(newdata, format, key, format)
-      df = iNZightTools::aggregateData(df, format, method)
-      colname = subset(colnames(df), grepl("[:.:]missing$",colnames(df)))
-      for (i in 1:length(colname)) {
-        if (all(df[[colname[i]]] == 0)) {
-          df[, colname[i]] <- NULL
+        return(df)
+      } else if (key != "" & key != "dt" & format != "") {
+        newdata <- iNZightTools::separate(.dataset, col, "left", "right", key, "Column")
+        df = iNZightTools::aggregatedt(newdata, format, key, format)
+        df = iNZightTools::aggregateData(df, format, method)
+        colname = subset(colnames(df), grepl("[:.:]missing$",colnames(df)))
+        for (i in 1:length(colname)) {
+          if (all(df[[colname[i]]] == 0)) {
+            df[, colname[i]] <- NULL
+          }
         }
+        return(df)
       }
-      return(df)
+    },
+    updateView = function() {
+      df = aggregate()
+      if (length(df) != 0) {
+        newview$set_items(df)
+      }
     }
-  },
-  updateView = function() {
-    df = aggregate()
-    if (length(df) != 0) {
-      newview$set_items(df)
-    }
-  }
-))
+  ))
