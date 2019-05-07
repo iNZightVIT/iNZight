@@ -1013,7 +1013,7 @@ iNZjoinDataWin <- setRefClass(
                                parent = GUI$win, width = 550, visible = FALSE)
         mainGroup <- ggroup(cont = GUI$modWin, expand = TRUE, horizontal = FALSE)
         
-        join_method <<- "inner_join"
+        join_method <<- "left_join"
         
         ## Title
         title_string = glabel("Join Datasets", cont = mainGroup)
@@ -1054,7 +1054,7 @@ iNZjoinDataWin <- setRefClass(
         impview <- gtable(data.frame(""))
         string4 <- glabel("Import data")
         data_name <- gfilebrowse(text = "Specify a file", initial.dir = file.path(".", "data"), handler = function(h, ...) {
-          newdata <<- read.csv(svalue(data_name))
+          newdata <<- iNZightTools::smart_read(svalue(data_name))
           impview$set_items(head(newdata, 10))
           
           ## checking for common columns that are of different types
@@ -1075,7 +1075,7 @@ iNZjoinDataWin <- setRefClass(
               return()
             }
           }
-
+          
           left_col <<- ""
           right_col <<- ""
           d1 = tryCatch(
@@ -1181,6 +1181,7 @@ iNZjoinDataWin <- setRefClass(
       if (nrow(d) == 0) {
         joinview$set_items("Joined dataset has 0 row")
       } else {
+        d[is.na(d)] <- "NA"
         joinview$set_items(head(d, 10))
       }
     },
@@ -1296,7 +1297,7 @@ iNZappendrowWin <- setRefClass(
         font(title_string) = list(size = 14, weight = "bold")
         file_string = glabel("Import data", cont = mainGroup, anchor = c(-1,0))
         data_name = gfilebrowse(text = "Specify a file", initial.dir = file.path(".", "data"), cont = mainGroup, handler = function(h, ...) {
-          newdata <<- read.csv(svalue(data_name))
+          newdata <<- iNZightTools::smart_read(svalue(data_name))
         })
         
         date <<- FALSE
