@@ -1013,8 +1013,6 @@ iNZjoinDataWin <- setRefClass(
                                parent = GUI$win, width = 550, visible = FALSE)
         mainGroup <- ggroup(cont = GUI$modWin, expand = TRUE, horizontal = FALSE)
         
-        join_method <<- "left_join"
-        
         ## Title
         title_string = glabel("Join Datasets", cont = mainGroup)
         font(title_string) = list(size = 14, weight = "bold")
@@ -1024,7 +1022,12 @@ iNZjoinDataWin <- setRefClass(
         string1 <- glabel("Preview of the original dataset")
         originview <- gtable(data.frame(head(GUI$getActiveData(), 10)))
         string2 <- glabel("Select join methods")
-        var1 <- gcombobox(items = c("Inner Join", "Left Join", "Full Join", "Semi Join", "Anti Join"))
+        var1 <- gcombobox(
+	    items = c("Inner Join", "Left Join", "Full Join", "Semi Join", "Anti Join"),
+	    selected = 2
+        )
+	join_method <<- svalue(var1)
+
         addHandlerChanged(var1, function(h, ...) {
           join_method <<- switch(svalue(var1), "Inner Join" = "inner_join",
                                  "Left Join" = "left_join",
