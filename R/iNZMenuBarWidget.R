@@ -130,7 +130,7 @@ iNZMenuBarWidget <- setRefClass(
                     gaction("Delete current dataset",
                         icon = "symbol_diamond",
                         handler = function(h, ...) GUI$deleteDataset()),
-                "Merge datasets" = list(
+                "Merge/Join datasets" = list(
                   joinbycol =
                     gaction("Join by column values",
                             icon = "symbol_diamond",
