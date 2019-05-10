@@ -244,6 +244,9 @@ iNZImportWin <- setRefClass(
                 if (length(match) > 0) match else 0
             unblockHandlers(filetype)
 
+            # and reset some things about the dataset
+            fColTypes <<- NULL
+
             generatePreview(...)
         },
         col_types = function() {
@@ -321,27 +324,29 @@ iNZImportWin <- setRefClass(
                             )
                         prev <<- gdf(head(tmpData, 5), container = prevGp)
                         invisible(prev$remove_popup_menu())
-                        invisible(prev$add_popup(function(col_index) {
-                            j <- prev$get_column_index(col_index)
-                            types <- c(
-                                "auto", 
-                                "numeric", 
-                                "categorical",
-                                "date",
-                                "time",
-                                "datetime"
-                            )
-                            list(
-                                gradio(types,
-                                    selected = match(fColTypes[j], types),
-                                    handler = function(h, ...) {
-                                        fColTypes[j] <<-
-                                            types[svalue(h$obj, index = TRUE)]
-                                        generatePreview(h, ..., reload = TRUE)
-                                    }
-                                )
-                            )
-                        }))
+                        if (fext %in% c("csv", "txt")) {
+                          invisible(prev$add_popup(function(col_index) {
+                              j <- prev$get_column_index(col_index)
+                              types <- c(
+                                  "auto", 
+                                  "numeric", 
+                                  "categorical",
+                                  "date",
+                                  "time",
+                                  "datetime"
+                              )
+                              list(
+                                  gradio(types,
+                                      selected = match(fColTypes[j], types),
+                                      handler = function(h, ...) {
+                                          fColTypes[j] <<-
+                                              types[svalue(h$obj, index = TRUE)]
+                                          generatePreview(h, ..., reload = TRUE)
+                                      }
+                                  )
+                              )
+                          }))
+                        }
                         names(prev) <<- paste0(
                             names(prev),
                             " (",

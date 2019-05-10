@@ -207,3 +207,11 @@ test_that("Date times are supported (csv)", {
     expect_is(ui$getActiveData()$y, "hms")
     expect_is(ui$getActiveData()$z, "POSIXct")
 })
+
+test_that("Changing file resets column types", {
+    imp <- iNZImportWin$new(ui)
+    imp$fname <- "dt.csv"
+    imp$fColTypes <- c("numeric", "numeric", "auto")
+    expect_silent(imp$setfile())
+    expect_true(all(imp$fColTypes == "auto"))
+})
