@@ -1022,12 +1022,9 @@ iNZjoinDataWin <- setRefClass(
         string1 <- glabel("Preview of the original dataset")
         originview <- gtable(data.frame(head(GUI$getActiveData(), 10)))
         string2 <- glabel("Select join methods")
-        var1 <- gcombobox(
-	    items = c("Inner Join", "Left Join", "Full Join", "Semi Join", "Anti Join"),
-	    selected = 2
-        )
-	join_method <<- svalue(var1)
-
+        var1 <- gcombobox(items = c("Inner Join", "Left Join", "Full Join", "Semi Join", "Anti Join"), selected = 2)
+	      
+        join_method <<- "left_join"
         addHandlerChanged(var1, function(h, ...) {
           join_method <<- switch(svalue(var1), "Inner Join" = "inner_join",
                                  "Left Join" = "left_join",
@@ -1041,7 +1038,7 @@ iNZjoinDataWin <- setRefClass(
         name_string = glabel("Duplicated cols: suffix for Original", cont = left_name_box, anchor = c(-1, 0))
         left_name <<- "Orig"
         left_name_string = gedit("Orig", cont = left_name_box)
-        addHandlerChanged(left_name_string, function(h, ...) {
+        addHandlerKeystroke(left_name_string, function(h, ...) {
           left_name <<- svalue(left_name_string)
           updatePreview()
         })
@@ -1060,6 +1057,9 @@ iNZjoinDataWin <- setRefClass(
           newdata <<- iNZightTools::smart_read(svalue(data_name))
           impview$set_items(head(newdata, 10))
           
+          left_col <<- ""
+          right_col <<- ""
+          
           ## checking for common columns that are of different types
           cols_in_common <- intersect(colnames(GUI$getActiveData()), colnames(newdata))
           list <- list()
@@ -1075,12 +1075,14 @@ iNZjoinDataWin <- setRefClass(
             }
             if (!all(list == TRUE)) {
               joinview$set_items("Join failed as two datasets contain columns that have the same names but different types")
+              middle$remove_child(coltbl)
+              coltbl <<- glayout()
+              coltbl[1, 1:4] <<- glabel("Please specify columns to match on from two datasets")
+              middle$add_child(coltbl, fill = TRUE)
               return()
             }
           }
-          
-          left_col <<- ""
-          right_col <<- ""
+
           d1 = tryCatch(
             joinData(),
             error = function(e) {
@@ -1102,7 +1104,7 @@ iNZjoinDataWin <- setRefClass(
         name_string = glabel("Duplicated cols: suffix for New", cont = right_name_box, anchor = c(-1, 0))
         right_name <<- "New"
         right_name_string = gedit("New", cont = right_name_box)
-        addHandlerChanged(right_name_string, function(h, ...) {
+        addHandlerKeystroke(right_name_string, function(h, ...) {
           right_name <<- svalue(right_name_string)
           updatePreview()
         })
@@ -1197,7 +1199,7 @@ iNZjoinDataWin <- setRefClass(
           for (i in 1:length(left_col)) {
             orig_type <- class(GUI$getActiveData()[[left_col[i]]])
             new_type <- class(newdata[[right_col[i]]])
-            if (orig_type == new_type|orig_type == "character" & new_type == "factor"|orig_type == "factor" & new_type == "character") {
+            if (orig_type == new_type) {
               list <- append(list, TRUE)
             } else {list <- append(list, FALSE)}
           }
