@@ -1014,30 +1014,29 @@ iNZjoinDataWin <- setRefClass(
         mainGroup <- ggroup(cont = GUI$modWin, expand = TRUE, horizontal = FALSE)
         
         ## Title
-        title_string = glabel("Join Datasets", cont = mainGroup)
-        font(title_string) = list(size = 14, weight = "bold")
+        title_string <- glabel("Join Datasets", cont = mainGroup)
+        font(title_string) <- list(size = 14, weight = "bold")
         
         prevTbl <- glayout(homogeneous = FALSE, cont = mainGroup)
         
         string1 <- glabel("Preview of the original dataset")
         originview <- gtable(data.frame(head(GUI$getActiveData(), 10)))
         string2 <- glabel("Select join methods")
-        var1 <- gcombobox(items = c("Inner Join", "Left Join", "Full Join", "Semi Join", "Anti Join"), selected = 2)
+        jointypes <- list("Inner Join" = "inner_join", "Left Join" = "left_join", "Full Join" = "full_join", "Semi Join" = "semi_join", "Anti Join" = "anti_join")
+        var1 <- gcombobox(
+          items = names(jointypes), 
+          selected = 2,
+          handler = function(h, ...) {
+            join_method <<- jointypes[[svalue(var1)]]
+            updatePreview()
+          })
 	      
         join_method <<- "left_join"
-        addHandlerChanged(var1, function(h, ...) {
-          join_method <<- switch(svalue(var1), "Inner Join" = "inner_join",
-                                 "Left Join" = "left_join",
-                                 "Full Join" = "full_join",
-                                 "Semi Join" = "semi_join",
-                                 "Anti Join" = "anti_join")
-          updatePreview()
-        })
-        
-        left_name_box = gvbox()
-        name_string = glabel("Duplicated cols: suffix for Original", cont = left_name_box, anchor = c(-1, 0))
+
+        left_name_box <- gvbox()
+        name_string <- glabel("Duplicated cols: suffix for Original", cont = left_name_box, anchor = c(-1, 0))
         left_name <<- "Orig"
-        left_name_string = gedit("Orig", cont = left_name_box)
+        left_name_string <- gedit("Orig", cont = left_name_box)
         addHandlerKeystroke(left_name_string, function(h, ...) {
           left_name <<- svalue(left_name_string)
           updatePreview()
@@ -1048,7 +1047,8 @@ iNZjoinDataWin <- setRefClass(
         prevTbl[3,1, expand = TRUE] <- string2
         prevTbl[4,1, expand = TRUE] <- var1
         prevTbl[5,1, expand = TRUE] <- left_name_box
-        size(originview) = c(-1, 200)
+        size(originview) <- c(-1, 200)
+
         
         string3 <- glabel("Preview of the imported dataset")
         impview <- gtable(data.frame(""))
@@ -1056,32 +1056,9 @@ iNZjoinDataWin <- setRefClass(
         data_name <- gfilebrowse(text = "Specify a file", initial.dir = file.path(".", "data"), handler = function(h, ...) {
           newdata <<- iNZightTools::smart_read(svalue(data_name))
           impview$set_items(head(newdata, 10))
-          
+
           left_col <<- ""
           right_col <<- ""
-          
-          ## checking for common columns that are of different types
-          cols_in_common <- intersect(colnames(GUI$getActiveData()), colnames(newdata))
-          list <- list()
-          if (length(cols_in_common) != 0) {
-            for (i in 1:length(cols_in_common)) {
-              orig_type <- class(GUI$getActiveData()[[cols_in_common[i]]])
-              new_type <- class(newdata[[cols_in_common[i]]])
-              if (orig_type == new_type|orig_type == "character" & new_type == "factor"|orig_type == "factor" & new_type == "character") {
-                list <- append(list, TRUE)
-              } else {
-                list <- append(list, FALSE)
-              }
-            }
-            if (!all(list == TRUE)) {
-              joinview$set_items("Join failed as two datasets contain columns that have the same names but different types")
-              middle$remove_child(coltbl)
-              coltbl <<- glayout()
-              coltbl[1, 1:4] <<- glabel("Please specify columns to match on from two datasets")
-              middle$add_child(coltbl, fill = TRUE)
-              return()
-            }
-          }
 
           d1 = tryCatch(
             joinData(),
@@ -1131,7 +1108,7 @@ iNZjoinDataWin <- setRefClass(
         addHandlerChanged(joinbtn, function(h, ...) {
           .dataset <- GUI$getActiveData()
           data = joinData()
-          if (length(data) == 0) {data = GUI$getActiveData()}
+          if (length(data) == 0 | nrow(data) == 0) {data = GUI$getActiveData()}
           attr(data, "name") <- paste(attr(.dataset, "name", exact = TRUE), "joined", sep = ".")
           attr(data, "code") <- gsub(".dataset", attr(.dataset, "name", exact = TRUE), attr(data, "code"))
           GUI$setDocument(iNZDocument$new(data = data))
@@ -1172,16 +1149,7 @@ iNZjoinDataWin <- setRefClass(
     },
     updatePreview = function() {
       "update the preview window"
-      d = tryCatch(
-        joinData(),
-        error = function(e) {
-          if (error == "missing value where TRUE/FALSE needed") {
-            joinview$set_items("No mataching columns, please specify")
-          } else {
-            joinview$set_items(e$message)
-          }
-        }
-      )
+      d = joinData()
       if (length(d) == 0) return()
       if (nrow(d) == 0) {
         joinview$set_items("Joined dataset has 0 row")
@@ -1192,19 +1160,17 @@ iNZjoinDataWin <- setRefClass(
     },
     joinData = function() {
       data <- GUI$getActiveData()
-      if (length(left_col) == length(right_col)) {
+      if (length(left_col) != 0 & length(left_col) == length(right_col)) {
         ## checking for column types
-        if (length(left_col) != 0) {
-          list <- list()
-          for (i in 1:length(left_col)) {
-            orig_type <- class(GUI$getActiveData()[[left_col[i]]])
-            new_type <- class(newdata[[right_col[i]]])
-            if (orig_type == new_type) {
-              list <- append(list, TRUE)
-            } else {list <- append(list, FALSE)}
-          }
+        list <- list()
+        for (i in 1:length(left_col)) {
+          orig_type <- class(GUI$getActiveData()[[left_col[i]]])
+          new_type <- class(newdata[[right_col[i]]])
+          if (orig_type == new_type|orig_type == "character" & new_type == "factor"|orig_type == "factor" & new_type == "character") {
+            list <- append(list, TRUE)
+          } else {list <- append(list, FALSE)}
         }
-        
+        ## Now left_col contains some column namese and the mataching columns from two datasets are in the same class so JOIN
         if (all(list == TRUE)) {
           iNZightTools::joindata(
             GUI$getActiveData(),
@@ -1220,7 +1186,7 @@ iNZjoinDataWin <- setRefClass(
           return()
         }
       } else {
-        joinview$set_items("Specify columns to join on")
+        joinview$set_items("Please specify columns to match on from two datasets")
         return()
       }
     },
@@ -1236,14 +1202,15 @@ iNZjoinDataWin <- setRefClass(
         add_joinby_row(coltbl, 1)
         joinview$set_items("Please specify columns to match on from two datasets")
         return()
-      }
-      for (i in 1:length(left_col)) {
-        add_joinby_row(coltbl, i)
-        number = i + 1
-        coltbl[number, 1]$set_items(left_col[i])
-        svalue(coltbl[number, 1]) <<- left_col[i]
-        coltbl[number, 2]$set_items(right_col[i])
-        svalue(coltbl[number, 2]) <<- right_col[i]
+      } else {
+        for (i in 1:length(left_col)) {
+          add_joinby_row(coltbl, i)
+          number = i + 1
+          coltbl[number, 1]$set_items(left_col[i])
+          svalue(coltbl[number, 1]) <<- left_col[i]
+          coltbl[number, 2]$set_items(right_col[i])
+          svalue(coltbl[number, 2]) <<- right_col[i]
+        }
       }
     },
     # Add joinby row
