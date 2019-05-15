@@ -31,9 +31,9 @@ env:
 repos:
   docker: https://r.docker.stat.auckland.ac.nz
 
-r_github_packages:
-  - iNZightVIT/iNZightTools@dev
-  - iNZightVIT/iNZightPlots@dev
+#r_github_packages:
+#  - iNZightVIT/iNZightTools@dev
+#  - iNZightVIT/iNZightPlots@dev
 
 addons:
   apt:
