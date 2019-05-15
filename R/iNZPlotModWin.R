@@ -967,7 +967,7 @@ iNZPlotMod <- setRefClass(
 
             ## PLOT TYPE
             lbl <- glabel("Plot type :")
-
+            
             PLOTTYPES <- switch(TYPE,
                                 "scatter" = ,
                                 "hex" = ,
@@ -975,13 +975,31 @@ iNZPlotMod <- setRefClass(
                                     list(scatter = "scatter",
                                          hex     = "hexagonal binning",
                                          grid    = "grid-density"),
+                                "gg_violin" = ,
+                                "gg_barcode" = ,
                                 "dot" = ,
                                 "hist" =
                                     list(dot  = "dot plot",
-                                         hist = "histogram"),
-                                "bar" = list(bar = "barplot"))  ## in future + mozaic
+                                         hist = "histogram",
+                                         gg_violin = "violin",
+                                         gg_barcode = "barcode"),
+                                "gg_stackedbar" = ,
+                                "gg_stackedcolumn" = ,
+                                "gg_column" = ,
+                                "gg_bar" = ,
+                                "gg_pie" = , 
+                                "gg_donut" = ,
+                                "bar" = ,
+                                  list(bar = "barplot", 
+                                       gg_pie = "pie", 
+                                       gg_donut = "donut", 
+                                       gg_bar = "barplot (ggplot)", 
+                                       gg_column = "column",
+                                       gg_stackedcolumn = "stacked column",
+                                       gg_stackedbar = "stacked bar")
+                                )  ## in future + mozaic
 
-            if (PLOTTYPE != "bar") {
+            # if (PLOTTYPE != "bar") {
               plotTypes <- do.call(c, PLOTTYPES)
               plotTypeValues <- names(PLOTTYPES)
               plotTypeList <- gcombobox(
@@ -1011,7 +1029,7 @@ iNZPlotMod <- setRefClass(
               tbl[ii,  1:2, anchor = c(1, 0), expand = TRUE] <- lbl
               tbl[ii,  3:6, expand = TRUE] <- plotTypeList
               ii <- ii + 1
-            }
+            # }
 
             ## BACKGROUND COLOUR
             lbl <- "Background colour :"
@@ -1551,7 +1569,7 @@ iNZPlotMod <- setRefClass(
                                   timer <<- gtimer(500, function(...) updateEverything(), one.shot = TRUE)
                               })
 
-            if (!PLOTTYPE %in% c("bar")) {
+            if (!PLOTTYPE %in% c("bar", "gg_pie", "gg_donut", "gg_bar", "gg_column", "gg_stackedcolumn", "gg_stackedbar")) {
                 addHandlerChanged(cexPt,
                                   handler = function(h, ...) {
                                       if (!is.null(timer))

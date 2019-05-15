@@ -970,11 +970,14 @@ iNZGUI <- setRefClass(
                     curPlSet$data <- NULL
                     curPlSet$design <- curMod$createSurveyObject()
                 }
+                
+                curPlSet$data.name <- dataNameWidget$datName
 
                 ## Suppress the warnings produced by iNZightPlot ...
                 suppressWarnings({
                     ## Generate the plot ... and update the interaction button
                     curPlot <<- unclass(rawpl <- do.call(iNZightPlot, curPlSet))
+                    
                     if (allow.redraw & !is.null(attr(curPlot, "dotplot.redraw")))
                         if (attr(curPlot, "dotplot.redraw"))
                             curPlot <<- unclass(rawpl <- do.call(iNZightPlot, curPlSet))
