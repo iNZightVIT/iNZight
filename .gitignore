@@ -1,9 +1,9 @@
 *.Rhistory
 *~
 #*#
-
 .Rproj.user
 *.Rproj
 revdep
 *.Rcheck
 *.tar.gz
+*.RData

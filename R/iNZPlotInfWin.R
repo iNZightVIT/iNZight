@@ -23,20 +23,13 @@ iNZPlotInfWin <- setRefClass(
             initFields(GUI = gui)
             if (!is.null(GUI)) {
                 ## close modification window if one is open
-                if (length(GUI$leftMain$children) > 1) {
-                    delete(GUI$leftMain, GUI$leftMain$children[[2]])
-                }
-                GUI$initializeModuleWindow()
+                # if (length(GUI$leftMain$children) > 1) {
+                #     delete(GUI$leftMain, GUI$leftMain$children[[2]])
+                # }
+                modwin <- GUI$initializeModuleWindow(title = "Add Inference Information")
+                mainGrp <- modwin$body
 
                 updateSettings()
-
-                mainGrp <- gvbox(container = GUI$moduleWindow, expand = TRUE)
-                mainGrp$set_borderwidth(5)
-
-                ## Window title
-                ttl <- glabel("Add Inference Information")
-                font(ttl) <- list(weight = "bold", family = "normal", size = 11)
-                add(mainGrp, ttl)
 
                 ## Three layouts, one for parameter/method/type
                 parTab <<- glayout()
@@ -76,8 +69,7 @@ iNZPlotInfWin <- setRefClass(
 
                 addSpring(mainGrp)
 
-                btnGrp <- ggroup(horizontal = TRUE,
-                                 expand = FALSE)
+                btnGrp <- modwin$footer
 
                 helpButton <- gbutton("Help", expand = TRUE, fill = TRUE,
                                       cont = btnGrp,
@@ -93,9 +85,6 @@ iNZPlotInfWin <- setRefClass(
                                         ## display the default view (data, variable, etc.)
                                         visible(GUI$gp1) <<- TRUE
                                     })
-                
-                add(mainGrp, btnGrp, expand = FALSE, fill = "x", anchor = c(0, -1))
-                visible(GUI$moduleWindow) <<- TRUE
             }
         },
         ## up the curSet class variable

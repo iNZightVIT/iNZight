@@ -57,7 +57,7 @@ iNZPlotToolbar <- setRefClass(
         makeToolbar = function(btns = c("add", "rmv", "inf", "export"),
                                refresh.fn = NULL,
                                export.fn = NULL,
-                               extra, 
+                               extra,
                                cont = iconbar) {
 
             ## link the menu:
@@ -212,7 +212,7 @@ iNZPlotToolbar <- setRefClass(
         },
         ## function to open the correct plot modification win
         ## depending on the currently selected variable types
-        addToPlot = function() {
+        addToPlot = function(message = TRUE) {
             curSet <- GUI$getActiveDoc()$getSettings()
             err <- FALSE
             if (is.null(GUI$plotType))
@@ -220,11 +220,17 @@ iNZPlotToolbar <- setRefClass(
             if (GUI$plotType == "none")
                 err <- TRUE
 
-            if (err)
-                gmessage("Hmm... you'll have to create a plot before you can add to it!",
-                         title = "No plot!")
-            else
+            if (err) {
+                if (message)
+                    gmessage(
+                        "Hmm... you'll have to create a plot before you can add to it!",
+                        title = "No plot!"
+                    )
+            } else {
                 iNZPlotMod$new(GUI)
+            }
+
+            invisible(!err)
         },
         addInf = function() {
             if (!is.null(GUI$getActiveDoc()$getModel()$getDesign())) {

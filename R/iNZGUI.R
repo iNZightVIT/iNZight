@@ -17,7 +17,7 @@ iNZGUI <- setRefClass(
             activeDoc = "numeric",
             ## the main GUI window
             win = "ANY",
-            menuBarWidget = "ANY", 
+            menuBarWidget = "ANY",
             menubar = "ANY",
 
             ## left group
@@ -80,13 +80,13 @@ iNZGUI <- setRefClass(
             win.title <- paste(
                 "iNZight (v",
                 packageDescription("iNZight")$Version,
-                ")", 
+                ")",
                 sep = ""
             )
 
-            OS <<- 
-                if (.Platform$OS == "windows") "windows" 
-                else if (Sys.info()["sysname"] == "Darwin") "mac" 
+            OS <<-
+                if (.Platform$OS == "windows") "windows"
+                else if (Sys.info()["sysname"] == "Darwin") "mac"
                 else "linux"
 
             ## We must set the correct directory correctly ...
@@ -122,7 +122,7 @@ iNZGUI <- setRefClass(
 
                             if (!done)
                                 gmessage("iNZight was unable to create the folder.")
-                        }  
+                        }
                     }
 
                     ## Add the module library path if it exists
@@ -183,7 +183,7 @@ iNZGUI <- setRefClass(
             popOut <<- preferences$popout
 
             win <<- gwindow(
-                win.title, 
+                win.title,
                 visible = FALSE,
                 width = if (popOut) NULL else preferences$window.size[1],
                 height = preferences$window.size[2]
@@ -193,7 +193,7 @@ iNZGUI <- setRefClass(
                            use.scrollwindow = FALSE)
             menugrp <- ggroup(container = gtop)
             initializeMenu(menugrp, disposeR)
-            
+
             g <- gpanedgroup(container = gtop, expand = TRUE)
 
             ## Left side group
@@ -270,7 +270,7 @@ iNZGUI <- setRefClass(
         ## set up the menu bar widget
         initializeMenu = function(cont, disposeR) {
             menuBarWidget <<- iNZMenuBarWidget$new(.self, cont, disposeR)
-            
+
             addActDocObs(
                 function() {
                     menuBarWidget$defaultMenu()
@@ -361,7 +361,7 @@ iNZGUI <- setRefClass(
                 handler = function(h, ...) {
                     curSet <- getActiveDoc()$getSettings()
                     if (!is.null(curSet$x)) {
-                        if (is.numeric(curSet$x) & is.numeric(curSet$y)) {
+                        if (is_num(curSet$x) & is_num(curSet$y)) {
                             tmp.x <- curSet$y
                             curSet$y <- curSet$x
                             curSet$x <- tmp.x
@@ -378,10 +378,10 @@ iNZGUI <- setRefClass(
                         }
 
                         w <- gwindow(
-                            "Summary", 
-                            width = 800 * preferences$font.size / 10, 
+                            "Summary",
+                            width = 800 * preferences$font.size / 10,
                             height = 400 * preferences$font.size / 10,
-                            visible = FALSE, 
+                            visible = FALSE,
                             parent = win
                         )
                         g <- gvbox(container = w)
@@ -390,29 +390,29 @@ iNZGUI <- setRefClass(
                                 do.call(iNZightPlots:::getPlotSummary, curSet),
                                 collapse = "\n"
                             ),
-                            expand = TRUE, 
-                            container = g, 
+                            expand = TRUE,
+                            container = g,
                             wrap = FALSE,
                             font.attr = list(
-                                family = "monospace", 
+                                family = "monospace",
                                 size = preferences$font.size
                             )
                         )
 
                         ## if regression OR anova is going on:
-                        if (is.null(curSet$g1) && 
+                        if (is.null(curSet$g1) &&
                             is.null(curSet$g2) &&
-                            !is.null(curSet$y) && 
-                            (is.numeric(curSet$x) | is.numeric(curSet$y)) &&
-                            (!is.null(curSet$trend) | curSet$smooth > 0 | 
-                             !is.numeric(curSet$x) | !is.numeric(curSet$y))) {
+                            !is.null(curSet$y) &&
+                            (is_num(curSet$x) | is_num(curSet$y)) &&
+                            (!is.null(curSet$trend) | curSet$smooth > 0 |
+                             !is_num(curSet$x) | !is_num(curSet$y))) {
                             btngrp <- ggroup(container = g)
                             addSpace(btngrp, 5)
 
                             btnHandler <- function(h, ...) {
                                 varType <- ifelse(
-                                    grepl("residuals", svalue(h$obj)), 
-                                    "residual", 
+                                    grepl("residuals", svalue(h$obj)),
+                                    "residual",
                                     "predict"
                                 )
 
@@ -425,8 +425,8 @@ iNZGUI <- setRefClass(
 
                                 lbl <- glabel(
                                     sprintf(
-                                        "Specify names for the new variable%s", 
-                                        ifelse(length(curSet$trend) > 1, "s", "")), 
+                                        "Specify names for the new variable%s",
+                                        ifelse(length(curSet$trend) > 1, "s", "")),
                                     container = g2,
                                     anchor = c(-1, -1)
                                 )
@@ -442,13 +442,13 @@ iNZGUI <- setRefClass(
                                 fittedLbl <- glabel("")
                                 fittedName <- gedit(
                                     sprintf(
-                                        "%s.%s", 
-                                        curSet$varnames[[ifelse(is.numeric(curSet$y), "y", "x")]], 
+                                        "%s.%s",
+                                        curSet$varnames[[ifelse(is_num(curSet$y), "y", "x")]],
                                         varType),
                                     width = 25
                                 )
 
-                                if (is.factor(curSet$x) || is.factor(curSet$y)) { ##} || length(curSet$trend) == 1) {
+                                if (is_cat(curSet$x) || is_cat(curSet$y)) { ##} || length(curSet$trend) == 1) {
                                     tbl[ii, 1:3, anchor = c(1, 0), expand = TRUE] <- fittedLbl
                                     tbl[ii, 4:6, expand = TRUE] <- fittedName
                                     ii <- ii + 1
@@ -505,8 +505,8 @@ iNZGUI <- setRefClass(
                                     sprintf("%s.%s.smooth", curSet$varnames$y, varType),
                                     width = 25
                                 )
-                                if (curSet$smooth > 0 && is.numeric(curSet$x) && 
-                                    is.numeric(curSet$y)) {
+                                if (curSet$smooth > 0 && is_num(curSet$x) &&
+                                    is_num(curSet$y)) {
                                     tbl[ii, 1:3, anchor = c(1, 0), expand = TRUE] <- fittedLbl.smth
                                     tbl[ii, 4:6, expand = TRUE] <- fittedName.smth
                                     ii <- ii + 1
@@ -515,14 +515,14 @@ iNZGUI <- setRefClass(
                                 addSpring(g2)
 
                                 okBtn <- gbutton(
-                                    "Ok", 
+                                    "Ok",
                                     icon = "save",
                                     handler = function(h, ...) {
-                                        FUN <- 
+                                        FUN <-
                                             if (varType == "predict")
                                                 function(object)
                                                     predict(
-                                                        object, 
+                                                        object,
                                                         newdata = data.frame(x = curSet$x)
                                                     )
                                             else
@@ -530,9 +530,9 @@ iNZGUI <- setRefClass(
                                                     residuals(object)
 
                                         pred <- NULL
-                                        if (is.factor(curSet$x) || is.factor(curSet$y)) { #} || length(curSet$trend) == 1) {
+                                        if (is_cat(curSet$x) || is_cat(curSet$y)) { #} || length(curSet$trend) == 1) {
                                             ## just the one
-                                            fit <- with(curSet, lm(if (is.numeric(curSet$y)) y ~ x else x ~ y, na.action = na.exclude))
+                                            fit <- with(curSet, lm(if (is_num(curSet$y)) y ~ x else x ~ y, na.action = na.exclude))
                                             pred <- data.frame(FUN(fit))
                                             colnames(pred) <- svalue(fittedName)
                                         } else if (length(curSet$trend) >= 1) {
@@ -557,7 +557,7 @@ iNZGUI <- setRefClass(
                                             newdata <- getActiveData()
 
 
-                                        if (curSet$smooth > 0 && is.numeric(curSet$x) && is.numeric(curSet$y)) {
+                                        if (curSet$smooth > 0 && is_num(curSet$x) && is_num(curSet$y)) {
                                             tmp <- data.frame(x = curSet$x, y = curSet$y)
                                             fit <- with(curSet, loess(y ~ x, span = curSet$smooth, family = "gaussian", degree = 1, na.action = "na.exclude"))
                                             pred <- data.frame(FUN(fit))
@@ -569,7 +569,7 @@ iNZGUI <- setRefClass(
                                         getActiveDoc()$getModel()$updateData(newdata)
 
                                         dispose(w2)
-                                    }, 
+                                    },
                                     container = g2)
 
                                 visible(w2) <- TRUE
@@ -583,21 +583,21 @@ iNZGUI <- setRefClass(
 
                         visible(w) <- TRUE
                     } else {
-                        w <- gwindow("Summary", 
-                                     width = 800 * preferences$font.size / 10, 
+                        w <- gwindow("Summary",
+                                     width = 800 * preferences$font.size / 10,
                                      height = 400 * preferences$font.size / 10,
                                      visible = FALSE, parent = win)
                         g <- gvbox(container = w)
                         txtSmry <- gtext(
                             text = paste(
-                                iNZightPlots::getPlotSummary(getActiveData()),
+                                iNZightPlots::getPlotSummary(data = getActiveData()),
                                 collapse = "\n"
                             ),
-                            expand = TRUE, 
-                            container = g, 
+                            expand = TRUE,
+                            container = g,
                             wrap = FALSE,
                             font.attr = list(
-                                family = "monospace", 
+                                family = "monospace",
                                 size = preferences$font.size
                             )
                         )
@@ -611,17 +611,17 @@ iNZGUI <- setRefClass(
                     curSet <- getActiveDoc()$getSettings()
                     if (!is.null(curSet$x)) {
                         ## Figure out what type of inference will be happening:
-                        xnum <- is.numeric(curSet$x)
+                        xnum <- is_num(curSet$x)
 
                         if (is.null(curSet$y)) {
                             INFTYPE <- ifelse(xnum, "onesample-ttest", "oneway-table")
                         } else {
-                            ynum <- is.numeric(curSet$y)
+                            ynum <- is_num(curSet$y)
                             if (xnum && ynum) {
                                 INFTYPE <- "regression"
                             } else if (xnum | ynum) {
-                                M <- 
-                                    if (xnum) length(levels(curSet$y)) 
+                                M <-
+                                    if (xnum) length(levels(curSet$y))
                                     else length(levels(curSet$x))
                                 if (M == 2) INFTYPE <- "twosample-ttest"
                                 if (M > 2) INFTYPE <- "anova"
@@ -650,7 +650,7 @@ iNZGUI <- setRefClass(
                             "Get Inference",
                             width = 350,
                             #height = 400,
-                            parent = win, 
+                            parent = win,
                             visible = FALSE
                         )
                         g <- gvbox(container = w, expand = TRUE, fill = TRUE)
@@ -684,7 +684,7 @@ iNZGUI <- setRefClass(
                         ## Checkbox: perform hypothesis test? Activates hypothesis options.
                         TTEST <- grepl("ttest", INFTYPE)
                         TTEST2 <- INFTYPE == "twosample-ttest"
-                        hypTest <- 
+                        hypTest <-
                             if (TTEST2)
                                 gradio(c("None", "Two Sample t-test", "ANOVA"), horizontal = TRUE)
                             else
@@ -719,8 +719,8 @@ iNZGUI <- setRefClass(
                                 ii <- ii + 1
                             }
 
-                            enabled(hypAlt) <- enabled(hypVal) <- 
-                                if (TTEST2) svalue(hypTest, index = TRUE) == 2 
+                            enabled(hypAlt) <- enabled(hypVal) <-
+                                if (TTEST2) svalue(hypTest, index = TRUE) == 2
                                 else svalue(hypTest)
 
                             ## use equal variance assumption?
@@ -734,8 +734,8 @@ iNZGUI <- setRefClass(
                         }
 
                         addHandlerChanged(hypTest, function(h, ...) {
-                            enabled(hypEqualVar) <- enabled(hypAlt) <- enabled(hypVal) <- 
-                                if (TTEST2) svalue(hypTest, index = TRUE) == 2 
+                            enabled(hypEqualVar) <- enabled(hypAlt) <- enabled(hypVal) <-
+                                if (TTEST2) svalue(hypTest, index = TRUE) == 2
                                 else svalue(h$obj)
                         })
 
@@ -755,22 +755,22 @@ iNZGUI <- setRefClass(
                             }
                             curtrend <- curSet$trend
                             trendLinearChk <- gcheckbox(
-                                "Linear trend", 
-                                checked = "linear" %in% curtrend, 
+                                "Linear trend",
+                                checked = "linear" %in% curtrend,
                                 handler = addCurve
                             )
                             tbl[ii, 2:6] <- trendLinearChk
                             ii <- ii + 1
                             trendQuadChk <- gcheckbox(
-                                "Quadratic trend", 
-                                checked = "quadratic" %in% curtrend, 
+                                "Quadratic trend",
+                                checked = "quadratic" %in% curtrend,
                                 handler = addCurve
                             )
                             tbl[ii, 2:6] <- trendQuadChk
                             ii <- ii + 1
                             trendCubicChk <- gcheckbox(
-                                "Cubic trend", 
-                                checked = "cubic" %in% curtrend, 
+                                "Cubic trend",
+                                checked = "cubic" %in% curtrend,
                                 handler = addCurve
                             )
                             tbl[ii, 2:6] <- trendCubicChk
@@ -779,9 +779,19 @@ iNZGUI <- setRefClass(
 
                         btn <- gbutton("OK", handler = function(h, ...) {
                             infType <- svalue(infMthd, index = TRUE)
-                            sets <- getActiveDoc()$getSettings()
-                            sets <- modifyList(
-                                sets,
+                            curSet <- getActiveDoc()$getSettings()
+                            if (!is.null(curSet$x)) {
+                                if (is.numeric(curSet$x) & is.numeric(curSet$y)) {
+                                    tmp.x <- curSet$y
+                                    curSet$y <- curSet$x
+                                    curSet$x <- tmp.x
+                                    v <- curSet$varnames
+                                    curSet$varnames$x <- v$y
+                                    curSet$varnames$y <- v$x
+                                }
+                            }
+                            curSet <- modifyList(
+                                curSet,
                                 list(bs.inference = infType == 2,
                                      summary.type = "inference",
                                      inference.type = "conf",
@@ -790,14 +800,14 @@ iNZGUI <- setRefClass(
                             if (ifelse(TTEST2, svalue(hypTest, index = TRUE) > 1, svalue(hypTest))) {
                                 if (is.na(as.numeric(svalue(hypVal)))) {
                                     gmessage(
-                                        "Null value must be a valid number.", 
+                                        "Null value must be a valid number.",
                                         title = "Invalid Value",
                                         icon = "error"
                                     )
                                     return()
                                 }
-                                sets <- modifyList(
-                                    sets,
+                                curSet <- modifyList(
+                                    curSet,
                                     list(
                                         hypothesis.value = as.numeric(svalue(hypVal)),
                                         hypothesis.alt = switch(
@@ -806,19 +816,19 @@ iNZGUI <- setRefClass(
                                         ),
                                         hypothesis.var.equal = svalue(hypEqualVar),
                                         hypothesis.test = ifelse(
-                                            TTEST2, 
+                                            TTEST2,
                                             switch(
-                                                svalue(hypTest, index = TRUE), 
+                                                svalue(hypTest, index = TRUE),
                                                 "default", "t.test", "anova"
-                                            ), 
+                                            ),
                                             "default"
                                         )
                                     )
                                 )
                             } else {
-                                sets <- modifyList(
-                                    sets, 
-                                    list(hypothesis = NULL), 
+                                curSet <- modifyList(
+                                    curSet,
+                                    list(hypothesis = NULL),
                                     keep.null = TRUE
                                 )
                             }
@@ -841,9 +851,9 @@ iNZGUI <- setRefClass(
                                 ## function has finished.
                                 wBoots <- gwindow(
                                     "Performing Bootstrap ...",
-                                    parent = win, 
-                                    width=350, 
-                                    height=120, 
+                                    parent = win,
+                                    width=350,
+                                    height=120,
                                     visible = FALSE
                                 )
                                 ggBoots <- ggroup(container = wBoots)
@@ -854,36 +864,36 @@ iNZGUI <- setRefClass(
                                 fBoots <- gvbox(container = ggBoots, spacing = 10)
                                 fBoots$set_borderwidth(10)
                                 gBoots <- glabel(
-                                    "Please wait while iNZight\nperforms bootstrap simulations.", 
-                                    anchor = c(-1, 0), 
+                                    "Please wait while iNZight\nperforms bootstrap simulations.",
+                                    anchor = c(-1, 0),
                                     cont = fBoots
                                 )
                                 font(gBoots) <- list(size = 14, weight = "bold")
                                 gBoots2 <- glabel(
-                                    "Depending on the size of the data,\nthis could take a while.", 
-                                    anchor = c(-1, 0), 
+                                    "Depending on the size of the data,\nthis could take a while.",
+                                    anchor = c(-1, 0),
                                     cont = fBoots
                                 )
                                 visible(wBoots) <- TRUE
                             }
 
-                            w2 <- gwindow(infTitle, 
-                                          width = 800 * preferences$font.size / 10, 
+                            w2 <- gwindow(infTitle,
+                                          width = 800 * preferences$font.size / 10,
                                           height = 400 * preferences$font.size / 10,
                                           visible = FALSE, parent = win)
                             g2 <- gtext(
                                 paste(
                                     do.call(
                                         iNZightPlots:::getPlotSummary,
-                                        sets
+                                        curSet
                                     ),
                                     collapse = "\n"
                                 ),
-                                expand = TRUE, 
-                                cont = w2, 
+                                expand = TRUE,
+                                cont = w2,
                                 wrap = FALSE,
                                 font.attr = list(
-                                    family = "monospace", 
+                                    family = "monospace",
                                     size = preferences$font.size
                                 )
                             )
@@ -901,9 +911,9 @@ iNZGUI <- setRefClass(
                                  parent = win)
                     }
                 })
-            font(sumBtn) <<- 
+            font(sumBtn) <<-
                 list(weight = "bold", family = "normal", color = "navy")
-            font(infBtn) <<- 
+            font(infBtn) <<-
                 list(weight = "bold", family = "normal", color = "navy")
             add(sumGrp, sumBtn, expand = TRUE)
             add(sumGrp, infBtn, expand = TRUE)
@@ -945,7 +955,7 @@ iNZGUI <- setRefClass(
             curPlSet <- getActiveDoc()$getSettings()
             if(!is.null(curPlSet$x)) {
                 # Switch x and y:
-                if (is.numeric(curPlSet$x) & is.numeric(curPlSet$y)) {
+                if (is_num(curPlSet$x) & is_num(curPlSet$y)) {
                     x.tmp <- curPlSet$y
                     curPlSet$y <- curPlSet$x
                     curPlSet$x <- x.tmp
@@ -985,11 +995,11 @@ iNZGUI <- setRefClass(
                 ctrlWidget$resetWidget()
                 Nk <- length(iNZDocuments)
                 iNZDocuments <<- list(document)
-                ## add a separator to code history 
+                ## add a separator to code history
                 rhistory$add(c(
-                    "SEP", 
+                    "SEP",
                     sprintf(
-                        "## Exploring the '%s' dataset", 
+                        "## Exploring the '%s' dataset",
                         attr(document$getData(), "name", exact = TRUE)
                     )
                 ))
@@ -1011,7 +1021,7 @@ iNZGUI <- setRefClass(
                 iNZDocuments <<- c(iNZDocuments, list(document))
             }
             ## clean up any 'empty' datasets ..
-            iNZDocuments <<- iNZDocuments[sapply(iNZDocuments, function(d) 
+            iNZDocuments <<- iNZDocuments[sapply(iNZDocuments, function(d)
                 !all(dim(d$dataModel$dataSet) == 1))]
             ## set the active document to the one we added
             activeDoc <<- length(iNZDocuments)
@@ -1087,8 +1097,8 @@ iNZGUI <- setRefClass(
             if (activeDoc == 1) {
                 gmessage(
                     "Sorry, but you can't delete this dataset (it's the original, afterall!).",
-                    title = "Unable to delete original data set", 
-                    icon = "warning", 
+                    title = "Unable to delete original data set",
+                    icon = "warning",
                     parent = .self$win
                 )
             } else {
@@ -1099,7 +1109,7 @@ iNZGUI <- setRefClass(
                         attr(iNZDocuments[[activeDoc]]$getData(), "name", exact = TRUE), "\n\n",
                         "Are you sure you want to continue?"
                     ),
-                    title = "You sure you want to delete this data?", 
+                    title = "You sure you want to delete this data?",
                     icon = "question",
                     parent = .self$win
                 )
@@ -1128,38 +1138,66 @@ iNZGUI <- setRefClass(
             if (type == 1) {
                 gmessage(
                     msg = paste(
-                        "A dataset is required to use the", 
-                        module, 
+                        "A dataset is required to use the",
+                        module,
                         "module"
                     ),
-                    title = "Empty data", 
+                    title = "Empty data",
                     icon = "error"
                 )
             } else if (type == 2) {
                 gmessage(
                     msg = paste(
-                        "Imported dataset is not appropriate for", 
-                        module, 
+                        "Imported dataset is not appropriate for",
+                        module,
                         "module"
                     ),
-                    title = "Inappropriate data type", 
+                    title = "Inappropriate data type",
                     icon = "error"
                 )
             }
         },
         ## create a gvbox object into the module window (ie, initialize it)
         ## NOTE: should be run every time when a new module is open
-        initializeModuleWindow = function(mod) {
+        initializeModuleWindow = function(mod, title, scroll = FALSE, border = 0) {
             ## delete any old ones:
             if (length(.self$leftMain$children) > 1) {
                 delete(.self$leftMain, .self$leftMain$children[[2]])
             }
             ## create a gvbox in moduleWindow
-            moduleWindow <<- gvbox(container = leftMain, expand = TRUE)
+            # to improve between-module similarity, set up here with
+            # -> head, body, footer (for buttons)
+            modContainer <- gvbox(container = leftMain, expand = TRUE)
+
+            moduleWindow <<-
+                list(
+                    header =
+                        gvbox(container = modContainer),
+                    body =
+                        gvbox(
+                            spacing = 10,
+                            use.scrollwindow = ifelse(scroll, "y", FALSE),
+                            container = modContainer,
+                            expand = TRUE
+                        ),
+                    footer =
+                        ggroup(container = modContainer)
+                )
+
+            if (!missing(title)) {
+                title <- glabel(title)
+                font(title) <- list(weight = "bold", size = 12)
+                add(moduleWindow$header, title, anchor = c(0, 0))
+            }
+
+            if (border > 0) moduleWindow$body$set_borderwidth(border)
+
             visible(gp1) <<- FALSE
 
             if (!missing(mod))
                 activeModule <<- mod
+
+            invisible(moduleWindow)
         },
         initializeCodeHistory = function() {
             rhistory <<- iNZcodeWidget$new(.self)
@@ -1179,7 +1217,7 @@ iNZGUI <- setRefClass(
         defaultPrefs = function() {
             ## The default iNZight settings:
             list(
-                track = "ask", 
+                track = "ask",
                 track.id = NULL,
                 check.updates = TRUE,
                 window.size = c(1250, 850),
@@ -1188,7 +1226,7 @@ iNZGUI <- setRefClass(
             )
         },
         checkPrefs = function(prefs) {
-            allowed.names <- c("track", "track.id", "check.updates", 
+            allowed.names <- c("track", "track.id", "check.updates",
                                "window.size", "popout", "font.size")
 
             ## Only keep allowed preferences --- anything else is discarded
@@ -1212,7 +1250,7 @@ iNZGUI <- setRefClass(
             prefs$window.size <-
                 if (is.null(prefs$window.size)) defs$window.size
                 else if (length(prefs$window.size) != 2) defs$window.size
-                else if (is.numeric(prefs$window.size)) prefs$window.size
+                else if (is_num(prefs$window.size)) prefs$window.size
                 else defs$window.size
 
             ## pop-out layout = FALSE
@@ -1223,7 +1261,7 @@ iNZGUI <- setRefClass(
 
             ## font size
             prefs$font.size <-
-                if (is.null(prefs$font.size) || !is.numeric(prefs$font.size)) defs$font.size
+                if (is.null(prefs$font.size) || !is_num(prefs$font.size)) defs$font.size
                 else prefs$font.size
 
             prefs
@@ -1297,7 +1335,7 @@ iNZGUI <- setRefClass(
                         "iNZight was unable to save your preferences, so",
                         "they won't carry over into the next session."
                     ),
-                    title = "Unable to save preferences", 
+                    title = "Unable to save preferences",
                     icon = "warning"
                 )
             }
@@ -1325,7 +1363,7 @@ iNZGUI <- setRefClass(
                                 x = unit(0.8, "npc"), y = unit(0.75, "npc"),
                                 just = 'right')
                 grid::grid.text(sprintf("Release date: %s",
-                                        format(as.Date(packageDescription('iNZight')$Date), 
+                                        format(as.Date(packageDescription('iNZight')$Date),
                                                '%d %b %Y')),
                                 x = unit(0.8, "npc"), y = unit(0.25, "npc"),
                                 just = 'right', gp = gpar(fontsize = 9))
@@ -1335,11 +1373,11 @@ iNZGUI <- setRefClass(
                 grid::pushViewport(grid::viewport(
                     y = unit(0.45, "npc"),
                     width = unit(0.8, "npc"), height = unit(0.9, "npc")))
-                
+
                 if (all(dim(getActiveData()) == 1)) {
                     grid::grid.text(
                         "Kia ora and welcome! To get started, import some data.",
-                        y = 1, x = 0, just = c("left", "top"), 
+                        y = 1, x = 0, just = c("left", "top"),
                         gp = gpar(fontsize = 12, fontface = 'bold')
                     )
                     grid::grid.text(
@@ -1354,13 +1392,13 @@ iNZGUI <- setRefClass(
 
                     grid::grid.text(
                         paste(
-                            sep = "\n", 
-                            "What's changed? Y'know, in case you're interested ...", 
+                            sep = "\n",
+                            "What's changed? Y'know, in case you're interested ...",
                             "",
                             "- iNZight now speaks tidyverse! ",
                             "  The data operations in the Data and Variables menus now write tidyverse code,",
                             "  which you can see by going to Advanced > Show R code history.",
-                            "  Note that this is a new feature and still being developed.", 
+                            "  Note that this is a new feature and still being developed.",
                             "",
                             "- As well as tracking filtering and other dataset operations,",
                             "  iNZight now lets you switch between them!",
@@ -1372,7 +1410,7 @@ iNZGUI <- setRefClass(
                             "- A bunch of other bug fixes and tweaks.",
                             "  For more details, head to Help > Changes."
                         ),
-                        y = unit(1, "npc") - unit(8, "lines"), 
+                        y = unit(1, "npc") - unit(8, "lines"),
                         x = 0, c(just = "left", "top"),
                         gp = gpar(fontsize = 11)
                     )
@@ -1380,7 +1418,7 @@ iNZGUI <- setRefClass(
                 } else {
                     grid::grid.text(
                         "That's some fine looking data ... ",
-                        y = 1, x = 0, just = c("left", "top"), 
+                        y = 1, x = 0, just = c("left", "top"),
                         gp = gpar(fontsize = 12, fontface = 'bold')
                     )
 
@@ -1405,10 +1443,10 @@ iNZGUI <- setRefClass(
                             "",
                             "- Most importantly, have fun!"
                         ),
-                        y = unit(1, "npc") - unit(3, "lines"), 
+                        y = unit(1, "npc") - unit(3, "lines"),
                         x = 0, c(just = "left", "top"),
                         gp = gpar(fontsize = 12)
-                    )                
+                    )
                 }
 
                 grDevices::dev.flush()

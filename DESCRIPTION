@@ -1,8 +1,8 @@
 Package: iNZight
 Type: Package
 Title: iNZight GUI for Data Exploration and Visualisation
-Version: 3.3.2
-Date: 2018-11-15
+Version: 3.4.0.9000
+Date: 2019-04-30
 Authors@R: c(person("Tom", "Elliott", role = c("aut", "cre"),
                     email = "tom.elliott@auckland.ac.nz"),
              person("Dineika", "Chandrananda", role = "ctb"),
@@ -41,7 +41,8 @@ Suggests:
     RColorBrewer,
     FutureLearnData,
     testthat,
-    covr
+    covr,
+    dplyr
 Additional_repositories: https://r.docker.stat.auckland.ac.nz
 LazyData: true
 Encoding: UTF-8

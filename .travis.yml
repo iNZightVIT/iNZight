@@ -2,7 +2,7 @@
 
 language: R
 sudo: true
-cache: 
+cache:
   - packages
   - directories:
     - $HOME/Library/Caches/Homebrew
@@ -17,15 +17,23 @@ matrix:
       r: release
     - os: linux
       r: devel
-    - os: osx
-      r: 3.3
-      brew_packages: libgit2
-  allow_failures:
-    - os: osx
+#    - os: osx
+#      r: 3.3
+#      brew_packages: libgit2
+#  allow_failures:
+#    - os: osx
+
+env:
+  global:
+    - R_REMOTES_NO_ERRORS_FROM_WARNINGS: true
+    - _R_CHECK_SYSTEM_CLOCK_=FALSE
 
 repos:
   docker: https://r.docker.stat.auckland.ac.nz
 
+#r_github_packages:
+#  - iNZightVIT/iNZightTools@dev
+#  - iNZightVIT/iNZightPlots@dev
 
 addons:
   apt:
@@ -40,7 +48,7 @@ addons:
       - r-cran-cairodevice
 
 before_install:
-  - if [ "$TRAVIS_OS_NAME" == "osx" ]; then 
+  - if [ "$TRAVIS_OS_NAME" == "osx" ]; then
       sudo chown -R $(whoami) /usr/local/share;
       brew uninstall --force cairo --ignore-dependencies;
       brew cask install xquartz;
@@ -50,7 +58,7 @@ before_install:
     else
       export DISPLAY=:99.0;
       sh -e /etc/init.d/xvfb start;
-      sleep 10; 
+      sleep 10;
     fi
 
 after_success:

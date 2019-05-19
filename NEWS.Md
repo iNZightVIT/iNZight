@@ -1,96 +1,163 @@
-- [dev] add tests
-- [add] show dataset summary from Get Summary when no variables selected
-- [fix] remove NULL arguments from survey design call
-- [change] menu reacts to context (disabled when no data, etc)
-- [fix] survey design writes code
-
-- [fix] modules path is prepended to libPaths
+## iNZight 3.4.0.9000
+__Release date__: TBA
 
 
-# Version 3.3
+
+
+
+# iNZight 3.4
+__Release date__: 30 April 2019
+
+### Dates and times
+- convert variables into datetimes (Variables > Dates and times)
+- extract time information from a datetime variable (such as the hour, or year)
+
+### Merging and reshaping data sets
+- reshape data from long to wide, and vice versa
+- merge data sets using `*_join()`
+- join data sets by appending rows
+
+### Other changes and fixes
+- add axis transformation (log-10) for numeric variables
+- switch between counts/percentages in bar plots
+- import SAS files (.sas7bdat and .xpt)
+- add dataset validation module
+- allow switching between categorical and numeric data types in import window
+- fixes, and export additional variables, for interactive maps
+- when importing RDS files, character variables are converted to factors
+
+
+## iNZight 3.3.7
+__Release date__: 05 April 2019
+
+- small change to patch bug in iNZightPlots package
+
+
+## iNZight 3.3.6
+__Release date__: 12 February 2019
+
+- fix a bug in Get Inference which showed x and y the wrong way around
+
+
+## iNZight 3.3.5
+__Release date__: 01 February 2019
+
+- update API for module windows to create header (title), body (with scrollbar), and footer (for buttons)
+
+
+## iNZight 3.3.4
+__Release date:__ 16 January 2019
+
+- fix a bug in which the preferences menu wouldn't open up
+
+
+## iNZight 3.3.3
+__Release date:__ 07 January 2019
+
+- menu now reacts to the environment (plus major internal code refactoring)
+- now showing a dataset summary under Get Summary when no variables selected
+- updated the maps landing page
+- specifying survey design now writes code history
+
+- remove NULL arguments from survey design call
+- modules path is prepended to libPaths
+
+- added unit testing
+
+
+## iNZight 3.3.2
+__Release date:__ 15 November 2018
+
+- add dataset summary information to Get Summary (when no variables selected)
+- add interact button
+- fix call for survey design objects (remove NULL arguments)
+- fix bug that prevented iNZight to launch on some macs
+
+
+## iNZight 3.3.1
+__Release date:__ 10 August 2018
+
+- fix bug in reading non-csv files
+
+
+# iNZight 3.3
 __Release date:__ 15 August 2018
-
-## Major Changes
 
 - import data now uses updated functions which return the file-specified code,
   available from Advanced > R Code history
 - maps module completely renovated
 - interactive plots have recieved more updates and fixes
 
-## Patches
 
-### Patch 3.3.1 - 10/09/2018
-- fix bug in reading non-csv files
+## iNZight 3.2.2
+__Release date:__ 25 May 2018
 
-### Patch 3.3.2 - 15/11/2018
-- add dataset summary information to Get Summary (when no variables selected)
-- add interact button 
-- fix call for survey design objects (remove NULL arguments)
-- fix bug that prevented iNZight to launch on some macs
+- fix bug in import window where some character encodings were being distorted
+- fix typo in import window info box
+- catch import errors, so the "please wait" dialog hopefully doesn't stay open forever
 
-***
-# Version 3.2
+
+## iNZight 3.2.1
+__Release date:__ 21 Febuary 2018
+
+- fix small issue in import module that prevented reading of non-UTF-8 csv files
+
+
+# iNZight 3.2
 __Release date:__ 23 January 2018
 
-## New Features
+### New Features
 
 - New developmental __code writing__ feature has been added, which writes tidyverse code
   for common data/variable manipulations
 - Manage your datasets with the updated data set widget, just above the data set view!
 - Added the ability to control font size in Summary/Inference windows via File > Preferences
 
-## Minor Changes
+### Minor Changes
 
 - The __Reorder Levels__ window has been reconfigured to, hopefully, make it easier to use
-- Filtering no longer clears the slots 
+- Filtering no longer clears the slots
 - Import data [beta] is ... no longer beta!
 - Updated the splash screen to be up-to-date, and attempt to be friendly ...
 
-
-## Bug Fixes
+### Bug Fixes
 - saving residuals/predicted values works if you select only quadratic or cubic
 
 
-## Patches
+## iNZight 3.1.6
+__Release date:__ 12 January 2018
 
-### Patch 3.2.1 - 21/02/2018
-- fix small issue in import module that prevented reading of non-UTF-8 csv files
-
-### Patch 3.2.2 - 25/05/2018
-- fix bug in import window where some character encodings were being distorted
-- fix typo in import window info box
-- catch import errors, so the "please wait" dialog hopefully doesn't stay open forever
-
-***
-# Version 3.1
-__Release date:__ 13 December, 2016
-
-Main changes in this update are within the Inference functions;
-t-tests performed on request.
-
-## New Features
-
-- __Hypothesis testing__: new option under Get Inference
-  - one-sample t-tests, two-sample t-tests, ANOVA, and one- and two-way Chi-square testing
-  - ability to adjust null value and alternative hypothesis in t-tests
-  - ability to specify pooled variance alternative for two-sample t-test
-- Store predicted values and residuals under Get Summary (for scatter plots and ANOVA)
-- Added `SURFIncomeSurvey` data set (200 row subset) to examples
-
-## Minor Changes
-
-- "factor" reworded to "categorical" in summary/inference output
-- some of the inference output has been adjusted slightly for consistency (see above)
-
-## Bug Fixes
-
-- Fix a bug in inference output where reorded factors' confidence intervals and p-values were _not_ reordered!
-- Fix issue where confidence intervals for two-way table row proportions were ordered incorrectly
+- Add font size option to preferences for the Get Summary/Inference windows
 
 
-## Patches
+## iNZight 3.1.5
+__Release date:__ 02 October 2017
 
-### Patch 3.1.1 - 23/03/2017
+- More bug fixes/minor improvements
+
+
+## iNZight 3.1.4
+__Release date:__ 25 August 2017
+
+- Add basic code history to model fitting module
+- few bug fixes
+
+
+## iNZight 3.1.3
+__Release date:__ 18 August 2017
+
+- Fixes for Interactive plots
+- BETA release of new Model Fitting module
+
+
+## iNZight 3.1.2
+__Release date:__ 02 June 2017
+
+- Integrate changes in `iNZightPlots`
+
+
+## iNZight 3.1.1
+__Release date:__ 23 March 2017
 
 - Additions:
   - Time Series module update to new UI
@@ -100,38 +167,67 @@ t-tests performed on request.
 - Survey design object is now passed to Model Fitting module (will soon be depreciated)
 - Various other bug fixes in supporting packages
 
-### Patch 3.1.2 - 02/06/2017
 
-- Integrate changes in `iNZightPlots`
+# iNZight 3.1
+__Release date:__ 13 December 2016
+
+Main changes in this update are within the Inference functions;
+t-tests performed on request.
+
+### New Features
+
+- __Hypothesis testing__: new option under Get Inference
+  - one-sample t-tests, two-sample t-tests, ANOVA, and one- and two-way Chi-square testing
+  - ability to adjust null value and alternative hypothesis in t-tests
+  - ability to specify pooled variance alternative for two-sample t-test
+- Store predicted values and residuals under Get Summary (for scatter plots and ANOVA)
+- Added `SURFIncomeSurvey` data set (200 row subset) to examples
+
+### Minor Changes
+
+- "factor" reworded to "categorical" in summary/inference output
+- some of the inference output has been adjusted slightly for consistency (see above)
+
+### Bug Fixes
+
+- Fix a bug in inference output where reorded factors' confidence intervals and p-values were _not_ reordered!
+- Fix issue where confidence intervals for two-way table row proportions were ordered incorrectly
 
 
-### Patch 3.1.3 - 18/08/2017
 
-- Fixes for Interactive plots
-- BETA release of new Model Fitting module
 
-### Patch 3.1.4 - 25/08/2017
 
-- Add basic code history to model fitting module
-- few bug fixes
 
-### Patch 3.1.5 - 02/10/2017
 
-- More bug fixes/minor improvements
+## iNZight 3.0.3
+__Release date:__ 12 October 2016
 
-### Patch 3.1.6 - 12/01/2018
+- Bug fix: can now change colours of histograms
 
-- Add font size option to preferences for the Get Summary/Inference windows
 
-***
+## iNZight 3.0.2
+__Release date:__ 04 October 2016
 
-# Version 3.0
+- Add "Updates Available" text back to the title (when they're available, of course!)
+
+
+## iNZight 3.0.1
+__Release date:__ 23 September 2016
+
+- Fix up labels and icons so plot toolbar and plot menu match
+- Fix a bug where two-level bar plots failed to draw
+- Fix a bug where empty levels in two-way bar plots failed to draw
+- Fix locator for dot plots
+- Fix the updates available checker
+
+
+# iNZight 3.0
 __Release date:__ 5 Septemer, 2016
 
 This is a major new release of iNZight, so many things have changed.
 We hope you like them!
 
-## New Features
+### New Features
 
 Here's just a few of the major new features to iNZight.
 
@@ -148,7 +244,7 @@ Here's just a few of the major new features to iNZight.
   you can choose to have a separate window for graphs (as opposed to the built-in one).
 
 
-## Major Changes
+### Major Changes
 
 We can't list everything here, but some of the important ones are listed below.
 
@@ -162,32 +258,21 @@ We can't list everything here, but some of the important ones are listed below.
 - (temporary) Just a quick workaround for analysing tables in iNZight: Dataset > Expand Table
 
 
-## Minor Changes
+### Minor Changes
 
 Given the magnitude of changes, there's little point mentioning the minor ones and bug fixes!
 
 
-
-## Patches
-
-### 3.0.1 - 23/09/2016
-
-- Fix up labels and icons so plot toolbar and plot menu match
-- Fix a bug where two-level bar plots failed to draw
-- Fix a bug where empty levels in two-way bar plots failed to draw
-- Fix locator for dot plots
-- Fix the updates available checker
-
-### 3.0.2 - 04/10/2016
-
-- Add "Updates Available" text back to the title (when they're available, of course!)
-
-### 3.0.3 - 12/10/2016
-
-- Bug fix: can now change colours of histograms
-
 ***
-# Version 2.5
+
+## iNZight 2.5.1
+__Release date:__ 16 November 2015
+
+- correct the names and URLs in the 'Help > User Guides' menu
+- fix bug that occurs when 'Colour by' variable has only one unique value
+
+
+# iNZight 2.5
 __Release date__: 08 November, 2015
 
 ## New Features
@@ -195,27 +280,41 @@ __Release date__: 08 November, 2015
 - specify colours for dotplots and scatterplots from the Add to Plot > Code more variables screen.
 
 
-### Patch 2.5.1 - 16/11/2015
+## iNZight 2.4.3
+__Release date:__ 02 November 2015
 
-- correct the names and URLs in the 'Help > User Guides' menu
-- fix bug that occurs when 'Colour by' variable has only one unique value
+- Improve smoothness of dotplot transitions by only redrawing
+  when the scaling has changed.
 
 
-***
-# Version 2.4
+## iNZight 2.4.2
+__Release date:__ 28 October 2015
+
+- Add option to display labels internally on numeric x factor
+- Fix from iNZightPlots for Get Summary (`n.missing` now correct)
+
+
+## iNZight 2.4.1
+__Release date:__ 21 October 2015
+
+- Remove dependency on `RODBC` package; this causes
+  issues on Mac attempting to manually install.
+
+
+# iNZight 2.4
 __Release date__: 12 October, 2015
 
-## New Features
+### New Features
 
 - Include FPC (finite population corrections) in survey designs
 
-## Major Changes
+### Major Changes
 
 - Replace the drag-drop boxes for variabes with drop-down
   boxes for an alternative method of variable
   selection. Drag-and-drop functionality has been retained.
 
-## Bug Fixes
+### Bug Fixes
 
 - Fix the enabling/disabling of buttons when survey designs
   are specified.
@@ -227,24 +326,7 @@ __Release date__: 12 October, 2015
   dependency pacakges. See their change logs for details.
 
 
-### Patch 2.4.1 - 21/10/2015
-
-- Remove dependency on `RODBC` package; this causes
-  issues on Mac attempting to manually install.
-
-### PATCH 2.4.2 - 28/10/2015
-
-- Add option to display labels internally on numeric x factor
-- Fix from iNZightPlots for Get Summary (`n.missing` now correct)
-
-### Patch 2.4.3 - 02/11/2015
-
-- Improve smoothness of dotplot transitions by only redrawing
-  when the scaling has changed.
-
-
-***
-# Version 2.3
+# iNZight 2.3
 __Release date__: 4 August, 2015
 
 ## New Features
@@ -272,49 +354,57 @@ __Release date__: 4 August, 2015
   variables having been selected
 
 
-***
-# Version 2.2
+## iNZight 2.2.0-1
+__Release date:__ 01 July 2015
+
+- iNZightPlots package: fix colour of segmented bar plots to
+  match the legend
+
+## iNZight 2.2.0-2
+__Release date:__ 27 July 2015
+
+- Fix mapping of confidence intervals (instead of comparison
+  intervals) to Year 12 intervals in dot plots.
+
+
+# iNZight 2.2
 __Release date__: 16 June, 2015
 
-## New Features
+### New Features
 
 - users can specify a window size in File > Preferences
 - Links to the User Guides found on our website have been
   added, including help buttons in the Add To Plot and Inference
   Information windows.
 
-## Major Changes
+### Major Changes
 
 - LOCATE functionality now included for dot plots. Also fixes
   several bugs in the previous update for locating points in
   scatter plot.
 
-## Minor Changes
+### Minor Changes
 
 - the "Row Operations" menu has been renamed "Data"
 
-### Patch 2.2.0-1 - 1/07/2015
 
-- iNZightPlots package: fix colour of segmented bar plots to
-  match the legend
+## iNZight 2.1.1
+__Release date:__ 09 June 2015
 
-### Patch 2.2.0-2 - 27/7/2015
+- fix a dependency issue required for aggregating data sets
 
-- Fix mapping of confidence intervals (instead of comparison
-  intervals) to Year 12 intervals in dot plots.
 
-***
-# Version 2.1
+# iNZight 2.1
 __Release date__: 25 May, 2015
 
-## New Features
+### New Features
 
 - New hexagonal binning plot available to large samples
 - Live updating sliders for the "Add to Plot" panel, which is
   now embedded into the main window rather than creating an
   additional pop-up window
 
-## Major Changes
+### Major Changes
 
 - The "Add to Plot", "Remove Additions" and
   "Inference Information" windows have been integrated into the main
@@ -340,7 +430,7 @@ __Release date__: 25 May, 2015
   multiple graphcs, and selecting points by a variable.
   (similar upgrades for dot plots coming in v2.2)
 
-## Minor Changes
+### Minor Changes
 
 - the number of missing values is now displayed on the plot,
   broken down by variable
@@ -348,7 +438,7 @@ __Release date__: 25 May, 2015
   down menu, rather than radio buttons, to save space
 - many other small UI improvements
 
-## Bug Fixes
+### Bug Fixes
 
 - if `colour by` is set, but the graph is changed to a histogram,
   the legend is removed from the plot
@@ -356,16 +446,30 @@ __Release date__: 25 May, 2015
   of the plots
 - includes other patches from the previous version of iNZight
 
-### Patch 2.1.1 - 09/06/2015
-
-- fix a dependency issue required for aggregating data sets
 
 
-***
-# Version 2.0.4
+## iNZight 2.0.4-4
+__Release date:__ 10 March 2015
+
+- ping for an internet connection before trying to check for updates
+
+
+## iNZight 2.0.4-3
+__Release date:__ 10 February 2015
+
+- fix a bug causing write-protected directories to crash
+
+
+## iNZight 2.0.4-1
+__Release date:__ 12 December 2014
+
+- fixed up the plot device in Time Series on Linux machines
+
+
+## iNZight 2.0.4
 __Release date__: 18 November 2014
 
-## New Features
+### New Features
 
 - The data set name is displayed above the data view
 - The variable type is now displayed as a prefix to the variable
@@ -375,14 +479,14 @@ __Release date__: 18 November 2014
 - A new Help tab that includes Licence information, and a link
   to the FAQ and Support pages
 
-## Minor Changes
+### Minor Changes
 
 - In the "Remove Additions" window, "Remove segmentation" has
   been renamed to "Remove colour by" for bar plots, and
   "Restore default labels" is added to remove customised plot
   labels
 
-## Bug Fixes
+### Bug Fixes
 
 - Removes development text from Load Data window
 - Fixes a bug in the Locate Points feature when the scales are
@@ -391,45 +495,31 @@ __Release date__: 18 November 2014
 - The menu has been moved above the plot tabs, so it no longer
   gets cut off
 
-### Patch 2.0.4-1 - 12/12/2014
 
-- fixed up the plot device in Time Series on Linux machines
-
-### Patch 2.0.4-3 - 10/02/2015
-
-- fix a bug causing write-protected directories to crash
-
-### Patch 2.0.4-4 - 10/03/2015
-
-- ping for an internet connection before trying to check for updates
-
-
-***
-# Version 2.0.3
+## iNZight 2.0.3
 __Release date__: 17 September, 2014
 
-## Major Changes
+### Major Changes
 
 - A new Multiple Response analysis module has been added to the
   Advanced menu. This utilises the iNZightMR package developed by
   Junjie Zeng
 
-## Minor Changes
+### Minor Changes
 
 - "Add to Plot" window modified for barcharts - can show only
   CIs, and also selects comparison and confidence intervals by default
 
-## Bug Fixes
+### Bug Fixes
 
 - Includes a suite of bug fixes in the iNZightPlots package - see its
   NEWS file for these
 
 
-***
-# Version 2.0.2
+## iNZight 2.0.2
 __Release date__: 17 June, 2014
 
-## New Features
+### New Features
 
 - can now cycle through all two-variable plots for a selected
   Variable 1
@@ -437,29 +527,28 @@ __Release date__: 17 June, 2014
   (automatically cycle levels)
 - data manipulation features added and modified
 
-## Minor Changes
+### Minor Changes
 
 - can now specify to identify min/max points in a dot plot
 - in the Add to Plot window for barcharts, reworded "segment by" to "colour by"
   for consistency.
 - the transparency slider now runs from 0% to 100%
 
-## Bug Fixes
+### Bug Fixes
 
 - identify functionality works for subsets (except when multi plots at once)
 
 
-***
-# Version 2.0.1
+## iNZight 2.0.1
 __Release date__: 27 March, 2014
 
-## New Features
+### New Features
 
 -  Identify feature added to the "Add To Plot" menu. This
   allows users to interactively label points with `id` or any other
   variable. This feature works for both dot plots and scatter plots.
 
-## Minor Changes
+### Minor Changes
 
 - Users can force scatter plots when the sample size is large,
   rather than using the alternative grid-density plot.
@@ -470,7 +559,7 @@ __Release date__: 27 March, 2014
   `missing` factor level. For continuous variables, a new factor
   variable with two levels, `missing` and `not missing` is created.
 
-## Bug Fixes
+### Bug Fixes
 
 - Vertical sliders added to the `Rename Levels` and `Rename
       factor levels` windows.
@@ -480,11 +569,10 @@ __Release date__: 27 March, 2014
   `cancel` has been fixed.
 
 
-***
-# Version 2.0
+# iNZight 2.0
 __Release date__: 18 January, 2014
 
-## Major Release
+### Major Release
 
 The entire iNZight module of iNZightVIT has been rewritten,
 with a multitude of changes along the way.
