@@ -123,6 +123,10 @@ iNZconToCatWin <- setRefClass(
       mainGroup <- gvbox()
       mainGroup$set_borderwidth(15)
       
+      helpbtn <- gimagebutton(stock.id = "gw-help", anchor = c(1, -1), cont = mainGroup, handler = function(h, ...){
+        browseURL("https://www.stat.auckland.ac.nz/~wild/iNZight/user_guides/variables/#convert1")
+      })
+      
       tbl <- glayout(container = mainGroup)
       ii <- 1
       
@@ -130,6 +134,7 @@ iNZconToCatWin <- setRefClass(
                           "label below to create a categorical version",
                           "of that variable", sep = "\n"))
       font(lbl) <- list(weight = "bold", family = "normal")
+
       tbl[ii, 1, anchor = c(-1, 0), expand = TRUE] <- lbl
       ii <- ii + 1
       
@@ -206,6 +211,9 @@ iNZtrnsWin <- setRefClass(
       svalue(GUI$modWin) <<- "Transform Variables"
       mainGroup <- ggroup(horizontal = FALSE)
       mainGroup$set_borderwidth(15)
+      helpbtn <- gimagebutton(stock.id = "gw-help", cont = mainGroup, anchor = c(1, -1), handler = function(h, ...){
+        browseURL("https://www.stat.auckland.ac.nz/~wild/iNZight/user_guides/variables/#transform")
+      })
       lbl1 <- glabel("Drag and drop variable names onto the labels below\nto create new transformed variables.")
       font(lbl1) <- list(weight="bold", family = "normal", size = 11)
       
@@ -278,6 +286,12 @@ iNZcllpsWin <- setRefClass(
       lbl1 <- glabel("Choose a variable")
       font(lbl1) <- list(weight = "bold",
                          family = "normal")
+      helpbtn <- gimagebutton(stock.id = "gw-help", handler = function(h, ...){
+        browseURL("https://www.stat.auckland.ac.nz/~wild/iNZight/user_guides/variables/#collapse")
+      })
+      titlelyt <- glayout(homegenous = FALSE)
+      titlelyt[1, 4:19, expand = TRUE, anchor = c(0,0)] <- lbl1
+      titlelyt[1, 20, expand = TRUE, anchor = c(1, -1)] <- helpbtn
       lbl2 <- glabel("Choose two or more levels")
       font(lbl2) <- list(weight = "bold",
                          family = "normal")
@@ -326,7 +340,7 @@ iNZcllpsWin <- setRefClass(
             }
           }
         })
-      add(mainGroup, lbl1)
+      add(mainGroup, titlelyt)
       add(mainGroup, factorMenu)
       add(mainGroup, lbl2)
       add(mainGroup, lbl3)
@@ -373,6 +387,9 @@ iNZrenameWin <- setRefClass(
       mainGroup <- ggroup(expand = TRUE, horizontal = FALSE)
       mainGroup$set_borderwidth(15)
       ## instructions through glabels
+      helpbtn <- gimagebutton(stock.id = "gw-help", cont = mainGroup, anchor = c(1, -1), handler = function(h, ...){
+        browseURL("https://www.stat.auckland.ac.nz/~wild/iNZight/user_guides/variables/#renamelevs")
+      })
       lbl1 <- glabel("Choose variable: ")
       font(lbl1) <- list(weight = "bold",
                          family = "normal")
@@ -486,6 +503,10 @@ iNZreorderWin <- setRefClass(
       
       mainGroup <- ggroup(expand = TRUE, horizontal = FALSE)
       mainGroup$set_borderwidth(15)
+      
+      helpbtn <- gimagebutton(stock.id = "gw-help", cont = mainGroup, anchor = c(1, -1), handler = function(h, ...){
+        browseURL("https://www.stat.auckland.ac.nz/~wild/iNZight/user_guides/variables/#reorderlevs")
+      })
       
       tbl <- glayout()
       
@@ -623,6 +644,13 @@ iNZcmbCatWin <- setRefClass(
       lbl1 <- glabel("Choose 2 or more variables you want to combine")
       font(lbl1) <- list(weight = "bold",
                          family = "normal")
+      helpbtn <- gimagebutton(stock.id = "gw-help", handler = function(h, ...){
+        browseURL("https://www.stat.auckland.ac.nz/~wild/iNZight/user_guides/variables/#catcombine")
+      })
+      titlelyt <- glayout(homegenous = FALSE)
+      titlelyt[1, 4:19, expand = TRUE, anchor = c(0,0)] <- lbl1
+      titlelyt[1, 20, expand = TRUE, anchor = c(1, -1)] <- helpbtn
+      
       lbl2 <- glabel("(Hold Ctrl to choose many)")
       font(lbl2) <- list(weight = "bold",
                          family = "normal")
@@ -671,7 +699,7 @@ iNZcmbCatWin <- setRefClass(
             }
           }
         })
-      add(mainGroup, lbl1)
+      add(mainGroup, titlelyt)
       add(mainGroup, lbl2)
       add(mainGroup, factorNames, expand = TRUE)
       tbl <- glayout()
@@ -717,6 +745,12 @@ iNZcrteVarWin <- setRefClass(
       mainGroup$set_borderwidth(15)
       lbl1 = glabel("Type in an expression to compute a new variable")
       font(lbl1) <- list(weight="bold", family = "normal")
+      helpbtn <- gimagebutton(stock.id = "gw-help", handler = function(h, ...){
+        browseURL("https://www.stat.auckland.ac.nz/~wild/iNZight/user_guides/variables/#create")
+      })
+      titlelyt <- glayout(homegenous = FALSE)
+      titlelyt[1, 4:19, expand = TRUE, anchor = c(0,0)] <- lbl1
+      titlelyt[1, 20, expand = TRUE, anchor = c(1, -1)] <- helpbtn
       lbl2 = glabel("EXAMPLES")
       font(lbl2) <- list(weight="bold", family = "normal")
       newVarName = gedit("new.variable", width = 15) ## name of the new variable
@@ -747,7 +781,7 @@ iNZcrteVarWin <- setRefClass(
       tbl[4,2,anchor = c(-1,1)] = newVarName
       tbl[4,3,anchor = c(-1,1)] = " = "
       tbl[4,4, expand = TRUE, anchor = c(-1,1)] = newVarExp
-      add(mainGroup, lbl1)
+      add(mainGroup, titlelyt)
       add(mainGroup, lbl2)
       add(mainGroup, tbl)
       add(mainGroup, submitButton)
@@ -768,6 +802,9 @@ iNZfrmIntWin <- setRefClass(
       size(GUI$modWin) <<- c(400, 400)
       mainGroup <- ggroup(expand = TRUE, horizontal = FALSE)
       mainGroup$set_borderwidth(15)
+      helpbtn <- gimagebutton(stock.id = "gw-help", cont = mainGroup, anchor = c(1, -1), handler = function(h, ...){
+        browseURL("https://www.stat.auckland.ac.nz/~wild/iNZight/user_guides/variables/#classints")
+      })
       lbl1 = glabel("Choose variable :")
       font(lbl1) = list(weight = "bold", style = "normal")
       lbl2 = glabel("New variable    :")
@@ -974,6 +1011,9 @@ iNZrnmVarWin <- setRefClass(
       scrolledWindow$setPolicy("GTK_POLICY_AUTOMATIC","GTK_POLICY_AUTOMATIC")
       mainGroup <- ggroup(expand = TRUE, horizontal = FALSE)
       mainGroup$set_borderwidth(15)
+      helpbtn <- gimagebutton(stock.id = "gw-help", cont = mainGroup, anchor = c(1, -1), handler = function(h, ...){
+        browseURL("https://www.stat.auckland.ac.nz/~wild/iNZight/user_guides/variables/#renamevars")
+      })
       lbl1 <- glabel("Old Variables")
       lbl2 <- glabel("New Variables")
       oldNames <- names(GUI$getActiveData())
@@ -1029,6 +1069,12 @@ iNZstdVarWin <- setRefClass(
       lbl1 <- glabel("Choose a variables you want to standardise")
       font(lbl1) <- list(weight = "bold",
                          family = "normal")
+      helpbtn <- gimagebutton(stock.id = "gw-help", handler = function(h, ...){
+        browseURL("https://www.stat.auckland.ac.nz/~wild/iNZight/user_guides/variables/#standardize")
+      })
+      titlelyt <- glayout(homegenous = FALSE)
+      titlelyt[1, 4:19, expand = TRUE, anchor = c(0,0)] <- lbl1
+      titlelyt[1, 20, expand = TRUE, anchor = c(1, -1)] <- helpbtn
       lbl2 <- glabel("(Hold Ctrl to choose many)")
       font(lbl2) <- list(weight = "bold",
                          family = "normal")
@@ -1047,7 +1093,7 @@ iNZstdVarWin <- setRefClass(
           updateData(data)
         }
       })
-      add(mainGroup, lbl1)
+      add(mainGroup, titlelyt)
       add(mainGroup, lbl2)
       add(mainGroup, numVar, expand = TRUE)
       add(mainGroup, stdButton)
@@ -1069,6 +1115,12 @@ iNZdeleteVarWin <- setRefClass(
       ## instructions through glabels
       lbl1 = glabel("Select Variables to delete")
       font(lbl1) <- list(weight="bold", family = "normal")
+      helpbtn <- gimagebutton(stock.id = "gw-help", handler = function(h, ...){
+        browseURL("https://www.stat.auckland.ac.nz/~wild/iNZight/user_guides/variables/#deletevars")
+      })
+      titlelyt <- glayout(homegenous = FALSE)
+      titlelyt[1, 4:19, expand = TRUE, anchor = c(0,0)] <- lbl1
+      titlelyt[1, 20, expand = TRUE, anchor = c(1, -1)] <- helpbtn
       lbl2 = glabel("(Hold Ctrl to choose many)")
       font(lbl2) <- list(weight="bold", family = "normal")
       listOfVars = gtable(names(GUI$getActiveData()),
@@ -1100,7 +1152,7 @@ iNZdeleteVarWin <- setRefClass(
             }
           }
         })
-      add(mainGroup, lbl1)
+      add(mainGroup, titlelyt)
       add(mainGroup, lbl2)
       add(mainGroup, listOfVars, expand = TRUE)
       add(mainGroup, deleteButton)
@@ -1122,6 +1174,12 @@ iNZmissCatWin <- setRefClass(
       ## instructions through glabels
       lbl1 = glabel("Select Variables to be transformed\nResulting Variables will be categorical with a level for missing observations")
       font(lbl1) <- list(weight="bold", family = "normal")
+      helpbtn <- gimagebutton(stock.id = "gw-help", handler = function(h, ...){
+        browseURL("https://www.stat.auckland.ac.nz/~wild/iNZight/user_guides/variables/#missingcat")
+      })
+      titlelyt <- glayout(homegenous = FALSE)
+      titlelyt[1, 1:19, expand = TRUE] <- lbl1
+      titlelyt[1, 20, expand = TRUE, anchor = c(1, -1)] <- helpbtn
       lbl2 = glabel("(Hold Ctrl to choose many)")
       font(lbl2) <- list(weight="bold", family = "normal")
       listOfVars = gtable(names(GUI$getActiveData()),
@@ -1139,7 +1197,7 @@ iNZmissCatWin <- setRefClass(
             dispose(GUI$modWin)
           }
         })
-      add(mainGroup, lbl1)
+      add(mainGroup, titlelyt)
       add(mainGroup, lbl2)
       add(mainGroup, listOfVars, expand = TRUE)
       add(mainGroup, convertButton)
@@ -1164,6 +1222,12 @@ iNZrankNumWin <- setRefClass(
       lbl1 <- glabel("Rank the numerical variables X (vector, matrix)")
       font(lbl1) <- list(weight = "bold",
                          family = "normal")
+      helpbtn <- gimagebutton(stock.id = "gw-help", handler = function(h, ...){
+        browseURL("https://www.stat.auckland.ac.nz/~wild/iNZight/user_guides/variables/#rank")
+      })
+      titlelyt <- glayout(homegenous = FALSE)
+      titlelyt[1, 4:19, expand = TRUE, anchor = c(0,0)] <- lbl1
+      titlelyt[1, 20, expand = TRUE, anchor = c(1, -1)] <- helpbtn
       lbl2 <- glabel("(Hold Ctrl to choose many)")
       font(lbl2) <- list(weight = "bold",
                          family = "normal")
@@ -1184,7 +1248,7 @@ iNZrankNumWin <- setRefClass(
                    parent = GUI$win)
         }
       })
-      add(mainGroup, lbl1)
+      add(mainGroup, titlelyt)
       add(mainGroup, lbl2)
       add(mainGroup, numVar, expand = TRUE)
       add(mainGroup, rankButton)
@@ -1208,6 +1272,12 @@ iNZctocatmulWin <- setRefClass(
       lbl1 <- glabel("Choose variables you want to convert")
       font(lbl1) <- list(weight = "bold",
                          family = "normal")
+      helpbtn <- gimagebutton(stock.id = "gw-help", handler = function(h, ...){
+        browseURL("https://www.stat.auckland.ac.nz/~wild/iNZight/user_guides/variables/#convert2")
+      })
+      titlelyt <- glayout(homegenous = FALSE)
+      titlelyt[1, 4:19, expand = TRUE, anchor = c(0,0)] <- lbl1
+      titlelyt[1, 20, expand = TRUE, anchor = c(1, -1)] <- helpbtn
       lbl2 <- glabel("(Hold Ctrl to choose many)")
       font(lbl2) <- list(weight = "bold",
                          family = "normal")
@@ -1226,7 +1296,7 @@ iNZctocatmulWin <- setRefClass(
           dispose(GUI$modWin)
         }
       })
-      add(mainGroup, lbl1)
+      add(mainGroup, titlelyt)
       add(mainGroup, lbl2)
       add(mainGroup, numVar, expand = TRUE)
       add(mainGroup, ctmcButton)
@@ -1298,9 +1368,15 @@ iNZconTodtWin <- setRefClass(
       mainGroup <- ggroup(expand = TRUE, horizontal = FALSE)
       mainGroup$set_borderwidth(15)
       
-      title <- glabel("Convert to a Date-Time variable", container = mainGroup)
+      title <- glabel("Convert to a Date-Time variable")
       font(title) <- list(size = 14, weight = "bold")
-      
+      helpbtn <- gimagebutton(stock.id = "gw-help", handler = function(h, ...){
+        browseURL("https://www.stat.auckland.ac.nz/~wild/iNZight/user_guides/variables/#dtconvert")
+      })
+      titlelyt <- glayout(homegenous = FALSE)
+      titlelyt[1, 4:19, expand = TRUE, anchor = c(0,0)] <- title
+      titlelyt[1, 20, expand = TRUE, anchor = c(1, -1)] <- helpbtn
+      add(mainGroup, titlelyt)
       addSpace(mainGroup, 5)
       
       date_string <- glabel("Select variable to convert from", container = mainGroup, anchor = c(-1, 0))
@@ -1489,9 +1565,15 @@ iNZExtfromdtWin <- setRefClass(
       mainGroup <- gvbox()
       mainGroup$set_borderwidth(15)
       
-      title <- glabel("Extract parts of the datetime", container = mainGroup)
+      title <- glabel("Extract parts of the datetime")
       font(title) <- list(size = 14, weight = "bold")
-      
+      helpbtn <- gimagebutton(stock.id = "gw-help", handler = function(h, ...){
+        browseURL("https://www.stat.auckland.ac.nz/~wild/iNZight/user_guides/variables/#dtextract")
+      })
+      titlelyt <- glayout(homegenous = FALSE)
+      titlelyt[1, 4:19, expand = TRUE, anchor = c(0,0)] <- title
+      titlelyt[1, 20, expand = TRUE, anchor = c(1, -1)] <- helpbtn
+      add(mainGroup, titlelyt)
       addSpace(mainGroup, 5)
       
       date_string <- glabel("Select variable to extract information from", 
@@ -1628,9 +1710,16 @@ iNZAggregatedtWin <- setRefClass(
       mainGroup <- gvbox()
       mainGroup$set_borderwidth(15)
       
-      title <- glabel("Aggregate datetimes to monthly or quarterly", container = mainGroup)
+      title <- glabel("Aggregate datetimes to monthly or quarterly")
       font(title) <- list(size = 14, weight = "bold")
+      helpbtn <- gimagebutton(stock.id = "gw-help", handler = function(h, ...){
+        browseURL("https://www.stat.auckland.ac.nz/~wild/iNZight/user_guides/variables/#dtaggregate")
+      })
       
+      titlelyt <- glayout(homegenous = FALSE)
+      titlelyt[1, 4:19, expand = TRUE, anchor = c(0,0)] <- title
+      titlelyt[1, 20, expand = TRUE, anchor = c(1, -1)] <- helpbtn
+      add(mainGroup, titlelyt)
       addSpace(mainGroup, 5)
       
       var1_string <- glabel("Select a column", container = mainGroup)

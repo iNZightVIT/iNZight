@@ -24,13 +24,23 @@ iNZFilterWin <- setRefClass(
         mainGrp <- ggroup(cont = GUI$modWin, horizontal = FALSE,
                           expand = TRUE)
         mainGrp$set_borderwidth(15)
+        
+        helpbtn <- gimagebutton(stock.id = "gw-help", handler = function(h, ...){
+          browseURL("https://www.stat.auckland.ac.nz/~wild/iNZight/user_guides/data_options/#filter")
+        })
         lbl1 <- glabel("Filter data by:")
         font(lbl1) <- list(weight = "bold", style = "normal")
+        
+        helplyt <- glayout(homegenous = FALSE)
+        helplyt[1, 4:19, expand = TRUE, anchor = c(0,0)] <- lbl1
+        helplyt[1, 20, expand = TRUE, anchor = c(1, -1)] <- helpbtn
+        
         filterOpt <- gradio(c("levels of a categorical variable",
                               "numeric condition", "row number",
                               "randomly"),
                             horizontal = FALSE, selected = 1)
-        add(mainGrp, lbl1)
+        add(mainGrp, helplyt)
+        # add(mainGrp, lbl1)
         add(mainGrp, filterOpt)
         btnGrp <- ggroup(cont = mainGrp, horizontal = TRUE)
         addSpring(btnGrp)
@@ -299,6 +309,224 @@ iNZFilterWin <- setRefClass(
 )
 
 
+## --------------------------------------------
+## Class that handles the sortby of a dataset
+## --------------------------------------------
+iNZSortbyDataWin <- setRefClass(
+  "iNZSortbyDataWin",
+  fields = list(
+    GUI = "ANY"
+  ),
+  methods = list(
+    initialize = function(gui = NULL) {
+      initFields(GUI = gui)
+      if (!is.null(GUI)) {
+        ## close any current mod windows
+        try(dispose(GUI$modWin), silent = TRUE)
+        GUI$modWin <<- gwindow("Sort data by variables",
+                               parent = GUI$win, visible = FALSE)
+        mainGrp <- ggroup(cont = GUI$modWin, horizontal = FALSE,
+                          expand = TRUE)
+        mainGrp$set_borderwidth(15)
+        btnGrp <- ggroup(horizontal = TRUE)
+        helpbtn <- gimagebutton(stock.id = "gw-help", handler = function(h, ...){
+          browseURL("https://www.stat.auckland.ac.nz/~wild/iNZight/user_guides/data_options/#sort")
+        })
+        lbl1 <- glabel("Sort by")
+        font(lbl1) <- list(weight = "bold", style = "normal")
+        helplyt <- glayout(homegenous = FALSE)
+        helplyt[1, 1:19, expand = TRUE] <- lbl1
+        helplyt[1, 20, expand = TRUE, anchor = c(1, -1)] <- helpbtn
+        lbl2 <- glabel("Variable")
+        nameList <- names(GUI$getActiveData())
+        SortByButton <- gbutton(
+          "Sort Now",
+          handler = function(h, ...) {
+            vars <- sapply(tbl[, 2], svalue)
+            asc <- sapply(tbl[, 3], svalue, index = TRUE) == 1
+            wi <- vars != ""
+            
+            .dataset <- GUI$getActiveData()
+            data <- iNZightTools::sortVars(.dataset, vars[wi], asc[wi])
+            attr(data, "name") <- paste(attr(.dataset, "name", exact = TRUE), "sorted", sep = ".")
+            attr(data, "code") <- gsub(".dataset", attr(.dataset, "name", exact = TRUE), attr(data, "code"))
+            GUI$setDocument(iNZDocument$new(data = data))
+            dispose(GUI$modWin)
+          }
+        )
+        
+        label_var1 <- glabel("1st")
+        label_var2 <- glabel("2nd")
+        label_var3 <- glabel("3rd")
+        label_var4 <- glabel("4th")
+        droplist_var1 <- gcombobox(c("",nameList), selected = 1)
+        droplist_var2 <- gcombobox(c("",nameList), selected= 1)
+        droplist_var3 <- gcombobox(c("",nameList), selected = 1)
+        droplist_var4 <- gcombobox(c("",nameList), selected = 1)
+        radio_var1 <- gradio(c("increasing","decreasing"), horizontal = TRUE)
+        radio_var2 <- gradio(c("increasing","decreasing"), horizontal = TRUE)
+        radio_var3 <- gradio(c("increasing","decreasing"), horizontal = TRUE)
+        radio_var4 <- gradio(c("increasing","decreasing"), horizontal = TRUE)
+        tbl <- glayout()
+        tbl[1, 1, expand = TRUE, anchor = c(-1, -1)] <- label_var1
+        tbl[1, 2, expand = TRUE, anchor = c(-1, -1)] <- droplist_var1
+        tbl[1, 3, expand = TRUE, anchor = c(-1, -1)] <- radio_var1
+        tbl[2, 1, expand = TRUE, anchor = c(-1, -1)] <- label_var2
+        tbl[2, 2, expand = TRUE, anchor = c(-1, -1)] <- droplist_var2
+        tbl[2, 3, expand = TRUE, anchor = c(-1, -1)] <- radio_var2
+        tbl[3, 1, expand = TRUE, anchor = c(-1, -1)] <- label_var3
+        tbl[3, 2, expand = TRUE, anchor = c(-1, -1)] <- droplist_var3
+        tbl[3, 3, expand = TRUE, anchor = c(-1, -1)] <- radio_var3
+        tbl[4, 1, expand = TRUE, anchor = c(-1, -1)] <- label_var4
+        tbl[4, 2, expand = TRUE, anchor = c(-1, -1)] <- droplist_var4
+        tbl[4, 3, expand = TRUE, anchor = c(-1, -1)] <- radio_var4
+        add(mainGrp, helplyt)
+        addSpring(mainGrp)
+        add(mainGrp, lbl2, anchor = c(-1, -1))
+        add(mainGrp, tbl)
+        add(mainGrp, btnGrp)
+        addSpring(btnGrp)
+        add(btnGrp, SortByButton)
+        visible(GUI$modWin) <<- TRUE
+      }
+    }
+  )
+)
+
+
+## --------------------------------------------
+## Class that handles aggregate the data set
+## --------------------------------------------
+iNZAgraDataWin <- setRefClass(
+  "iNZAgraDataWin",
+  fields = list(
+    GUI = "ANY"
+  ),
+  methods = list(
+    initialize = function(gui = NULL) {
+      initFields(GUI = gui)
+      if (!is.null(GUI)) {
+        ## close any current mod windows
+        try(dispose(GUI$modWin), silent = TRUE)
+        GUI$modWin <<- gwindow("Aggregation to the data",
+                               parent = GUI$win, visible = FALSE)
+        mainGrp <- ggroup(cont = GUI$modWin, horizontal = FALSE,
+                          expand = TRUE)
+        mainGrp$set_borderwidth(15)
+        btnGrp <- ggroup(horizontal = TRUE)
+        nameList <- names(Filter(is_cat,GUI$getActiveData()))
+        helpbtn <- gimagebutton(stock.id = "gw-help", handler = function(h, ...){
+          browseURL("https://www.stat.auckland.ac.nz/~wild/iNZight/user_guides/data_options/#aggregate")
+        })
+        heading <- glabel("Aggregate over variables:")
+        font(heading) <- list(weight = "bold", style = "normal")
+        helplyt <- glayout(homegenous = FALSE)
+        helplyt[1, 5:19, expand = TRUE, anchor = c(0,0)] <- heading
+        helplyt[1, 20, expand = TRUE, anchor = c(1, -1)] <- helpbtn
+        AgraButton <- gbutton(
+          "Aggregate Now",
+          handler = function(h, ...) {
+            vars <- sapply(tbl[2:4, 2], svalue)
+            vars <- vars[vars != ""]
+            smrs <- svalue(func.table)
+            
+            .dataset <- GUI$getActiveData()
+            data <- iNZightTools::aggregateData(.dataset, vars, smrs)
+            attr(data, "name") <- paste(attr(.dataset, "name", exact = TRUE), "aggregated", sep = ".")
+            attr(data, "code") <- gsub(".dataset", attr(.dataset, "name", exact = TRUE), attr(data, "code"))
+            GUI$setDocument(iNZDocument$new(data = data))
+            dispose(GUI$modWin)
+          })
+        label_var1 <- glabel("1st")
+        label_var2 <- glabel("2nd")
+        label_var3 <- glabel("3rd")
+        droplist_var1 <- gcombobox(c("",nameList), selected = 1)
+        droplist_var2 <- gcombobox(c("",nameList), selected= 1)
+        droplist_var3 <- gcombobox(c("",nameList), selected = 1)
+        func.frame <- data.frame("Summaries:" = c("Mean", "Median", "Sum", "Sd", "IQR"),
+                                 stringsAsFactors = FALSE)
+        func.table <- gtable(func.frame, multiple=TRUE)
+        func.table$remove_popup_menu() # remove the popup menu from gtable()
+        tbl <- glayout()
+        tbl[2, 1, expand = TRUE, anchor = c(-1, -1)] <- label_var1
+        tbl[2, 2, expand = TRUE, anchor = c(-1, -1)] <- droplist_var1
+        tbl[3, 1, expand = TRUE, anchor = c(-1, -1)] <- label_var2
+        tbl[3, 2, expand = TRUE, anchor = c(-1, -1)] <- droplist_var2
+        tbl[4, 1, expand = TRUE, anchor = c(-1, -1)] <- label_var3
+        tbl[4, 2, expand = TRUE, anchor = c(-1, -1)] <- droplist_var3
+        tbl[5:25, 1:2, expand =TRUE, anchor = c(-1, -1)] <- func.table
+        add(mainGrp, helplyt)
+        add(mainGrp, heading)
+        addSpring(mainGrp)
+        add(mainGrp, tbl)
+        add(mainGrp, btnGrp)
+        #addSpring(btnGrp)
+        add(btnGrp, AgraButton)
+        visible(GUI$modWin) <<- TRUE
+      }
+    }
+  )
+)
+
+
+iNZstackVarWin <- setRefClass(
+  "iNZstackVarWin",
+  fields = list(
+    GUI = "ANY"
+  ),
+  methods = list(
+    initialize = function(gui = NULL) {
+      initFields(GUI = gui)
+      if (!is.null(GUI)) {
+        ## close any current mod windows
+        try(dispose(GUI$modWin), silent = TRUE)
+        GUI$modWin <<- gwindow("Stack data by Variables",
+                               parent = GUI$win, visible = FALSE)
+        mainGroup <- ggroup(expand = TRUE, horizontal = FALSE)
+        mainGroup$set_borderwidth(15)
+        helpbtn <- gimagebutton(stock.id = "gw-help", handler = function(h, ...){
+          browseURL("https://www.stat.auckland.ac.nz/~wild/iNZight/user_guides/data_options/#stack")
+        })
+        ## instructions through glabels
+        lbl1 <- glabel("Choose variables to stack")
+        font(lbl1) <- list(weight = "bold",
+                           family = "normal")
+        helplyt <- glayout(homegenous = FALSE)
+        helplyt[1, 4:19, expand = TRUE, anchor = c(0,0)] <- lbl1
+        helplyt[1, 20, expand = TRUE, anchor = c(1, -1)] <- helpbtn
+        lbl2 <- glabel("(Hold Ctrl to choose many)")
+        font(lbl2) <- list(weight = "bold",
+                           family = "normal")
+        ## display only numeric variables
+        numIndices <- sapply(GUI$getActiveData(), function(x) !is_cat(x))
+        numVar <- gtable(names(GUI$getActiveData())[numIndices],
+                         multiple = TRUE)
+        names(numVar) <- "Variables"
+        StackButton <- gbutton("Stack", handler = function(h, ...) {
+          if (length(svalue(numVar)) > 0) {
+            vars <- svalue(numVar)
+            
+            .dataset <- GUI$getActiveData()
+            data <- iNZightTools::stackVars(.dataset, vars)
+            attr(data, "name") <- paste(attr(.dataset, "name", exact = TRUE), "stacked", sep = ".")
+            attr(data, "code") <- gsub(".dataset", attr(.dataset, "name", exact = TRUE), attr(data, "code"))
+            GUI$setDocument(iNZDocument$new(data = data))
+            dispose(GUI$modWin)
+          }
+        })
+        add(mainGroup, helplyt)
+        # add(mainGroup, lbl1)
+        add(mainGroup, lbl2)
+        add(mainGroup, numVar, expand = TRUE)
+        add(mainGroup, StackButton)
+        add(GUI$modWin, mainGroup, expand = TRUE, fill = TRUE)
+        visible(GUI$modWin) <<- TRUE
+      }
+    })
+)
+
+
+
 
 ## --------------------------------------------
 ## Class that handles the reshaping of a dataset
@@ -327,9 +555,16 @@ iNZReshapeDataWin <- setRefClass(
         ## start my window
         GUI$modWin <<- gwindow("Reshape dataset", parent = GUI$win, visible = FALSE)
         mainGroup <- ggroup(cont = GUI$modWin, expand = TRUE, horizontal = FALSE)
-        
-        title_string <- glabel("Reshape Dateset", cont = mainGroup)
+        mainGroup$set_borderwidth(15)
+        helpbtn <- gimagebutton(stock.id = "gw-help", handler = function(h, ...){
+          browseURL("https://www.stat.auckland.ac.nz/~wild/iNZight/user_guides/data_options/#reshape")
+        })
+        title_string <- glabel("Reshape Dateset")
         font(title_string) <- list(size = 14, weight = "bold")
+        helplyt <- glayout(homegenous = FALSE)
+        helplyt[1, 4:19, expand = TRUE, anchor = c(0,0)] <- title_string
+        helplyt[1, 20, expand = TRUE, anchor = c(1, -1)] <- helpbtn
+        add(mainGroup, helplyt)
         
         format_string <- glabel("Select reshape mode", cont = mainGroup)
         format <- gcombobox(items = c("", "Wide to long", "Long to wide"), cont = mainGroup, handler = function(h, ...){
@@ -514,9 +749,18 @@ iNZSeparateDataWin <- setRefClass(
         ## start my window
         GUI$modWin <<- gwindow("Separate columns", parent = GUI$win, visible = FALSE)
         mainGroup <- ggroup(cont = GUI$modWin, expand = TRUE, horizontal = FALSE)
-        
-        title_string = glabel("Separate columns", cont = mainGroup)
+        mainGroup$set_borderwidth(15)
+        helpbtn <- gimagebutton(stock.id = "gw-help", handler = function(h, ...){
+          browseURL("https://www.stat.auckland.ac.nz/~wild/iNZight/user_guides/data_options/#separate")
+        })
+
+        title_string = glabel("Separate columns")
         font(title_string) = list(size = 14, weight = "bold")
+        
+        helplyt <- glayout(homegenous = FALSE)
+        helplyt[1, 4:19, expand = TRUE, anchor = c(0,0)] <- title_string
+        helplyt[1, 20, expand = TRUE, anchor = c(1, -1)] <- helpbtn
+        add(mainGroup, helplyt)
         
         format_string <- glabel("Select separate mode", cont = mainGroup)
         format <- gcombobox(items = c("", "Separate a column into several columns", "Separate a column to make several rows"), cont = mainGroup, handler = function(h, ...){
@@ -662,12 +906,11 @@ iNZUniteDataWin <- setRefClass(
     sep = "ANY",
     col = "ANY",
     name = "ANY",
-    newview = "ANY",
-    timer = "ANY"
+    newview = "ANY"
   ),
   methods = list(
     initialize = function(gui = NULL) {
-      initFields(GUI = gui, timer = NULL)
+      initFields(GUI = gui)
       if (!is.null(GUI)) {
         ## close any current mod windows
         try(dispose(GUI$modWin), silent = TRUE)
@@ -675,9 +918,16 @@ iNZUniteDataWin <- setRefClass(
         ## start my window
         GUI$modWin <<- gwindow("Unite columns", parent = GUI$win, visible = FALSE)
         mainGroup <- ggroup(cont = GUI$modWin, expand = TRUE, horizontal = FALSE)
-        
-        title_string <- glabel("Unite columns", cont = mainGroup)
+        mainGroup$set_borderwidth(15)
+        helpbtn <- gimagebutton(stock.id = "gw-help", handler = function(h, ...){
+          browseURL("https://www.stat.auckland.ac.nz/~wild/iNZight/user_guides/data_options/#unite")
+        })
+        title_string <- glabel("Unite columns")
         font(title_string) <- list(size = 14, weight = "bold")
+        helplyt <- glayout(homegenous = FALSE)
+        helplyt[1, 4:19, expand = TRUE, anchor = c(0,0)] <- title_string
+        helplyt[1, 20, expand = TRUE, anchor = c(1, -1)] <- helpbtn
+        add(mainGroup, helplyt)
         
         col_string <- glabel("Select columns to unite", cont = mainGroup)
         
@@ -740,205 +990,6 @@ iNZUniteDataWin <- setRefClass(
       newview$set_items(df)
     }
   )
-)
-
-
-
-
-
-## --------------------------------------------
-## Class that handles the sortby of a dataset
-## --------------------------------------------
-iNZSortbyDataWin <- setRefClass(
-  "iNZSortbyDataWin",
-  fields = list(
-    GUI = "ANY"
-  ),
-  methods = list(
-    initialize = function(gui = NULL) {
-      initFields(GUI = gui)
-      if (!is.null(GUI)) {
-        ## close any current mod windows
-        try(dispose(GUI$modWin), silent = TRUE)
-        GUI$modWin <<- gwindow("Sort data by variables",
-                               parent = GUI$win, visible = FALSE)
-        mainGrp <- ggroup(cont = GUI$modWin, horizontal = FALSE,
-                          expand = TRUE)
-        mainGrp$set_borderwidth(15)
-        btnGrp <- ggroup(horizontal = TRUE)
-        lbl1 <- glabel("Sort by")
-        font(lbl1) <- list(weight = "bold", style = "normal")
-        lbl2 <- glabel("Variable")
-        nameList <- names(GUI$getActiveData())
-        SortByButton <- gbutton(
-          "Sort Now",
-          handler = function(h, ...) {
-            vars <- sapply(tbl[, 2], svalue)
-            asc <- sapply(tbl[, 3], svalue, index = TRUE) == 1
-            wi <- vars != ""
-            
-            .dataset <- GUI$getActiveData()
-            data <- iNZightTools::sortVars(.dataset, vars[wi], asc[wi])
-            attr(data, "name") <- paste(attr(.dataset, "name", exact = TRUE), "sorted", sep = ".")
-            attr(data, "code") <- gsub(".dataset", attr(.dataset, "name", exact = TRUE), attr(data, "code"))
-            GUI$setDocument(iNZDocument$new(data = data))
-            dispose(GUI$modWin)
-          }
-        )
-        
-        label_var1 <- glabel("1st")
-        label_var2 <- glabel("2nd")
-        label_var3 <- glabel("3rd")
-        label_var4 <- glabel("4th")
-        droplist_var1 <- gcombobox(c("",nameList), selected = 1)
-        droplist_var2 <- gcombobox(c("",nameList), selected= 1)
-        droplist_var3 <- gcombobox(c("",nameList), selected = 1)
-        droplist_var4 <- gcombobox(c("",nameList), selected = 1)
-        radio_var1 <- gradio(c("increasing","decreasing"), horizontal = TRUE)
-        radio_var2 <- gradio(c("increasing","decreasing"), horizontal = TRUE)
-        radio_var3 <- gradio(c("increasing","decreasing"), horizontal = TRUE)
-        radio_var4 <- gradio(c("increasing","decreasing"), horizontal = TRUE)
-        tbl <- glayout()
-        tbl[1, 1, expand = TRUE, anchor = c(-1, -1)] <- label_var1
-        tbl[1, 2, expand = TRUE, anchor = c(-1, -1)] <- droplist_var1
-        tbl[1, 3, expand = TRUE, anchor = c(-1, -1)] <- radio_var1
-        tbl[2, 1, expand = TRUE, anchor = c(-1, -1)] <- label_var2
-        tbl[2, 2, expand = TRUE, anchor = c(-1, -1)] <- droplist_var2
-        tbl[2, 3, expand = TRUE, anchor = c(-1, -1)] <- radio_var2
-        tbl[3, 1, expand = TRUE, anchor = c(-1, -1)] <- label_var3
-        tbl[3, 2, expand = TRUE, anchor = c(-1, -1)] <- droplist_var3
-        tbl[3, 3, expand = TRUE, anchor = c(-1, -1)] <- radio_var3
-        tbl[4, 1, expand = TRUE, anchor = c(-1, -1)] <- label_var4
-        tbl[4, 2, expand = TRUE, anchor = c(-1, -1)] <- droplist_var4
-        tbl[4, 3, expand = TRUE, anchor = c(-1, -1)] <- radio_var4
-        add(mainGrp, lbl1, anchor = c(-1, -1))
-        addSpring(mainGrp)
-        add(mainGrp, lbl2, anchor = c(-1, -1))
-        add(mainGrp, tbl)
-        add(mainGrp, btnGrp)
-        addSpring(btnGrp)
-        add(btnGrp, SortByButton)
-        visible(GUI$modWin) <<- TRUE
-      }
-    }
-  )
-)
-
-
-## --------------------------------------------
-## Class that handles aggregate the data set
-## --------------------------------------------
-iNZAgraDataWin <- setRefClass(
-  "iNZAgraDataWin",
-  fields = list(
-    GUI = "ANY"
-  ),
-  methods = list(
-    initialize = function(gui = NULL) {
-      initFields(GUI = gui)
-      if (!is.null(GUI)) {
-        ## close any current mod windows
-        try(dispose(GUI$modWin), silent = TRUE)
-        GUI$modWin <<- gwindow("Aggregation to the data",
-                               parent = GUI$win, visible = FALSE)
-        mainGrp <- ggroup(cont = GUI$modWin, horizontal = FALSE,
-                          expand = TRUE)
-        mainGrp$set_borderwidth(15)
-        btnGrp <- ggroup(horizontal = TRUE)
-        nameList <- names(Filter(is_cat,GUI$getActiveData()))
-        heading <- glabel("Aggregate over variables:")
-        font(heading) <- list(weight = "bold", style = "normal")
-        AgraButton <- gbutton(
-          "Aggregate Now",
-          handler = function(h, ...) {
-            vars <- sapply(tbl[2:4, 2], svalue)
-            vars <- vars[vars != ""]
-            smrs <- svalue(func.table)
-            
-            .dataset <- GUI$getActiveData()
-            data <- iNZightTools::aggregateData(.dataset, vars, smrs)
-            attr(data, "name") <- paste(attr(.dataset, "name", exact = TRUE), "aggregated", sep = ".")
-            attr(data, "code") <- gsub(".dataset", attr(.dataset, "name", exact = TRUE), attr(data, "code"))
-            GUI$setDocument(iNZDocument$new(data = data))
-            dispose(GUI$modWin)
-          })
-        label_var1 <- glabel("1st")
-        label_var2 <- glabel("2nd")
-        label_var3 <- glabel("3rd")
-        droplist_var1 <- gcombobox(c("",nameList), selected = 1)
-        droplist_var2 <- gcombobox(c("",nameList), selected= 1)
-        droplist_var3 <- gcombobox(c("",nameList), selected = 1)
-        func.frame <- data.frame("Summaries:" = c("Mean", "Median", "Sum", "Sd", "IQR"),
-                                 stringsAsFactors = FALSE)
-        func.table <- gtable(func.frame, multiple=TRUE)
-        func.table$remove_popup_menu() # remove the popup menu from gtable()
-        tbl <- glayout()
-        tbl[2, 1, expand = TRUE, anchor = c(-1, -1)] <- label_var1
-        tbl[2, 2, expand = TRUE, anchor = c(-1, -1)] <- droplist_var1
-        tbl[3, 1, expand = TRUE, anchor = c(-1, -1)] <- label_var2
-        tbl[3, 2, expand = TRUE, anchor = c(-1, -1)] <- droplist_var2
-        tbl[4, 1, expand = TRUE, anchor = c(-1, -1)] <- label_var3
-        tbl[4, 2, expand = TRUE, anchor = c(-1, -1)] <- droplist_var3
-        tbl[5:25, 1:2, expand =TRUE, anchor = c(-1, -1)] <- func.table
-        add(mainGrp, heading)
-        addSpring(mainGrp)
-        add(mainGrp, tbl)
-        add(mainGrp, btnGrp)
-        #addSpring(btnGrp)
-        add(btnGrp, AgraButton)
-        visible(GUI$modWin) <<- TRUE
-      }
-    }
-  )
-)
-
-
-iNZstackVarWin <- setRefClass(
-  "iNZstackVarWin",
-  fields = list(
-    GUI = "ANY"
-  ),
-  methods = list(
-    initialize = function(gui = NULL) {
-      initFields(GUI = gui)
-      if (!is.null(GUI)) {
-        ## close any current mod windows
-        try(dispose(GUI$modWin), silent = TRUE)
-        GUI$modWin <<- gwindow("Stack data by Variables",
-                               parent = GUI$win, visible = FALSE)
-        mainGroup <- ggroup(expand = TRUE, horizontal = FALSE)
-        ## instructions through glabels
-        lbl1 <- glabel("Choose variables to stack")
-        font(lbl1) <- list(weight = "bold",
-                           family = "normal")
-        lbl2 <- glabel("(Hold Ctrl to choose many)")
-        font(lbl2) <- list(weight = "bold",
-                           family = "normal")
-        ## display only numeric variables
-        numIndices <- sapply(GUI$getActiveData(), function(x) !is_cat(x))
-        numVar <- gtable(names(GUI$getActiveData())[numIndices],
-                         multiple = TRUE)
-        names(numVar) <- "Variables"
-        StackButton <- gbutton("Stack", handler = function(h, ...) {
-          if (length(svalue(numVar)) > 0) {
-            vars <- svalue(numVar)
-            
-            .dataset <- GUI$getActiveData()
-            data <- iNZightTools::stackVars(.dataset, vars)
-            attr(data, "name") <- paste(attr(.dataset, "name", exact = TRUE), "stacked", sep = ".")
-            attr(data, "code") <- gsub(".dataset", attr(.dataset, "name", exact = TRUE), attr(data, "code"))
-            GUI$setDocument(iNZDocument$new(data = data))
-            dispose(GUI$modWin)
-          }
-        })
-        add(mainGroup, lbl1)
-        add(mainGroup, lbl2)
-        add(mainGroup, numVar, expand = TRUE)
-        add(mainGroup, StackButton)
-        add(GUI$modWin, mainGroup, expand = TRUE, fill = TRUE)
-        visible(GUI$modWin) <<- TRUE
-      }
-    })
 )
 
 
@@ -1012,10 +1063,17 @@ iNZjoinDataWin <- setRefClass(
         GUI$modWin <<- gwindow("Join with another dataset by column values",
                                parent = GUI$win, width = 550, visible = FALSE)
         mainGroup <- ggroup(cont = GUI$modWin, expand = TRUE, horizontal = FALSE)
+        mainGroup$set_borderwidth(15)
         
-        ## Title
-        title_string <- glabel("Join Datasets", cont = mainGroup)
+        helpbtn <- gimagebutton(stock.id = "gw-help", handler = function(h, ...){
+          browseURL("https://www.stat.auckland.ac.nz/~wild/iNZight/user_guides/data_options/#join")
+        })
+        title_string <- glabel("Join Datasets")
         font(title_string) <- list(size = 14, weight = "bold")
+        helplyt <- glayout(homegenous = FALSE)
+        helplyt[1, 4:19, expand = TRUE, anchor = c(0,0)] <- title_string
+        helplyt[1, 20, expand = TRUE, anchor = c(1, -1)] <- helpbtn
+        add(mainGroup, helplyt)
         
         prevTbl <- glayout(homogeneous = FALSE, cont = mainGroup)
         
@@ -1264,9 +1322,16 @@ iNZappendrowWin <- setRefClass(
         GUI$modWin <<- gwindow("Append rows",
                                parent = GUI$win, visible = FALSE)
         mainGroup <- ggroup(cont = GUI$modWin, expand = TRUE, horizontal = FALSE)
-        
-        title_string = glabel("Append rows", cont = mainGroup)
+        mainGroup$set_borderwidth(15)
+        helpbtn <- gimagebutton(stock.id = "gw-help", handler = function(h, ...){
+          browseURL("https://www.stat.auckland.ac.nz/~wild/iNZight/user_guides/data_options/#append")
+        })
+        title_string = glabel("Append rows")
         font(title_string) = list(size = 14, weight = "bold")
+        helplyt <- glayout(homegenous = FALSE)
+        helplyt[1, 4:19, expand = TRUE, anchor = c(0,0)] <- title_string
+        helplyt[1, 20, expand = TRUE, anchor = c(1, -1)] <- helpbtn
+        add(mainGroup, helplyt)
         file_string = glabel("Import data", cont = mainGroup, anchor = c(-1,0))
         data_name = gfilebrowse(text = "Specify a file", initial.dir = file.path(".", "data"), cont = mainGroup, handler = function(h, ...) {
           newdata <<- iNZightTools::smart_read(svalue(data_name))
