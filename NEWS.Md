@@ -1,13 +1,37 @@
-## iNZight 3.3.6.9000
+## iNZight 3.4.0.9000
 __Release date__: TBA
 
+
+
+
+
+# iNZight 3.4
+__Release date__: 30 April 2019
+
+### Dates and times
+- convert variables into datetimes (Variables > Dates and times)
+- extract time information from a datetime variable (such as the hour, or year)
+
+### Merging and reshaping data sets
+- reshape data from long to wide, and vice versa
+- merge data sets using `*_join()`
+- join data sets by appending rows
+
+### Other changes and fixes
 - add axis transformation (log-10) for numeric variables
 - switch between counts/percentages in bar plots
+- import SAS files (.sas7bdat and .xpt)
+- add dataset validation module
+- allow switching between categorical and numeric data types in import window
+- fixes, and export additional variables, for interactive maps
+- when importing RDS files, character variables are converted to factors
 
 
-### Dates and times 
-- convert variables into datetimes (Variables > Dates and times) 
-- extract time information from a datetime variable (such as the hour, or year)
+## iNZight 3.3.7
+__Release date__: 05 April 2019
+
+- small change to patch bug in iNZightPlots package
+
 
 ## iNZight 3.3.6
 __Release date__: 12 February 2019
@@ -45,7 +69,7 @@ __Release date:__ 07 January 2019
 __Release date:__ 15 November 2018
 
 - add dataset summary information to Get Summary (when no variables selected)
-- add interact button 
+- add interact button
 - fix call for survey design objects (remove NULL arguments)
 - fix bug that prevented iNZight to launch on some macs
 
@@ -92,7 +116,7 @@ __Release date:__ 23 January 2018
 ### Minor Changes
 
 - The __Reorder Levels__ window has been reconfigured to, hopefully, make it easier to use
-- Filtering no longer clears the slots 
+- Filtering no longer clears the slots
 - Import data [beta] is ... no longer beta!
 - Updated the splash screen to be up-to-date, and attempt to be friendly ...
 

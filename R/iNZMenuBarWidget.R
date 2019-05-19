@@ -44,17 +44,17 @@ iNZMenuBarWidget <- setRefClass(
                 load =
                     gaction("Load ...",
                         icon = "symbol_diamond",
-                        handler = function(h, ...) iNZLoadSaveWin$new(GUI, action = "load")),
+                        handler = function(h, ...) iNZLoadSaveWin$new(GUI, what = "load")),
                 save =
                     gaction("Save ...",
                         icon = "save",
-                        handler = function(h, ...) iNZLoadSaveWin$new(GUI, action = "save")),
+                        handler = function(h, ...) iNZLoadSaveWin$new(GUI, what = "save")),
                 gseparator(),
                 import =
                     gaction("Import data ...",
                         icon = "symbol_diamond",
                         tooltip = "Import a new dataset",
-                        handler = function(h, ...) iNZImportWinBeta$new(GUI)),
+                        handler = function(h, ...) iNZImportWin$new(GUI)),
                 export =
                     gaction("Export data ...",
                         icon = "symbol_diamond",
@@ -113,6 +113,10 @@ iNZMenuBarWidget <- setRefClass(
                             tooltip = "Unite columns",
                             handler = function(h, ...) iNZUniteDataWin$new(GUI))
                 ),
+                validate =
+                  gaction("Validate ...",
+                          icon = "symbol_diamond",
+                          handler = function(h, ...) iNZValidateWin$new(GUI)),
                 gseparator(),
                 rename =
                     gaction("Rename ...",
@@ -126,7 +130,7 @@ iNZMenuBarWidget <- setRefClass(
                     gaction("Delete current dataset",
                         icon = "symbol_diamond",
                         handler = function(h, ...) GUI$deleteDataset()),
-                "Merge datasets" = list(
+                "Merge/Join datasets" = list(
                   joinbycol =
                     gaction("Join by column values",
                             icon = "symbol_diamond",
@@ -188,7 +192,7 @@ iNZMenuBarWidget <- setRefClass(
                             icon = "symbol_diamond",
                             tooltip = "Combine two or more categorical variables",
                             handler = function(h, ...) iNZcmbCatWin$new(GUI))
-                    ),
+                ),
                 "Numeric Variables" = list(
                     transform =
                         gaction("Transform ...",
@@ -215,8 +219,7 @@ iNZMenuBarWidget <- setRefClass(
                             icon = "symbol_diamond",
                             tooltip = "Convert multiple numeric variables to categorical",
                             handler = function(h, ...) iNZctocatmulWin$new(GUI))
-                    ),
-
+                ),
                 "Dates and Times" = list(
                   convert =
                     gaction("Convert to ...",
@@ -227,9 +230,13 @@ iNZMenuBarWidget <- setRefClass(
                     gaction("Extract from ...",
                             icon = "symbol_diamond",
                             tooltip = "Extract parts from a dates and times variable",
-                            handler = function(h, ...) iNZExtfromdtWin$new(GUI))
+                            handler = function(h, ...) iNZExtfromdtWin$new(GUI)),
+                  aggregation =
+                    gaction("Aggregate to ...",
+                            icon = "symbol_diamond",
+                            tooltip = "Aggregate date-time into monthly or quarterly",
+                            handler = function(h, ...) iNZAggregatedtWin$new(GUI))
                 ),
-
                 rename =
                     gaction("Rename variables ...",
                         icon = "symbol_diamond",

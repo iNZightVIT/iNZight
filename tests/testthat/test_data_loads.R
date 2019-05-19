@@ -40,7 +40,7 @@ test_that("UI correctly displays the data", {
     expect_true(visible(ui$dataViewWidget$dataGp$children[[2]]))
 
     expect_equal(ui$dataViewWidget$dataGp$children[[2]]$children[[1]]$get_names(),
-        c("VARIABLES (n = numeric, c = categorical, t = time/date)"))
+        c("VARIABLES (n = numeric, c = categorical, dt = date/time)"))
     expect_equal(ui$dataViewWidget$dataGp$children[[2]]$children[[1]]$get_items(),
         c("(n) A", "(c) B"))
 
@@ -93,4 +93,125 @@ test_that("Example data menus work correctly", {
     )
     expect_equal(ui$dataNameWidget$datName, "census.at.school.500_ex")
 
+})
+
+test_that("CSV files load", {
+    imp <- iNZImportWin$new(ui)
+    imp$fname <- "cas5.csv"
+    imp$setfile()
+    skip_if(length(imp$prevGp$children) == 1,
+        message = "Preview did not load."
+    )
+    expect_is(imp$prevGp$children[[2]], "GDf")
+    expect_equal(imp$prevGp$children[[2]]$get_dim(), c(rows = 5, cols = 10))
+    expect_silent(imp$okBtn$invoke_change_handler())
+    expect_equal(
+        names(ui$getActiveData()),
+        c("cellsource", "rightfoot", "travel", "getlunch", "height",
+            "gender", "age", "year", "armspan", "cellcost")
+    )
+    expect_equal(
+        dim(ui$getActiveData()),
+        c(5, 10)
+    )
+})
+
+test_that("SAS (.sas7bdat) files load", {
+    imp <- iNZImportWin$new(ui)
+    imp$fname <- "test.sas7bdat"
+    imp$setfile()
+    skip_if(length(imp$prevGp$children) == 1,
+        message = "Preview did not load."
+    )
+    expect_is(imp$prevGp$children[[2]], "GDf")
+    expect_equal(imp$prevGp$children[[2]]$get_dim(), c(rows = 5, cols = 7))
+    imp$okBtn$invoke_change_handler()
+    # expect_silent(imp$okBtn$invoke_change_handler())
+    expect_equal(
+        names(ui$getActiveData()),
+        c("id", "workshop", "gender", "q1", "q2", "q3", "q4")
+    )
+    expect_equal(
+        dim(ui$getActiveData()),
+        c(8, 7)
+    )
+})
+
+test_that("SAS Xport (.xpt) files load", {
+    imp <- iNZImportWin$new(ui)
+    imp$fname <- "cars.xpt"
+    imp$setfile()
+    skip_if(length(imp$prevGp$children) == 1,
+        message = "Preview did not load."
+    )
+    expect_is(imp$prevGp$children[[2]], "GDf")
+    expect_equal(imp$prevGp$children[[2]]$get_dim(), c(rows = 5, cols = 5))
+    imp$okBtn$invoke_change_handler()
+    # expect_silent(imp$okBtn$invoke_change_handler())
+    expect_equal(
+        names(ui$getActiveData()),
+        c("MAKE", "PRICE", "MPG", "REP78", "FOREIGN")
+    )
+    expect_equal(
+        dim(ui$getActiveData()),
+        c(26, 5)
+    )
+})
+
+test_that("Switching variable types works (csv)", {
+    imp <- iNZImportWin$new(ui)
+    imp$fname <- "cas5.csv"
+    imp$setfile()
+
+    skip_if(length(imp$prevGp$children) == 1,
+        message = "Preview did not load."
+    )
+    # convert YEAR to cat
+    expect_equal(
+        imp$prev$get_names(),
+        c(
+            "cellsource (c)", "rightfoot (n)", "travel (c)",
+            "getlunch (c)", "height (n)", "gender (c)",
+            "age (n)", "year (n)", "armspan (n)", "cellcost (n)"
+        )
+    )
+    imp$fColTypes[8] <- "categorical"
+    imp$generatePreview(NULL)
+    expect_equal(
+        imp$prev$get_names(),
+        c(
+            "cellsource (c)", "rightfoot (n)", "travel (c)",
+            "getlunch (c)", "height (n)", "gender (c)",
+            "age (n)", "year (c)", "armspan (n)", "cellcost (n)"
+        )
+    )
+
+    imp$okBtn$invoke_change_handler()
+    expect_is(ui$getActiveData()$year, "factor")
+})
+
+test_that("Date times are supported (csv)", {
+    imp <- iNZImportWin$new(ui)
+    imp$fname <- "dt.csv"
+    imp$setfile()
+    skip_if(length(imp$prevGp$children) == 1,
+        message = "Preview did not load."
+    )
+
+    expect_equal(
+        imp$prev$get_names(),
+        c("x (d)", "y (t)", "z (dt)")
+    )
+    imp$okBtn$invoke_change_handler()
+    expect_is(ui$getActiveData()$x, "Date")
+    expect_is(ui$getActiveData()$y, "hms")
+    expect_is(ui$getActiveData()$z, "POSIXct")
+})
+
+test_that("Changing file resets column types", {
+    imp <- iNZImportWin$new(ui)
+    imp$fname <- "dt.csv"
+    imp$fColTypes <- c("numeric", "numeric", "auto")
+    expect_silent(imp$setfile())
+    expect_true(all(imp$fColTypes == "auto"))
 })
