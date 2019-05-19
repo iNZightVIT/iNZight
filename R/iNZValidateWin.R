@@ -43,6 +43,12 @@ iNZValidateWin <- setRefClass(
       font(lbl.rulesbox) <- list(weight = "bold")
       font(lbl.results) <- list(weight = "bold")
       font(lbl.details) <- list(weight = "bold")
+      helpbtn <- gimagebutton(stock.id = "gw-help", handler = function(h, ...){
+        browseURL("https://www.stat.auckland.ac.nz/~wild/iNZight/user_guides/data_options/#validate")
+      })
+      titlelyt <- glayout(homegenous = FALSE)
+      titlelyt[1, 1:19, expand = TRUE] <- lbl.details
+      titlelyt[1, 20, expand = TRUE, anchor = c(1, -1)] <- helpbtn
       
       group.identifier <- ggroup()
       add(group.identifier, glabel("Unique Identifier: "))
@@ -128,7 +134,7 @@ iNZValidateWin <- setRefClass(
       add(group.left, results.box, expand = TRUE, fill = TRUE)
       # add(group.left, save.button)
       
-      add(group.right, lbl.details, anchor = c(-1, 0))
+      add(group.right, titlelyt)
       add(group.right, group.identifier)
       add(group.right, details.box, expand = TRUE, fill = TRUE)
       add(group.left, ok.button, anchor = c(1, 0))
