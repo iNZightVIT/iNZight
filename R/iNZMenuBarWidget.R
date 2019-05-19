@@ -113,7 +113,7 @@ iNZMenuBarWidget <- setRefClass(
                             tooltip = "Unite columns",
                             handler = function(h, ...) iNZUniteDataWin$new(GUI))
                 ),
-                validate = 
+                validate =
                   gaction("Validate ...",
                           icon = "symbol_diamond",
                           handler = function(h, ...) iNZValidateWin$new(GUI)),
@@ -153,7 +153,14 @@ iNZMenuBarWidget <- setRefClass(
                 expandtable =
                     gaction("Expand table",
                         icon = "symbol_diamond",
-                        handler = function(h, ...) iNZexpandTblWin$new(GUI))
+                        handler = function(h, ...) iNZexpandTblWin$new(GUI)
+                    ),
+                setfrequency =
+                    gaction("Specify frequency column",
+                        icon = "symbol_diamond",
+                        handler = function(h, ...)
+                            iNZSurveyDesign$new(GUI, freq = TRUE)
+                    )
             )
         },
         VariablesMenu = function() {
@@ -185,7 +192,7 @@ iNZMenuBarWidget <- setRefClass(
                             icon = "symbol_diamond",
                             tooltip = "Combine two or more categorical variables",
                             handler = function(h, ...) iNZcmbCatWin$new(GUI))
-                    ),
+                ),
                 "Numeric Variables" = list(
                     transform =
                         gaction("Transform ...",
@@ -212,8 +219,7 @@ iNZMenuBarWidget <- setRefClass(
                             icon = "symbol_diamond",
                             tooltip = "Convert multiple numeric variables to categorical",
                             handler = function(h, ...) iNZctocatmulWin$new(GUI))
-                    ),
-
+                ),
                 "Dates and Times" = list(
                   convert =
                     gaction("Convert to ...",
