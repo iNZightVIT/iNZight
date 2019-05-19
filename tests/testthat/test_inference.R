@@ -1,7 +1,7 @@
 context("Get Inference window")
 
-ui$close()
-devtools::load_all("../..")
+# ui$close()
+# devtools::load_all("../..")
 ui <- iNZGUI$new()
 ui$initializeGui()
 on.exit(gWidgets2::dispose(ui$win))
