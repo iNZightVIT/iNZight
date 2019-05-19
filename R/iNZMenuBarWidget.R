@@ -153,7 +153,14 @@ iNZMenuBarWidget <- setRefClass(
                 expandtable =
                     gaction("Expand table",
                         icon = "symbol_diamond",
-                        handler = function(h, ...) iNZexpandTblWin$new(GUI))
+                        handler = function(h, ...) iNZexpandTblWin$new(GUI)
+                    ),
+                setfrequency =
+                    gaction("Specify frequency column",
+                        icon = "symbol_diamond",
+                        handler = function(h, ...)
+                            iNZSurveyDesign$new(GUI, freq = TRUE)
+                    )
             )
         },
         VariablesMenu = function() {

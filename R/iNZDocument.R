@@ -66,20 +66,41 @@ iNZDataModel <- setRefClass(
         addObjObserver = function(FUN, ...) {
             .self$changed$connect(FUN, ...)
         },
-        setDesign = function(strata=NULL, clus1=NULL, clus2=NULL,
-                             wt=NULL, nest=NULL, fpc=NULL, gui, ...) {
-            if (is.null(strata) & is.null(clus1) & is.null(clus2) &
+        setDesign = function(strata = NULL, clus1 = NULL, clus2 = NULL,
+                             wt = NULL, nest = NULL, fpc = NULL,
+                             freq = NULL,
+                             gui, ...) {
+            if (!is.null(freq)) {
+                dataDesign <<-
+                    list(
+                        strata = NULL,
+                        clus1  = NULL,
+                        clus2  = NULL,
+                        wt     = NULL,
+                        fpc    = NULL,
+                        nest   = NULL,
+                        freq   = freq
+                    )
+            } else if (is.null(strata) & is.null(clus1) & is.null(clus2) &
                 is.null(wt) & is.null(nest) & is.null(fpc)) {
                 dataDesign <<- NULL
             } else {
-                dataDesign <<- list(strata = strata,
-                                    clus1  = clus1,
-                                    clus2  = clus2,
-                                    wt     = wt,
-                                    fpc    = fpc,
-                                    nest   = nest)
+                dataDesign <<-
+                    list(
+                        strata = strata,
+                        clus1  = clus1,
+                        clus2  = clus2,
+                        wt     = wt,
+                        fpc    = fpc,
+                        nest   = nest,
+                        freq   = NULL
+                    )
             }
-            dataDesignName <<- sprintf("%s.svy", name)
+            dataDesignName <<-
+                sprintf("%s.%s",
+                    name,
+                    ifelse(is.null(freq), "svy", "freq")
+                )
         },
         createSurveyObject = function() {
             des <- getDesign()
@@ -95,21 +116,25 @@ iNZDataModel <- setRefClass(
             }
 
             strata <- if (is.null(des$strata)) "NULL" else paste("~", des$strata)
-            weights <- if (is.null(des$wt)) "NULL" else paste("~", des$wt)
+            weights <-
+                if (is.null(des$wt) && is.null(des$freq)) "NULL"
+                else if (is.null(des$freq)) paste("~", des$wt)
+                else paste("~", des$freq)
             fpcs <- if (is.null(des$fpc)) "NULL" else paste("~", des$fpc)
 
             obj <-
                 parse(text =
-                      paste0(
-                          "survey::svydesign(",
-                          "id = ", id, ", ",
-                          if (!is.null(des$strata)) sprintf("strata = %s, ", strata),
-                          if (!is.null(des$wt)) sprintf("weights = %s, ", weights),
-                          if (!is.null(des$fpc)) sprintf("fpc = %s, ", fpcs),
-                          if (!is.null(des$nest) && des$nest) "nest = TRUE, ",
-                          "data = dataSet)"
-                          )
-                      )
+                    paste0(
+                        "survey::svydesign(",
+                        "id = ", id, ", ",
+                        if (!is.null(des$strata)) sprintf("strata = %s, ", strata),
+                        if (!is.null(des$wt) || !is.null(des$freq))
+                            sprintf("weights = %s, ", weights),
+                        if (!is.null(des$fpc)) sprintf("fpc = %s, ", fpcs),
+                        if (!is.null(des$nest) && des$nest) "nest = TRUE, ",
+                        "data = dataSet)"
+                    )
+                )
 
             eval(obj)
         },

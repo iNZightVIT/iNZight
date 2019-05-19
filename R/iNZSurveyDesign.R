@@ -2,10 +2,19 @@ iNZSurveyDesign <- setRefClass(
     "iNZSurveyDesign",
     fields = list(
         GUI = "ANY",
-        designWin = "ANY"
+        designWin = "ANY",
+        freqVar = "ANY",
+        stratVar = "ANY",
+        clus1Var = "ANY",
+        clus2Var = "ANY",
+        nestChk = "ANY",
+        wtVar = "ANY",
+        fpcVar = "ANY",
+        createBtn = "ANY",
+        cancelBtn = "ANY"
     ),
     methods = list(
-        initialize = function(GUI) {
+        initialize = function(GUI, freq = FALSE, warn = TRUE) {
             initFields(GUI = GUI)
 
             if (is.null(GUI$getActiveData())) {
@@ -18,60 +27,90 @@ iNZSurveyDesign <- setRefClass(
                 return()
             }
 
-            gmessage(paste(
-                    "The Survey functionality is still under development. Please use with caution",
-                    "and for experimentation only.",
-                    "\n\nIf you discover any bugs, let us know by emailing",
-                    "inzight_support@stat.auckland.ac.nz."),
-                title = "Survey Analysis BETA", parent = GUI$win, icon = "warning")
+            if (warn) {
+                gmessage(
+                    paste(
+"The Survey functionality is still under development.",
+"Please use with caution and for experimentation only.",
+"\n\nIf you discover any bugs, let us know by emailing",
+"inzight_support@stat.auckland.ac.nz."
+                    ),
+                    title = "Survey Analysis BETA",
+                    parent = GUI$win,
+                    icon = "warning"
+                )
+            }
 
-            designWin <<- 
-                gwindow("Specify survey design", parent = GUI$win,
-                    width = 450, height = 300, visible = FALSE)
-            gg <- gvbox(container = designWin, expand = TRUE)
-            gg$set_borderwidth(5)
-   
-            ttl <- glabel("Specify Survey Design", cont = gg)
-            font(ttl) <- list(weight = "bold", size = 11)
-   
-            addSpace(gg, 5)
-            tbl <- glayout(cont = gg)
-   
-            vars <- c("", colnames(GUI$getActiveData()))
-   
-            ii <- 2
-            lbl <- glabel("Strata variable: ")
-            tbl[ii, 1, expand = TRUE, fill = FALSE, anchor = c(1, 0)] <- lbl
-            stratVar <- gcombobox(vars)
-            tbl[ii, 2, expand = TRUE] <- stratVar
+            if (freq) {
+                designWin <<-
+                    gwindow("Specify frequency column",
+                        parent = GUI$win,
+                        width = 450,
+                        height = 150,
+                        visible = FALSE
+                    )
+                gg <- gvbox(container = designWin, expand = TRUE)
+                gg$set_borderwidth(5)
 
-            ii <- ii + 1
-            lbl <- glabel("1st stage clustering variable: ")
-            tbl[ii, 1, expand = TRUE, fill = FALSE, anchor = c(1, 0)] <- lbl
-            clus1Var <- gcombobox(vars)
-            tbl[ii, 2, expand = TRUE] <- clus1Var
+                lbl <- glabel("Choose frequency column", cont = gg)
+                font(lbl) <- list(weight = "bold", size = 11)
 
-            ii <- ii + 1
-            lbl <- glabel("2nd stage clustering variable: ")
-            tbl[ii, 1, expand = TRUE, fill = FALSE, anchor = c(1, 0)] <- lbl
-            clus2Var <- gcombobox(vars)
-            tbl[ii, 2, expand = TRUE] <- clus2Var
+                addSpace(gg, 5)
 
-            ii <- ii + 1
-            nestChk <- gcheckbox("Use nested sampling")
-            tbl[ii, 2, expand = TRUE] <- nestChk
+                as.int <- function(x) is.numeric(x) && all(floor(x) == x)
+                ints <- sapply(GUI$getActiveData(), as.int)
+                vars <- names(GUI$getActiveData())[ints]
 
-            ii <- ii + 2
-            lbl <- glabel("Weighting variable: ")
-            tbl[ii, 1, expand = TRUE, fill = FALSE, anchor = c(1, 0)] <- lbl
-            wtVar <- gcombobox(vars)
-            tbl[ii, 2, expand = TRUE] <- wtVar
+                freqVar <<- gcombobox(vars, selected = 0, container = gg)
+            } else {
+                designWin <<-
+                    gwindow("Specify survey design", parent = GUI$win,
+                        width = 450, height = 300, visible = FALSE)
+                gg <- gvbox(container = designWin, expand = TRUE)
+                gg$set_borderwidth(5)
 
-            ii <- ii + 1
-            lbl <- glabel("Finite population correction: ")
-            tbl[ii, 1, expand = TRUE, fill = FALSE, anchor= c(1, 0)] <- lbl
-            fpcVar <- gcombobox(vars, editable = TRUE)
-            tbl[ii, 2, expand = TRUE] <- fpcVar
+                ttl <- glabel("Specify Survey Design", cont = gg)
+                font(ttl) <- list(weight = "bold", size = 11)
+
+                addSpace(gg, 5)
+                tbl <- glayout(cont = gg)
+
+                vars <- c("", colnames(GUI$getActiveData()))
+
+                ii <- 2
+                lbl <- glabel("Strata variable: ")
+                tbl[ii, 1, expand = TRUE, fill = FALSE, anchor = c(1, 0)] <- lbl
+                stratVar <<- gcombobox(vars)
+                tbl[ii, 2, expand = TRUE] <- stratVar
+
+                ii <- ii + 1
+                lbl <- glabel("1st stage clustering variable: ")
+                tbl[ii, 1, expand = TRUE, fill = FALSE, anchor = c(1, 0)] <- lbl
+                clus1Var <<- gcombobox(vars)
+                tbl[ii, 2, expand = TRUE] <- clus1Var
+
+                ii <- ii + 1
+                lbl <- glabel("2nd stage clustering variable: ")
+                tbl[ii, 1, expand = TRUE, fill = FALSE, anchor = c(1, 0)] <- lbl
+                clus2Var <<- gcombobox(vars)
+                tbl[ii, 2, expand = TRUE] <- clus2Var
+
+                ii <- ii + 1
+                nestChk <<- gcheckbox("Use nested sampling")
+                tbl[ii, 2, expand = TRUE] <- nestChk
+
+                ii <- ii + 2
+                lbl <- glabel("Weighting variable: ")
+                tbl[ii, 1, expand = TRUE, fill = FALSE, anchor = c(1, 0)] <- lbl
+                wtVar <<- gcombobox(vars)
+                tbl[ii, 2, expand = TRUE] <- wtVar
+
+                ii <- ii + 1
+                lbl <- glabel("Finite population correction: ")
+                tbl[ii, 1, expand = TRUE, fill = FALSE, anchor= c(1, 0)] <- lbl
+                fpcVar <<- gcombobox(vars, editable = TRUE)
+                tbl[ii, 2, expand = TRUE] <- fpcVar
+            }
 
             addSpring(gg)
 
@@ -79,9 +118,9 @@ iNZSurveyDesign <- setRefClass(
             addSpace(btnGrp, 10)
             #advancedBtn <- gbutton("Advanced", cont = btnGrp)
             addSpring(btnGrp)
-            cancelBtn <- gbutton("Cancel", cont = btnGrp)
+            cancelBtn <<- gbutton("Cancel", cont = btnGrp)
             addSpace(btnGrp, 10)
-            createBtn <- gbutton("OK", cont = btnGrp)
+            createBtn <<- gbutton("OK", cont = btnGrp)
             addSpace(btnGrp, 10)
 
             addSpace(gg, 10)
@@ -92,44 +131,53 @@ iNZSurveyDesign <- setRefClass(
                 dispose(designWin)
             })
             addHandlerClicked(createBtn, handler = function(h, ...) {
-                strat <- svalue(stratVar, index = FALSE)
-                clus1 <- svalue(clus1Var, index = FALSE)
-                clus2 <- svalue(clus2Var, index = FALSE)
-                wts <- svalue(wtVar, index = FALSE)
-                fpc <- svalue(fpcVar, index = FALSE)
-                nest <- as.logical(svalue(nestChk))
+                if (freq) {
+                    freqv <- svalue(freqVar, index = FALSE)
+                    if (freqv == "") freqv <- NULL
+                    GUI$getActiveDoc()$getModel()$setDesign(
+                        freq = freqv, gui = GUI
+                    )
+                } else {
+                    strat <- svalue(stratVar, index = FALSE)
+                    clus1 <- svalue(clus1Var, index = FALSE)
+                    clus2 <- svalue(clus2Var, index = FALSE)
+                    wts <- svalue(wtVar, index = FALSE)
+                    fpc <- svalue(fpcVar, index = FALSE)
+                    nest <- as.logical(svalue(nestChk))
 
-                if (strat == "") strat <- NULL
-                if (clus1 == "") clus1 <- NULL
-                if (clus2 == "") clus2 <- NULL
-                if (wts == "") wts <- NULL
-                if (fpc == "") fpc <- NULL
+                    if (strat == "") strat <- NULL
+                    if (clus1 == "") clus1 <- NULL
+                    if (clus2 == "") clus2 <- NULL
+                    if (wts == "") wts <- NULL
+                    if (fpc == "") fpc <- NULL
 
-                GUI$getActiveDoc()$getModel()$setDesign(
-                    strat, clus1, clus2, wts, nest, fpc, gui = GUI
-                )
+                    GUI$getActiveDoc()$getModel()$setDesign(
+                        strat, clus1, clus2, wts, nest, fpc, gui = GUI
+                    )
+                }
+
 
                 setOK <- try(GUI$getActiveDoc()$getModel()$createSurveyObject(), TRUE)
-       
-                if (!inherits(setOK, "try-error")) {
-                    if (is.null(strat) & is.null(clus1) &
-                        is.null(clus2) & is.null(wts) & is.null(fpc)) {
-                        ## ENABLE A WHOLE LOT OF STUFF
-                        # enabled(GUI$menubar$menu_list[["Dataset"]][[3]]) <<- TRUE
-                        # enabled(GUI$menubar$menu_list[["Variables"]][["Numeric Variables"]][[2]]) <<- TRUE
-                        # enabled(GUI$menubar$menu_list[["Plot"]][[3]]) <<- TRUE
-                        #enabled(GUI$sumBtn) <<- TRUE
-                        # enabled(GUI$infBtn) <<- TRUE
-                    } else {
-                        ## DISABLE A WHOLE LOT OF STUFF
-                        # enabled(GUI$menubar$menu_list[["Dataset"]][[3]]) <<- FALSE
-                        # enabled(GUI$menubar$menu_list[["Variables"]][["Numeric Variables"]][[2]]) <<- FALSE
-                        # enabled(GUI$menubar$menu_list[["Plot"]][[3]]) <<- FALSE
-                        ##enabled(GUI$sumBtn) <<- FALSE
-                        ##enabled(GUI$infBtn) <<- FALSE
 
-                        dispose(designWin)
-                    }
+                if (!inherits(setOK, "try-error")) {
+                    # if (is.null(strat) & is.null(clus1) &
+                    #     is.null(clus2) & is.null(wts) & is.null(fpc)) {
+                    #     ## ENABLE A WHOLE LOT OF STUFF
+                    #     # enabled(GUI$menubar$menu_list[["Dataset"]][[3]]) <<- TRUE
+                    #     # enabled(GUI$menubar$menu_list[["Variables"]][["Numeric Variables"]][[2]]) <<- TRUE
+                    #     # enabled(GUI$menubar$menu_list[["Plot"]][[3]]) <<- TRUE
+                    #     #enabled(GUI$sumBtn) <<- TRUE
+                    #     # enabled(GUI$infBtn) <<- TRUE
+                    # } else {
+                    #     ## DISABLE A WHOLE LOT OF STUFF
+                    #     # enabled(GUI$menubar$menu_list[["Dataset"]][[3]]) <<- FALSE
+                    #     # enabled(GUI$menubar$menu_list[["Variables"]][["Numeric Variables"]][[2]]) <<- FALSE
+                    #     # enabled(GUI$menubar$menu_list[["Plot"]][[3]]) <<- FALSE
+                    #     ##enabled(GUI$sumBtn) <<- FALSE
+                    #     ##enabled(GUI$infBtn) <<- FALSE
+                    # }
+
+                    dispose(designWin)
 
                     ## write design call
                     call <- deparse(setOK$call)
@@ -140,32 +188,37 @@ iNZSurveyDesign <- setRefClass(
                     GUI$rhistory$add(c("## create survey design object", call),
                         tidy = TRUE)
 
-                    ## update plot 
+                    ## update plot
                     GUI$updatePlot()
                 } else {
                     gmessage(paste0(
                         "There is a problem with the specification of the survey design:\n\n",
-                        setOK), 
+                        setOK),
                         icon = "error")
-                }                                     
+                }
             })
 
 
             ## Populate the lists:
             curDes <- GUI$getActiveDoc()$getModel()$getDesign()
             if (!is.null(curDes)) {
-                if (!is.null(curDes$strata))
-                    svalue(stratVar) <- curDes$strata
-                if (!is.null(curDes$clus1))
-                    svalue(clus1Var) <- curDes$clus1
-                if (!is.null(curDes$clus2))
-                    svalue(clus2Var) <- curDes$clus2
-                if (!is.null(curDes$nest))
-                    svalue(nestChk) <- curDes$nest
-                if (!is.null(curDes$wt))
-                    svalue(wtVar) <- curDes$wt
-                if (!is.null(curDes$fpc))
-                    svalue(fpcVar) <- curDes$fpc
+                if (freq) {
+                    if (!is.null(curDes$freq))
+                        svalue(freqVar) <<- curDes$freq
+                } else {
+                    if (!is.null(curDes$strata))
+                        svalue(stratVar) <<- curDes$strata
+                    if (!is.null(curDes$clus1))
+                        svalue(clus1Var) <<- curDes$clus1
+                    if (!is.null(curDes$clus2))
+                        svalue(clus2Var) <<- curDes$clus2
+                    if (!is.null(curDes$nest))
+                        svalue(nestChk) <<- curDes$nest
+                    if (!is.null(curDes$wt))
+                        svalue(wtVar) <<- curDes$wt
+                    if (!is.null(curDes$fpc))
+                        svalue(fpcVar) <<- curDes$fpc
+                }
             }
 
            visible(designWin) <<- TRUE
