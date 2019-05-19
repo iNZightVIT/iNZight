@@ -899,13 +899,14 @@ iNZGUI <- setRefClass(
                             )
                             visible(w2) <- TRUE
                             try(dispose(wBoots), silent = TRUE)
+                            invisible(w2)
                         })
 
                         addSpring(g)
                         add(g, btn)
 
                         visible(w) <- TRUE
-
+                        invisible(w)
                     } else {
                         gmessage("Please select at least one variable",
                                  parent = win)
