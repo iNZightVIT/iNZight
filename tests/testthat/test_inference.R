@@ -211,3 +211,24 @@ test_that("Get inference window - scatter plots", {
     dispose(w2[[1]])
 })
 
+## Survey designs
+expect_true(enabled(ui$infBtn))
+
+data(api, package = "survey")
+ui$setDocument(iNZDocument$new(data = apiclus2), reset = TRUE)
+Sys.sleep(5)
+
+
+test_that("Get inference disabled for surveys", {
+    swin <- iNZSurveyDesign$new(ui, warn = FALSE)
+    svalue(swin$clus1Var) <- "dnum"
+    svalue(swin$clus2Var) <- "snum"
+    svalue(swin$fpcVar) <- "fpc1 + fpc2"
+    swin$createBtn$invoke_change_handler()
+    expect_false(enabled(ui$infBtn))
+})
+
+test_that("Get inference reenabled for non-surveys", {
+    ui$removeDesign()
+    expect_true(enabled(ui$infBtn))
+})

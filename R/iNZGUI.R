@@ -1132,7 +1132,7 @@ iNZGUI <- setRefClass(
             # enabled(menubar$menu_list[["Variables"]][["Numeric Variables"]][[2]]) <<- TRUE
             # enabled(menubar$menu_list[["Plot"]][[3]]) <<- TRUE
             # enabled(sumBtn) <<- TRUE
-            # enabled(infBtn) <<- TRUE
+            enabled(infBtn) <<- TRUE
         },
         ## display warning message
         displayMsg = function(module, type) {
