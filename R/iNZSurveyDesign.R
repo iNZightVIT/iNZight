@@ -160,8 +160,8 @@ iNZSurveyDesign <- setRefClass(
                 setOK <- try(GUI$getActiveDoc()$getModel()$createSurveyObject(), TRUE)
 
                 if (!inherits(setOK, "try-error")) {
-                    if (is.null(strat) & is.null(clus1) &
-                        is.null(clus2) & is.null(wts) & is.null(fpc) &
+                    if (!freq && is.null(strat) && is.null(clus1) &&
+                        is.null(clus2) && is.null(wts) && is.null(fpc) &&
                         !freq) {
                         ## ENABLE A WHOLE LOT OF STUFF
                         # enabled(GUI$menubar$menu_list[["Dataset"]][[3]]) <<- TRUE
