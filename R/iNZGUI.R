@@ -899,13 +899,14 @@ iNZGUI <- setRefClass(
                             )
                             visible(w2) <- TRUE
                             try(dispose(wBoots), silent = TRUE)
+                            invisible(w2)
                         })
 
                         addSpring(g)
                         add(g, btn)
 
                         visible(w) <- TRUE
-
+                        invisible(w)
                     } else {
                         gmessage("Please select at least one variable",
                                  parent = win)
@@ -1131,7 +1132,7 @@ iNZGUI <- setRefClass(
             # enabled(menubar$menu_list[["Variables"]][["Numeric Variables"]][[2]]) <<- TRUE
             # enabled(menubar$menu_list[["Plot"]][[3]]) <<- TRUE
             # enabled(sumBtn) <<- TRUE
-            # enabled(infBtn) <<- TRUE
+            enabled(infBtn) <<- TRUE
         },
         ## display warning message
         displayMsg = function(module, type) {

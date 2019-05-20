@@ -160,22 +160,23 @@ iNZSurveyDesign <- setRefClass(
                 setOK <- try(GUI$getActiveDoc()$getModel()$createSurveyObject(), TRUE)
 
                 if (!inherits(setOK, "try-error")) {
-                    # if (is.null(strat) & is.null(clus1) &
-                    #     is.null(clus2) & is.null(wts) & is.null(fpc)) {
-                    #     ## ENABLE A WHOLE LOT OF STUFF
-                    #     # enabled(GUI$menubar$menu_list[["Dataset"]][[3]]) <<- TRUE
-                    #     # enabled(GUI$menubar$menu_list[["Variables"]][["Numeric Variables"]][[2]]) <<- TRUE
-                    #     # enabled(GUI$menubar$menu_list[["Plot"]][[3]]) <<- TRUE
-                    #     #enabled(GUI$sumBtn) <<- TRUE
-                    #     # enabled(GUI$infBtn) <<- TRUE
-                    # } else {
-                    #     ## DISABLE A WHOLE LOT OF STUFF
-                    #     # enabled(GUI$menubar$menu_list[["Dataset"]][[3]]) <<- FALSE
-                    #     # enabled(GUI$menubar$menu_list[["Variables"]][["Numeric Variables"]][[2]]) <<- FALSE
-                    #     # enabled(GUI$menubar$menu_list[["Plot"]][[3]]) <<- FALSE
-                    #     ##enabled(GUI$sumBtn) <<- FALSE
-                    #     ##enabled(GUI$infBtn) <<- FALSE
-                    # }
+                    if (!freq && is.null(strat) && is.null(clus1) &&
+                        is.null(clus2) && is.null(wts) && is.null(fpc) &&
+                        !freq) {
+                        ## ENABLE A WHOLE LOT OF STUFF
+                        # enabled(GUI$menubar$menu_list[["Dataset"]][[3]]) <<- TRUE
+                        # enabled(GUI$menubar$menu_list[["Variables"]][["Numeric Variables"]][[2]]) <<- TRUE
+                        # enabled(GUI$menubar$menu_list[["Plot"]][[3]]) <<- TRUE
+                        #enabled(GUI$sumBtn) <<- TRUE
+                        enabled(GUI$infBtn) <<- TRUE
+                    } else {
+                        ## DISABLE A WHOLE LOT OF STUFF
+                        # enabled(GUI$menubar$menu_list[["Dataset"]][[3]]) <<- FALSE
+                        # enabled(GUI$menubar$menu_list[["Variables"]][["Numeric Variables"]][[2]]) <<- FALSE
+                        # enabled(GUI$menubar$menu_list[["Plot"]][[3]]) <<- FALSE
+                        ##enabled(GUI$sumBtn) <<- FALSE
+                        enabled(GUI$infBtn) <<- FALSE
+                    }
 
                     dispose(designWin)
 
