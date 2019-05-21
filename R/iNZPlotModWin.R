@@ -1569,7 +1569,7 @@ iNZPlotMod <- setRefClass(
                                   timer <<- gtimer(500, function(...) updateEverything(), one.shot = TRUE)
                               })
 
-            if (!PLOTTYPE %in% c("bar", "gg_pie", "gg_donut", "gg_bar", "gg_column", "gg_stackedcolumn", "gg_stackedbar")) {
+            if (!PLOTTYPE %in% c("bar", "gg_pie", "gg_donut", "gg_bar", "gg_column", "gg_stackedcolumn", "gg_stackedbar", "gg_violin", "gg_barcode")) {
                 addHandlerChanged(cexPt,
                                   handler = function(h, ...) {
                                       if (!is.null(timer))
@@ -2139,6 +2139,8 @@ iNZPlotMod <- setRefClass(
                     })
                     ii <- ii + 1
                 }
+            } else if (grepl("^gg_", PLOTTYPE)) {
+              
             } else {
                 ## Axis Limits
                 tbl[ii,  1:2, anchor = c(-1,-1), expand = TRUE] <- sectionTitle("Axis Limits")
@@ -2252,6 +2254,8 @@ iNZPlotMod <- setRefClass(
                             else
                                 c(svalue(START, index = TRUE), svalue(NBARS))
                     }
+                } else if (grepl("^gg_", PLOTTYPE)) {
+                  
                 } else {
                     err <- FALSE
                     xl <- suppressWarnings(as.numeric(svalue(xlower)))
@@ -2337,6 +2341,8 @@ iNZPlotMod <- setRefClass(
                     addHandlerChanged(NBARS, function(h, ...) updateEverything())
                     addHandlerChanged(START, function(h, ...) updateEverything())
                 }
+            } else if (grep("^gg_", PLOTTYPE)) {
+              
             } else {
                 addHandlerKeystroke(xlower, updT)
                 addHandlerKeystroke(xupper, updT)
