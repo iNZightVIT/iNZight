@@ -12,12 +12,23 @@ data1 = data.frame("Country" = c("Afghanistan", "Afghanistan", "Afghanistan", "A
                "Count" = c(745,19987071,2666,20595360,37737,172006362,80488,174504898,212258,1272915272,213766,1280428583))
 data = tidyr::unite(data.frame("Country" = c("A", "B", "C"), "v1999" = c("0.7K", "37K", ""), "v2000" = c("2K", "80K", "213K")), col = "newcol", sep = "_", remove = FALSE) 
 
-data = data.frame("B" = c("hi", "hello", "bye"), "A" = c("A-0.7K-2K/D-0.2K-3K", "B_37K", "C"))
+data = data.frame("B" = c("hi", "hello", "bye"), "A" = c("ada.s-d\\dsd^fd_sf", "B_37K", "C"))
+
+data = data.frame("B" = c("hi", "hello", "bye"), "A" = c("AA_3", "B.37K", "C"))
+
+
 
 try(dispose(kk$win), TRUE)
 load_all("~/iNZight")
 kk = iNZGUI$new()
 kk$initializeGui(data)
+
+
+
+varx <- data$A
+grepl(sep, varx, fixed = TRUE)
+sep %in% varx
+stringr::str_detect(varx, sep)
 
 
 ## Do append column function P.S. two datasets must have the same number of rows
