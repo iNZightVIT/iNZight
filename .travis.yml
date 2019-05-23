@@ -8,6 +8,8 @@ cache:
     - $HOME/Library/Caches/Homebrew
 latex: false
 pandoc: false
+services:
+  - xvfb
 
 matrix:
   include:
@@ -55,10 +57,10 @@ before_install:
       brew install --with-x11 cairo;
       brew install --with-gdktarget=x11 --enable-x11-backend gtk+;
       echo "export PKG_CONFIG_PATH=/usr/local/lib/pkgconfig:/usr/local/lib/pkgconfig/gtk+-2.0.pc:/opt/X11/lib/pkgconfig" >> ~/.bash_profile;
-    else
-      export DISPLAY=:99.0;
-      sh -e /etc/init.d/xvfb start;
-      sleep 10;
+#    else
+#      export DISPLAY=:99.0;
+#      sh -e /etc/init.d/xvfb start;
+#      sleep 10;
     fi
 
 after_success:
