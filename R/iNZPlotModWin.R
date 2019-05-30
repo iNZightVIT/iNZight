@@ -975,14 +975,22 @@ iNZPlotMod <- setRefClass(
                                     list(scatter = "scatter",
                                          hex     = "hexagonal binning",
                                          grid    = "grid-density"),
+                                "gg_boxplot" = ,
+                                "gg_column2" = ,
+                                "gg_cumcurve" = ,
                                 "gg_violin" = ,
                                 "gg_barcode" = ,
+                                "gg_lollipop" = ,
                                 "dot" = ,
                                 "hist" =
                                     list(dot  = "dot plot",
                                          hist = "histogram",
                                          gg_violin = "violin",
-                                         gg_barcode = "barcode"),
+                                         gg_barcode = "barcode",
+                                         gg_boxplot = "boxplot",
+                                         gg_column2 = "column",
+                                         gg_lollipop = "lollipop",
+                                         gg_cumcurve = "cumulative curve"),
                                 "gg_stackedbar" = ,
                                 "gg_stackedcolumn" = ,
                                 "gg_column" = ,
@@ -1388,6 +1396,27 @@ iNZPlotMod <- setRefClass(
                 tbl[ii, 5:6, anchor = c(-1, 0)] <- fillSym
                 ii <- ii + 1
             }
+            
+            if (grepl("^gg_", PLOTTYPE)) {
+              tbl[ii, 1:2, anchor = c(1, 0), expand = TRUE] <- glabel("Rotation:")
+              rotateCheck <- gcheckbox("Rotate", handler = function(h, ...) updateEverything())
+              tbl[ii, 3:6, expand = TRUE] <- rotateCheck
+              
+              ii <- ii + 1
+            }
+            
+            if (PLOTTYPE %in% c("gg_lollipop", "gg_column2")) {
+              tbl[ii, 1:2, anchor = c(1, 0), expand = TRUE] <- glabel("Label by:")
+              labelVar <- gcombobox(c("", colnames(GUI$getActiveData())))
+              tbl[ii, 3:6, expand = TRUE] <- labelVar
+              
+              ii <- ii + 1
+              
+              tbl[ii, 1:2, anchor = c(1, 0), expand = TRUE] <- glabel("Sorting:")
+              sortOrder <- gradio(c("Ascending", "Descending"))
+              tbl[ii, 3:6, expand = TRUE] <- sortOrder
+              ii <- ii + 1
+            }
 
             updateEverything <<- function(update = auto) {
                 ## To easily diable automatic updating of plot, add this argument,
@@ -1547,6 +1576,10 @@ iNZPlotMod <- setRefClass(
                     newSet$fill.pt <- ifelse(svalue(fillSym), "fill", "transparent")
                     newSet$lwd.pt <- svalue(symLwd)
                 }
+                
+                if (grepl("^gg_", PLOTTYPE)) {
+                  newSet$rotation <- svalue(rotateCheck)
+                }
 
                 GUI$getActiveDoc()$setSettings(newSet)
                 updateSettings()
@@ -1569,7 +1602,7 @@ iNZPlotMod <- setRefClass(
                                   timer <<- gtimer(500, function(...) updateEverything(), one.shot = TRUE)
                               })
 
-            if (!PLOTTYPE %in% c("bar", "gg_pie", "gg_donut", "gg_bar", "gg_column", "gg_stackedcolumn", "gg_stackedbar", "gg_violin", "gg_barcode")) {
+            if (!PLOTTYPE %in% c("bar", "gg_pie", "gg_donut", "gg_bar", "gg_column", "gg_stackedcolumn", "gg_stackedbar", "gg_violin", "gg_barcode", "gg_cumcurve", "gg_boxplot", "gg_column2", "gg_lollipop")) {
                 addHandlerChanged(cexPt,
                                   handler = function(h, ...) {
                                       if (!is.null(timer))
