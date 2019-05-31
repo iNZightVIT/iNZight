@@ -53,6 +53,8 @@ before_install:
       sudo chown -R $(whoami) /usr/local/share;
       curl -L http://mac.r-project.org/libs/GTK_2.24.17-X11.pkg -o gtk.pkg;
       sudo installer -pkg gtk.pkg -target / -allowUntrusted;
+      rm gtk.pkg;
+      mkdir ~/Documents/iNZightVIT;
     fi
 
 after_success:
