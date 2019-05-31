@@ -79,7 +79,7 @@ ui <- iNZGUI$new()
 ui$initializeGui(cas2)
 on.exit(gWidgets2::dispose(ui$win))
 
-test_that("Frequency column specification is passed as survey weights", {
+test_that("Frequency column specification is passed to settings", {
     expect_silent(swin <- iNZSurveyDesign$new(ui, freq = TRUE, warn = FALSE))
 
     expect_equal(svalue(swin$freqVar), character(0))
@@ -88,15 +88,11 @@ test_that("Frequency column specification is passed as survey weights", {
 
     expect_silent(swin$createBtn$invoke_change_handler())
     expect_equal(
-        ui$iNZDocuments[[ui$activeDoc]]$getModel()$getDesign(),
-        list(
-            strata = NULL,
-            clus1 = NULL,
-            clus2 = NULL,
-            wt = NULL,
-            fpc = NULL,
-            nest = NULL,
-            freq = "frequency"
-        )
+        ui$iNZDocuments[[ui$activeDoc]]$getSettings()$freq,
+        cas2$frequency
     )
+})
+
+test_that("Frequencies retained after filtering", {
+    ## I suspsect it will be broken because of the way things work ... 
 })

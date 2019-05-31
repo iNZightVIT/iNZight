@@ -134,30 +134,33 @@ iNZSurveyDesign <- setRefClass(
                 if (freq) {
                     freqv <- svalue(freqVar, index = FALSE)
                     if (freqv == "") freqv <- NULL
-                    GUI$getActiveDoc()$getModel()$setDesign(
+                    GUI$getActiveDoc()$getModel()$setFrequencies(
                         freq = freqv, gui = GUI
                     )
-                } else {
-                    strat <- svalue(stratVar, index = FALSE)
-                    clus1 <- svalue(clus1Var, index = FALSE)
-                    clus2 <- svalue(clus2Var, index = FALSE)
-                    wts <- svalue(wtVar, index = FALSE)
-                    fpc <- svalue(fpcVar, index = FALSE)
-                    nest <- as.logical(svalue(nestChk))
+                    dispose(designWin)
+                    return()
+                } 
 
-                    if (strat == "") strat <- NULL
-                    if (clus1 == "") clus1 <- NULL
-                    if (clus2 == "") clus2 <- NULL
-                    if (wts == "") wts <- NULL
-                    if (fpc == "") fpc <- NULL
+                strat <- svalue(stratVar, index = FALSE)
+                clus1 <- svalue(clus1Var, index = FALSE)
+                clus2 <- svalue(clus2Var, index = FALSE)
+                wts <- svalue(wtVar, index = FALSE)
+                fpc <- svalue(fpcVar, index = FALSE)
+                nest <- as.logical(svalue(nestChk))
 
-                    GUI$getActiveDoc()$getModel()$setDesign(
-                        strat, clus1, clus2, wts, nest, fpc, gui = GUI
-                    )
-                }
+                if (strat == "") strat <- NULL
+                if (clus1 == "") clus1 <- NULL
+                if (clus2 == "") clus2 <- NULL
+                if (wts == "") wts <- NULL
+                if (fpc == "") fpc <- NULL
 
-
-                setOK <- try(GUI$getActiveDoc()$getModel()$createSurveyObject(), TRUE)
+                GUI$getActiveDoc()$getModel()$setDesign(
+                    strat, clus1, clus2, wts, nest, fpc, gui = GUI
+                )
+                setOK <- try(
+                    GUI$getActiveDoc()$getModel()$createSurveyObject(), 
+                    TRUE
+                )
 
                 if (!inherits(setOK, "try-error")) {
                     if (!freq && is.null(strat) && is.null(clus1) &&
