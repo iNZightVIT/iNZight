@@ -1,5 +1,6 @@
 # R for travis: see documentation at https://docs.travis-ci.com/user/languages/r
 
+dist: xenial
 language: R
 sudo: true
 cache:
@@ -19,11 +20,14 @@ matrix:
       r: release
     - os: linux
       r: devel
-#    - os: osx
-#      r: 3.3
-#      brew_packages: libgit2
-#  allow_failures:
-#    - os: osx
+    - os: osx
+      r: oldrel
+      brew_packages: libgit2
+    - os: osx
+      r: release
+      brew_packages: libgit2
+  allow_failures:
+    - os: osx
 
 env:
   global:
@@ -33,9 +37,8 @@ env:
 repos:
   docker: https://r.docker.stat.auckland.ac.nz
 
-#r_github_packages:
-#  - iNZightVIT/iNZightTools@dev
-#  - iNZightVIT/iNZightPlots@dev
+r_github_packages: 
+  - jverzani/gWidgets2RGtk2
 
 addons:
   apt:
@@ -52,11 +55,10 @@ addons:
 before_install:
   - if [ "$TRAVIS_OS_NAME" == "osx" ]; then
       sudo chown -R $(whoami) /usr/local/share;
-      brew uninstall --force cairo --ignore-dependencies;
-      brew cask install xquartz;
-      brew install --with-x11 cairo;
-      brew install --with-gdktarget=x11 --enable-x11-backend gtk+;
-      echo "export PKG_CONFIG_PATH=/usr/local/lib/pkgconfig:/usr/local/lib/pkgconfig/gtk+-2.0.pc:/opt/X11/lib/pkgconfig" >> ~/.bash_profile;
+      curl -L http://mac.r-project.org/libs/GTK_2.24.17-X11.pkg -o gtk.pkg;
+      sudo installer -pkg gtk.pkg -target / -allowUntrusted;
+      rm gtk.pkg;
+      mkdir ~/Documents/iNZightVIT;
     fi
 
 after_success:
