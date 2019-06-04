@@ -113,7 +113,7 @@ scd$ESAcat <- as.factor(scd$ESA)
 scd$ambulancecat <- as.factor(scd$ambulance)
 scd <- cbind(scd, repweights)
 
-load_all()
+# load_all()
 ui <- iNZGUI$new()
 ui$initializeGui(scd)
 test_that("Replicate weights can be specified", {
@@ -146,3 +146,5 @@ test_that("Replicate weights can be specified", {
         )
     )
 })
+
+ui$close()
