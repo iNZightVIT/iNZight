@@ -27,7 +27,7 @@ iNZSurveyDesign <- setRefClass(
                 return()
             }
 
-            if (warn) {
+            if (!freq && warn) {
                 gmessage(
                     paste(
 "The Survey functionality is still under development.",
@@ -139,7 +139,7 @@ iNZSurveyDesign <- setRefClass(
                     )
                     dispose(designWin)
                     return()
-                } 
+                }
 
                 strat <- svalue(stratVar, index = FALSE)
                 clus1 <- svalue(clus1Var, index = FALSE)
@@ -158,7 +158,7 @@ iNZSurveyDesign <- setRefClass(
                     strat, clus1, clus2, wts, nest, fpc, gui = GUI
                 )
                 setOK <- try(
-                    GUI$getActiveDoc()$getModel()$createSurveyObject(), 
+                    GUI$getActiveDoc()$getModel()$createSurveyObject(),
                     TRUE
                 )
 
