@@ -971,7 +971,7 @@ iNZGUI <- setRefClass(
                     curPlSet$design <- curMod$createSurveyObject()
                 }
                 
-                curPlSet$data.name <- dataNameWidget$datName
+                curPlSet$data_name <- dataNameWidget$datName
 
                 ## Suppress the warnings produced by iNZightPlot ...
                 suppressWarnings({
