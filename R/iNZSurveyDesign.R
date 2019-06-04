@@ -185,7 +185,7 @@ iNZSurveyDesign <- setRefClass(
                 if (!inherits(setOK, "try-error")) {
                     if (!freq && is.null(strat) && is.null(clus1) &&
                         is.null(clus2) && is.null(wts) && is.null(fpc) &&
-                        is.null(repweights) &&
+                        is.null(repWts) &&
                         !freq) {
                         ## ENABLE A WHOLE LOT OF STUFF
                         # enabled(GUI$menubar$menu_list[["Dataset"]][[3]]) <<- TRUE

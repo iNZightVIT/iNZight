@@ -147,4 +147,3 @@ test_that("Replicate weights can be specified", {
     )
 })
 
-ui$close()
