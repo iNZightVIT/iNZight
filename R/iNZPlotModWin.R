@@ -7,6 +7,76 @@
 ## which is the same since the two are linked together)
 ## --------------------------------------------
 
+plot_list <- function(plot_type, x, y) {
+  
+  print(head(x))
+  
+  print(head(y))
+  
+  if (plot_type %in% c(
+    "scatter", 
+    "hex", 
+    "grid"
+  )) {
+    return_list <- list(
+      scatter = "scatter",
+      hex = "hexagonal binning",
+      grid = "grid-density"
+    )
+  } else if (plot_type %in% c(
+    "dot", 
+    "hist", 
+    "gg_boxplot", 
+    "gg_column2", 
+    "gg_cumcurve", 
+    "gg_violin", 
+    "gg_barcode", 
+    "gg_lollipop", 
+    "gg_poppyramid"
+  )) {
+    return_list <- list(
+      dot  = "dot plot",
+      hist = "histogram",
+      gg_violin = "violin",
+      gg_barcode = "barcode",
+      gg_boxplot = "boxplot",
+      gg_cumcurve = "cumulative curve"
+    )
+    
+    if (is.null(y)) {
+      return_list <- append(return_list, list(gg_column2 = "column",gg_lollipop = "lollipop"))
+    }
+    
+    if ((!is.numeric(y) && nlevels(y) == 2) || (!is.numeric(x) && nlevels(x) == 2)) {
+      return_list <- append(return_list, list(gg_poppyramid = "population pyramid"))
+    }
+  } else if (plot_type %in% c(
+    "gg_stackedbar", 
+    "gg_stackedcolumn", 
+    "gg_column", 
+    "gg_bar", 
+    "gg_pie", 
+    "gg_donut", 
+    "gg_freqpolygon",
+    "gg_heatmap",
+    "bar"
+  )) {
+    return_list <- list(
+      bar = "barplot", 
+      gg_column = "column",
+      gg_stackedcolumn = "stacked column"
+    )
+    
+    if (is.null(y)) {
+      return_list <- append(return_list, list(gg_pie = "pie",gg_donut = "donut"), 1)
+    } else {
+      return_list <- append(return_list, list(gg_freqpolygon = "frequency polygons", gg_heatmap = "heatmap"))
+    }
+  }
+  
+  return_list
+}
+
 iNZPlotModWin <- setRefClass(
     "iNZPlotModWin",
     fields = list(
@@ -968,45 +1038,12 @@ iNZPlotMod <- setRefClass(
             ## PLOT TYPE
             lbl <- glabel("Plot type :")
             
-            PLOTTYPES <- switch(TYPE,
-                                "scatter" = ,
-                                "hex" = ,
-                                "grid" =
-                                    list(scatter = "scatter",
-                                         hex     = "hexagonal binning",
-                                         grid    = "grid-density"),
-                                "gg_boxplot" = ,
-                                "gg_column2" = ,
-                                "gg_cumcurve" = ,
-                                "gg_violin" = ,
-                                "gg_barcode" = ,
-                                "gg_lollipop" = ,
-                                "dot" = ,
-                                "hist" =
-                                    list(dot  = "dot plot",
-                                         hist = "histogram",
-                                         gg_violin = "violin",
-                                         gg_barcode = "barcode",
-                                         gg_boxplot = "boxplot",
-                                         gg_column2 = "column",
-                                         gg_lollipop = "lollipop",
-                                         gg_cumcurve = "cumulative curve"),
-                                "gg_stackedbar" = ,
-                                "gg_stackedcolumn" = ,
-                                "gg_column" = ,
-                                "gg_bar" = ,
-                                "gg_pie" = , 
-                                "gg_donut" = ,
-                                "bar" = ,
-                                  list(bar = "barplot", 
-                                       gg_pie = "pie", 
-                                       gg_donut = "donut", 
-                                       gg_bar = "barplot (ggplot)", 
-                                       gg_column = "column",
-                                       gg_stackedcolumn = "stacked column",
-                                       gg_stackedbar = "stacked bar")
-                                )  ## in future + mozaic
-
+            print(attr(GUI$curPlot, "vartypes"))
+            varnames <- unlist(attr(GUI$curPlot, "varnames"))
+            print(varnames)
+            PLOTTYPES <- plot_list(TYPE, GUI$getActiveData()[[varnames["x"]]], GUI$getActiveData()[[varnames["y"]]])
+            print("plottypes:")
+            print(PLOTTYPES)
             # if (PLOTTYPE != "bar") {
               plotTypes <- do.call(c, PLOTTYPES)
               plotTypeValues <- names(PLOTTYPES)
@@ -1308,6 +1345,20 @@ iNZPlotMod <- setRefClass(
                     ii <- ii + 1
                 }
             }
+            
+            if (grepl("^gg_", PLOTTYPE)) {
+              lbl <- glabel("Colour palette :")
+              palette_options <- c("default", "viridis", "magma", "plasma", "inferno", "BrBG", "PiYG", "PRGn",
+                                   "Accent", "Dark2", "Paired", "Pastel1", "Set1",
+                                   "Blues", "BuGn", "BuPu", "GnBu")
+              paletteCombobox <- gcombobox(palette_options, 
+                                           selected = ifelse(!is.null(curSet$palette), which(palette_options == curSet$palette), 1))
+              
+              addHandlerChanged(paletteCombobox, function(h, ...) updateEverything())
+              
+              tbl[ii, 1:2, anchor = c(1, 0), expand = TRUE] <- lbl
+              tbl[ii, 3:6, expand = TRUE] <- paletteCombobox
+            }
 
             if (PLOTTYPE %in% c("scatter", "dot")) {
                 lbl <- glabel("Transparency :")
@@ -1397,7 +1448,7 @@ iNZPlotMod <- setRefClass(
                 ii <- ii + 1
             }
             
-            if (grepl("^gg_", PLOTTYPE)) {
+            if (grepl("^gg_", PLOTTYPE) && !(PLOTTYPE %in% c("gg_pie", "gg_donut", "gg_freqpolygon"))) {
               tbl[ii, 1:2, anchor = c(1, 0), expand = TRUE] <- glabel("Rotation:")
               rotateCheck <- gcheckbox("Rotate", handler = function(h, ...) updateEverything())
               tbl[ii, 3:6, expand = TRUE] <- rotateCheck
@@ -1578,7 +1629,10 @@ iNZPlotMod <- setRefClass(
                 }
                 
                 if (grepl("^gg_", PLOTTYPE)) {
-                  newSet$rotation <- svalue(rotateCheck)
+                  if (!(PLOTTYPE %in% c("gg_pie", "gg_donut", "gg_freqpolygon"))) {
+                    newSet$rotation <- svalue(rotateCheck)
+                  }
+                  newSet$palette <- svalue(paletteCombobox)
                 }
 
                 GUI$getActiveDoc()$setSettings(newSet)
@@ -1602,7 +1656,7 @@ iNZPlotMod <- setRefClass(
                                   timer <<- gtimer(500, function(...) updateEverything(), one.shot = TRUE)
                               })
 
-            if (!PLOTTYPE %in% c("bar", "gg_pie", "gg_donut", "gg_bar", "gg_column", "gg_stackedcolumn", "gg_stackedbar", "gg_violin", "gg_barcode", "gg_cumcurve", "gg_boxplot", "gg_column2", "gg_lollipop")) {
+            if (!PLOTTYPE %in% c("bar", "gg_pie", "gg_donut", "gg_bar", "gg_column", "gg_stackedcolumn", "gg_stackedbar", "gg_violin", "gg_barcode", "gg_cumcurve", "gg_boxplot", "gg_column2", "gg_lollipop", "gg_poppyramid", "gg_freqpolygon", "gg_heatmap")) {
                 addHandlerChanged(cexPt,
                                   handler = function(h, ...) {
                                       if (!is.null(timer))
