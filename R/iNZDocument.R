@@ -76,6 +76,7 @@ iNZDataModel <- setRefClass(
         },
         setDesign = function(strata = NULL, clus1 = NULL, clus2 = NULL,
                              wt = NULL, nest = NULL, fpc = NULL,
+                             repweights = NULL,
                              freq = NULL,
                              gui, ...) {
             if (!is.null(freq)) {
@@ -87,10 +88,11 @@ iNZDataModel <- setRefClass(
                         wt     = NULL,
                         fpc    = NULL,
                         nest   = NULL,
+                        repweights = NULL,
                         freq   = freq
                     )
             } else if (is.null(strata) & is.null(clus1) & is.null(clus2) &
-                is.null(wt) & is.null(nest) & is.null(fpc)) {
+                is.null(wt) & is.null(nest) & is.null(fpc) & is.null(repweights)) {
                 dataDesign <<- NULL
             } else {
                 dataDesign <<-
@@ -101,6 +103,7 @@ iNZDataModel <- setRefClass(
                         wt     = wt,
                         fpc    = fpc,
                         nest   = nest,
+                        repweights = repweights,
                         freq   = NULL
                     )
             }
@@ -129,6 +132,8 @@ iNZDataModel <- setRefClass(
                 else if (is.null(des$freq)) paste("~", des$wt)
                 else paste("~", des$freq)
             fpcs <- if (is.null(des$fpc)) "NULL" else paste("~", des$fpc)
+            repweights <- if(is.null(des$repweights)) "NULL"
+                else paste("~", paste(des$repweights, collapse = " + "))
 
             obj <-
                 parse(text =
@@ -140,6 +145,8 @@ iNZDataModel <- setRefClass(
                             sprintf("weights = %s, ", weights),
                         if (!is.null(des$fpc)) sprintf("fpc = %s, ", fpcs),
                         if (!is.null(des$nest) && des$nest) "nest = TRUE, ",
+                        if (!is.null(des$repweights))
+                            sprintf("repweights = %s, ", repweights),
                         "data = dataSet)"
                     )
                 )

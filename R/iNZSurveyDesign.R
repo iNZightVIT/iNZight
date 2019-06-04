@@ -10,6 +10,8 @@ iNZSurveyDesign <- setRefClass(
         nestChk = "ANY",
         wtVar = "ANY",
         fpcVar = "ANY",
+        useRep = "ANY",
+        repVars = "ANY",
         createBtn = "ANY",
         cancelBtn = "ANY"
     ),
@@ -110,6 +112,21 @@ iNZSurveyDesign <- setRefClass(
                 tbl[ii, 1, expand = TRUE, fill = FALSE, anchor= c(1, 0)] <- lbl
                 fpcVar <<- gcombobox(vars, editable = TRUE)
                 tbl[ii, 2, expand = TRUE] <- fpcVar
+
+                ii <- ii + 2
+                useRep <<- gcheckbox("Specify replicate weights")
+                tbl[ii, 1:2, expand = TRUE] <- useRep
+
+                ii <- ii + 1
+                repVars <<- gtable(vars, multiple = TRUE)
+                size(repVars) <<- c(-1, 120)
+                tbl[ii, 1:2, expand = TRUE] <- repVars
+                enabled(repVars) <<- FALSE
+
+                addHandlerChanged(useRep, function(h, ...) {
+                    enabled(repVars) <<- svalue(useRep)
+                })
+
             }
 
             addSpring(gg)
@@ -147,15 +164,18 @@ iNZSurveyDesign <- setRefClass(
                 wts <- svalue(wtVar, index = FALSE)
                 fpc <- svalue(fpcVar, index = FALSE)
                 nest <- as.logical(svalue(nestChk))
+                repWts <- ""
+                if (svalue(useRep)) repWts <- svalue(repVars, index = FALSE)
 
                 if (strat == "") strat <- NULL
                 if (clus1 == "") clus1 <- NULL
                 if (clus2 == "") clus2 <- NULL
                 if (wts == "") wts <- NULL
                 if (fpc == "") fpc <- NULL
+                if (length(repWts) == 0 || repWts == "") repWts <- NULL
 
                 GUI$getActiveDoc()$getModel()$setDesign(
-                    strat, clus1, clus2, wts, nest, fpc, gui = GUI
+                    strat, clus1, clus2, wts, nest, fpc, repWts, gui = GUI
                 )
                 setOK <- try(
                     GUI$getActiveDoc()$getModel()$createSurveyObject(),
@@ -165,6 +185,7 @@ iNZSurveyDesign <- setRefClass(
                 if (!inherits(setOK, "try-error")) {
                     if (!freq && is.null(strat) && is.null(clus1) &&
                         is.null(clus2) && is.null(wts) && is.null(fpc) &&
+                        is.null(repweights) &&
                         !freq) {
                         ## ENABLE A WHOLE LOT OF STUFF
                         # enabled(GUI$menubar$menu_list[["Dataset"]][[3]]) <<- TRUE
@@ -222,6 +243,10 @@ iNZSurveyDesign <- setRefClass(
                         svalue(wtVar) <<- curDes$wt
                     if (!is.null(curDes$fpc))
                         svalue(fpcVar) <<- curDes$fpc
+                    if (!is.null(curDes$repweights)) {
+                        svalue(useRep) <<- TRUE
+                        svalue(repVars) <<- curDes$repweights
+                    }
                 }
             }
 
