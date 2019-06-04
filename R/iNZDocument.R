@@ -66,6 +66,14 @@ iNZDataModel <- setRefClass(
         addObjObserver = function(FUN, ...) {
             .self$changed$connect(FUN, ...)
         },
+        setFrequencies = function(freq, gui) {
+            if (is.null(freq) || freq == "") {
+                gui$getActiveDoc()$setSettings(list(freq = NULL))
+            }
+            gui$getActiveDoc()$setSettings(list(
+                freq = gui$getActiveData()[[freq]]
+            ))
+        },
         setDesign = function(strata = NULL, clus1 = NULL, clus2 = NULL,
                              wt = NULL, nest = NULL, fpc = NULL,
                              freq = NULL,
