@@ -8,11 +8,7 @@
 ## --------------------------------------------
 
 plot_list <- function(plot_type, x, y) {
-  
-  print(head(x))
-  
-  print(head(y))
-  
+
   if (plot_type %in% c(
     "scatter", 
     "hex", 
@@ -1046,12 +1042,9 @@ iNZPlotMod <- setRefClass(
             ## PLOT TYPE
             lbl <- glabel("Plot type :")
             
-            print(attr(GUI$curPlot, "vartypes"))
             varnames <- unlist(attr(GUI$curPlot, "varnames"))
-            print(varnames)
             PLOTTYPES <- plot_list(TYPE, GUI$getActiveData()[[varnames["x"]]], GUI$getActiveData()[[varnames["y"]]])
-            print("plottypes:")
-            print(PLOTTYPES)
+            
             # if (PLOTTYPE != "bar") {
               plotTypes <- do.call(c, PLOTTYPES)
               plotTypeValues <- names(PLOTTYPES)
