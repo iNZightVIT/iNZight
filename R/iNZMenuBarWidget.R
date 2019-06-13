@@ -160,6 +160,13 @@ iNZMenuBarWidget <- setRefClass(
                         icon = "symbol_diamond",
                         handler = function(h, ...)
                             iNZSurveyDesign$new(GUI, freq = TRUE)
+                    ),
+                dropfrequency = 
+                    gaction("Remove frequency column",
+                        icon = "symbol_diamond",
+                        handler = function(h, ...) {
+                            GUI$getActiveDoc()$setSettings(list(freq = NULL))
+                        }
                     )
             )
         },

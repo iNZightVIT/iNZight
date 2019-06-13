@@ -39,6 +39,7 @@ test_that("Survey design can be specified using window", {
             wt = NULL,
             fpc = "fpc1 + fpc2",
             nest = FALSE,
+            repweights = NULL,
             freq = NULL
         )
     )
@@ -79,7 +80,7 @@ ui <- iNZGUI$new()
 ui$initializeGui(cas2)
 on.exit(gWidgets2::dispose(ui$win))
 
-test_that("Frequency column specification is passed as survey weights", {
+test_that("Frequency column specification is passed to settings", {
     expect_silent(swin <- iNZSurveyDesign$new(ui, freq = TRUE, warn = FALSE))
 
     expect_equal(svalue(swin$freqVar), character(0))
@@ -88,6 +89,50 @@ test_that("Frequency column specification is passed as survey weights", {
 
     expect_silent(swin$createBtn$invoke_change_handler())
     expect_equal(
+        ui$iNZDocuments[[ui$activeDoc]]$getSettings()$freq,
+        cas2$frequency
+    )
+})
+
+test_that("Frequencies retained after filtering", {
+    ## I suspsect it will be broken because of the way things work ...
+})
+
+ui$close()
+
+
+data(scd, package = "survey")
+repweights <- 2 *
+    data.frame(
+        weights.1 = c(1,0,1,0,1,0),
+        weights.2 = c(1,0,0,1,0,1),
+        weights.3 = c(0,1,1,0,0,1),
+        weights.4 = c(0,1,0,1,1,0)
+    )
+scd$ESAcat <- as.factor(scd$ESA)
+scd$ambulancecat <- as.factor(scd$ambulance)
+scd <- cbind(scd, repweights)
+
+# devtools::load_all()
+ui <- iNZGUI$new()
+ui$initializeGui(scd)
+test_that("Replicate weights can be specified", {
+    expect_silent(swin <- iNZSurveyDesign$new(ui, warn = FALSE))
+
+    # check rep weights box
+    expect_false(svalue(swin$useRep))
+    expect_false(visible(swin$repG))
+    expect_silent(svalue(swin$useRep) <- TRUE)
+    expect_true(visible(swin$repG))
+
+    # select variables
+    svalue(swin$repVars) <- paste("weights", 1:4, sep = ".")
+
+    expect_warning(
+        swin$createBtn$invoke_change_handler(),
+        "No weights or probabilities"
+    )
+    expect_equal(
         ui$iNZDocuments[[ui$activeDoc]]$getModel()$getDesign(),
         list(
             strata = NULL,
@@ -95,8 +140,10 @@ test_that("Frequency column specification is passed as survey weights", {
             clus2 = NULL,
             wt = NULL,
             fpc = NULL,
-            nest = NULL,
-            freq = "frequency"
+            nest = FALSE,
+            repweights = paste("weights", 1:4, sep = "."),
+            freq = NULL
         )
     )
 })
+
