@@ -113,7 +113,7 @@ scd$ESAcat <- as.factor(scd$ESA)
 scd$ambulancecat <- as.factor(scd$ambulance)
 scd <- cbind(scd, repweights)
 
-# load_all()
+# devtools::load_all()
 ui <- iNZGUI$new()
 ui$initializeGui(scd)
 test_that("Replicate weights can be specified", {
@@ -121,9 +121,9 @@ test_that("Replicate weights can be specified", {
 
     # check rep weights box
     expect_false(svalue(swin$useRep))
-    expect_false(enabled(swin$repVars))
+    expect_false(visible(swin$repG))
     expect_silent(svalue(swin$useRep) <- TRUE)
-    expect_true(enabled(swin$repVars))
+    expect_true(visible(swin$repG))
 
     # select variables
     svalue(swin$repVars) <- paste("weights", 1:4, sep = ".")

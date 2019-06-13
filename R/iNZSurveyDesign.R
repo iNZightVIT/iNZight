@@ -11,6 +11,7 @@ iNZSurveyDesign <- setRefClass(
         wtVar = "ANY",
         fpcVar = "ANY",
         useRep = "ANY",
+        repG = "ANY",
         repVars = "ANY",
         createBtn = "ANY",
         cancelBtn = "ANY"
@@ -29,19 +30,19 @@ iNZSurveyDesign <- setRefClass(
                 return()
             }
 
-            if (!freq && warn) {
-                gmessage(
-                    paste(
-"The Survey functionality is still under development.",
-"Please use with caution and for experimentation only.",
-"\n\nIf you discover any bugs, let us know by emailing",
-"inzight_support@stat.auckland.ac.nz."
-                    ),
-                    title = "Survey Analysis BETA",
-                    parent = GUI$win,
-                    icon = "warning"
-                )
-            }
+#             if (!freq && warn) {
+#                 gmessage(
+#                     paste(
+# "The Survey functionality is still under development.",
+# "Please use with caution and for experimentation only.",
+# "\n\nIf you discover any bugs, let us know by emailing",
+# "inzight_support@stat.auckland.ac.nz."
+#                     ),
+#                     title = "Survey Analysis BETA",
+#                     parent = GUI$win,
+#                     icon = "warning"
+#                 )
+#             }
 
             if (freq) {
                 designWin <<-
@@ -66,7 +67,7 @@ iNZSurveyDesign <- setRefClass(
                 freqVar <<- gcombobox(vars, selected = 0, container = gg)
             } else {
                 designWin <<-
-                    gwindow("Specify survey design", parent = GUI$win,
+                    gwindow("Survey Design", parent = GUI$win,
                         width = 450, height = 300, visible = FALSE)
                 gg <- gvbox(container = designWin, expand = TRUE)
                 gg$set_borderwidth(5)
@@ -118,13 +119,14 @@ iNZSurveyDesign <- setRefClass(
                 tbl[ii, 1:2, expand = TRUE] <- useRep
 
                 ii <- ii + 1
-                repVars <<- gtable(vars, multiple = TRUE)
+                repG <<- ggroup()
+                repVars <<- gtable(vars, multiple = TRUE, container = repG)
                 size(repVars) <<- c(-1, 120)
-                tbl[ii, 1:2, expand = TRUE] <- repVars
-                enabled(repVars) <<- FALSE
+                tbl[ii, 1:2, expand = TRUE] <- repG
+                visible(repG) <<- FALSE
 
                 addHandlerChanged(useRep, function(h, ...) {
-                    enabled(repVars) <<- svalue(useRep)
+                    visible(repG) <<- svalue(useRep)
                 })
 
             }
