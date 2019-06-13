@@ -174,7 +174,7 @@ iNZSurveyDesign <- setRefClass(
                 if (clus2 == "") clus2 <- NULL
                 if (wts == "") wts <- NULL
                 if (fpc == "") fpc <- NULL
-                if (length(repWts) == 0 || repWts == "") repWts <- NULL
+                if (length(repWts) == 0 || all(repWts == "")) repWts <- NULL
 
                 GUI$getActiveDoc()$getModel()$setDesign(
                     strat, clus1, clus2, wts, nest, fpc, repWts, gui = GUI
