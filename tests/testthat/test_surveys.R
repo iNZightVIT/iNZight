@@ -191,6 +191,7 @@ test_that("Post stratification set by importing additional dataset", {
     )
 
     # read from file
+    print(list.files())
     expect_silent(swin$update_levels(read.csv("poptypes.csv")))
     expect_equal(
         sapply(swin$PSlvls$children[c(4, 6, 8)], svalue),
