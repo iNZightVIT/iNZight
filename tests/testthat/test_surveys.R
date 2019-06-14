@@ -155,6 +155,8 @@ dclus1 <- svydesign(id = ~dnum, weights = ~pw, data = apiclus1, fpc = ~fpc)
 pop.types <- data.frame(stype = c("E", "H", "M"), Freq = c(4421, 755, 1018))
 dclus1p <- postStratify(dclus1, ~stype, pop.types)
 
+
+devtools::load_all()
 ui$close()
 ui <- iNZGUI$new()
 ui$initializeGui(apiclus1)
@@ -176,8 +178,39 @@ test_that("Post stratification set by importing additional dataset", {
     expect_silent(swin <- iNZSurveyPostStrat$new(ui, .use_ui = FALSE))
     expect_silent(svalue(swin$PSvar) <- "stype")
 
-    # now the tbl should have length(levels(style)) + 2 rows
+    expect_equal(
+        swin$lvldf, 
+        data.frame(stype = c("E", "H", "M"), Freq = NA)
+    )
 
+    # now the tbl should have length(levels(style)) + 2 rows
+    expect_equal(
+        dim(swin$PSlvls),
+        c(nrow = 4, ncol = 2)
+    )
+
+    # read from file
+    expect_silent(swin$update_levels(read.csv("poptypes.csv")))
+    expect_equal(
+        sapply(swin$PSlvls$children[c(4, 6, 8)], svalue),
+        as.character(pop.types$Freq)
+    )
+
+    # and trigger the save
+    expect_silent(swin$okBtn$invoke_change_handler())
+    expect_equal(
+        ui$iNZDocuments[[ui$activeDoc]]$getModel()$getDesign(),
+        list(
+            strata = NULL,
+            clus1 = "dnum",
+            wt = "wt",
+            fpc = "fpc",
+            nest = FALSE,
+            repweights = NULL,
+            poststrat = pop.types,
+            freq = NULL
+        )
+    )
 })
 
 test_that("Post stratification set by manually entering values", {

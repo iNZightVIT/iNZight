@@ -262,7 +262,11 @@ iNZSurveyPostStrat <- setRefClass(
     fields = list(
         GUI = "ANY",
         win = "ANY",
-        PSvar = "ANY"
+        mthd = "ANY",
+        PSvar = "ANY",
+        PSlvls = "ANY",
+        lvldf = "data.frame",
+        okBtn = "ANY"
     ),
     methods = list(
         initialize = function(gui, .use_ui = TRUE) {
@@ -282,9 +286,9 @@ iNZSurveyPostStrat <- setRefClass(
             }
 
             win <<- gwindow("Post Stratification", 
-                parent = GUI,
-                width = 450,
-                height = 150,
+                parent = GUI$win,
+                width = 380,
+                height = 350,
                 visible = FALSE
             )
             g <- gvbox(container = win)
@@ -297,16 +301,134 @@ iNZSurveyPostStrat <- setRefClass(
             tbl <- glayout(container = g)
             ii <- 1
 
-            factorvars <- names(GUI$getActiveData())[sapply(GUI$getActiveData(), is_cat)]
+            lbl <- glabel("Method :")
+            mthd <<- gcombobox(c("Post stratification", "Rake (not available yet)"))
+            tbl[ii, 1, expand = TRUE, fill = FALSE, anchor = c(1, 0)] <- lbl
+            tbl[ii, 2, expand = TRUE] <- mthd
+            ii <- ii + 1
+
+            ## also only those with no missing values ...
+            factorvars <- names(GUI$getActiveData())[sapply(
+                GUI$getActiveData(),
+                function(v) 
+                    length(levels(v)) > 0 && sum(is.na(v)) == 0
+            )]
             lbl <- glabel("Choose factor variable :")
             PSvar <<- gcombobox(factorvars, selected = 0)
             tbl[ii, 1, expand = TRUE, fill = FALSE, anchor = c(1, 0)] <- lbl
             tbl[ii, 2, expand = TRUE] <- PSvar
             ii <- ii + 1
 
+            addSpace(g, 5)
+
+            ## choose from file button
+            tbl[ii, 2, expand = TRUE] <- gbutton("Read from file ...",
+                handler = function(h, ...) {
+                    f <- gfile(
+                        type = "open", 
+                        filter = c("csv" = "csv")
+                    )
+                    df <- read.csv(f)
+                    if (all(dim(df) != dim(PSlvls) + c(-1, 0))) {
+                        gmessage("File needs to have 2 columns and one row for each levels of the chosen factor variable.")
+                        return()
+                    }
+                    names(df) <- c(svalue(PSvar), "Freq")
+                    update_levels(df)
+                }
+            )
+            ii <- ii + 1
+
+            lbl <- glabel("File must contain one column of factors levels, and one column of frequencies.")
+            font(lbl) <- list(size = 8)
+            tbl[ii, 1:2, expand = TRUE, fill = FALSE, anchor = c(1, 0)] <- lbl
+            ii <- ii + 1
+
+            ## table to populate with levels of variable
+            gl <- ggroup(container = g)
+            addSpring(gl)
+            PSlvls <<- glayout(container = gl)
+            addSpace(gl, 20)
+
+            addHandlerChanged(PSvar, function(h, ...) update_levels())
+
+            # save/cancel buttons
+            addSpring(g)
+            btnGrp <- ggroup(container = g)
+            addSpring(btnGrp)
+            okBtn <<- gbutton("OK",
+                handler = function(h, ...) {
+                    # call postStratify
+                    set_poststrat_design()
+                    dispose(win)
+                },
+                container = btnGrp
+            )
+            cnclBtn <- gbutton("Cancel", 
+                handler = function(h, ...) {
+                    dispose(win)
+                },
+                container = btnGrp
+            )
+
+
             visible(win) <<- TRUE
 
             invisible(NULL)
+        },
+        update_levels = function(df = NULL) {
+            # remove existing children from PSlvls
+            if (length(PSlvls$children))
+                sapply(PSlvls$children, PSlvls$remove_child)
+            
+            # for each level of PSvar, create a row
+            if (is.null(df)) {
+                lvldf <<- data.frame(
+                    v = levels(GUI$getActiveData()[[svalue(PSvar)]]),
+                    Freq = NA
+                )
+                names(lvldf)[1] <<- svalue(PSvar)
+            } else {
+                lvldf <<- df
+            }
+
+            lbl <- glabel(svalue(PSvar))
+            font(lbl) <- list(weight = "bold")
+            PSlvls[1, 1, expand = TRUE, fill = FALSE, anchor = c(1, 0)] <<- lbl
+            lbl <- glabel("Frequency")
+            font(lbl) <- list(weight = "bold")
+            PSlvls[1, 2, expand = TRUE, fill = FALSE, anchor = c(-1, 0)] <<- lbl
+
+            for (i in seq_along(1:nrow(lvldf))) {
+                PSlvls[i + 1, 1, expand = TRUE, fill = TRUE, anchor = c(1, 0)] <<- 
+                    glabel(lvldf[i, 1])
+                PSlvls[i + 1, 2] <<- gedit(
+                    ifelse(is.na(lvldf[i, 2]), "", lvldf[i, 2]),
+                    width = 20
+                )
+                # change handler for each of these too
+            }
+
+            invisible(NULL)
+        },
+        set_poststrat_design = function() {
+            curDes <- GUI$getActiveDoc()$getModel()$getDesign()
+            GUI$getActiveDoc()$getModel()$setDesign(
+                curDes$strat, curDes$clus1, curDes$clus2, 
+                curDes$wts, curDes$nest, curDes$fpc, 
+                curDes$repWts, 
+                poststrat = lvldf,
+                gui = GUI
+            )
+            setOK <- try(
+                GUI$getActiveDoc()$getModel()$createSurveyObject(),
+                TRUE
+            )
+            if (inherits(setOK, "try-error")) {
+                gmessage("Something went wrong during post stratification ...",
+                    type = "error"
+                )
+            }
         }
     )
 )
