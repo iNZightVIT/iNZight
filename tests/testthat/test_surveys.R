@@ -191,8 +191,9 @@ test_that("Post stratification set by importing additional dataset", {
     )
 
     # read from file
-    print(list.files())
-    expect_silent(swin$update_levels(read.csv("poptypes.csv")))
+    tmp <- tempfile(fileext = ".csv")
+    write.csv(pop.types, file = tmp, quote = FALSE, row.names = FALSE)
+    expect_silent(swin$update_levels(read.csv(tmp)))
     expect_equal(
         sapply(swin$PSlvls$children[c(4, 6, 8)], svalue),
         as.character(pop.types$Freq)
