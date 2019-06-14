@@ -256,3 +256,57 @@ iNZSurveyDesign <- setRefClass(
         }
     )
 )
+
+iNZSurveyPostStrat <- setRefClass(
+    "iNZSurveyPostStrat",
+    fields = list(
+        GUI = "ANY",
+        win = "ANY",
+        PSvar = "ANY"
+    ),
+    methods = list(
+        initialize = function(gui, .use_ui = TRUE) {
+            initFields(GUI = gui)
+
+            curDes <- GUI$getActiveDoc()$getModel()$getDesign()
+            if (is.null(curDes)) {
+                if (.use_ui) {
+                    gmessage("Please specify a survey design first",
+                        title = "No design specified",
+                        icon = "warning"
+                    )
+                } else {
+                    warning("Please specify a survey design first")    
+                }
+                return(invisible(NULL))
+            }
+
+            win <<- gwindow("Post Stratification", 
+                parent = GUI,
+                width = 450,
+                height = 150,
+                visible = FALSE
+            )
+            g <- gvbox(container = win)
+            g$set_borderwidth(5)
+
+            lbl <- glabel("Specify post stratification",
+                container = g)
+            font(lbl) <- list(size = 11, weight = "bold")
+
+            tbl <- glayout(container = g)
+            ii <- 1
+
+            factorvars <- names(GUI$getActiveData())[sapply(GUI$getActiveData(), is_cat)]
+            lbl <- glabel("Choose factor variable :")
+            PSvar <<- gcombobox(factorvars, selected = 0)
+            tbl[ii, 1, expand = TRUE, fill = FALSE, anchor = c(1, 0)] <- lbl
+            tbl[ii, 2, expand = TRUE] <- PSvar
+            ii <- ii + 1
+
+            visible(win) <<- TRUE
+
+            invisible(NULL)
+        }
+    )
+)

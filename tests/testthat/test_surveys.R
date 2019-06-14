@@ -147,3 +147,38 @@ test_that("Replicate weights can be specified", {
     )
 })
 
+
+# devtools::load_all()
+data(api, package = "survey")
+# replicate this:
+dclus1 <- svydesign(id = ~dnum, weights = ~pw, data = apiclus1, fpc = ~fpc)
+pop.types <- data.frame(stype = c("E", "H", "M"), Freq = c(4421, 755, 1018))
+dclus1p <- postStratify(dclus1, ~stype, pop.types)
+
+ui$close()
+ui <- iNZGUI$new()
+ui$initializeGui(apiclus1)
+
+test_that("Survey design must be specified", {
+    expect_warning(
+        swin <- iNZSurveyPostStrat$new(ui, .use_ui = FALSE),
+        "Please specify a survey design first"
+    )
+})
+
+test_that("Post stratification set by importing additional dataset", {
+    expect_silent(swin <- iNZSurveyDesign$new(ui))
+    expect_silent(svalue(swin$clus1Var) <- "dnum")
+    expect_silent(svalue(swin$fpcVar) <- "fpc")
+    expect_silent(svalue(swin$wtVar) <- "pw")
+    expect_silent(swin$createBtn$invoke_change_handler())
+
+    expect_silent(swin <- iNZSurveyPostStrat$new(ui, .use_ui = FALSE))
+    expect_silent(svalue(swin$PSvar) <- "stype")
+    
+
+})
+
+test_that("Post stratification set by manually entering values", {
+
+})

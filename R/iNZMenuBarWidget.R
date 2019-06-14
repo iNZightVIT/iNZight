@@ -141,33 +141,43 @@ iNZMenuBarWidget <- setRefClass(
                             handler = function(h, ...) iNZappendrowWin$new(GUI))
                 ),
                 gseparator(),
-                surveydesign =
-                    gaction("Specify survey design [beta] ...",
-                        icon = "symbol_diamond",
-                        handler = function(h, ...) iNZSurveyDesign$new(GUI)),
-                removedesign =
-                    gaction("Remove design",
-                        icon = "symbol_diamond",
-                        handler = function(h, ...) GUI$removeDesign()),
-                gseparator(),
-                expandtable =
-                    gaction("Expand table",
-                        icon = "symbol_diamond",
-                        handler = function(h, ...) iNZexpandTblWin$new(GUI)
-                    ),
-                setfrequency =
-                    gaction("Specify frequency column",
-                        icon = "symbol_diamond",
-                        handler = function(h, ...)
-                            iNZSurveyDesign$new(GUI, freq = TRUE)
-                    ),
-                dropfrequency = 
-                    gaction("Remove frequency column",
-                        icon = "symbol_diamond",
-                        handler = function(h, ...) {
-                            GUI$getActiveDoc()$setSettings(list(freq = NULL))
-                        }
-                    )
+                "Survey design" = list(
+                    surveydesign =
+                        gaction("Specify survey design ...",
+                            icon = "symbol_diamond",
+                            handler = function(h, ...) iNZSurveyDesign$new(GUI)
+                        ),
+                    poststrat = 
+                        gaction("Post stratify ...",
+                            icon = "symbol_diamond",
+                            handler = function(h, ...) iNZSurveyPostStrat$new(GUI)
+                        ),
+                    removedesign =
+                        gaction("Remove design",
+                            icon = "symbol_diamond",
+                            handler = function(h, ...) GUI$removeDesign()
+                        )
+                ),
+                "Frequency tables" = list(
+                    expandtable =
+                        gaction("Expand table",
+                            icon = "symbol_diamond",
+                            handler = function(h, ...) iNZexpandTblWin$new(GUI)
+                        ),
+                    setfrequency =
+                        gaction("Specify frequency column",
+                            icon = "symbol_diamond",
+                            handler = function(h, ...)
+                                iNZSurveyDesign$new(GUI, freq = TRUE)
+                        ),
+                    dropfrequency = 
+                        gaction("Remove frequency column",
+                            icon = "symbol_diamond",
+                            handler = function(h, ...) {
+                                GUI$getActiveDoc()$setSettings(list(freq = NULL))
+                            }
+                        )
+                )
             )
         },
         VariablesMenu = function() {
