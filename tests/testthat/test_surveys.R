@@ -40,6 +40,7 @@ test_that("Survey design can be specified using window", {
             fpc = "fpc1 + fpc2",
             nest = FALSE,
             repweights = NULL,
+            poststrat = NULL,
             freq = NULL
         )
     )
@@ -142,6 +143,7 @@ test_that("Replicate weights can be specified", {
             fpc = NULL,
             nest = FALSE,
             repweights = paste("weights", 1:4, sep = "."),
+            poststrat = NULL,
             freq = NULL
         )
     )
