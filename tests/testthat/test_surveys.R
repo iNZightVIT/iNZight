@@ -147,6 +147,8 @@ test_that("Replicate weights can be specified", {
     )
 })
 
+ui$close()
+
 
 # devtools::load_all()
 data(api, package = "survey")
@@ -155,9 +157,6 @@ dclus1 <- svydesign(id = ~dnum, weights = ~pw, data = apiclus1, fpc = ~fpc)
 pop.types <- data.frame(stype = c("E", "H", "M"), Freq = c(4421, 755, 1018))
 dclus1p <- postStratify(dclus1, ~stype, pop.types)
 
-
-devtools::load_all()
-ui$close()
 ui <- iNZGUI$new()
 ui$initializeGui(apiclus1)
 
@@ -203,7 +202,8 @@ test_that("Post stratification set by importing additional dataset", {
         list(
             strata = NULL,
             clus1 = "dnum",
-            wt = "wt",
+            clus2 = NULL,
+            wt = "pw",
             fpc = "fpc",
             nest = FALSE,
             repweights = NULL,
@@ -212,6 +212,8 @@ test_that("Post stratification set by importing additional dataset", {
         )
     )
 })
+
+## svytable(~sch.wide, design = dclus1p)
 
 test_that("Post stratification set by manually entering values", {
 

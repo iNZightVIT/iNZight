@@ -415,7 +415,7 @@ iNZSurveyPostStrat <- setRefClass(
             curDes <- GUI$getActiveDoc()$getModel()$getDesign()
             GUI$getActiveDoc()$getModel()$setDesign(
                 curDes$strat, curDes$clus1, curDes$clus2, 
-                curDes$wts, curDes$nest, curDes$fpc, 
+                curDes$wt, curDes$nest, curDes$fpc, 
                 curDes$repWts, 
                 poststrat = lvldf,
                 gui = GUI
