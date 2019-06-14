@@ -77,6 +77,7 @@ iNZDataModel <- setRefClass(
         setDesign = function(strata = NULL, clus1 = NULL, clus2 = NULL,
                              wt = NULL, nest = NULL, fpc = NULL,
                              repweights = NULL,
+                             poststrat = NULL,
                              freq = NULL,
                              gui, ...) {
             if (!is.null(freq)) {
@@ -89,10 +90,12 @@ iNZDataModel <- setRefClass(
                         fpc    = NULL,
                         nest   = NULL,
                         repweights = NULL,
+                        poststrat = NULL,
                         freq   = freq
                     )
             } else if (is.null(strata) & is.null(clus1) & is.null(clus2) &
-                is.null(wt) & is.null(nest) & is.null(fpc) & is.null(repweights)) {
+                is.null(wt) & is.null(nest) & is.null(fpc) & 
+                is.null(repweights) & is.null(poststrat)) {
                 dataDesign <<- NULL
             } else {
                 dataDesign <<-
@@ -104,6 +107,7 @@ iNZDataModel <- setRefClass(
                         fpc    = fpc,
                         nest   = nest,
                         repweights = repweights,
+                        poststrat = poststrat,
                         freq   = NULL
                     )
             }
@@ -150,6 +154,17 @@ iNZDataModel <- setRefClass(
                         "data = dataSet)"
                     )
                 )
+
+            if (!is.null(des$poststrat)) {
+                design_obj <- eval(obj)
+                dfv <- des$poststrat
+                obj <- parse(
+                    text = sprintf(
+                        "survey::postStratify(design_obj, ~%s, dfv)",
+                        names(dfv)[1]
+                    )
+                )
+            }
 
             eval(obj)
         },

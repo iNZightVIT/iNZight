@@ -40,6 +40,7 @@ test_that("Survey design can be specified using window", {
             fpc = "fpc1 + fpc2",
             nest = FALSE,
             repweights = NULL,
+            poststrat = NULL,
             freq = NULL
         )
     )
@@ -142,8 +143,150 @@ test_that("Replicate weights can be specified", {
             fpc = NULL,
             nest = FALSE,
             repweights = paste("weights", 1:4, sep = "."),
+            poststrat = NULL,
             freq = NULL
         )
     )
 })
 
+ui$close()
+
+
+# devtools::load_all()
+data(api, package = "survey")
+# replicate this:
+dclus1 <- svydesign(id = ~dnum, weights = ~pw, data = apiclus1, fpc = ~fpc)
+pop.types <- data.frame(stype = c("E", "H", "M"), Freq = c(4421, 755, 1018))
+dclus1p <- postStratify(dclus1, ~stype, pop.types)
+
+ui <- iNZGUI$new()
+ui$initializeGui(apiclus1)
+
+test_that("Survey design must be specified", {
+    expect_warning(
+        swin <- iNZSurveyPostStrat$new(ui, .use_ui = FALSE),
+        "Please specify a survey design first"
+    )
+})
+
+test_that("Post stratification set by importing additional dataset", {
+    expect_silent(swin <- iNZSurveyDesign$new(ui))
+    expect_silent(svalue(swin$clus1Var) <- "dnum")
+    expect_silent(svalue(swin$fpcVar) <- "fpc")
+    expect_silent(svalue(swin$wtVar) <- "pw")
+    expect_silent(swin$createBtn$invoke_change_handler())
+
+    expect_silent(swin <- iNZSurveyPostStrat$new(ui, .use_ui = FALSE))
+    expect_silent(svalue(swin$PSvar) <- "stype")
+
+    expect_equal(
+        swin$lvldf, 
+        data.frame(stype = c("E", "H", "M"), Freq = NA)
+    )
+
+    # now the tbl should have length(levels(style)) + 2 rows
+    expect_equal(
+        dim(swin$PSlvls),
+        c(nrow = 4, ncol = 2)
+    )
+
+    # read from file
+    tmp <- tempfile(fileext = ".csv")
+    write.csv(pop.types, file = tmp, quote = FALSE, row.names = FALSE)
+    expect_silent(swin$update_levels(read.csv(tmp)))
+    expect_equal(
+        sapply(swin$PSlvls$children[c(4, 6, 8)], svalue),
+        as.character(pop.types$Freq)
+    )
+
+    # and trigger the save
+    expect_silent(swin$okBtn$invoke_change_handler())
+    expect_equal(
+        ui$iNZDocuments[[ui$activeDoc]]$getModel()$getDesign(),
+        list(
+            strata = NULL,
+            clus1 = "dnum",
+            clus2 = NULL,
+            wt = "pw",
+            fpc = "fpc",
+            nest = FALSE,
+            repweights = NULL,
+            poststrat = pop.types,
+            freq = NULL
+        )
+    )
+})
+
+test_that("Post stratification is remembered", {
+    expect_silent(swin <- iNZSurveyPostStrat$new(ui, .use_ui = FALSE))
+    expect_equal(svalue(swin$PSvar), "stype")
+    expect_equal(swin$lvldf, pop.types)
+    expect_silent(swin$cancelBtn$invoke_change_handler())
+})
+
+test_that("Post stratification can be removed", {
+    expect_silent(swin <- iNZSurveyPostStrat$new(ui, .use_ui = FALSE))
+    expect_silent(svalue(swin$PSvar, index = TRUE) <- 1)
+    expect_null(swin$lvldf)
+    expect_silent(swin$okBtn$invoke_change_handler())
+    expect_equal(
+        ui$iNZDocuments[[ui$activeDoc]]$getModel()$getDesign(),
+        list(
+            strata = NULL,
+            clus1 = "dnum",
+            clus2 = NULL,
+            wt = "pw",
+            fpc = "fpc",
+            nest = FALSE,
+            repweights = NULL,
+            poststrat = NULL,
+            freq = NULL
+        )
+    )
+})
+
+test_that("Post stratification set by manually entering values", {
+    expect_silent(swin <- iNZSurveyPostStrat$new(ui, .use_ui = FALSE))
+    expect_silent(svalue(swin$PSvar) <- "stype")
+
+    expect_equal(
+        swin$lvldf, 
+        data.frame(stype = c("E", "H", "M"), Freq = NA)
+    )
+
+    # now the tbl should have length(levels(style)) + 2 rows
+    expect_equal(
+        dim(swin$PSlvls),
+        c(nrow = 4, ncol = 2)
+    )
+
+    # manually enter values
+    j <- which(sapply(swin$PSlvls$children, 
+        function(x) identical(x, swin$PSlvls[2, 2])))
+    svalue(swin$PSlvls$children[[j]]) <- pop.types$Freq[1]
+    j <- which(sapply(swin$PSlvls$children, 
+        function(x) identical(x, swin$PSlvls[3, 2])))
+    svalue(swin$PSlvls$children[[j]]) <- pop.types$Freq[2]
+    j <- which(sapply(swin$PSlvls$children, 
+        function(x) identical(x, swin$PSlvls[4, 2])))
+    svalue(swin$PSlvls$children[[j]]) <- pop.types$Freq[3]
+
+    expect_equal(swin$lvldf, pop.types)
+
+    # and trigger the save
+    expect_silent(swin$okBtn$invoke_change_handler())
+    expect_equal(
+        ui$iNZDocuments[[ui$activeDoc]]$getModel()$getDesign(),
+        list(
+            strata = NULL,
+            clus1 = "dnum",
+            clus2 = NULL,
+            wt = "pw",
+            fpc = "fpc",
+            nest = FALSE,
+            repweights = NULL,
+            poststrat = pop.types,
+            freq = NULL
+        )
+    )
+})
