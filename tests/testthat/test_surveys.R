@@ -175,7 +175,8 @@ test_that("Post stratification set by importing additional dataset", {
 
     expect_silent(swin <- iNZSurveyPostStrat$new(ui, .use_ui = FALSE))
     expect_silent(svalue(swin$PSvar) <- "stype")
-    
+
+    # now the tbl should have length(levels(style)) + 2 rows
 
 })
 
