@@ -265,8 +265,9 @@ iNZSurveyPostStrat <- setRefClass(
         mthd = "ANY",
         PSvar = "ANY",
         PSlvls = "ANY",
-        lvldf = "data.frame",
-        okBtn = "ANY"
+        lvldf = "ANY",
+        okBtn = "ANY",
+        cancelBtn = "ANY"
     ),
     methods = list(
         initialize = function(gui, .use_ui = TRUE) {
@@ -313,8 +314,8 @@ iNZSurveyPostStrat <- setRefClass(
                 function(v) 
                     length(levels(v)) > 0 && sum(is.na(v)) == 0
             )]
-            lbl <- glabel("Choose factor variable :")
-            PSvar <<- gcombobox(factorvars, selected = 0)
+            lbl <- glabel("Post stratification variable :")
+            PSvar <<- gcombobox(c("None", factorvars), selected = 1)
             tbl[ii, 1, expand = TRUE, fill = FALSE, anchor = c(1, 0)] <- lbl
             tbl[ii, 2, expand = TRUE] <- PSvar
             ii <- ii + 1
@@ -364,13 +365,18 @@ iNZSurveyPostStrat <- setRefClass(
                 },
                 container = btnGrp
             )
-            cnclBtn <- gbutton("Cancel", 
+            cancelBtn <<- gbutton("Cancel", 
                 handler = function(h, ...) {
                     dispose(win)
                 },
                 container = btnGrp
             )
 
+            ## populate on load
+            if (!is.null(curDes$poststrat)) {
+                svalue(PSvar) <<- names(curDes$poststrat)[1]
+                update_levels(curDes$poststrat)
+            }
 
             visible(win) <<- TRUE
 
@@ -381,6 +387,11 @@ iNZSurveyPostStrat <- setRefClass(
             if (length(PSlvls$children))
                 sapply(PSlvls$children, PSlvls$remove_child)
             
+            if (svalue(PSvar, index = TRUE) == 1) {
+                lvldf <<- NULL
+                return()
+            }
+
             # for each level of PSvar, create a row
             if (is.null(df)) {
                 lvldf <<- data.frame(
@@ -399,17 +410,25 @@ iNZSurveyPostStrat <- setRefClass(
             font(lbl) <- list(weight = "bold")
             PSlvls[1, 2, expand = TRUE, fill = FALSE, anchor = c(-1, 0)] <<- lbl
 
+            set_freq_val <- function(h, ...) {
+                j <- which(sapply(PSlvls[, 2], 
+                    function(z) identical(z, h$obj)
+                ))
+                set_freq(svalue(PSlvls[j,1]), svalue(h$obj))
+            }
             for (i in seq_along(1:nrow(lvldf))) {
                 PSlvls[i + 1, 1, expand = TRUE, fill = TRUE, anchor = c(1, 0)] <<- 
                     glabel(lvldf[i, 1])
                 PSlvls[i + 1, 2] <<- gedit(
                     ifelse(is.na(lvldf[i, 2]), "", lvldf[i, 2]),
-                    width = 20
+                    width = 20,
+                    handler = set_freq_val
                 )
-                # change handler for each of these too
+                addHandlerKeystroke(PSlvls[i + 1, 2], set_freq_val)
             }
-
-            invisible(NULL)
+        },
+        set_freq = function(level, freq) {
+            lvldf$Freq[lvldf[,1] == level] <<- as.numeric(freq)
         },
         set_poststrat_design = function() {
             curDes <- GUI$getActiveDoc()$getModel()$getDesign()
