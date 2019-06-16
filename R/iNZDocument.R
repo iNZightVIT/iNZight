@@ -73,6 +73,15 @@ iNZDataModel <- setRefClass(
             gui$getActiveDoc()$setSettings(list(
                 freq = gui$getActiveData()[[freq]]
             ))
+            # remove any non-categorical variables
+            newdata <- gui$getActiveData()
+            catvars <- c(names(newdata)[sapply(newdata, is_cat)], freq)
+            newdata <- newdata[, catvars]
+            attr(newdata, "name") <- paste(sep = ".",
+                attr(gui$getActiveData(), "name", exact = TRUE),
+                "freq"
+            )
+            gui$setDocument(iNZDocument$new(data = newdata))
         },
         setDesign = function(strata = NULL, clus1 = NULL, clus2 = NULL,
                              wt = NULL, nest = NULL, fpc = NULL,
@@ -94,7 +103,7 @@ iNZDataModel <- setRefClass(
                         freq   = freq
                     )
             } else if (is.null(strata) & is.null(clus1) & is.null(clus2) &
-                is.null(wt) & is.null(nest) & is.null(fpc) & 
+                is.null(wt) & is.null(nest) & is.null(fpc) &
                 is.null(repweights) & is.null(poststrat)) {
                 dataDesign <<- NULL
             } else {
