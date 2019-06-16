@@ -60,11 +60,18 @@ iNZSurveyDesign <- setRefClass(
 
                 addSpace(gg, 5)
 
-                as.int <- function(x) is.numeric(x) && all(floor(x) == x)
+                as.int <- function(x) {
+                    is.numeric(x) && all(floor(x) == x, na.rm = TRUE)
+                }
                 ints <- sapply(GUI$getActiveData(), as.int)
                 vars <- names(GUI$getActiveData())[ints]
 
                 freqVar <<- gcombobox(vars, selected = 0, container = gg)
+
+                addSpace(gg, 5)
+                lbl <- glabel("WARNING: any non-categorical variables will be removed")
+                font(lbl) <- list(weight = "bold", size = 9)
+                add(gg, lbl, expand = TRUE, anchor = c(-1, 0))
             } else {
                 designWin <<-
                     gwindow("Survey Design", parent = GUI$win,
@@ -281,12 +288,12 @@ iNZSurveyPostStrat <- setRefClass(
                         icon = "warning"
                     )
                 } else {
-                    warning("Please specify a survey design first")    
+                    warning("Please specify a survey design first")
                 }
                 return(invisible(NULL))
             }
 
-            win <<- gwindow("Post Stratification", 
+            win <<- gwindow("Post Stratification",
                 parent = GUI$win,
                 width = 380,
                 height = 350,
@@ -311,7 +318,7 @@ iNZSurveyPostStrat <- setRefClass(
             ## also only those with no missing values ...
             factorvars <- names(GUI$getActiveData())[sapply(
                 GUI$getActiveData(),
-                function(v) 
+                function(v)
                     length(levels(v)) > 0 && sum(is.na(v)) == 0
             )]
             lbl <- glabel("Post stratification variable :")
@@ -326,7 +333,7 @@ iNZSurveyPostStrat <- setRefClass(
             tbl[ii, 2, expand = TRUE] <- gbutton("Read from file ...",
                 handler = function(h, ...) {
                     f <- gfile(
-                        type = "open", 
+                        type = "open",
                         filter = c("csv" = "csv")
                     )
                     df <- read.csv(f)
@@ -365,7 +372,7 @@ iNZSurveyPostStrat <- setRefClass(
                 },
                 container = btnGrp
             )
-            cancelBtn <<- gbutton("Cancel", 
+            cancelBtn <<- gbutton("Cancel",
                 handler = function(h, ...) {
                     dispose(win)
                 },
@@ -386,7 +393,7 @@ iNZSurveyPostStrat <- setRefClass(
             # remove existing children from PSlvls
             if (length(PSlvls$children))
                 sapply(PSlvls$children, PSlvls$remove_child)
-            
+
             if (svalue(PSvar, index = TRUE) == 1) {
                 lvldf <<- NULL
                 return()
@@ -411,13 +418,13 @@ iNZSurveyPostStrat <- setRefClass(
             PSlvls[1, 2, expand = TRUE, fill = FALSE, anchor = c(-1, 0)] <<- lbl
 
             set_freq_val <- function(h, ...) {
-                j <- which(sapply(PSlvls[, 2], 
+                j <- which(sapply(PSlvls[, 2],
                     function(z) identical(z, h$obj)
                 ))
                 set_freq(svalue(PSlvls[j,1]), svalue(h$obj))
             }
             for (i in seq_along(1:nrow(lvldf))) {
-                PSlvls[i + 1, 1, expand = TRUE, fill = TRUE, anchor = c(1, 0)] <<- 
+                PSlvls[i + 1, 1, expand = TRUE, fill = TRUE, anchor = c(1, 0)] <<-
                     glabel(lvldf[i, 1])
                 PSlvls[i + 1, 2] <<- gedit(
                     ifelse(is.na(lvldf[i, 2]), "", lvldf[i, 2]),
@@ -433,9 +440,9 @@ iNZSurveyPostStrat <- setRefClass(
         set_poststrat_design = function() {
             curDes <- GUI$getActiveDoc()$getModel()$getDesign()
             GUI$getActiveDoc()$getModel()$setDesign(
-                curDes$strat, curDes$clus1, curDes$clus2, 
-                curDes$wt, curDes$nest, curDes$fpc, 
-                curDes$repWts, 
+                curDes$strat, curDes$clus1, curDes$clus2,
+                curDes$wt, curDes$nest, curDes$fpc,
+                curDes$repWts,
                 poststrat = lvldf,
                 gui = GUI
             )

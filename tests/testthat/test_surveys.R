@@ -74,6 +74,7 @@ suppressWarnings({
         select("gender", "getlunch", "travel") %>%
         group_by(gender, getlunch, travel) %>%
         tally(name = "frequency") %>%
+        mutate(height = sample(cas$height, nrow(.))) %>%
         as.data.frame()
 })
 
@@ -92,6 +93,14 @@ test_that("Frequency column specification is passed to settings", {
     expect_equal(
         ui$iNZDocuments[[ui$activeDoc]]$getSettings()$freq,
         cas2$frequency
+    )
+})
+
+test_that("Non-categorical variables removed after specifying frequencies", {
+    expect_true(
+        all(
+            sapply(ui$getActiveData(), is_cat)[names(ui$getActiveData()) != "frequency"]
+        )
     )
 })
 
@@ -180,7 +189,7 @@ test_that("Post stratification set by importing additional dataset", {
     expect_silent(svalue(swin$PSvar) <- "stype")
 
     expect_equal(
-        swin$lvldf, 
+        swin$lvldf,
         data.frame(stype = c("E", "H", "M"), Freq = NA)
     )
 
@@ -250,7 +259,7 @@ test_that("Post stratification set by manually entering values", {
     expect_silent(svalue(swin$PSvar) <- "stype")
 
     expect_equal(
-        swin$lvldf, 
+        swin$lvldf,
         data.frame(stype = c("E", "H", "M"), Freq = NA)
     )
 
@@ -261,13 +270,13 @@ test_that("Post stratification set by manually entering values", {
     )
 
     # manually enter values
-    j <- which(sapply(swin$PSlvls$children, 
+    j <- which(sapply(swin$PSlvls$children,
         function(x) identical(x, swin$PSlvls[2, 2])))
     svalue(swin$PSlvls$children[[j]]) <- pop.types$Freq[1]
-    j <- which(sapply(swin$PSlvls$children, 
+    j <- which(sapply(swin$PSlvls$children,
         function(x) identical(x, swin$PSlvls[3, 2])))
     svalue(swin$PSlvls$children[[j]]) <- pop.types$Freq[2]
-    j <- which(sapply(swin$PSlvls$children, 
+    j <- which(sapply(swin$PSlvls$children,
         function(x) identical(x, swin$PSlvls[4, 2])))
     svalue(swin$PSlvls$children[[j]]) <- pop.types$Freq[3]
 
