@@ -313,8 +313,8 @@ iNZSurveyPostStrat <- setRefClass(
 
             ## only those with no missing values ...
             # lbl <- glabel("Choose variables",
-            #     container = g1, 
-            #     anchor = c(-1, 0), 
+            #     container = g1,
+            #     anchor = c(-1, 0),
             #     expand = TRUE
             # )
             factorvars <- names(GUI$getActiveData())[sapply(
@@ -322,7 +322,7 @@ iNZSurveyPostStrat <- setRefClass(
                 function(v)
                     length(levels(v)) > 0 && sum(is.na(v)) == 0
             )]
-            PSvar <<- gtable(factorvars, 
+            PSvar <<- gtable(factorvars,
                 multiple = TRUE,
                 container = g1,
                 expand = TRUE
@@ -340,8 +340,8 @@ iNZSurveyPostStrat <- setRefClass(
             font(lbl) <- list(size = 8)
 
             addSpace(g, 10)
-            g2 <- gvbox(container = g, 
-                use.scrollwindow = "y", 
+            g2 <- gvbox(container = g,
+                use.scrollwindow = "y",
                 expand = TRUE
             )
             g2$set_borderwidth(5)
@@ -408,7 +408,7 @@ iNZSurveyPostStrat <- setRefClass(
             display_tbl()
         },
         set_freq = function(variable, level, freq) {
-            lvldf[[variable]]$Freq[lvldf[[variable]][,1] == level] <<- 
+            lvldf[[variable]]$Freq[lvldf[[variable]][,1] == level] <<-
                 as.numeric(freq)
         },
         display_tbl = function() {
@@ -492,8 +492,8 @@ iNZSurveyPostStrat <- setRefClass(
                 btn <- gbutton("Read from clipboard ...")
                 PSlvls[ii, 3, anchor = c(1, 0)] <<- btn
 
-                
-                
+
+
                 ii <- ii + 2
                 PSlvls[ii, 1:3] <<- gseparator()
                 ii <- ii + 2

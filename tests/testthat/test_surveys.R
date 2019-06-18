@@ -165,7 +165,11 @@ data(api, package = "survey")
 # replicate this:
 dclus1 <- svydesign(id = ~dnum, weights = ~pw, data = apiclus1, fpc = ~fpc)
 pop.types <- data.frame(stype = c("E", "H", "M"), Freq = c(4421, 755, 1018))
-dclus1p <- postStratify(dclus1, ~stype, pop.types)
+vec <- structure(
+    c(sum(pop.types$Freq), pop.types$Freq[-1]),
+    .Names = c("(Intercept)", paste0("stype", as.character(pop.types$stype[-1])))
+)
+dclus1p <- calibrate(dclus1, ~stype, vec)
 
 ui <- iNZGUI$new()
 ui$initializeGui(apiclus1)
@@ -307,5 +311,4 @@ test_that("Post stratification object is correct", {
     )
     expect_is(des, "survey.design2")
     expect_equal(des$postStrata, dclus1p$postStrata)
-
 })
