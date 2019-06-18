@@ -300,3 +300,12 @@ test_that("Post stratification set by manually entering values", {
         )
     )
 })
+
+test_that("Post stratification object is correct", {
+    expect_silent(
+        des <- ui$iNZDocuments[[ui$activeDoc]]$getModel()$createSurveyObject()
+    )
+    expect_is(des, "survey.design2")
+    expect_equal(des$postStrata, dclus1p$postStrata)
+
+})
