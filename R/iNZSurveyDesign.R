@@ -294,68 +294,68 @@ iNZSurveyPostStrat <- setRefClass(
 
             win <<- gwindow("Post Stratification",
                 parent = GUI$win,
-                width = 380,
-                height = 350,
+                width = 730,
+                height = 500,
                 visible = FALSE
             )
-            g <- gvbox(container = win)
-            g$set_borderwidth(5)
+            gmain <- gvbox(container = win)
+            gmain$set_borderwidth(5)
 
-            lbl <- glabel("Specify post stratification",
-                container = g)
-            font(lbl) <- list(size = 11, weight = "bold")
+            title <- glabel("Specify post stratification",
+                container = gmain)
+            font(title) <- list(size = 11, weight = "bold")
 
-            tbl <- glayout(container = g)
-            ii <- 1
+            ## central panel
+            g <- ggroup(container = gmain)
 
-            ## also only those with no missing values ...
+            ## left size panel (choose variables)
+            g1 <- gvbox(container = g)
+
+            ## only those with no missing values ...
+            # lbl <- glabel("Choose variables",
+            #     container = g1, 
+            #     anchor = c(-1, 0), 
+            #     expand = TRUE
+            # )
             factorvars <- names(GUI$getActiveData())[sapply(
                 GUI$getActiveData(),
                 function(v)
                     length(levels(v)) > 0 && sum(is.na(v)) == 0
             )]
-            lbl <- glabel("Post stratification variable :")
-            PSvar <<- gcombobox(c("None", factorvars), selected = 1)
-            tbl[ii, 1, expand = TRUE, fill = FALSE, anchor = c(1, 0)] <- lbl
-            tbl[ii, 2, expand = TRUE] <- PSvar
-            ii <- ii + 1
-
-            addSpace(g, 5)
-
-            ## choose from file button
-            tbl[ii, 2, expand = TRUE] <- gbutton("Read from file ...",
-                handler = function(h, ...) {
-                    f <- gfile(
-                        type = "open",
-                        filter = c("csv" = "csv")
-                    )
-                    df <- read.csv(f)
-                    if (all(dim(df) != dim(PSlvls) + c(-1, 0))) {
-                        gmessage("File needs to have 2 columns and one row for each levels of the chosen factor variable.")
-                        return()
-                    }
-                    names(df) <- c(svalue(PSvar), "Freq")
-                    update_levels(df)
-                }
+            PSvar <<- gtable(factorvars, 
+                multiple = TRUE,
+                container = g1,
+                expand = TRUE
+                # fill = TRUE
             )
-            ii <- ii + 1
+            PSvar$set_names("Choose variables")
+            size(PSvar) <<- c(200, 380)
+            addHandlerSelectionChanged(PSvar, function(h, ...) update_levels())
 
-            lbl <- glabel("File must contain one column of factors levels, and one column of frequencies.")
+            lbl <- glabel("Hold CTRL or SHIFT to select multiple",
+                container = g1,
+                anchor = c(-1, 0),
+                expand = TRUE
+            )
             font(lbl) <- list(size = 8)
-            tbl[ii, 1:2, expand = TRUE, fill = FALSE, anchor = c(1, 0)] <- lbl
-            ii <- ii + 1
 
+            addSpace(g, 10)
+            g2 <- gvbox(container = g, 
+                use.scrollwindow = "y", 
+                expand = TRUE
+            )
+            g2$set_borderwidth(5)
             ## table to populate with levels of variable
-            gl <- ggroup(container = g)
-            addSpring(gl)
+            gl <- ggroup(container = g2)
+            # addSpring(gl)
             PSlvls <<- glayout(container = gl)
             addSpace(gl, 20)
 
             addHandlerChanged(PSvar, function(h, ...) update_levels())
 
             # save/cancel buttons
-            addSpring(g)
-            btnGrp <- ggroup(container = g)
+            addSpring(gmain)
+            btnGrp <- ggroup(container = gmain)
             addSpring(btnGrp)
             okBtn <<- gbutton("OK",
                 handler = function(h, ...) {
@@ -374,67 +374,131 @@ iNZSurveyPostStrat <- setRefClass(
 
             ## populate on load
             if (!is.null(curDes$poststrat)) {
-                svalue(PSvar) <<- names(curDes$poststrat)[1]
-                update_levels(curDes$poststrat[[1]])
+                svalue(PSvar) <<- names(curDes$poststrat)
+                lvldf <<- curDes$poststrat
+                display_tbl()
             }
 
             visible(win) <<- TRUE
 
             invisible(NULL)
         },
-        update_levels = function(df = NULL) {
+        update_levels = function(h, ...) {
+            # read svalue(PSvar) -> lvldf
+            # if (length(svalue(PSvar)) == 0) return()
+
+            for (v in svalue(PSvar)) {
+                if (is.null(lvldf[[v]])) {
+                    d <- data.frame(
+                        a = levels(GUI$getActiveData()[[v]]),
+                        b = NA
+                    )
+                    names(d) <- c(v, "Freq")
+                    lvldf[[v]] <<- d
+                }
+            }
+
+            display_tbl()
+        },
+        set_freqs = function(variable, df) {
+            ## add checks that 2 columns with all necessary levels
+            names(df) <- c(variable, "Freq")
+            lvldf[[variable]] <<- df
+            ## now display the information in the UI
+            display_tbl()
+        },
+        set_freq = function(variable, level, freq) {
+            lvldf[[variable]]$Freq[lvldf[[variable]][,1] == level] <<- 
+                as.numeric(freq)
+        },
+        display_tbl = function() {
             # remove existing children from PSlvls
             if (length(PSlvls$children))
                 sapply(PSlvls$children, PSlvls$remove_child)
 
-            if (svalue(PSvar, index = TRUE) == 1) {
-                ## TODO: this will no longer be a thing ... 
-                lvldf <<- list()
-                return()
-            }
+            # Only display those chosen on the left
+            if (length(svalue(PSvar)) == 0) return()
 
-            # for each level of PSvar, create a row
-            if (is.null(df)) {
-                lvldf <<- structure(
-                    list(
-                        data.frame(
-                            v = levels(GUI$getActiveData()[[svalue(PSvar)]]),
-                            Freq = NA
-                        )
-                    ),
-                    .Names = svalue(PSvar)
-                )
-                names(lvldf[[1]])[1] <<- svalue(PSvar)
-            } else {
-                lvldf <<- structure(list(df), .Names = svalue(PSvar))
-            }
-
-            lbl <- glabel(svalue(PSvar))
-            font(lbl) <- list(weight = "bold")
-            PSlvls[1, 1, expand = TRUE, fill = FALSE, anchor = c(1, 0)] <<- lbl
-            lbl <- glabel("Frequency")
-            font(lbl) <- list(weight = "bold")
-            PSlvls[1, 2, expand = TRUE, fill = FALSE, anchor = c(-1, 0)] <<- lbl
+            # display lvldf variables selected in tables:
+            ii <- 1
 
             set_freq_val <- function(h, ...) {
+                ## need a way of figuring out which VARIABLE it is ...
                 j <- which(sapply(PSlvls[, 2],
                     function(z) identical(z, h$obj)
                 ))
-                set_freq(svalue(PSlvls[j,1]), svalue(h$obj))
-            }
-            for (i in seq_along(1:nrow(lvldf[[1]]))) {
-                PSlvls[i + 1, 1, expand = TRUE, fill = TRUE, anchor = c(1, 0)] <<-
-                    glabel(lvldf[[1]][i, 1])
-                PSlvls[i + 1, 2] <<- gedit(
-                    ifelse(is.na(lvldf[[1]][i, 2]), "", lvldf[[1]][i, 2]),
-                    width = 20,
-                    handler = set_freq_val
+                set_freq(
+                    svalue(PSlvls[j, 4]), # inivisble variable name
+                    svalue(PSlvls[j, 1]), # variable level
+                    svalue(h$obj)         # freq
                 )
-                addHandlerKeystroke(PSlvls[i + 1, 2], set_freq_val)
             }
-        },
-        set_freq = function(level, freq) {
-            lvldf[[1]]$Freq[lvldf[[1]][,1] == level] <<- as.numeric(freq)
+
+            for (v in svalue(PSvar)) {
+                lbl <- glabel(v)
+                font(lbl) <- list(weight = "bold")
+                PSlvls[ii, 1, expand = TRUE, fill = FALSE, anchor = c(1, 0)] <<- lbl
+
+                lbl <- glabel("Frequency")
+                font(lbl) <- list(weight = "bold")
+                PSlvls[ii, 2, expand = TRUE, fill = FALSE, anchor = c(-1, 0)] <<- lbl
+                lbl <- glabel(v)
+                visible(lbl) <- FALSE
+                PSlvls[ii, 4] <<- lbl
+
+                for (i in seq_along(1:nrow(lvldf[[v]]))) {
+                    ii <- ii + 1
+                    PSlvls[ii, 1, expand = TRUE, fill = TRUE, anchor = c(1, 0)] <<-
+                        glabel(lvldf[[v]][i, 1])
+                    PSlvls[ii, 2] <<- gedit(
+                        ifelse(is.na(lvldf[[v]][i, 2]), "", lvldf[[v]][i, 2]),
+                        width = 20,
+                        handler = set_freq_val
+                    )
+                    addHandlerKeystroke(PSlvls[ii, 2], set_freq_val)
+
+                    lbl <- glabel(v)
+                    visible(lbl) <- FALSE
+                    PSlvls[ii, 4] <<- lbl
+                }
+
+                btn <- gbutton("Read from file ...",
+                    handler = function(h, ...) {
+                        f <- gfile(
+                            type = "open",
+                            filter = c("csv" = "csv")
+                        )
+                        if (length(f) == 0) return()
+
+                        df <- read.csv(f)
+                        rowj <- which(sapply(PSlvls[, 3],
+                            function(z) identical(z, h$obj)
+                        ))
+                        var <- svalue(PSlvls[rowj, 4])
+                        if (ncol(df) != 2) {
+                            gmessage("File needs to have 2 columns: one for variable names, and one for frequencies.")
+                            return()
+                        }
+                        if (nrow(df) != nrow(lvldf[[var]])) {
+                            gmessage("File needs to have one row for each level.")
+                            return()
+                        }
+                        set_freqs(var, df)
+                    }
+                )
+                ## add button to second-to-last-row
+                PSlvls[ii-1, 3, anchor = c(1, 0)] <<- btn
+
+                btn <- gbutton("Read from clipboard ...")
+                PSlvls[ii, 3, anchor = c(1, 0)] <<- btn
+
+                
+                
+                ii <- ii + 2
+                PSlvls[ii, 1:3] <<- gseparator()
+                ii <- ii + 2
+            }
+
         },
         set_poststrat_design = function() {
             curDes <- GUI$getActiveDoc()$getModel()$getDesign()
@@ -442,7 +506,7 @@ iNZSurveyPostStrat <- setRefClass(
                 curDes$strat, curDes$clus1, curDes$clus2,
                 curDes$wt, curDes$nest, curDes$fpc,
                 curDes$repWts,
-                poststrat = if (length(lvldf)) lvldf else NULL,
+                poststrat = if (length(svalue(PSvar))) lvldf[svalue(PSvar)] else NULL,
                 gui = GUI
             )
             setOK <- try(

@@ -160,7 +160,6 @@ test_that("Replicate weights can be specified", {
 
 ui$close()
 
-
 # devtools::load_all()
 data(api, package = "survey")
 # replicate this:
@@ -188,6 +187,7 @@ test_that("Post stratification set by importing additional dataset", {
     expect_silent(swin <- iNZSurveyPostStrat$new(ui, .use_ui = FALSE))
     expect_equal(swin$lvldf, list())
     expect_silent(svalue(swin$PSvar) <- "stype")
+    expect_silent(swin$PSvar$invoke_change_handler())
 
     expect_equal(
         swin$lvldf,
@@ -197,15 +197,15 @@ test_that("Post stratification set by importing additional dataset", {
     # now the tbl should have length(levels(style)) + 2 rows
     expect_equal(
         dim(swin$PSlvls),
-        c(nrow = 4, ncol = 2)
+        c(nrow = 6, ncol = 4)
     )
 
     # read from file
     tmp <- tempfile(fileext = ".csv")
     write.csv(pop.types, file = tmp, quote = FALSE, row.names = FALSE)
-    expect_silent(swin$update_levels(read.csv(tmp)))
+    expect_silent(swin$set_freqs("stype", read.csv(tmp)))
     expect_equal(
-        sapply(swin$PSlvls$children[c(4, 6, 8)], svalue),
+        sapply(swin$PSlvls$children[c(5, 8, 11)], svalue),
         as.character(pop.types$Freq)
     )
 
@@ -236,8 +236,8 @@ test_that("Post stratification is remembered", {
 
 test_that("Post stratification can be removed", {
     expect_silent(swin <- iNZSurveyPostStrat$new(ui, .use_ui = FALSE))
-    expect_silent(svalue(swin$PSvar, index = TRUE) <- 1)
-    expect_equal(swin$lvldf, list())
+    expect_silent(svalue(swin$PSvar, index = TRUE) <- 0)
+    expect_equal(swin$lvldf, list(stype = pop.types))
     expect_silent(swin$okBtn$invoke_change_handler())
     expect_equal(
         ui$iNZDocuments[[ui$activeDoc]]$getModel()$getDesign(),
@@ -257,7 +257,7 @@ test_that("Post stratification can be removed", {
 
 test_that("Post stratification set by manually entering values", {
     expect_silent(swin <- iNZSurveyPostStrat$new(ui, .use_ui = FALSE))
-    expect_silent(svalue(swin$PSvar) <- "stype")
+    expect_silent(svalue(swin$PSvar, index = TRUE) <- 1)
 
     expect_equal(
         swin$lvldf,
@@ -267,7 +267,7 @@ test_that("Post stratification set by manually entering values", {
     # now the tbl should have length(levels(style)) + 2 rows
     expect_equal(
         dim(swin$PSlvls),
-        c(nrow = 4, ncol = 2)
+        c(nrow = 6, ncol = 4)
     )
 
     # manually enter values
