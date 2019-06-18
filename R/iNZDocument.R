@@ -166,20 +166,28 @@ iNZDataModel <- setRefClass(
 
             if (!is.null(des$poststrat)) {
                 design_obj <- eval(obj)
-                dfv <- des$poststrat[[1]]
                 ## Note: if allowing continuous variables in future,
                 ##       this needs a better name:
                 pop.totals <- structure(
-                    c(sum(dfv$Freq), dfv$Freq[-1]),
-                    .Names = c(
-                        "(Intercept)",
-                        paste0(names(dfv)[1], as.character(dfv[-1,1]))
+                    do.call(c,
+                        c(
+                            list(sum(des$poststrat[[1]]$Freq)),
+                            lapply(des$poststrat, function(df) df$Freq[-1])
+                        )
+                    ),
+                    .Names = do.call(c,
+                        c(
+                            list("(Intercept)"),
+                            lapply(des$poststrat, function(df)
+                                paste0(names(df)[1], as.character(df[-1,1]))
+                            )
+                        )
                     )
                 )
                 obj <- parse(
                     text = sprintf(
                         "survey::calibrate(design_obj, ~%s, pop.totals)",
-                        names(dfv)[1]
+                        paste(names(des$poststrat), collapse = " + ")
                     )
                 )
             }

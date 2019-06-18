@@ -312,3 +312,49 @@ test_that("Post stratification object is correct", {
     expect_is(des, "survey.design2")
     expect_equal(des$postStrata, dclus1p$postStrata)
 })
+
+test_that("Multiple variables can be specified (raking calibration)", {
+    expect_silent(swin <- iNZSurveyPostStrat$new(ui, .use_ui = FALSE))
+    expect_silent(svalue(swin$PSvar, index = TRUE) <- 1:2)
+    expect_equal(
+        swin$lvldf,
+        list(
+            stype = pop.types,
+            sch.wide = data.frame(sch.wide = c("No", "Yes"), Freq = NA)
+        )
+    )
+
+    swin$lvldf$sch.wide$Freq <- as.numeric(table(apipop$sch.wide))
+    expect_silent(swin$display_tbl())
+    pop.types2 <- data.frame(
+        sch.wide = c("No", "Yes"),
+        Freq = as.numeric(table(apipop$sch.wide))
+    )
+
+    # and trigger the save
+    expect_silent(swin$okBtn$invoke_change_handler())
+    expect_equal(
+        ui$iNZDocuments[[ui$activeDoc]]$getModel()$getDesign(),
+        list(
+            strata = NULL,
+            clus1 = "dnum",
+            clus2 = NULL,
+            wt = "pw",
+            fpc = "fpc",
+            nest = FALSE,
+            repweights = NULL,
+            poststrat = list(stype = pop.types, sch.wide = pop.types2),
+            freq = NULL
+        )
+    )
+
+    dclus1g2 <- calibrate(dclus1, ~stype + sch.wide,
+        c(vec, sch.wideYes = 5122))
+
+    expect_silent(
+        des <- ui$iNZDocuments[[ui$activeDoc]]$getModel()$createSurveyObject()
+    )
+    expect_is(des, "survey.design2")
+    expect_equal(des$postStrata, dclus1g2$postStrata)
+})
+
