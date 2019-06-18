@@ -161,13 +161,16 @@ test_that("Replicate weight object is valid", {
 
 ui$close()
 
-
 # devtools::load_all()
 data(api, package = "survey")
 # replicate this:
 dclus1 <- svydesign(id = ~dnum, weights = ~pw, data = apiclus1, fpc = ~fpc)
 pop.types <- data.frame(stype = c("E", "H", "M"), Freq = c(4421, 755, 1018))
-dclus1p <- postStratify(dclus1, ~stype, pop.types)
+vec <- structure(
+    c(sum(pop.types$Freq), pop.types$Freq[-1]),
+    .Names = c("(Intercept)", paste0("stype", as.character(pop.types$stype[-1])))
+)
+dclus1p <- calibrate(dclus1, ~stype, vec)
 
 ui <- iNZGUI$new()
 ui$initializeGui(apiclus1)
@@ -187,25 +190,27 @@ test_that("Post stratification set by importing additional dataset", {
     expect_silent(swin$createBtn$invoke_change_handler())
 
     expect_silent(swin <- iNZSurveyPostStrat$new(ui, .use_ui = FALSE))
+    expect_equal(swin$lvldf, list())
     expect_silent(svalue(swin$PSvar) <- "stype")
+    expect_silent(swin$PSvar$invoke_change_handler())
 
     expect_equal(
         swin$lvldf,
-        data.frame(stype = c("E", "H", "M"), Freq = NA)
+        list(stype = data.frame(stype = c("E", "H", "M"), Freq = NA))
     )
 
     # now the tbl should have length(levels(style)) + 2 rows
     expect_equal(
         dim(swin$PSlvls),
-        c(nrow = 4, ncol = 2)
+        c(nrow = 6, ncol = 4)
     )
 
     # read from file
     tmp <- tempfile(fileext = ".csv")
     write.csv(pop.types, file = tmp, quote = FALSE, row.names = FALSE)
-    expect_silent(swin$update_levels(read.csv(tmp)))
+    expect_silent(swin$set_freqs("stype", read.csv(tmp)))
     expect_equal(
-        sapply(swin$PSlvls$children[c(4, 6, 8)], svalue),
+        sapply(swin$PSlvls$children[c(5, 8, 11)], svalue),
         as.character(pop.types$Freq)
     )
 
@@ -221,7 +226,7 @@ test_that("Post stratification set by importing additional dataset", {
             fpc = "fpc",
             nest = FALSE,
             repweights = NULL,
-            poststrat = pop.types,
+            poststrat = list(stype = pop.types),
             freq = NULL
         )
     )
@@ -230,14 +235,14 @@ test_that("Post stratification set by importing additional dataset", {
 test_that("Post stratification is remembered", {
     expect_silent(swin <- iNZSurveyPostStrat$new(ui, .use_ui = FALSE))
     expect_equal(svalue(swin$PSvar), "stype")
-    expect_equal(swin$lvldf, pop.types)
+    expect_equal(swin$lvldf, list(stype = pop.types))
     expect_silent(swin$cancelBtn$invoke_change_handler())
 })
 
 test_that("Post stratification can be removed", {
     expect_silent(swin <- iNZSurveyPostStrat$new(ui, .use_ui = FALSE))
-    expect_silent(svalue(swin$PSvar, index = TRUE) <- 1)
-    expect_null(swin$lvldf)
+    expect_silent(svalue(swin$PSvar, index = TRUE) <- 0)
+    expect_equal(swin$lvldf, list(stype = pop.types))
     expect_silent(swin$okBtn$invoke_change_handler())
     expect_equal(
         ui$iNZDocuments[[ui$activeDoc]]$getModel()$getDesign(),
@@ -255,19 +260,23 @@ test_that("Post stratification can be removed", {
     )
 })
 
+test_that("Frequency tables are saved", {
+
+})
+
 test_that("Post stratification set by manually entering values", {
     expect_silent(swin <- iNZSurveyPostStrat$new(ui, .use_ui = FALSE))
-    expect_silent(svalue(swin$PSvar) <- "stype")
+    expect_silent(svalue(swin$PSvar, index = TRUE) <- 1)
 
     expect_equal(
         swin$lvldf,
-        data.frame(stype = c("E", "H", "M"), Freq = NA)
+        list(stype = data.frame(stype = c("E", "H", "M"), Freq = NA))
     )
 
     # now the tbl should have length(levels(style)) + 2 rows
     expect_equal(
         dim(swin$PSlvls),
-        c(nrow = 4, ncol = 2)
+        c(nrow = 6, ncol = 4)
     )
 
     # manually enter values
@@ -281,7 +290,7 @@ test_that("Post stratification set by manually entering values", {
         function(x) identical(x, swin$PSlvls[4, 2])))
     svalue(swin$PSlvls$children[[j]]) <- pop.types$Freq[3]
 
-    expect_equal(swin$lvldf, pop.types)
+    expect_equal(swin$lvldf, list(stype = pop.types))
 
     # and trigger the save
     expect_silent(swin$okBtn$invoke_change_handler())
@@ -295,8 +304,62 @@ test_that("Post stratification set by manually entering values", {
             fpc = "fpc",
             nest = FALSE,
             repweights = NULL,
-            poststrat = pop.types,
+            poststrat = list(stype = pop.types),
             freq = NULL
         )
     )
 })
+
+test_that("Post stratification object is correct", {
+    expect_silent(
+        des <- ui$iNZDocuments[[ui$activeDoc]]$getModel()$createSurveyObject()
+    )
+    expect_is(des, "survey.design2")
+    expect_equal(des$postStrata, dclus1p$postStrata)
+})
+
+test_that("Multiple variables can be specified (raking calibration)", {
+    expect_silent(swin <- iNZSurveyPostStrat$new(ui, .use_ui = FALSE))
+    expect_silent(svalue(swin$PSvar, index = TRUE) <- 1:2)
+    expect_equal(
+        swin$lvldf,
+        list(
+            stype = pop.types,
+            sch.wide = data.frame(sch.wide = c("No", "Yes"), Freq = NA)
+        )
+    )
+
+    swin$lvldf$sch.wide$Freq <- as.numeric(table(apipop$sch.wide))
+    expect_silent(swin$display_tbl())
+    pop.types2 <- data.frame(
+        sch.wide = c("No", "Yes"),
+        Freq = as.numeric(table(apipop$sch.wide))
+    )
+
+    # and trigger the save
+    expect_silent(swin$okBtn$invoke_change_handler())
+    expect_equal(
+        ui$iNZDocuments[[ui$activeDoc]]$getModel()$getDesign(),
+        list(
+            strata = NULL,
+            clus1 = "dnum",
+            clus2 = NULL,
+            wt = "pw",
+            fpc = "fpc",
+            nest = FALSE,
+            repweights = NULL,
+            poststrat = list(stype = pop.types, sch.wide = pop.types2),
+            freq = NULL
+        )
+    )
+
+    dclus1g2 <- calibrate(dclus1, ~stype + sch.wide,
+        c(vec, sch.wideYes = 5122))
+
+    expect_silent(
+        des <- ui$iNZDocuments[[ui$activeDoc]]$getModel()$createSurveyObject()
+    )
+    expect_is(des, "survey.design2")
+    expect_equal(des$postStrata, dclus1g2$postStrata)
+})
+

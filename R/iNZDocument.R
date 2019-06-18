@@ -8,14 +8,16 @@ iNZDataModel <- setRefClass(
             dataDesign = "ANY",
             dataDesignName = "character",
             name = "character",
-            oldname = "character"
+            oldname = "character",
+            freqtables = "list"
         ),
         prototype = list(
             dataSet = data.frame(empty = " "),
             origDataSet = data.frame(empty = " "),
             rowDataSet = data.frame(Row.names = 1, empty = " "),
             dataDesign = NULL,
-            name = "data", oldname = ""
+            name = "data", oldname = "",
+            freqtables = list()
         )
     ),
     contains = "PropertySet", ## need this to add observer to object
@@ -172,11 +174,28 @@ iNZDataModel <- setRefClass(
 
             if (!is.null(des$poststrat)) {
                 design_obj <- eval(obj)
-                dfv <- des$poststrat
+                ## Note: if allowing continuous variables in future,
+                ##       this needs a better name:
+                pop.totals <- structure(
+                    do.call(c,
+                        c(
+                            list(sum(des$poststrat[[1]]$Freq)),
+                            lapply(des$poststrat, function(df) df$Freq[-1])
+                        )
+                    ),
+                    .Names = do.call(c,
+                        c(
+                            list("(Intercept)"),
+                            lapply(des$poststrat, function(df)
+                                paste0(names(df)[1], as.character(df[-1,1]))
+                            )
+                        )
+                    )
+                )
                 obj <- parse(
                     text = sprintf(
-                        "survey::postStratify(design_obj, ~%s, dfv)",
-                        names(dfv)[1]
+                        "survey::calibrate(design_obj, ~%s, pop.totals)",
+                        paste(names(des$poststrat), collapse = " + ")
                     )
                 )
             }
@@ -185,6 +204,12 @@ iNZDataModel <- setRefClass(
         },
         getDesign = function() {
             dataDesign
+        },
+        storeFreqTables = function(tbls) {
+            freqtables <<- tbls
+        },
+        getFreqTables = function() {
+            freqtables
         },
         getCode = function(remove = TRUE) {
             code <- attr(dataSet, "code")
