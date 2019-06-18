@@ -166,7 +166,7 @@ iNZDataModel <- setRefClass(
 
             if (!is.null(des$poststrat)) {
                 design_obj <- eval(obj)
-                dfv <- des$poststrat
+                dfv <- des$poststrat[[1]]
                 obj <- parse(
                     text = sprintf(
                         "survey::postStratify(design_obj, ~%s, dfv)",

@@ -272,13 +272,13 @@ iNZSurveyPostStrat <- setRefClass(
         mthd = "ANY",
         PSvar = "ANY",
         PSlvls = "ANY",
-        lvldf = "ANY",
+        lvldf = "list",
         okBtn = "ANY",
         cancelBtn = "ANY"
     ),
     methods = list(
         initialize = function(gui, .use_ui = TRUE) {
-            initFields(GUI = gui)
+            initFields(GUI = gui, lvldf = list())
 
             curDes <- GUI$getActiveDoc()$getModel()$getDesign()
             if (is.null(curDes)) {
@@ -382,7 +382,7 @@ iNZSurveyPostStrat <- setRefClass(
             ## populate on load
             if (!is.null(curDes$poststrat)) {
                 svalue(PSvar) <<- names(curDes$poststrat)[1]
-                update_levels(curDes$poststrat)
+                update_levels(curDes$poststrat[[1]])
             }
 
             visible(win) <<- TRUE
@@ -395,19 +395,25 @@ iNZSurveyPostStrat <- setRefClass(
                 sapply(PSlvls$children, PSlvls$remove_child)
 
             if (svalue(PSvar, index = TRUE) == 1) {
-                lvldf <<- NULL
+                ## TODO: this will no longer be a thing ... 
+                lvldf <<- list()
                 return()
             }
 
             # for each level of PSvar, create a row
             if (is.null(df)) {
-                lvldf <<- data.frame(
-                    v = levels(GUI$getActiveData()[[svalue(PSvar)]]),
-                    Freq = NA
+                lvldf <<- structure(
+                    list(
+                        data.frame(
+                            v = levels(GUI$getActiveData()[[svalue(PSvar)]]),
+                            Freq = NA
+                        )
+                    ),
+                    .Names = svalue(PSvar)
                 )
-                names(lvldf)[1] <<- svalue(PSvar)
+                names(lvldf[[1]])[1] <<- svalue(PSvar)
             } else {
-                lvldf <<- df
+                lvldf <<- structure(list(df), .Names = svalue(PSvar))
             }
 
             lbl <- glabel(svalue(PSvar))
@@ -423,11 +429,11 @@ iNZSurveyPostStrat <- setRefClass(
                 ))
                 set_freq(svalue(PSlvls[j,1]), svalue(h$obj))
             }
-            for (i in seq_along(1:nrow(lvldf))) {
+            for (i in seq_along(1:nrow(lvldf[[1]]))) {
                 PSlvls[i + 1, 1, expand = TRUE, fill = TRUE, anchor = c(1, 0)] <<-
-                    glabel(lvldf[i, 1])
+                    glabel(lvldf[[1]][i, 1])
                 PSlvls[i + 1, 2] <<- gedit(
-                    ifelse(is.na(lvldf[i, 2]), "", lvldf[i, 2]),
+                    ifelse(is.na(lvldf[[1]][i, 2]), "", lvldf[[1]][i, 2]),
                     width = 20,
                     handler = set_freq_val
                 )
@@ -435,7 +441,7 @@ iNZSurveyPostStrat <- setRefClass(
             }
         },
         set_freq = function(level, freq) {
-            lvldf$Freq[lvldf[,1] == level] <<- as.numeric(freq)
+            lvldf[[1]]$Freq[lvldf[[1]][,1] == level] <<- as.numeric(freq)
         },
         set_poststrat_design = function() {
             curDes <- GUI$getActiveDoc()$getModel()$getDesign()
@@ -443,7 +449,7 @@ iNZSurveyPostStrat <- setRefClass(
                 curDes$strat, curDes$clus1, curDes$clus2,
                 curDes$wt, curDes$nest, curDes$fpc,
                 curDes$repWts,
-                poststrat = lvldf,
+                poststrat = if (length(lvldf)) lvldf else NULL,
                 gui = GUI
             )
             setOK <- try(

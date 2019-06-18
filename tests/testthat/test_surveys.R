@@ -186,11 +186,12 @@ test_that("Post stratification set by importing additional dataset", {
     expect_silent(swin$createBtn$invoke_change_handler())
 
     expect_silent(swin <- iNZSurveyPostStrat$new(ui, .use_ui = FALSE))
+    expect_equal(swin$lvldf, list())
     expect_silent(svalue(swin$PSvar) <- "stype")
 
     expect_equal(
         swin$lvldf,
-        data.frame(stype = c("E", "H", "M"), Freq = NA)
+        list(stype = data.frame(stype = c("E", "H", "M"), Freq = NA))
     )
 
     # now the tbl should have length(levels(style)) + 2 rows
@@ -220,7 +221,7 @@ test_that("Post stratification set by importing additional dataset", {
             fpc = "fpc",
             nest = FALSE,
             repweights = NULL,
-            poststrat = pop.types,
+            poststrat = list(stype = pop.types),
             freq = NULL
         )
     )
@@ -229,14 +230,14 @@ test_that("Post stratification set by importing additional dataset", {
 test_that("Post stratification is remembered", {
     expect_silent(swin <- iNZSurveyPostStrat$new(ui, .use_ui = FALSE))
     expect_equal(svalue(swin$PSvar), "stype")
-    expect_equal(swin$lvldf, pop.types)
+    expect_equal(swin$lvldf, list(stype = pop.types))
     expect_silent(swin$cancelBtn$invoke_change_handler())
 })
 
 test_that("Post stratification can be removed", {
     expect_silent(swin <- iNZSurveyPostStrat$new(ui, .use_ui = FALSE))
     expect_silent(svalue(swin$PSvar, index = TRUE) <- 1)
-    expect_null(swin$lvldf)
+    expect_equal(swin$lvldf, list())
     expect_silent(swin$okBtn$invoke_change_handler())
     expect_equal(
         ui$iNZDocuments[[ui$activeDoc]]$getModel()$getDesign(),
@@ -260,7 +261,7 @@ test_that("Post stratification set by manually entering values", {
 
     expect_equal(
         swin$lvldf,
-        data.frame(stype = c("E", "H", "M"), Freq = NA)
+        list(stype = data.frame(stype = c("E", "H", "M"), Freq = NA))
     )
 
     # now the tbl should have length(levels(style)) + 2 rows
@@ -280,7 +281,7 @@ test_that("Post stratification set by manually entering values", {
         function(x) identical(x, swin$PSlvls[4, 2])))
     svalue(swin$PSlvls$children[[j]]) <- pop.types$Freq[3]
 
-    expect_equal(swin$lvldf, pop.types)
+    expect_equal(swin$lvldf, list(stype = pop.types))
 
     # and trigger the save
     expect_silent(swin$okBtn$invoke_change_handler())
@@ -294,7 +295,7 @@ test_that("Post stratification set by manually entering values", {
             fpc = "fpc",
             nest = FALSE,
             repweights = NULL,
-            poststrat = pop.types,
+            poststrat = list(stype = pop.types),
             freq = NULL
         )
     )
