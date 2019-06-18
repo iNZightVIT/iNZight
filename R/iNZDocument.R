@@ -145,13 +145,17 @@ iNZDataModel <- setRefClass(
                 else if (is.null(des$freq)) paste("~", des$wt)
                 else paste("~", des$freq)
             fpcs <- if (is.null(des$fpc)) "NULL" else paste("~", des$fpc)
+
             repweights <- if(is.null(des$repweights)) "NULL"
                 else paste("~", paste(des$repweights, collapse = " + "))
 
             obj <-
                 parse(text =
                     paste0(
-                        "survey::svydesign(",
+                        ifelse(is.null(des$repweights),
+                            "survey::svydesign(",
+                            "survey::svrepdesign("
+                        ),
                         "id = ", id, ", ",
                         if (!is.null(des$strata)) sprintf("strata = %s, ", strata),
                         if (!is.null(des$wt) || !is.null(des$freq))
@@ -159,7 +163,9 @@ iNZDataModel <- setRefClass(
                         if (!is.null(des$fpc)) sprintf("fpc = %s, ", fpcs),
                         if (!is.null(des$nest) && des$nest) "nest = TRUE, ",
                         if (!is.null(des$repweights))
-                            sprintf("repweights = %s, ", repweights),
+                            sprintf("repweights = %s, type = '%s'",
+                                repweights, "BRR"
+                            ),
                         "data = dataSet)"
                     )
                 )

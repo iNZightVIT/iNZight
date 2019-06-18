@@ -110,22 +110,18 @@ test_that("Frequencies retained after filtering", {
 
 ui$close()
 
-
-data(scd, package = "survey")
-repweights <- 2 *
-    data.frame(
-        weights.1 = c(1,0,1,0,1,0),
-        weights.2 = c(1,0,0,1,0,1),
-        weights.3 = c(0,1,1,0,0,1),
-        weights.4 = c(0,1,0,1,1,0)
-    )
-scd$ESAcat <- as.factor(scd$ESA)
-scd$ambulancecat <- as.factor(scd$ambulance)
-scd <- cbind(scd, repweights)
+# devtools::load_all()
+chis <- iNZightTools::smart_read("chis.csv")
+# chis <- iNZightTools::smart_read("tests/testthat/chis.csv")
+dchis <- svrepdesign(data = chis[,c(1:10, 92:96)],
+    repweights = chis[, 12:91],
+    weights = chis[, 11],
+    type = "BRR"
+)
 
 # devtools::load_all()
 ui <- iNZGUI$new()
-ui$initializeGui(scd)
+ui$initializeGui(chis)
 test_that("Replicate weights can be specified", {
     expect_silent(swin <- iNZSurveyDesign$new(ui, warn = FALSE))
 
@@ -136,26 +132,31 @@ test_that("Replicate weights can be specified", {
     expect_true(visible(swin$repG))
 
     # select variables
-    svalue(swin$repVars) <- paste("weights", 1:4, sep = ".")
+    svalue(swin$wtVar) <- "rakedw0"
+    svalue(swin$repVars) <- paste("rakedw", 1:80, sep = "")
 
-    expect_warning(
-        swin$createBtn$invoke_change_handler(),
-        "No weights or probabilities"
-    )
+    expect_silent(swin$createBtn$invoke_change_handler())
     expect_equal(
         ui$iNZDocuments[[ui$activeDoc]]$getModel()$getDesign(),
         list(
             strata = NULL,
             clus1 = NULL,
             clus2 = NULL,
-            wt = NULL,
+            wt = "rakedw0",
             fpc = NULL,
             nest = FALSE,
-            repweights = paste("weights", 1:4, sep = "."),
+            repweights = paste("rakedw", 1:80, sep = ""),
             poststrat = NULL,
             freq = NULL
         )
     )
+})
+
+test_that("Replicate weight object is valid", {
+    expect_silent(
+        des <- ui$iNZDocuments[[ui$activeDoc]]$getModel()$createSurveyObject()
+    )
+    expect_equal(des)
 })
 
 ui$close()
