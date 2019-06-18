@@ -269,7 +269,6 @@ iNZSurveyPostStrat <- setRefClass(
     fields = list(
         GUI = "ANY",
         win = "ANY",
-        mthd = "ANY",
         PSvar = "ANY",
         PSlvls = "ANY",
         lvldf = "list",
@@ -308,12 +307,6 @@ iNZSurveyPostStrat <- setRefClass(
 
             tbl <- glayout(container = g)
             ii <- 1
-
-            lbl <- glabel("Method :")
-            mthd <<- gcombobox(c("Post stratification", "Rake (not available yet)"))
-            tbl[ii, 1, expand = TRUE, fill = FALSE, anchor = c(1, 0)] <- lbl
-            tbl[ii, 2, expand = TRUE] <- mthd
-            ii <- ii + 1
 
             ## also only those with no missing values ...
             factorvars <- names(GUI$getActiveData())[sapply(
