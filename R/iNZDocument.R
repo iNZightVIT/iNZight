@@ -8,14 +8,16 @@ iNZDataModel <- setRefClass(
             dataDesign = "ANY",
             dataDesignName = "character",
             name = "character",
-            oldname = "character"
+            oldname = "character",
+            freqtables = "list"
         ),
         prototype = list(
             dataSet = data.frame(empty = " "),
             origDataSet = data.frame(empty = " "),
             rowDataSet = data.frame(Row.names = 1, empty = " "),
             dataDesign = NULL,
-            name = "data", oldname = ""
+            name = "data", oldname = "",
+            freqtables = list()
         )
     ),
     contains = "PropertySet", ## need this to add observer to object
@@ -196,6 +198,12 @@ iNZDataModel <- setRefClass(
         },
         getDesign = function() {
             dataDesign
+        },
+        storeFreqTables = function(tbls) {
+            freqtables <<- tbls
+        },
+        getFreqTables = function() {
+            freqtables
         },
         getCode = function(remove = TRUE) {
             code <- attr(dataSet, "code")

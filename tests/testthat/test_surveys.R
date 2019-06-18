@@ -259,6 +259,10 @@ test_that("Post stratification can be removed", {
     )
 })
 
+test_that("Frequency tables are saved", {
+
+})
+
 test_that("Post stratification set by manually entering values", {
     expect_silent(swin <- iNZSurveyPostStrat$new(ui, .use_ui = FALSE))
     expect_silent(svalue(swin$PSvar, index = TRUE) <- 1)

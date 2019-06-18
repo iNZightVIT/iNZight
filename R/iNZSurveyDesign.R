@@ -375,9 +375,14 @@ iNZSurveyPostStrat <- setRefClass(
             ## populate on load
             if (!is.null(curDes$poststrat)) {
                 svalue(PSvar) <<- names(curDes$poststrat)
-                lvldf <<- curDes$poststrat
+                lvldf <<- GUI$getActiveDoc()$getModel()$getFreqTables()
                 display_tbl()
             }
+
+            ## when the window closes, store the lvldf in survey
+            addHandlerDestroy(win, function(h, ...) {
+                GUI$getActiveDoc()$getModel()$storeFreqTables(lvldf)
+            })
 
             visible(win) <<- TRUE
 
