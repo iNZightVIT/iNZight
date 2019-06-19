@@ -12,6 +12,11 @@ iNZSurveyDesign <- setRefClass(
         fpcVar = "ANY",
         combWts = "ANY",
         repVars = "ANY",
+        repType = "ANY",
+        repScale = "ANY",
+        repRscalesBtn = "ANY",
+        repRscales = "ANY",
+        rscalesTbl = "ANY",
         createBtn = "ANY",
         cancelBtn = "ANY"
     ),
@@ -225,7 +230,7 @@ iNZSurveyDesign <- setRefClass(
             g
         },
         set_repdesign = function() {
-            size(designWin) <<- c(700, 500)
+            size(designWin) <<- c(800, -1)
             g <- ggroup()
 
             g1 <- gvbox(container = g)
@@ -234,28 +239,105 @@ iNZSurveyDesign <- setRefClass(
 
             ## ... weights, combine.weights here ...
             tbl <- glayout(container = g1)
-            tbl[1, 1, expand = TRUE, anchor = c(1, 0)] <-
-                glabel("Weighting variable: ")
+            ii <- 1
+
+            tbl[ii, 1, expand = TRUE, anchor = c(1, 0)] <-
+                glabel("Sampling weights : ")
             wtVar <<- gcombobox(vars)
-            tbl[1, 2, expand = TRUE] <- wtVar
+            tbl[ii, 2, expand = TRUE] <- wtVar
+            ii <- ii + 1
 
             combWts <<- gcheckbox(
                 "Replication weights incorporate sampling weights",
                 checked = TRUE)
-            tbl[2, 1:2, expand = TRUE, anchor = c(1, 0)] <- combWts
-
+            tbl[ii, 1:2, expand = TRUE, anchor = c(1, 0)] <- combWts
+            ii <- ii + 1
 
             addSpace(g1, 5)
 
             repVars <<- gtable(vars[-1], multiple = TRUE, container = g1)
             repVars$set_names("Select replicate weights")
-            size(repVars) <<- c(300, 350)
+            size(repVars) <<- c(-1, 320)
+
+            lbl <- glabel(
+                paste(sep = "\n",
+                    "To select a range, click the first, then hold SHIFT while clicking the last.",
+                    "Hold CTRL while clicking to add and remove invidividual variables."
+                )
+            )
+            font(lbl) <- list(size = 8)
+            add(g1, lbl)
 
 
-            g2 <- gvbox(container = g)
+            g2 <- gvbox(container = g, expand = TRUE)
             ## type, scale, etc.
+            
+            tbl2 <- glayout(container = g2)
+            ii <- 1
 
+            lbl <- glabel("Type of replication weights: ")
+            repType <<- gcombobox(
+                c("BRR", "Fay", "JK1", "JKn", "bootstrap", "other"),
+                selected = 6
+            )
+            tbl2[ii, 1, expand = TRUE, anchor = c(1, 0)] <- lbl
+            tbl2[ii, 2, expand = TRUE] <- repType
+            ii <- ii + 1
+
+            lbl <- glabel("Overall scale: ")
+            repScale <<- gedit("")
+            tbl2[ii, 1, expand = TRUE, anchor = c(1, 0)] <- lbl
+            tbl2[ii, 2, expand = TRUE] <- repScale
+            ii <- ii + 1
+
+            lbl <- glabel("Replicate scales: ")
+            repRscalesBtn <<- gbutton("Read from file ...",
+                handler = function(h, ...) {
+                    f <- gfile(
+                        type = "open",
+                        filter = c("csv" = "csv")
+                    )
+                    if (length(f) == 0) return()
+
+                    df <- read.csv(f)
+                    repRscales <<- data.frame(
+                        repvar = svalue(repVars),
+                        rscales = df[,1]
+                    )
+                    display_scales()
+                }
+            )
+            tbl2[ii, 1, expand = TRUE, anchor = c(1, 0)] <- lbl
+            tbl2[ii, 2, expand = TRUE] <- repRscalesBtn
+            ii <- ii + 1
+
+            rscalesTbl <<- gdf(
+                data.frame(repvar = character(), rscales = numeric()),
+                container = g2
+            )
+            rscalesTbl$set_editable(FALSE, 1)
+
+            addHandlerSelectionChanged(repVars, function(h, ...) {
+                repRscales <<- data.frame(
+                    repvar = svalue(h$obj),
+                    rscales = rep(1, length(svalue(h$obj)))
+                )
+                display_scales()
+            })
+            
+            addHandlerChanged(repType, function(h, ...) {
+                need.scales <- !svalue(h$obj) %in% c("BRR", "Fay", "JK1", "JKn")
+                enabled(repScale) <<- need.scales
+                enabled(repRscalesBtn) <<- need.scales
+
+            })
+
+
+            ## Return the content container thing
             g
+        },
+        display_scales = function() {
+            rscalesTbl$set_items(repRscales)
         },
         set_frequency = function() {
             g <- gvbox()
@@ -513,7 +595,7 @@ iNZSurveyPostStrat <- setRefClass(
                 ## add button to second-to-last-row
                 PSlvls[ii-1, 3, anchor = c(1, 0)] <<- btn
 
-                btn <- gbutton("Read from clipboard ...")
+                btn <- gbutton("Paste from clipboard ...")
                 PSlvls[ii, 3, anchor = c(1, 0)] <<- btn
 
 

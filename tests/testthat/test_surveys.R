@@ -122,12 +122,13 @@ ui$close()
 dchis <- suppressWarnings(svrepdesign(data = chis[,c(1:10, 92:96)],
     repweights = chis[, 12:91],
     weights = chis[, 11],
-    type = "BRR"
+    type = "other", scale = 1, rscales = 1
 ))
 
 # devtools::load_all()
 ui <- iNZGUI$new()
 ui$initializeGui(chis)
+
 test_that("Replicate weights can be specified", {
     expect_silent(swin <- iNZSurveyDesign$new(ui, type = "replicate"))
 
