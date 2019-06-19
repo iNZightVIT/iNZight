@@ -220,7 +220,7 @@ Sys.sleep(5)
 
 
 test_that("Get inference disabled for surveys", {
-    swin <- iNZSurveyDesign$new(ui, warn = FALSE)
+    swin <- iNZSurveyDesign$new(ui)
     svalue(swin$clus1Var) <- "dnum"
     svalue(swin$clus2Var) <- "snum"
     svalue(swin$fpcVar) <- "fpc1 + fpc2"

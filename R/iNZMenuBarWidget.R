@@ -143,11 +143,18 @@ iNZMenuBarWidget <- setRefClass(
                 gseparator(),
                 "Survey design" = list(
                     surveydesign =
-                        gaction("Specify survey design ...",
+                        gaction("Specify design ...",
                             icon = "symbol_diamond",
-                            handler = function(h, ...) iNZSurveyDesign$new(GUI)
+                            handler = function(h, ...)
+                                iNZSurveyDesign$new(GUI, type = "survey")
                         ),
-                    poststrat = 
+                    repdesign =
+                        gaction("Specify replicate design ...",
+                            icon = "symbol_diamond",
+                            handler = function(h, ...)
+                                iNZSurveyDesign$new(GUI, type = "replicate")
+                        ),
+                    poststrat =
                         gaction("Post stratify ...",
                             icon = "symbol_diamond",
                             handler = function(h, ...) iNZSurveyPostStrat$new(GUI)
@@ -168,9 +175,9 @@ iNZMenuBarWidget <- setRefClass(
                         gaction("Specify frequency column",
                             icon = "symbol_diamond",
                             handler = function(h, ...)
-                                iNZSurveyDesign$new(GUI, freq = TRUE)
+                                iNZSurveyDesign$new(GUI, type = "frequency")
                         ),
-                    dropfrequency = 
+                    dropfrequency =
                         gaction("Remove frequency column",
                             icon = "symbol_diamond",
                             handler = function(h, ...) {

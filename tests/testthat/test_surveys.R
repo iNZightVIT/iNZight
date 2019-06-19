@@ -2,12 +2,13 @@ context("Survey data")
 data(api, package = "survey")
 chis <- iNZightTools::smart_read("chis.csv")
 
+# ui$close()
 ui <- iNZGUI$new()
 ui$initializeGui(apiclus2)
 on.exit(gWidgets2::dispose(ui$win))
 
 test_that("Survey design window defaults are empty", {
-    expect_silent(swin <- iNZSurveyDesign$new(ui, warn = FALSE))
+    expect_silent(swin <- iNZSurveyDesign$new(ui))
 
     expect_equal(svalue(swin$stratVar), "")
     expect_equal(svalue(swin$clus1Var), "")
@@ -21,7 +22,7 @@ test_that("Survey design window defaults are empty", {
 
 # svydesign(id = ~dnum + snum, fpc = ~fpc1 + fpc2, data = apiclus2)
 test_that("Survey design can be specified using window", {
-    expect_silent(swin <- iNZSurveyDesign$new(ui, warn = FALSE))
+    expect_silent(swin <- iNZSurveyDesign$new(ui))
     expect_silent(svalue(swin$clus1Var) <- "dnum")
     expect_silent(svalue(swin$clus2Var) <- "snum")
     expect_silent(svalue(swin$fpcVar) <- "fpc1 + fpc2")
@@ -48,7 +49,7 @@ test_that("Survey design can be specified using window", {
 })
 
 test_that("Survey design window remembers the design", {
-    expect_silent(swin <- iNZSurveyDesign$new(ui, warn = FALSE))
+    expect_silent(swin <- iNZSurveyDesign$new(ui))
 
     expect_equal(svalue(swin$stratVar), "")
     expect_equal(svalue(swin$clus1Var), "dnum")
@@ -73,18 +74,23 @@ library(magrittr)
 suppressWarnings({
     cas2 <- cas %>%
         select("gender", "getlunch", "travel") %>%
+        mutate(
+            getlunch = forcats::fct_explicit_na(getlunch)
+        ) %>%
         group_by(gender, getlunch, travel) %>%
         tally(name = "frequency") %>%
+        ungroup() %>%
         mutate(height = sample(cas$height, nrow(.))) %>%
         as.data.frame()
 })
 
+# ui$close()
 ui <- iNZGUI$new()
 ui$initializeGui(cas2)
 on.exit(gWidgets2::dispose(ui$win))
 
 test_that("Frequency column specification is passed to settings", {
-    expect_silent(swin <- iNZSurveyDesign$new(ui, freq = TRUE, warn = FALSE))
+    expect_silent(swin <- iNZSurveyDesign$new(ui, type = "frequency"))
 
     expect_equal(svalue(swin$freqVar), character(0))
     expect_silent(svalue(swin$freqVar) <- "frequency")
@@ -123,13 +129,7 @@ dchis <- suppressWarnings(svrepdesign(data = chis[,c(1:10, 92:96)],
 ui <- iNZGUI$new()
 ui$initializeGui(chis)
 test_that("Replicate weights can be specified", {
-    expect_silent(swin <- iNZSurveyDesign$new(ui, warn = FALSE))
-
-    # check rep weights box
-    expect_false(svalue(swin$useRep))
-    expect_false(visible(swin$repG))
-    expect_silent(svalue(swin$useRep) <- TRUE)
-    expect_true(visible(swin$repG))
+    expect_silent(swin <- iNZSurveyDesign$new(ui, type = "replicate"))
 
     # select variables
     svalue(swin$wtVar) <- "rakedw0"
@@ -144,7 +144,7 @@ test_that("Replicate weights can be specified", {
             clus2 = NULL,
             wt = "rakedw0",
             fpc = NULL,
-            nest = FALSE,
+            nest = NULL,
             repweights = paste("rakedw", 1:80, sep = ""),
             poststrat = NULL,
             freq = NULL
