@@ -87,69 +87,63 @@ iNZDataModel <- setRefClass(
         },
         setDesign = function(strata = NULL, clus1 = NULL, clus2 = NULL,
                              wt = NULL, nest = NULL, fpc = NULL,
-                             repweights = NULL,
+                             repweights = NULL, reptype = NULL,
+                             scale = NULL, rscales = NULL,
                              poststrat = NULL,
-                             freq = NULL,
+                             type = c("survey", "replicate"),
                              gui, ...) {
-            if (!is.null(freq)) {
-                dataDesign <<-
-                    list(
-                        strata = NULL,
-                        clus1  = NULL,
-                        clus2  = NULL,
-                        wt     = NULL,
-                        fpc    = NULL,
-                        nest   = NULL,
-                        repweights = NULL,
-                        poststrat = NULL,
-                        freq   = freq
-                    )
-            } else if (is.null(strata) & is.null(clus1) & is.null(clus2) &
+            if (is.null(strata) & is.null(clus1) & is.null(clus2) &
                 is.null(wt) & is.null(nest) & is.null(fpc) &
                 is.null(repweights) & is.null(poststrat)) {
                 dataDesign <<- NULL
+                dataDesignName <<- name
             } else {
                 dataDesign <<-
-                    list(
-                        strata = strata,
-                        clus1  = clus1,
-                        clus2  = clus2,
-                        wt     = wt,
-                        fpc    = fpc,
-                        nest   = nest,
-                        repweights = repweights,
-                        poststrat = poststrat,
-                        freq   = NULL
+                    switch(type,
+                        "survey" = list(
+                            strata = strata,
+                            clus1  = clus1,
+                            clus2  = clus2,
+                            wt     = wt,
+                            fpc    = fpc,
+                            nest   = nest,
+                            poststrat = poststrat,
+                            type = type
+                        ),
+                        "replicate" = list(
+                            wt = wt,
+                            repweights = repweights,
+                            reptype = reptype,
+                            scale = scale,
+                            rscales = rscales,
+                            poststrat = poststrat,
+                            type = type
+                        )
+                    )
+                dataDesignName <<-
+                    sprintf("%s.%s",
+                        name,
+                        switch(type, "survey" = "svy", "replicate" = "repsvy")
                     )
             }
-            dataDesignName <<-
-                sprintf("%s.%s",
-                    name,
-                    ifelse(is.null(freq), "svy", "freq")
-                )
         },
         createSurveyObject = function() {
             des <- getDesign()
 
-            id <- if (is.null(des$clus1) & is.null(des$clus2)) {
-                "~ 1"
-            } else if (is.null(des$clus1)) {
-                paste("~", des$clus2)
-            } else if (is.null(des$clus2)) {
-                paste("~", des$clus1)
-            } else {
-                paste("~", des$clus1, "+", des$clus2)
-            }
+            weights <- if (is.null(des$wt)) "NULL" else paste("~", des$wt)
+            if (des$type == "survey") {
+                id <- if (is.null(des$clus1) & is.null(des$clus2)) {
+                    "~ 1"
+                } else if (is.null(des$clus1)) {
+                    paste("~", des$clus2)
+                } else if (is.null(des$clus2)) {
+                    paste("~", des$clus1)
+                } else {
+                    paste("~", des$clus1, "+", des$clus2)
+                }
 
-            strata <- if (is.null(des$strata)) "NULL" else paste("~", des$strata)
-            weights <-
-                if (is.null(des$wt) && is.null(des$freq)) "NULL"
-                else if (is.null(des$freq)) paste("~", des$wt)
-                else paste("~", des$freq)
-            fpcs <- if (is.null(des$fpc)) "NULL" else paste("~", des$fpc)
-
-
-            if (is.null(des$repweights)) {
+                strata <- if (is.null(des$strata)) "NULL" else paste("~", des$strata)
+                fpcs <- if (is.null(des$fpc)) "NULL" else paste("~", des$fpc)
                 obj <-
                     parse(text =
                         paste0(
@@ -167,15 +161,21 @@ iNZDataModel <- setRefClass(
                 ## replicate weights specified
                 repweights <- if(is.null(des$repweights)) "NULL"
                     else paste("~", paste(des$repweights, collapse = " + "))
-                type = "BRR"
+                type <- des$reptype
+                rscales <- if (is.null(des$rscales)) "NULL"
+                    else sprintf("c(%s)", paste(des$rscales, collapse = ", "))
                 obj <-
                     parse(text =
                         paste0("survey::svrepdesign(",
-                            "data = dataSet, ",
                             if (!is.null(des$wt))
                                 sprintf("weights = %s, ", weights),
                             sprintf("repweights = %s, ", repweights),
-                            sprintf("type = '%s')", type)
+                            sprintf("type = '%s', ", type),
+                            if (!is.null(des$scale))
+                                sprintf("scale = %s, ", des$scale),
+                            if (!is.null(des$rscales))
+                                sprintf("rscales = %s, ", rscales),
+                            "data = dataSet)"
                         )
                     )
             }

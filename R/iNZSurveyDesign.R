@@ -3,6 +3,7 @@ iNZSurveyDesign <- setRefClass(
     fields = list(
         GUI = "ANY",
         designWin = "ANY",
+        svytype = "character",
         freqVar = "ANY",
         stratVar = "ANY",
         clus1Var = "ANY",
@@ -22,7 +23,7 @@ iNZSurveyDesign <- setRefClass(
     ),
     methods = list(
         initialize = function(GUI, type = c("survey", "replicate", "frequency")) {
-            initFields(GUI = GUI)
+            initFields(GUI = GUI, svytype = match.arg(type))
 
             if (is.null(GUI$getActiveData())) {
                 gerror("Please import a data set first.",
@@ -34,15 +35,14 @@ iNZSurveyDesign <- setRefClass(
                 return()
             }
 
-            type <- match.arg(type)
             designWin <<- gwindow(
-                title = switch(type,
+                title = switch(svytype,
                     survey = "Specify Complex Survey Design",
                     replicate = "Specify Survey Design with Replicate Weights",
                     frequency = "Specify frequency column"
                 ),
                 visible = FALSE,
-                width = ifelse(type == "replicate", 600, 450),
+                width = ifelse(svytype == "replicate", 600, 450),
                 height = 150,
                 parent = GUI$win
             )
@@ -50,7 +50,7 @@ iNZSurveyDesign <- setRefClass(
             gmain <- gvbox(container = designWin, expand = TRUE)
             gmain$set_borderwidth(5)
 
-            pnl <- switch(type,
+            pnl <- switch(svytype,
                 "survey" = set_design(),
                 "replicate" = set_repdesign(),
                 "frequency" = set_frequency()
@@ -81,7 +81,7 @@ iNZSurveyDesign <- setRefClass(
                     svalue(x)
                 }
 
-                switch(type,
+                switch(svytype,
                     "survey" = {
                         strat <- svalue_or_null(stratVar)
                         clus1 <- svalue_or_null(clus1Var)
@@ -98,16 +98,24 @@ iNZSurveyDesign <- setRefClass(
                             wt = wts,
                             nest = nest,
                             fpc = fpc,
+                            type = "survey",
                             gui = GUI
                         )
                     },
                     "replicate" = {
                         wts <- svalue_or_null(wtVar)
                         repWts <- svalue(repVars, index = FALSE)
+                        reptype <- svalue(repType)
+                        scale <- as.numeric(svalue(repScale))
+                        rscales <- repRscales$rscales
                         clear <- is.null(wts) && length(repWts) == 0
                         GUI$getActiveDoc()$getModel()$setDesign(
                             wt = wts,
                             repweights = repWts,
+                            reptype = reptype,
+                            scale = scale,
+                            rscales = rscales,
+                            type = "replicate",
                             gui = GUI
                         )
                     },
@@ -154,7 +162,7 @@ iNZSurveyDesign <- setRefClass(
             ## Populate the lists:
             curDes <- GUI$getActiveDoc()$getModel()$getDesign()
             if (!is.null(curDes)) {
-                switch(type,
+                switch(svytype,
                     "survey" = {
                         if (!is.null(curDes$strata))
                             svalue(stratVar) <<- curDes$strata
@@ -613,6 +621,7 @@ iNZSurveyPostStrat <- setRefClass(
                 curDes$wt, curDes$nest, curDes$fpc,
                 curDes$repWts,
                 poststrat = if (length(svalue(PSvar))) lvldf[svalue(PSvar)] else NULL,
+                type = curDes$type,
                 gui = GUI
             )
             setOK <- try(

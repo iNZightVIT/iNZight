@@ -41,9 +41,8 @@ test_that("Survey design can be specified using window", {
             wt = NULL,
             fpc = "fpc1 + fpc2",
             nest = FALSE,
-            repweights = NULL,
             poststrat = NULL,
-            freq = NULL
+            type = "survey"
         )
     )
 })
@@ -135,20 +134,23 @@ test_that("Replicate weights can be specified", {
     # select variables
     svalue(swin$wtVar) <- "rakedw0"
     svalue(swin$repVars) <- paste("rakedw", 1:80, sep = "")
+    swin$repVars$invoke_change_handler()
+    svalue(swin$repType) <- "other"
+    svalue(swin$repScale) <- 1
+    swin$repRscales$scales <- rep(1, length(swin$repVars))
+    swin$display_scales()
 
     expect_silent(swin$createBtn$invoke_change_handler())
     expect_equal(
         ui$iNZDocuments[[ui$activeDoc]]$getModel()$getDesign(),
         list(
-            strata = NULL,
-            clus1 = NULL,
-            clus2 = NULL,
             wt = "rakedw0",
-            fpc = NULL,
-            nest = NULL,
             repweights = paste("rakedw", 1:80, sep = ""),
+            reptype = "other",
+            scale = 1,
+            rscales = rep(1, 80),
             poststrat = NULL,
-            freq = NULL
+            type = "replicate"
         )
     )
 })
@@ -227,9 +229,8 @@ test_that("Post stratification set by importing additional dataset", {
             wt = "pw",
             fpc = "fpc",
             nest = FALSE,
-            repweights = NULL,
             poststrat = list(stype = pop.types),
-            freq = NULL
+            type = "survey"
         )
     )
 })
@@ -255,9 +256,8 @@ test_that("Post stratification can be removed", {
             wt = "pw",
             fpc = "fpc",
             nest = FALSE,
-            repweights = NULL,
             poststrat = NULL,
-            freq = NULL
+            type = "survey"
         )
     )
 })
@@ -305,9 +305,8 @@ test_that("Post stratification set by manually entering values", {
             wt = "pw",
             fpc = "fpc",
             nest = FALSE,
-            repweights = NULL,
             poststrat = list(stype = pop.types),
-            freq = NULL
+            type = "survey"
         )
     )
 })
@@ -349,9 +348,8 @@ test_that("Multiple variables can be specified (raking calibration)", {
             wt = "pw",
             fpc = "fpc",
             nest = FALSE,
-            repweights = NULL,
             poststrat = list(stype = pop.types, sch.wide = pop.types2),
-            freq = NULL
+            type = "survey"
         )
     )
 
