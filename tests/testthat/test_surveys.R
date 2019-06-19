@@ -113,11 +113,11 @@ ui$close()
 # devtools::load_all()
 chis <- iNZightTools::smart_read("chis.csv")
 # chis <- iNZightTools::smart_read("tests/testthat/chis.csv")
-dchis <- svrepdesign(data = chis[,c(1:10, 92:96)],
+dchis <- suppressWarnings(svrepdesign(data = chis[,c(1:10, 92:96)],
     repweights = chis[, 12:91],
     weights = chis[, 11],
     type = "BRR"
-)
+))
 
 # devtools::load_all()
 ui <- iNZGUI$new()
@@ -156,7 +156,8 @@ test_that("Replicate weight object is valid", {
     expect_silent(
         des <- ui$iNZDocuments[[ui$activeDoc]]$getModel()$createSurveyObject()
     )
-    expect_equal(des)
+    expect_is(des, "svyrep.design")
+    expect_equivalent(weights(des), weights(dchis))
 })
 
 ui$close()

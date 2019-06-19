@@ -148,29 +148,37 @@ iNZDataModel <- setRefClass(
                 else paste("~", des$freq)
             fpcs <- if (is.null(des$fpc)) "NULL" else paste("~", des$fpc)
 
-            repweights <- if(is.null(des$repweights)) "NULL"
-                else paste("~", paste(des$repweights, collapse = " + "))
 
-            obj <-
-                parse(text =
-                    paste0(
-                        ifelse(is.null(des$repweights),
+            if (is.null(des$repweights)) {
+                obj <-
+                    parse(text =
+                        paste0(
                             "survey::svydesign(",
-                            "survey::svrepdesign("
-                        ),
-                        "id = ", id, ", ",
-                        if (!is.null(des$strata)) sprintf("strata = %s, ", strata),
-                        if (!is.null(des$wt) || !is.null(des$freq))
-                            sprintf("weights = %s, ", weights),
-                        if (!is.null(des$fpc)) sprintf("fpc = %s, ", fpcs),
-                        if (!is.null(des$nest) && des$nest) "nest = TRUE, ",
-                        if (!is.null(des$repweights))
-                            sprintf("repweights = %s, type = '%s'",
-                                repweights, "BRR"
-                            ),
-                        "data = dataSet)"
+                            "id = ", id, ", ",
+                            if (!is.null(des$strata)) sprintf("strata = %s, ", strata),
+                            if (!is.null(des$wt) || !is.null(des$freq))
+                                sprintf("weights = %s, ", weights),
+                            if (!is.null(des$fpc)) sprintf("fpc = %s, ", fpcs),
+                            if (!is.null(des$nest) && des$nest) "nest = TRUE, ",
+                            "data = dataSet)"
+                        )
                     )
-                )
+            } else {
+                ## replicate weights specified
+                repweights <- if(is.null(des$repweights)) "NULL"
+                    else paste("~", paste(des$repweights, collapse = " + "))
+                type = "BRR"
+                obj <-
+                    parse(text =
+                        paste0("survey::svrepdesign(",
+                            "data = dataSet, ",
+                            if (!is.null(des$wt))
+                                sprintf("weights = %s, ", weights),
+                            sprintf("repweights = %s, ", repweights),
+                            sprintf("type = '%s')", type)
+                        )
+                    )
+            }
 
             if (!is.null(des$poststrat)) {
                 design_obj <- eval(obj)
