@@ -1,5 +1,6 @@
 context("Survey data")
 data(api, package = "survey")
+chis <- iNZightTools::smart_read("chis.csv")
 
 ui <- iNZGUI$new()
 ui$initializeGui(apiclus2)
@@ -111,7 +112,6 @@ test_that("Frequencies retained after filtering", {
 ui$close()
 
 # devtools::load_all()
-chis <- iNZightTools::smart_read("chis.csv")
 # chis <- iNZightTools::smart_read("tests/testthat/chis.csv")
 dchis <- suppressWarnings(svrepdesign(data = chis[,c(1:10, 92:96)],
     repweights = chis[, 12:91],
