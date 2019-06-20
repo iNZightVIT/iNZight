@@ -107,7 +107,8 @@ iNZSurveyDesign <- setRefClass(
                         repWts <- svalue(repVars, index = FALSE)
                         reptype <- svalue(repType)
                         scale <- as.numeric(svalue(repScale))
-                        rscales <- repRscales$rscales
+                        rscales <- as.numeric(repRscales$rscales)
+                        if (any(is.na(rscales))) rscales <- NULL
                         clear <- is.null(wts) && length(repWts) == 0
                         GUI$getActiveDoc()$getModel()$setDesign(
                             wt = wts,
