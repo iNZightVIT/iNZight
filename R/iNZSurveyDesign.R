@@ -292,10 +292,21 @@ iNZSurveyDesign <- setRefClass(
             tbl2[ii, 2, expand = TRUE] <- repType
             ii <- ii + 1
 
+            addSpace(g2, 5)
+            scalesG <- gvbox(container = g2)
+
+            tbl3 <- glayout(container = scalesG)
+            ii <- 1
+
+            scalesLbl <- glabel("Specify at least one of overall scale and individual replicate scales")
+            font(scalesLbl) <- list(size = 9, weight = "bold")
+            tbl3[ii, 1:2, expand = TRUE, anchor = c(0, 0)] <- scalesLbl
+            ii <- ii + 1
+
             lbl <- glabel("Overall scale: ")
             repScale <<- gedit("")
-            tbl2[ii, 1, expand = TRUE, anchor = c(1, 0)] <- lbl
-            tbl2[ii, 2, expand = TRUE] <- repScale
+            tbl3[ii, 1, expand = TRUE, anchor = c(1, 0)] <- lbl
+            tbl3[ii, 2, expand = TRUE] <- repScale
             ii <- ii + 1
 
             lbl <- glabel("Replicate scales: ")
@@ -308,36 +319,39 @@ iNZSurveyDesign <- setRefClass(
                     if (length(f) == 0) return()
 
                     df <- read.csv(f)
-                    repRscales <<- data.frame(
-                        repvar = svalue(repVars),
-                        rscales = df[,1]
-                    )
+                    if (nrow(df) != length(svalue(repVars))) {
+                        gmessage("You need to specify one scale per replicate.")
+                        return()
+                    }
+                    names(df)[1] <- "rscales"
+                    repRscales <<- df
                     display_scales()
                 }
             )
-            tbl2[ii, 1, expand = TRUE, anchor = c(1, 0)] <- lbl
-            tbl2[ii, 2, expand = TRUE] <- repRscalesBtn
+            tbl3[ii, 1, expand = TRUE, anchor = c(1, 0)] <- lbl
+            tbl3[ii, 2, expand = TRUE] <- repRscalesBtn
             ii <- ii + 1
 
-            rscalesTbl <<- gdf(
-                data.frame(repvar = character(), rscales = numeric()),
-                container = g2
+            lbl <- glabel("File should contain one replicate scale per line.")
+            font(lbl) <- list(size = 8)
+            tbl3[ii, 2, expand = TRUE, anchor = c(-1, 0)] <- lbl
+            ii <- ii + 1
+
+            rscalesTbl <<- gtable(
+                data.frame(rscales = numeric())
             )
-            rscalesTbl$set_editable(FALSE, 1)
+            tbl3[ii, 2, expand = TRUE] <- rscalesTbl
+            size(rscalesTbl) <<- c(-1, 200)
 
             addHandlerSelectionChanged(repVars, function(h, ...) {
                 repRscales <<- data.frame(
-                    repvar = svalue(h$obj),
-                    rscales = rep(1, length(svalue(h$obj)))
+                    rscales = rep("", length(svalue(h$obj)))
                 )
                 display_scales()
             })
             
             addHandlerChanged(repType, function(h, ...) {
-                need.scales <- !svalue(h$obj) %in% c("BRR", "Fay", "JK1", "JKn")
-                enabled(repScale) <<- need.scales
-                enabled(repRscalesBtn) <<- need.scales
-
+                visible(scalesG) <- !svalue(h$obj) %in% c("BRR", "Fay", "JK1", "JKn")
             })
 
 
