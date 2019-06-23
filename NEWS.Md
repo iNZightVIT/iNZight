@@ -4,6 +4,7 @@ __Release date__: TBA
 - allow users to specify replicate weights in the survey design
 - specify post stratification information to existing survey design
 - specify frequency column to use in plots, summary, and inference
+- add suite of Financial Times plots (using ggplot2) (#211, @daniel-barnett)
 
 
 # iNZight 3.4
