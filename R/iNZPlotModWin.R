@@ -2437,7 +2437,7 @@ iNZPlotMod <- setRefClass(
                     addHandlerChanged(NBARS, function(h, ...) updateEverything())
                     addHandlerChanged(START, function(h, ...) updateEverything())
                 }
-            } else if (grep("^gg_", PLOTTYPE)) {
+            } else if (grepl("^gg_", PLOTTYPE)) {
               
             } else {
                 addHandlerKeystroke(xlower, updT)
