@@ -1,8 +1,9 @@
 ## iNZight 3.4.0.9000
 __Release date__: TBA
 
-
-
+- allow users to specify replicate weights in the survey design
+- specify post stratification information to existing survey design
+- specify frequency column to use in plots, summary, and inference
 
 
 # iNZight 3.4
