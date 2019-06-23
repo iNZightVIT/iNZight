@@ -1,12 +1,14 @@
 context("Survey data")
 data(api, package = "survey")
+chis <- iNZightTools::smart_read("chis.csv")
 
+# ui$close()
 ui <- iNZGUI$new()
 ui$initializeGui(apiclus2)
 on.exit(gWidgets2::dispose(ui$win))
 
 test_that("Survey design window defaults are empty", {
-    expect_silent(swin <- iNZSurveyDesign$new(ui, warn = FALSE))
+    expect_silent(swin <- iNZSurveyDesign$new(ui))
 
     expect_equal(svalue(swin$stratVar), "")
     expect_equal(svalue(swin$clus1Var), "")
@@ -20,7 +22,7 @@ test_that("Survey design window defaults are empty", {
 
 # svydesign(id = ~dnum + snum, fpc = ~fpc1 + fpc2, data = apiclus2)
 test_that("Survey design can be specified using window", {
-    expect_silent(swin <- iNZSurveyDesign$new(ui, warn = FALSE))
+    expect_silent(swin <- iNZSurveyDesign$new(ui))
     expect_silent(svalue(swin$clus1Var) <- "dnum")
     expect_silent(svalue(swin$clus2Var) <- "snum")
     expect_silent(svalue(swin$fpcVar) <- "fpc1 + fpc2")
@@ -39,15 +41,14 @@ test_that("Survey design can be specified using window", {
             wt = NULL,
             fpc = "fpc1 + fpc2",
             nest = FALSE,
-            repweights = NULL,
             poststrat = NULL,
-            freq = NULL
+            type = "survey"
         )
     )
 })
 
 test_that("Survey design window remembers the design", {
-    expect_silent(swin <- iNZSurveyDesign$new(ui, warn = FALSE))
+    expect_silent(swin <- iNZSurveyDesign$new(ui))
 
     expect_equal(svalue(swin$stratVar), "")
     expect_equal(svalue(swin$clus1Var), "dnum")
@@ -72,18 +73,23 @@ library(magrittr)
 suppressWarnings({
     cas2 <- cas %>%
         select("gender", "getlunch", "travel") %>%
+        mutate(
+            getlunch = forcats::fct_explicit_na(getlunch)
+        ) %>%
         group_by(gender, getlunch, travel) %>%
         tally(name = "frequency") %>%
+        ungroup() %>%
         mutate(height = sample(cas$height, nrow(.))) %>%
         as.data.frame()
 })
 
+# ui$close()
 ui <- iNZGUI$new()
 ui$initializeGui(cas2)
 on.exit(gWidgets2::dispose(ui$win))
 
 test_that("Frequency column specification is passed to settings", {
-    expect_silent(swin <- iNZSurveyDesign$new(ui, freq = TRUE, warn = FALSE))
+    expect_silent(swin <- iNZSurveyDesign$new(ui, type = "frequency"))
 
     expect_equal(svalue(swin$freqVar), character(0))
     expect_silent(svalue(swin$freqVar) <- "frequency")
@@ -110,52 +116,51 @@ test_that("Frequencies retained after filtering", {
 
 ui$close()
 
-
-data(scd, package = "survey")
-repweights <- 2 *
-    data.frame(
-        weights.1 = c(1,0,1,0,1,0),
-        weights.2 = c(1,0,0,1,0,1),
-        weights.3 = c(0,1,1,0,0,1),
-        weights.4 = c(0,1,0,1,1,0)
-    )
-scd$ESAcat <- as.factor(scd$ESA)
-scd$ambulancecat <- as.factor(scd$ambulance)
-scd <- cbind(scd, repweights)
+# devtools::load_all()
+# chis <- iNZightTools::smart_read("tests/testthat/chis.csv")
+dchis <- suppressWarnings(svrepdesign(data = chis[,c(1:10, 92:96)],
+    repweights = chis[, 12:91],
+    weights = chis[, 11],
+    type = "other", scale = 1, rscales = 1
+))
 
 # devtools::load_all()
 ui <- iNZGUI$new()
-ui$initializeGui(scd)
-test_that("Replicate weights can be specified", {
-    expect_silent(swin <- iNZSurveyDesign$new(ui, warn = FALSE))
+ui$initializeGui(chis)
 
-    # check rep weights box
-    expect_false(svalue(swin$useRep))
-    expect_false(visible(swin$repG))
-    expect_silent(svalue(swin$useRep) <- TRUE)
-    expect_true(visible(swin$repG))
+test_that("Replicate weights can be specified", {
+    expect_silent(swin <- iNZSurveyDesign$new(ui, type = "replicate"))
 
     # select variables
-    svalue(swin$repVars) <- paste("weights", 1:4, sep = ".")
+    svalue(swin$wtVar) <- "rakedw0"
+    svalue(swin$repVars) <- paste("rakedw", 1:80, sep = "")
+    swin$repVars$invoke_change_handler()
+    svalue(swin$repType) <- "other"
+    svalue(swin$repScale) <- 1
+    swin$repRscales$scales <- rep(1, length(swin$repVars))
+    swin$display_scales()
 
-    expect_warning(
-        swin$createBtn$invoke_change_handler(),
-        "No weights or probabilities"
-    )
+    expect_silent(swin$createBtn$invoke_change_handler())
     expect_equal(
         ui$iNZDocuments[[ui$activeDoc]]$getModel()$getDesign(),
         list(
-            strata = NULL,
-            clus1 = NULL,
-            clus2 = NULL,
-            wt = NULL,
-            fpc = NULL,
-            nest = FALSE,
-            repweights = paste("weights", 1:4, sep = "."),
+            wt = "rakedw0",
+            repweights = paste("rakedw", 1:80, sep = ""),
+            reptype = "other",
+            scale = 1,
+            rscales = rep(1, 80),
             poststrat = NULL,
-            freq = NULL
+            type = "replicate"
         )
     )
+})
+
+test_that("Replicate weight object is valid", {
+    expect_silent(
+        des <- ui$iNZDocuments[[ui$activeDoc]]$getModel()$createSurveyObject()
+    )
+    expect_is(des, "svyrep.design")
+    expect_equivalent(weights(des), weights(dchis))
 })
 
 ui$close()
@@ -224,9 +229,8 @@ test_that("Post stratification set by importing additional dataset", {
             wt = "pw",
             fpc = "fpc",
             nest = FALSE,
-            repweights = NULL,
             poststrat = list(stype = pop.types),
-            freq = NULL
+            type = "survey"
         )
     )
 })
@@ -252,9 +256,8 @@ test_that("Post stratification can be removed", {
             wt = "pw",
             fpc = "fpc",
             nest = FALSE,
-            repweights = NULL,
             poststrat = NULL,
-            freq = NULL
+            type = "survey"
         )
     )
 })
@@ -302,9 +305,8 @@ test_that("Post stratification set by manually entering values", {
             wt = "pw",
             fpc = "fpc",
             nest = FALSE,
-            repweights = NULL,
             poststrat = list(stype = pop.types),
-            freq = NULL
+            type = "survey"
         )
     )
 })
@@ -346,9 +348,8 @@ test_that("Multiple variables can be specified (raking calibration)", {
             wt = "pw",
             fpc = "fpc",
             nest = FALSE,
-            repweights = NULL,
             poststrat = list(stype = pop.types, sch.wide = pop.types2),
-            freq = NULL
+            type = "survey"
         )
     )
 
