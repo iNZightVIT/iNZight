@@ -1,11 +1,12 @@
 context("Survey data")
 data(api, package = "survey")
 chis <- iNZightTools::smart_read("chis.csv")
+ncsr <- iNZightTools::smart_read("ncsr.csv")
 
 # ui$close()
 ui <- iNZGUI$new()
 ui$initializeGui(apiclus2)
-on.exit(gWidgets2::dispose(ui$win))
+on.exit(try(ui$close(), TRUE))
 
 test_that("Survey design window defaults are empty", {
     expect_silent(swin <- iNZSurveyDesign$new(ui))
@@ -363,3 +364,29 @@ test_that("Multiple variables can be specified (raking calibration)", {
     expect_equal(des$postStrata, dclus1g2$postStrata)
 })
 
+ui$close()
+ui <- iNZGUI$new()
+ui$initializeGui(ncsr)
+
+test_that("New variables show up in calibration list", {
+    # ncsr <- iNZightTools::smart_read("tests/testthat/ncsr.csv")
+
+    swin <- iNZSurveyDesign$new(ui)
+    expect_silent(svalue(swin$stratVar) <- "SESTRAT")
+    expect_silent(svalue(swin$clus1Var) <- "SECLUSTR")
+    expect_silent(svalue(swin$wtVar) <- "popweight")
+    expect_silent(svalue(swin$nestChk) <- TRUE)
+    expect_silent(swin$createBtn$invoke_change_handler())
+
+    # add interaction between REGION and race
+    comb <- iNZcmbCatWin$new(ui)
+    svalue(ui$modWin$children[[1]]$children[[3]]) <- c("REGION", "race")
+    ui$modWin$children[[1]]$children[[3]]$invoke_change_handler()
+    ui$modWin$children[[1]]$children[[5]]$invoke_change_handler()
+    expect_is(ui$getActiveData()$REGION.race, "factor")
+
+    expect_silent(swin <- iNZSurveyPostStrat$new(ui, .use_ui = FALSE))
+    expect_true("REGION.race" %in% swin$PSvar$get_items())
+    swin$cancelBtn$invoke_change_handler()
+
+})
