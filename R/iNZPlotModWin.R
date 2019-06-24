@@ -1363,7 +1363,7 @@ iNZPlotMod <- setRefClass(
               ii <- ii + 1
             }
             
-            if (PLOTTYPE %in% c("gg_violin", "gg_barcode", "gg_column2", "gg_lollipop", "gg_boxplot", "gg_density")) {
+            if (PLOTTYPE %in% c("gg_violin", "gg_barcode", "gg_column2", "gg_lollipop", "gg_boxplot", "gg_density", "gg_dotstrip")) {
               tbl[ii, 1:2, anchor = c(1, 0), expand = TRUE] <- glabel("Fill colour:")
               
               if (isTRUE(!is.null(curSet$fill_colour))) {
@@ -1667,7 +1667,7 @@ iNZPlotMod <- setRefClass(
                   
                   newSet$palette <- svalue(paletteCombobox)
                   
-                  if (PLOTTYPE %in% c("gg_violin", "gg_barcode", "gg_column2", "gg_lollipop", "gg_boxplot", "gg_density")) {
+                  if (PLOTTYPE %in% c("gg_violin", "gg_barcode", "gg_column2", "gg_lollipop", "gg_boxplot", "gg_density", "gg_dotstrip")) {
                     newSet$fill_colour <- svalue(colourCombobox)
                   }
                   
