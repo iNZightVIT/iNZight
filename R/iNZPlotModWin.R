@@ -1359,6 +1359,24 @@ iNZPlotMod <- setRefClass(
               
               tbl[ii, 1:2, anchor = c(1, 0), expand = TRUE] <- lbl
               tbl[ii, 3:6, expand = TRUE] <- paletteCombobox
+              
+              ii <- ii + 1
+            }
+            
+            if (PLOTTYPE %in% c("gg_violin", "gg_barcode", "gg_column2", "gg_lollipop", "gg_boxplot", "gg_density")) {
+              tbl[ii, 1:2, anchor = c(1, 0), expand = TRUE] <- glabel("Fill colour:")
+              
+              if (isTRUE(!is.null(curSet$fill_colour))) {
+                fill_colour <- curSet$fill_colour
+              } else {
+                fill_colour <- "darkgreen"
+              }
+              
+              colourCombobox <- gedit(fill_colour, handler = function(h, ...) updateEverything())
+
+              tbl[ii, 3:6, expand = TRUE] <- colourCombobox
+              
+              ii <- ii + 1
             }
 
             if (PLOTTYPE %in% c("scatter", "dot")) {
@@ -1474,6 +1492,14 @@ iNZPlotMod <- setRefClass(
               tbl[ii, 3:6, expand = TRUE] <- sortOrder
               ii <- ii + 1
             }
+            
+            # if (PLOTTYPE %in% c("gg_column")) {
+            #   tbl[ii, 1:2, anchor = c(1, 0), expand = TRUE] <- glabel("Percentage axis:")
+            #   percentAxis <- gcheckbox(handler = function(h, ...) updateEverything())
+            #   tbl[ii, 3:6, expand = TRUE] <- percentAxis
+            #   
+            #   ii <- ii + 1
+            # }
 
             updateEverything <<- function(update = auto) {
                 ## To easily diable automatic updating of plot, add this argument,
@@ -1638,7 +1664,16 @@ iNZPlotMod <- setRefClass(
                   if (!(PLOTTYPE %in% c("gg_pie", "gg_donut", "gg_freqpolygon"))) {
                     newSet$rotation <- svalue(rotateCheck)
                   }
+                  
                   newSet$palette <- svalue(paletteCombobox)
+                  
+                  if (PLOTTYPE %in% c("gg_violin", "gg_barcode", "gg_column2", "gg_lollipop", "gg_boxplot", "gg_density")) {
+                    newSet$fill_colour <- svalue(colourCombobox)
+                  }
+                  
+                  if (PLOTTYPE %in% c("gg_column")) {
+                    newSet$percent <- svalue(percentAxis)
+                  }
                 }
                 
                 if (PLOTTYPE %in% c("gg_lollipop", "gg_column2")) {
