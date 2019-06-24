@@ -35,20 +35,20 @@ plot_list <- function(plot_type, x, y) {
     return_list <- list(
       dot  = "dot plot",
       hist = "histogram",
-      gg_violin = "violin",
-      gg_barcode = "barcode",
       gg_dotstrip = "dot strip",
+      gg_barcode = "barcode",
       gg_boxplot = "boxplot",
-      gg_cumcurve = "cumulative curve",
-      gg_density = "density"
+      gg_violin = "violin",
+      gg_density = "density",
+      gg_cumcurve = "cumulative curve"
     )
     
     # if (is.null(y)) {
-      return_list <- append(return_list, list(gg_column2 = "column",gg_lollipop = "lollipop"))
+      return_list <- append(return_list, list(gg_column2 = "column/row bar", gg_lollipop = "lollipop"), length(return_list) - 1)
     # }
     
     if ((!is.numeric(y) && nlevels(y) == 2) || (!is.numeric(x) && nlevels(x) == 2)) {
-      return_list <- append(return_list, list(gg_poppyramid = "population pyramid"))
+      return_list <- append(return_list, list(gg_poppyramid = "pyramid"))
     }
   } else if (plot_type %in% c(
     "gg_stackedbar", 
@@ -64,16 +64,16 @@ plot_list <- function(plot_type, x, y) {
   )) {
     return_list <- list(
       bar = "barplot", 
-      gg_column = "column",
-      gg_stackedcolumn = "stacked column"
+      gg_column = "column/row bar",
+      gg_stackedcolumn = "stacked column/row"
     )
     
     if (is.null(y)) {
-      return_list <- append(return_list, list(gg_pie = "pie",gg_donut = "donut"), 1)
+      return_list <- append(return_list, list(gg_pie = "pie",gg_donut = "donut"))
     } else {
       return_list <- append(return_list, list(gg_freqpolygon = "frequency polygons", gg_heatmap = "heatmap"))
       if (is.factor(y) && nlevels(y) == 2) {
-        return_list <- append(return_list, list(gg_spine = "spine"))
+        return_list <- append(return_list, list(gg_spine = "spine"), length(return_list) - 1)
       }
     }
   }
