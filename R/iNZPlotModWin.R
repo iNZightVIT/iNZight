@@ -43,14 +43,18 @@ plot_list <- function(plot_type, x, y) {
       gg_cumcurve = "cumulative curve"
     )
     
-    # if (is.null(y)) {
-      return_list <- append(return_list, list(gg_column2 = "column/row bar", gg_lollipop = "lollipop"), length(return_list) - 1)
-    # }
+    return_list <- append(return_list, list(gg_column2 = "column/row bar"), length(return_list) - 1)
+      
+    if (is.null(y)) {
+      return_list <- append(return_list, list(gg_lollipop = "lollipop"), length(return_list) - 1)
+    }
     
     if ((!is.numeric(y) && nlevels(y) == 2) || (!is.numeric(x) && nlevels(x) == 2)) {
       return_list <- append(return_list, list(gg_poppyramid = "pyramid"))
     }
   } else if (plot_type %in% c(
+    "gg_mosaic",
+    "gg_lollipop2",
     "gg_stackedbar", 
     "gg_stackedcolumn", 
     "gg_column", 
@@ -65,13 +69,14 @@ plot_list <- function(plot_type, x, y) {
     return_list <- list(
       bar = "barplot", 
       gg_column = "column/row bar",
-      gg_stackedcolumn = "stacked column/row"
+      gg_stackedcolumn = "stacked column/row",
+      gg_lollipop2 = "lollipop 2"
     )
     
     if (is.null(y)) {
       return_list <- append(return_list, list(gg_pie = "pie",gg_donut = "donut"))
     } else {
-      return_list <- append(return_list, list(gg_freqpolygon = "frequency polygons", gg_heatmap = "heatmap"))
+      return_list <- append(return_list, list(gg_freqpolygon = "frequency polygons", gg_heatmap = "heatmap", gg_mosaic = "mosaic"))
       if (is.factor(y) && nlevels(y) == 2) {
         return_list <- append(return_list, list(gg_spine = "spine"), length(return_list) - 1)
       }
