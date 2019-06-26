@@ -1524,13 +1524,28 @@ iNZPlotMod <- setRefClass(
               ii <- ii + 1
             }
             
-            # if (PLOTTYPE %in% c("gg_column")) {
-            #   tbl[ii, 1:2, anchor = c(1, 0), expand = TRUE] <- glabel("Percentage axis:")
-            #   percentAxis <- gcheckbox(handler = function(h, ...) updateEverything())
-            #   tbl[ii, 3:6, expand = TRUE] <- percentAxis
-            #   
-            #   ii <- ii + 1
-            # }
+            if (PLOTTYPE %in% c("gg_lollipop", "gg_boxplot", "gg_cumcurve")) {
+              tbl[ii, 1:2, anchor = c(1, 0), expand = TRUE] <- glabel("Line width:")
+              lwdSlider <- gslider(1, 5, value = 1)
+              tbl[ii, 3:6, expand = TRUE] <- lwdSlider
+              
+              addHandlerChanged(lwdSlider, handler = function(h, ...) updateEverything())
+            }
+            
+            if (PLOTTYPE %in% c("gg_column", "gg_lollipop2", "gg_pie")) {
+              tbl[ii, 1:2, anchor = c(1, 0), expand = TRUE] <- glabel("Sort categories:")
+              sortCheck <- gcheckbox(handler = function(h, ...) updateEverything())
+              tbl[ii, 3:6, expand = TRUE] <- sortCheck
+
+              ii <- ii + 1
+            }
+            
+            if (PLOTTYPE %in% c("gg_column2", "gg_lollipop")) {
+              label_options <- colnames(GUI$getActiveData())[sapply(GUI$getActiveData(), function(x) !is.numeric(x) && length(unique(x)) == length(x))]
+              tbl[ii, 1:2, anchor = c(1, 0), expand = TRUE] <- glabel("Label by:")
+              labelVar <- gcombobox(c("", label_options), handler = function(h, ...) updateEverything())
+              tbl[ii, 3:6, expand = TRUE] <- labelVar
+            }
 
             updateEverything <<- function(update = auto) {
                 ## To easily diable automatic updating of plot, add this argument,
@@ -1702,13 +1717,13 @@ iNZPlotMod <- setRefClass(
                     newSet$fill_colour <- svalue(colourCombobox)
                   }
                   
-                  if (PLOTTYPE %in% c("gg_column")) {
-                    newSet$percent <- svalue(percentAxis)
+                  if (PLOTTYPE %in% c("gg_column", "gg_lollipop2", "gg_pie")) {
+                    newSet$ordered <- svalue(sortCheck)
                   }
                   
                   if (PLOTTYPE %in% c("gg_lollipop", "gg_column2")) {
                     newSet$desc <- svalue(sortOrder) == "Descending"
-                    # newSet$labelVar <- svalue(labelVar)
+                    newSet$labels <- svalue(labelVar)
                     
                   }
                   
@@ -1721,6 +1736,11 @@ iNZPlotMod <- setRefClass(
                   if (PLOTTYPE %in% c("gg_violin", "gg_density")) {
                     newSet$alpha <- 1 - svalue(transpSlider) / 100
                   }
+                  
+                  if (PLOTTYPE %in% c("gg_lollipop", "gg_boxplot", "gg_cumcurve")) {
+                    newSet$gg_lwd <- svalue(lwdSlider)
+                  }
+                  
                 }
 
                 GUI$getActiveDoc()$setSettings(newSet)
