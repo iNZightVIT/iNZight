@@ -8,7 +8,6 @@
 ## --------------------------------------------
 
 plot_list <- function(plot_type, x, y) {
-
   if (plot_type %in% c(
     "scatter", 
     "hex", 
@@ -52,6 +51,9 @@ plot_list <- function(plot_type, x, y) {
     if ((!is.numeric(y) && nlevels(y) == 2) || (!is.numeric(x) && nlevels(x) == 2)) {
       return_list <- append(return_list, list(gg_poppyramid = "pyramid"))
     }
+    
+    attr(return_list, "null.y") <- is.null(y)
+    attr(return_list, "cat.levels") <- ifelse(is.numeric(x), nlevels(y), nlevels(x))
   } else if (plot_type %in% c(
     "gg_mosaic",
     "gg_lollipop2",
@@ -1498,6 +1500,30 @@ iNZPlotMod <- setRefClass(
               ii <- ii + 1
             }
             
+            if (PLOTTYPE %in% c("gg_violin", "gg_density")) {
+              tbl[ii, 1:2, anchor = c(1, 0), expand = TRUE] <- glabel("Smoothing:")
+              smoothSlider <- gslider(0.25, 4, 0.25, value = 1, handler = function(h, ...) updateEverything())
+              tbl[ii, 3:6, expand = TRUE] <- smoothSlider
+              
+              ii <- ii + 1
+            }
+            
+            if (PLOTTYPE %in% c("gg_violin", "gg_density")) {
+              tbl[ii, 1:2, anchor = c(1, 0), expand = TRUE] <- glabel("Fill opacity:")
+              transpSlider <- gslider(from = 0, to = 100,
+                                      by = 1, value = 100 * (1 - curSet$alpha))
+              tbl[ii, 3:6, expand = TRUE] <- transpSlider
+              
+              addHandlerChanged(transpSlider,
+                                handler = function(h, ...) {
+                                  if (!is.null(timer))
+                                    if (timer$started) timer$stop_timer()
+                                  timer <<- gtimer(500, function(...) updateEverything(), one.shot = TRUE)
+                                })
+              
+              ii <- ii + 1
+            }
+            
             # if (PLOTTYPE %in% c("gg_column")) {
             #   tbl[ii, 1:2, anchor = c(1, 0), expand = TRUE] <- glabel("Percentage axis:")
             #   percentAxis <- gcheckbox(handler = function(h, ...) updateEverything())
@@ -1679,12 +1705,22 @@ iNZPlotMod <- setRefClass(
                   if (PLOTTYPE %in% c("gg_column")) {
                     newSet$percent <- svalue(percentAxis)
                   }
-                }
-                
-                if (PLOTTYPE %in% c("gg_lollipop", "gg_column2")) {
-                  newSet$desc <- svalue(sortOrder) == "Descending"
-                  # newSet$labelVar <- svalue(labelVar)
                   
+                  if (PLOTTYPE %in% c("gg_lollipop", "gg_column2")) {
+                    newSet$desc <- svalue(sortOrder) == "Descending"
+                    # newSet$labelVar <- svalue(labelVar)
+                    
+                  }
+                  
+                  if (PLOTTYPE %in% c("gg_violin", "gg_density")) {
+                    newSet$adjust <- svalue(smoothSlider)
+                  } else {
+                    newSet$adjust <- NULL
+                  }
+                  
+                  if (PLOTTYPE %in% c("gg_violin", "gg_density")) {
+                    newSet$alpha <- 1 - svalue(transpSlider) / 100
+                  }
                 }
 
                 GUI$getActiveDoc()$setSettings(newSet)
