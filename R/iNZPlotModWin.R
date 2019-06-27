@@ -51,8 +51,7 @@ plot_list <- function(plot_type, x, y) {
     if ((!is.numeric(y) && nlevels(y) == 2) || (!is.numeric(x) && nlevels(x) == 2)) {
       return_list <- append(return_list, list(gg_poppyramid = "pyramid"))
     }
-    
-    attr(return_list, "null.y") <- is.null(y)
+      
     attr(return_list, "cat.levels") <- ifelse(is.numeric(x), nlevels(y), nlevels(x))
   } else if (plot_type %in% c(
     "gg_mosaic",
@@ -84,6 +83,8 @@ plot_list <- function(plot_type, x, y) {
       }
     }
   }
+  
+  attr(return_list, "null.y") <- is.null(y)
   
   return_list
 }
@@ -1354,7 +1355,11 @@ iNZPlotMod <- setRefClass(
                 }
             }
             
-            if (grepl("^gg_", PLOTTYPE)) {
+            if (
+              grepl("^gg_", PLOTTYPE) && 
+              (PLOTTYPE %in% c("gg_pie", "gg_donut", "gg_column", "gg_heatmap", "gg_stackedcolumn", "gg_poppyramid", "gg_spine", "gg_mosaic")) ||
+              (!attr(PLOTTYPES, "null.y") && PLOTTYPE %in% c("gg_violin", "gg_barcode", "gg_boxplot", "gg_cumcurve", "gg_freqpolygon", "gg_dotstrip", "gg_density"))
+            ) {
               lbl <- glabel("Colour palette :")
               palette_options <- c("default", "viridis", "magma", "plasma", "inferno", "BrBG", "PiYG", "PRGn",
                                    "Accent", "Dark2", "Paired", "Pastel1", "Set1",
@@ -1370,7 +1375,7 @@ iNZPlotMod <- setRefClass(
               ii <- ii + 1
             }
             
-            if (PLOTTYPE %in% c("gg_violin", "gg_barcode", "gg_column2", "gg_lollipop", "gg_boxplot", "gg_density", "gg_dotstrip")) {
+            if (PLOTTYPE %in% c("gg_violin", "gg_column2", "gg_lollipop", "gg_boxplot", "gg_density", "gg_cumcurve") && attr(PLOTTYPES, "null.y")) {
               tbl[ii, 1:2, anchor = c(1, 0), expand = TRUE] <- glabel("Fill colour:")
               
               if (isTRUE(!is.null(curSet$fill_colour))) {
@@ -1476,7 +1481,7 @@ iNZPlotMod <- setRefClass(
             
             ## FT PLOT OPTIONS
             
-            if (grepl("^gg_", PLOTTYPE) && !(PLOTTYPE %in% c("gg_pie", "gg_donut", "gg_freqpolygon"))) {
+            if (grepl("^gg_", PLOTTYPE) && !(PLOTTYPE %in% c("gg_pie", "gg_donut", "gg_freqpolygon", "gg_cumcurve", "gg_barcode", "gg_poppyramid", "gg_spine"))) {
               tbl[ii, 1:2, anchor = c(1, 0), expand = TRUE] <- glabel("Rotation:")
               rotateCheck <- gcheckbox("Rotate", handler = function(h, ...) updateEverything())
               if (isTRUE(!is.null(curSet$rotation))) {
@@ -1710,11 +1715,16 @@ iNZPlotMod <- setRefClass(
                 }
                 
                 if (grepl("^gg_", PLOTTYPE)) {
-                  if (!(PLOTTYPE %in% c("gg_pie", "gg_donut", "gg_freqpolygon"))) {
+                  if (!(PLOTTYPE %in% c("gg_pie", "gg_donut", "gg_freqpolygon", "gg_cumcurve", "gg_barcode", "gg_poppyramid", "gg_spine"))) {
                     newSet$rotation <- svalue(rotateCheck)
                   }
                   
-                  newSet$palette <- svalue(paletteCombobox)
+                  if(grepl("^gg_", PLOTTYPE) && 
+                     (PLOTTYPE %in% c("gg_pie", "gg_donut", "gg_column", "gg_heatmap", "gg_stackedcolumn", "gg_poppyramid", "gg_spine", "gg_mosaic")) ||
+                     (!attr(PLOTTYPES, "null.y") && PLOTTYPE %in% c("gg_violin", "gg_barcode", "gg_boxplot", "gg_cumcurve", "gg_freqpolygon", "gg_dotstrip", "gg_density"))
+                  ) {
+                    newSet$palette <- svalue(paletteCombobox)
+                  }
                   
                   if (PLOTTYPE %in% c("gg_violin", "gg_barcode", "gg_column2", "gg_lollipop", "gg_boxplot", "gg_density", "gg_dotstrip")) {
                     newSet$fill_colour <- svalue(colourCombobox)
