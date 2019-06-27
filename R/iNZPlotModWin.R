@@ -44,9 +44,9 @@ plot_list <- function(plot_type, x, y) {
     
     return_list <- append(return_list, list(gg_column2 = "column/row bar"), length(return_list) - 1)
       
-    if (is.null(y)) {
+    # if (is.null(y)) {
       return_list <- append(return_list, list(gg_lollipop = "lollipop"), length(return_list) - 1)
-    }
+    # }
     
     if ((!is.numeric(y) && nlevels(y) == 2) || (!is.numeric(x) && nlevels(x) == 2)) {
       return_list <- append(return_list, list(gg_poppyramid = "pyramid"))
@@ -1488,16 +1488,17 @@ iNZPlotMod <- setRefClass(
             }
             
             if (PLOTTYPE %in% c("gg_lollipop", "gg_column2")) {
-              tbl[ii, 1:2, anchor = c(1, 0), expand = TRUE] <- glabel("Label by:")
-              labelVar <- gcombobox(c("", colnames(GUI$getActiveData())))
-              tbl[ii, 3:6, expand = TRUE] <- labelVar
+              # tbl[ii, 1:2, anchor = c(1, 0), expand = TRUE] <- glabel("Label by:")
+              # labelVar <- gcombobox(c("", colnames(GUI$getActiveData())))
+              # tbl[ii, 3:6, expand = TRUE] <- labelVar
+              # 
+              # ii <- ii + 1
               
-              ii <- ii + 1
-              
-              tbl[ii, 1:2, anchor = c(1, 0), expand = TRUE] <- glabel("Sorting:")
-              sortOrder <- gradio(c("Ascending", "Descending"), handler = function(h, ...) updateEverything())
-              tbl[ii, 3:6, expand = TRUE] <- sortOrder
-              ii <- ii + 1
+              # tbl[ii, 1:2, anchor = c(1, 0), expand = TRUE] <- glabel("Sorting:")
+              # sortOrder <- gradio(c("Ascending", "Descending"), handler = function(h, ...) updateEverything())
+              # tbl[ii, 3:6, expand = TRUE] <- sortOrder
+              # 
+              # ii <- ii + 1
             }
             
             if (PLOTTYPE %in% c("gg_violin", "gg_density")) {
@@ -1530,6 +1531,8 @@ iNZPlotMod <- setRefClass(
               tbl[ii, 3:6, expand = TRUE] <- lwdSlider
               
               addHandlerChanged(lwdSlider, handler = function(h, ...) updateEverything())
+              
+              ii <- ii + 1
             }
             
             if (PLOTTYPE %in% c("gg_column", "gg_lollipop2", "gg_pie")) {
@@ -1540,12 +1543,12 @@ iNZPlotMod <- setRefClass(
               ii <- ii + 1
             }
             
-            if (PLOTTYPE %in% c("gg_column2", "gg_lollipop")) {
-              label_options <- colnames(GUI$getActiveData())[sapply(GUI$getActiveData(), function(x) !is.numeric(x) && length(unique(x)) == length(x))]
-              tbl[ii, 1:2, anchor = c(1, 0), expand = TRUE] <- glabel("Label by:")
-              labelVar <- gcombobox(c("", label_options), handler = function(h, ...) updateEverything())
-              tbl[ii, 3:6, expand = TRUE] <- labelVar
-            }
+            # if (PLOTTYPE %in% c("gg_column2", "gg_lollipop")) {
+            #   label_options <- colnames(GUI$getActiveData())[sapply(GUI$getActiveData(), function(x) !is.numeric(x) && length(unique(x)) == length(x))]
+            #   tbl[ii, 1:2, anchor = c(1, 0), expand = TRUE] <- glabel("Label by:")
+            #   labelVar <- gcombobox(c("", label_options), handler = function(h, ...) updateEverything())
+            #   tbl[ii, 3:6, expand = TRUE] <- labelVar
+            # }
 
             updateEverything <<- function(update = auto) {
                 ## To easily diable automatic updating of plot, add this argument,
@@ -1722,9 +1725,7 @@ iNZPlotMod <- setRefClass(
                   }
                   
                   if (PLOTTYPE %in% c("gg_lollipop", "gg_column2")) {
-                    newSet$desc <- svalue(sortOrder) == "Descending"
-                    newSet$labels <- svalue(labelVar)
-                    
+                    # newSet$desc <- svalue(sortOrder) == "Descending"
                   }
                   
                   if (PLOTTYPE %in% c("gg_violin", "gg_density")) {
