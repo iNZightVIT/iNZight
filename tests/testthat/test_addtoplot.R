@@ -32,9 +32,11 @@ test_that("Add to Plot shows correct options by plot", {
     expect_equal(svalue(atptbl[[3]]), "dot plot")
     expect_equal(
         atptbl[[3]]$get_items(), 
-        c("dot plot", "histogram", "violin", "barcode",
-            "dot strip", "boxplot", "cumulative curve", 
-            "density", "column", "lollipop")
+        c(
+            "dot plot", "histogram", "dot strip", "barcode",
+            "boxplot", "violin", "density", 
+            "column/row bar", "lollipop", "cumulative curve"
+        )
     )
 
     # change to scatter plot
@@ -64,7 +66,10 @@ test_that("Add to Plot shows correct options by plot", {
 
     atptbl <- ui$moduleWindow$body$children[[1]]$children[[1]]$children
     expect_equal(atptbl[[3]]$get_items(), 
-        c("barplot", "pie", "donut", "column", "stacked column")
+        c(
+            "barplot", "column/row bar", "stacked column/row", 
+            "lollipop 2", "pie", "donut"
+        )
     )
 
     ui$moduleWindow$footer$children[[2]]$invoke_change_handler()
