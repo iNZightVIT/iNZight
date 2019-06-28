@@ -1726,7 +1726,7 @@ iNZPlotMod <- setRefClass(
                     newSet$palette <- svalue(paletteCombobox)
                   }
                   
-                  if (PLOTTYPE %in% c("gg_violin", "gg_barcode", "gg_column2", "gg_lollipop", "gg_boxplot", "gg_density", "gg_dotstrip")) {
+                  if (PLOTTYPE %in% c("gg_violin", "gg_column2", "gg_lollipop", "gg_boxplot", "gg_density")) {
                     newSet$fill_colour <- svalue(colourCombobox)
                   }
                   
