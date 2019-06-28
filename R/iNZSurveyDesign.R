@@ -619,7 +619,7 @@ iNZSurveyPostStrat <- setRefClass(
                 PSlvls[ii-1, 3, anchor = c(1, 0)] <<- btn
 
                 btn <- gbutton("Paste from clipboard ...")
-                PSlvls[ii, 3, anchor = c(1, 0)] <<- btn
+                # PSlvls[ii, 3, anchor = c(1, 0)] <<- btn
 
 
 
