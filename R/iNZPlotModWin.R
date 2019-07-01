@@ -1375,7 +1375,10 @@ iNZPlotMod <- setRefClass(
               ii <- ii + 1
             }
             
-            if (PLOTTYPE %in% c("gg_violin", "gg_column2", "gg_lollipop", "gg_boxplot", "gg_density", "gg_cumcurve") && attr(PLOTTYPES, "null.y")) {
+            if (
+              PLOTTYPE %in% c("gg_violin", "gg_column2", "gg_lollipop", "gg_boxplot", "gg_density", "gg_cumcurve") && attr(PLOTTYPES, "null.y") || 
+              PLOTTYPE %in% c("gg_barcode", "gg_dotstrip")
+            ) {
               tbl[ii, 1:2, anchor = c(1, 0), expand = TRUE] <- glabel("Fill colour:")
               
               if (isTRUE(!is.null(curSet$fill_colour))) {
@@ -1481,7 +1484,7 @@ iNZPlotMod <- setRefClass(
             
             ## FT PLOT OPTIONS
             
-            if (grepl("^gg_", PLOTTYPE) && !(PLOTTYPE %in% c("gg_pie", "gg_donut", "gg_freqpolygon", "gg_cumcurve", "gg_barcode", "gg_poppyramid", "gg_spine"))) {
+            if (grepl("^gg_", PLOTTYPE) && !(PLOTTYPE %in% c("gg_pie", "gg_donut", "gg_freqpolygon", "gg_cumcurve", "gg_barcode", "gg_poppyramid"))) {
               tbl[ii, 1:2, anchor = c(1, 0), expand = TRUE] <- glabel("Rotation:")
               rotateCheck <- gcheckbox("Rotate", handler = function(h, ...) updateEverything())
               if (isTRUE(!is.null(curSet$rotation))) {
@@ -1514,7 +1517,7 @@ iNZPlotMod <- setRefClass(
               ii <- ii + 1
             }
             
-            if (PLOTTYPE %in% c("gg_violin", "gg_density")) {
+            if (PLOTTYPE %in% c("gg_violin", "gg_density", "gg_barcode", "gg_dotstrip")) {
               tbl[ii, 1:2, anchor = c(1, 0), expand = TRUE] <- glabel("Fill opacity:")
               transpSlider <- gslider(from = 0, to = 100,
                                       by = 1, value = 100 * (1 - curSet$alpha))
@@ -1530,7 +1533,37 @@ iNZPlotMod <- setRefClass(
               ii <- ii + 1
             }
             
-            if (PLOTTYPE %in% c("gg_lollipop", "gg_boxplot", "gg_cumcurve")) {
+            if (PLOTTYPE %in% c("gg_barcode")) {
+              tbl[ii, 1:2, anchor = c(1, 0), expand = TRUE] <- glabel("Bar size:")
+              barcodeSize <- gslider(from = 5, to = 20, by = 1, value = 16)
+              tbl[ii, 3:6, expand = TRUE] <- barcodeSize
+              
+              addHandlerChanged(barcodeSize, handler = function(h, ...) updateEverything())
+              
+              ii <- ii + 1
+            }
+            
+            if (PLOTTYPE %in% c("gg_lollipop2", "gg_lollipop", "gg_freqpolygon")) {
+              tbl[ii, 1:2, anchor = c(1, 0), expand = TRUE] <- glabel("Point size:")
+              pointSize <- gslider(from = 1, to = 10, by = 1, value = 1)
+              tbl[ii, 3:6, expand = TRUE] <- pointSize
+              
+              addHandlerChanged(pointSize, handler = function(h, ...) updateEverything())
+              
+              ii <- ii + 1
+            }
+            
+            if (PLOTTYPE %in% c("gg_poppyramid")) {
+              tbl[ii, 1:2, anchor = c(1, 0), expand = TRUE] <- glabel("Number of bins:")
+              pyramidBins <- gslider(5, 50, by = 5, value = 30)
+              tbl[ii, 3:6, expand = TRUE] <- pyramidBins
+              
+              addHandlerChanged(pyramidBins, handler = function(h, ...) updateEverything())
+              
+              ii <- ii + 1
+            }
+            
+            if (PLOTTYPE %in% c("gg_lollipop", "gg_boxplot", "gg_cumcurve", "gg_lollipop2", "gg_freqpolygon")) {
               tbl[ii, 1:2, anchor = c(1, 0), expand = TRUE] <- glabel("Line width:")
               lwdSlider <- gslider(1, 5, value = 1)
               tbl[ii, 3:6, expand = TRUE] <- lwdSlider
@@ -1715,7 +1748,7 @@ iNZPlotMod <- setRefClass(
                 }
                 
                 if (grepl("^gg_", PLOTTYPE)) {
-                  if (!(PLOTTYPE %in% c("gg_pie", "gg_donut", "gg_freqpolygon", "gg_cumcurve", "gg_barcode", "gg_poppyramid", "gg_spine"))) {
+                  if (!(PLOTTYPE %in% c("gg_pie", "gg_donut", "gg_freqpolygon", "gg_cumcurve", "gg_barcode", "gg_poppyramid"))) {
                     newSet$rotation <- svalue(rotateCheck)
                   }
                   
@@ -1727,6 +1760,10 @@ iNZPlotMod <- setRefClass(
                   }
                   
                   if (PLOTTYPE %in% c("gg_violin", "gg_column2", "gg_lollipop", "gg_boxplot", "gg_density", "gg_cumcurve") && attr(PLOTTYPES, "null.y")) {
+                    newSet$fill_colour <- svalue(colourCombobox)
+                  }
+                  
+                  if (PLOTTYPE %in% c("gg_barcode", "gg_dotstrip")) {
                     newSet$fill_colour <- svalue(colourCombobox)
                   }
                   
@@ -1744,11 +1781,23 @@ iNZPlotMod <- setRefClass(
                     newSet$adjust <- NULL
                   }
                   
-                  if (PLOTTYPE %in% c("gg_violin", "gg_density")) {
+                  if (PLOTTYPE %in% c("gg_violin", "gg_density", "gg_barcode", "gg_dotstrip")) {
                     newSet$alpha <- 1 - svalue(transpSlider) / 100
                   }
                   
-                  if (PLOTTYPE %in% c("gg_lollipop", "gg_boxplot", "gg_cumcurve")) {
+                  if (PLOTTYPE %in% c("gg_barcode")) {
+                    newSet$gg_barSize <- svalue(barcodeSize)
+                  }
+                  
+                  if (PLOTTYPE %in% c("gg_lollipop2", "gg_lollipop", "gg_freqpolygon")) {
+                    newSet$gg_size <- svalue(pointSize)
+                  }
+                  
+                  if (PLOTTYPE %in% c("gg_poppyramid")) {
+                    newSet$gg_bins <- svalue(pyramidBins)
+                  }
+                  
+                  if (PLOTTYPE %in% c("gg_lollipop", "gg_boxplot", "gg_cumcurve", "gg_lollipop2", "gg_freqpolygon")) {
                     newSet$gg_lwd <- svalue(lwdSlider)
                   }
                   
