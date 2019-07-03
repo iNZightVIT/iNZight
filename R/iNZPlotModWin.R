@@ -1494,24 +1494,17 @@ iNZPlotMod <- setRefClass(
               
               ii <- ii + 1
             }
-            
-            if (PLOTTYPE %in% c("gg_lollipop", "gg_column2")) {
-              # tbl[ii, 1:2, anchor = c(1, 0), expand = TRUE] <- glabel("Label by:")
-              # labelVar <- gcombobox(c("", colnames(GUI$getActiveData())))
-              # tbl[ii, 3:6, expand = TRUE] <- labelVar
-              # 
-              # ii <- ii + 1
-              
-              # tbl[ii, 1:2, anchor = c(1, 0), expand = TRUE] <- glabel("Sorting:")
-              # sortOrder <- gradio(c("Ascending", "Descending"), handler = function(h, ...) updateEverything())
-              # tbl[ii, 3:6, expand = TRUE] <- sortOrder
-              # 
-              # ii <- ii + 1
-            }
-            
+
             if (PLOTTYPE %in% c("gg_violin", "gg_density")) {
               tbl[ii, 1:2, anchor = c(1, 0), expand = TRUE] <- glabel("Smoothing:")
-              smoothSlider <- gslider(0.25, 4, 0.25, value = 1, handler = function(h, ...) updateEverything())
+              smoothSlider <- gslider(0.25, 4, 0.25, handler = function(h, ...) updateEverything())
+              
+              if (isTRUE(!is.null(curSet$adjust))) {
+                svalue(smoothSlider) <- curSet$adjust
+              } else {
+                svalue(smoothSlider) <- 1
+              }
+              
               tbl[ii, 3:6, expand = TRUE] <- smoothSlider
               
               ii <- ii + 1
@@ -1538,6 +1531,12 @@ iNZPlotMod <- setRefClass(
               barcodeSize <- gslider(from = 5, to = 20, by = 1, value = 16)
               tbl[ii, 3:6, expand = TRUE] <- barcodeSize
               
+              if (isTRUE(!is.null(curSet$gg_barSize))) {
+                svalue(barcodeSize) <- curSet$gg_barSize
+              } else {
+                svalue(barcodeSize) <- 16
+              }
+              
               addHandlerChanged(barcodeSize, handler = function(h, ...) updateEverything())
               
               ii <- ii + 1
@@ -1545,8 +1544,14 @@ iNZPlotMod <- setRefClass(
             
             if (PLOTTYPE %in% c("gg_lollipop2", "gg_lollipop", "gg_freqpolygon")) {
               tbl[ii, 1:2, anchor = c(1, 0), expand = TRUE] <- glabel("Point size:")
-              pointSize <- gslider(from = 1, to = 10, by = 1, value = 1)
+              pointSize <- gslider(from = 1, to = 10, by = 1)
               tbl[ii, 3:6, expand = TRUE] <- pointSize
+              
+              if (isTRUE(!is.null(curSet$gg_size))) {
+                svalue(pointSize) <- curSet$gg_size
+              } else {
+                svalue(pointSize) <- 5
+              }
               
               addHandlerChanged(pointSize, handler = function(h, ...) updateEverything())
               
@@ -1558,6 +1563,12 @@ iNZPlotMod <- setRefClass(
               pyramidBins <- gslider(5, 50, by = 5, value = 30)
               tbl[ii, 3:6, expand = TRUE] <- pyramidBins
               
+              if (isTRUE(!is.null(curSet$gg_bins))) {
+                svalue(pyramidBins) <- curSet$gg_bins
+              } else {
+                svalue(pyramidBins) <- 30
+              }
+              
               addHandlerChanged(pyramidBins, handler = function(h, ...) updateEverything())
               
               ii <- ii + 1
@@ -1568,6 +1579,12 @@ iNZPlotMod <- setRefClass(
               lwdSlider <- gslider(1, 5, value = 1)
               tbl[ii, 3:6, expand = TRUE] <- lwdSlider
               
+              if (isTRUE(!is.null(curSet$gg_lwd))) {
+                svalue(lwdSlider) <- curSet$gg_lwd
+              } else {
+                svalue(lwdSlider) <- 1
+              }
+              
               addHandlerChanged(lwdSlider, handler = function(h, ...) updateEverything())
               
               ii <- ii + 1
@@ -1577,8 +1594,24 @@ iNZPlotMod <- setRefClass(
               tbl[ii, 1:2, anchor = c(1, 0), expand = TRUE] <- glabel("Sort categories:")
               sortCheck <- gcheckbox(handler = function(h, ...) updateEverything())
               tbl[ii, 3:6, expand = TRUE] <- sortCheck
+              
+              if (isTRUE(!is.null(curSet$ordered))) {
+                svalue(sortCheck) <- curSet$ordered
+              } else {
+                svalue(sortCheck) <- FALSE
+              }
 
               ii <- ii + 1
+            }
+            
+            if (grepl("^gg_", PLOTTYPE)) {
+              tbl[ii, 3:4, anchor = c(1, 0), expand = TRUE] <- gbutton("Export using plotly", handler = function(h, ...) {
+                print(plotly::ggplotly())
+              })
+              
+              ii <- ii + 1
+              
+              # GUI$plotToolbar$update(export = function() plotly::ggplotly())
             }
             
             # if (PLOTTYPE %in% c("gg_column2", "gg_lollipop")) {
