@@ -1479,6 +1479,17 @@ iNZPlotMod <- setRefClass(
                 ii <- ii + 1
             }
             
+            if (PLOTTYPE %in% c("dot", "hist")) {
+              showBoxplot <- gcheckbox("Show boxplot", checked = curSet$boxplot, handler = function(h, ...) updateEverything())
+              showMean <- gcheckbox("Show mean", checked = curSet$mean_indicator, handler = function(h, ...) updateEverything())
+              
+              tbl[ii, 1:6, anchor = c(1, 0), expand = TRUE] <- showBoxplot
+              ii <- ii + 1
+              
+              tbl[ii, 1:6, anchor = c(1, 0), expand = TRUE] <- showMean
+              ii <- ii + 1
+            }
+            
             ## FT PLOT OPTIONS
             
             if (grepl("^gg_", PLOTTYPE) && !(PLOTTYPE %in% c("gg_pie", "gg_donut", "gg_freqpolygon", "gg_cumcurve", "gg_barcode", "gg_poppyramid", "gg_spine"))) {
@@ -1752,6 +1763,11 @@ iNZPlotMod <- setRefClass(
                     newSet$gg_lwd <- svalue(lwdSlider)
                   }
                   
+                }
+                
+                if (PLOTTYPE %in% c("dot", "hist")) {
+                  newSet$boxplot <- svalue(showBoxplot)
+                  newSet$mean_indicator <- svalue(showMean)
                 }
 
                 GUI$getActiveDoc()$setSettings(newSet)
@@ -2103,6 +2119,7 @@ iNZPlotMod <- setRefClass(
                 }
 
                 newSet$lwd <- svalue(lwdSpin)
+
 
                 GUI$getActiveDoc()$setSettings(newSet)
                 updateSettings()
