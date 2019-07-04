@@ -79,7 +79,7 @@ plot_list <- function(plot_type, x, y) {
     if (is.null(y)) {
       return_list <- append(return_list, list(gg_pie = "pie",gg_donut = "donut"))
     } else {
-      return_list <- append(return_list, list(gg_freqpolygon = "frequency polygons", gg_heatmap = "heatmap", gg_mosaic = "mosaic"))
+      return_list <- append(return_list, list(gg_freqpolygon = "frequency polygons", gg_heatmap = "heatmap"))
       if (is.factor(y) && nlevels(y) == 2) {
         return_list <- append(return_list, list(gg_spine = "spine"), length(return_list) - 1)
       }
