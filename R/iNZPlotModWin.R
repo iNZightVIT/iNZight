@@ -65,13 +65,15 @@ plot_list <- function(plot_type, x, y) {
     "gg_freqpolygon",
     "gg_heatmap",
     "gg_spine",
+    "gg_gridplot",
     "bar"
   )) {
     return_list <- list(
       bar = "barplot", 
       gg_column = "column/row bar",
       gg_stackedcolumn = "stacked column/row",
-      gg_lollipop2 = "lollipop 2"
+      gg_lollipop2 = "lollipop",
+      gg_gridplot = "gridplot"
     )
     
     if (is.null(y)) {
