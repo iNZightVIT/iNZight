@@ -978,7 +978,6 @@ iNZGUI <- setRefClass(
                 suppressWarnings({
                     ## Generate the plot ... and update the interaction button
                     curPlot <<- unclass(rawpl <- do.call(iNZightPlot, curPlSet))
-                    
                     if (allow.redraw & !is.null(attr(curPlot, "dotplot.redraw")))
                         if (attr(curPlot, "dotplot.redraw"))
                             curPlot <<- unclass(rawpl <- do.call(iNZightPlot, curPlSet))
@@ -989,6 +988,7 @@ iNZGUI <- setRefClass(
                 rawpl <- plotSplashScreen()
                 curPlot <<- NULL
                 plotType <<- "none"
+                enabled(plotToolbar$exportplotBtn) <<- FALSE
             }
             invisible(rawpl)
         },
