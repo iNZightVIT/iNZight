@@ -68,7 +68,7 @@ test_that("Add to Plot shows correct options by plot", {
     expect_equal(atptbl[[3]]$get_items(), 
         c(
             "barplot", "column/row bar", "stacked column/row", 
-            "lollipop 2", "pie", "donut"
+            "lollipop", "gridplot", "pie", "donut"
         )
     )
 
