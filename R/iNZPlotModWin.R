@@ -1362,7 +1362,7 @@ iNZPlotMod <- setRefClass(
             
             if (
               grepl("^gg_", PLOTTYPE) && 
-              (PLOTTYPE %in% c("gg_pie", "gg_donut", "gg_column", "gg_heatmap", "gg_stackedcolumn", "gg_poppyramid", "gg_spine", "gg_mosaic")) ||
+              (PLOTTYPE %in% c("gg_pie", "gg_donut", "gg_column", "gg_heatmap", "gg_stackedcolumn", "gg_poppyramid", "gg_spine", "gg_mosaic", "gg_divergingstackedbar")) ||
               (!attr(PLOTTYPES, "null.y") && PLOTTYPE %in% c("gg_violin", "gg_barcode", "gg_boxplot", "gg_cumcurve", "gg_freqpolygon", "gg_dotstrip", "gg_density"))
             ) {
               lbl <- glabel("Colour palette :")
@@ -1791,7 +1791,7 @@ iNZPlotMod <- setRefClass(
                   }
                   
                   if(grepl("^gg_", PLOTTYPE) && 
-                     (PLOTTYPE %in% c("gg_pie", "gg_donut", "gg_column", "gg_heatmap", "gg_stackedcolumn", "gg_poppyramid", "gg_spine", "gg_mosaic")) ||
+                     (PLOTTYPE %in% c("gg_pie", "gg_donut", "gg_column", "gg_heatmap", "gg_stackedcolumn", "gg_poppyramid", "gg_spine", "gg_mosaic", "gg_divergingstackedbar")) ||
                      (!attr(PLOTTYPES, "null.y") && PLOTTYPE %in% c("gg_violin", "gg_barcode", "gg_boxplot", "gg_cumcurve", "gg_freqpolygon", "gg_dotstrip", "gg_density"))
                   ) {
                     newSet$palette <- svalue(paletteCombobox)
