@@ -1389,7 +1389,7 @@ iNZPlotMod <- setRefClass(
               if (isTRUE(!is.null(curSet$fill_colour))) {
                 fill_colour <- curSet$fill_colour
               } else {
-                fill_colour <- "darkgreen"
+                fill_colour <- ""
               }
               
               colourCombobox <- gedit(fill_colour, handler = function(h, ...) updateEverything())
@@ -1798,7 +1798,9 @@ iNZPlotMod <- setRefClass(
                   }
                   
                   if (PLOTTYPE %in% c("gg_violin", "gg_column2", "gg_lollipop", "gg_boxplot", "gg_density", "gg_cumcurve") && attr(PLOTTYPES, "null.y")) {
-                    newSet$fill_colour <- svalue(colourCombobox)
+                    if (svalue(colourCombobox) != "") {
+                      newSet$fill_colour <- svalue(colourCombobox)
+                    }
                   }
                   
                   if (PLOTTYPE %in% c("gg_barcode", "gg_dotstrip")) {
