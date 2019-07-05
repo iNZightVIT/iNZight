@@ -29,6 +29,7 @@ plot_list <- function(plot_type, x, y) {
     "gg_dotstrip",
     "gg_lollipop", 
     "gg_poppyramid",
+    "gg_divergingstackedbar",
     "gg_density"
   )) {
     return_list <- list(
@@ -82,6 +83,8 @@ plot_list <- function(plot_type, x, y) {
       return_list <- append(return_list, list(gg_freqpolygon = "frequency polygons", gg_heatmap = "heatmap"))
       if (is.factor(y) && nlevels(y) == 2) {
         return_list <- append(return_list, list(gg_spine = "spine"), length(return_list) - 1)
+      } else if (is.factor(y) && nlevels(y) >= 3) {
+        return_list <- append(return_list, list(gg_divergingstackedbar = "diverging stacked bar (likert)"), length(return_list) - 1)
       }
     }
   }
