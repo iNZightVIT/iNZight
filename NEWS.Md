@@ -1,5 +1,5 @@
-## iNZight 3.4.0.9000
-__Release date__: TBA
+## iNZight 3.4.1
+__Release date__: 8 July 2019
 
 - allow users to specify replicate weights in the survey design
 - specify post stratification information to existing survey design
