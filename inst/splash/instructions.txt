@@ -1,0 +1,18 @@
+Drag a variable into the Variable 1 slot to start exploring!
+
+
+Some helpful tips:
+
+- Click on one of the Variable boxes and use the up/down arrow keys
+  to step through the variables in the data set!
+
+- Use Add to Plot (the blue bar-graph icon with a plus)
+  to add a splash of colour to your graph.
+
+- Not sure what something does? Click it and find out!
+  The worst you can do is crash the program, and if that happens
+  it would be super helpful to you, me, and everyone else if you
+  sent off a bug report explaining what you did and what happened.
+  (See the Help Menu)
+
+- Most importantly, have fun!
