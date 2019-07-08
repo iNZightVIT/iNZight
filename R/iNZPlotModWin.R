@@ -1511,13 +1511,18 @@ iNZPlotMod <- setRefClass(
 
             if (PLOTTYPE %in% c("gg_violin", "gg_density")) {
               tbl[ii, 1:2, anchor = c(1, 0), expand = TRUE] <- glabel("Smoothing:")
-              smoothSlider <- gslider(0.25, 4, 0.25, handler = function(h, ...) updateEverything())
+              smoothSlider <- gslider(0.25, 4, 0.25, value = ifelse(is.null(curSet$adjust), 1, curSet$adjust), 
+                                      handler = function(h, ...) {
+                if (!is.null(timer))
+                  if (timer$started) timer$stop_timer()
+                timer <<- gtimer(500, function(...) updateEverything(), one.shot = TRUE)
+              })
               
-              if (isTRUE(!is.null(curSet$adjust))) {
-                svalue(smoothSlider) <- curSet$adjust
-              } else {
-                svalue(smoothSlider) <- 1
-              }
+              # if (isTRUE(!is.null(curSet$adjust))) {
+              #   svalue(smoothSlider) <- curSet$adjust
+              # } else {
+              #   svalue(smoothSlider) <- 1
+              # }
               
               tbl[ii, 3:6, expand = TRUE] <- smoothSlider
               
@@ -1846,8 +1851,6 @@ iNZPlotMod <- setRefClass(
                   
                   if (PLOTTYPE %in% c("gg_violin", "gg_density")) {
                     newSet$adjust <- svalue(smoothSlider)
-                  } else {
-                    newSet$adjust <- NULL
                   }
                   
                   if (PLOTTYPE %in% c("gg_violin", "gg_density", "gg_barcode", "gg_dotstrip")) {
