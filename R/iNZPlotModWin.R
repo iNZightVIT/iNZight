@@ -1529,10 +1529,32 @@ iNZPlotMod <- setRefClass(
               ii <- ii + 1
             }
             
-            if (PLOTTYPE %in% c("gg_violin", "gg_density", "gg_barcode", "gg_dotstrip")) {
+            if (PLOTTYPE %in% c("gg_violin", "gg_barcode", "gg_dotstrip")) {
               tbl[ii, 1:2, anchor = c(1, 0), expand = TRUE] <- glabel("Fill transparency:")
               transpSlider <- gslider(from = 0, to = 100,
                                       by = 1, value = 100 * (1 - curSet$alpha))
+              tbl[ii, 3:6, expand = TRUE] <- transpSlider
+              
+              addHandlerChanged(transpSlider,
+                                handler = function(h, ...) {
+                                  if (!is.null(timer))
+                                    if (timer$started) timer$stop_timer()
+                                  timer <<- gtimer(500, function(...) updateEverything(), one.shot = TRUE)
+                                })
+              
+              ii <- ii + 1
+            }
+            
+            if (PLOTTYPE %in% c("gg_density")) {
+              tbl[ii, 1:2, anchor = c(1, 0), expand = TRUE] <- glabel("Fill transparency:")
+              transpSlider <- gslider(from = 0, to = 100,
+                                      by = 1, 
+                                      value = ifelse(
+                                        attr(PLOTTYPES, "null.y"), 
+                                        100 * (1 - curSet$alpha), 
+                                        ifelse(is.null(curSet$alpha_densitygroup), 60, 100 * (1 - curSet$alpha_densitygroup))
+                                      )
+              )
               tbl[ii, 3:6, expand = TRUE] <- transpSlider
               
               addHandlerChanged(transpSlider,
@@ -1853,8 +1875,16 @@ iNZPlotMod <- setRefClass(
                     newSet$adjust <- svalue(smoothSlider)
                   }
                   
-                  if (PLOTTYPE %in% c("gg_violin", "gg_density", "gg_barcode", "gg_dotstrip")) {
+                  if (PLOTTYPE %in% c("gg_violin", "gg_barcode", "gg_dotstrip")) {
                     newSet$alpha <- 1 - svalue(transpSlider) / 100
+                  }
+                  
+                  if (PLOTTYPE %in% c("gg_density")) {
+                    if (attr(PLOTTYPES, "null.y")) {
+                      newSet$alpha <- 1 - svalue(transpSlider) / 100
+                    } else {
+                      newSet$alpha_densitygroup <- 1 - svalue(transpSlider) / 100
+                    }
                   }
                   
                   if (PLOTTYPE %in% c("gg_barcode")) {
