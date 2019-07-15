@@ -899,13 +899,14 @@ iNZGUI <- setRefClass(
                             )
                             visible(w2) <- TRUE
                             try(dispose(wBoots), silent = TRUE)
+                            invisible(w2)
                         })
 
                         addSpring(g)
                         add(g, btn)
 
                         visible(w) <- TRUE
-
+                        invisible(w)
                     } else {
                         gmessage("Please select at least one variable",
                                  parent = win)
@@ -971,6 +972,8 @@ iNZGUI <- setRefClass(
                     curPlSet$design <- curMod$createSurveyObject()
                 }
 
+                curPlSet$data_name <- dataNameWidget$datName
+
                 ## Suppress the warnings produced by iNZightPlot ...
                 suppressWarnings({
                     ## Generate the plot ... and update the interaction button
@@ -985,6 +988,7 @@ iNZGUI <- setRefClass(
                 rawpl <- plotSplashScreen()
                 curPlot <<- NULL
                 plotType <<- "none"
+                enabled(plotToolbar$exportplotBtn) <<- FALSE
             }
             invisible(rawpl)
         },
@@ -1131,7 +1135,7 @@ iNZGUI <- setRefClass(
             # enabled(menubar$menu_list[["Variables"]][["Numeric Variables"]][[2]]) <<- TRUE
             # enabled(menubar$menu_list[["Plot"]][[3]]) <<- TRUE
             # enabled(sumBtn) <<- TRUE
-            # enabled(infBtn) <<- TRUE
+            enabled(infBtn) <<- TRUE
         },
         ## display warning message
         displayMsg = function(module, type) {
@@ -1392,23 +1396,12 @@ iNZGUI <- setRefClass(
 
                     grid::grid.text(
                         paste(
-                            sep = "\n",
-                            "What's changed? Y'know, in case you're interested ...",
-                            "",
-                            "- iNZight now speaks tidyverse! ",
-                            "  The data operations in the Data and Variables menus now write tidyverse code,",
-                            "  which you can see by going to Advanced > Show R code history.",
-                            "  Note that this is a new feature and still being developed.",
-                            "",
-                            "- As well as tracking filtering and other dataset operations,",
-                            "  iNZight now lets you switch between them!",
-                            "  Just use the drop down menu above the data spreadsheet.",
-                            "  iNZight will also attempt to retain the chosen variables and settings! Hurrah!",
-                            "",
-                            "- Time series module plots have been prettified (somewhat).",
-                            "",
-                            "- A bunch of other bug fixes and tweaks.",
-                            "  For more details, head to Help > Changes."
+                            readLines(
+                                system.file("splash", "whatsnew.txt",
+                                    package = "iNZight"
+                                )
+                            ),
+                            collapse = "\n"
                         ),
                         y = unit(1, "npc") - unit(8, "lines"),
                         x = 0, c(just = "left", "top"),
@@ -1424,24 +1417,12 @@ iNZGUI <- setRefClass(
 
                     grid::grid.text(
                         paste(
-                            sep = "\n",
-                            "Drag a variable into the Variable 1 slot to start exploring!",
-                            "", "",
-                            "Some helpful tips:",
-                            "",
-                            "- Click on one of the Variable boxes and use the up/down arrow keys",
-                            "  to step through the variables in the data set!",
-                            "",
-                            "- Use Add to Plot (the blue bar-graph icon with a plus)",
-                            "  to add a splash of colour to your graph.",
-                            "",
-                            "- Not sure what something does? Click it and find out!",
-                            "  The worst you can do is crash the program, and if that happens",
-                            "  it would be super helpful to you, me, and everyone else if you",
-                            "  sent off a bug report explaining what you did and what happened.",
-                            "  (See the Help Menu)",
-                            "",
-                            "- Most importantly, have fun!"
+                            readLines(
+                                system.file("splash", "instructions.txt",
+                                    package = "iNZight"
+                                )
+                            ),
+                            collapse = "\n"
                         ),
                         y = unit(1, "npc") - unit(3, "lines"),
                         x = 0, c(just = "left", "top"),

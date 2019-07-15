@@ -49,9 +49,11 @@ iNZPlotToolbar <- setRefClass(
             makeToolbar(btns, refresh.fn = refresh, export.fn = export, extra, cont = altbar)
         },
         restore = function() {
-            setPlotMenu()
-            delete(toolbarcont, toolbarcont$children[[2]])
-            visible(iconbar) <<- TRUE
+            update(c("add", "rmv", "inf", "export"))
+            # if (length(toolbarcont$children) > 1)
+            #     delete(toolbarcont, toolbarcont$children[[2]])
+            # setPlotMenu()
+            # visible(iconbar) <<- TRUE
         },
         ## create the toolbar!
         makeToolbar = function(btns = c("add", "rmv", "inf", "export"),
@@ -73,7 +75,8 @@ iNZPlotToolbar <- setRefClass(
                 exportFn = function() {
                     try({
                         tmpurl <- iNZightPlots::exportHTML(refreshFn, file = tempfile(fileext = ".html"))
-                        browseURL(tmpurl)
+                        if (inherits(tmpurl, "htmlwidget")) print(tmpurl)
+                        else browseURL(tmpurl)
                     })
                 }
             } else {

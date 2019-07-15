@@ -1,15 +1,17 @@
 Package: iNZight
 Type: Package
 Title: iNZight GUI for Data Exploration and Visualisation
-Version: 3.4
-Date: 2019-04-30
+Version: 3.4.1
+Date: 2019-07-15
 Authors@R: c(person("Tom", "Elliott", role = c("aut", "cre"),
                     email = "tom.elliott@auckland.ac.nz"),
              person("Dineika", "Chandrananda", role = "ctb"),
              person("Simon", "Potter", role = "ctb"),
              person("Marco", "Kuper", role = c("aut"),
                     email = "MarcoKuper42@gmail.com"),
-             person("David", "Banks", role = "ctb"))
+             person("David", "Banks", role = "ctb"),
+             person("Yiwen", "He", role = "ctb"),
+             person("Daniel", "Barnett", role = "ctb"))
 Description: An interactive GUI for easy visual exploration of datasets.
 License: GPL-3 | file LICENSE
 Depends:
@@ -41,7 +43,9 @@ Suggests:
     RColorBrewer,
     FutureLearnData,
     testthat,
-    covr
+    covr,
+    dplyr,
+    forcats
 Additional_repositories: https://r.docker.stat.auckland.ac.nz
 LazyData: true
 Encoding: UTF-8

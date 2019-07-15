@@ -43,6 +43,12 @@ iNZValidateWin <- setRefClass(
       font(lbl.rulesbox) <- list(weight = "bold")
       font(lbl.results) <- list(weight = "bold")
       font(lbl.details) <- list(weight = "bold")
+      helpbtn <- gimagebutton(stock.id = "gw-help", handler = function(h, ...){
+        browseURL("https://www.stat.auckland.ac.nz/~wild/iNZight/user_guides/data_options/#validate")
+      })
+      titlelyt <- glayout(homegenous = FALSE)
+      titlelyt[1, 1:19, expand = TRUE] <- lbl.details
+      titlelyt[1, 20, expand = TRUE, anchor = c(1, -1)] <- helpbtn
       
       group.identifier <- ggroup()
       add(group.identifier, glabel("Unique Identifier: "))
@@ -62,9 +68,16 @@ iNZValidateWin <- setRefClass(
       validate.button <- gbutton("Validate Dataset", handler = function(h, ...) {
         rules <- unlist(strsplit(svalue(rules.box), "\\n"))
         rules <- rules[rules != ""]
+        has.labels <- grepl("^.*:.*", rules)
+        labels <- paste0("V", 1:length(rules))
+        labels[has.labels] <- unlist(lapply(strsplit(rules[has.labels], ":"), `[[`, 1))
         
         tryCatch({
-          vali <<- validate::validator(.data = data.frame(name = paste0("V", 1:length(rules)), rule = rules))
+          rules.df <- data.frame(
+            name = labels, 
+            rule = gsub("^.+:", "", rules)
+          )
+          vali <<- validate::validator(.data = rules.df)
           cf <<- validate::confront(GUI$getActiveData(), vali)
           
           results.df <- iNZightTools::validation_summary(cf)
@@ -128,7 +141,7 @@ iNZValidateWin <- setRefClass(
       add(group.left, results.box, expand = TRUE, fill = TRUE)
       # add(group.left, save.button)
       
-      add(group.right, lbl.details, anchor = c(-1, 0))
+      add(group.right, titlelyt)
       add(group.right, group.identifier)
       add(group.right, details.box, expand = TRUE, fill = TRUE)
       add(group.left, ok.button, anchor = c(1, 0))

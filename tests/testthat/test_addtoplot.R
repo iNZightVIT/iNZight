@@ -30,7 +30,14 @@ test_that("Add to Plot shows correct options by plot", {
 
     atptbl <- ui$moduleWindow$body$children[[1]]$children[[1]]$children
     expect_equal(svalue(atptbl[[3]]), "dot plot")
-    expect_equal(atptbl[[3]]$get_items(), c("dot plot", "histogram"))
+    expect_equal(
+        atptbl[[3]]$get_items(), 
+        c(
+            "dot plot", "histogram", "dot strip", "barcode",
+            "boxplot", "violin", "density", 
+            "column/row bar", "lollipop", "cumulative curve"
+        )
+    )
 
     # change to scatter plot
     ui$moduleWindow$footer$children[[2]]$invoke_change_handler()
@@ -56,8 +63,15 @@ test_that("Add to Plot shows correct options by plot", {
     cmbo <- ui$moduleWindow$header$children[[2]]$children[[1]]
     expect_equal(svalue(cmbo), "Customise Plot Appearance")
     expect_equal(cmbo$get_items(), atpOpts[c(1, 3)])
-    ## bar plot doesn't have plot type options, yet
-    
+
+    atptbl <- ui$moduleWindow$body$children[[1]]$children[[1]]$children
+    expect_equal(atptbl[[3]]$get_items(), 
+        c(
+            "barplot", "column/row bar", "stacked column/row", 
+            "lollipop",  "pie", "donut", "gridplot"
+        )
+    )
+
     ui$moduleWindow$footer$children[[2]]$invoke_change_handler()
     svalue(ui$ctrlWidget$V2box, TRUE) <- 1
     svalue(ui$ctrlWidget$V1box, TRUE) <- 1
