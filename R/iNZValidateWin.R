@@ -12,6 +12,14 @@ iNZValidateWin <- setRefClass(
       initFields(GUI = GUI)
       open.window()
     },
+    open.file = function(file, rules.box) {
+      print(rules.box)
+      file.vali <- validate::validator(.file = file)
+      svalue(rules.box) <- sub("^ V[0-9]+: ", "", capture.output(print(file.vali))[-1])
+    },
+    save.file = function(file, rules) {
+      write(rules, file = file)
+    },
     open.window = function() {
       window <<- gwindow("Validate Data", width = 800, height = 500, parent = GUI$win, visible = FALSE)
       
@@ -56,13 +64,12 @@ iNZValidateWin <- setRefClass(
       
       open.button <- gbutton("Open Rules", handler = function(h, ...) {
         open.dialog <- gfile("Open Rules...", type = "open")
-        file.vali <- validate::validator(.file = open.dialog)
-        svalue(rules.box) <- sub("^ V[0-9]+: ", "", capture.output(print(file.vali))[-1])
+        open.file(open.dialog, rules.box)
       })
       
       save.button <- gbutton("Save Rules", handler = function(h, ...) {
         save.dialog <- gfile("Save Rules...", type = "save", initial.filename = paste0(attr(GUI$getActiveData(), "name", exact = TRUE), "_rules.txt"))
-        write(svalue(rules.box), file = save.dialog)
+        save.file(save.dialog, svalue(rules.box))
       })
       
       validate.button <- gbutton("Validate Dataset", handler = function(h, ...) {
