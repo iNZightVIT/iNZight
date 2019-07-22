@@ -1128,7 +1128,9 @@ iNZPlotMod <- setRefClass(
                 ## OVERALL SIZE
                 lbl <- glabel("Overall :")
                 cexPt <- gslider(from = 0.05, to = 3.5,
-                                 by = 0.05, value = curSet$cex.pt)
+                                 by = 0.05, 
+                                 value = if (PLOTTYPE == "scatter") curSet$cex.pt else curSet$cex.dotpt
+                                 )
                 tbl[ii, 1:2, anchor = c(1, 0), expand = TRUE] <- lbl
                 tbl[ii, 3:6, expand = TRUE] <- cexPt
                 ii <- ii + 1
