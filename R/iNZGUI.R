@@ -96,10 +96,6 @@ iNZGUI <- setRefClass(
                     done <- FALSE
                     if (file.exists(file.path("~", "iNZightVIT"))) {
                         setwd(file.path("~", "iNZightVIT"))
-
-                        ## Now check to see if there is a library in there ...
-                        if (!file.exists("modules"))
-                            dir.create("modules")
                     } else {
                         ## Create it:
                         conf <- gconfirm(
@@ -108,26 +104,11 @@ iNZGUI <- setRefClass(
                             title = "Create Folder", icon = "question")
 
                         if (conf) {
-                            if ( dir.create(file.path("~", "iNZightVIT")) ) {
-                                ## copy the Data folder:
-                                ##try(file.copy("Data.lnk", file.path("~", "iNZightVIT")), TRUE)
-                                ##try(file.symlink("data", file.path("~", "iNZightVIT")), TRUE)
-
-                                ##setwd(file.path("~", "iNZightVIT"))
-
-                                dir.create(file.path("~", "iNZightVIT", "modules"))
-
-                                done <- TRUE
-                            }
-
+                            done <- dir.create(file.path("~", "iNZightVIT"))
                             if (!done)
                                 gmessage("iNZight was unable to create the folder.")
                         }
                     }
-
-                    ## Add the module library path if it exists
-                    if (file.exists(file.path("~", "iNZightVIT", "modules")))
-                        .libPaths(c(file.path("~", "iNZightVIT", "modules"), .libPaths()))
                 },
                 "mac" = {
                     done <- FALSE
@@ -142,7 +123,6 @@ iNZGUI <- setRefClass(
 
                         if (conf) {
                             if ( dir.create(file.path("~", "Documents", "iNZightVIT")) ) {
-                                dir.create(file.path("~", "Documents", "iNZightVIT", "modules"))
                                 try(setwd(Sys.getenv("R_DIR")), TRUE)
 
                                 done <- TRUE
