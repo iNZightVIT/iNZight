@@ -1,3 +1,10 @@
+## iNZight 3.4.2
+__Release date__: 22 July 2019
+
+- modules directory no longer used (or created) on Windows, to help the updater
+- fix bug in point sizing when removing/adding box plot from dotplots 
+
+
 ## iNZight 3.4.1
 __Release date__: 15 July 2019
 
