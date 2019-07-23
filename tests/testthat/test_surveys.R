@@ -99,7 +99,7 @@ test_that("Frequency column specification is passed to settings", {
     expect_silent(swin$createBtn$invoke_change_handler())
     expect_equal(
         ui$iNZDocuments[[ui$activeDoc]]$getSettings()$freq,
-        cas2$frequency
+        "frequency"
     )
 })
 
@@ -111,9 +111,22 @@ test_that("Non-categorical variables removed after specifying frequencies", {
     )
 })
 
-# test_that("Frequencies retained after filtering", {
-#     ## I suspsect it will be broken because of the way things work ...
-# })
+test_that("Plotting and summary of frequencies works", {
+    expect_silent(svalue(ui$ctrlWidget$V1box) <- "travel")
+    expect_equal(ui$plotType, "bar")
+    expect_silent(ui$sumBtn$invoke_change_handler())
+})
+
+test_that("Frequencies retained after filtering", {
+    fwin <- iNZFilterWin$new(ui)
+    dispose(ui$modWin)
+    fwin$opt1()
+    svalue(ui$modWin$children[[1]]$children[[1]]$children[[2]]) <- "gender"
+    svalue(ui$modWin$children[[1]]$children[[2]]) <- 1
+    expect_silent(
+        ui$modWin$children[[1]]$children[[3]]$children[[1]]$invoke_change_handler()
+    )
+})
 
 ui$close()
 

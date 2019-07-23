@@ -340,6 +340,8 @@ iNZGUI <- setRefClass(
                 "Get Summary",
                 handler = function(h, ...) {
                     curSet <- getActiveDoc()$getSettings()
+                    if (!is.null(curSet$freq))
+                        curSet$freq <- getActiveData()[[curSet$freq]]
                     if (!is.null(curSet$x)) {
                         if (is_num(curSet$x) & is_num(curSet$y)) {
                             tmp.x <- curSet$y
@@ -589,6 +591,8 @@ iNZGUI <- setRefClass(
                 "Get Inference",
                 handler = function(h, ...) {
                     curSet <- getActiveDoc()$getSettings()
+                    if (!is.null(curSet$freq))
+                        curSet$freq <- getActiveData()[[curSet$freq]]
                     if (!is.null(curSet$x)) {
                         ## Figure out what type of inference will be happening:
                         xnum <- is_num(curSet$x)
@@ -934,6 +938,8 @@ iNZGUI <- setRefClass(
         ## plot with the current active plot settings
         updatePlot = function(allow.redraw = TRUE) {
             curPlSet <- getActiveDoc()$getSettings()
+            if (!is.null(curPlSet$freq))
+                curPlSet$freq <- getActiveData()[[curPlSet$freq]]
             if(!is.null(curPlSet$x)) {
                 # Switch x and y:
                 if (is_num(curPlSet$x) & is_num(curPlSet$y)) {
