@@ -1,3 +1,8 @@
+## iNZight 3.4.2.9000
+
+- allow user to remove calibration design from calibration window
+
+
 ## iNZight 3.4.2
 __Release date__: 22 July 2019
 
