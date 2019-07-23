@@ -397,7 +397,8 @@ iNZSurveyPostStrat <- setRefClass(
         PSlvls = "ANY",
         lvldf = "list",
         okBtn = "ANY",
-        cancelBtn = "ANY"
+        cancelBtn = "ANY",
+        rmvBtn = "ANY"
     ),
     methods = list(
         initialize = function(gui, .use_ui = TRUE) {
@@ -480,6 +481,17 @@ iNZSurveyPostStrat <- setRefClass(
             # save/cancel buttons
             addSpring(gmain)
             btnGrp <- ggroup(container = gmain)
+
+            rmvBtn <<- gbutton("Remove", 
+                # icon = "delete",
+                handler = function(h, ...) {
+                    svalue(PSvar, index = TRUE) <<- 0
+                    set_poststrat_design()
+                    dispose(win)
+                },
+                container = btnGrp
+            )
+
             addSpring(btnGrp)
             okBtn <<- gbutton("OK",
                 handler = function(h, ...) {
@@ -497,9 +509,9 @@ iNZSurveyPostStrat <- setRefClass(
             )
 
             ## populate on load
+            lvldf <<- GUI$getActiveDoc()$getModel()$getFreqTables()
             if (!is.null(curDes$poststrat)) {
                 svalue(PSvar) <<- names(curDes$poststrat)
-                lvldf <<- GUI$getActiveDoc()$getModel()$getFreqTables()
                 display_tbl()
             }
 

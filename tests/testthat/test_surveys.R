@@ -111,9 +111,9 @@ test_that("Non-categorical variables removed after specifying frequencies", {
     )
 })
 
-test_that("Frequencies retained after filtering", {
-    ## I suspsect it will be broken because of the way things work ...
-})
+# test_that("Frequencies retained after filtering", {
+#     ## I suspsect it will be broken because of the way things work ...
+# })
 
 ui$close()
 
@@ -264,8 +264,14 @@ test_that("Post stratification can be removed", {
 })
 
 test_that("Frequency tables are saved", {
-
+    expect_equal(
+        ui$getActiveDoc()$getModel()$getFreqTables(), 
+        list(stype = pop.types)
+    )
 })
+
+# clear the values
+ui$getActiveDoc()$getModel()$storeFreqTables(NULL)
 
 test_that("Post stratification set by manually entering values", {
     expect_silent(swin <- iNZSurveyPostStrat$new(ui, .use_ui = FALSE))
@@ -362,6 +368,15 @@ test_that("Multiple variables can be specified (raking calibration)", {
     )
     expect_is(des, "survey.design2")
     expect_equal(des$postStrata, dclus1g2$postStrata)
+})
+
+test_that("User can remove calibration from a survey", {
+    expect_silent(swin <- iNZSurveyPostStrat$new(ui, .use_ui = FALSE))
+    expect_silent(swin$rmvBtn$invoke_change_handler())
+    expect_equal(
+        ui$iNZDocuments[[ui$activeDoc]]$getModel()$getDesign()$poststrat,
+        NULL
+    )
 })
 
 ui$close()
