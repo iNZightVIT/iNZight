@@ -1,6 +1,8 @@
 ## iNZight 3.4.2.9000
 
 - allow user to remove calibration design from calibration window
+- change how frequency variable is stored so it is retained after filter/modifying
+  the dataset
 
 
 ## iNZight 3.4.2
