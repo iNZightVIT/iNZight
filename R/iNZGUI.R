@@ -764,6 +764,8 @@ iNZGUI <- setRefClass(
                         btn <- gbutton("OK", handler = function(h, ...) {
                             infType <- svalue(infMthd, index = TRUE)
                             curSet <- getActiveDoc()$getSettings()
+                            if (!is.null(curSet$freq))
+                                curSet$freq <- getActiveData()[[curSet$freq]]
                             if (!is.null(curSet$x)) {
                                 if (is.numeric(curSet$x) & is.numeric(curSet$y)) {
                                     tmp.x <- curSet$y
