@@ -3,6 +3,8 @@ data(api, package = "survey")
 chis <- iNZightTools::smart_read("chis.csv")
 ncsr <- iNZightTools::smart_read("ncsr.csv")
 
+test_dir <- getwd()
+
 # ui$close()
 ui <- iNZGUI$new()
 ui$initializeGui(apiclus2)
@@ -191,6 +193,8 @@ test_that("Replicate weight window repopulated correctly", {
     swin$cancelBtn$invoke_change_handler()
 })
 
+f1 <- file.path(test_dir, "chis_wts.csv")
+f2 <- file.path(test_dir, "chis_wts_header.csv")
 test_that("Replicate weights can be specified by file", {
     expect_silent(swin <- iNZSurveyDesign$new(ui, type = "replicate"))
     expect_silent(swin$repRscalesClear$invoke_change_handler())
@@ -199,12 +203,12 @@ test_that("Replicate weights can be specified by file", {
         data.frame(rep.weight = character(), rscales = numeric())
     )
 
-    expect_silent(swin$set_rscales("chis_wts.csv"))
+    expect_silent(swin$set_rscales(f1))
     expect_equal(
         swin$rscalesTbl$get_items(),
         data.frame(
             rep.weight = paste("rakedw", 1:80, sep = ""),
-            rscales = read.csv("chis_wts.csv", header = FALSE)[[1]]
+            rscales = read.csv(f1, header = FALSE)[[1]]
         )
     )
 
@@ -214,12 +218,12 @@ test_that("Replicate weights can be specified by file", {
         data.frame(rep.weight = character(), rscales = numeric())
     )
     
-    expect_silent(swin$set_rscales("chis_wts_header.csv"))
+    expect_silent(swin$set_rscales(f2))
     expect_equal(
         swin$rscalesTbl$get_items(),
         data.frame(
             rep.weight = paste("rakedw", 1:80, sep = ""),
-            rscales = read.csv("chis_wts_header.csv")[[1]]
+            rscales = read.csv(f2)[[1]]
         )
     )
 })
