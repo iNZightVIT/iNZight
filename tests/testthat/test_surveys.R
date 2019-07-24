@@ -151,8 +151,6 @@ test_that("Replicate weights can be specified", {
     swin$repVars$invoke_change_handler()
     svalue(swin$repType) <- "other"
     svalue(swin$repScale) <- 1
-    swin$repRscales$scales <- rep(1, length(swin$repVars))
-    swin$display_scales()
 
     expect_silent(swin$createBtn$invoke_change_handler())
     expect_equal(
@@ -175,6 +173,55 @@ test_that("Replicate weight object is valid", {
     )
     expect_is(des, "svyrep.design")
     expect_equivalent(weights(des), weights(dchis))
+})
+
+test_that("Replicate weight window repopulated correctly", {
+    expect_silent(swin <- iNZSurveyDesign$new(ui, type = "replicate"))
+    expect_equal(svalue(swin$wtVar), "rakedw0")
+    expect_equal(svalue(swin$repVars), paste("rakedw", 1:80, sep = ""))
+    expect_equal(svalue(swin$repType), "other")
+    expect_equal(svalue(swin$repScale), "1")
+    expect_equal(
+        swin$rscalesTbl$get_items(),
+        data.frame(
+            rep.weight = paste("rakedw", 1:80, sep = ""),
+            rscales = rep(1, 80)
+        )
+    )
+    swin$cancelBtn$invoke_change_handler()
+})
+
+test_that("Replicate weights can be specified by file", {
+    expect_silent(swin <- iNZSurveyDesign$new(ui, type = "replicate"))
+    expect_silent(swin$repRscalesClear$invoke_change_handler())
+    expect_equal(
+        swin$rscalesTbl$get_items(),
+        data.frame(rep.weight = character(), rscales = numeric())
+    )
+
+    expect_silent(swin$set_rscales("chis_wts.csv"))
+    expect_equal(
+        swin$rscalesTbl$get_items(),
+        data.frame(
+            rep.weight = paste("rakedw", 1:80, sep = ""),
+            rscales = read.csv("chis_wts.csv", header = FALSE)[[1]]
+        )
+    )
+
+    expect_silent(swin$repRscalesClear$invoke_change_handler())
+    expect_equal(
+        swin$rscalesTbl$get_items(),
+        data.frame(rep.weight = character(), rscales = numeric())
+    )
+    
+    expect_silent(swin$set_rscales("chis_wts_header.csv"))
+    expect_equal(
+        swin$rscalesTbl$get_items(),
+        data.frame(
+            rep.weight = paste("rakedw", 1:80, sep = ""),
+            rscales = read.csv("chis_wts_header.csv")[[1]]
+        )
+    )
 })
 
 ui$close()
