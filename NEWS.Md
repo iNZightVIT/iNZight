@@ -3,6 +3,7 @@
 - allow user to remove calibration design from calibration window
 - change how frequency variable is stored so it is retained after filter/modifying
   the dataset
+- improve how replicate weights are displayed, and addition of 'remove' button
 
 
 ## iNZight 3.4.2
