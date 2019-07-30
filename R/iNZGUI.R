@@ -1062,6 +1062,10 @@ iNZGUI <- setRefClass(
         addActDocObs = function(FUN, ...) {
             .self$activeDocChanged$connect(FUN, ...)
         },
+        view_dataset = function() {
+            d <- getActiveData()
+            utils::View(d, title = attr(d, "name"))
+        },
         ## data check
         checkData = function(module) {
             data = .self$getActiveData()
