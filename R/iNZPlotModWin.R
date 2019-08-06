@@ -1369,7 +1369,7 @@ iNZPlotMod <- setRefClass(
               (!attr(PLOTTYPES, "null.y") && PLOTTYPE %in% c("gg_violin", "gg_barcode", "gg_boxplot", "gg_cumcurve", "gg_freqpolygon", "gg_dotstrip", "gg_density"))
             ) {
               lbl <- glabel("Colour palette :")
-              palette_options <- c("default", "viridis", "magma", "plasma", "inferno", "BrBG", "PiYG", "PRGn",
+              palette_options <- c("default", "greyscale", "viridis", "magma", "plasma", "inferno", "BrBG", "PiYG", "PRGn",
                                    "Accent", "Dark2", "Paired", "Pastel1", "Set1",
                                    "Blues", "BuGn", "BuPu", "GnBu")
               paletteCombobox <- gcombobox(palette_options, 
