@@ -39,10 +39,10 @@ plot_list <- function(plot_type, x, y) {
       gg_dotstrip = "dot strip",
       gg_barcode2 = "barcode",
       gg_boxplot = "boxplot",
+      gg_beeswarm = "beeswarm",
       gg_violin = "violin",
       gg_density = "density",
-      gg_cumcurve = "cumulative curve",
-      gg_beeswarm = "beeswarm"
+      gg_cumcurve = "cumulative curve"
     )
     
     if (is.null(y)) {
