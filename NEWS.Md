@@ -7,6 +7,7 @@
 - add option to dataset menu to view the (entire) dataset using `utils::View()`
 - add search box to filter long variable lists (iNZight home panel)
 - add beeswarm option for plotting (using ggbeeswarm)
+- add ability to include captions for sources in Financial Times plots
 
 
 ## iNZight 3.4.2
