@@ -1942,7 +1942,7 @@ iNZPlotMod <- setRefClass(
                     newSet$gg_height <- svalue(barcodeHeight)
                   }
                   
-                  if (PLOTTYPE %in% c("gg_lollipop2", "gg_lollipop", "gg_freqpolygon", "gg_dotstrip")) {
+                  if (PLOTTYPE %in% c("gg_lollipop2", "gg_lollipop", "gg_freqpolygon", "gg_dotstrip", "gg_beeswarm")) {
                     newSet$gg_size <- svalue(pointSize)
                   }
                   
