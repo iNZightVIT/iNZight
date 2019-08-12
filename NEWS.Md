@@ -6,6 +6,7 @@
 - improve how replicate weights are displayed, and addition of 'remove' button
 - add option to dataset menu to view the (entire) dataset using `utils::View()`
 - add search box to filter long variable lists (iNZight home panel)
+- add beeswarm option for plotting (using ggbeeswarm)
 
 
 ## iNZight 3.4.2
