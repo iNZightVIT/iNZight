@@ -2611,7 +2611,15 @@ iNZPlotMod <- setRefClass(
                     ii <- ii + 1
                 }
             } else if (grepl("^gg_", PLOTTYPE)) {
-              
+              tbl[ii, 1:2, anchor = c(-1,-1), expand = TRUE] <- sectionTitle("Caption")
+              ii <- ii + 1
+              tbl[ii, 1:2, expand = TRUE, fill = TRUE, anchor = c(1, 0)] <- glabel("Caption/Source:")
+              captionText <- gedit(
+                text = if (!is.null(curSet$caption)) curSet$caption else "", 
+                handler = function(h, ...) updateEverything()
+              )
+              tbl[ii, 3:6, expand = TRUE] <- captionText
+              ii <- ii + 1
             } else {
                 ## Axis Limits
                 tbl[ii,  1:2, anchor = c(-1,-1), expand = TRUE] <- sectionTitle("Axis Limits")
@@ -2726,7 +2734,11 @@ iNZPlotMod <- setRefClass(
                                 c(svalue(START, index = TRUE), svalue(NBARS))
                     }
                 } else if (grepl("^gg_", PLOTTYPE)) {
-                  
+                  if (!is.null(svalue(captionText)) && svalue(captionText) != "") {
+                    newSet$caption <- svalue(captionText)
+                  } else {
+                    newSet$caption <- ""
+                  }
                 } else {
                     err <- FALSE
                     xl <- suppressWarnings(as.numeric(svalue(xlower)))
@@ -2799,6 +2811,10 @@ iNZPlotMod <- setRefClass(
                 addHandlerChanged(yJit, function(h, ...) updateEverything())
                 addHandlerChanged(xRug, function(h, ...) updateEverything())
                 addHandlerChanged(yRug, function(h, ...) updateEverything())
+            }
+            
+            if (grepl("^gg_", PLOTTYPE)) {
+              addHandlerChanged(captionText, function(h, ...) updateEverything())
             }
 
             updT <- function(h, ...) {
