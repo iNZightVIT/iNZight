@@ -30,7 +30,8 @@ plot_list <- function(plot_type, x, y) {
     "gg_dotstrip",
     "gg_lollipop", 
     "gg_poppyramid",
-    "gg_density"
+    "gg_density",
+    "gg_beeswarm"
   )) {
     return_list <- list(
       dot  = "dot plot",
@@ -38,6 +39,7 @@ plot_list <- function(plot_type, x, y) {
       gg_dotstrip = "dot strip",
       gg_barcode2 = "barcode",
       gg_boxplot = "boxplot",
+      gg_beeswarm = "beeswarm",
       gg_violin = "violin",
       gg_density = "density",
       gg_cumcurve = "cumulative curve"
@@ -1369,7 +1371,7 @@ iNZPlotMod <- setRefClass(
               (!attr(PLOTTYPES, "null.y") && PLOTTYPE %in% c("gg_violin", "gg_barcode", "gg_boxplot", "gg_cumcurve", "gg_freqpolygon", "gg_dotstrip", "gg_density"))
             ) {
               lbl <- glabel("Colour palette :")
-              palette_options <- c("default", "viridis", "magma", "plasma", "inferno", "BrBG", "PiYG", "PRGn",
+              palette_options <- c("default", "greyscale", "viridis", "magma", "plasma", "inferno", "BrBG", "PiYG", "PRGn",
                                    "Accent", "Dark2", "Paired", "Pastel1", "Set1",
                                    "Blues", "BuGn", "BuPu", "GnBu")
               paletteCombobox <- gcombobox(palette_options, 
@@ -1631,7 +1633,7 @@ iNZPlotMod <- setRefClass(
               
             }
             
-            if (PLOTTYPE %in% c("gg_lollipop2", "gg_lollipop", "gg_freqpolygon", "gg_dotstrip")) {
+            if (PLOTTYPE %in% c("gg_lollipop2", "gg_lollipop", "gg_freqpolygon", "gg_dotstrip", "gg_beeswarm")) {
               tbl[ii, 1:2, anchor = c(1, 0), expand = TRUE] <- glabel("Point size:")
               pointSize <- gslider(from = 1, to = 10, by = 1)
               tbl[ii, 3:6, expand = TRUE] <- pointSize
@@ -1717,6 +1719,61 @@ iNZPlotMod <- setRefClass(
               }
               
               # GUI$plotToolbar$update(export = function() plotly::ggplotly())
+              
+              available.themes <- c(
+                "Default" = "grey", 
+                "Black & White" = "bw", 
+                "Light" = "light", 
+                "Dark" = "dark", 
+                "Minimal" = "minimal", 
+                "Classic" = "classic", 
+                "Void" = "void", 
+                "Stata" = "stata",
+                "Wall Street Journal" = "wsj",
+                "Tufte" = "tufte",
+                "Google Docs" = "gdocs",
+                "FiveThirtyEight" = "fivethirtyeight",
+                "Excel" = "excel",
+                "Economist" = "economist"
+              )
+              
+              if ("ggthemes" %in% installed.packages()) {
+                theme.options <- names(available.themes)
+              } else {
+                theme.options <- c(
+                  names(available.themes[1:7] ),
+                  "Install additional themes..."
+                )
+              }
+
+              tbl[ii, 1:2, anchor = c(1, 0), expand = TRUE] <- glabel("Theme:")
+              themeCombobox <- gcombobox(
+                theme.options,
+                selected = if (!is.null(curSet$gg_theme)) match(names(available.themes)[which(available.themes == curSet$gg_theme)], theme.options) else 1,
+                handler = function(h, ...) {
+                  if (svalue(themeCombobox) == "Install additional themes...") {
+                    tryCatch({
+                        if(gconfirm("Install ggthemes package?")) {
+                          install.packages(
+                            "ggthemes", 
+                            repos = c("https://r.docker.stat.auckland.ac.nz",
+                                      "https://cran.stat.auckland.ac.nz")
+                          )
+                        }
+                      },
+                      finally = {
+                        svalue(themeCombobox) <- names(available.themes)[which(available.themes == curSet$gg_theme)]
+                      }
+                    )
+                  } else {
+                    updateEverything()
+                  }
+                }
+              )
+              tbl[ii, 3:4, expand = TRUE] <- themeCombobox
+              
+              ii <- ii + 1
+              
             }
             
             # if (PLOTTYPE %in% c("gg_column2", "gg_lollipop")) {
@@ -1940,7 +1997,7 @@ iNZPlotMod <- setRefClass(
                     newSet$gg_height <- svalue(barcodeHeight)
                   }
                   
-                  if (PLOTTYPE %in% c("gg_lollipop2", "gg_lollipop", "gg_freqpolygon", "gg_dotstrip")) {
+                  if (PLOTTYPE %in% c("gg_lollipop2", "gg_lollipop", "gg_freqpolygon", "gg_dotstrip", "gg_beeswarm")) {
                     newSet$gg_size <- svalue(pointSize)
                   }
                   
@@ -1951,6 +2008,10 @@ iNZPlotMod <- setRefClass(
                   if (PLOTTYPE %in% c("gg_lollipop", "gg_boxplot", "gg_cumcurve", "gg_lollipop2", "gg_freqpolygon")) {
                     newSet$gg_lwd <- svalue(lwdSlider)
                   }
+                  
+                  newSet$gg_theme <- available.themes[svalue(themeCombobox)]
+                  
+
                   
                 }
                 
@@ -2552,7 +2613,15 @@ iNZPlotMod <- setRefClass(
                     ii <- ii + 1
                 }
             } else if (grepl("^gg_", PLOTTYPE)) {
-              
+              tbl[ii, 1:2, anchor = c(-1,-1), expand = TRUE] <- sectionTitle("Caption")
+              ii <- ii + 1
+              tbl[ii, 1:2, expand = TRUE, fill = TRUE, anchor = c(1, 0)] <- glabel("Caption/Source:")
+              captionText <- gedit(
+                text = if (!is.null(curSet$caption)) curSet$caption else "", 
+                handler = function(h, ...) updateEverything()
+              )
+              tbl[ii, 3:6, expand = TRUE] <- captionText
+              ii <- ii + 1
             } else {
                 ## Axis Limits
                 tbl[ii,  1:2, anchor = c(-1,-1), expand = TRUE] <- sectionTitle("Axis Limits")
@@ -2667,7 +2736,11 @@ iNZPlotMod <- setRefClass(
                                 c(svalue(START, index = TRUE), svalue(NBARS))
                     }
                 } else if (grepl("^gg_", PLOTTYPE)) {
-                  
+                  if (!is.null(svalue(captionText)) && svalue(captionText) != "") {
+                    newSet$caption <- svalue(captionText)
+                  } else {
+                    newSet$caption <- ""
+                  }
                 } else {
                     err <- FALSE
                     xl <- suppressWarnings(as.numeric(svalue(xlower)))
@@ -2740,6 +2813,10 @@ iNZPlotMod <- setRefClass(
                 addHandlerChanged(yJit, function(h, ...) updateEverything())
                 addHandlerChanged(xRug, function(h, ...) updateEverything())
                 addHandlerChanged(yRug, function(h, ...) updateEverything())
+            }
+            
+            if (grepl("^gg_", PLOTTYPE)) {
+              addHandlerChanged(captionText, function(h, ...) updateEverything())
             }
 
             updT <- function(h, ...) {

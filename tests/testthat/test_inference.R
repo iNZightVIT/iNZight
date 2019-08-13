@@ -211,15 +211,56 @@ test_that("Get inference window - scatter plots", {
     dispose(w2[[1]])
 })
 
-## Survey designs
-expect_true(enabled(ui$infBtn))
+cas <- census.at.school.500
+library(dplyr)
+library(magrittr)
+suppressWarnings({
+    cas2 <- cas %>%
+        select("gender", "getlunch", "travel") %>%
+        mutate(
+            getlunch = forcats::fct_explicit_na(getlunch)
+        ) %>%
+        group_by(gender, getlunch, travel) %>%
+        tally(name = "frequency") %>%
+        ungroup() %>%
+        mutate(height = sample(cas$height, nrow(.))) %>%
+        as.data.frame()
+})
 
+ui$close()
+ui <- iNZGUI$new()
+ui$initializeGui(cas2)
+ui$getActiveDoc()$getModel()$setFrequencies("frequency", ui)
+
+test_that("Get inference works for frequencies", {
+    svalue(ui$ctrlWidget$V1box) <- "travel"
+    expect_true(enabled(ui$infBtn))
+    iwin <- ui$infBtn$invoke_change_handler()
+    expect_silent(
+        iwin2 <- iwin[[1]]$children[[1]]$children[[2]]$invoke_change_handler()
+    )
+    dispose(iwin2[[1]])
+
+    svalue(ui$ctrlWidget$V2box) <- "gender"
+    expect_true(enabled(ui$infBtn))
+    iwin <- ui$infBtn$invoke_change_handler()
+    expect_silent(
+        iwin2 <- iwin[[1]]$children[[1]]$children[[2]]$invoke_change_handler()
+    )
+    dispose(iwin2[[1]])
+})
+
+
+## Survey designs
+
+ui$close()
 data(api, package = "survey")
-ui$setDocument(iNZDocument$new(data = apiclus2), reset = TRUE)
-Sys.sleep(5)
+ui <- iNZGUI$new()
+ui$initializeGui(apiclus2)
 
 
 test_that("Get inference disabled for surveys", {
+    expect_true(enabled(ui$infBtn))
     swin <- iNZSurveyDesign$new(ui)
     svalue(swin$clus1Var) <- "dnum"
     svalue(swin$clus2Var) <- "snum"
@@ -232,3 +273,4 @@ test_that("Get inference reenabled for non-surveys", {
     ui$removeDesign()
     expect_true(enabled(ui$infBtn))
 })
+

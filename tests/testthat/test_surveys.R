@@ -3,6 +3,8 @@ data(api, package = "survey")
 chis <- iNZightTools::smart_read("chis.csv")
 ncsr <- iNZightTools::smart_read("ncsr.csv")
 
+test_dir <- getwd()
+
 # ui$close()
 ui <- iNZGUI$new()
 ui$initializeGui(apiclus2)
@@ -99,7 +101,7 @@ test_that("Frequency column specification is passed to settings", {
     expect_silent(swin$createBtn$invoke_change_handler())
     expect_equal(
         ui$iNZDocuments[[ui$activeDoc]]$getSettings()$freq,
-        cas2$frequency
+        "frequency"
     )
 })
 
@@ -111,8 +113,21 @@ test_that("Non-categorical variables removed after specifying frequencies", {
     )
 })
 
+test_that("Plotting and summary of frequencies works", {
+    expect_silent(svalue(ui$ctrlWidget$V1box) <- "travel")
+    expect_equal(ui$plotType, "bar")
+    expect_silent(ui$sumBtn$invoke_change_handler())
+})
+
 test_that("Frequencies retained after filtering", {
-    ## I suspsect it will be broken because of the way things work ...
+    fwin <- iNZFilterWin$new(ui)
+    dispose(ui$modWin)
+    fwin$opt1()
+    svalue(ui$modWin$children[[1]]$children[[1]]$children[[2]]) <- "gender"
+    svalue(ui$modWin$children[[1]]$children[[2]]) <- 1
+    expect_silent(
+        ui$modWin$children[[1]]$children[[3]]$children[[1]]$invoke_change_handler()
+    )
 })
 
 ui$close()
@@ -138,8 +153,6 @@ test_that("Replicate weights can be specified", {
     swin$repVars$invoke_change_handler()
     svalue(swin$repType) <- "other"
     svalue(swin$repScale) <- 1
-    swin$repRscales$scales <- rep(1, length(swin$repVars))
-    swin$display_scales()
 
     expect_silent(swin$createBtn$invoke_change_handler())
     expect_equal(
@@ -162,6 +175,57 @@ test_that("Replicate weight object is valid", {
     )
     expect_is(des, "svyrep.design")
     expect_equivalent(weights(des), weights(dchis))
+})
+
+test_that("Replicate weight window repopulated correctly", {
+    expect_silent(swin <- iNZSurveyDesign$new(ui, type = "replicate"))
+    expect_equal(svalue(swin$wtVar), "rakedw0")
+    expect_equal(svalue(swin$repVars), paste("rakedw", 1:80, sep = ""))
+    expect_equal(svalue(swin$repType), "other")
+    expect_equal(svalue(swin$repScale), "1")
+    expect_equal(
+        swin$rscalesTbl$get_items(),
+        data.frame(
+            rep.weight = paste("rakedw", 1:80, sep = ""),
+            rscales = rep(1, 80)
+        )
+    )
+    swin$cancelBtn$invoke_change_handler()
+})
+
+f1 <- file.path(test_dir, "chis_wts.csv")
+f2 <- file.path(test_dir, "chis_wts_header.csv")
+test_that("Replicate weights can be specified by file", {
+    expect_silent(swin <- iNZSurveyDesign$new(ui, type = "replicate"))
+    expect_silent(swin$repRscalesClear$invoke_change_handler())
+    expect_equal(
+        swin$rscalesTbl$get_items(),
+        data.frame(rep.weight = character(), rscales = numeric())
+    )
+
+    expect_silent(swin$set_rscales(f1))
+    expect_equal(
+        swin$rscalesTbl$get_items(),
+        data.frame(
+            rep.weight = paste("rakedw", 1:80, sep = ""),
+            rscales = read.csv(f1, header = FALSE)[[1]]
+        )
+    )
+
+    expect_silent(swin$repRscalesClear$invoke_change_handler())
+    expect_equal(
+        swin$rscalesTbl$get_items(),
+        data.frame(rep.weight = character(), rscales = numeric())
+    )
+    
+    expect_silent(swin$set_rscales(f2))
+    expect_equal(
+        swin$rscalesTbl$get_items(),
+        data.frame(
+            rep.weight = paste("rakedw", 1:80, sep = ""),
+            rscales = read.csv(f2)[[1]]
+        )
+    )
 })
 
 ui$close()
@@ -264,8 +328,14 @@ test_that("Post stratification can be removed", {
 })
 
 test_that("Frequency tables are saved", {
-
+    expect_equal(
+        ui$getActiveDoc()$getModel()$getFreqTables(), 
+        list(stype = pop.types)
+    )
 })
+
+# clear the values
+ui$getActiveDoc()$getModel()$storeFreqTables(NULL)
 
 test_that("Post stratification set by manually entering values", {
     expect_silent(swin <- iNZSurveyPostStrat$new(ui, .use_ui = FALSE))
@@ -362,6 +432,15 @@ test_that("Multiple variables can be specified (raking calibration)", {
     )
     expect_is(des, "survey.design2")
     expect_equal(des$postStrata, dclus1g2$postStrata)
+})
+
+test_that("User can remove calibration from a survey", {
+    expect_silent(swin <- iNZSurveyPostStrat$new(ui, .use_ui = FALSE))
+    expect_silent(swin$rmvBtn$invoke_change_handler())
+    expect_equal(
+        ui$iNZDocuments[[ui$activeDoc]]$getModel()$getDesign()$poststrat,
+        NULL
+    )
 })
 
 ui$close()

@@ -1,3 +1,17 @@
+## iNZight 3.4.3
+__Release date__: 13 August 2019
+
+- allow user to remove calibration design from calibration window
+- change how frequency variable is stored so it is retained after filter/modifying
+  the dataset
+- improve how replicate weights are displayed, and addition of 'remove' button
+- add option to dataset menu to view the (entire) dataset using `utils::View()`
+- add search box to filter long variable lists (iNZight home panel)
+- add option to change ggplot theme of Financial Times plots
+- add beeswarm option for plotting (using ggbeeswarm)
+- add ability to include captions for sources in Financial Times plots
+
+
 ## iNZight 3.4.2
 __Release date__: 22 July 2019
 

@@ -16,6 +16,7 @@ iNZSurveyDesign <- setRefClass(
         repType = "ANY",
         repScale = "ANY",
         repRscalesBtn = "ANY",
+        repRscalesClear = "ANY",
         repRscales = "ANY",
         rscalesTbl = "ANY",
         createBtn = "ANY",
@@ -108,7 +109,10 @@ iNZSurveyDesign <- setRefClass(
                         reptype <- svalue(repType)
                         scale <- as.numeric(svalue(repScale))
                         rscales <- as.numeric(repRscales$rscales)
-                        if (any(is.na(rscales))) rscales <- NULL
+                        if (length(rscales) == 0)
+                            rscales <- rep(scale, length(repWts))
+                        else if(any(is.na(rscales)))
+                            rscales <- NULL
                         clear <- is.null(wts) && length(repWts) == 0
                         GUI$getActiveDoc()$getModel()$setDesign(
                             wt = wts,
@@ -183,6 +187,19 @@ iNZSurveyDesign <- setRefClass(
                             svalue(wtVar) <<- curDes$wt
                         if (!is.null(curDes$repweights)) {
                             svalue(repVars) <<- curDes$repweights
+                            if (!is.null(curDes$rscales)) {
+                                repRscales <<- data.frame(
+                                    rep.weight = curDes$repweights,
+                                    rscales = curDes$rscales
+                                )
+                                display_scales()
+                            }
+                        }
+                        if (!is.null(curDes$reptype)) {
+                            svalue(repType) <<- curDes$reptype
+                        }
+                        if (!is.null(curDes$scale)) {
+                            svalue(repScale) <<- curDes$scale
                         }
                     },
                     "freq" = {
@@ -319,36 +336,42 @@ iNZSurveyDesign <- setRefClass(
                     )
                     if (length(f) == 0) return()
 
-                    df <- read.csv(f)
-                    if (nrow(df) != length(svalue(repVars))) {
-                        gmessage("You need to specify one scale per replicate.")
-                        return()
-                    }
-                    names(df)[1] <- "rscales"
-                    repRscales <<- df
+                    set_rscales(f)
+                }
+            )
+            repRscalesClear <<- gbutton("Clear",
+                handler = function(h, ...) {
+                    repRscales <<- data.frame(
+                        rep.weight = character(),
+                        rscales = numeric()
+                    )
                     display_scales()
                 }
             )
             tbl3[ii, 1, expand = TRUE, anchor = c(1, 0)] <- lbl
             tbl3[ii, 2, expand = TRUE] <- repRscalesBtn
+            tbl3[ii, 3, expand = TRUE] <- repRscalesClear
             ii <- ii + 1
+
 
             lbl <- glabel("File should contain one replicate scale per line.")
             font(lbl) <- list(size = 8)
-            tbl3[ii, 2, expand = TRUE, anchor = c(-1, 0)] <- lbl
+            tbl3[ii, 2:3, expand = TRUE, anchor = c(-1, 0)] <- lbl
             ii <- ii + 1
 
-            rscalesTbl <<- gtable(
-                data.frame(rscales = numeric())
-            )
-            tbl3[ii, 2, expand = TRUE] <- rscalesTbl
+            ## initialize repRscales
+            repRscales <<- 
+                data.frame(rep.weight = character(), rscales = numeric())
+            rscalesTbl <<- gtable(repRscales)
+            tbl3[ii, 2:3, expand = TRUE] <- rscalesTbl
             size(rscalesTbl) <<- c(-1, 200)
 
             addHandlerSelectionChanged(repVars, function(h, ...) {
-                repRscales <<- data.frame(
-                    rscales = rep("", length(svalue(h$obj)))
-                )
-                display_scales()
+                # repRscales <<- data.frame(
+                #     rep.weight = svalue(repVars),
+                #     rscales = rep("", length(svalue(h$obj)))
+                # )
+                # display_scales()
             })
             
             addHandlerChanged(repType, function(h, ...) {
@@ -361,6 +384,23 @@ iNZSurveyDesign <- setRefClass(
         },
         display_scales = function() {
             rscalesTbl$set_items(repRscales)
+            invisible()
+        },
+        set_rscales = function(file) {
+            # if first row is a character, file has a header
+            x1 <- readLines(file, n = 1)
+            file_has_header <- suppressWarnings(is.na(as.numeric(x1)))
+            df <- read.csv(file, header = file_has_header)
+            if (nrow(df) != length(svalue(repVars))) {
+                gmessage("You need to specify one scale per replicate.")
+                return()
+            }
+            names(df)[1] <- "rscales"
+            repRscales <<- cbind(
+                data.frame(rep.weight = svalue(repVars)),
+                df
+            )
+            display_scales()
         },
         set_frequency = function() {
             g <- gvbox()
@@ -397,7 +437,8 @@ iNZSurveyPostStrat <- setRefClass(
         PSlvls = "ANY",
         lvldf = "list",
         okBtn = "ANY",
-        cancelBtn = "ANY"
+        cancelBtn = "ANY",
+        rmvBtn = "ANY"
     ),
     methods = list(
         initialize = function(gui, .use_ui = TRUE) {
@@ -480,6 +521,17 @@ iNZSurveyPostStrat <- setRefClass(
             # save/cancel buttons
             addSpring(gmain)
             btnGrp <- ggroup(container = gmain)
+
+            rmvBtn <<- gbutton("Remove", 
+                # icon = "delete",
+                handler = function(h, ...) {
+                    svalue(PSvar, index = TRUE) <<- 0
+                    set_poststrat_design()
+                    dispose(win)
+                },
+                container = btnGrp
+            )
+
             addSpring(btnGrp)
             okBtn <<- gbutton("OK",
                 handler = function(h, ...) {
@@ -497,9 +549,9 @@ iNZSurveyPostStrat <- setRefClass(
             )
 
             ## populate on load
+            lvldf <<- GUI$getActiveDoc()$getModel()$getFreqTables()
             if (!is.null(curDes$poststrat)) {
                 svalue(PSvar) <<- names(curDes$poststrat)
-                lvldf <<- GUI$getActiveDoc()$getModel()$getFreqTables()
                 display_tbl()
             }
 

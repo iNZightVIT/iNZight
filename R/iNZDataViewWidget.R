@@ -6,7 +6,9 @@ iNZDataViewWidget <- setRefClass(
         dfView = "ANY", ## group that contains data view
         varView = "ANY", ## group that contains variable view
         ## max size before dataview gets deactived
-        dataThreshold = "numeric"
+        dataThreshold = "numeric",
+        varWidget = "ANY",
+        searchBox = "ANY"
         ),
     methods = list(
         initialize = function(gui, dataThreshold) {
@@ -81,7 +83,7 @@ iNZDataViewWidget <- setRefClass(
         ## create variable view (invisible)
         createVarView = function() {
             dataSet <- GUI$getActiveData()
-            varView <<- ggroup(container = dataGp, expand = TRUE)
+            varView <<- gvbox(container = dataGp, expand = TRUE)
             visible(varView) <<- FALSE
             ## if more than 19 columns are in the dataSet, split the variable
             ## view into 2 tables
@@ -99,26 +101,75 @@ iNZDataViewWidget <- setRefClass(
 
             vnames <- paste(vtypes, vnames)
 
-            # if(length(names(dataSet)) > N && length(names(dataSet)) < 80) {
-            if(length(dataSet) < 100000 && length(names(dataSet)) > 80) {
-                varWidget <- list(
-                    gtable(vnames[1:floor(N/2)], expand = TRUE),
-                    gtable(vnames[(floor(N/2)+1):ncol(dataSet)],
-                           expand = TRUE))
-                names(varWidget[[1]]) <- "VARIABLES"
-                names(varWidget[[2]]) <- "...CONTINUED"
-            } else {
-                varWidget <- list(gtable(vnames, expand = TRUE))
-                names(varWidget[[1]]) <- "VARIABLES (n = numeric, c = categorical, dt = date/time)"
-            }
+            #  if(FALSE){#length(names(dataSet)) > N && length(names(dataSet)) < 80) {
+            # # if(length(dataSet) < 100000 && length(names(dataSet)) > 80) {
+            #     varWidget <- list(
+            #         gtable(vnames[1:floor(length(names(dataSet))/2)], expand = TRUE),
+            #         gtable(vnames[(floor(length(names(dataSet))/2)+1):ncol(dataSet)],
+            #                expand = TRUE))
+            #     names(varWidget[[1]]) <- "VARIABLES"
+            #     names(varWidget[[2]]) <- "...CONTINUED"
+            # } else {
+            #     varWidget <- list(gtable(vnames, expand = TRUE))
+            #     names(varWidget[[1]]) <- "VARIABLES (n = numeric, c = categorical, dt = date/time)"
+            # }
             ## use the variable view as dropsource and add to data group
-            invisible(lapply(varWidget, function(x) {
-                add(varView, x, expand = TRUE)
-                x$remove_popup_menu()
-                addDropSource(x, handler = function(h, ...) {
+            
+            ## display a search box to filter displayed variables
+            searchBox <<- NULL
+            searchtimer <- NULL
+            if (length(names(dataSet)) > N) {
+                searchBox <<- gedit(width = 50, 
+                    initial.msg = "Search filter",
+                    handler = function(h, ...) {
+                        matches <- grep(svalue(h$obj), names(dataSet), 
+                            ignore.case = TRUE)
+                        if (length(matches) == 0) 
+                            matches <- "No matching variable names"
+                        else
+                            matches <- names(dataSet)[matches]
+                        cn <- varWidget$get_names()
+                        varWidget$set_items(matches)
+                        varWidget$set_names(cn)
+                    }
+                )
+                addHandlerKeystroke(searchBox,
+                    function(h, ...) {
+                        if (!is.null(searchtimer))
+                            if (searchtimer$started) 
+                                searchtimer$stop_timer()
+
+                        searchtimer <- gtimer(300, 
+                            searchBox$invoke_change_handler,
+                            one.shot = TRUE
+                        )
+                    }
+                )
+                add(varView, searchBox)
+            }
+
+            varWidget <<- gtable(vnames, expand = TRUE)
+            names(varWidget) <<- 
+                "VARIABLES (n = numeric, c = categorical, dt = date/time)"
+
+            varWidget$remove_popup_menu()
+            addDropSource(varWidget, 
+                handler = function(h, ...) {
                     ## Remove the variable type from the tag (otherwise `variable doesn't exist`)
-                    gsub("\\([a-z]\\) ", "", svalue(h$obj)) 
-                })}))
+                    gsub("\\([a-z]\\) ", "", svalue(h$obj))
+                }
+            )
+            add(varView, varWidget, expand = TRUE)
+
+            invisible(NULL)
+
+            # invisible(lapply(varWidget, function(x) {
+            #     add(varView, x, expand = TRUE)
+            #     x$remove_popup_menu()
+            #     addDropSource(x, handler = function(h, ...) {
+            #         ## Remove the variable type from the tag (otherwise `variable doesn't exist`)
+            #         gsub("\\([a-z]\\) ", "", svalue(h$obj))
+            #     })}))
         },
         ## change the currently active View
         changeView = function() {

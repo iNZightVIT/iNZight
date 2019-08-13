@@ -118,6 +118,11 @@ iNZMenuBarWidget <- setRefClass(
                           icon = "symbol_diamond",
                           handler = function(h, ...) iNZValidateWin$new(GUI)),
                 gseparator(),
+                view = 
+                    gaction("View full dataset",
+                        icon = "symbol_diamon",
+                        handler = function(h, ...) GUI$view_dataset()
+                    ),
                 rename =
                     gaction("Rename ...",
                         icon = "symbol_diamond",
