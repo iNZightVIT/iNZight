@@ -34,7 +34,7 @@ test_that("Add to Plot shows correct options by plot", {
         atptbl[[3]]$get_items(), 
         c(
             "dot plot", "histogram", "dot strip", "barcode",
-            "boxplot", "violin", "density", 
+            "boxplot", "beeswarm", "violin", "density", 
             "column/row bar", "lollipop", "cumulative curve"
         )
     )
