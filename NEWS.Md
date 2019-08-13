@@ -7,6 +7,7 @@
 - add option to dataset menu to view the (entire) dataset using `utils::View()`
 - add search box to filter long variable lists (iNZight home panel)
 - add option to change ggplot theme of Financial Times plots
+- add beeswarm option for plotting (using ggbeeswarm)
 - add ability to include captions for sources in Financial Times plots
 
 

@@ -30,7 +30,8 @@ plot_list <- function(plot_type, x, y) {
     "gg_dotstrip",
     "gg_lollipop", 
     "gg_poppyramid",
-    "gg_density"
+    "gg_density",
+    "gg_beeswarm"
   )) {
     return_list <- list(
       dot  = "dot plot",
@@ -38,6 +39,7 @@ plot_list <- function(plot_type, x, y) {
       gg_dotstrip = "dot strip",
       gg_barcode2 = "barcode",
       gg_boxplot = "boxplot",
+      gg_beeswarm = "beeswarm",
       gg_violin = "violin",
       gg_density = "density",
       gg_cumcurve = "cumulative curve"
@@ -1631,7 +1633,7 @@ iNZPlotMod <- setRefClass(
               
             }
             
-            if (PLOTTYPE %in% c("gg_lollipop2", "gg_lollipop", "gg_freqpolygon", "gg_dotstrip")) {
+            if (PLOTTYPE %in% c("gg_lollipop2", "gg_lollipop", "gg_freqpolygon", "gg_dotstrip", "gg_beeswarm")) {
               tbl[ii, 1:2, anchor = c(1, 0), expand = TRUE] <- glabel("Point size:")
               pointSize <- gslider(from = 1, to = 10, by = 1)
               tbl[ii, 3:6, expand = TRUE] <- pointSize
@@ -1995,7 +1997,7 @@ iNZPlotMod <- setRefClass(
                     newSet$gg_height <- svalue(barcodeHeight)
                   }
                   
-                  if (PLOTTYPE %in% c("gg_lollipop2", "gg_lollipop", "gg_freqpolygon", "gg_dotstrip")) {
+                  if (PLOTTYPE %in% c("gg_lollipop2", "gg_lollipop", "gg_freqpolygon", "gg_dotstrip", "gg_beeswarm")) {
                     newSet$gg_size <- svalue(pointSize)
                   }
                   
