@@ -1,4 +1,5 @@
-## iNZight 3.4.2.9000
+## iNZight 3.4.3
+__Release date__: 13 August 2019
 
 - allow user to remove calibration design from calibration window
 - change how frequency variable is stored so it is retained after filter/modifying
