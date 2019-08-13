@@ -1371,7 +1371,7 @@ iNZPlotMod <- setRefClass(
               (!attr(PLOTTYPES, "null.y") && PLOTTYPE %in% c("gg_violin", "gg_barcode", "gg_boxplot", "gg_cumcurve", "gg_freqpolygon", "gg_dotstrip", "gg_density"))
             ) {
               lbl <- glabel("Colour palette :")
-              palette_options <- c("default", "viridis", "magma", "plasma", "inferno", "BrBG", "PiYG", "PRGn",
+              palette_options <- c("default", "greyscale", "viridis", "magma", "plasma", "inferno", "BrBG", "PiYG", "PRGn",
                                    "Accent", "Dark2", "Paired", "Pastel1", "Set1",
                                    "Blues", "BuGn", "BuPu", "GnBu")
               paletteCombobox <- gcombobox(palette_options, 
@@ -1719,6 +1719,61 @@ iNZPlotMod <- setRefClass(
               }
               
               # GUI$plotToolbar$update(export = function() plotly::ggplotly())
+              
+              available.themes <- c(
+                "Default" = "grey", 
+                "Black & White" = "bw", 
+                "Light" = "light", 
+                "Dark" = "dark", 
+                "Minimal" = "minimal", 
+                "Classic" = "classic", 
+                "Void" = "void", 
+                "Stata" = "stata",
+                "Wall Street Journal" = "wsj",
+                "Tufte" = "tufte",
+                "Google Docs" = "gdocs",
+                "FiveThirtyEight" = "fivethirtyeight",
+                "Excel" = "excel",
+                "Economist" = "economist"
+              )
+              
+              if ("ggthemes" %in% installed.packages()) {
+                theme.options <- names(available.themes)
+              } else {
+                theme.options <- c(
+                  names(available.themes[1:7] ),
+                  "Install additional themes..."
+                )
+              }
+
+              tbl[ii, 1:2, anchor = c(1, 0), expand = TRUE] <- glabel("Theme:")
+              themeCombobox <- gcombobox(
+                theme.options,
+                selected = if (!is.null(curSet$gg_theme)) match(names(available.themes)[which(available.themes == curSet$gg_theme)], theme.options) else 1,
+                handler = function(h, ...) {
+                  if (svalue(themeCombobox) == "Install additional themes...") {
+                    tryCatch({
+                        if(gconfirm("Install ggthemes package?")) {
+                          install.packages(
+                            "ggthemes", 
+                            repos = c("https://r.docker.stat.auckland.ac.nz",
+                                      "https://cran.stat.auckland.ac.nz")
+                          )
+                        }
+                      },
+                      finally = {
+                        svalue(themeCombobox) <- names(available.themes)[which(available.themes == curSet$gg_theme)]
+                      }
+                    )
+                  } else {
+                    updateEverything()
+                  }
+                }
+              )
+              tbl[ii, 3:4, expand = TRUE] <- themeCombobox
+              
+              ii <- ii + 1
+              
             }
             
             # if (PLOTTYPE %in% c("gg_column2", "gg_lollipop")) {
@@ -1953,6 +2008,10 @@ iNZPlotMod <- setRefClass(
                   if (PLOTTYPE %in% c("gg_lollipop", "gg_boxplot", "gg_cumcurve", "gg_lollipop2", "gg_freqpolygon")) {
                     newSet$gg_lwd <- svalue(lwdSlider)
                   }
+                  
+                  newSet$gg_theme <- available.themes[svalue(themeCombobox)]
+                  
+
                   
                 }
                 
