@@ -97,6 +97,10 @@ plot_list <- function(plot_type, x, y) {
   return_list
 }
 
+valid_colour <- function(colour) {
+  !inherits(try(col2rgb(colour), silent = TRUE), "try-error")
+}
+
 iNZPlotModWin <- setRefClass(
     "iNZPlotModWin",
     fields = list(
