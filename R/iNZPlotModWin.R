@@ -1401,8 +1401,19 @@ iNZPlotMod <- setRefClass(
                 fill_colour <- ""
               }
               
-              colourCombobox <- gedit(fill_colour, handler = function(h, ...) updateEverything())
-
+              # colourCombobox <- gedit(fill_colour, handler = function(h, ...) updateEverything())
+              fill_colours <- c("", "darkred", "darkgreen")
+              colourCombobox <- gcombobox(
+                fill_colours, 
+                match(fill_colour, fill_colours, nomatch = 0)[1], 
+                editable = TRUE
+              )
+              
+              if (fill_colour != "" && svalue(colourCombobox, index = TRUE) < 2) {
+                svalue(colourCombobox) <- fill_colour
+              }
+              
+              addHandlerChanged(colourCombobox, function(h, ...) updateEverything())
               tbl[ii, 3:6, expand = TRUE] <- colourCombobox
               
               ii <- ii + 1
