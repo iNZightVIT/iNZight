@@ -1708,18 +1708,6 @@ iNZPlotMod <- setRefClass(
             }
             
             if (grepl("^gg_", PLOTTYPE)) {
-              if (!PLOTTYPE %in% c("gg_pie", "gg_donut", "gg_gridplot", "gg_barcode2", "gg_barcode")) {
-                tbl[ii, 3:4, anchor = c(1, 0), expand = TRUE] <- gbutton("Interactive Plot (via plotly)", handler = function(h, ...) {
-                  suppressWarnings(
-                    print(plotly::ggplotly())
-                  )
-                })
-                
-                ii <- ii + 1
-              }
-              
-              # GUI$plotToolbar$update(export = function() plotly::ggplotly())
-              
               available.themes <- c(
                 "Default" = "grey", 
                 "Black & White" = "bw", 
@@ -1745,7 +1733,7 @@ iNZPlotMod <- setRefClass(
                   "Install additional themes..."
                 )
               }
-
+              
               tbl[ii, 1:2, anchor = c(1, 0), expand = TRUE] <- glabel("Theme:")
               themeCombobox <- gcombobox(
                 theme.options,
@@ -1753,17 +1741,17 @@ iNZPlotMod <- setRefClass(
                 handler = function(h, ...) {
                   if (svalue(themeCombobox) == "Install additional themes...") {
                     tryCatch({
-                        if(gconfirm("Install ggthemes package?")) {
-                          install.packages(
-                            "ggthemes", 
-                            repos = c("https://r.docker.stat.auckland.ac.nz",
-                                      "https://cran.stat.auckland.ac.nz")
-                          )
-                        }
-                      },
-                      finally = {
-                        svalue(themeCombobox) <- names(available.themes)[which(available.themes == curSet$gg_theme)]
+                      if(gconfirm("Install ggthemes package?")) {
+                        install.packages(
+                          "ggthemes", 
+                          repos = c("https://r.docker.stat.auckland.ac.nz",
+                                    "https://cran.stat.auckland.ac.nz")
+                        )
                       }
+                    },
+                    finally = {
+                      svalue(themeCombobox) <- names(available.themes)[which(available.themes == curSet$gg_theme)]
+                    }
                     )
                   } else {
                     updateEverything()
@@ -1774,6 +1762,15 @@ iNZPlotMod <- setRefClass(
               
               ii <- ii + 1
               
+              if (!PLOTTYPE %in% c("gg_pie", "gg_donut", "gg_gridplot", "gg_barcode2", "gg_barcode")) {
+                tbl[ii, 3:4, anchor = c(1, 0), expand = TRUE] <- gbutton("Interactive Plot (via plotly)", handler = function(h, ...) {
+                  suppressWarnings(
+                    print(plotly::ggplotly())
+                  )
+                })
+                
+                ii <- ii + 1
+              }
             }
             
             # if (PLOTTYPE %in% c("gg_column2", "gg_lollipop")) {
