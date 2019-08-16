@@ -1694,7 +1694,7 @@ iNZPlotMod <- setRefClass(
             }
             
             if (PLOTTYPE %in% c("gg_column", "gg_lollipop2", "gg_pie", "gg_donut")) {
-              tbl[ii, 1:2, anchor = c(1, 0), expand = TRUE] <- glabel("Sort categories:")
+              tbl[ii, 1:2, anchor = c(1, 0), expand = TRUE] <- glabel("Sort by size:")
               sortCheck <- gcheckbox(handler = function(h, ...) updateEverything())
               tbl[ii, 3:6, expand = TRUE] <- sortCheck
               
