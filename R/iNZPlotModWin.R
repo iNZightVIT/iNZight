@@ -83,7 +83,7 @@ plot_list <- function(plot_type, x, y) {
     } else {
       return_list <- append(return_list, list(gg_freqpolygon = "frequency polygons", gg_heatmap = "heatmap"))
       if (is.factor(y) && nlevels(y) == 2) {
-        return_list <- append(return_list, list(gg_spine = "spine"), length(return_list) - 1)
+        return_list <- append(return_list, list(gg_spine = "spine/pyramid"), length(return_list) - 1)
       } 
       
       if (is.factor(x) && nlevels(x) >= 3) {
