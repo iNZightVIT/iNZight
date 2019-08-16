@@ -1507,11 +1507,13 @@ iNZPlotMod <- setRefClass(
             
             if (grepl("^gg_", PLOTTYPE) && !(PLOTTYPE %in% c("gg_pie", "gg_donut", "gg_freqpolygon", "gg_cumcurve", "gg_barcode", "gg_gridplot"))) {
               tbl[ii, 1:2, anchor = c(1, 0), expand = TRUE] <- glabel("Rotation:")
-              rotateCheck <- gcheckbox("Rotate", handler = function(h, ...) updateEverything())
+              rotateCheck <- gcheckbox("Rotate")
               if (isTRUE(!is.null(curSet$rotation))) {
                 svalue(rotateCheck) <- curSet$rotation
               }
               tbl[ii, 3:6, expand = TRUE] <- rotateCheck
+              
+              addHandlerChanged(rotateCheck, function(h, ...) updateEverything())
               
               ii <- ii + 1
             }
