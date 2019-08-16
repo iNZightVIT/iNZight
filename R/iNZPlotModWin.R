@@ -1368,7 +1368,7 @@ iNZPlotMod <- setRefClass(
             if (
               grepl("^gg_", PLOTTYPE) && 
               (PLOTTYPE %in% c("gg_pie", "gg_donut", "gg_column", "gg_heatmap", "gg_stackedcolumn", "gg_poppyramid", "gg_spine", "gg_mosaic", "gg_divergingstackedbar")) ||
-              (!attr(PLOTTYPES, "null.y") && PLOTTYPE %in% c("gg_violin", "gg_barcode", "gg_boxplot", "gg_cumcurve", "gg_freqpolygon", "gg_dotstrip", "gg_density"))
+              (!attr(PLOTTYPES, "null.y") && PLOTTYPE %in% c("gg_violin", "gg_barcode", "gg_boxplot", "gg_cumcurve", "gg_freqpolygon", "gg_dotstrip", "gg_density", "gg_lollipop2"))
             ) {
               lbl <- glabel("Colour palette :")
               palette_options <- c("default", "greyscale", "viridis", "magma", "plasma", "inferno", "BrBG", "PiYG", "PRGn",
@@ -1386,7 +1386,7 @@ iNZPlotMod <- setRefClass(
             }
             
             if (
-              PLOTTYPE %in% c("gg_violin", "gg_column2", "gg_lollipop", "gg_boxplot", "gg_density", "gg_cumcurve") && attr(PLOTTYPES, "null.y") || 
+              PLOTTYPE %in% c("gg_violin", "gg_column2", "gg_lollipop", "gg_boxplot", "gg_density", "gg_cumcurve", "gg_lollipop2") && attr(PLOTTYPES, "null.y") || 
               PLOTTYPE %in% c("gg_barcode", "gg_dotstrip")
             ) {
               tbl[ii, 1:2, anchor = c(1, 0), expand = TRUE] <- glabel("Fill colour:")
@@ -1946,12 +1946,12 @@ iNZPlotMod <- setRefClass(
                   
                   if(grepl("^gg_", PLOTTYPE) && 
                      (PLOTTYPE %in% c("gg_pie", "gg_donut", "gg_column", "gg_heatmap", "gg_stackedcolumn", "gg_poppyramid", "gg_spine", "gg_mosaic", "gg_divergingstackedbar")) ||
-                     (!attr(PLOTTYPES, "null.y") && PLOTTYPE %in% c("gg_violin", "gg_barcode", "gg_boxplot", "gg_cumcurve", "gg_freqpolygon", "gg_dotstrip", "gg_density"))
+                     (!attr(PLOTTYPES, "null.y") && PLOTTYPE %in% c("gg_violin", "gg_barcode", "gg_boxplot", "gg_cumcurve", "gg_freqpolygon", "gg_dotstrip", "gg_density", "gg_lollipop2"))
                   ) {
                     newSet$palette <- svalue(paletteCombobox)
                   }
                   
-                  if (PLOTTYPE %in% c("gg_violin", "gg_column2", "gg_lollipop", "gg_boxplot", "gg_density", "gg_cumcurve") && attr(PLOTTYPES, "null.y")) {
+                  if (PLOTTYPE %in% c("gg_violin", "gg_column2", "gg_lollipop", "gg_boxplot", "gg_density", "gg_cumcurve", "gg_lollipop2") && attr(PLOTTYPES, "null.y")) {
                     if (svalue(colourCombobox) != "") {
                       newSet$fill_colour <- svalue(colourCombobox)
                     }
