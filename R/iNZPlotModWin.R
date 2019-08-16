@@ -1505,7 +1505,7 @@ iNZPlotMod <- setRefClass(
             
             ## FT PLOT OPTIONS
             
-            if (grepl("^gg_", PLOTTYPE) && !(PLOTTYPE %in% c("gg_pie", "gg_donut", "gg_freqpolygon", "gg_cumcurve", "gg_barcode"))) {
+            if (grepl("^gg_", PLOTTYPE) && !(PLOTTYPE %in% c("gg_pie", "gg_donut", "gg_cumcurve", "gg_barcode"))) {
               tbl[ii, 1:2, anchor = c(1, 0), expand = TRUE] <- glabel("Rotation:")
               rotateCheck <- gcheckbox("Rotate")
               if (isTRUE(!is.null(curSet$rotation))) {
@@ -1942,7 +1942,7 @@ iNZPlotMod <- setRefClass(
                 }
                 
                 if (grepl("^gg_", PLOTTYPE)) {
-                  if (!(PLOTTYPE %in% c("gg_pie", "gg_donut", "gg_freqpolygon", "gg_cumcurve", "gg_barcode"))) {
+                  if (!(PLOTTYPE %in% c("gg_pie", "gg_donut", "gg_cumcurve", "gg_barcode"))) {
                     newSet$rotation <- svalue(rotateCheck)
                   }
                   
