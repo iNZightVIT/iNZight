@@ -39,13 +39,13 @@ iNZPlotInfWin <- setRefClass(
 
                 ## Labels for each option
                 parLab <- glabel("Parameter")
-                font(parLab) <- list(weight = "bold", family = "normal", size = 9)
+                font(parLab) <- list(weight = "bold", family = "sans", size = 9)
 
                 metLab <- glabel("Type of Inference")
-                font(metLab) <- list(weight = "bold", family = "normal", size = 9)
+                font(metLab) <- list(weight = "bold", family = "sans", size = 9)
 
                 typLab <- glabel("Type of Interval")
-                font(typLab) <- list(weight = "bold", family = "normal", size = 9)
+                font(typLab) <- list(weight = "bold", family = "sans", size = 9)
                 
                 parTab[2, 1, expand = TRUE, anchor = c(-1, 0)] <<- parLab
                 metTab[2, 1, expand = TRUE, anchor = c(-1, 0)] <<- metLab
