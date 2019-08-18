@@ -47,7 +47,7 @@ iNZValidateWin <- setRefClass(
       lbl.results <- glabel("Results:")
       lbl.details <- glabel("Details:")
       
-      font(lbl) <- list(weight = "bold", size = 12, family = "normal")
+      font(lbl) <- list(weight = "bold", size = 12, family = "sans")
       font(lbl.rulesbox) <- list(weight = "bold")
       font(lbl.results) <- list(weight = "bold")
       font(lbl.details) <- list(weight = "bold")

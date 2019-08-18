@@ -899,9 +899,9 @@ iNZGUI <- setRefClass(
                     }
                 })
             font(sumBtn) <<-
-                list(weight = "bold", family = "normal", color = "navy")
+                list(weight = "bold", family = "sans", color = "navy")
             font(infBtn) <<-
-                list(weight = "bold", family = "normal", color = "navy")
+                list(weight = "bold", family = "sans", color = "navy")
             add(sumGrp, sumBtn, expand = TRUE)
             add(sumGrp, infBtn, expand = TRUE)
             sumGrp

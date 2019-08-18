@@ -490,13 +490,13 @@ iNZstackVarWin <- setRefClass(
         ## instructions through glabels
         lbl1 <- glabel("Choose variables to stack")
         font(lbl1) <- list(weight = "bold",
-                           family = "normal")
+                           family = "sans")
         helplyt <- glayout(homegenous = FALSE)
         helplyt[1, 4:19, expand = TRUE, anchor = c(0,0)] <- lbl1
         helplyt[1, 20, expand = TRUE, anchor = c(1, -1)] <- helpbtn
         lbl2 <- glabel("(Hold Ctrl to choose many)")
         font(lbl2) <- list(weight = "bold",
-                           family = "normal")
+                           family = "sans")
         ## display only numeric variables
         numIndices <- sapply(GUI$getActiveData(), function(x) !is_cat(x))
         numVar <- gtable(names(GUI$getActiveData())[numIndices],

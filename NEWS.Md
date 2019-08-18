@@ -1,3 +1,8 @@
+## iNZight 3.4.3.9000
+__Release date__: 
+
+- fix warnings that occur from `family = "normal"` fonts
+
 ## iNZight 3.4.3
 __Release date__: 13 August 2019
 

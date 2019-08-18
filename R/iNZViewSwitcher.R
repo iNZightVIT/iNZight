@@ -18,9 +18,9 @@ iNZViewSwitcher <- setRefClass(
                                 handler = function(h,...) .self$viewData(h,...))
             listBtn <<- gbutton("View Variables",
                                 handler = function(h,...) .self$viewList(h,...))
-            font(dataBtn) <<- list(weight="bold", family = "normal",
+            font(dataBtn) <<- list(weight="bold", family = "sans",
                                    color = "navy")
-            font(listBtn) <<- list(weight="bold", family = "normal",
+            font(listBtn) <<- list(weight="bold", family = "sans",
                                    color = "navy")
             dataSet <- GUI$getActiveData()
             ## if the data size is below threshold, start in data view,
