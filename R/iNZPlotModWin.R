@@ -1707,6 +1707,14 @@ iNZPlotMod <- setRefClass(
               ii <- ii + 1
             }
             
+            if (PLOTTYPE %in% c("gg_gridplot")) {
+              tbl[ii, 1:2, anchor = c(1, 0), expand = TRUE] <- glabel("Square per N obs:")
+              gridNPerSquare <- gedit(1, handler = function(h, ...) updateEverything())
+              tbl[ii, 3:6, expand = TRUE] <- gridNPerSquare
+              
+              ii <- ii + 1
+            }
+            
             if (grepl("^gg_", PLOTTYPE)) {
               if (!PLOTTYPE %in% c("gg_pie", "gg_donut", "gg_gridplot", "gg_barcode2", "gg_barcode")) {
                 tbl[ii, 3:4, anchor = c(1, 0), expand = TRUE] <- gbutton("Export using plotly", handler = function(h, ...) {
@@ -2007,6 +2015,10 @@ iNZPlotMod <- setRefClass(
                   
                   if (PLOTTYPE %in% c("gg_lollipop", "gg_boxplot", "gg_cumcurve", "gg_lollipop2", "gg_freqpolygon")) {
                     newSet$gg_lwd <- svalue(lwdSlider)
+                  }
+                  
+                  if (PLOTTYPE %in% c("gg_gridplot")) {
+                    newSet$gg_perN <- svalue(gridNPerSquare)
                   }
                   
                   newSet$gg_theme <- available.themes[svalue(themeCombobox)]
