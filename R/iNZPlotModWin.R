@@ -31,7 +31,7 @@ plot_list <- function(plot_type, x, y) {
     "gg_lollipop", 
     "gg_poppyramid",
     "gg_density",
-    "gg_beeswarm"
+    "gg_quasirandom"
   )) {
     return_list <- list(
       dot  = "dot plot",
@@ -39,7 +39,7 @@ plot_list <- function(plot_type, x, y) {
       gg_dotstrip = "dot strip",
       gg_barcode2 = "barcode",
       gg_boxplot = "boxplot",
-      gg_beeswarm = "beeswarm",
+      gg_quasirandom = "beeswarm",
       gg_violin = "violin",
       gg_density = "density",
       gg_cumcurve = "cumulative curve"
@@ -1707,6 +1707,28 @@ iNZPlotMod <- setRefClass(
               ii <- ii + 1
             }
             
+            if (PLOTTYPE %in% c("gg_quasirandom")) {
+              tbl[ii, 1:2, anchor = c(1, 0), expand = TRUE] <- glabel("Swarm width:")
+              swarmWidth <- gslider(0, 1, 0.1)
+              tbl[ii, 3:6, expand = TRUE] <- swarmWidth
+              
+              addHandlerChanged(swarmWidth, handler = function(h, ...) {
+                if (!is.null(timer))
+                  if (timer$started) timer$stop_timer()
+                timer <<- gtimer(500, function(...) updateEverything(), one.shot = TRUE)
+              })
+              
+              ii <- ii + 1
+              
+              tbl[ii, 1:2, anchor = c(1, 0), expand = TRUE] <- glabel("Swarm method:")
+              swarmMethod <- gcombobox(c("quasirandom", "pseudorandom", "smiley", "frowney"))
+              tbl[ii, 3:6, expand = TRUE] <- swarmMethod
+              addHandlerChanged(swarmMethod, handler = function(h, ...) updateEverything())
+              
+              ii <- ii + 1
+              
+            }
+            
             if (grepl("^gg_", PLOTTYPE)) {
               if (!PLOTTYPE %in% c("gg_pie", "gg_donut", "gg_gridplot", "gg_barcode2", "gg_barcode")) {
                 tbl[ii, 3:4, anchor = c(1, 0), expand = TRUE] <- gbutton("Export using plotly", handler = function(h, ...) {
@@ -2007,6 +2029,11 @@ iNZPlotMod <- setRefClass(
                   
                   if (PLOTTYPE %in% c("gg_lollipop", "gg_boxplot", "gg_cumcurve", "gg_lollipop2", "gg_freqpolygon")) {
                     newSet$gg_lwd <- svalue(lwdSlider)
+                  }
+                  
+                  if (PLOTTYPE %in% c("gg_quasirandom")) {
+                    newSet$gg_width <- svalue(swarmWidth)
+                    newSet$gg_method <- svalue(swarmMethod)
                   }
                   
                   newSet$gg_theme <- available.themes[svalue(themeCombobox)]
