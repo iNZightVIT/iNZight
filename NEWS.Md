@@ -1,7 +1,8 @@
 ## iNZight 3.4.3.9000
-__Release date__: 
+__Release date__:
 
 - fix warnings that occur from `family = "normal"` fonts
+- fix preferences storage location on Windows Install version of iNZight
 
 ## iNZight 3.4.3
 __Release date__: 13 August 2019
@@ -21,7 +22,7 @@ __Release date__: 13 August 2019
 __Release date__: 22 July 2019
 
 - modules directory no longer used (or created) on Windows, to help the updater
-- fix bug in point sizing when removing/adding box plot from dotplots 
+- fix bug in point sizing when removing/adding box plot from dotplots
 
 
 ## iNZight 3.4.1
