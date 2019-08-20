@@ -1285,6 +1285,9 @@ iNZGUI <- setRefClass(
                 "windows" = {
                     if (file.exists(file.path("~", "iNZightVIT"))) {
                         path <- file.path("~", "iNZightVIT", ".inzight")
+                        # on new windows installer, nest prefs file one deeper
+                        if (dir.exists(path))
+                            path <- file.path(path, ".inzight")
                     } else {
                         path <- file.path("~", ".inzight")
                     }
