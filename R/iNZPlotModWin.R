@@ -1079,6 +1079,10 @@ iNZPlotMod <- setRefClass(
                           else
                               GUI$getActiveData()[[curSet$varnames$colby]]
                   }
+                  if (newSet$plottype == "gg_gridplot") {
+                    newSet$gg_perN <- 10^(floor(log10(nrow(GUI$getActiveData()))) - 1)  
+                  }
+                  
                   GUI$getActiveDoc()$setSettings(newSet)
                   updateSettings()
 
@@ -1709,7 +1713,8 @@ iNZPlotMod <- setRefClass(
             
             if (PLOTTYPE %in% c("gg_gridplot")) {
               tbl[ii, 1:2, anchor = c(1, 0), expand = TRUE] <- glabel("Square per N obs:")
-              gridNPerSquare <- gedit(1, handler = function(h, ...) updateEverything())
+              gridNPerSquare <- gedit(10^(floor(log10(nrow(GUI$getActiveData()))) - 1))
+              addHandlerChanged(gridNPerSquare, function(h, ...) updateEverything())
               tbl[ii, 3:6, expand = TRUE] <- gridNPerSquare
               
               ii <- ii + 1
