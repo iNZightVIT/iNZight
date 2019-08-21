@@ -1709,7 +1709,7 @@ iNZPlotMod <- setRefClass(
             
             if (PLOTTYPE %in% c("gg_quasirandom")) {
               tbl[ii, 1:2, anchor = c(1, 0), expand = TRUE] <- glabel("Swarm width:")
-              swarmWidth <- gslider(0, 1, 0.1, value = 0.4)
+              swarmWidth <- gslider(0, 1, 0.1, value = if (!is.null(curSet$gg_swarmwidth)) curSet$gg_swarmwidth else 0.4)
               tbl[ii, 3:6, expand = TRUE] <- swarmWidth
               
               addHandlerChanged(swarmWidth, handler = function(h, ...) {
@@ -2032,7 +2032,7 @@ iNZPlotMod <- setRefClass(
                   }
                   
                   if (PLOTTYPE %in% c("gg_quasirandom")) {
-                    newSet$gg_width <- svalue(swarmWidth)
+                    newSet$gg_swarmwidth <- svalue(swarmWidth)
                     newSet$gg_method <- svalue(swarmMethod)
                   }
                   
