@@ -1,5 +1,5 @@
-## iNZight 3.4.3.9000
-__Release date__:
+## iNZight 3.4.4
+__Release date__" 21 August 2019
 
 - fix warnings that occur from `family = "normal"` fonts
 - fix preferences storage location on Windows Install version of iNZight
