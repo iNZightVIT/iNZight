@@ -340,6 +340,7 @@ iNZGUI <- setRefClass(
                 "Get Summary",
                 handler = function(h, ...) {
                     curSet <- getActiveDoc()$getSettings()
+                    curSet$plottype <- NULL
                     if (!is.null(curSet$freq))
                         curSet$freq <- getActiveData()[[curSet$freq]]
                     if (!is.null(curSet$x)) {
@@ -591,6 +592,7 @@ iNZGUI <- setRefClass(
                 "Get Inference",
                 handler = function(h, ...) {
                     curSet <- getActiveDoc()$getSettings()
+                    curSet$plottype <- NULL
                     if (!is.null(curSet$freq))
                         curSet$freq <- getActiveData()[[curSet$freq]]
                     if (!is.null(curSet$x)) {
@@ -764,6 +766,7 @@ iNZGUI <- setRefClass(
                         btn <- gbutton("OK", handler = function(h, ...) {
                             infType <- svalue(infMthd, index = TRUE)
                             curSet <- getActiveDoc()$getSettings()
+                            curSet$plottype <- NULL
                             if (!is.null(curSet$freq))
                                 curSet$freq <- getActiveData()[[curSet$freq]]
                             if (!is.null(curSet$x)) {
