@@ -31,6 +31,7 @@ plot_list <- function(plot_type, x, y) {
     "gg_lollipop", 
     "gg_poppyramid",
     "gg_density",
+    "gg_ridgeline",
     "gg_beeswarm"
   )) {
     return_list <- list(
@@ -48,6 +49,10 @@ plot_list <- function(plot_type, x, y) {
     if (is.null(y)) {
       return_list <- append(return_list, list(gg_column2 = "column/row bar"), length(return_list) - 1)
       return_list <- append(return_list, list(gg_lollipop = "lollipop"), length(return_list) - 1)
+    }
+    
+    if (!is.null(y)) {
+      return_list <- append(return_list, list(gg_ridgeline = "ridgeline"))
     }
     
     if ((!is.numeric(y) && nlevels(y) == 2) || (!is.numeric(x) && nlevels(x) == 2)) {
@@ -1368,7 +1373,7 @@ iNZPlotMod <- setRefClass(
             if (
               grepl("^gg_", PLOTTYPE) && 
               (PLOTTYPE %in% c("gg_pie", "gg_donut", "gg_column", "gg_heatmap", "gg_stackedcolumn", "gg_poppyramid", "gg_spine", "gg_mosaic", "gg_divergingstackedbar")) ||
-              (!attr(PLOTTYPES, "null.y") && PLOTTYPE %in% c("gg_violin", "gg_barcode", "gg_boxplot", "gg_cumcurve", "gg_freqpolygon", "gg_dotstrip", "gg_density"))
+              (!attr(PLOTTYPES, "null.y") && PLOTTYPE %in% c("gg_violin", "gg_barcode", "gg_boxplot", "gg_cumcurve", "gg_freqpolygon", "gg_dotstrip", "gg_density", "gg_ridgeline"))
             ) {
               lbl <- glabel("Colour palette :")
               palette_options <- c("default", "greyscale", "viridis", "magma", "plasma", "inferno", "BrBG", "PiYG", "PRGn",
@@ -1949,7 +1954,7 @@ iNZPlotMod <- setRefClass(
                   
                   if(grepl("^gg_", PLOTTYPE) && 
                      (PLOTTYPE %in% c("gg_pie", "gg_donut", "gg_column", "gg_heatmap", "gg_stackedcolumn", "gg_poppyramid", "gg_spine", "gg_mosaic", "gg_divergingstackedbar")) ||
-                     (!attr(PLOTTYPES, "null.y") && PLOTTYPE %in% c("gg_violin", "gg_barcode", "gg_boxplot", "gg_cumcurve", "gg_freqpolygon", "gg_dotstrip", "gg_density"))
+                     (!attr(PLOTTYPES, "null.y") && PLOTTYPE %in% c("gg_violin", "gg_barcode", "gg_boxplot", "gg_cumcurve", "gg_freqpolygon", "gg_dotstrip", "gg_density", "gg_ridgeline"))
                   ) {
                     newSet$palette <- svalue(paletteCombobox)
                   }
