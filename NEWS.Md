@@ -3,6 +3,8 @@ __Release date__:
 
 - fix warnings that occur from `family = "normal"` fonts
 - fix preferences storage location on Windows Install version of iNZight
+- fix bug preventing Get Summary/Inference from working with FT plots
+
 
 ## iNZight 3.4.3
 __Release date__: 13 August 2019
