@@ -340,6 +340,7 @@ iNZGUI <- setRefClass(
                 "Get Summary",
                 handler = function(h, ...) {
                     curSet <- getActiveDoc()$getSettings()
+                    curSet$plottype <- NULL
                     if (!is.null(curSet$freq))
                         curSet$freq <- getActiveData()[[curSet$freq]]
                     if (!is.null(curSet$x)) {
@@ -591,6 +592,7 @@ iNZGUI <- setRefClass(
                 "Get Inference",
                 handler = function(h, ...) {
                     curSet <- getActiveDoc()$getSettings()
+                    curSet$plottype <- NULL
                     if (!is.null(curSet$freq))
                         curSet$freq <- getActiveData()[[curSet$freq]]
                     if (!is.null(curSet$x)) {
@@ -764,6 +766,7 @@ iNZGUI <- setRefClass(
                         btn <- gbutton("OK", handler = function(h, ...) {
                             infType <- svalue(infMthd, index = TRUE)
                             curSet <- getActiveDoc()$getSettings()
+                            curSet$plottype <- NULL
                             if (!is.null(curSet$freq))
                                 curSet$freq <- getActiveData()[[curSet$freq]]
                             if (!is.null(curSet$x)) {
@@ -899,9 +902,9 @@ iNZGUI <- setRefClass(
                     }
                 })
             font(sumBtn) <<-
-                list(weight = "bold", family = "normal", color = "navy")
+                list(weight = "bold", family = "sans", color = "navy")
             font(infBtn) <<-
-                list(weight = "bold", family = "normal", color = "navy")
+                list(weight = "bold", family = "sans", color = "navy")
             add(sumGrp, sumBtn, expand = TRUE)
             add(sumGrp, infBtn, expand = TRUE)
             sumGrp
@@ -1285,6 +1288,9 @@ iNZGUI <- setRefClass(
                 "windows" = {
                     if (file.exists(file.path("~", "iNZightVIT"))) {
                         path <- file.path("~", "iNZightVIT", ".inzight")
+                        # on new windows installer, nest prefs file one deeper
+                        if (dir.exists(path))
+                            path <- file.path(path, ".inzight")
                     } else {
                         path <- file.path("~", ".inzight")
                     }
