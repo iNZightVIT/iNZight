@@ -670,9 +670,14 @@ iNZGUI <- setRefClass(
                         ## Checkbox: perform hypothesis test? Activates hypothesis options.
                         TTEST <- grepl("ttest", INFTYPE)
                         TTEST2 <- INFTYPE == "twosample-ttest"
+                        CHI2 <- grepl("-table", INFTYPE)
+                        PROPTEST <- INFTYPE == "oneway-table"
+                        PROPTEST2 <- PROPTEST && length(levels(curSet$x)) == 2
                         hypTest <-
                             if (TTEST2)
                                 gradio(c("None", "Two Sample t-test", "ANOVA"), horizontal = TRUE)
+                            else if (PROPTEST2)
+                                gradio(c("None", "Chi-square test", "Test proportion"), horizontal = TRUE)
                             else
                                 gcheckbox(test.type, checked = FALSE)
                         if (doHypTest) {
@@ -694,12 +699,17 @@ iNZGUI <- setRefClass(
                                 tbl[ii, 1:3, anchor = c(1, 0), expand = TRUE] <- lbl
                                 tbl[ii, 4:6, expand = TRUE] <- hypVal
                                 ii <- ii + 1
+                            } else if (PROPTEST2) {
+                                tbl[ii, 1:3, anchor = c(1, 0), expand = TRUE] <- lbl
+                                svalue(hypVal) <- "0.5"
+                                tbl[ii, 4:6, expand = TRUE] <- hypVal
+                                ii <- ii + 1
                             }
 
                             ## alternative hypothesis
                             lbl <- glabel("Alternative Hypothesis :")
                             hypAlt <- gcombobox(c("two sided", "greater than", "less than"))
-                            if (TTEST) {
+                            if (TTEST || PROPTEST2) {
                                 tbl[ii, 1:3, anchor = c(1, 0), expand = TRUE] <- lbl
                                 tbl[ii, 4:6, expand = TRUE] <- hypAlt
                                 ii <- ii + 1
@@ -707,6 +717,7 @@ iNZGUI <- setRefClass(
 
                             enabled(hypAlt) <- enabled(hypVal) <-
                                 if (TTEST2) svalue(hypTest, index = TRUE) == 2
+                                else if (PROPTEST2) svalue(hypTest, index = TRUE) == 3
                                 else svalue(hypTest)
 
                             ## use equal variance assumption?
@@ -717,11 +728,41 @@ iNZGUI <- setRefClass(
 
                                 enabled(hypEqualVar) <- svalue(hypTest, index = TRUE) == 2
                             }
+
+                            hypSimPval <- gcheckbox("Simulate p-value", 
+                                checked = FALSE)
+                            if (CHI2) {
+                                tbl[ii, 4:6, expand = TRUE] <- hypSimPval
+                                ii <- ii + 1
+
+                                enabled(hypSimPval) <- 
+                                    if (PROPTEST2) svalue(hypTest, index = TRUE) == 2
+                                    else svalue(hypTest)
+                            }
+
+                            hypExactPval <- gcheckbox("Calculate exact p-value", 
+                                checked = FALSE)
+                            if (PROPTEST2) {
+                                tbl[ii, 4:6, expand = TRUE] <- hypExactPval
+                                ii <- ii + 1
+
+                                enabled(hypExactPval) <- svalue(hypTest, index = TRUE) == 3
+                            }
                         }
 
                         addHandlerChanged(hypTest, function(h, ...) {
-                            enabled(hypEqualVar) <- enabled(hypAlt) <- enabled(hypVal) <-
+                            if (CHI2)
+                                enabled(hypSimPval) <- 
+                                    if (PROPTEST2) svalue(hypTest, index = TRUE) == 2
+                                    else svalue(hypTest)
+                            enabled(hypExactPval) <- 
+                                if (PROPTEST2) svalue(hypTest, index = TRUE) == 3
+                                else FALSE
+                            enabled(hypEqualVar) <- 
+                            enabled(hypAlt) <-
+                            enabled(hypVal) <-
                                 if (TTEST2) svalue(hypTest, index = TRUE) == 2
+                                else if (PROPTEST2) svalue(hypTest, index = TRUE) == 3
                                 else svalue(h$obj)
                         })
 
@@ -786,7 +827,10 @@ iNZGUI <- setRefClass(
                                      inference.type = "conf",
                                      inference.par = NULL)
                             )
-                            if (ifelse(TTEST2, svalue(hypTest, index = TRUE) > 1, svalue(hypTest))) {
+                            # if (ifelse(TTEST2, svalue(hypTest, index = TRUE) > 1, svalue(hypTest))) {
+                            if ((TTEST2 && svalue(hypTest, index = TRUE) > 1) ||
+                                (PROPTEST2 && svalue(hypTest, index = TRUE) > 1) ||
+                                (!TTEST2 && !PROPTEST2 && svalue(hypTest))) {
                                 if (is.na(as.numeric(svalue(hypVal)))) {
                                     gmessage(
                                         "Null value must be a valid number.",
@@ -804,14 +848,20 @@ iNZGUI <- setRefClass(
                                             "two.sided", "greater", "less"
                                         ),
                                         hypothesis.var.equal = svalue(hypEqualVar),
-                                        hypothesis.test = ifelse(
-                                            TTEST2,
-                                            switch(
-                                                svalue(hypTest, index = TRUE),
-                                                "default", "t.test", "anova"
-                                            ),
-                                            "default"
-                                        )
+                                        hypothesis.simulated.p.value = svalue(hypSimPval),
+                                        hypothesis.use.exact = svalue(hypExactPval),
+                                        hypothesis.test = 
+                                            if (TTEST2)
+                                                switch(
+                                                    svalue(hypTest, index = TRUE),
+                                                    "default", "t.test", "anova"
+                                                )
+                                            else if (PROPTEST2)
+                                                switch(svalue(hypTest, index = TRUE),
+                                                    "default", "chi2", "proportion"
+                                                )
+                                            else
+                                                "default"
                                     )
                                 )
                             } else {
