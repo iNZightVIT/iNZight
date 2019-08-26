@@ -176,7 +176,7 @@ iNZPlotModWin <- setRefClass(
                 topGrp <- modwin$header
                 lbl <- glabel("Add to Plot :")
                 font(lbl) <- list(weight="bold",
-                                  family = "normal",
+                                  family = "sans",
                                   size = 11)
                 radioGrp <<- ggroup(horizontal = FALSE,
                                     expand = TRUE)
@@ -326,7 +326,7 @@ iNZPlotModWin <- setRefClass(
             ii <- 3
 
             lbl <- glabel("How do you want to label points?")
-            font(lbl) <- list(weight = "bold", family = "normal")
+            font(lbl) <- list(weight = "bold", family = "sans")
             tbl[ii, 1:2, expand = TRUE, anchor = c(-1, 0)] <- lbl
             ii <- ii + 1
 
@@ -444,7 +444,7 @@ iNZPlotModWin <- setRefClass(
 
 
             lbl <- glabel("How do you want to select points?")
-            font(lbl) <- list(weight = "bold", family = "normal")
+            font(lbl) <- list(weight = "bold", family = "sans")
             tbl[ii, 1:2, expand = TRUE, anchor = c(-1, 0)] <- lbl
             ii <- ii + 1
 
@@ -768,7 +768,7 @@ iNZPlotModWin <- setRefClass(
                     "you click the above button."
                 )
             )
-            font(extLabel) <- list(family = "normal", size = 7)
+            font(extLabel) <- list(family = "sans", size = 7)
             add(extremeGrp, extLabel, anchor = c(-1, -1))
 
             addHandlerClicked(addPts, function(h, ...) {
@@ -908,7 +908,7 @@ iNZPlotModWin <- setRefClass(
                 jj <- 1
 
                 lbl <- glabel("Select colours")
-                font(lbl) <- list(weight = "bold", family = "normal", size = 9)
+                font(lbl) <- list(weight = "bold", family = "sans", size = 9)
                 tbl[jj, 1:2, anchor = c(-1, -1), expand = TRUE] <- lbl
                 jj <- jj + 1
 
@@ -981,7 +981,7 @@ iNZPlotModWin <- setRefClass(
         },
         sectionTitle = function(title, size = 10) {
             lbl <- glabel(title)
-            font(lbl) <- list(weight = "bold", family = "normal", size = size)
+            font(lbl) <- list(weight = "bold", family = "sans", size = size)
             lbl
         }
     )
@@ -2506,12 +2506,12 @@ iNZPlotMod <- setRefClass(
             }
 
             lbl <- glabel("TAB or ENTER/RETURN to apply changes")
-            font(lbl) <- list(family = "normal", size = 8)
+            font(lbl) <- list(family = "sans", size = 8)
             tbl[ii, 3:6, anchor = c(-1, 0), expand = TRUE] <- lbl
             ii <- ii + 2
 
             lbl <- glabel("Enter a single space to print no label\nLeave blank to print default label")
-            font(lbl) <- list(family = "normal", size = 8)
+            font(lbl) <- list(family = "sans", size = 8)
             tbl[ii, 3:6, anchor = c(-1, 0), expand = TRUE] <- lbl
             ii <- ii + 1
 

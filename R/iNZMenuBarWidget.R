@@ -444,14 +444,14 @@ iNZAboutWidget <- setRefClass(
             g <- gvbox(expand = FALSE, cont = w, spacing = 5)
             g$set_borderwidth(10)
             mainlbl <- glabel("iNZight", container = g)
-            font(mainlbl) <- list(weight = "bold", family = "normal", size = 20)
+            font(mainlbl) <- list(weight = "bold", family = "sans", size = 20)
             verlbl <- glabel(sprintf("Version %s - Released %s",
                                      packageDescription("iNZight")$Version,
                                      format(as.POSIXct(packageDescription("iNZight")$Date),
                                             "%d %B, %Y")), container = g)
-            font(verlbl) <- list(weight = "normal", family = "normal", size = 10)
+            font(verlbl) <- list(weight = "normal", family = "sans", size = 10)
             rverlbl <- glabel(sprintf("Running on R version %s", getRversion()), container = g)
-            font(rverlbl) <- list(weight = "normal", family = "normal", size = 10)
+            font(rverlbl) <- list(weight = "normal", family = "sans", size = 10)
             addSpace(g, 10)
             gpltxt <- gtext(expand = TRUE, cont = g, wrap = TRUE)
             insert(gpltxt, paste("\n\nThis program is free software; you can redistribute it and/or",
@@ -472,7 +472,7 @@ iNZAboutWidget <- setRefClass(
                    font.attr = list(size = 9)) -> l4
             addSpace(g, 5)
             contactlbl <- glabel("For help, contact inzight_support@stat.auckland.ac.nz", container = g)
-            font(contactlbl) <- list(weight = "normal", family = "normal", size = 8)
+            font(contactlbl) <- list(weight = "normal", family = "sans", size = 8)
             visible(w) <- TRUE
         }
     )

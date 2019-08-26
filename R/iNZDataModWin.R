@@ -133,7 +133,7 @@ iNZconToCatWin <- setRefClass(
       lbl <- glabel(paste("1. Drag and drop a variable name onto the",
                           "label below to create a categorical version",
                           "of that variable", sep = "\n"))
-      font(lbl) <- list(weight = "bold", family = "normal")
+      font(lbl) <- list(weight = "bold", family = "sans")
 
       tbl[ii, 1, anchor = c(-1, 0), expand = TRUE] <- lbl
       ii <- ii + 1
@@ -150,7 +150,7 @@ iNZconToCatWin <- setRefClass(
       ii <- ii + 1
       
       lbl <- glabel("2. Type name for the new variable: ")
-      font(lbl) <- list(weight = "bold", family = "normal")
+      font(lbl) <- list(weight = "bold", family = "sans")
       tbl[ii, 1, encho = c(-1, 0), expand = TRUE] <- lbl
       ii <- ii + 1
       
@@ -176,7 +176,7 @@ iNZconToCatWin <- setRefClass(
                               svalue(name.txt) <- "No Variable Selected"
                             }
                           })
-      font(okButton) <- list(weight="bold", family = "normal")
+      font(okButton) <- list(weight="bold", family = "sans")
       tbl[ii, 1] <- okButton
       ii <- ii + 1
       
@@ -215,7 +215,7 @@ iNZtrnsWin <- setRefClass(
         browseURL("https://www.stat.auckland.ac.nz/~wild/iNZight/user_guides/variables/#transform")
       })
       lbl1 <- glabel("Drag and drop variable names onto the labels below\nto create new transformed variables.")
-      font(lbl1) <- list(weight="bold", family = "normal", size = 11)
+      font(lbl1) <- list(weight="bold", family = "sans", size = 11)
       
       tbl <- glayout(container = mainGroup)
       ii <- 1
@@ -237,7 +237,7 @@ iNZtrnsWin <- setRefClass(
       
       trLbls <- sapply(seq_along(transforms), function(i) {
         lbl <- glabel(names(transforms)[i])
-        font(lbl) <- list(weight = "bold", family = "normal", size = 14, color = "navy")
+        font(lbl) <- list(weight = "bold", family = "sans", size = 14, color = "navy")
         tbl[ii + i - 1, 1, expand = TRUE, anchor = c(0, 0)] <- lbl
         
         addDropTarget(lbl, handler = function(h, ...) {
@@ -285,7 +285,7 @@ iNZcllpsWin <- setRefClass(
       ## instructions through glabels
       lbl1 <- glabel("Choose a variable")
       font(lbl1) <- list(weight = "bold",
-                         family = "normal")
+                         family = "sans")
       helpbtn <- gimagebutton(stock.id = "gw-help", handler = function(h, ...){
         browseURL("https://www.stat.auckland.ac.nz/~wild/iNZight/user_guides/variables/#collapse")
       })
@@ -294,10 +294,10 @@ iNZcllpsWin <- setRefClass(
       titlelyt[1, 20, expand = TRUE, anchor = c(1, -1)] <- helpbtn
       lbl2 <- glabel("Choose two or more levels")
       font(lbl2) <- list(weight = "bold",
-                         family = "normal")
+                         family = "sans")
       lbl3 <- glabel("(Hold Ctrl to choose many)")
       font(lbl3) <- list(weight = "bold",
-                         family = "normal")
+                         family = "sans")
       lbl4 <- glabel("New variable name: ")
       lbl5 <- glabel("Collapsed level name: ")
       ## choose a factor column from the dataset and display
@@ -392,10 +392,10 @@ iNZrenameWin <- setRefClass(
       })
       lbl1 <- glabel("Choose variable: ")
       font(lbl1) <- list(weight = "bold",
-                         family = "normal")
+                         family = "sans")
       lbl2 <- glabel("Name of the new variable:")
       font(lbl2) <- list(weight = "bold",
-                         family = "normal")
+                         family = "sans")
       ## choose a factor column from the dataset and display
       ## its levels together with their order
       factorIndices <- sapply(GUI$getActiveData(), is_cat)
@@ -445,10 +445,10 @@ iNZrenameWin <- setRefClass(
       
       lbl3 <- glabel("Levels")
       font(lbl3) <- list(weight = "bold",
-                         family = "normal")
+                         family = "sans")
       lbl4 <- glabel("New Name")
       font(lbl4) <- list(weight = "bold",
-                         family = "normal")
+                         family = "sans")
       tbl[4, 1, expand = TRUE, anchor = c(-1, 0)] <- lbl3
       tbl[4, 2, expand = TRUE, anchor = c(-1, 0)] <- lbl4
       invisible(sapply(levels(factorData), function(x) {
@@ -643,7 +643,7 @@ iNZcmbCatWin <- setRefClass(
       ## instructions through glabels
       lbl1 <- glabel("Choose 2 or more variables you want to combine")
       font(lbl1) <- list(weight = "bold",
-                         family = "normal")
+                         family = "sans")
       helpbtn <- gimagebutton(stock.id = "gw-help", handler = function(h, ...){
         browseURL("https://www.stat.auckland.ac.nz/~wild/iNZight/user_guides/variables/#catcombine")
       })
@@ -653,7 +653,7 @@ iNZcmbCatWin <- setRefClass(
       
       lbl2 <- glabel("(Hold Ctrl to choose many)")
       font(lbl2) <- list(weight = "bold",
-                         family = "normal")
+                         family = "sans")
       lbl3 <- glabel("New Variable Name")
       ## choose a factor column from the dataset and display
       ## its level in a gtable
@@ -744,7 +744,7 @@ iNZcrteVarWin <- setRefClass(
       mainGroup <- ggroup(expand = TRUE, horizontal = FALSE)
       mainGroup$set_borderwidth(15)
       lbl1 = glabel("Type in an expression to compute a new variable")
-      font(lbl1) <- list(weight="bold", family = "normal")
+      font(lbl1) <- list(weight="bold", family = "sans")
       helpbtn <- gimagebutton(stock.id = "gw-help", handler = function(h, ...){
         browseURL("https://www.stat.auckland.ac.nz/~wild/iNZight/user_guides/variables/#create")
       })
@@ -752,7 +752,7 @@ iNZcrteVarWin <- setRefClass(
       titlelyt[1, 4:19, expand = TRUE, anchor = c(0,0)] <- lbl1
       titlelyt[1, 20, expand = TRUE, anchor = c(1, -1)] <- helpbtn
       lbl2 = glabel("EXAMPLES")
-      font(lbl2) <- list(weight="bold", family = "normal")
+      font(lbl2) <- list(weight="bold", family = "sans")
       newVarName = gedit("new.variable", width = 15) ## name of the new variable
       newVarExp = gedit("  ") ## expression used to create new var
       submitButton = gbutton(" - SUBMIT -", handler = function(h,...) {
@@ -1068,7 +1068,7 @@ iNZstdVarWin <- setRefClass(
       ## instructions through glabels
       lbl1 <- glabel("Choose a variables you want to standardise")
       font(lbl1) <- list(weight = "bold",
-                         family = "normal")
+                         family = "sans")
       helpbtn <- gimagebutton(stock.id = "gw-help", handler = function(h, ...){
         browseURL("https://www.stat.auckland.ac.nz/~wild/iNZight/user_guides/variables/#standardize")
       })
@@ -1077,7 +1077,7 @@ iNZstdVarWin <- setRefClass(
       titlelyt[1, 20, expand = TRUE, anchor = c(1, -1)] <- helpbtn
       lbl2 <- glabel("(Hold Ctrl to choose many)")
       font(lbl2) <- list(weight = "bold",
-                         family = "normal")
+                         family = "sans")
       ## display only numeric variables
       numIndices <- sapply(GUI$getActiveData(), function(x) !is_cat(x))
       numVar <- gtable(names(GUI$getActiveData())[numIndices],
@@ -1114,7 +1114,7 @@ iNZdeleteVarWin <- setRefClass(
       mainGroup$set_borderwidth(15)
       ## instructions through glabels
       lbl1 = glabel("Select Variables to delete")
-      font(lbl1) <- list(weight="bold", family = "normal")
+      font(lbl1) <- list(weight="bold", family = "sans")
       helpbtn <- gimagebutton(stock.id = "gw-help", handler = function(h, ...){
         browseURL("https://www.stat.auckland.ac.nz/~wild/iNZight/user_guides/variables/#deletevars")
       })
@@ -1122,7 +1122,7 @@ iNZdeleteVarWin <- setRefClass(
       titlelyt[1, 4:19, expand = TRUE, anchor = c(0,0)] <- lbl1
       titlelyt[1, 20, expand = TRUE, anchor = c(1, -1)] <- helpbtn
       lbl2 = glabel("(Hold Ctrl to choose many)")
-      font(lbl2) <- list(weight="bold", family = "normal")
+      font(lbl2) <- list(weight="bold", family = "sans")
       listOfVars = gtable(names(GUI$getActiveData()),
                           multiple = TRUE, expand = TRUE)
       names(listOfVars) = "Variables"
@@ -1173,7 +1173,7 @@ iNZmissCatWin <- setRefClass(
       mainGroup$set_borderwidth(15)
       ## instructions through glabels
       lbl1 = glabel("Select Variables to be transformed\nResulting Variables will be categorical with a level for missing observations")
-      font(lbl1) <- list(weight="bold", family = "normal")
+      font(lbl1) <- list(weight="bold", family = "sans")
       helpbtn <- gimagebutton(stock.id = "gw-help", handler = function(h, ...){
         browseURL("https://www.stat.auckland.ac.nz/~wild/iNZight/user_guides/variables/#missingcat")
       })
@@ -1181,7 +1181,7 @@ iNZmissCatWin <- setRefClass(
       titlelyt[1, 1:19, expand = TRUE] <- lbl1
       titlelyt[1, 20, expand = TRUE, anchor = c(1, -1)] <- helpbtn
       lbl2 = glabel("(Hold Ctrl to choose many)")
-      font(lbl2) <- list(weight="bold", family = "normal")
+      font(lbl2) <- list(weight="bold", family = "sans")
       listOfVars = gtable(names(GUI$getActiveData()),
                           multiple = TRUE, expand = TRUE)
       names(listOfVars) = "Variables"
@@ -1221,7 +1221,7 @@ iNZrankNumWin <- setRefClass(
       ## instructions through glabels
       lbl1 <- glabel("Rank the numerical variables X (vector, matrix)")
       font(lbl1) <- list(weight = "bold",
-                         family = "normal")
+                         family = "sans")
       helpbtn <- gimagebutton(stock.id = "gw-help", handler = function(h, ...){
         browseURL("https://www.stat.auckland.ac.nz/~wild/iNZight/user_guides/variables/#rank")
       })
@@ -1230,7 +1230,7 @@ iNZrankNumWin <- setRefClass(
       titlelyt[1, 20, expand = TRUE, anchor = c(1, -1)] <- helpbtn
       lbl2 <- glabel("(Hold Ctrl to choose many)")
       font(lbl2) <- list(weight = "bold",
-                         family = "normal")
+                         family = "sans")
       ## display only numeric variables
       numIndices <- sapply(GUI$getActiveData(), function(x) !is_cat(x))
       numVar <- gtable(names(GUI$getActiveData())[numIndices],
@@ -1271,7 +1271,7 @@ iNZctocatmulWin <- setRefClass(
       ## instructions through glabels
       lbl1 <- glabel("Choose variables you want to convert")
       font(lbl1) <- list(weight = "bold",
-                         family = "normal")
+                         family = "sans")
       helpbtn <- gimagebutton(stock.id = "gw-help", handler = function(h, ...){
         browseURL("https://www.stat.auckland.ac.nz/~wild/iNZight/user_guides/variables/#convert2")
       })
@@ -1280,7 +1280,7 @@ iNZctocatmulWin <- setRefClass(
       titlelyt[1, 20, expand = TRUE, anchor = c(1, -1)] <- helpbtn
       lbl2 <- glabel("(Hold Ctrl to choose many)")
       font(lbl2) <- list(weight = "bold",
-                         family = "normal")
+                         family = "sans")
       ## display only numeric variables
       numIndices <- sapply(GUI$getActiveData(), function(x) !is_cat(x))
       numVar <- gtable(names(GUI$getActiveData())[numIndices],
@@ -1318,7 +1318,7 @@ iNZrenameDataWin <- setRefClass(
       mainGroup$set_borderwidth(15)
       
       lbl <- glabel("Enter a new name for the current dataset")
-      font(lbl) <- list(weight = "bold", family = "normal")
+      font(lbl) <- list(weight = "bold", family = "sans")
       
       curname <- attr(GUI$getActiveData(), "name", exact = TRUE)
       if (length(curname) == 0) curname <- ""
