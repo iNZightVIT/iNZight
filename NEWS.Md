@@ -3,7 +3,7 @@ __Release date__: TBA
 
 - adds option to perform hypothesis test on a single proportion
 - allow users to request simulated p-value from chi-square tests
-
+- label changes to ggplot controls
 
 
 ## iNZight 3.4.4
