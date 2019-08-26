@@ -128,6 +128,52 @@ test_that("Get inference window - ANOVA dot plots", {
     dispose(w2[[1]])
 })
 
+test_that("Get inference window - one way bar plots, two levels", {
+    svalue(ui$ctrlWidget$V2box, index = TRUE) <- 1
+    svalue(ui$ctrlWidget$V1box) <- "gender"
+
+    iwin <- ui$infBtn$invoke_change_handler()
+    expect_is(iwin[[1]], "GWindow")
+    chk <- iwin[[1]]$children[[1]]$children[[1]]$children[[4]]
+    null <- iwin[[1]]$children[[1]]$children[[1]]$children[[6]]
+    alt <- iwin[[1]]$children[[1]]$children[[1]]$children[[8]]
+    simp <- iwin[[1]]$children[[1]]$children[[1]]$children[[9]]
+    expect_equal(svalue(chk), "None")
+    expect_equal(svalue(null), "0.5")
+    expect_equal(svalue(alt), "two sided")
+    expect_false(svalue(simp))
+    expect_false(enabled(null))
+    expect_false(enabled(alt))
+    expect_false(enabled(simp))
+
+    expect_silent(svalue(chk, index = TRUE) <- 2)
+    expect_false(enabled(null))
+    expect_false(enabled(alt))
+    expect_true(enabled(simp))
+
+    expect_silent(svalue(chk, index = TRUE) <- 3)
+    expect_true(enabled(null))
+    expect_true(enabled(alt))
+    expect_false(enabled(simp))
+
+    # expect_silent(svalue(simp) <- TRUE)
+
+    expect_silent(
+        w2 <- iwin[[1]]$children[[1]]$children[[2]]$invoke_change_handler()
+    )
+    expect_is(w2[[1]], "GWindow")
+    expect_is(w2[[1]]$children[[1]], "GText")
+    expect_match(
+        svalue(w2[[1]]$children[[1]]),
+        "Null Hypothesis: true proportion of gender = female is 0.5"
+    )
+    expect_match(
+        svalue(w2[[1]]$children[[1]]),
+        "Alternative Hypothesis: true proportion of gender = female is not equal to 0.5"
+    )
+    dispose(w2[[1]])
+})
+
 test_that("Get inference window - one way bar plots", {
     svalue(ui$ctrlWidget$V2box, index = TRUE) <- 1
     svalue(ui$ctrlWidget$V1box) <- "getlunch"
@@ -135,11 +181,15 @@ test_that("Get inference window - one way bar plots", {
     iwin <- ui$infBtn$invoke_change_handler()
     expect_is(iwin[[1]], "GWindow")
     chk <- iwin[[1]]$children[[1]]$children[[1]]$children[[4]]
+    null <- iwin[[1]]$children[[1]]$children[[1]]$children[[5]]
     expect_equal(
         chk$widget$label,
         "Chi-square test"
     )
+    expect_false(enabled(null) && svalue(null))
     expect_silent(svalue(chk) <- TRUE)
+    expect_true(enabled(null))
+    expect_silent(svalue(null) <- TRUE)
 
     expect_silent(
         w2 <- iwin[[1]]$children[[1]]$children[[2]]$invoke_change_handler()
@@ -154,6 +204,10 @@ test_that("Get inference window - one way bar plots", {
         svalue(w2[[1]]$children[[1]]),
         "Alternative Hypothesis: true proportions in each category are not equal"
     )
+    expect_match(
+        svalue(w2[[1]]$children[[1]]),
+        "simulated p-value"
+    )
     dispose(w2[[1]])
 })
 
@@ -163,11 +217,17 @@ test_that("Get inference window - two way bar plots", {
     iwin <- ui$infBtn$invoke_change_handler()
     expect_is(iwin[[1]], "GWindow")
     chk <- iwin[[1]]$children[[1]]$children[[1]]$children[[4]]
+    sim <- iwin[[1]]$children[[1]]$children[[1]]$children[[5]]
     expect_equal(
         chk$widget$label,
         "Chi-square test"
     )
+    expect_false(enabled(sim))
+    expect_false(svalue(sim))
+
     expect_silent(svalue(chk) <- TRUE)
+    expect_true(enabled(sim))
+    expect_silent(svalue(sim) <- TRUE)
 
     expect_silent(
         w2 <- iwin[[1]]$children[[1]]$children[[2]]$invoke_change_handler()
@@ -181,6 +241,10 @@ test_that("Get inference window - two way bar plots", {
     expect_match(
         svalue(w2[[1]]$children[[1]]),
         "Alternative Hypothesis: distribution of getlunch changes with gender"
+    )
+    expect_match(
+        svalue(w2[[1]]$children[[1]]),
+        "simulated p-value"
     )
     dispose(w2[[1]])
 })
