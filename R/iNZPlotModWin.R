@@ -83,7 +83,7 @@ plot_list <- function(plot_type, x, y) {
     } else {
       return_list <- append(return_list, list(gg_freqpolygon = "frequency polygons", gg_heatmap = "heatmap"))
       if (is.factor(y) && nlevels(y) == 2) {
-        return_list <- append(return_list, list(gg_spine = "spine"), length(return_list) - 1)
+        return_list <- append(return_list, list(gg_spine = "spine/pyramid"), length(return_list) - 1)
       } 
       
       if (is.factor(x) && nlevels(x) >= 3) {
@@ -1368,7 +1368,7 @@ iNZPlotMod <- setRefClass(
             if (
               grepl("^gg_", PLOTTYPE) && 
               (PLOTTYPE %in% c("gg_pie", "gg_donut", "gg_column", "gg_heatmap", "gg_stackedcolumn", "gg_poppyramid", "gg_spine", "gg_mosaic", "gg_divergingstackedbar")) ||
-              (!attr(PLOTTYPES, "null.y") && PLOTTYPE %in% c("gg_violin", "gg_barcode", "gg_boxplot", "gg_cumcurve", "gg_freqpolygon", "gg_dotstrip", "gg_density", "gg_quasirandom"))
+              (!attr(PLOTTYPES, "null.y") && PLOTTYPE %in% c("gg_violin", "gg_barcode", "gg_boxplot", "gg_cumcurve", "gg_freqpolygon", "gg_dotstrip", "gg_density", "gg_quasirandom", "gg_lollipop2"))
             ) {
               lbl <- glabel("Colour palette :")
               palette_options <- c("default", "greyscale", "viridis", "magma", "plasma", "inferno", "BrBG", "PiYG", "PRGn",
@@ -1386,7 +1386,7 @@ iNZPlotMod <- setRefClass(
             }
             
             if (
-              PLOTTYPE %in% c("gg_violin", "gg_column2", "gg_lollipop", "gg_boxplot", "gg_density", "gg_cumcurve", "gg_quasirandom") && attr(PLOTTYPES, "null.y") || 
+              PLOTTYPE %in% c("gg_violin", "gg_column2", "gg_lollipop", "gg_boxplot", "gg_density", "gg_cumcurve", "gg_quasirandom", "gg_lollipop2") && attr(PLOTTYPES, "null.y") || 
               PLOTTYPE %in% c("gg_barcode", "gg_dotstrip")
             ) {
               tbl[ii, 1:2, anchor = c(1, 0), expand = TRUE] <- glabel("Fill colour:")
@@ -1505,13 +1505,15 @@ iNZPlotMod <- setRefClass(
             
             ## FT PLOT OPTIONS
             
-            if (grepl("^gg_", PLOTTYPE) && !(PLOTTYPE %in% c("gg_pie", "gg_donut", "gg_freqpolygon", "gg_cumcurve", "gg_barcode", "gg_gridplot"))) {
+            if (grepl("^gg_", PLOTTYPE) && !(PLOTTYPE %in% c("gg_pie", "gg_donut", "gg_cumcurve", "gg_barcode"))) {
               tbl[ii, 1:2, anchor = c(1, 0), expand = TRUE] <- glabel("Rotation:")
-              rotateCheck <- gcheckbox("Rotate", handler = function(h, ...) updateEverything())
+              rotateCheck <- gcheckbox("Rotate")
               if (isTRUE(!is.null(curSet$rotation))) {
                 svalue(rotateCheck) <- curSet$rotation
               }
               tbl[ii, 3:6, expand = TRUE] <- rotateCheck
+              
+              addHandlerChanged(rotateCheck, function(h, ...) updateEverything())
               
               ii <- ii + 1
             }
@@ -1694,7 +1696,7 @@ iNZPlotMod <- setRefClass(
             }
             
             if (PLOTTYPE %in% c("gg_column", "gg_lollipop2", "gg_pie", "gg_donut")) {
-              tbl[ii, 1:2, anchor = c(1, 0), expand = TRUE] <- glabel("Sort categories:")
+              tbl[ii, 1:2, anchor = c(1, 0), expand = TRUE] <- glabel("Sort by size:")
               sortCheck <- gcheckbox(handler = function(h, ...) updateEverything())
               tbl[ii, 3:6, expand = TRUE] <- sortCheck
               
@@ -1730,18 +1732,6 @@ iNZPlotMod <- setRefClass(
             }
             
             if (grepl("^gg_", PLOTTYPE)) {
-              if (!PLOTTYPE %in% c("gg_pie", "gg_donut", "gg_gridplot", "gg_barcode2", "gg_barcode")) {
-                tbl[ii, 3:4, anchor = c(1, 0), expand = TRUE] <- gbutton("Export using plotly", handler = function(h, ...) {
-                  suppressWarnings(
-                    print(plotly::ggplotly())
-                  )
-                })
-                
-                ii <- ii + 1
-              }
-              
-              # GUI$plotToolbar$update(export = function() plotly::ggplotly())
-              
               available.themes <- c(
                 "Default" = "grey", 
                 "Black & White" = "bw", 
@@ -1767,7 +1757,7 @@ iNZPlotMod <- setRefClass(
                   "Install additional themes..."
                 )
               }
-
+              
               tbl[ii, 1:2, anchor = c(1, 0), expand = TRUE] <- glabel("Theme:")
               themeCombobox <- gcombobox(
                 theme.options,
@@ -1775,17 +1765,17 @@ iNZPlotMod <- setRefClass(
                 handler = function(h, ...) {
                   if (svalue(themeCombobox) == "Install additional themes...") {
                     tryCatch({
-                        if(gconfirm("Install ggthemes package?")) {
-                          install.packages(
-                            "ggthemes", 
-                            repos = c("https://r.docker.stat.auckland.ac.nz",
-                                      "https://cran.stat.auckland.ac.nz")
-                          )
-                        }
-                      },
-                      finally = {
-                        svalue(themeCombobox) <- names(available.themes)[which(available.themes == curSet$gg_theme)]
+                      if(gconfirm("Install ggthemes package?")) {
+                        install.packages(
+                          "ggthemes", 
+                          repos = c("https://r.docker.stat.auckland.ac.nz",
+                                    "https://cran.stat.auckland.ac.nz")
+                        )
                       }
+                    },
+                    finally = {
+                      svalue(themeCombobox) <- names(available.themes)[which(available.themes == curSet$gg_theme)]
+                    }
                     )
                   } else {
                     updateEverything()
@@ -1796,6 +1786,15 @@ iNZPlotMod <- setRefClass(
               
               ii <- ii + 1
               
+              if (!PLOTTYPE %in% c("gg_pie", "gg_donut", "gg_gridplot", "gg_barcode2", "gg_barcode")) {
+                tbl[ii, 3:4, anchor = c(1, 0), expand = TRUE] <- gbutton("Interactive Plot (via plotly)", handler = function(h, ...) {
+                  suppressWarnings(
+                    print(plotly::ggplotly())
+                  )
+                })
+                
+                ii <- ii + 1
+              }
             }
             
             # if (PLOTTYPE %in% c("gg_column2", "gg_lollipop")) {
@@ -1965,18 +1964,18 @@ iNZPlotMod <- setRefClass(
                 }
                 
                 if (grepl("^gg_", PLOTTYPE)) {
-                  if (!(PLOTTYPE %in% c("gg_pie", "gg_donut", "gg_freqpolygon", "gg_cumcurve", "gg_barcode", "gg_gridplot"))) {
+                  if (!(PLOTTYPE %in% c("gg_pie", "gg_donut", "gg_cumcurve", "gg_barcode"))) {
                     newSet$rotation <- svalue(rotateCheck)
                   }
                   
                   if(grepl("^gg_", PLOTTYPE) && 
                      (PLOTTYPE %in% c("gg_pie", "gg_donut", "gg_column", "gg_heatmap", "gg_stackedcolumn", "gg_poppyramid", "gg_spine", "gg_mosaic", "gg_divergingstackedbar")) ||
-                     (!attr(PLOTTYPES, "null.y") && PLOTTYPE %in% c("gg_violin", "gg_barcode", "gg_boxplot", "gg_cumcurve", "gg_freqpolygon", "gg_dotstrip", "gg_density", "gg_quasirandom"))
+                     (!attr(PLOTTYPES, "null.y") && PLOTTYPE %in% c("gg_violin", "gg_barcode", "gg_boxplot", "gg_cumcurve", "gg_freqpolygon", "gg_dotstrip", "gg_density", "gg_quasirandom", "gg_lollipop2"))
                   ) {
                     newSet$palette <- svalue(paletteCombobox)
                   }
                   
-                  if (PLOTTYPE %in% c("gg_violin", "gg_column2", "gg_lollipop", "gg_boxplot", "gg_density", "gg_cumcurve", "gg_quasirandom") && attr(PLOTTYPES, "null.y")) {
+                  if (PLOTTYPE %in% c("gg_violin", "gg_column2", "gg_lollipop", "gg_boxplot", "gg_density", "gg_cumcurve", "gg_quasirandom", "gg_lollipop2") && attr(PLOTTYPES, "null.y")) {
                     if (svalue(colourCombobox) != "") {
                       newSet$fill_colour <- svalue(colourCombobox)
                     }
