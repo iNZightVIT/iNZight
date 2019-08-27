@@ -3,6 +3,7 @@ __Release date__: TBA
 
 - adds option to perform hypothesis test on a single proportion
 - allow users to request simulated p-value from chi-square tests
+- add option to change the number of observations a square represents in gridplots
 - add option for ridgeline ggplot
 - add controls for the width and method of swarming for beeswarm plots
 - label changes to ggplot controls

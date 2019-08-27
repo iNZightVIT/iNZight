@@ -1085,6 +1085,10 @@ iNZPlotMod <- setRefClass(
                           else
                               GUI$getActiveData()[[curSet$varnames$colby]]
                   }
+                  if (newSet$plottype == "gg_gridplot") {
+                    newSet$gg_perN <- 10^(floor(log10(nrow(GUI$getActiveData()))) - 1)  
+                  }
+                  
                   GUI$getActiveDoc()$setSettings(newSet)
                   updateSettings()
 
@@ -1715,6 +1719,15 @@ iNZPlotMod <- setRefClass(
               ii <- ii + 1
             }
             
+            if (PLOTTYPE %in% c("gg_gridplot")) {
+              tbl[ii, 1:2, anchor = c(1, 0), expand = TRUE] <- glabel("Square per N obs:")
+              gridNPerSquare <- gedit(10^(floor(log10(nrow(GUI$getActiveData()))) - 1))
+              addHandlerChanged(gridNPerSquare, function(h, ...) updateEverything())
+              tbl[ii, 3:6, expand = TRUE] <- gridNPerSquare
+              
+              ii <- ii + 1
+            }
+
             if (PLOTTYPE %in% c("gg_quasirandom")) {
               tbl[ii, 1:2, anchor = c(1, 0), expand = TRUE] <- glabel("Swarm width:")
               swarmWidth <- gslider(0, 1, 0.1, value = if (!is.null(curSet$gg_swarmwidth)) curSet$gg_swarmwidth else 0.4)
@@ -2036,15 +2049,16 @@ iNZPlotMod <- setRefClass(
                     newSet$gg_lwd <- svalue(lwdSlider)
                   }
                   
+                  if (PLOTTYPE %in% c("gg_gridplot")) {
+                    newSet$gg_perN <- svalue(gridNPerSquare)
+                  }
+                  
                   if (PLOTTYPE %in% c("gg_quasirandom")) {
                     newSet$gg_swarmwidth <- svalue(swarmWidth)
                     newSet$gg_method <- svalue(swarmMethod)
                   }
                   
                   newSet$gg_theme <- available.themes[svalue(themeCombobox)]
-                  
-
-                  
                 }
                 
                 if (PLOTTYPE %in% c("dot", "hist")) {
