@@ -1,5 +1,5 @@
-## iNZight 3.4.4.9000
-__Release date__: TBA
+## iNZight 3.4.5
+__Release date__: 2 September 2019
 
 - adds option to perform hypothesis test on a single proportion
 - allow users to request simulated p-value from chi-square tests
