@@ -1,3 +1,22 @@
+## iNZight 3.4.4.9000
+__Release date__: TBA
+
+- adds option to perform hypothesis test on a single proportion
+- allow users to request simulated p-value from chi-square tests
+- add option to change the number of observations a square represents in gridplots
+- add option for ridgeline ggplot
+- add controls for the width and method of swarming for beeswarm plots
+- label changes to ggplot controls
+
+
+## iNZight 3.4.4
+__Release date__: 26 August 2019
+
+- fix warnings that occur from `family = "normal"` fonts
+- fix preferences storage location on Windows Install version of iNZight
+- fix bug preventing Get Summary/Inference from working with FT plots
+
+
 ## iNZight 3.4.3
 __Release date__: 13 August 2019
 
@@ -16,7 +35,7 @@ __Release date__: 13 August 2019
 __Release date__: 22 July 2019
 
 - modules directory no longer used (or created) on Windows, to help the updater
-- fix bug in point sizing when removing/adding box plot from dotplots 
+- fix bug in point sizing when removing/adding box plot from dotplots
 
 
 ## iNZight 3.4.1

@@ -31,7 +31,9 @@ plot_list <- function(plot_type, x, y) {
     "gg_lollipop", 
     "gg_poppyramid",
     "gg_density",
-    "gg_beeswarm"
+    "gg_ridgeline",
+    "gg_beeswarm",
+    "gg_quasirandom"
   )) {
     return_list <- list(
       dot  = "dot plot",
@@ -39,7 +41,7 @@ plot_list <- function(plot_type, x, y) {
       gg_dotstrip = "dot strip",
       gg_barcode2 = "barcode",
       gg_boxplot = "boxplot",
-      gg_beeswarm = "beeswarm",
+      gg_quasirandom = "beeswarm",
       gg_violin = "violin",
       gg_density = "density",
       gg_cumcurve = "cumulative curve"
@@ -48,6 +50,10 @@ plot_list <- function(plot_type, x, y) {
     if (is.null(y)) {
       return_list <- append(return_list, list(gg_column2 = "column/row bar"), length(return_list) - 1)
       return_list <- append(return_list, list(gg_lollipop = "lollipop"), length(return_list) - 1)
+    }
+    
+    if (!is.null(y)) {
+      return_list <- append(return_list, list(gg_ridgeline = "ridgeline"))
     }
     
     if ((!is.numeric(y) && nlevels(y) == 2) || (!is.numeric(x) && nlevels(x) == 2)) {
@@ -83,7 +89,7 @@ plot_list <- function(plot_type, x, y) {
     } else {
       return_list <- append(return_list, list(gg_freqpolygon = "frequency polygons", gg_heatmap = "heatmap"))
       if (is.factor(y) && nlevels(y) == 2) {
-        return_list <- append(return_list, list(gg_spine = "spine"), length(return_list) - 1)
+        return_list <- append(return_list, list(gg_spine = "spine/pyramid"), length(return_list) - 1)
       } 
       
       if (is.factor(x) && nlevels(x) >= 3) {
@@ -180,7 +186,7 @@ iNZPlotModWin <- setRefClass(
                 topGrp <- modwin$header
                 lbl <- glabel("Add to Plot :")
                 font(lbl) <- list(weight="bold",
-                                  family = "normal",
+                                  family = "sans",
                                   size = 11)
                 radioGrp <<- ggroup(horizontal = FALSE,
                                     expand = TRUE)
@@ -330,7 +336,7 @@ iNZPlotModWin <- setRefClass(
             ii <- 3
 
             lbl <- glabel("How do you want to label points?")
-            font(lbl) <- list(weight = "bold", family = "normal")
+            font(lbl) <- list(weight = "bold", family = "sans")
             tbl[ii, 1:2, expand = TRUE, anchor = c(-1, 0)] <- lbl
             ii <- ii + 1
 
@@ -448,7 +454,7 @@ iNZPlotModWin <- setRefClass(
 
 
             lbl <- glabel("How do you want to select points?")
-            font(lbl) <- list(weight = "bold", family = "normal")
+            font(lbl) <- list(weight = "bold", family = "sans")
             tbl[ii, 1:2, expand = TRUE, anchor = c(-1, 0)] <- lbl
             ii <- ii + 1
 
@@ -772,7 +778,7 @@ iNZPlotModWin <- setRefClass(
                     "you click the above button."
                 )
             )
-            font(extLabel) <- list(family = "normal", size = 7)
+            font(extLabel) <- list(family = "sans", size = 7)
             add(extremeGrp, extLabel, anchor = c(-1, -1))
 
             addHandlerClicked(addPts, function(h, ...) {
@@ -912,7 +918,7 @@ iNZPlotModWin <- setRefClass(
                 jj <- 1
 
                 lbl <- glabel("Select colours")
-                font(lbl) <- list(weight = "bold", family = "normal", size = 9)
+                font(lbl) <- list(weight = "bold", family = "sans", size = 9)
                 tbl[jj, 1:2, anchor = c(-1, -1), expand = TRUE] <- lbl
                 jj <- jj + 1
 
@@ -985,7 +991,7 @@ iNZPlotModWin <- setRefClass(
         },
         sectionTitle = function(title, size = 10) {
             lbl <- glabel(title)
-            font(lbl) <- list(weight = "bold", family = "normal", size = size)
+            font(lbl) <- list(weight = "bold", family = "sans", size = size)
             lbl
         }
     )
@@ -1083,6 +1089,10 @@ iNZPlotMod <- setRefClass(
                           else
                               GUI$getActiveData()[[curSet$varnames$colby]]
                   }
+                  if (newSet$plottype == "gg_gridplot") {
+                    newSet$gg_perN <- 10^(floor(log10(nrow(GUI$getActiveData()))) - 1)  
+                  }
+                  
                   GUI$getActiveDoc()$setSettings(newSet)
                   updateSettings()
 
@@ -1372,7 +1382,7 @@ iNZPlotMod <- setRefClass(
             if (
               grepl("^gg_", PLOTTYPE) && 
               (PLOTTYPE %in% c("gg_pie", "gg_donut", "gg_column", "gg_heatmap", "gg_stackedcolumn", "gg_poppyramid", "gg_spine", "gg_mosaic", "gg_divergingstackedbar")) ||
-              (!attr(PLOTTYPES, "null.y") && PLOTTYPE %in% c("gg_violin", "gg_barcode", "gg_boxplot", "gg_cumcurve", "gg_freqpolygon", "gg_dotstrip", "gg_density"))
+              (!attr(PLOTTYPES, "null.y") && PLOTTYPE %in% c("gg_violin", "gg_barcode", "gg_boxplot", "gg_cumcurve", "gg_freqpolygon", "gg_dotstrip", "gg_density", "gg_quasirandom", "gg_lollipop2", "gg_ridgeline"))
             ) {
               lbl <- glabel("Colour palette :")
               palette_options <- c("default", "greyscale", "viridis", "magma", "plasma", "inferno", "BrBG", "PiYG", "PRGn",
@@ -1390,7 +1400,7 @@ iNZPlotMod <- setRefClass(
             }
             
             if (
-              PLOTTYPE %in% c("gg_violin", "gg_column2", "gg_lollipop", "gg_boxplot", "gg_density", "gg_cumcurve") && attr(PLOTTYPES, "null.y") || 
+              PLOTTYPE %in% c("gg_violin", "gg_column2", "gg_lollipop", "gg_boxplot", "gg_density", "gg_cumcurve", "gg_quasirandom", "gg_lollipop2") && attr(PLOTTYPES, "null.y") || 
               PLOTTYPE %in% c("gg_barcode", "gg_dotstrip")
             ) {
               tbl[ii, 1:2, anchor = c(1, 0), expand = TRUE] <- glabel("Fill colour:")
@@ -1520,13 +1530,15 @@ iNZPlotMod <- setRefClass(
             
             ## FT PLOT OPTIONS
             
-            if (grepl("^gg_", PLOTTYPE) && !(PLOTTYPE %in% c("gg_pie", "gg_donut", "gg_freqpolygon", "gg_cumcurve", "gg_barcode", "gg_gridplot"))) {
+            if (grepl("^gg_", PLOTTYPE) && !(PLOTTYPE %in% c("gg_pie", "gg_donut", "gg_cumcurve", "gg_barcode"))) {
               tbl[ii, 1:2, anchor = c(1, 0), expand = TRUE] <- glabel("Rotation:")
-              rotateCheck <- gcheckbox("Rotate", handler = function(h, ...) updateEverything())
+              rotateCheck <- gcheckbox("Rotate")
               if (isTRUE(!is.null(curSet$rotation))) {
                 svalue(rotateCheck) <- curSet$rotation
               }
               tbl[ii, 3:6, expand = TRUE] <- rotateCheck
+              
+              addHandlerChanged(rotateCheck, function(h, ...) updateEverything())
               
               ii <- ii + 1
             }
@@ -1709,7 +1721,7 @@ iNZPlotMod <- setRefClass(
             }
             
             if (PLOTTYPE %in% c("gg_column", "gg_lollipop2", "gg_pie", "gg_donut")) {
-              tbl[ii, 1:2, anchor = c(1, 0), expand = TRUE] <- glabel("Sort categories:")
+              tbl[ii, 1:2, anchor = c(1, 0), expand = TRUE] <- glabel("Sort by size:")
               sortCheck <- gcheckbox(handler = function(h, ...) updateEverything())
               tbl[ii, 3:6, expand = TRUE] <- sortCheck
               
@@ -1722,19 +1734,38 @@ iNZPlotMod <- setRefClass(
               ii <- ii + 1
             }
             
+            if (PLOTTYPE %in% c("gg_gridplot")) {
+              tbl[ii, 1:2, anchor = c(1, 0), expand = TRUE] <- glabel("Square per N obs:")
+              gridNPerSquare <- gedit(10^(floor(log10(nrow(GUI$getActiveData()))) - 1))
+              addHandlerChanged(gridNPerSquare, function(h, ...) updateEverything())
+              tbl[ii, 3:6, expand = TRUE] <- gridNPerSquare
+              
+              ii <- ii + 1
+            }
+
+            if (PLOTTYPE %in% c("gg_quasirandom")) {
+              tbl[ii, 1:2, anchor = c(1, 0), expand = TRUE] <- glabel("Swarm width:")
+              swarmWidth <- gslider(0, 1, 0.1, value = if (!is.null(curSet$gg_swarmwidth)) curSet$gg_swarmwidth else 0.4)
+              tbl[ii, 3:6, expand = TRUE] <- swarmWidth
+              
+              addHandlerChanged(swarmWidth, handler = function(h, ...) {
+                if (!is.null(timer))
+                  if (timer$started) timer$stop_timer()
+                timer <<- gtimer(500, function(...) updateEverything(), one.shot = TRUE)
+              })
+              
+              ii <- ii + 1
+              
+              tbl[ii, 1:2, anchor = c(1, 0), expand = TRUE] <- glabel("Swarm method:")
+              swarmMethod <- gcombobox(c("quasirandom", "pseudorandom", "smiley", "frowney"))
+              tbl[ii, 3:6, expand = TRUE] <- swarmMethod
+              addHandlerChanged(swarmMethod, handler = function(h, ...) updateEverything())
+              
+              ii <- ii + 1
+              
+            }
+            
             if (grepl("^gg_", PLOTTYPE)) {
-              if (!PLOTTYPE %in% c("gg_pie", "gg_donut", "gg_gridplot", "gg_barcode2", "gg_barcode")) {
-                tbl[ii, 3:4, anchor = c(1, 0), expand = TRUE] <- gbutton("Export using plotly", handler = function(h, ...) {
-                  suppressWarnings(
-                    print(plotly::ggplotly())
-                  )
-                })
-                
-                ii <- ii + 1
-              }
-              
-              # GUI$plotToolbar$update(export = function() plotly::ggplotly())
-              
               available.themes <- c(
                 "Default" = "grey", 
                 "Black & White" = "bw", 
@@ -1760,7 +1791,7 @@ iNZPlotMod <- setRefClass(
                   "Install additional themes..."
                 )
               }
-
+              
               tbl[ii, 1:2, anchor = c(1, 0), expand = TRUE] <- glabel("Theme:")
               themeCombobox <- gcombobox(
                 theme.options,
@@ -1768,17 +1799,17 @@ iNZPlotMod <- setRefClass(
                 handler = function(h, ...) {
                   if (svalue(themeCombobox) == "Install additional themes...") {
                     tryCatch({
-                        if(gconfirm("Install ggthemes package?")) {
-                          install.packages(
-                            "ggthemes", 
-                            repos = c("https://r.docker.stat.auckland.ac.nz",
-                                      "https://cran.stat.auckland.ac.nz")
-                          )
-                        }
-                      },
-                      finally = {
-                        svalue(themeCombobox) <- names(available.themes)[which(available.themes == curSet$gg_theme)]
+                      if(gconfirm("Install ggthemes package?")) {
+                        install.packages(
+                          "ggthemes", 
+                          repos = c("https://r.docker.stat.auckland.ac.nz",
+                                    "https://cran.stat.auckland.ac.nz")
+                        )
                       }
+                    },
+                    finally = {
+                      svalue(themeCombobox) <- names(available.themes)[which(available.themes == curSet$gg_theme)]
+                    }
                     )
                   } else {
                     updateEverything()
@@ -1789,6 +1820,15 @@ iNZPlotMod <- setRefClass(
               
               ii <- ii + 1
               
+              if (!PLOTTYPE %in% c("gg_pie", "gg_donut", "gg_gridplot", "gg_barcode2", "gg_barcode")) {
+                tbl[ii, 3:4, anchor = c(1, 0), expand = TRUE] <- gbutton("Interactive Plot (via plotly)", handler = function(h, ...) {
+                  suppressWarnings(
+                    print(plotly::ggplotly())
+                  )
+                })
+                
+                ii <- ii + 1
+              }
             }
             
             # if (PLOTTYPE %in% c("gg_column2", "gg_lollipop")) {
@@ -1958,19 +1998,19 @@ iNZPlotMod <- setRefClass(
                 }
                 
                 if (grepl("^gg_", PLOTTYPE)) {
-                  if (!(PLOTTYPE %in% c("gg_pie", "gg_donut", "gg_freqpolygon", "gg_cumcurve", "gg_barcode", "gg_gridplot"))) {
+                  if (!(PLOTTYPE %in% c("gg_pie", "gg_donut", "gg_cumcurve", "gg_barcode"))) {
                     newSet$rotation <- svalue(rotateCheck)
                   }
                   
                   if(grepl("^gg_", PLOTTYPE) && 
                      (PLOTTYPE %in% c("gg_pie", "gg_donut", "gg_column", "gg_heatmap", "gg_stackedcolumn", "gg_poppyramid", "gg_spine", "gg_mosaic", "gg_divergingstackedbar")) ||
-                     (!attr(PLOTTYPES, "null.y") && PLOTTYPE %in% c("gg_violin", "gg_barcode", "gg_boxplot", "gg_cumcurve", "gg_freqpolygon", "gg_dotstrip", "gg_density"))
+                     (!attr(PLOTTYPES, "null.y") && PLOTTYPE %in% c("gg_violin", "gg_barcode", "gg_boxplot", "gg_cumcurve", "gg_freqpolygon", "gg_dotstrip", "gg_density", "gg_quasirandom", "gg_lollipop2", "gg_ridgeline"))
                   ) {
                     newSet$palette <- svalue(paletteCombobox)
                   }
                   
-                  if (PLOTTYPE %in% c("gg_violin", "gg_column2", "gg_lollipop", "gg_boxplot", "gg_density", "gg_cumcurve") && attr(PLOTTYPES, "null.y")) {
-                    if (svalue(colourCombobox) != "" && valid_colour(svalue(colourCombobox))) {
+                  if (PLOTTYPE %in% c("gg_violin", "gg_column2", "gg_lollipop", "gg_boxplot", "gg_density", "gg_cumcurve", "gg_quasirandom", "gg_lollipop2") && attr(PLOTTYPES, "null.y")) {
+                    if (svalue(colourCombobox) != "") {
                       newSet$fill_colour <- svalue(colourCombobox)
                     } else if (svalue(colourCombobox) == "") {
                       newSet$fill_colour <- ""
@@ -2030,10 +2070,16 @@ iNZPlotMod <- setRefClass(
                     newSet$gg_lwd <- svalue(lwdSlider)
                   }
                   
+                  if (PLOTTYPE %in% c("gg_gridplot")) {
+                    newSet$gg_perN <- svalue(gridNPerSquare)
+                  }
+                  
+                  if (PLOTTYPE %in% c("gg_quasirandom")) {
+                    newSet$gg_swarmwidth <- svalue(swarmWidth)
+                    newSet$gg_method <- svalue(swarmMethod)
+                  }
+                  
                   newSet$gg_theme <- available.themes[svalue(themeCombobox)]
-                  
-
-                  
                 }
                 
                 if (PLOTTYPE %in% c("dot", "hist")) {
@@ -2528,12 +2574,12 @@ iNZPlotMod <- setRefClass(
             }
 
             lbl <- glabel("TAB or ENTER/RETURN to apply changes")
-            font(lbl) <- list(family = "normal", size = 8)
+            font(lbl) <- list(family = "sans", size = 8)
             tbl[ii, 3:6, anchor = c(-1, 0), expand = TRUE] <- lbl
             ii <- ii + 2
 
             lbl <- glabel("Enter a single space to print no label\nLeave blank to print default label")
-            font(lbl) <- list(family = "normal", size = 8)
+            font(lbl) <- list(family = "sans", size = 8)
             tbl[ii, 3:6, anchor = c(-1, 0), expand = TRUE] <- lbl
             ii <- ii + 1
 
