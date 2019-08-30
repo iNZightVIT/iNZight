@@ -1402,7 +1402,7 @@ iNZPlotMod <- setRefClass(
               }
               
               # colourCombobox <- gedit(fill_colour, handler = function(h, ...) updateEverything())
-              fill_colours <- c("", "darkred", "darkgreen")
+              fill_colours <- c("", names(barColours))
               colourCombobox <- gcombobox(
                 fill_colours, 
                 match(fill_colour, fill_colours, nomatch = 0)[1], 
