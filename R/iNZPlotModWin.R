@@ -103,6 +103,10 @@ plot_list <- function(plot_type, x, y) {
   return_list
 }
 
+valid_colour <- function(colour) {
+  !inherits(try(col2rgb(colour), silent = TRUE), "try-error")
+}
+
 iNZPlotModWin <- setRefClass(
     "iNZPlotModWin",
     fields = list(
@@ -1407,8 +1411,19 @@ iNZPlotMod <- setRefClass(
                 fill_colour <- ""
               }
               
-              colourCombobox <- gedit(fill_colour, handler = function(h, ...) updateEverything())
-
+              # colourCombobox <- gedit(fill_colour, handler = function(h, ...) updateEverything())
+              fill_colours <- c("", names(barColours))
+              colourCombobox <- gcombobox(
+                fill_colours, 
+                match(fill_colour, fill_colours, nomatch = 0)[1], 
+                editable = TRUE
+              )
+              
+              if (fill_colour != "" && svalue(colourCombobox, index = TRUE) < 2) {
+                svalue(colourCombobox) <- fill_colour
+              }
+              
+              addHandlerChanged(colourCombobox, function(h, ...) updateEverything())
               tbl[ii, 3:6, expand = TRUE] <- colourCombobox
               
               ii <- ii + 1
@@ -1997,11 +2012,17 @@ iNZPlotMod <- setRefClass(
                   if (PLOTTYPE %in% c("gg_violin", "gg_column2", "gg_lollipop", "gg_boxplot", "gg_density", "gg_cumcurve", "gg_quasirandom", "gg_lollipop2") && attr(PLOTTYPES, "null.y")) {
                     if (svalue(colourCombobox) != "") {
                       newSet$fill_colour <- svalue(colourCombobox)
+                    } else if (svalue(colourCombobox) == "") {
+                      newSet$fill_colour <- ""
                     }
                   }
                   
                   if (PLOTTYPE %in% c("gg_barcode", "gg_dotstrip")) {
-                    newSet$fill_colour <- svalue(colourCombobox)
+                    if (svalue(colourCombobox) != "" && valid_colour(svalue(colourCombobox))) {
+                      newSet$fill_colour <- svalue(colourCombobox)
+                    } else if (svalue(colourCombobox) == "") {
+                      newSet$fill_colour <- ""
+                    }
                   }
                   
                   if (PLOTTYPE %in% c("gg_column", "gg_lollipop2", "gg_pie", "gg_donut")) {
