@@ -206,7 +206,7 @@ test_that("Get inference window - one way bar plots", {
     )
     expect_match(
         svalue(w2[[1]]$children[[1]]),
-        "simulated p-value"
+        "Simulated p-value"
     )
     dispose(w2[[1]])
 })
@@ -244,7 +244,7 @@ test_that("Get inference window - two way bar plots", {
     )
     expect_match(
         svalue(w2[[1]]$children[[1]]),
-        "simulated p-value"
+        "Simulated p-value"
     )
     dispose(w2[[1]])
 })
