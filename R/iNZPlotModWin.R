@@ -53,11 +53,11 @@ plot_list <- function(plot_type, x, y) {
     }
     
     if (!is.null(y)) {
-      return_list <- append(return_list, list(gg_ridgeline = "ridgeline"))
+      return_list <- append(return_list, list(gg_ridgeline = "ridgeline"), after = length(return_list) - 1)
     }
     
     if ((!is.numeric(y) && nlevels(y) == 2) || (!is.numeric(x) && nlevels(x) == 2)) {
-      return_list <- append(return_list, list(gg_poppyramid = "pyramid"))
+      return_list <- append(return_list, list(gg_poppyramid = "pyramid"), after = 2)
     }
       
     attr(return_list, "cat.levels") <- ifelse(is.numeric(x), nlevels(y), nlevels(x))
@@ -85,7 +85,7 @@ plot_list <- function(plot_type, x, y) {
     )
     
     if (is.null(y)) {
-      return_list <- append(return_list, list(gg_pie = "pie", gg_donut = "donut", gg_gridplot = "gridplot"))
+      return_list <- append(return_list, list(gg_gridplot = "gridplot", gg_pie = "pie", gg_donut = "donut"))
     } else {
       return_list <- append(return_list, list(gg_freqpolygon = "frequency polygons", gg_heatmap = "heatmap"))
       if (is.factor(y) && nlevels(y) == 2) {
