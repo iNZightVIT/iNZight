@@ -1531,14 +1531,19 @@ iNZPlotMod <- setRefClass(
             ## FT PLOT OPTIONS
             
             if (grepl("^gg_", PLOTTYPE) && !(PLOTTYPE %in% c("gg_pie", "gg_donut", "gg_cumcurve", "gg_barcode"))) {
-              tbl[ii, 1:2, anchor = c(1, 0), expand = TRUE] <- glabel("Rotation:")
-              rotateCheck <- gcheckbox("Rotate")
+              tbl[ii, 1:2, anchor = c(1, 0), expand = TRUE] <- glabel("Rotate:")
+              rotateCheck <- gcheckbox("Plot")
               if (isTRUE(!is.null(curSet$rotation))) {
                 svalue(rotateCheck) <- curSet$rotation
               }
               tbl[ii, 3:6, expand = TRUE] <- rotateCheck
               
               addHandlerChanged(rotateCheck, function(h, ...) updateEverything())
+              
+              ii <- ii + 1
+              
+              rotateLabels <- gcheckbox("x-axis Labels", handler = function(h, ...) updateEverything())
+              tbl[ii, 3:6, expand = TRUE] <- rotateLabels
               
               ii <- ii + 1
             }
@@ -2080,6 +2085,7 @@ iNZPlotMod <- setRefClass(
                   }
                   
                   newSet$gg_theme <- available.themes[svalue(themeCombobox)]
+                  newSet$rotate_labels <- svalue(rotateLabels)
                 }
                 
                 if (PLOTTYPE %in% c("dot", "hist")) {
