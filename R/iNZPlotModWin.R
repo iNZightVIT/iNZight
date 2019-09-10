@@ -129,7 +129,8 @@ iNZPlotModWin <- setRefClass(
         barColours = "list",
         colourPalettes = "list",
         EMPH.LEVEL = "numeric",
-        timer = "ANY"
+        timer = "ANY",
+        plot_history = "ANY"
         ),
     methods = list(
         initialize = function(gui = NULL, which = 1,
@@ -174,12 +175,16 @@ iNZPlotModWin <- setRefClass(
                     emphasize = iNZightPlots::emphasize_pal_colour
                 ),
                 EMPH.LEVEL = 0,
-                timer = NULL
+                timer = NULL,
+                plot_history = NULL
             ) # end initFields
 
             if (!is.null(GUI)) {
                 updateSettings()
-
+                
+              plot_history <<- GUI$initializePlotHistory()
+                
+  
                 modwin <- GUI$initializeModuleWindow(scroll = FALSE)
                 mainGrp <- modwin$body
 
@@ -1829,6 +1834,16 @@ iNZPlotMod <- setRefClass(
                 
                 ii <- ii + 1
               }
+              
+              tbl[ii, 3, expand = TRUE] <- gbutton("Store Code", handler = function(h, ...) {
+                GUI$plot_history$add(GUI$curPlot)
+              })
+              
+              tbl[ii, 4, expand = TRUE] <- gbutton("View Code", handler = function(h, ...) {
+                GUI$plot_history$show()
+              })
+              
+              ii <- ii + 1
             }
             
             # if (PLOTTYPE %in% c("gg_column2", "gg_lollipop")) {
