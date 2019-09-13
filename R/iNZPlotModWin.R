@@ -249,6 +249,8 @@ iNZPlotModWin <- setRefClass(
         ## up the curSet class variable
         updateSettings = function() {
             curSet <<- GUI$getActiveDoc()$getSettings()
+            if (!is.null(curSet$x))
+                curSet$x <<- GUI$getActiveData()[[curSet$x]]
         },
         iNZLocatePoints = function(dot = GUI$plotType == "dot") {
             ## Do checking first

@@ -188,3 +188,45 @@ modifyList <- function (x, val, keep.null = FALSE)
     }
     x
 }
+
+
+construct_call <- function(settings, model, data = quote(.dataset)) {
+    # go through settings and compare to default settings
+    default_args <- formals(iNZightPlots::iNZightPlot)
+    inz_args <- iNZightPlots:::inzpar()
+    defaults <- c(default_args, inz_args)
+    lapply(names(settings), function(s_name) {
+        is_same <- identical(
+            settings[[s_name]], 
+            defaults[[s_name]], 
+            ignore.bytecode = TRUE,
+            ignore.environment = TRUE
+        )
+        if (is_same) settings[[s_name]] <<- NULL
+    })
+
+    ## set the data
+    settings$data <- data
+
+    if (!is.null(model$dataDesign)) {
+        settings$data <- NULL
+        settings$design <- model$createSurveyObject()
+    }
+
+    ## order of list
+    name_order <- c(names(default_args),  names(inz_args))
+    name_order <- name_order[name_order %in% names(settings)]
+    settings <- settings[name_order]
+
+    ## drop "x = " and "y = "
+    names(settings) <- ifelse(names(settings) %in% c("x", "y"),
+        paste0(names(settings), "DROP"),
+        names(settings)
+    )
+
+    call <- capture.output(dput(settings))
+    call <- gsub("^list", "iNZightPlot", call)
+    call <- gsub(".DROP = ", "", call)
+
+    paste(call, collapse = "\n")
+}

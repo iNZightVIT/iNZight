@@ -341,10 +341,14 @@ iNZGUI <- setRefClass(
                 handler = function(h, ...) {
                     curSet <- getActiveDoc()$getSettings()
                     curSet$plottype <- NULL
+                    .dataset <- getActiveData()
+                    curSet$data <- quote(.dataset)
+
                     if (!is.null(curSet$freq))
                         curSet$freq <- getActiveData()[[curSet$freq]]
                     if (!is.null(curSet$x)) {
-                        if (is_num(curSet$x) & is_num(curSet$y)) {
+                        xvar <- .dataset[[curSet$x]]
+                        if (is_num(xvar) & is_num(curSet$y)) {
                             tmp.x <- curSet$y
                             curSet$y <- curSet$x
                             curSet$x <- tmp.x
@@ -431,7 +435,7 @@ iNZGUI <- setRefClass(
                                     width = 25
                                 )
 
-                                if (is_cat(curSet$x) || is_cat(curSet$y)) { ##} || length(curSet$trend) == 1) {
+                                if (is_cat(xvar) || is_cat(curSet$y)) { ##} || length(curSet$trend) == 1) {
                                     tbl[ii, 1:3, anchor = c(1, 0), expand = TRUE] <- fittedLbl
                                     tbl[ii, 4:6, expand = TRUE] <- fittedName
                                     ii <- ii + 1
@@ -488,7 +492,7 @@ iNZGUI <- setRefClass(
                                     sprintf("%s.%s.smooth", curSet$varnames$y, varType),
                                     width = 25
                                 )
-                                if (curSet$smooth > 0 && is_num(curSet$x) &&
+                                if (curSet$smooth > 0 && is_num(xvar) &&
                                     is_num(curSet$y)) {
                                     tbl[ii, 1:3, anchor = c(1, 0), expand = TRUE] <- fittedLbl.smth
                                     tbl[ii, 4:6, expand = TRUE] <- fittedName.smth
@@ -506,14 +510,14 @@ iNZGUI <- setRefClass(
                                                 function(object)
                                                     predict(
                                                         object,
-                                                        newdata = data.frame(x = curSet$x)
+                                                        newdata = data.frame(x = xvar)
                                                     )
                                             else
                                                 function(object)
                                                     residuals(object)
 
                                         pred <- NULL
-                                        if (is_cat(curSet$x) || is_cat(curSet$y)) { #} || length(curSet$trend) == 1) {
+                                        if (is_cat(xvar) || is_cat(curSet$y)) { #} || length(curSet$trend) == 1) {
                                             ## just the one
                                             fit <- with(curSet, lm(if (is_num(curSet$y)) y ~ x else x ~ y, na.action = na.exclude))
                                             pred <- data.frame(FUN(fit))
@@ -540,8 +544,8 @@ iNZGUI <- setRefClass(
                                             newdata <- getActiveData()
 
 
-                                        if (curSet$smooth > 0 && is_num(curSet$x) && is_num(curSet$y)) {
-                                            tmp <- data.frame(x = curSet$x, y = curSet$y)
+                                        if (curSet$smooth > 0 && is_num(xvar) && is_num(curSet$y)) {
+                                            tmp <- data.frame(x = xvar, y = curSet$y)
                                             fit <- with(curSet, loess(y ~ x, span = curSet$smooth, family = "gaussian", degree = 1, na.action = "na.exclude"))
                                             pred <- data.frame(FUN(fit))
                                             colnames(pred) <- svalue(fittedName.smth)
@@ -593,11 +597,14 @@ iNZGUI <- setRefClass(
                 handler = function(h, ...) {
                     curSet <- getActiveDoc()$getSettings()
                     curSet$plottype <- NULL
+                    .dataset <- getActiveData()
+                    curSet$data <- quote(.dataset)
                     if (!is.null(curSet$freq))
                         curSet$freq <- getActiveData()[[curSet$freq]]
                     if (!is.null(curSet$x)) {
+                        xvar <- .dataset[[curSet$x]]
                         ## Figure out what type of inference will be happening:
-                        xnum <- is_num(curSet$x)
+                        xnum <- is_num(xvar)
 
                         if (is.null(curSet$y)) {
                             INFTYPE <- ifelse(xnum, "onesample-ttest", "oneway-table")
@@ -608,7 +615,7 @@ iNZGUI <- setRefClass(
                             } else if (xnum | ynum) {
                                 M <-
                                     if (xnum) length(levels(curSet$y))
-                                    else length(levels(curSet$x))
+                                    else length(levels(xvar))
                                 if (M == 2) INFTYPE <- "twosample-ttest"
                                 if (M > 2) INFTYPE <- "anova"
                             } else {
@@ -672,7 +679,7 @@ iNZGUI <- setRefClass(
                         TTEST2 <- INFTYPE == "twosample-ttest"
                         CHI2 <- grepl("-table", INFTYPE)
                         PROPTEST <- INFTYPE == "oneway-table"
-                        PROPTEST2 <- PROPTEST && length(levels(curSet$x)) == 2
+                        PROPTEST2 <- PROPTEST && length(levels(xvar)) == 2
                         hypTest <-
                             if (TTEST2)
                                 gradio(c("None", "Two Sample t-test", "ANOVA"), horizontal = TRUE)
@@ -807,11 +814,14 @@ iNZGUI <- setRefClass(
                         btn <- gbutton("OK", handler = function(h, ...) {
                             infType <- svalue(infMthd, index = TRUE)
                             curSet <- getActiveDoc()$getSettings()
+                            .dataset <- getActiveData()
+                            curSet$data <- quote(.dataset)
                             curSet$plottype <- NULL
                             if (!is.null(curSet$freq))
                                 curSet$freq <- getActiveData()[[curSet$freq]]
                             if (!is.null(curSet$x)) {
-                                if (is.numeric(curSet$x) & is.numeric(curSet$y)) {
+                                xvar <- .dataset[[curSet$x]]
+                                if (is.numeric(xvar) & is.numeric(curSet$y)) {
                                     tmp.x <- curSet$y
                                     curSet$y <- curSet$x
                                     curSet$x <- tmp.x
@@ -993,11 +1003,19 @@ iNZGUI <- setRefClass(
         ## plot with the current active plot settings
         updatePlot = function(allow.redraw = TRUE) {
             curPlSet <- getActiveDoc()$getSettings()
+            curMod <- getActiveDoc()$getModel()
+
+            plot_call <- construct_call(curPlSet, curMod)
+
+            .dataset <- getActiveData()
+            curPlSet$data <- quote(.dataset)
+
             if (!is.null(curPlSet$freq))
                 curPlSet$freq <- getActiveData()[[curPlSet$freq]]
             if(!is.null(curPlSet$x)) {
+                varx <- .dataset[[curPlSet$x]]
                 # Switch x and y:
-                if (is_num(curPlSet$x) & is_num(curPlSet$y)) {
+                if (is_num(varx) & is_num(curPlSet$y)) {
                     x.tmp <- curPlSet$y
                     curPlSet$y <- curPlSet$x
                     curPlSet$x <- x.tmp

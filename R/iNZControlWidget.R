@@ -289,14 +289,14 @@ iNZControlWidget <- setRefClass(
                         newXname <- NULL
                     } else {
                         val <- svalue(V1box)
-                        newX <- GUI$getActiveDoc()$getData()[val][[1]]
+                        newX <- as.name(val) #GUI$getActiveDoc()$getData()[val][[1]]
                         newXname <- val
                     }
-                    
+
                     changePlotSettings(list(
                         x = newX,
-                        xlab = NULL,
-                        main = NULL,
+                        xlab = NULL,formals(iNZightPlots::iNZightPlot)$xlab,
+                        main = NULL,formals(iNZightPlots::iNZightPlot)$main,
                         varnames = list(x = newXname)
                     ), reset = TRUE)
                 })
@@ -622,7 +622,7 @@ iNZControlWidget <- setRefClass(
                 blockHandlers(V1box)
                 svalue(V1box) <<- set$varnames$x
                 unblockHandlers(V1box)
-                set$x <- data[[set$varnames$x]]
+                set$x <- as.name(set$varnames$x)
             } else {
                 ## remove variable 1
                 set$x <- NULL
