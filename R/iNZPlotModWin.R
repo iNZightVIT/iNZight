@@ -53,11 +53,11 @@ plot_list <- function(plot_type, x, y) {
     }
     
     if (!is.null(y)) {
-      return_list <- append(return_list, list(gg_ridgeline = "ridgeline"))
+      return_list <- append(return_list, list(gg_ridgeline = "ridgeline"), after = length(return_list) - 1)
     }
     
     if ((!is.numeric(y) && nlevels(y) == 2) || (!is.numeric(x) && nlevels(x) == 2)) {
-      return_list <- append(return_list, list(gg_poppyramid = "pyramid"))
+      return_list <- append(return_list, list(gg_poppyramid = "pyramid"), after = 2)
     }
       
     attr(return_list, "cat.levels") <- ifelse(is.numeric(x), nlevels(y), nlevels(x))
@@ -85,7 +85,7 @@ plot_list <- function(plot_type, x, y) {
     )
     
     if (is.null(y)) {
-      return_list <- append(return_list, list(gg_pie = "pie", gg_donut = "donut", gg_gridplot = "gridplot"))
+      return_list <- append(return_list, list(gg_gridplot = "gridplot", gg_pie = "pie", gg_donut = "donut"))
     } else {
       return_list <- append(return_list, list(gg_freqpolygon = "frequency polygons", gg_heatmap = "heatmap"))
       if (is.factor(y) && nlevels(y) == 2) {
@@ -1522,28 +1522,40 @@ iNZPlotMod <- setRefClass(
                 ii <- ii + 1
             }
             
+            ii <- ii + 1
+            
             if (PLOTTYPE %in% c("dot", "hist")) {
-              showBoxplot <- gcheckbox("Show boxplot", checked = curSet$boxplot, handler = function(h, ...) updateEverything())
-              showMean <- gcheckbox("Show mean", checked = curSet$mean_indicator, handler = function(h, ...) updateEverything())
-              
-              tbl[ii, 1:6, anchor = c(1, 0), expand = TRUE] <- showBoxplot
+              tbl[ii,  1:6, anchor = c(-1, 0), expand = TRUE] <- sectionTitle("Summaries")
               ii <- ii + 1
               
-              tbl[ii, 1:6, anchor = c(1, 0), expand = TRUE] <- showMean
+              tbl[ii, 1:2, anchor = c(1, 0), expand = TRUE] <- glabel("Show :")
+              
+              showBoxplot <- gcheckbox("Boxplot", checked = curSet$boxplot, handler = function(h, ...) updateEverything())
+              showMean <- gcheckbox("Mean indicator", checked = curSet$mean_indicator, handler = function(h, ...) updateEverything())
+              
+              tbl[ii, 3:6, anchor = c(1, 0), expand = TRUE] <- showBoxplot
+              ii <- ii + 1
+              
+              tbl[ii, 3:6, anchor = c(1, 0), expand = TRUE] <- showMean
               ii <- ii + 1
             }
             
             ## FT PLOT OPTIONS
             
             if (grepl("^gg_", PLOTTYPE) && !(PLOTTYPE %in% c("gg_pie", "gg_donut", "gg_cumcurve", "gg_barcode"))) {
-              tbl[ii, 1:2, anchor = c(1, 0), expand = TRUE] <- glabel("Rotation:")
-              rotateCheck <- gcheckbox("Rotate")
+              tbl[ii, 1:2, anchor = c(1, 0), expand = TRUE] <- glabel("Rotate:")
+              rotateCheck <- gcheckbox("Plot")
               if (isTRUE(!is.null(curSet$rotation))) {
                 svalue(rotateCheck) <- curSet$rotation
               }
               tbl[ii, 3:6, expand = TRUE] <- rotateCheck
               
               addHandlerChanged(rotateCheck, function(h, ...) updateEverything())
+              
+              ii <- ii + 1
+              
+              rotateLabels <- gcheckbox("x-axis Labels", handler = function(h, ...) updateEverything())
+              tbl[ii, 3:6, expand = TRUE] <- rotateLabels
               
               ii <- ii + 1
             }
@@ -2096,6 +2108,7 @@ iNZPlotMod <- setRefClass(
                   }
                   
                   newSet$gg_theme <- available.themes[svalue(themeCombobox)]
+                  newSet$rotate_labels <- svalue(rotateLabels)
                 }
                 
                 if (PLOTTYPE %in% c("dot", "hist")) {
