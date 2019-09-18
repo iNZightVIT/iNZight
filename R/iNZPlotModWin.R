@@ -1837,6 +1837,7 @@ iNZPlotMod <- setRefClass(
               
               tbl[ii, 3, expand = TRUE] <- gbutton("Store Code", handler = function(h, ...) {
                 GUI$plot_history$add(GUI$curPlot)
+                GUI$rhistory$add(paste0(attr(GUI$curPlot, "code"), collapse = "\n\n"))
               })
               
               tbl[ii, 4, expand = TRUE] <- gbutton("View Code", handler = function(h, ...) {
