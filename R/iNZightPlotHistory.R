@@ -38,7 +38,7 @@ iNZplothistory <- setRefClass(
       
       new_item <- history_item(
         name = paste0("Plot ", i),
-        code = attr(plot, "code"),
+        code = paste0(attr(plot, "code"), collapse = "\n\n"),
         plot = plot,
         img = paste0("plot", i, ".png"),
         id = i
