@@ -1,14 +1,21 @@
-history_item <- function(name, code, img) {
+history_item <- function(name, code, img, plot, id) {
   list(
     name = name,
     code = code,
-    img_file = img
+    img_file = img,
+    id = id,
+    plot = plot
   )
 }
 
-plot_entry <- function(item, window) {
+plot_entry <- function(item, window, i) {
   plot_group <- glayout(expand = TRUE, fill = TRUE)
-  plot_group[1:2, 1] <- gimage(item$img_file)
+  plot_image <- gimage(item$img_file)
+  addHandlerClicked(plot_image, function(h, ...) {
+    print(item$plot)
+  })
+  
+  plot_group[1:2, 1] <- plot_image
   plot_group[1:2, 2, fill = "x", expand = TRUE, anchor = c(-1, 0)] <- glabel(item$name)
   plot_group[1:2, 3:9, fill = "x", expand = TRUE] <- gtext(item$code)
   plot_group[1, 10] <- gbutton("Copy", handler = function(h, ...) {
@@ -28,14 +35,15 @@ iNZplothistory <- setRefClass(
   "iNZplothistory",
   fields = list(
     GUI = "ANY",
-    history = "list"
+    history = "list",
+    i = "numeric"
   ),
   methods = list(
     initialize = function(gui) {
-      initFields(GUI = gui, history = list())
+      initFields(GUI = gui, history = list(), i = 0L)
     },
     add = function(plot) {
-      i <- length(history) + 1
+      i <<- i + 1
       
       class(plot) <- c("gg", "ggplot")
       
@@ -52,7 +60,9 @@ iNZplothistory <- setRefClass(
       new_item <- history_item(
         name = paste0("Plot ", i),
         code = attr(plot, "code"),
-        img = paste0("plot", i, ".png")
+        plot = plot,
+        img = paste0("plot", i, ".png"),
+        id = i
       )
       
       
@@ -66,7 +76,10 @@ iNZplothistory <- setRefClass(
       gWidgets2::add(w, g)
       gWidgets2::add(g, glabel("The following is a list of the plots you have stored"))
       gWidgets2::add(g, plot_list, expand = TRUE)
-      gWidgets2::add(g, gbutton("OK", handler = function(h, ...) dispose(w)))
+      gWidgets2::add(g, gbutton("OK", handler = function(h, ...) {
+        GUI$updatePlot()
+        dispose(w)
+      }))
       
       plot_items <- lapply(history, plot_entry, window = w)
       
