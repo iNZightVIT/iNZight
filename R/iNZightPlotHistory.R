@@ -64,7 +64,7 @@ iNZplothistory <- setRefClass(
       
         invisible(lapply(plot_items, gWidgets2::add, obj = plot_list, expand = TRUE, fill = "x"))
       } else {
-        gWidgets2::add(plot_list, glabel("You haven't stored any plots yet - click the \"Store Code\" button in the plotting menu to keep a list \nof the plots you'd like the R code for"), anchor = c(0, 0))
+        gWidgets2::add(plot_list, glabel("You haven't stored any plots yet - click the \"Store Code\" button in the plotting menu to keep a list \nof the plots you'd like the R code for"), anchor = c(0, 0), expand = TRUE, fill = TRUE)
       }
     },
     plot_entry = function(item, window, i) {
@@ -72,6 +72,20 @@ iNZplothistory <- setRefClass(
       plot_image <- gimage(item$img_file)
       addHandlerClicked(plot_image, function(h, ...) {
         print(item$plot)
+      })
+      
+      # old_cursor <- getToolkitWidget(plot_image)$getWindow()$getCursor()
+      hover <- gdkCursorNew("GDK_HAND1")
+      
+      addHandler(plot_image, "enter-notify-event", handler=function(h,...) {
+        getToolkitWidget(plot_image)$getWindow()$setCursor(hover)
+        TRUE
+      })
+      
+      
+      addHandler(plot_image, "leave-notify-event", handler=function(h,...) {
+        getToolkitWidget(plot_image)$getWindow()$setCursor(gdkCursorNew("GDK_LEFT_PTR"))
+        TRUE
       })
       
       plot_group[1:2, 1] <- plot_image
@@ -87,7 +101,6 @@ iNZplothistory <- setRefClass(
       })
       plot_group[2, 10] <- gbutton("Delete", handler = function(h, ...) {
         history[[i]] <<- NULL
-        plot_group <- NULL
       })
       
       plot_group
