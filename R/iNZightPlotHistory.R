@@ -8,28 +8,7 @@ history_item <- function(name, code, img, plot, id) {
   )
 }
 
-plot_entry <- function(item, window, i) {
-  plot_group <- glayout(expand = TRUE, fill = TRUE)
-  plot_image <- gimage(item$img_file)
-  addHandlerClicked(plot_image, function(h, ...) {
-    print(item$plot)
-  })
-  
-  plot_group[1:2, 1] <- plot_image
-  plot_group[1:2, 2, fill = "x", expand = TRUE, anchor = c(-1, 0)] <- glabel(item$name)
-  plot_group[1:2, 3:9, fill = "x", expand = TRUE] <- gtext(item$code)
-  plot_group[1, 10] <- gbutton("Copy", handler = function(h, ...) {
-    tryCatch({
-      clipr::write_clip(item$code)
-      gmessage("Successfully copied to clipboard", parent = window)
-    }, error = function(e) gmessage(e, icon = "error", parent = window))
-  })
-  plot_group[2, 10] <- gbutton("Delete", handler = function(h, ...) {
-    
-  })
-  
-  plot_group
-}
+
 
 iNZplothistory <- setRefClass(
   "iNZplothistory",
@@ -66,7 +45,7 @@ iNZplothistory <- setRefClass(
       )
       
       
-      history[[i]] <<- new_item
+      history[[as.character(i)]] <<- new_item
     },
     show = function() {
       w <- gwindow(width = 700, height = 300, parent = GUI$win)
@@ -80,10 +59,38 @@ iNZplothistory <- setRefClass(
         GUI$updatePlot()
         dispose(w)
       }))
+      if (length(history) > 0) {
+        plot_items <- lapply(names(history), function(i) plot_entry(history[[i]], window = w, i = i))
       
-      plot_items <- lapply(history, plot_entry, window = w)
+        invisible(lapply(plot_items, gWidgets2::add, obj = plot_list, expand = TRUE, fill = "x"))
+      } else {
+        gWidgets2::add(plot_list, glabel("You haven't stored any plots yet - click the \"Store Code\" button in the plotting menu to keep a list \nof the plots you'd like the R code for"), anchor = c(0, 0))
+      }
+    },
+    plot_entry = function(item, window, i) {
+      plot_group <- glayout(expand = TRUE, fill = TRUE)
+      plot_image <- gimage(item$img_file)
+      addHandlerClicked(plot_image, function(h, ...) {
+        print(item$plot)
+      })
       
-      invisible(lapply(plot_items, gWidgets2::add, obj = plot_list, expand = TRUE, fill = "x"))
+      plot_group[1:2, 1] <- plot_image
+      plot_group[1:2, 2, fill = "x", expand = TRUE, anchor = c(-1, 0)] <- gedit(item$name, handler = function(h, ...) {
+        history[[i]]$name <<- svalue(h$obj)
+      })
+      plot_group[1:2, 3:9, fill = "x", expand = TRUE] <- gtext(item$code)
+      plot_group[1, 10] <- gbutton("Copy", handler = function(h, ...) {
+        tryCatch({
+          clipr::write_clip(item$code)
+          gmessage("Successfully copied to clipboard", parent = window)
+        }, error = function(e) gmessage(e, icon = "error", parent = window))
+      })
+      plot_group[2, 10] <- gbutton("Delete", handler = function(h, ...) {
+        history[[i]] <<- NULL
+        plot_group <- NULL
+      })
+      
+      plot_group
     }
   )
 )
