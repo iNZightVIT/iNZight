@@ -1543,7 +1543,7 @@ iNZPlotMod <- setRefClass(
             ## FT PLOT OPTIONS
             
             if (grepl("^gg_", PLOTTYPE) && !(PLOTTYPE %in% c("gg_pie", "gg_donut", "gg_cumcurve", "gg_barcode"))) {
-              tbl[ii, 1:2, anchor = c(1, 0), expand = TRUE] <- glabel("Rotate:")
+              tbl[ii, 1:2, anchor = c(1, 0), expand = TRUE] <- glabel("Rotate :")
               rotateCheck <- gcheckbox("Plot")
               if (isTRUE(!is.null(curSet$rotation))) {
                 svalue(rotateCheck) <- curSet$rotation
@@ -1561,7 +1561,10 @@ iNZPlotMod <- setRefClass(
             }
 
             if (PLOTTYPE %in% c("gg_violin", "gg_density")) {
-              tbl[ii, 1:2, anchor = c(1, 0), expand = TRUE] <- glabel("Smoothing:")
+              tbl[ii, 1:6, expand = TRUE] <- sectionTitle("Density Options")
+              ii <- ii + 1
+              
+              tbl[ii, 1:2, anchor = c(1, 0), expand = TRUE] <- glabel("Smoothing :")
               smoothSlider <- gslider(0.25, 4, 0.25, value = ifelse(is.null(curSet$adjust), 1, curSet$adjust), 
                                       handler = function(h, ...) {
                 if (!is.null(timer))
@@ -1580,46 +1583,8 @@ iNZPlotMod <- setRefClass(
               ii <- ii + 1
             }
             
-            if (PLOTTYPE %in% c("gg_violin", "gg_barcode", "gg_dotstrip", "gg_barcode2")) {
-              tbl[ii, 1:2, anchor = c(1, 0), expand = TRUE] <- glabel("Fill transparency:")
-              transpSlider <- gslider(from = 0, to = 100,
-                                      by = 1, value = 100 * (1 - curSet$alpha))
-              tbl[ii, 3:6, expand = TRUE] <- transpSlider
-              
-              addHandlerChanged(transpSlider,
-                                handler = function(h, ...) {
-                                  if (!is.null(timer))
-                                    if (timer$started) timer$stop_timer()
-                                  timer <<- gtimer(500, function(...) updateEverything(), one.shot = TRUE)
-                                })
-              
-              ii <- ii + 1
-            }
-            
-            if (PLOTTYPE %in% c("gg_density")) {
-              tbl[ii, 1:2, anchor = c(1, 0), expand = TRUE] <- glabel("Fill transparency:")
-              transpSlider <- gslider(from = 0, to = 100,
-                                      by = 1, 
-                                      value = ifelse(
-                                        attr(PLOTTYPES, "null.y"), 
-                                        100 * (1 - curSet$alpha), 
-                                        ifelse(is.null(curSet$alpha_densitygroup), 60, 100 * (1 - curSet$alpha_densitygroup))
-                                      )
-              )
-              tbl[ii, 3:6, expand = TRUE] <- transpSlider
-              
-              addHandlerChanged(transpSlider,
-                                handler = function(h, ...) {
-                                  if (!is.null(timer))
-                                    if (timer$started) timer$stop_timer()
-                                  timer <<- gtimer(500, function(...) updateEverything(), one.shot = TRUE)
-                                })
-              
-              ii <- ii + 1
-            }
-            
             if (PLOTTYPE %in% c("gg_barcode")) {
-              tbl[ii, 1:2, anchor = c(1, 0), expand = TRUE] <- glabel("Bar size:")
+              tbl[ii, 1:2, anchor = c(1, 0), expand = TRUE] <- glabel("Size :")
               barcodeSize <- gslider(from = 5, to = 20, by = 1, value = 16)
               tbl[ii, 3:6, expand = TRUE] <- barcodeSize
               
@@ -1639,13 +1604,16 @@ iNZPlotMod <- setRefClass(
             }
             
             if (PLOTTYPE %in% c("gg_barcode2")) {
-              tbl[ii, 1:2, anchor = c(1, 0), expand = TRUE] <- glabel("Bar width:")
+              tbl[ii, 1:6, expand = TRUE] <- sectionTitle("Barcode Options")
+              ii <- ii + 1
+              
+              tbl[ii, 1:2, anchor = c(1, 0), expand = TRUE] <- glabel("Width :")
               barcodeWidth <- gslider(from = 1, to = 5, by = 1, value = 1)
               tbl[ii, 3:6, expand = TRUE] <- barcodeWidth
               
               ii <- ii + 1
               
-              tbl[ii, 1:2, anchor = c(1, 0), expand = TRUE] <- glabel("Bar height:")
+              tbl[ii, 1:2, anchor = c(1, 0), expand = TRUE] <- glabel("Height :")
               barcodeHeight <- gslider(from = 0.1, to = 1, by = 0.1, value = 1)
               tbl[ii, 3:6, expand = TRUE] <- barcodeHeight
               
@@ -1678,7 +1646,10 @@ iNZPlotMod <- setRefClass(
             }
             
             if (PLOTTYPE %in% c("gg_lollipop2", "gg_lollipop", "gg_freqpolygon", "gg_dotstrip", "gg_beeswarm")) {
-              tbl[ii, 1:2, anchor = c(1, 0), expand = TRUE] <- glabel("Point size:")
+              tbl[ii, 1:6, expand = TRUE] <- sectionTitle("Point Options")
+              ii <- ii + 1
+              
+              tbl[ii, 1:2, anchor = c(1, 0), expand = TRUE] <- glabel("Size :")
               pointSize <- gslider(from = 1, to = 10, by = 1)
               tbl[ii, 3:6, expand = TRUE] <- pointSize
               
@@ -1697,8 +1668,49 @@ iNZPlotMod <- setRefClass(
               ii <- ii + 1
             }
             
+            if (PLOTTYPE %in% c("gg_violin", "gg_barcode", "gg_dotstrip", "gg_barcode2")) {
+              tbl[ii, 1:2, anchor = c(1, 0), expand = TRUE] <- glabel("Transparency :")
+              transpSlider <- gslider(from = 0, to = 100,
+                                      by = 1, value = 100 * (1 - curSet$alpha))
+              tbl[ii, 3:6, expand = TRUE] <- transpSlider
+              
+              addHandlerChanged(transpSlider,
+                                handler = function(h, ...) {
+                                  if (!is.null(timer))
+                                    if (timer$started) timer$stop_timer()
+                                  timer <<- gtimer(500, function(...) updateEverything(), one.shot = TRUE)
+                                })
+              
+              ii <- ii + 1
+            }
+            
+            if (PLOTTYPE %in% c("gg_density")) {
+              tbl[ii, 1:2, anchor = c(1, 0), expand = TRUE] <- glabel("Transparency :")
+              transpSlider <- gslider(from = 0, to = 100,
+                                      by = 1, 
+                                      value = ifelse(
+                                        attr(PLOTTYPES, "null.y"), 
+                                        100 * (1 - curSet$alpha), 
+                                        ifelse(is.null(curSet$alpha_densitygroup), 60, 100 * (1 - curSet$alpha_densitygroup))
+                                      )
+              )
+              tbl[ii, 3:6, expand = TRUE] <- transpSlider
+              
+              addHandlerChanged(transpSlider,
+                                handler = function(h, ...) {
+                                  if (!is.null(timer))
+                                    if (timer$started) timer$stop_timer()
+                                  timer <<- gtimer(500, function(...) updateEverything(), one.shot = TRUE)
+                                })
+              
+              ii <- ii + 1
+            }
+            
             if (PLOTTYPE %in% c("gg_poppyramid")) {
-              tbl[ii, 1:2, anchor = c(1, 0), expand = TRUE] <- glabel("Number of bins:")
+              tbl[ii, 1:6, expand = TRUE] <- sectionTitle("Pyramid Options")
+              ii <- ii + 1
+              
+              tbl[ii, 1:2, anchor = c(1, 0), expand = TRUE] <- glabel("Number of bins :")
               pyramidBins <- gslider(5, 50, by = 5, value = 30)
               tbl[ii, 3:6, expand = TRUE] <- pyramidBins
               
@@ -1718,7 +1730,10 @@ iNZPlotMod <- setRefClass(
             }
             
             if (PLOTTYPE %in% c("gg_lollipop", "gg_boxplot", "gg_cumcurve", "gg_lollipop2", "gg_freqpolygon")) {
-              tbl[ii, 1:2, anchor = c(1, 0), expand = TRUE] <- glabel("Line width:")
+              tbl[ii, 1:6, expand = TRUE] <- sectionTitle("Line Options")
+              ii <- ii + 1
+              
+              tbl[ii, 1:2, anchor = c(1, 0), expand = TRUE] <- glabel("Width :")
               lwdSlider <- gslider(1, 5, value = 1)
               tbl[ii, 3:6, expand = TRUE] <- lwdSlider
               
@@ -1738,7 +1753,10 @@ iNZPlotMod <- setRefClass(
             }
             
             if (PLOTTYPE %in% c("gg_column", "gg_lollipop2", "gg_pie", "gg_donut")) {
-              tbl[ii, 1:2, anchor = c(1, 0), expand = TRUE] <- glabel("Sort by size:")
+              tbl[ii, 1:6, expand = TRUE] <- sectionTitle("Sorting")
+              ii <- ii + 1
+              
+              tbl[ii, 1:2, anchor = c(1, 0), expand = TRUE] <- glabel("Sort categories by size :")
               sortCheck <- gcheckbox(handler = function(h, ...) updateEverything())
               tbl[ii, 3:6, expand = TRUE] <- sortCheck
               
@@ -1752,7 +1770,10 @@ iNZPlotMod <- setRefClass(
             }
             
             if (PLOTTYPE %in% c("gg_gridplot")) {
-              tbl[ii, 1:2, anchor = c(1, 0), expand = TRUE] <- glabel("Square per N obs:")
+              tbl[ii, 1:6, expand = TRUE] <- sectionTitle("Gridplot Options")
+              ii <- ii + 1
+              
+              tbl[ii, 1:2, anchor = c(1, 0), expand = TRUE] <- glabel("Squares represent N observations :")
               gridNPerSquare <- gedit(10^(floor(log10(nrow(GUI$getActiveData()))) - 1))
               addHandlerChanged(gridNPerSquare, function(h, ...) updateEverything())
               tbl[ii, 3:6, expand = TRUE] <- gridNPerSquare
@@ -1761,7 +1782,17 @@ iNZPlotMod <- setRefClass(
             }
 
             if (PLOTTYPE %in% c("gg_quasirandom")) {
-              tbl[ii, 1:2, anchor = c(1, 0), expand = TRUE] <- glabel("Swarm width:")
+              tbl[ii, 1:6, expand = TRUE] <- sectionTitle("Beeswarm Options")
+              ii <- ii + 1
+              
+              tbl[ii, 1:2, anchor = c(1, 0), expand = TRUE] <- glabel("Method :")
+              swarmMethod <- gcombobox(c("quasirandom", "pseudorandom", "smiley", "frowney"))
+              tbl[ii, 3:6, expand = TRUE] <- swarmMethod
+              addHandlerChanged(swarmMethod, handler = function(h, ...) updateEverything())
+              
+              ii <- ii + 1
+              
+              tbl[ii, 1:2, anchor = c(1, 0), expand = TRUE] <- glabel("Swarm width :")
               swarmWidth <- gslider(0, 1, 0.1, value = if (!is.null(curSet$gg_swarmwidth)) curSet$gg_swarmwidth else 0.4)
               tbl[ii, 3:6, expand = TRUE] <- swarmWidth
               
@@ -1772,14 +1803,6 @@ iNZPlotMod <- setRefClass(
               })
               
               ii <- ii + 1
-              
-              tbl[ii, 1:2, anchor = c(1, 0), expand = TRUE] <- glabel("Swarm method:")
-              swarmMethod <- gcombobox(c("quasirandom", "pseudorandom", "smiley", "frowney"))
-              tbl[ii, 3:6, expand = TRUE] <- swarmMethod
-              addHandlerChanged(swarmMethod, handler = function(h, ...) updateEverything())
-              
-              ii <- ii + 1
-              
             }
             
             if (grepl("^gg_", PLOTTYPE)) {
@@ -1809,7 +1832,7 @@ iNZPlotMod <- setRefClass(
                 )
               }
               
-              tbl[ii, 1:2, anchor = c(1, 0), expand = TRUE] <- glabel("Theme:")
+              tbl[ii, 1:2, anchor = c(1, 0), expand = TRUE] <- glabel("Theme :")
               themeCombobox <- gcombobox(
                 theme.options,
                 selected = if (!is.null(curSet$gg_theme)) match(names(available.themes)[which(available.themes == curSet$gg_theme)], theme.options) else 1,
@@ -1837,15 +1860,8 @@ iNZPlotMod <- setRefClass(
               
               ii <- ii + 1
               
-              if (!PLOTTYPE %in% c("gg_pie", "gg_donut", "gg_gridplot", "gg_barcode2", "gg_barcode")) {
-                tbl[ii, 3:4, anchor = c(1, 0), expand = TRUE] <- gbutton("Interactive Plot (via plotly)", handler = function(h, ...) {
-                  suppressWarnings(
-                    print(plotly::ggplotly())
-                  )
-                })
-                
-                ii <- ii + 1
-              }
+              tbl[ii, 1:6, expand = TRUE] <- sectionTitle("Export Plot")
+              ii <- ii + 1
               
               tbl[ii, 3, expand = TRUE] <- gbutton("Store Code", handler = function(h, ...) {
                 GUI$plot_history$add(GUI$curPlot)
@@ -1857,6 +1873,16 @@ iNZPlotMod <- setRefClass(
               })
               
               ii <- ii + 1
+              
+              if (!PLOTTYPE %in% c("gg_pie", "gg_donut", "gg_gridplot", "gg_barcode2", "gg_barcode")) {
+                tbl[ii, 3:4, anchor = c(1, 0), expand = TRUE] <- gbutton("Interactive Plot (via plotly)", handler = function(h, ...) {
+                  suppressWarnings(
+                    print(plotly::ggplotly())
+                  )
+                })
+                
+                ii <- ii + 1
+              }
             }
             
             # if (PLOTTYPE %in% c("gg_column2", "gg_lollipop")) {
@@ -2108,7 +2134,10 @@ iNZPlotMod <- setRefClass(
                   }
                   
                   newSet$gg_theme <- available.themes[svalue(themeCombobox)]
-                  newSet$rotate_labels <- svalue(rotateLabels)
+                  
+                  if (!(PLOTTYPE %in% c("gg_cumcurve", "gg_pie", "gg_donut"))) {
+                    newSet$rotate_labels <- svalue(rotateLabels)
+                  }
                 }
                 
                 if (PLOTTYPE %in% c("dot", "hist")) {
