@@ -1095,7 +1095,19 @@ iNZPlotMod <- setRefClass(
                               GUI$getActiveData()[[curSet$varnames$colby]]
                   }
                   if (newSet$plottype == "gg_gridplot") {
-                    newSet$gg_perN <- 10^(floor(log10(nrow(GUI$getActiveData()))) - 1)  
+                    n_fun <- function(n) {
+                      if (n > 1000) {
+                        if (n > 5 * 10^ceiling(log10(n) - 1) && n > 5 * 10^ceiling(log10(n + 1) - 1)) {
+                          10^(floor(log10(n)) - 1)
+                        } else {
+                          10^(floor(log10(n)) - 2)
+                        }
+                      } else {
+                        1
+                      }
+                    }
+                    
+                    newSet$gg_perN <- n_fun(nrow(GUI$getActiveData()))
                   }
                   
                   GUI$getActiveDoc()$setSettings(newSet)
@@ -1774,7 +1786,18 @@ iNZPlotMod <- setRefClass(
               ii <- ii + 1
               
               tbl[ii, 1:2, anchor = c(1, 0), expand = TRUE] <- glabel("Squares represent N observations :")
-              gridNPerSquare <- gedit(10^(floor(log10(nrow(GUI$getActiveData()))) - 1))
+              n_fun <- function(n) {
+                if (n > 1000) {
+                  if (n > 5 * 10^ceiling(log10(n) - 1) && n > 5 * 10^ceiling(log10(n + 1) - 1)) {
+                    10^(floor(log10(n)) - 1)
+                  } else {
+                    10^(floor(log10(n)) - 2)
+                  }
+                } else {
+                  1
+                }
+              }
+              gridNPerSquare <- gedit(n_fun(nrow(GUI$getActiveData())))
               addHandlerChanged(gridNPerSquare, function(h, ...) updateEverything())
               tbl[ii, 3:6, expand = TRUE] <- gridNPerSquare
               
