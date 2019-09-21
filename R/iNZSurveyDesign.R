@@ -141,7 +141,7 @@ iNZSurveyDesign <- setRefClass(
                 )
 
                 if (!inherits(setOK, "try-error")) {
-                    enabled(GUI$infBtn) <<- clear
+                    # enabled(GUI$infBtn) <<- clear
                     dispose(designWin)
 
                     ## write design call

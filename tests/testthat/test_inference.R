@@ -323,18 +323,18 @@ ui <- iNZGUI$new()
 ui$initializeGui(apiclus2)
 
 
-test_that("Get inference disabled for surveys", {
+test_that("Get inference for surveys", {
     expect_true(enabled(ui$infBtn))
     swin <- iNZSurveyDesign$new(ui)
     svalue(swin$clus1Var) <- "dnum"
     svalue(swin$clus2Var) <- "snum"
     svalue(swin$fpcVar) <- "fpc1 + fpc2"
     swin$createBtn$invoke_change_handler()
-    expect_false(enabled(ui$infBtn))
-})
-
-test_that("Get inference reenabled for non-surveys", {
-    ui$removeDesign()
     expect_true(enabled(ui$infBtn))
 })
+
+# test_that("Get inference reenabled for non-surveys", {
+#     ui$removeDesign()
+#     expect_true(enabled(ui$infBtn))
+# })
 
