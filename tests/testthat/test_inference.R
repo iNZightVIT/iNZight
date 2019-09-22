@@ -119,11 +119,11 @@ test_that("Get inference window - ANOVA dot plots", {
     expect_is(w2[[1]]$children[[1]], "GText")
     expect_match(
         svalue(w2[[1]]$children[[1]]),
-        "Null Hypothesis: true group means are equal"
+        "Null Hypothesis: true group means are all equal"
     )
     expect_match(
         svalue(w2[[1]]$children[[1]]),
-        "Alternative Hypothesis: true group means are not equal"
+        "Alternative Hypothesis: true group means are not all equal"
     )
     dispose(w2[[1]])
 })
