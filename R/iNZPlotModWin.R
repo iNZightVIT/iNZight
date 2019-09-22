@@ -39,7 +39,7 @@ plot_list <- function(plot_type, x, y) {
       dot  = "dot plot",
       hist = "histogram",
       gg_dotstrip = "dot strip",
-      gg_barcode2 = "barcode",
+      # gg_barcode2 = "barcode",
       gg_boxplot = "boxplot",
       gg_quasirandom = "beeswarm",
       gg_violin = "violin",
