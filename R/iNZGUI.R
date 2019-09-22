@@ -627,9 +627,11 @@ iNZGUI <- setRefClass(
 
                         ## Design or data?
                         curMod <- getActiveDoc()$getModel()
+                        is_survey <- FALSE
                         if (!is.null(curMod$dataDesign)) {
                             curSet$data <- NULL
                             curSet$design <- curMod$createSurveyObject()
+                            is_survey <- TRUE
                         }
 
                         w <- gwindow(
@@ -648,9 +650,11 @@ iNZGUI <- setRefClass(
                         ## Inference method
                         lbl <- glabel("Method :")
                         infMthd <- gradio(c("Normal", "Bootstrap"), horizontal = TRUE)
-                        tbl[ii, 1:3, anchor = c(1, 0), expand = TRUE] <- lbl
-                        tbl[ii, 4:6, expand = TRUE] <- infMthd
-                        ii <- ii + 1
+                        if (!is_survey) {
+                            tbl[ii, 1:3, anchor = c(1, 0), expand = TRUE] <- lbl
+                            tbl[ii, 4:6, expand = TRUE] <- infMthd
+                            ii <- ii + 1
+                        }
 
                         ii <- ii + 1
 
@@ -819,6 +823,16 @@ iNZGUI <- setRefClass(
                                     curSet$varnames$x <- v$y
                                     curSet$varnames$y <- v$x
                                 }
+                            }
+                            if (is.null(curSet$g1) & !is.null(curSet$g2)) {
+                                if (curSet$g2.level != "_ALL") {
+                                    curSet$g1 <- curSet$g2
+                                    curSet$g1.level <- curSet$g2.level
+                                    curSet$varnames$g1 <- curSet$varnames$g2
+                                }
+                                curSet$g2 <- NULL
+                                curSet$g2.level <- NULL
+                                curSet$varnames$g2 <- NULL
                             }
                             curSet <- modifyList(
                                 curSet,
