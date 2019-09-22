@@ -1610,7 +1610,7 @@ iNZPlotMod <- setRefClass(
               ii <- ii + 1
             }
             
-            if (grepl("^gg_", PLOTTYPE) && !(PLOTTYPE %in% c("gg_pie", "gg_donut", "gg_cumcurve", "gg_barcode"))) {
+            if (grepl("^gg_", PLOTTYPE) && !(PLOTTYPE %in% c("gg_pie", "gg_donut", "gg_barcode", "gg_cumcurve"))) {
               tbl[ii, 1:2, anchor = c(1, 0), expand = TRUE] <- glabel("Rotate :")
               rotateCheck <- gcheckbox("Plot")
               if (isTRUE(!is.null(curSet$rotation))) {
@@ -1622,10 +1622,24 @@ iNZPlotMod <- setRefClass(
               
               ii <- ii + 1
               
-              rotateLabels <- gcheckbox("x-axis Labels", handler = function(h, ...) updateEverything())
-              tbl[ii, 3:6, expand = TRUE] <- rotateLabels
+              rotateLabelsX <- gcheckbox("x-axis Labels")
+              tbl[ii, 3:6, expand = TRUE] <- rotateLabelsX
+              if (isTRUE(!is.null(curSet$rotate_labels$x))) {
+                svalue(rotateLabelsX) <- curSet$rotate_labels$x
+              }
               
               ii <- ii + 1
+              
+              rotateLabelsY <- gcheckbox("y-axis Labels")
+              tbl[ii, 3:6, expand = TRUE] <- rotateLabelsY
+              if (isTRUE(!is.null(curSet$rotate_labels$y))) {
+                svalue(rotateLabelsY) <- curSet$rotate_labels$y
+              }
+              
+              ii <- ii + 1
+              
+              addHandlerChanged(rotateLabelsX, function(h, ...) updateEverything())
+              addHandlerChanged(rotateLabelsY, function(h, ...) updateEverything())
             }
 
             if (PLOTTYPE %in% c("gg_violin", "gg_density")) {
@@ -2162,8 +2176,11 @@ iNZPlotMod <- setRefClass(
                   
                   newSet$gg_theme <- available.themes[svalue(themeCombobox)]
                   
-                  if (!(PLOTTYPE %in% c("gg_cumcurve", "gg_pie", "gg_donut"))) {
-                    newSet$rotate_labels <- svalue(rotateLabels)
+                  if (!(PLOTTYPE %in% c("gg_pie", "gg_donut"))) {
+                    newSet$rotate_labels <- list()
+                    
+                    newSet$rotate_labels$x <- svalue(rotateLabelsX)
+                    newSet$rotate_labels$y <- svalue(rotateLabelsY)
                   }
                 }
                 
