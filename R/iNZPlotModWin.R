@@ -1554,6 +1554,62 @@ iNZPlotMod <- setRefClass(
             
             ## FT PLOT OPTIONS
             
+            if (grepl("^gg_", PLOTTYPE)) {
+              available.themes <- c(
+                "Default" = "grey", 
+                "Black & White" = "bw", 
+                "Light" = "light", 
+                "Dark" = "dark", 
+                "Minimal" = "minimal", 
+                "Classic" = "classic", 
+                "Void" = "void", 
+                "Stata" = "stata",
+                "Wall Street Journal" = "wsj",
+                "Tufte" = "tufte",
+                "Google Docs" = "gdocs",
+                "FiveThirtyEight" = "fivethirtyeight",
+                "Excel" = "excel",
+                "Economist" = "economist"
+              )
+              
+              if ("ggthemes" %in% installed.packages()) {
+                theme.options <- names(available.themes)
+              } else {
+                theme.options <- c(
+                  names(available.themes[1:7] ),
+                  "Install additional themes..."
+                )
+              }
+              
+              tbl[ii, 1:2, anchor = c(1, 0), expand = TRUE] <- glabel("Theme :")
+              themeCombobox <- gcombobox(
+                theme.options,
+                selected = if (!is.null(curSet$gg_theme)) match(names(available.themes)[which(available.themes == curSet$gg_theme)], theme.options) else 1,
+                handler = function(h, ...) {
+                  if (svalue(themeCombobox) == "Install additional themes...") {
+                    tryCatch({
+                      if(gconfirm("Install ggthemes package?")) {
+                        install.packages(
+                          "ggthemes", 
+                          repos = c("https://r.docker.stat.auckland.ac.nz",
+                                    "https://cran.stat.auckland.ac.nz")
+                        )
+                      }
+                    },
+                    finally = {
+                      svalue(themeCombobox) <- names(available.themes)[which(available.themes == curSet$gg_theme)]
+                    }
+                    )
+                  } else {
+                    updateEverything()
+                  }
+                }
+              )
+              tbl[ii, 3:6, expand = TRUE] <- themeCombobox
+              
+              ii <- ii + 1
+            }
+            
             if (grepl("^gg_", PLOTTYPE) && !(PLOTTYPE %in% c("gg_pie", "gg_donut", "gg_cumcurve", "gg_barcode"))) {
               tbl[ii, 1:2, anchor = c(1, 0), expand = TRUE] <- glabel("Rotate :")
               rotateCheck <- gcheckbox("Plot")
@@ -1829,59 +1885,7 @@ iNZPlotMod <- setRefClass(
             }
             
             if (grepl("^gg_", PLOTTYPE)) {
-              available.themes <- c(
-                "Default" = "grey", 
-                "Black & White" = "bw", 
-                "Light" = "light", 
-                "Dark" = "dark", 
-                "Minimal" = "minimal", 
-                "Classic" = "classic", 
-                "Void" = "void", 
-                "Stata" = "stata",
-                "Wall Street Journal" = "wsj",
-                "Tufte" = "tufte",
-                "Google Docs" = "gdocs",
-                "FiveThirtyEight" = "fivethirtyeight",
-                "Excel" = "excel",
-                "Economist" = "economist"
-              )
-              
-              if ("ggthemes" %in% installed.packages()) {
-                theme.options <- names(available.themes)
-              } else {
-                theme.options <- c(
-                  names(available.themes[1:7] ),
-                  "Install additional themes..."
-                )
-              }
-              
-              tbl[ii, 1:2, anchor = c(1, 0), expand = TRUE] <- glabel("Theme :")
-              themeCombobox <- gcombobox(
-                theme.options,
-                selected = if (!is.null(curSet$gg_theme)) match(names(available.themes)[which(available.themes == curSet$gg_theme)], theme.options) else 1,
-                handler = function(h, ...) {
-                  if (svalue(themeCombobox) == "Install additional themes...") {
-                    tryCatch({
-                      if(gconfirm("Install ggthemes package?")) {
-                        install.packages(
-                          "ggthemes", 
-                          repos = c("https://r.docker.stat.auckland.ac.nz",
-                                    "https://cran.stat.auckland.ac.nz")
-                        )
-                      }
-                    },
-                    finally = {
-                      svalue(themeCombobox) <- names(available.themes)[which(available.themes == curSet$gg_theme)]
-                    }
-                    )
-                  } else {
-                    updateEverything()
-                  }
-                }
-              )
-              tbl[ii, 3:4, expand = TRUE] <- themeCombobox
-              
-              ii <- ii + 1
+
               
               tbl[ii, 1:6, expand = TRUE] <- sectionTitle("Export Plot")
               ii <- ii + 1
