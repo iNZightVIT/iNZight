@@ -1,6 +1,7 @@
 ## iNZight 3.4.5.9000
 __Release date__: TBA
 
+- enable inference for survey designs
 
 
 ## iNZight 3.4.5
