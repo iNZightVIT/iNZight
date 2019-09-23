@@ -321,7 +321,7 @@ ui$close()
 data(api, package = "survey")
 ui <- iNZGUI$new()
 ui$initializeGui(apiclus2)
-
+Sys.sleep(2)
 
 test_that("Get inference for surveys", {
     expect_true(enabled(ui$infBtn))
@@ -331,10 +331,20 @@ test_that("Get inference for surveys", {
     svalue(swin$fpcVar) <- "fpc1 + fpc2"
     swin$createBtn$invoke_change_handler()
     expect_true(enabled(ui$infBtn))
+
+    svalue(ui$ctrlWidget$V1box) <- "api00"
+    iwin <- ui$infBtn$invoke_change_handler()
+    svalue(iwin[[1]]$children[[1]]$children[[1]]$children[[2]]) <- TRUE
+    out <- iwin[[1]]$children[[1]]$children[[2]]$invoke_change_handler()
+    expect_match(
+        svalue(out[[1]]$children[[1]]),
+        "survey::svydesign"
+    )
+    dispose(out[[1]])
 })
 
-# test_that("Get inference reenabled for non-surveys", {
-#     ui$removeDesign()
-#     expect_true(enabled(ui$infBtn))
-# })
+test_that("Get inference still enabled for non-surveys", {
+    ui$removeDesign()
+    expect_true(enabled(ui$infBtn))
+})
 

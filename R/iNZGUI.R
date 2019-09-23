@@ -812,6 +812,11 @@ iNZGUI <- setRefClass(
                             infType <- svalue(infMthd, index = TRUE)
                             curSet <- getActiveDoc()$getSettings()
                             curSet$plottype <- NULL
+                            curMod <- getActiveDoc()$getModel()
+                            if (!is.null(curMod$dataDesign)) {
+                                curSet$data <- NULL
+                                curSet$design <- curMod$createSurveyObject()
+                            }
                             if (!is.null(curSet$freq))
                                 curSet$freq <- getActiveData()[[curSet$freq]]
                             if (!is.null(curSet$x)) {
