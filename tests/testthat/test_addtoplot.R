@@ -33,7 +33,7 @@ test_that("Add to Plot shows correct options by plot", {
     expect_equal(
         atptbl[[3]]$get_items(), 
         c(
-            "dot plot", "histogram", "dot strip", "barcode",
+            "dot plot", "histogram", "dot strip", 
             "boxplot", "beeswarm", "violin", "density", 
             "column/row bar", "lollipop", "cumulative curve"
         )
@@ -68,7 +68,7 @@ test_that("Add to Plot shows correct options by plot", {
     expect_equal(atptbl[[3]]$get_items(), 
         c(
             "barplot", "column/row bar", "stacked column/row", 
-            "lollipop",  "pie", "donut", "gridplot"
+            "lollipop", "gridplot", "pie", "donut"
         )
     )
 
