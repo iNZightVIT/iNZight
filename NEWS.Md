@@ -1,5 +1,5 @@
-## iNZight 3.4.5.9000
-__Release date__: TBA
+## iNZight 3.4.6
+__Release date__: 23 September 2019
 
 - add gallery of previously stored plots for ggplots
 - rearrange controls for ggplots
