@@ -1,6 +1,7 @@
 ## iNZight 3.4.6.9000
 __Release date__: TBA
 
+- allow users to change column types for all import types (cat/num)
 
 
 ## iNZight 3.4.6

@@ -293,7 +293,8 @@ iNZImportWin <- setRefClass(
                     tmpData <<- iNZightTools::smart_read(
                         fname,
                         fext,
-                        preview = preview
+                        preview = preview,
+                        column_types = col_types()
                     )
                 }
             )
@@ -324,7 +325,7 @@ iNZImportWin <- setRefClass(
                             )
                         prev <<- gdf(head(tmpData, 5), container = prevGp)
                         invisible(prev$remove_popup_menu())
-                        if (fext %in% c("csv", "txt")) {
+                        # if (fext %in% c("csv", "txt")) {
                           invisible(prev$add_popup(function(col_index) {
                               j <- prev$get_column_index(col_index)
                               types <- c(
@@ -335,6 +336,8 @@ iNZImportWin <- setRefClass(
                                   "time",
                                   "datetime"
                               )
+                              if (!fext %in% c("csv", "txt"))
+                                types <- types[1:3]
                               list(
                                   gradio(types,
                                       selected = match(fColTypes[j], types),
@@ -346,7 +349,7 @@ iNZImportWin <- setRefClass(
                                   )
                               )
                           }))
-                        }
+                        # }
                         names(prev) <<- paste0(
                             names(prev),
                             " (",
