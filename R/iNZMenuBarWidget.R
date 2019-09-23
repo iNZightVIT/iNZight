@@ -310,7 +310,7 @@ iNZMenuBarWidget <- setRefClass(
                 ))
             }
 
-            list(
+            adv <- list(
                 "Quick Explore" = list(
                     missing =
                         gaction("Missing values",
@@ -369,12 +369,31 @@ iNZMenuBarWidget <- setRefClass(
                         icon = "symbol_diamond",
                         handler = function(h, ...) iNZightModules::iNZightMapLanding$new(GUI)),
                 gseparator(),
+                install =
+                    gaction("Add or remove modules ...",
+                        icon = "symbol_diamond",
+                        tooltip = "Add or remove add-on iNZight modules",
+                        handler = function(h, ...) iNZightModules::CustomModule$new(GUI)),
+                gseparator(),
                 rcode =
                     gaction("R code history [beta] ...",
                         icon = "symbol_diamond",
                         tooltip = "Show the R code history for your session",
                         handler = function(h, ...) GUI$showHistory())
             )
+            modules <- iNZightModules:::getModules()
+            if (length(modules)) {
+                instindex <- which(names(adv) == "install")
+                mods <- lapply(modules, function(mod) {
+                    gaction(mod, handler = function(h, ...) {
+                        mod$load()
+                        x <- sprintf("%s$new(GUI)", tools::file_path_sans_ext(mod))
+                        eval(parse(text = x))
+                    })
+                })
+                adv <- c(adv[1:(instindex-1)], mods, adv[instindex:length(adv)])
+            }
+            adv
         },
         HelpMenu = function() {
             guides <- list(user_guides.basics = "The Basics",
