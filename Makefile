@@ -2,8 +2,9 @@ R := R --slave
 document:
 	@$(R) -e "devtools::document()"
 
+FILTER ?= NULL
 test:
-	@$(R) -e "devtools::test()"
+	@$(R) -e "devtools::test(filter = $(FILTER))"
 
 check:
 	@$(R) -e "devtools::check()"

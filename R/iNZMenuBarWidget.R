@@ -118,6 +118,11 @@ iNZMenuBarWidget <- setRefClass(
                           icon = "symbol_diamond",
                           handler = function(h, ...) iNZValidateWin$new(GUI)),
                 gseparator(),
+                view = 
+                    gaction("View full dataset",
+                        icon = "symbol_diamon",
+                        handler = function(h, ...) GUI$view_dataset()
+                    ),
                 rename =
                     gaction("Rename ...",
                         icon = "symbol_diamond",
@@ -141,26 +146,50 @@ iNZMenuBarWidget <- setRefClass(
                             handler = function(h, ...) iNZappendrowWin$new(GUI))
                 ),
                 gseparator(),
-                surveydesign =
-                    gaction("Specify survey design [beta] ...",
-                        icon = "symbol_diamond",
-                        handler = function(h, ...) iNZSurveyDesign$new(GUI)),
-                removedesign =
-                    gaction("Remove design",
-                        icon = "symbol_diamond",
-                        handler = function(h, ...) GUI$removeDesign()),
-                gseparator(),
-                expandtable =
-                    gaction("Expand table",
-                        icon = "symbol_diamond",
-                        handler = function(h, ...) iNZexpandTblWin$new(GUI)
-                    ),
-                setfrequency =
-                    gaction("Specify frequency column",
-                        icon = "symbol_diamond",
-                        handler = function(h, ...)
-                            iNZSurveyDesign$new(GUI, freq = TRUE)
-                    )
+                "Survey design" = list(
+                    surveydesign =
+                        gaction("Specify design ...",
+                            icon = "symbol_diamond",
+                            handler = function(h, ...)
+                                iNZSurveyDesign$new(GUI, type = "survey")
+                        ),
+                    repdesign =
+                        gaction("Specify replicate design ...",
+                            icon = "symbol_diamond",
+                            handler = function(h, ...)
+                                iNZSurveyDesign$new(GUI, type = "replicate")
+                        ),
+                    poststrat =
+                        gaction("Post stratify ...",
+                            icon = "symbol_diamond",
+                            handler = function(h, ...) iNZSurveyPostStrat$new(GUI)
+                        ),
+                    removedesign =
+                        gaction("Remove design",
+                            icon = "symbol_diamond",
+                            handler = function(h, ...) GUI$removeDesign()
+                        )
+                ),
+                "Frequency tables" = list(
+                    expandtable =
+                        gaction("Expand table",
+                            icon = "symbol_diamond",
+                            handler = function(h, ...) iNZexpandTblWin$new(GUI)
+                        ),
+                    setfrequency =
+                        gaction("Specify frequency column",
+                            icon = "symbol_diamond",
+                            handler = function(h, ...)
+                                iNZSurveyDesign$new(GUI, type = "frequency")
+                        ),
+                    dropfrequency =
+                        gaction("Remove frequency column",
+                            icon = "symbol_diamond",
+                            handler = function(h, ...) {
+                                GUI$getActiveDoc()$setSettings(list(freq = NULL))
+                            }
+                        )
+                )
             )
         },
         VariablesMenu = function() {
@@ -434,14 +463,14 @@ iNZAboutWidget <- setRefClass(
             g <- gvbox(expand = FALSE, cont = w, spacing = 5)
             g$set_borderwidth(10)
             mainlbl <- glabel("iNZight", container = g)
-            font(mainlbl) <- list(weight = "bold", family = "normal", size = 20)
+            font(mainlbl) <- list(weight = "bold", family = "sans", size = 20)
             verlbl <- glabel(sprintf("Version %s - Released %s",
                                      packageDescription("iNZight")$Version,
                                      format(as.POSIXct(packageDescription("iNZight")$Date),
                                             "%d %B, %Y")), container = g)
-            font(verlbl) <- list(weight = "normal", family = "normal", size = 10)
+            font(verlbl) <- list(weight = "normal", family = "sans", size = 10)
             rverlbl <- glabel(sprintf("Running on R version %s", getRversion()), container = g)
-            font(rverlbl) <- list(weight = "normal", family = "normal", size = 10)
+            font(rverlbl) <- list(weight = "normal", family = "sans", size = 10)
             addSpace(g, 10)
             gpltxt <- gtext(expand = TRUE, cont = g, wrap = TRUE)
             insert(gpltxt, paste("\n\nThis program is free software; you can redistribute it and/or",
@@ -462,7 +491,7 @@ iNZAboutWidget <- setRefClass(
                    font.attr = list(size = 9)) -> l4
             addSpace(g, 5)
             contactlbl <- glabel("For help, contact inzight_support@stat.auckland.ac.nz", container = g)
-            font(contactlbl) <- list(weight = "normal", family = "normal", size = 8)
+            font(contactlbl) <- list(weight = "normal", family = "sans", size = 8)
             visible(w) <- TRUE
         }
     )

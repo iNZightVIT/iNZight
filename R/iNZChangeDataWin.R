@@ -490,13 +490,13 @@ iNZstackVarWin <- setRefClass(
         ## instructions through glabels
         lbl1 <- glabel("Choose variables to stack")
         font(lbl1) <- list(weight = "bold",
-                           family = "normal")
+                           family = "sans")
         helplyt <- glayout(homegenous = FALSE)
         helplyt[1, 4:19, expand = TRUE, anchor = c(0,0)] <- lbl1
         helplyt[1, 20, expand = TRUE, anchor = c(1, -1)] <- helpbtn
         lbl2 <- glabel("(Hold Ctrl to choose many)")
         font(lbl2) <- list(weight = "bold",
-                           family = "normal")
+                           family = "sans")
         ## display only numeric variables
         numIndices <- sapply(GUI$getActiveData(), function(x) !is_cat(x))
         numVar <- gtable(names(GUI$getActiveData())[numIndices],
@@ -724,20 +724,14 @@ iNZSeparateDataWin <- setRefClass(
   "iNZSeparateDataWin",
   fields = list(
     GUI = "ANY",
-    type = "ANY",
     col = "ANY",
-    left = "ANY",
-    right = "ANY",
     sep = "ANY",
     check = "ANY",
     newview = "ANY",
-    varx = "ANY",
-    num = "ANY",
-    g2 = "ANY",
     box = "ANY",
-    dtpreview = "ANY",
     scrollbox = "ANY",
-    namelist = "ANY"
+    namelist = "ANY",
+    dtpreview = "ANY"
   ),
   methods = list(
     initialize = function(gui = NULL) {
@@ -753,26 +747,22 @@ iNZSeparateDataWin <- setRefClass(
         helpbtn <- gimagebutton(stock.id = "gw-help", handler = function(h, ...){
           browseURL("https://www.stat.auckland.ac.nz/~wild/iNZight/user_guides/data_options/#separate")
         })
-
         title_string = glabel("Separate columns")
         font(title_string) = list(size = 14, weight = "bold")
-        
         helplyt <- glayout(homegenous = FALSE)
         helplyt[1, 4:19, expand = TRUE, anchor = c(0,0)] <- title_string
         helplyt[1, 20, expand = TRUE, anchor = c(1, -1)] <- helpbtn
         add(mainGroup, helplyt)
         
         format_string <- glabel("Select separate mode", cont = mainGroup)
-        format <- gcombobox(items = c("", "Separate a column into several columns", "Separate a column to make several rows"), cont = mainGroup, handler = function(h, ...){
+        format.list <- c("", "Separate a column into several columns", "Separate a column to make several rows")
+        format <- gcombobox(items = format.list, cont = mainGroup, handler = function(h, ...){
           col <<- ""
           sep <<- ""
-          left <<- "col1"
-          right <<- "col2"
-          num <<- 2
           var1$set_value(" ")
           var2$set_value("")
           newview$set_items("")
-          type <<- svalue(format)
+          type <- svalue(format)
           if (type == "Separate a column into several columns"){
             visible(namebox) <- TRUE
             check <<- "Column"
@@ -785,11 +775,10 @@ iNZSeparateDataWin <- setRefClass(
         })
         
         col_string <- glabel("Select column to separate out", cont = mainGroup)
-        
         var1 <- gcombobox(c(" ", names(GUI$getActiveData())), cont = mainGroup, handler = function(h, ...){
           col <<- svalue(var1)
-          varx <<- GUI$getActiveData()[[col]]
           updateView()
+          visible(g2) <- FALSE
         })
         
         sep_string <- glabel("Enter the separator between values", cont = mainGroup)
@@ -797,15 +786,15 @@ iNZSeparateDataWin <- setRefClass(
         addHandlerKeystroke(var2, function(h ,...){
           sep <<- svalue(var2)
           updateView()
+          visible(g2) <- FALSE
         })
         
-        namelist <<- list()
         namebox <- ggroup(cont = mainGroup, horizontal = FALSE)
-        g2 <<- gexpandgroup(container = namebox, horizontal = FALSE, text = "Change column names (Push enter to refresh the preview)")
+        g2 <- gexpandgroup(container = namebox, horizontal = FALSE, text = "Change column names (Push enter to refresh the preview)")
         scrollbox <<- ggroup(cont = g2, horizontal = FALSE, use.scrollwindow = TRUE)
         box <<- glayout()
         scrollbox$add_child(box, fill = TRUE)
-        visible(g2) <<- FALSE
+        visible(g2) <- FALSE
         visible(namebox) <- FALSE
         
         prevTbl <- glayout(homogeneous = FALSE, container = mainGroup)
@@ -842,14 +831,19 @@ iNZSeparateDataWin <- setRefClass(
       }
     },
     separatedt = function() {
+      left <- "col1"
+      right <- "col2"
       data <- GUI$getActiveData() %>% dplyr::select(col, dplyr::everything())
       if (check == "Column") {
-        while (TRUE %in% grepl(sep, varx)) {
-          data <- iNZightTools::separate(data, col, left, right, sep, check)
-          col <- paste0("col", num)
-          varx <- eval(parse(text = paste0("data$", col)))
+        varx <- GUI$getActiveData()[[col]]
+        num <- 2
+        sepcol <- col
+        while (TRUE %in% grepl(sep, varx, fixed = TRUE)) {
+          data <- iNZightTools::separate(data, sepcol, left, right, sep, check)
           left <- paste0("col", num)
           right <- paste0("col", num + 1)
+          sepcol <- paste0("col", num)
+          varx <- eval(parse(text = paste0("data$", sepcol)))
           num <- num + 1
         }
       } else if (check == "Row") {
@@ -859,7 +853,8 @@ iNZSeparateDataWin <- setRefClass(
     },
     updateView = function(){
       if (col != " " & sep != "") {
-        dtpreview <- separatedt()
+        namelist <<- list()
+        dtpreview <<- separatedt()
         newview$set_items(dtpreview)
         scrollbox$remove_child(box)
         
@@ -871,7 +866,6 @@ iNZSeparateDataWin <- setRefClass(
           update_name <- function(i, name) {
             force(i)
             force(name)
-            
             function(h, ...) {
               new.name <- ifelse(svalue(box[i, 2]) == "", paste0("col", i), svalue(box[i, 2]))
               colnames(dtpreview)[which(names(dtpreview) == name)] <<- new.name
@@ -883,7 +877,7 @@ iNZSeparateDataWin <- setRefClass(
           for (i in 1:numcol) {
             name <- paste0("col", i)
             box[i, 1] <<- glabel(paste0("Column ", i))
-            box[i, 2] <<-gedit("", handler = update_name(i, name))
+            box[i, 2] <<- gedit("", handler = update_name(i, name))
           }
         }
         

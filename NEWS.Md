@@ -1,8 +1,65 @@
-## iNZight 3.4.0.9000
+## iNZight 3.4.6.9000
 __Release date__: TBA
 
+- allow users to change column types for all import types (cat/num)
 
 
+## iNZight 3.4.6
+__Release date__: 23 September 2019
+
+- add gallery of previously stored plots for ggplots
+- rearrange controls for ggplots
+- add ability to rotate x/y axis for ggplots
+- change the default number of observations a square represents in gridplots
+
+
+## iNZight 3.4.5
+__Release date__: 2 September 2019
+
+- adds option to perform hypothesis test on a single proportion
+- allow users to request simulated p-value from chi-square tests
+- add option to change the number of observations a square represents in gridplots
+- add option for ridgeline ggplot
+- add controls for the width and method of swarming for beeswarm plots
+- label changes to ggplot controls
+
+
+## iNZight 3.4.4
+__Release date__: 26 August 2019
+
+- fix warnings that occur from `family = "normal"` fonts
+- fix preferences storage location on Windows Install version of iNZight
+- fix bug preventing Get Summary/Inference from working with FT plots
+
+
+## iNZight 3.4.3
+__Release date__: 13 August 2019
+
+- allow user to remove calibration design from calibration window
+- change how frequency variable is stored so it is retained after filter/modifying
+  the dataset
+- improve how replicate weights are displayed, and addition of 'remove' button
+- add option to dataset menu to view the (entire) dataset using `utils::View()`
+- add search box to filter long variable lists (iNZight home panel)
+- add option to change ggplot theme of Financial Times plots
+- add beeswarm option for plotting (using ggbeeswarm)
+- add ability to include captions for sources in Financial Times plots
+
+
+## iNZight 3.4.2
+__Release date__: 22 July 2019
+
+- modules directory no longer used (or created) on Windows, to help the updater
+- fix bug in point sizing when removing/adding box plot from dotplots
+
+
+## iNZight 3.4.1
+__Release date__: 15 July 2019
+
+- allow users to specify replicate weights in the survey design
+- specify post stratification information to existing survey design
+- specify frequency column to use in plots, summary, and inference
+- add suite of Financial Times plots (using ggplot2) (#211, @daniel-barnett)
 
 
 # iNZight 3.4

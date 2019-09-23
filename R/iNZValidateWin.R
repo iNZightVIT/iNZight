@@ -12,6 +12,14 @@ iNZValidateWin <- setRefClass(
       initFields(GUI = GUI)
       open.window()
     },
+    open.file = function(file, rules.box) {
+      print(rules.box)
+      file.vali <- validate::validator(.file = file)
+      svalue(rules.box) <- sub("^ V[0-9]+: ", "", capture.output(print(file.vali))[-1])
+    },
+    save.file = function(file, rules) {
+      write(rules, file = file)
+    },
     open.window = function() {
       window <<- gwindow("Validate Data", width = 800, height = 500, parent = GUI$win, visible = FALSE)
       
@@ -39,7 +47,7 @@ iNZValidateWin <- setRefClass(
       lbl.results <- glabel("Results:")
       lbl.details <- glabel("Details:")
       
-      font(lbl) <- list(weight = "bold", size = 12, family = "normal")
+      font(lbl) <- list(weight = "bold", size = 12, family = "sans")
       font(lbl.rulesbox) <- list(weight = "bold")
       font(lbl.results) <- list(weight = "bold")
       font(lbl.details) <- list(weight = "bold")
@@ -56,21 +64,27 @@ iNZValidateWin <- setRefClass(
       
       open.button <- gbutton("Open Rules", handler = function(h, ...) {
         open.dialog <- gfile("Open Rules...", type = "open")
-        file.vali <- validate::validator(.file = open.dialog)
-        svalue(rules.box) <- sub("^ V[0-9]+: ", "", capture.output(print(file.vali))[-1])
+        open.file(open.dialog, rules.box)
       })
       
       save.button <- gbutton("Save Rules", handler = function(h, ...) {
         save.dialog <- gfile("Save Rules...", type = "save", initial.filename = paste0(attr(GUI$getActiveData(), "name", exact = TRUE), "_rules.txt"))
-        write(svalue(rules.box), file = save.dialog)
+        save.file(save.dialog, svalue(rules.box))
       })
       
       validate.button <- gbutton("Validate Dataset", handler = function(h, ...) {
         rules <- unlist(strsplit(svalue(rules.box), "\\n"))
         rules <- rules[rules != ""]
+        has.labels <- grepl("^.*:.*", rules)
+        labels <- paste0("V", 1:length(rules))
+        labels[has.labels] <- unlist(lapply(strsplit(rules[has.labels], ":"), `[[`, 1))
         
         tryCatch({
-          vali <<- validate::validator(.data = data.frame(name = paste0("V", 1:length(rules)), rule = rules))
+          rules.df <- data.frame(
+            name = labels, 
+            rule = gsub("^.+:", "", rules)
+          )
+          vali <<- validate::validator(.data = rules.df)
           cf <<- validate::confront(GUI$getActiveData(), vali)
           
           results.df <- iNZightTools::validation_summary(cf)
