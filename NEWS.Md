@@ -1,7 +1,17 @@
-## iNZight 3.4.5.9000
+## iNZight 3.4.6.9000
 __Release date__: TBA
 
+- allow users to change column types for all import types (cat/num)
 - enable inference for survey designs
+
+
+## iNZight 3.4.6
+__Release date__: 23 September 2019
+
+- add gallery of previously stored plots for ggplots
+- rearrange controls for ggplots
+- add ability to rotate x/y axis for ggplots
+- change the default number of observations a square represents in gridplots
 
 
 ## iNZight 3.4.5
