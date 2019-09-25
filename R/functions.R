@@ -210,7 +210,8 @@ construct_call <- function(settings, model, data = quote(.dataset)) {
 
     if (!is.null(model$dataDesign)) {
         settings$data <- NULL
-        settings$design <- model$createSurveyObject()
+        .design <- model$createSurveyObject()
+        settings$design <- quote(.design)
     }
 
     ## order of list

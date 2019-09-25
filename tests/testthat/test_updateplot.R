@@ -4,6 +4,7 @@ context("Update Plot method and code writing")
 ui <- iNZGUI$new()
 ui$initializeGui(census.at.school.500)
 on.exit(gWidgets2::dispose(ui$win))
+Sys.sleep(2)
 
 test_that("Construct call function works", {
     ui$ctrlWidget$V1box$set_value("height")
@@ -28,5 +29,5 @@ test_that("Update plot call: basic dot plot", {
 })
 
 
-load_all()
-list_to_args(z)
+# load_all()
+# list_to_args(z)
