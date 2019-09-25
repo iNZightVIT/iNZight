@@ -193,7 +193,7 @@ modifyList <- function (x, val, keep.null = FALSE)
 construct_call <- function(settings, model, data = quote(.dataset)) {
     # go through settings and compare to default settings
     default_args <- formals(iNZightPlots::iNZightPlot)
-    inz_args <- iNZightPlots:::inzpar()
+    inz_args <- iNZightPlots::inzpar()
     defaults <- c(default_args, inz_args)
     lapply(names(settings), function(s_name) {
         is_same <- identical(
