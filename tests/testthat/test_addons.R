@@ -1,11 +1,12 @@
 context("Add-on Modules")
 
+moduledir <- file.path(getwd(), "modules")
 # load_all("../../../iNZightModules")
 # load_all()
 
 # try(ui$close())
 ui <- iNZGUI$new()
-ui$initializeGui(iris, addonDir = "modules")
+ui$initializeGui(iris, addonDir = moduledir)
 
 test_that("Modules loaded into menu", {
     advmenu <- svalue(ui$menuBarWidget$menubar)$Advanced
@@ -30,10 +31,10 @@ test_that("Modules launch and close", {
     )
 })
 
-test_that("Add/remove modules window", {
-    addrm <- svalue(ui$menuBarWidget$menubar)$Advanced$install
-    expect_is(addrm, "GAction")
-    ## more tests later
-})
+# test_that("Add/remove modules window", {
+#     addrm <- svalue(ui$menuBarWidget$menubar)$Advanced$install
+#     expect_is(addrm, "GAction")
+#     ## more tests later
+# })
 
 ui$close()
