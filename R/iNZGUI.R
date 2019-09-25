@@ -59,6 +59,7 @@ iNZGUI <- setRefClass(
             moduledata = "list",
             ## keep a track of R code history
             rhistory = "ANY",
+            plot_history = "ANY",
             disposer = "logical"
         ),
         prototype = list(
@@ -244,6 +245,8 @@ iNZGUI <- setRefClass(
 
             ## init statusbar
             statusbar <<- gstatusbar("iNZight is ready")# , container = win) ## disabled
+            
+            plot_history <<- NULL
 
             invisible(0)
         }, ## end initialization
@@ -1279,6 +1282,11 @@ iNZGUI <- setRefClass(
                     rhistory$update()
                 }
             )
+        },
+        initializePlotHistory = function() {
+            if (is.null(plot_history)) {
+                plot_history <<- iNZplothistory(.self)
+            }
         },
         ## --- PREFERENCES SETTINGS and LOCATIONS etc ...
         defaultPrefs = function() {
