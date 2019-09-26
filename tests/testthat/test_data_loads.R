@@ -216,11 +216,6 @@ test_that("Changing file resets column types", {
     expect_true(all(imp$fColTypes == "auto"))
 })
 
-# ui$close()
-# load_all()
-# ui <- iNZGUI$new()
-# ui$initializeGui()
-
 test_that("RData files display list of objects", {
     save(census.at.school.500, iris, file = "test.rda")
     on.exit(unlink("test.rda"))
