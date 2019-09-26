@@ -4,10 +4,12 @@ iNZImportWin <- setRefClass(
         GUI = "ANY",
         importFileWin = "ANY",
         filetypes = "list",
+        fileTbl = "ANY",
         fname = "character", filename = "ANY",
         fext = "ANY",
         filetype = "ANY",
         fColTypes = "ANY",
+        rdaName = "ANY",
         prevGp = "ANY",
         prevLbl = "ANY",
         prev = "ANY",
@@ -33,9 +35,12 @@ iNZImportWin <- setRefClass(
                     "SAS XPORT Files (.xpt)" = list(patterns = c("*.xpt")),
                     "97-2003 Excel Files (.xls)" = list(patterns = c("*.xls")),
                     "2007 Excel Files (.xlsx)" = list(patterns = c("*.xlsx")),
-                    "STATA Files (.dta)" = list(patterns = c("*.dta"))
+                    "STATA Files (.dta)" = list(patterns = c("*.dta")),
+                    "R Object (.rds)" = list(patterns = c("*.rds")),
+                    "RData Files (.RData, .rda)" = list(patterns = c("*.RData", "*.rda"))
                 ),
                 fColTypes = NULL,
+                rdaName = NULL,
                 delimiters = list(
                     "Comma (,)" = ",",
                     "Semi-colon (;)" = ";",
@@ -83,7 +88,7 @@ iNZImportWin <- setRefClass(
                 container = mainGp
             )
             fileGp$set_borderwidth(10)
-            fileTbl <- glayout(container = fileGp)
+            fileTbl <<- glayout(container = fileGp)
             ii <- 1
 
             lbl <- glabel("File Name :")
@@ -101,18 +106,18 @@ iNZImportWin <- setRefClass(
                     setfile(h, ...)
                 }
             )
-            fileTbl[ii, 1, anchor = c(1, 0)] <- lbl
+            fileTbl[ii, 1, anchor = c(1, 0)] <<- lbl
             font(lbl) <- list(weight = "bold")
-            fileTbl[ii, 2:4, expand = TRUE, anchor = c(-1, 0)] <- filename
-            fileTbl[ii, 5] <- browseBtn
+            fileTbl[ii, 2:4, expand = TRUE, anchor = c(-1, 0)] <<- filename
+            fileTbl[ii, 5] <<- browseBtn
             ii <- ii + 1
 
             ## --- Extension
             lbl <- glabel("File Type :")
             font(lbl) <- list(weight = "bold")
             filetype <<- gcombobox(c(names(filetypes)[-1]), selected = 0)
-            fileTbl[ii, 1, anchor = c(1, 0)] <- lbl
-            fileTbl[ii, 2:5, expand = TRUE] <- filetype
+            fileTbl[ii, 1, anchor = c(1, 0)] <<- lbl
+            fileTbl[ii, 2:5, expand = TRUE] <<- filetype
             ii <- ii + 1
 
 
@@ -121,7 +126,7 @@ iNZImportWin <- setRefClass(
                 function(h, ...) {
                     ## set the file extension
                     fext <<- gsub("[*.]", "",
-                        filetypes[[svalue(h$obj, index = TRUE) + 1]]$patterns
+                        filetypes[[svalue(h$obj, index = TRUE) + 1]]$patterns[1]
                     )
                     generatePreview(h, ...)
                 }
@@ -195,9 +200,12 @@ iNZImportWin <- setRefClass(
                     ## give the dataset a name ...
                     if (is.null(attr(tmpData, "name", exact = TRUE)))
                         attr(tmpData, "name") <<-
-                            make.names(
-                                tools::file_path_sans_ext(basename(fname))
-                            )
+                            if (fext %in% c("RData", "rda")) 
+                                svalue(rdaName)
+                            else
+                                make.names(
+                                    tools::file_path_sans_ext(basename(fname))
+                                )
 
                     ## coerce character to factor
                     GUI$setDocument(
@@ -238,7 +246,11 @@ iNZImportWin <- setRefClass(
 
             blockHandlers(filetype)
             match <- which(sapply(filetypes[-1],
-                function(ft) grepl(paste0(ft$patterns, "$"), paste0(".", fext))
+                function(ft) 
+                    grepl(
+                        paste0(ft$patterns, "$", collapse = "|"), 
+                        paste0(".", fext)
+                    )
             ))
             svalue(filetype, index = TRUE) <<-
                 if (length(match) > 0) match else 0
@@ -289,6 +301,20 @@ iNZImportWin <- setRefClass(
                         )
                     }))
                 },
+                "RData" = ,
+                "rda" = {
+                    data_list <- iNZightTools::load_rda(fname)
+                    dnames <- names(data_list)
+                    cur_val <- svalue(rdaName)
+                    blockHandlers(rdaName)
+                    rdaName$set_items(dnames)
+                    if (!cur_val %in% dnames) 
+                        svalue(rdaName) <<- dnames[1]
+                    else
+                        svalue(rdaName) <<- cur_val
+                    unblockHandlers(rdaName)
+                    tmpData <<- data_list[[svalue(rdaName)]]
+                },
                 {
                     tmpData <<- iNZightTools::smart_read(
                         fname,
@@ -312,44 +338,57 @@ iNZImportWin <- setRefClass(
                 }
                 svalue(prevLbl) <<- "Loading preview ..."
 
+                ## do extra stuff if its an RData file
+                can_edit_types <- TRUE
+                if (fext %in% c("RData", "rda")) {
+                    createDataName()
+                    can_edit_types <- FALSE
+                } else {
+                    removeDataName()
+                }
+                
                 ## load the preview ...
                 tryCatch(
                     {
                         readData(preview = TRUE)
                         ## set the preview
-                        svalue(prevLbl) <<-
-                            paste(
-                                "Right-click column names to change the type",
-                                "(c = categorical, n = numeric,",
-                                "d = date, t = time)\n"
-                            )
+                        if (can_edit_types)
+                            svalue(prevLbl) <<-
+                                paste(
+                                    "Right-click column names to change the type",
+                                    "(c = categorical, n = numeric,",
+                                    "d = date, t = time)\n"
+                                )
+                        else
+                            svalue(prevLbl) <<- ""
                         prev <<- gdf(head(tmpData, 5), container = prevGp)
                         invisible(prev$remove_popup_menu())
-                        # if (fext %in% c("csv", "txt")) {
-                          invisible(prev$add_popup(function(col_index) {
-                              j <- prev$get_column_index(col_index)
-                              types <- c(
-                                  "auto", 
-                                  "numeric", 
-                                  "categorical",
-                                  "date",
-                                  "time",
-                                  "datetime"
-                              )
-                              if (!fext %in% c("csv", "txt"))
-                                types <- types[1:3]
-                              list(
-                                  gradio(types,
-                                      selected = match(fColTypes[j], types),
-                                      handler = function(h, ...) {
-                                          fColTypes[j] <<-
-                                              types[svalue(h$obj, index = TRUE)]
-                                          generatePreview(h, ..., reload = TRUE)
-                                      }
-                                  )
-                              )
-                          }))
-                        # }
+
+                        if (can_edit_types) {
+                            invisible(prev$add_popup(function(col_index) {
+                                j <- prev$get_column_index(col_index)
+                                types <- c(
+                                    "auto", 
+                                    "numeric", 
+                                    "categorical",
+                                    "date",
+                                    "time",
+                                    "datetime"
+                                )
+                                if (!fext %in% c("csv", "txt"))
+                                    types <- types[1:3]
+                                list(
+                                    gradio(types,
+                                        selected = match(fColTypes[j], types),
+                                        handler = function(h, ...) {
+                                            fColTypes[j] <<-
+                                                types[svalue(h$obj, index = TRUE)]
+                                            generatePreview(h, ..., reload = TRUE)
+                                        }
+                                    )
+                                )
+                            }))
+                        }
                         names(prev) <<- paste0(
                             names(prev),
                             " (",
@@ -397,6 +436,23 @@ iNZImportWin <- setRefClass(
                 )
             )
             types
+        },
+        createDataName = function() {
+            if (is.null(rdaName)) {
+                lbl <- glabel("Dataset :")
+                font(lbl) <- list(weight = "bold")
+                rdaName <<- gcombobox("(none)")
+                fileTbl[3, 1, anchor = c(1, 0)] <<- lbl
+                fileTbl[3, 2:5, expand = TRUE] <<- rdaName
+                addHandlerChanged(rdaName, generatePreview)
+            }
+        },
+        removeDataName = function() {
+            if (!is.null(rdaName)) {
+                delete(fileTbl, fileTbl[3,1])
+                delete(fileTbl, fileTbl[3,2])
+                rdaName <<- NULL
+            }
         },
         advancedOptions = function() {
             ## populate the Advanced Options panel (advGp) with extra options for various data sets.
