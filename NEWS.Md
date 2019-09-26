@@ -4,7 +4,7 @@ __Release date__: TBA
 - allow users to change column types for all import types (cat/num)
 - reset axis limits when either V1 or V2 change (temp fix until something less aggressive is implemented)
 - make title/xlab/ylab boxes reactive to keystroke
-- add RData/rda and RDS import methods to main Import window (deprecating Load/Save)
+- add RData/rda and RDS import methods to main Import window, removing Load and Save options from File menu
 
 
 ## iNZight 3.4.6
