@@ -3,6 +3,7 @@ __Release date__: TBA
 
 - allow users to change column types for all import types (cat/num)
 - reset axis limits when either V1 or V2 change (temp fix until something less aggressive is implemented)
+- make title/xlab/ylab boxes reactive to keystroke
 
 
 ## iNZight 3.4.6
