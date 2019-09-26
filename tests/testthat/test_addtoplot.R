@@ -119,6 +119,24 @@ test_that("Axes and Labels - dot plots", {
     svalue(ui$ctrlWidget$V1box, TRUE) <- 1
 })
 
+test_that("Changing variable resets axis limits", {
+    svalue(ui$ctrlWidget$V1box) <- "height"
+    ui$plotToolbar$addToPlot(message = FALSE)
+    svalue(ui$moduleWindow$header$children[[2]]$children[[1]], TRUE) <- 2
+
+    upd <- ui$moduleWindow$body$children[[2]]$children[[2]]
+    axtbl <- ui$moduleWindow$body$children[[1]]$children[[1]]$children
+    svalue(axtbl[[10]]) <- "150"
+    svalue(axtbl[[11]]) <- "200"
+    upd$invoke_change_handler()
+
+    ui$moduleWindow$footer$children[[2]]$invoke_change_handler()
+
+    expect_equal(ui$getActiveDoc()$getSettings()$xlim, c(150, 200))
+    expect_silent(svalue(ui$ctrlWidget$V1box) <- "rightfoot")
+    expect_null(ui$getActiveDoc()$getSettings()$xlim)
+})
+
 test_that("Axes and Labels - scatter plots", {
     svalue(ui$ctrlWidget$V1box) <- "height"
     svalue(ui$ctrlWidget$V2box) <- "armspan"
