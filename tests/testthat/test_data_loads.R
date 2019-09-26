@@ -215,3 +215,20 @@ test_that("Changing file resets column types", {
     expect_silent(imp$setfile())
     expect_true(all(imp$fColTypes == "auto"))
 })
+
+# ui$close()
+# load_all()
+# ui <- iNZGUI$new()
+# ui$initializeGui()
+
+test_that("RData files display list of objects", {
+    save(census.at.school.500, iris, file = "test.rda")
+    on.exit(unlink("test.rda"))
+    imp <- iNZImportWin$new(ui)
+    imp$fname <- "test.rda"
+    expect_silent(imp$setfile())
+    expect_equal(svalue(imp$rdaName), "iris")
+    expect_equal(imp$rdaName$get_items(), c("iris", "census.at.school.500"))
+    expect_silent(svalue(imp$rdaName, index = TRUE) <- 2)
+    imp$okBtn$invoke_change_handler()
+})
