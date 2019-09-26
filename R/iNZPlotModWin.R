@@ -2967,13 +2967,16 @@ iNZPlotMod <- setRefClass(
                 updateSettings()
             }
 
-            addHandlerChanged(labMain, function(h, ...) updateEverything())
-            addHandlerBlur(labMain, function(h, ...) updateEverything())
-            addHandlerChanged(labXlab, function(h, ...) updateEverything())
-            addHandlerBlur(labXlab, function(h, ...) updateEverything())
+            updT <- function(h, ...) {
+                if (!is.null(timer))
+                    if (timer$started) timer$stop_timer()
+                timer <<- gtimer(800, function(...) updateEverything(), one.shot = TRUE)
+            }
+            
+            addHandlerKeystroke(labMain, updT)
+            addHandlerKeystroke(labXlab, updT)
             if (YAX) {
-              addHandlerChanged(labYlab, function(h, ...) updateEverything())
-              addHandlerBlur(labYlab, function(h, ...) updateEverything())
+              addHandlerKeystroke(labYlab, updT)
             }
             if (YAXlbl) addHandlerChanged(intLabs, function(h, ...) updateEverything())
 
@@ -2988,11 +2991,8 @@ iNZPlotMod <- setRefClass(
               addHandlerChanged(captionText, function(h, ...) updateEverything())
             }
 
-            updT <- function(h, ...) {
-                if (!is.null(timer))
-                    if (timer$started) timer$stop_timer()
-                timer <<- gtimer(800, function(...) updateEverything(), one.shot = TRUE)
-            }
+            
+
             if (PLOTTYPE == "bar") {
                 addHandlerChanged(ycounts, function(h, ...) updateEverything())
                 if (length(levels(curSet$x)) > 2) {

@@ -2,6 +2,7 @@
 __Release date__: TBA
 
 - allow users to change column types for all import types (cat/num)
+- make title/xlab/ylab boxes reactive to keystroke
 
 
 ## iNZight 3.4.6
