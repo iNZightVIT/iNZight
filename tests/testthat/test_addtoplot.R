@@ -119,11 +119,6 @@ test_that("Axes and Labels - dot plots", {
     svalue(ui$ctrlWidget$V1box, TRUE) <- 1
 })
 
-ui$close()
-load_all()
-ui <- iNZGUI$new()
-ui$initializeGui(census.at.school.500)
-
 test_that("Changing variable resets axis limits", {
     svalue(ui$ctrlWidget$V1box) <- "height"
     ui$plotToolbar$addToPlot(message = FALSE)
