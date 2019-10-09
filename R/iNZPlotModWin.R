@@ -53,7 +53,7 @@ plot_list <- function(plot_type, x, y) {
     }
     
     if (!is.null(y)) {
-      return_list <- append(return_list, list(gg_ridgeline = "ridgeline"), after = length(return_list) - 1)
+      return_list <- append(return_list, list(gg_ridgeline = "ridgeline density"), after = length(return_list) - 1)
     }
     
     if ((!is.numeric(y) && nlevels(y) == 2) || (!is.numeric(x) && nlevels(x) == 2)) {
