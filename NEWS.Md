@@ -8,6 +8,7 @@ __Release date__: TBA
 - disable plotly for ridgeline density plots
 - use temporary directory for ggplot thumbnails
 - some naming changes to plot modification UI
+- deleting plots in "Plot History" window will now remove them from the plot list in the window immediately
 
 
 ## iNZight 3.4.6

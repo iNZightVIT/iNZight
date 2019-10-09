@@ -16,7 +16,8 @@ iNZplothistory <- setRefClass(
     GUI = "ANY",
     history = "list",
     i = "numeric",
-    temp.dir = "ANY"
+    temp.dir = "ANY",
+    plot_list = "ANY"
   ),
   methods = list(
     initialize = function(gui) {
@@ -56,7 +57,7 @@ iNZplothistory <- setRefClass(
     show = function() {
       w <- gwindow(width = 700, height = 300, parent = GUI$win)
       g <- gvbox(expand = TRUE, fill = "x")
-      plot_list <- gvbox(use.scrollwindow = TRUE, expand = TRUE, fill = "xy")
+      plot_list <<- gvbox(use.scrollwindow = TRUE, expand = TRUE, fill = "xy")
       
       gWidgets2::add(w, g)
       gWidgets2::add(g, glabel("The following is a list of the plots you have stored"))
@@ -107,6 +108,10 @@ iNZplothistory <- setRefClass(
       })
       plot_group[2, 10] <- gbutton("Delete", handler = function(h, ...) {
         history[[i]] <<- NULL
+        delete(plot_list, plot_group)
+        if (length(history) == 0) {
+          gWidgets2::add(plot_list, glabel("You haven't stored any plots yet - click the \"Store Code\" button in the plotting menu to keep a list \nof the plots you'd like the R code for"), anchor = c(0, 0), expand = TRUE, fill = TRUE)
+        }
       })
       
       plot_group
