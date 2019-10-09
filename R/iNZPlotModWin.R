@@ -1614,7 +1614,7 @@ iNZPlotMod <- setRefClass(
               ii <- ii + 1
             }
             
-            if (grepl("^gg_", PLOTTYPE) && !(PLOTTYPE %in% c("gg_pie", "gg_donut", "gg_barcode", "gg_cumcurve"))) {
+            if (grepl("^gg_", PLOTTYPE) && !(PLOTTYPE %in% c("gg_pie", "gg_donut", "gg_barcode"))) {
               tbl[ii, 1:2, anchor = c(1, 0), expand = TRUE] <- glabel("Rotate :")
               rotateCheck <- gcheckbox("Plot")
               if (isTRUE(!is.null(curSet$rotation))) {
