@@ -1420,7 +1420,11 @@ iNZPlotMod <- setRefClass(
               PLOTTYPE %in% c("gg_violin", "gg_column2", "gg_lollipop", "gg_boxplot", "gg_density", "gg_cumcurve", "gg_quasirandom", "gg_lollipop2") && attr(PLOTTYPES, "null.y") || 
               PLOTTYPE %in% c("gg_barcode", "gg_dotstrip")
             ) {
-              tbl[ii, 1:2, anchor = c(1, 0), expand = TRUE] <- glabel("Fill colour:")
+              if (!(PLOTTYPE %in% c("gg_cumcurve"))) {
+                tbl[ii, 1:2, anchor = c(1, 0), expand = TRUE] <- glabel("Fill colour:")
+              } else {
+                tbl[ii, 1:2, anchor = c(1, 0), expand = TRUE] <- glabel("Line colour:")
+              }
               
               if (isTRUE(!is.null(curSet$fill_colour))) {
                 fill_colour <- curSet$fill_colour
