@@ -1919,7 +1919,7 @@ iNZPlotMod <- setRefClass(
               
               ii <- ii + 1
               
-              if (!PLOTTYPE %in% c("gg_pie", "gg_donut", "gg_gridplot", "gg_barcode2", "gg_barcode")) {
+              if (!PLOTTYPE %in% c("gg_pie", "gg_donut", "gg_gridplot", "gg_barcode2", "gg_barcode", "gg_ridgeline")) {
                 tbl[ii, 3:4, anchor = c(1, 0), expand = TRUE] <- gbutton("Interactive Plot (via plotly)", handler = function(h, ...) {
                   suppressWarnings(
                     print(plotly::ggplotly())
