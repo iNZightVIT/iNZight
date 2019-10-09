@@ -15,20 +15,26 @@ iNZplothistory <- setRefClass(
   fields = list(
     GUI = "ANY",
     history = "list",
-    i = "numeric"
+    i = "numeric",
+    temp.dir = "ANY"
   ),
   methods = list(
     initialize = function(gui) {
-      initFields(GUI = gui, history = list(), i = 0L)
+      initFields(
+        GUI = gui, 
+        history = list(), 
+        i = 0L, 
+        temp.dir = tempdir()
+      )
     },
     add = function(plot) {
       i <<- i + 1
       
       class(plot) <- c("gg", "ggplot")
-      
+
       tryCatch({
         ggplot2::ggsave(
-          paste0("plot", i, ".png"), 
+          file.path(temp.dir, sprintf("plot%d.png", i)),
           plot + ggplot2::theme_void() + ggplot2::theme(legend.position="none", title = ggplot2::element_blank()), 
           width = 1.5, 
           height = 1.5, 
@@ -40,7 +46,7 @@ iNZplothistory <- setRefClass(
         name = paste0("Plot ", i),
         code = paste0(attr(plot, "code"), collapse = "\n\n"),
         plot = plot,
-        img = paste0("plot", i, ".png"),
+        img = file.path(temp.dir, sprintf("plot%d.png", i)),
         id = i
       )
       
