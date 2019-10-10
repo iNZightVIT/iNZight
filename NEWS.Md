@@ -10,6 +10,7 @@ __Release date__: TBA
 - some naming changes to plot modification UI
 - deleting plots in "Plot History" window will now remove them from the plot list in the window immediately
 - gridplots now have palette selection
+- cut-point option for diverging stacked bar charts
 
 
 ## iNZight 3.4.6

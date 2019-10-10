@@ -95,6 +95,7 @@ plot_list <- function(plot_type, x, y) {
       
       if (is.factor(x) && nlevels(x) >= 3) {
         return_list <- append(return_list, list(gg_divergingstackedbar = "diverging stacked bar (likert)"), length(return_list) - 1)
+        attr(return_list, "cat.levels") <- nlevels(x)
       }
     }
   }
@@ -1732,6 +1733,18 @@ iNZPlotMod <- setRefClass(
               
             }
             
+            if (PLOTTYPE %in% c("gg_divergingstackedbar")) {
+              tbl[ii, 1:6, expand = TRUE] <- sectionTitle("Barchart Options")
+              ii <- ii + 1
+              
+              tbl[ii, 1:2, anchor = c(1, 0), expand = TRUE] <- glabel("Cut-point :")
+              stackedCutPoint <- gcombobox(c("Default", 1:(attr(PLOTTYPES, "cat.levels") - 1)))
+              tbl[ii, 3:6, expand = TRUE] <- stackedCutPoint
+              ii <- ii + 1
+              
+              addHandlerChanged(stackedCutPoint, function(h, ...) updateEverything())
+            }
+            
             if (PLOTTYPE %in% c("gg_lollipop2", "gg_lollipop", "gg_freqpolygon", "gg_dotstrip", "gg_beeswarm")) {
               tbl[ii, 1:6, expand = TRUE] <- sectionTitle("Point Options")
               ii <- ii + 1
@@ -2186,6 +2199,10 @@ iNZPlotMod <- setRefClass(
                     
                     newSet$rotate_labels$x <- svalue(rotateLabelsX)
                     newSet$rotate_labels$y <- svalue(rotateLabelsY)
+                  }
+                  
+                  if (PLOTTYPE %in% c("gg_divergingstackedbar")) {
+                    newSet$gg_cutpoint <- svalue(stackedCutPoint)
                   }
                 }
                 
