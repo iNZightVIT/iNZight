@@ -9,6 +9,7 @@ __Release date__: TBA
 - use temporary directory for ggplot thumbnails
 - some naming changes to plot modification UI
 - deleting plots in "Plot History" window will now remove them from the plot list in the window immediately
+- gridplots now have palette selection
 
 
 ## iNZight 3.4.6
