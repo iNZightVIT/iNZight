@@ -27,6 +27,7 @@ plot_list <- function(plot_type, x, y) {
     "gg_violin", 
     "gg_barcode", 
     "gg_barcode2",
+    "gg_barcode3",
     "gg_dotstrip",
     "gg_lollipop", 
     "gg_poppyramid",
@@ -39,7 +40,7 @@ plot_list <- function(plot_type, x, y) {
       dot  = "dot plot",
       hist = "histogram",
       gg_dotstrip = "dot strip",
-      # gg_barcode2 = "barcode",
+      gg_barcode3 = "barcode",
       gg_boxplot = "boxplot",
       gg_quasirandom = "beeswarm",
       gg_violin = "violin",
@@ -1417,7 +1418,7 @@ iNZPlotMod <- setRefClass(
             }
             
             if (
-              PLOTTYPE %in% c("gg_violin", "gg_column2", "gg_lollipop", "gg_boxplot", "gg_density", "gg_cumcurve", "gg_quasirandom", "gg_lollipop2") && attr(PLOTTYPES, "null.y") || 
+              PLOTTYPE %in% c("gg_violin", "gg_column2", "gg_lollipop", "gg_boxplot", "gg_density", "gg_cumcurve", "gg_quasirandom", "gg_lollipop2", "gg_barcode3") && attr(PLOTTYPES, "null.y") || 
               PLOTTYPE %in% c("gg_barcode", "gg_dotstrip")
             ) {
               if (!(PLOTTYPE %in% c("gg_cumcurve"))) {
@@ -1689,18 +1690,18 @@ iNZPlotMod <- setRefClass(
               ii <- ii + 1
             }
             
-            if (PLOTTYPE %in% c("gg_barcode2")) {
+            if (PLOTTYPE %in% c("gg_barcode2", "gg_barcode3")) {
               tbl[ii, 1:6, expand = TRUE] <- sectionTitle("Barcode Options")
               ii <- ii + 1
               
               tbl[ii, 1:2, anchor = c(1, 0), expand = TRUE] <- glabel("Width :")
-              barcodeWidth <- gslider(from = 1, to = 5, by = 1, value = 1)
+              barcodeWidth <- gslider(from = 0.25, to = 3, by = 0.25, value = 1)
               tbl[ii, 3:6, expand = TRUE] <- barcodeWidth
               
               ii <- ii + 1
               
               tbl[ii, 1:2, anchor = c(1, 0), expand = TRUE] <- glabel("Height :")
-              barcodeHeight <- gslider(from = 0.1, to = 1, by = 0.1, value = 1)
+              barcodeHeight <- gslider(from = 0.1, to = 1, by = 0.1, value = 0.5)
               tbl[ii, 3:6, expand = TRUE] <- barcodeHeight
               
               ii <- ii + 1
@@ -1708,7 +1709,7 @@ iNZPlotMod <- setRefClass(
               if (isTRUE(!is.null(curSet$gg_height))) {
                 svalue(barcodeHeight) <- curSet$gg_height
               } else {
-                svalue(barcodeHeight) <- 1
+                svalue(barcodeHeight) <- 0.5
               }
               
               if (isTRUE(!is.null(curSet$gg_width))) {
@@ -1754,7 +1755,7 @@ iNZPlotMod <- setRefClass(
               ii <- ii + 1
             }
             
-            if (PLOTTYPE %in% c("gg_violin", "gg_barcode", "gg_dotstrip", "gg_barcode2")) {
+            if (PLOTTYPE %in% c("gg_violin", "gg_barcode", "gg_dotstrip", "gg_barcode2", "gg_barcode3")) {
               tbl[ii, 1:2, anchor = c(1, 0), expand = TRUE] <- glabel("Transparency :")
               transpSlider <- gslider(from = 0, to = 100,
                                       by = 1, value = 100 * (1 - curSet$alpha))
@@ -2108,8 +2109,8 @@ iNZPlotMod <- setRefClass(
                     newSet$palette <- svalue(paletteCombobox)
                   }
                   
-                  if (PLOTTYPE %in% c("gg_violin", "gg_column2", "gg_lollipop", "gg_boxplot", "gg_density", "gg_cumcurve", "gg_quasirandom", "gg_lollipop2") && attr(PLOTTYPES, "null.y")) {
-                    if (svalue(colourCombobox) != "") {
+                  if (PLOTTYPE %in% c("gg_violin", "gg_column2", "gg_lollipop", "gg_boxplot", "gg_density", "gg_cumcurve", "gg_quasirandom", "gg_lollipop2", "gg_barcode3") && attr(PLOTTYPES, "null.y")) {
+                    if (svalue(colourCombobox) != "" && valid_colour(svalue(colourCombobox))) {
                       newSet$fill_colour <- svalue(colourCombobox)
                     } else if (svalue(colourCombobox) == "") {
                       newSet$fill_colour <- ""
@@ -2136,7 +2137,7 @@ iNZPlotMod <- setRefClass(
                     newSet$adjust <- svalue(smoothSlider)
                   }
                   
-                  if (PLOTTYPE %in% c("gg_violin", "gg_barcode", "gg_dotstrip", "gg_barcode2")) {
+                  if (PLOTTYPE %in% c("gg_violin", "gg_barcode", "gg_dotstrip", "gg_barcode2", "gg_barcode3")) {
                     newSet$alpha <- 1 - svalue(transpSlider) / 100
                   }
                   
@@ -2152,7 +2153,7 @@ iNZPlotMod <- setRefClass(
                     newSet$gg_barSize <- svalue(barcodeSize)
                   }
                   
-                  if (PLOTTYPE %in% c("gg_barcode2")) {
+                  if (PLOTTYPE %in% c("gg_barcode2", "gg_barcode3")) {
                     newSet$gg_width <- svalue(barcodeWidth)
                     newSet$gg_height <- svalue(barcodeHeight)
                   }
