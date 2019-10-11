@@ -33,7 +33,7 @@ test_that("Add to Plot shows correct options by plot", {
     expect_equal(
         atptbl[[3]]$get_items(), 
         c(
-            "dot plot", "histogram", "dot strip", 
+            "dot plot", "histogram", "dot strip", "barcode",
             "boxplot", "beeswarm", "violin", "density", 
             "column/row bar", "lollipop", "cumulative curve"
         )
