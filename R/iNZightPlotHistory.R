@@ -32,16 +32,28 @@ iNZplothistory <- setRefClass(
       i <<- i + 1
       
       class(plot) <- c("gg", "ggplot")
-
-      tryCatch({
-        ggplot2::ggsave(
-          file.path(temp.dir, sprintf("plot%d.png", i)),
-          plot + ggplot2::theme_void() + ggplot2::theme(legend.position="none", title = ggplot2::element_blank()), 
-          width = 1.5, 
-          height = 1.5, 
-          dpi = 50
-        )
-      })
+      
+      if (attr(plot, "plottype") == "gg_gridplot") {
+        tryCatch({
+          ggplot2::ggsave(
+            file.path(temp.dir, sprintf("plot%d.png", i)),
+            waffle::waffle(c(a = 3, b = 1), rows = 1) + ggplot2::theme_void(), 
+            width = 1.5, 
+            height = 1.5, 
+            dpi = 50
+          )
+        })
+      } else {
+        tryCatch({
+          ggplot2::ggsave(
+            file.path(temp.dir, sprintf("plot%d.png", i)),
+            plot + ggplot2::theme_void() + ggplot2::theme(legend.position="none", title = ggplot2::element_blank()), 
+            width = 1.5, 
+            height = 1.5, 
+            dpi = 50
+          )
+        })
+      }
       
       new_item <- history_item(
         name = paste0("Plot ", i),
