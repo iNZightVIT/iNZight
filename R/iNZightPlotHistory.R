@@ -1,10 +1,11 @@
-history_item <- function(name, code, img, plot, id) {
+history_item <- function(name, code, img, expr, data_name, id) {
   list(
     name = name,
     code = code,
     img_file = img,
     id = id,
-    plot = plot
+    expr = expr,
+    data_name = data_name
   )
 }
 
@@ -58,7 +59,8 @@ iNZplothistory <- setRefClass(
       new_item <- history_item(
         name = paste0("Plot ", i),
         code = paste0(attr(plot, "code"), collapse = "\n\n"),
-        plot = plot,
+        expr = attr(plot, "code_expr"),
+        data_name = attr(plot, "data_name"),
         img = file.path(temp.dir, sprintf("plot%d.png", i)),
         id = i
       )
@@ -90,7 +92,12 @@ iNZplothistory <- setRefClass(
       plot_group <- glayout(expand = TRUE, fill = TRUE)
       plot_image <- gimage(item$img_file)
       addHandlerClicked(plot_image, function(h, ...) {
-        print(item$plot)
+        # print(item$plot)
+        eval_env <- rlang::env(!!rlang::sym(item$data_name) := GUI$getActiveData())
+        
+        eval_results <- lapply(item$expr, eval, envir = eval_env)
+        
+        print(eval_results[[length(eval_results)]])
       })
       
       # old_cursor <- getToolkitWidget(plot_image)$getWindow()$getCursor()

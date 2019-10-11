@@ -11,6 +11,7 @@ __Release date__: TBA
 - deleting plots in "Plot History" window will now remove them from the plot list in the window immediately
 - gridplots now have palette selection
 - cut-point option for diverging stacked bar charts
+- the plot history window now reruns the code used for previous plots instead of storing the plot itself
 
 
 ## iNZight 3.4.6
