@@ -1873,7 +1873,7 @@ iNZPlotMod <- setRefClass(
               tbl[ii, 1:6, expand = TRUE] <- sectionTitle("Gridplot Options")
               ii <- ii + 1
               
-              tbl[ii, 1:2, anchor = c(1, 0), expand = TRUE] <- glabel("Squares represent N observations :")
+              tbl[ii, 1:2, anchor = c(1, 0), expand = TRUE] <- glabel("N observations/square :")
               n_fun <- function(n) {
                 if (n > 1000) {
                   if (n > 5 * 10^ceiling(log10(n) - 1) && n > 5 * 10^ceiling(log10(n + 1) - 1)) {
