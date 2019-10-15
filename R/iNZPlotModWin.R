@@ -39,26 +39,26 @@ plot_list <- function(plot_type, x, y) {
     return_list <- list(
       dot  = "dot plot",
       hist = "histogram",
-      gg_dotstrip = "dot strip",
-      gg_barcode3 = "barcode",
-      gg_boxplot = "boxplot",
-      gg_quasirandom = "beeswarm",
-      gg_violin = "violin",
-      gg_density = "density",
-      gg_cumcurve = "cumulative curve"
+      gg_dotstrip = "(gg) dot strip",
+      gg_barcode3 = "(gg) barcode",
+      gg_boxplot = "(gg) boxplot",
+      gg_quasirandom = "(gg) beeswarm",
+      gg_violin = "(gg) violin",
+      gg_density = "(gg) density",
+      gg_cumcurve = "(gg) cumulative curve"
     )
     
     if (is.null(y)) {
-      return_list <- append(return_list, list(gg_column2 = "column/row bar"), length(return_list) - 1)
-      return_list <- append(return_list, list(gg_lollipop = "lollipop"), length(return_list) - 1)
+      return_list <- append(return_list, list(gg_column2 = "(gg) column/row bar"), length(return_list) - 1)
+      return_list <- append(return_list, list(gg_lollipop = "(gg) lollipop"), length(return_list) - 1)
     }
     
     if (!is.null(y)) {
-      return_list <- append(return_list, list(gg_ridgeline = "density (ridgeline)"), after = length(return_list) - 1)
+      return_list <- append(return_list, list(gg_ridgeline = "(gg) density (ridgeline)"), after = length(return_list) - 1)
     }
     
     if ((!is.numeric(y) && nlevels(y) == 2) || (!is.numeric(x) && nlevels(x) == 2)) {
-      return_list <- append(return_list, list(gg_poppyramid = "pyramid"), after = 2)
+      return_list <- append(return_list, list(gg_poppyramid = "(gg) pyramid"), after = 2)
     }
       
     attr(return_list, "cat.levels") <- ifelse(is.numeric(x), nlevels(y), nlevels(x))
@@ -80,21 +80,21 @@ plot_list <- function(plot_type, x, y) {
   )) {
     return_list <- list(
       bar = "barplot", 
-      gg_column = "column/row bar",
-      gg_stackedcolumn = "stacked column/row",
-      gg_lollipop2 = "lollipop"
+      gg_column = "(gg) column/row bar",
+      gg_stackedcolumn = "(gg) stacked column/row",
+      gg_lollipop2 = "(gg) lollipop"
     )
     
     if (is.null(y)) {
-      return_list <- append(return_list, list(gg_gridplot = "gridplot", gg_pie = "pie", gg_donut = "donut"))
+      return_list <- append(return_list, list(gg_gridplot = "(gg) gridplot", gg_pie = "(gg) pie", gg_donut = "(gg) donut"))
     } else {
-      return_list <- append(return_list, list(gg_freqpolygon = "frequency polygons", gg_heatmap = "heatmap"))
+      return_list <- append(return_list, list(gg_freqpolygon = "(gg) frequency polygons", gg_heatmap = "(gg) heatmap"))
       if (is.factor(y) && nlevels(y) == 2) {
-        return_list <- append(return_list, list(gg_spine = "spine/pyramid"), length(return_list) - 1)
+        return_list <- append(return_list, list(gg_spine = "(gg) spine/pyramid"), length(return_list) - 1)
       } 
       
       if (is.factor(x) && nlevels(x) >= 3) {
-        return_list <- append(return_list, list(gg_divergingstackedbar = "diverging stacked bar (likert)"), length(return_list) - 1)
+        return_list <- append(return_list, list(gg_divergingstackedbar = "(gg) diverging stacked bar (likert)"), length(return_list) - 1)
         attr(return_list, "cat.levels") <- nlevels(x)
       }
     }
