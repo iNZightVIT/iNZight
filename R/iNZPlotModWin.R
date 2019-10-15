@@ -1857,13 +1857,15 @@ iNZPlotMod <- setRefClass(
               ii <- ii + 1
               
               tbl[ii, 1:2, anchor = c(1, 0), expand = TRUE] <- glabel("Sort categories by size :")
-              sortCheck <- gcheckbox(handler = function(h, ...) updateEverything())
+              # sortCheck <- gcheckbox(handler = function(h, ...) updateEverything())
+              sortCheck <- gcombobox(c("None", "Ascending", "Descending"), handler = function(h, ...) updateEverything())
               tbl[ii, 3:6, expand = TRUE] <- sortCheck
               
               if (isTRUE(!is.null(curSet$ordered))) {
-                svalue(sortCheck) <- curSet$ordered
+                print(curSet$ordered)
+                svalue(sortCheck, index = TRUE) <- ifelse(curSet$ordered == "asc", 2, ifelse(curSet$ordered == "desc", 3, 1))
               } else {
-                svalue(sortCheck) <- FALSE
+                svalue(sortCheck, TRUE) <- 1
               }
 
               ii <- ii + 1
@@ -2139,7 +2141,7 @@ iNZPlotMod <- setRefClass(
                   }
                   
                   if (PLOTTYPE %in% c("gg_column", "gg_lollipop2", "gg_pie", "gg_donut")) {
-                    newSet$ordered <- svalue(sortCheck)
+                    newSet$ordered <- if(svalue(sortCheck, index = TRUE) == 1) FALSE else c("asc", "desc")[svalue(sortCheck, TRUE) - 1]
                   }
                   
                   if (PLOTTYPE %in% c("gg_lollipop", "gg_column2")) {
