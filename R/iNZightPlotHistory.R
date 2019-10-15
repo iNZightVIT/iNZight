@@ -9,7 +9,17 @@ history_item <- function(name, code, img, expr, data_name, id) {
   )
 }
 
-
+with_packages <- function(pkg, expr) {
+  if (length(pkg) == 1) {
+    rlang::expr(
+      withr::with_package(!!pkg, eval(!!expr))
+    )
+  } else {
+    rlang::expr(
+      withr::with_package(!!pkg[1], !!with_packages(pkg[-1], expr))
+    )
+  }
+}
 
 iNZplothistory <- setRefClass(
   "iNZplothistory",
@@ -18,7 +28,8 @@ iNZplothistory <- setRefClass(
     history = "list",
     i = "numeric",
     temp.dir = "ANY",
-    plot_list = "ANY"
+    plot_list = "ANY",
+    code_box = "ANY"
   ),
   methods = list(
     initialize = function(gui) {
@@ -72,10 +83,18 @@ iNZplothistory <- setRefClass(
       w <- gwindow(width = 700, height = 300, parent = GUI$win)
       g <- gvbox(expand = TRUE, fill = "x")
       plot_list <<- gvbox(use.scrollwindow = TRUE, expand = TRUE, fill = "xy")
+      code_group <- gexpandgroup("Run Code", horizontal = FALSE)
+      visible(code_group) <- FALSE
+      code_group_horizontal <- ggroup()
+      code_box <<- gtext("# Copy and paste R code into this text box")
       
       gWidgets2::add(w, g)
       gWidgets2::add(g, glabel("The following is a list of the plots you have stored"))
       gWidgets2::add(g, plot_list, expand = TRUE)
+      gWidgets2::add(g, code_group)
+      gWidgets2::add(code_group_horizontal, code_box, expand = TRUE)
+      gWidgets2::add(code_group_horizontal, gbutton("Run Code", handler = function(h, ...) submitCode()))
+      gWidgets2::add(code_group, code_group_horizontal)
       gWidgets2::add(g, gbutton("OK", handler = function(h, ...) {
         GUI$updatePlot()
         dispose(w)
@@ -134,6 +153,31 @@ iNZplothistory <- setRefClass(
       })
       
       plot_group
+    },
+    submitCode = function() {
+      find_libraries <- function(expr) {
+        which_libraries <- gregexpr("library\\(([-_A-z0-9.])+\\)", expr)
+        lines_containing_library <- unlist(lapply(which_libraries, function(x) x > 0))
+        libraries <- unlist(lapply(regmatches(expr, which_libraries), function(x) if (length(x) > 0 && x[1] == "library") x[2]))
+        new_expr <- expr[!lines_containing_library]
+        
+        list(
+          expr = new_expr,
+          libraries = libraries
+        )
+      }
+      
+      code_text <- parse(text = svalue(code_box))
+      parsed <- find_libraries(code_text)
+
+      eval_env <- rlang::env(!!rlang::sym(attr(GUI$getActiveData(), "name")) := GUI$getActiveData())
+      
+      if (length(parsed$libraries) > 0) {
+        code_text <- with_packages(parsed$libraries, parsed$expr)
+      }
+      
+      eval_results <- eval(code_text, envir = eval_env)
+      print(eval_results)
     }
   )
 )
