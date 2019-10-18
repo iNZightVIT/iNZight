@@ -5,6 +5,15 @@ __Release date__: TBA
 - reset axis limits when either V1 or V2 change (temp fix until something less aggressive is implemented)
 - make title/xlab/ylab boxes reactive to keystroke
 - add RData/rda and RDS import methods to main Import window, removing Load and Save options from File menu
+- disable plotly for ridgeline density plots
+- use temporary directory for ggplot thumbnails
+- some naming changes to plot modification UI
+- deleting plots in "Plot History" window will now remove them from the plot list in the window immediately
+- gridplots now have palette selection
+- cut-point option for diverging stacked bar charts
+- the plot history window now reruns the code used for previous plots instead of storing the plot itself
+- the plot history window now has a textbox for users to modify code and run in an temporary environment
+- sortable plots now have ascending/descending option
 
 
 ## iNZight 3.4.6

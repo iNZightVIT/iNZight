@@ -33,9 +33,9 @@ test_that("Add to Plot shows correct options by plot", {
     expect_equal(
         atptbl[[3]]$get_items(), 
         c(
-            "dot plot", "histogram", "dot strip", 
-            "boxplot", "beeswarm", "violin", "density", 
-            "column/row bar", "lollipop", "cumulative curve"
+            "dot plot", "histogram", "(gg) dot strip", "(gg) barcode",
+            "(gg) boxplot", "(gg) beeswarm", "(gg) violin", "(gg) density", 
+            "(gg) column/row bar", "(gg) lollipop", "(gg) cumulative curve"
         )
     )
 
@@ -67,8 +67,8 @@ test_that("Add to Plot shows correct options by plot", {
     atptbl <- ui$moduleWindow$body$children[[1]]$children[[1]]$children
     expect_equal(atptbl[[3]]$get_items(), 
         c(
-            "barplot", "column/row bar", "stacked column/row", 
-            "lollipop", "gridplot", "pie", "donut"
+            "barplot", "(gg) column/row bar", "(gg) stacked column/row", 
+            "(gg) lollipop", "(gg) gridplot", "(gg) pie", "(gg) donut"
         )
     )
 
