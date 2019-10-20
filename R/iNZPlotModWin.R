@@ -27,6 +27,7 @@ plot_list <- function(plot_type, x, y) {
     "gg_violin", 
     "gg_barcode", 
     "gg_barcode2",
+    "gg_barcode3",
     "gg_dotstrip",
     "gg_lollipop", 
     "gg_poppyramid",
@@ -38,26 +39,26 @@ plot_list <- function(plot_type, x, y) {
     return_list <- list(
       dot  = "dot plot",
       hist = "histogram",
-      gg_dotstrip = "dot strip",
-      # gg_barcode2 = "barcode",
-      gg_boxplot = "boxplot",
-      gg_quasirandom = "beeswarm",
-      gg_violin = "violin",
-      gg_density = "density",
-      gg_cumcurve = "cumulative curve"
+      gg_dotstrip = "(gg) dot strip",
+      gg_barcode3 = "(gg) barcode",
+      gg_boxplot = "(gg) boxplot",
+      gg_quasirandom = "(gg) beeswarm",
+      gg_violin = "(gg) violin",
+      gg_density = "(gg) density",
+      gg_cumcurve = "(gg) cumulative curve"
     )
     
     if (is.null(y)) {
-      return_list <- append(return_list, list(gg_column2 = "column/row bar"), length(return_list) - 1)
-      return_list <- append(return_list, list(gg_lollipop = "lollipop"), length(return_list) - 1)
+      return_list <- append(return_list, list(gg_column2 = "(gg) column/row bar"), length(return_list) - 1)
+      return_list <- append(return_list, list(gg_lollipop = "(gg) lollipop"), length(return_list) - 1)
     }
     
     if (!is.null(y)) {
-      return_list <- append(return_list, list(gg_ridgeline = "ridgeline"), after = length(return_list) - 1)
+      return_list <- append(return_list, list(gg_ridgeline = "(gg) density (ridgeline)"), after = length(return_list) - 1)
     }
     
     if ((!is.numeric(y) && nlevels(y) == 2) || (!is.numeric(x) && nlevels(x) == 2)) {
-      return_list <- append(return_list, list(gg_poppyramid = "pyramid"), after = 2)
+      return_list <- append(return_list, list(gg_poppyramid = "(gg) pyramid"), after = 2)
     }
       
     attr(return_list, "cat.levels") <- ifelse(is.numeric(x), nlevels(y), nlevels(x))
@@ -79,21 +80,22 @@ plot_list <- function(plot_type, x, y) {
   )) {
     return_list <- list(
       bar = "barplot", 
-      gg_column = "column/row bar",
-      gg_stackedcolumn = "stacked column/row",
-      gg_lollipop2 = "lollipop"
+      gg_column = "(gg) column/row bar",
+      gg_stackedcolumn = "(gg) stacked column/row",
+      gg_lollipop2 = "(gg) lollipop"
     )
     
     if (is.null(y)) {
-      return_list <- append(return_list, list(gg_gridplot = "gridplot", gg_pie = "pie", gg_donut = "donut"))
+      return_list <- append(return_list, list(gg_gridplot = "(gg) gridplot", gg_pie = "(gg) pie", gg_donut = "(gg) donut"))
     } else {
-      return_list <- append(return_list, list(gg_freqpolygon = "frequency polygons", gg_heatmap = "heatmap"))
+      return_list <- append(return_list, list(gg_freqpolygon = "(gg) frequency polygons", gg_heatmap = "(gg) heatmap"))
       if (is.factor(y) && nlevels(y) == 2) {
-        return_list <- append(return_list, list(gg_spine = "spine/pyramid"), length(return_list) - 1)
+        return_list <- append(return_list, list(gg_spine = "(gg) spine/pyramid"), length(return_list) - 1)
       } 
       
       if (is.factor(x) && nlevels(x) >= 3) {
-        return_list <- append(return_list, list(gg_divergingstackedbar = "diverging stacked bar (likert)"), length(return_list) - 1)
+        return_list <- append(return_list, list(gg_divergingstackedbar = "(gg) diverging stacked bar (likert)"), length(return_list) - 1)
+        attr(return_list, "cat.levels") <- nlevels(x)
       }
     }
   }
@@ -1398,7 +1400,7 @@ iNZPlotMod <- setRefClass(
             
             if (
               grepl("^gg_", PLOTTYPE) && 
-              (PLOTTYPE %in% c("gg_pie", "gg_donut", "gg_column", "gg_heatmap", "gg_stackedcolumn", "gg_poppyramid", "gg_spine", "gg_mosaic", "gg_divergingstackedbar")) ||
+              (PLOTTYPE %in% c("gg_pie", "gg_donut", "gg_column", "gg_heatmap", "gg_stackedcolumn", "gg_poppyramid", "gg_spine", "gg_mosaic", "gg_divergingstackedbar", "gg_gridplot")) ||
               (!attr(PLOTTYPES, "null.y") && PLOTTYPE %in% c("gg_violin", "gg_barcode", "gg_boxplot", "gg_cumcurve", "gg_freqpolygon", "gg_dotstrip", "gg_density", "gg_quasirandom", "gg_lollipop2", "gg_ridgeline"))
             ) {
               lbl <- glabel("Colour palette :")
@@ -1417,10 +1419,14 @@ iNZPlotMod <- setRefClass(
             }
             
             if (
-              PLOTTYPE %in% c("gg_violin", "gg_column2", "gg_lollipop", "gg_boxplot", "gg_density", "gg_cumcurve", "gg_quasirandom", "gg_lollipop2") && attr(PLOTTYPES, "null.y") || 
+              PLOTTYPE %in% c("gg_violin", "gg_column2", "gg_lollipop", "gg_boxplot", "gg_density", "gg_cumcurve", "gg_quasirandom", "gg_lollipop2", "gg_barcode3") && attr(PLOTTYPES, "null.y") || 
               PLOTTYPE %in% c("gg_barcode", "gg_dotstrip")
             ) {
-              tbl[ii, 1:2, anchor = c(1, 0), expand = TRUE] <- glabel("Fill colour:")
+              if (!(PLOTTYPE %in% c("gg_cumcurve"))) {
+                tbl[ii, 1:2, anchor = c(1, 0), expand = TRUE] <- glabel("Fill colour:")
+              } else {
+                tbl[ii, 1:2, anchor = c(1, 0), expand = TRUE] <- glabel("Line colour:")
+              }
               
               if (isTRUE(!is.null(curSet$fill_colour))) {
                 fill_colour <- curSet$fill_colour
@@ -1610,7 +1616,7 @@ iNZPlotMod <- setRefClass(
               ii <- ii + 1
             }
             
-            if (grepl("^gg_", PLOTTYPE) && !(PLOTTYPE %in% c("gg_pie", "gg_donut", "gg_barcode", "gg_cumcurve"))) {
+            if (grepl("^gg_", PLOTTYPE) && !(PLOTTYPE %in% c("gg_pie", "gg_donut", "gg_barcode"))) {
               tbl[ii, 1:2, anchor = c(1, 0), expand = TRUE] <- glabel("Rotate :")
               rotateCheck <- gcheckbox("Plot")
               if (isTRUE(!is.null(curSet$rotation))) {
@@ -1685,18 +1691,18 @@ iNZPlotMod <- setRefClass(
               ii <- ii + 1
             }
             
-            if (PLOTTYPE %in% c("gg_barcode2")) {
+            if (PLOTTYPE %in% c("gg_barcode2", "gg_barcode3")) {
               tbl[ii, 1:6, expand = TRUE] <- sectionTitle("Barcode Options")
               ii <- ii + 1
               
               tbl[ii, 1:2, anchor = c(1, 0), expand = TRUE] <- glabel("Width :")
-              barcodeWidth <- gslider(from = 1, to = 5, by = 1, value = 1)
+              barcodeWidth <- gslider(from = 0.25, to = 3, by = 0.25, value = 1)
               tbl[ii, 3:6, expand = TRUE] <- barcodeWidth
               
               ii <- ii + 1
               
               tbl[ii, 1:2, anchor = c(1, 0), expand = TRUE] <- glabel("Height :")
-              barcodeHeight <- gslider(from = 0.1, to = 1, by = 0.1, value = 1)
+              barcodeHeight <- gslider(from = 0.1, to = 1, by = 0.1, value = 0.5)
               tbl[ii, 3:6, expand = TRUE] <- barcodeHeight
               
               ii <- ii + 1
@@ -1704,7 +1710,7 @@ iNZPlotMod <- setRefClass(
               if (isTRUE(!is.null(curSet$gg_height))) {
                 svalue(barcodeHeight) <- curSet$gg_height
               } else {
-                svalue(barcodeHeight) <- 1
+                svalue(barcodeHeight) <- 0.5
               }
               
               if (isTRUE(!is.null(curSet$gg_width))) {
@@ -1725,6 +1731,18 @@ iNZPlotMod <- setRefClass(
                 timer <<- gtimer(500, function(...) updateEverything(), one.shot = TRUE)
               })
               
+            }
+            
+            if (PLOTTYPE %in% c("gg_divergingstackedbar")) {
+              tbl[ii, 1:6, expand = TRUE] <- sectionTitle("Barchart Options")
+              ii <- ii + 1
+              
+              tbl[ii, 1:2, anchor = c(1, 0), expand = TRUE] <- glabel("Cut-point :")
+              stackedCutPoint <- gcombobox(c("Default", 1:(attr(PLOTTYPES, "cat.levels") - 1)))
+              tbl[ii, 3:6, expand = TRUE] <- stackedCutPoint
+              ii <- ii + 1
+              
+              addHandlerChanged(stackedCutPoint, function(h, ...) updateEverything())
             }
             
             if (PLOTTYPE %in% c("gg_lollipop2", "gg_lollipop", "gg_freqpolygon", "gg_dotstrip", "gg_beeswarm")) {
@@ -1750,7 +1768,7 @@ iNZPlotMod <- setRefClass(
               ii <- ii + 1
             }
             
-            if (PLOTTYPE %in% c("gg_violin", "gg_barcode", "gg_dotstrip", "gg_barcode2")) {
+            if (PLOTTYPE %in% c("gg_violin", "gg_barcode", "gg_dotstrip", "gg_barcode2", "gg_barcode3")) {
               tbl[ii, 1:2, anchor = c(1, 0), expand = TRUE] <- glabel("Transparency :")
               transpSlider <- gslider(from = 0, to = 100,
                                       by = 1, value = 100 * (1 - curSet$alpha))
@@ -1839,13 +1857,15 @@ iNZPlotMod <- setRefClass(
               ii <- ii + 1
               
               tbl[ii, 1:2, anchor = c(1, 0), expand = TRUE] <- glabel("Sort categories by size :")
-              sortCheck <- gcheckbox(handler = function(h, ...) updateEverything())
+              # sortCheck <- gcheckbox(handler = function(h, ...) updateEverything())
+              sortCheck <- gcombobox(c("None", "Ascending", "Descending"), handler = function(h, ...) updateEverything())
               tbl[ii, 3:6, expand = TRUE] <- sortCheck
               
               if (isTRUE(!is.null(curSet$ordered))) {
-                svalue(sortCheck) <- curSet$ordered
+                print(curSet$ordered)
+                svalue(sortCheck, index = TRUE) <- ifelse(curSet$ordered == "asc", 2, ifelse(curSet$ordered == "desc", 3, 1))
               } else {
-                svalue(sortCheck) <- FALSE
+                svalue(sortCheck, TRUE) <- 1
               }
 
               ii <- ii + 1
@@ -1855,7 +1875,7 @@ iNZPlotMod <- setRefClass(
               tbl[ii, 1:6, expand = TRUE] <- sectionTitle("Gridplot Options")
               ii <- ii + 1
               
-              tbl[ii, 1:2, anchor = c(1, 0), expand = TRUE] <- glabel("Squares represent N observations :")
+              tbl[ii, 1:2, anchor = c(1, 0), expand = TRUE] <- glabel("N observations/square :")
               n_fun <- function(n) {
                 if (n > 1000) {
                   if (n > 5 * 10^ceiling(log10(n) - 1) && n > 5 * 10^ceiling(log10(n + 1) - 1)) {
@@ -1915,7 +1935,7 @@ iNZPlotMod <- setRefClass(
               
               ii <- ii + 1
               
-              if (!PLOTTYPE %in% c("gg_pie", "gg_donut", "gg_gridplot", "gg_barcode2", "gg_barcode")) {
+              if (!PLOTTYPE %in% c("gg_pie", "gg_donut", "gg_gridplot", "gg_barcode2", "gg_barcode", "gg_ridgeline")) {
                 tbl[ii, 3:4, anchor = c(1, 0), expand = TRUE] <- gbutton("Interactive Plot (via plotly)", handler = function(h, ...) {
                   suppressWarnings(
                     print(plotly::ggplotly())
@@ -2098,14 +2118,14 @@ iNZPlotMod <- setRefClass(
                   }
                   
                   if(grepl("^gg_", PLOTTYPE) && 
-                     (PLOTTYPE %in% c("gg_pie", "gg_donut", "gg_column", "gg_heatmap", "gg_stackedcolumn", "gg_poppyramid", "gg_spine", "gg_mosaic", "gg_divergingstackedbar")) ||
+                     (PLOTTYPE %in% c("gg_pie", "gg_donut", "gg_column", "gg_heatmap", "gg_stackedcolumn", "gg_poppyramid", "gg_spine", "gg_mosaic", "gg_divergingstackedbar", "gg_gridplot")) ||
                      (!attr(PLOTTYPES, "null.y") && PLOTTYPE %in% c("gg_violin", "gg_barcode", "gg_boxplot", "gg_cumcurve", "gg_freqpolygon", "gg_dotstrip", "gg_density", "gg_quasirandom", "gg_lollipop2", "gg_ridgeline"))
                   ) {
                     newSet$palette <- svalue(paletteCombobox)
                   }
                   
-                  if (PLOTTYPE %in% c("gg_violin", "gg_column2", "gg_lollipop", "gg_boxplot", "gg_density", "gg_cumcurve", "gg_quasirandom", "gg_lollipop2") && attr(PLOTTYPES, "null.y")) {
-                    if (svalue(colourCombobox) != "") {
+                  if (PLOTTYPE %in% c("gg_violin", "gg_column2", "gg_lollipop", "gg_boxplot", "gg_density", "gg_cumcurve", "gg_quasirandom", "gg_lollipop2", "gg_barcode3") && attr(PLOTTYPES, "null.y")) {
+                    if (svalue(colourCombobox) != "" && valid_colour(svalue(colourCombobox))) {
                       newSet$fill_colour <- svalue(colourCombobox)
                     } else if (svalue(colourCombobox) == "") {
                       newSet$fill_colour <- ""
@@ -2121,7 +2141,7 @@ iNZPlotMod <- setRefClass(
                   }
                   
                   if (PLOTTYPE %in% c("gg_column", "gg_lollipop2", "gg_pie", "gg_donut")) {
-                    newSet$ordered <- svalue(sortCheck)
+                    newSet$ordered <- if(svalue(sortCheck, index = TRUE) == 1) FALSE else c("asc", "desc")[svalue(sortCheck, TRUE) - 1]
                   }
                   
                   if (PLOTTYPE %in% c("gg_lollipop", "gg_column2")) {
@@ -2132,7 +2152,7 @@ iNZPlotMod <- setRefClass(
                     newSet$adjust <- svalue(smoothSlider)
                   }
                   
-                  if (PLOTTYPE %in% c("gg_violin", "gg_barcode", "gg_dotstrip", "gg_barcode2")) {
+                  if (PLOTTYPE %in% c("gg_violin", "gg_barcode", "gg_dotstrip", "gg_barcode2", "gg_barcode3")) {
                     newSet$alpha <- 1 - svalue(transpSlider) / 100
                   }
                   
@@ -2148,7 +2168,7 @@ iNZPlotMod <- setRefClass(
                     newSet$gg_barSize <- svalue(barcodeSize)
                   }
                   
-                  if (PLOTTYPE %in% c("gg_barcode2")) {
+                  if (PLOTTYPE %in% c("gg_barcode2", "gg_barcode3")) {
                     newSet$gg_width <- svalue(barcodeWidth)
                     newSet$gg_height <- svalue(barcodeHeight)
                   }
@@ -2181,6 +2201,10 @@ iNZPlotMod <- setRefClass(
                     
                     newSet$rotate_labels$x <- svalue(rotateLabelsX)
                     newSet$rotate_labels$y <- svalue(rotateLabelsY)
+                  }
+                  
+                  if (PLOTTYPE %in% c("gg_divergingstackedbar")) {
+                    newSet$gg_cutpoint <- svalue(stackedCutPoint)
                   }
                 }
                 
@@ -2967,13 +2991,16 @@ iNZPlotMod <- setRefClass(
                 updateSettings()
             }
 
-            addHandlerChanged(labMain, function(h, ...) updateEverything())
-            addHandlerBlur(labMain, function(h, ...) updateEverything())
-            addHandlerChanged(labXlab, function(h, ...) updateEverything())
-            addHandlerBlur(labXlab, function(h, ...) updateEverything())
+            updT <- function(h, ...) {
+                if (!is.null(timer))
+                    if (timer$started) timer$stop_timer()
+                timer <<- gtimer(800, function(...) updateEverything(), one.shot = TRUE)
+            }
+            
+            addHandlerKeystroke(labMain, updT)
+            addHandlerKeystroke(labXlab, updT)
             if (YAX) {
-              addHandlerChanged(labYlab, function(h, ...) updateEverything())
-              addHandlerBlur(labYlab, function(h, ...) updateEverything())
+              addHandlerKeystroke(labYlab, updT)
             }
             if (YAXlbl) addHandlerChanged(intLabs, function(h, ...) updateEverything())
 
@@ -2988,11 +3015,8 @@ iNZPlotMod <- setRefClass(
               addHandlerChanged(captionText, function(h, ...) updateEverything())
             }
 
-            updT <- function(h, ...) {
-                if (!is.null(timer))
-                    if (timer$started) timer$stop_timer()
-                timer <<- gtimer(800, function(...) updateEverything(), one.shot = TRUE)
-            }
+            
+
             if (PLOTTYPE == "bar") {
                 addHandlerChanged(ycounts, function(h, ...) updateEverything())
                 if (length(levels(curSet$x)) > 2) {

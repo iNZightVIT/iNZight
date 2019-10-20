@@ -268,6 +268,12 @@ iNZPlotSettings <- setRefClass(
         ## reset: if TRUE, the default plot settings are loaded
         ##        for the additions to the plot
         setSettings = function(setList, reset = FALSE) {
+            ## changing x or y? reset the limits
+            if (!is.null(setList$x) || !is.null(setList$y)) {
+                settings$xlim <<- NULL
+                settings$ylim <<- NULL
+            }
+            
             if (reset)
                 setList <- modifyList(setList,
                                       defaultSettings,
@@ -289,7 +295,7 @@ iNZPlotSettings <- setRefClass(
             # defaultFields <- c("cex", "bg", "col.pt", "col.pt", "cex.pt", "cex.dotpt",
             #                    "alpha", "fill.pt", "pch", "internal.labels", "trend")
             defaultFields <- names(defaultSettings)
-            forget <- c('plottype')
+            forget <- c('plottype', 'xlim', 'ylim')
             defaultFields <- defaultFields[!defaultFields %in% forget]
             theSettings[defaultFields]
         },

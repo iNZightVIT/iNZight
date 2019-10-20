@@ -45,7 +45,9 @@ Suggests:
     testthat,
     covr,
     dplyr,
-    forcats
+    forcats,
+    rlang,
+    withr
 Additional_repositories: https://r.docker.stat.auckland.ac.nz
 LazyData: true
 Encoding: UTF-8
