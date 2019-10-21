@@ -40,7 +40,7 @@ repos:
 r_github_packages:
   - jverzani/gWidgets2RGtk2
   - iNZightVIT/iNZightTools@dev
-  - iNZightVIT/iNZightPlots@feature/survey-inference
+  - iNZightVIT/iNZightPlots@dev
 
 addons:
   apt:
