@@ -980,11 +980,11 @@ iNZGUI <- setRefClass(
                         addSpring(g)
                         add(g, btn)
 
-                        if (!doHypTest) {
-                            btn$invoke_change_handler()
-                        } else {
+                        # if (!doHypTest) {
+                            # btn$invoke_change_handler()
+                        # } else {
                             visible(w) <- TRUE
-                        }
+                        # }
                         invisible(w)
                     } else {
                         gmessage("Please select at least one variable",
