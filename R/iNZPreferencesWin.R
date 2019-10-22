@@ -91,8 +91,11 @@ iNZPrefsWin <- setRefClass(
                 btnGrp <- ggroup(container = g, expand = FALSE)
                 addSpring(btnGrp)
 
-                cancelButton <- gbutton("Cancel", expand = FALSE, cont = btnGrp,
-                                        handler = function(h, ...) dispose(GUI$modWin))
+                cancelButton <- gbutton("Cancel",
+                    expand = FALSE,
+                    cont = btnGrp,
+                    handler = function(h, ...) dispose(GUI$modWin)
+                )
 
                 addSpace(btnGrp, 15)
 
@@ -101,10 +104,8 @@ iNZPrefsWin <- setRefClass(
                     cont = btnGrp,
                     handler = function(h, ...) {
                         GUI$preferences <<- list(
-                            track = svalue(trackOpt),
                             check.updates = svalue(updOpt),
-                            window.size =
-                            as.numeric(c(svalue(winWd), svalue(winHt))),
+                            window.size = as.numeric(c(svalue(winWd), svalue(winHt))),
                             popout = svalue(popoutWin),
                             font.size = svalue(fsizebtn)
                         )
