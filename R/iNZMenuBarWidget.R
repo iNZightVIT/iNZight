@@ -301,7 +301,7 @@ iNZMenuBarWidget <- setRefClass(
                 ))
             }
 
-            list(
+            adv <- list(
                 "Quick Explore" = list(
                     missing =
                         gaction("Missing values",
@@ -359,6 +359,14 @@ iNZMenuBarWidget <- setRefClass(
                     gaction("Maps ...",
                         icon = "symbol_diamond",
                         handler = function(h, ...) iNZightModules::iNZightMapLanding$new(GUI)),
+                # gseparator(),
+                # install =
+                #     gaction("Add or remove modules ...",
+                #         icon = "symbol_diamond",
+                #         tooltip = "Add or remove add-on iNZight modules",
+                #         handler = function(h, ...) 
+                #             iNZightModules::InstallModules$new(GUI)
+                #     ),
                 gseparator(),
                 rcode =
                     gaction("R code history [beta] ...",
@@ -366,6 +374,25 @@ iNZMenuBarWidget <- setRefClass(
                         tooltip = "Show the R code history for your session",
                         handler = function(h, ...) GUI$showHistory())
             )
+            if (!is.null(GUI$addonModuleDir)) {
+                modules <- iNZightModules:::getModules(GUI$addonModuleDir)
+                if (length(modules)) {
+                    instindex <- which(names(adv) == "maps") + 1
+                    mods <- lapply(modules, function(mod) {
+                        gaction(mod$display_name,
+                            handler = function(h, ...) {
+                                x <- sprintf("mod$%s$new(GUI, name = '%s')", 
+                                    mod$name,
+                                    mod$display_name
+                                )
+                                eval(parse(text = x))
+                            }
+                        )
+                    })
+                    adv <- c(adv[1:(instindex-1)], mods, adv[instindex:length(adv)])
+                }
+            }
+            adv
         },
         HelpMenu = function() {
             guides <- list(user_guides.basics = "The Basics",

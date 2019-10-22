@@ -60,7 +60,8 @@ iNZGUI <- setRefClass(
             ## keep a track of R code history
             rhistory = "ANY",
             plot_history = "ANY",
-            disposer = "logical"
+            disposer = "logical",
+            addonModuleDir = "character"
         ),
         prototype = list(
             activeDoc = 1,
@@ -74,7 +75,11 @@ iNZGUI <- setRefClass(
         ##              closing the gui
         ## This is the main method of iNZight and calls all the other
         ## methods of the GUI class.
-        initializeGui = function(data = NULL, disposeR = FALSE) {
+        initializeGui = function(
+            data = NULL, 
+            disposeR = FALSE,
+            addonDir = NULL
+        ) {
             "Initiates the GUI"
             iNZDocuments <<- list(iNZDocument$new(data = data))
             disposer <<- disposeR
@@ -147,6 +152,19 @@ iNZGUI <- setRefClass(
                 }
             )
 
+            if (!is.null(addonDir) && dir.exists(addonDir)) {
+                addonModuleDir <<- addonDir
+            } else {
+                addonModuleDir <<- switch(OS,
+                    "windows" = 
+                        file.path("~", "iNZightVIT", "modules"),
+                    "mac" = ,
+                    "linux" = 
+                        file.path("~", "Documents", "iNZightVIT", "modules")
+                )
+                if (!dir.exists(addonModuleDir))
+                    addonModuleDir <<- NULL
+            }
 
             ## Grab settings file (or try to!)
             getPreferences()

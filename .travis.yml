@@ -14,20 +14,10 @@ services:
 
 matrix:
   include:
-#     - os: linux
-#       r: oldrel
     - os: linux
       r: release
     - os: linux
       r: devel
-  #   - os: osx
-  #     r: oldrel
-  #     brew_packages: libgit2
-  #   - os: osx
-  #     r: release
-  #     brew_packages: libgit2
-  # allow_failures:
-  #   - os: osx
 
 env:
   global:
@@ -39,8 +29,9 @@ repos:
 
 r_github_packages:
   - jverzani/gWidgets2RGtk2
-  - iNZightVIT/iNZightTools@dev
+  - iNZightVIT/iNZightModules@feature/addon-modules
   - iNZightVIT/iNZightPlots@dev
+  - iNZightVIT/iNZightTools@dev
 
 addons:
   apt:
