@@ -1091,6 +1091,46 @@ iNZGUI <- setRefClass(
             }
             invisible(rawpl)
         },
+        saveState = function(file) {
+            state <- lapply(
+                seq_along(iNZDocuments), 
+                function(i) {
+                    list(
+                        document = iNZDocuments[[i]],
+                        plot_settings = iNZDocuments[[i]]$getSettings()
+                    )
+                }
+            )
+            save(state, file = file)
+        },
+        loadState = function(file) {
+            if (!file.exists(file)) {
+                gmessage("File doesn't exist", icon = "error")
+                return()
+            }
+    
+            e <- new.env()
+            load(file, envir = e)
+            if (is.null(e$state)) {
+                gmessage("That file doesn't seem to be a valid iNZight save.",
+                    icon = "error"
+                )
+                return()
+            }
+            
+            setState(e$state)
+        },
+        setState = function(documents) {
+            lapply(
+                state, 
+                function(doc) {
+                    setDocument(doc$document)
+                    getActiveDoc()$setSettings(doc$plot_settings, reset = TRUE)
+                    ctrlWidget$setState(doc$plot_settings)
+                }
+            )
+            invisible(NULL)
+        },
         ## set a new iNZDocument and make it the active one
         setDocument = function(document, reset = FALSE) {
             if (reset) {
