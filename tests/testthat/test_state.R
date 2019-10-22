@@ -39,3 +39,6 @@ test_that("Application state can be loaded", {
         "gender"
     )
 })
+
+## clean up after ourselves
+unlink(tmp)
