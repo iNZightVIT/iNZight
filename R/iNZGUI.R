@@ -1120,7 +1120,7 @@ iNZGUI <- setRefClass(
             
             setState(e$state)
         },
-        setState = function(documents) {
+        setState = function(state) {
             lapply(
                 state, 
                 function(doc) {
