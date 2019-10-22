@@ -41,6 +41,7 @@ build_script:
   - del gtk64.zip
   - travis-tool.sh install_github iNZightVIT/iNZightModules@feature/addon-modules
   - travis-tool.sh install_github iNZightVIT/iNZightPlots@dev
+  - travis-tool.sh install_github iNZightVIT/iNZightTools@dev
 
 test_script:
   - md C:\Users\appveyor\Documents\iNZightVIT
