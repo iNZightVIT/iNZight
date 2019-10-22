@@ -15,6 +15,7 @@ __Release date__: TBA
 - the plot history window now has a textbox for users to modify code and run in an temporary environment
 - sortable plots now have ascending/descending option
 - enable inference for survey designs
+- addon modules now available (as a developmental feature)
 
 
 ## iNZight 3.4.6
