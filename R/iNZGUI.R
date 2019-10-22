@@ -1103,18 +1103,20 @@ iNZGUI <- setRefClass(
             )
             save(state, file = file)
         },
-        loadState = function(file) {
+        loadState = function(file, .alert = TRUE) {
             if (!file.exists(file)) {
-                gmessage("File doesn't exist", icon = "error")
+                if (.alert) 
+                    gmessage("File doesn't exist", icon = "error")
                 return()
             }
     
             e <- new.env()
             load(file, envir = e)
             if (is.null(e$state)) {
-                gmessage("That file doesn't seem to be a valid iNZight save.",
-                    icon = "error"
-                )
+                if (.alert) 
+                    gmessage("That file doesn't seem to be a valid iNZight save.",
+                        icon = "error"
+                    )
                 return()
             }
             

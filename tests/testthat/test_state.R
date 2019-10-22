@@ -15,6 +15,10 @@ test_that("Application state can be saved", {
     svalue(ui$ctrlWidget$V2box) <- "gender"
 
     expect_silent(ui$saveState(tmp))
+
+    e <- new.env()
+    load(tmp, envir = e)
+    expect_is(e$state, "list")
 })
 
 test_that("Application state can be loaded", {
@@ -23,7 +27,7 @@ test_that("Application state can be loaded", {
     Sys.sleep(2)
     on.exit(gWidgets2::dispose(ui$win))
 
-    ui$loadState(tmp)
+    ui$loadState(tmp, .alert = FALSE)
     Sys.sleep(5)
 
     expect_equivalent(
