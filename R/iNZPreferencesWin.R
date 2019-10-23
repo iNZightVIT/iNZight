@@ -85,6 +85,21 @@ iNZPrefsWin <- setRefClass(
                     checked = prefs$popout
                 )
                 add(g, popoutWin)
+
+                devFeatures <- gcheckbox(
+                    "Enable developmental features",
+                    checked = prefs$dev.features
+                )
+                add(g, devFeatures)
+                lbl <- glabel(
+                    paste(sep = "\n",
+                        "     These will be marked with [beta], and may change or have unintended side effects, such as crashing.",
+                        "     You can help us improve them by lettings us know if you experience problems!"
+                    )
+                )
+                font(lbl) <- list(size = 8)
+                add(g, lbl, expand = TRUE, anchor = c(-1, 0))
+
                 addSpring(g)
 
                 ## CANCEL / OK buttons
@@ -107,7 +122,8 @@ iNZPrefsWin <- setRefClass(
                             check.updates = svalue(updOpt),
                             window.size = as.numeric(c(svalue(winWd), svalue(winHt))),
                             popout = svalue(popoutWin),
-                            font.size = svalue(fsizebtn)
+                            font.size = svalue(fsizebtn),
+                            dev.features = svalue(devFeatures)
                         )
                         GUI$savePreferences()
                         dispose(GUI$modWin)

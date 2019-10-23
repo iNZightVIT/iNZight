@@ -1374,7 +1374,8 @@ iNZGUI <- setRefClass(
                 check.updates = TRUE,
                 window.size = c(1250, 850),
                 popout = FALSE,
-                font.size = 10
+                font.size = 10,
+                dev.features = FALSE
             )
         },
         checkPrefs = function(prefs) {
@@ -1382,7 +1383,8 @@ iNZGUI <- setRefClass(
                 "check.updates",
                 "window.size",
                 "popout",
-                "font.size"
+                "font.size",
+                "dev.features"
             )
 
             ## Only keep allowed preferences --- anything else is discarded
@@ -1412,6 +1414,10 @@ iNZGUI <- setRefClass(
             prefs$font.size <-
                 if (is.null(prefs$font.size) || !is_num(prefs$font.size)) defs$font.size
                 else prefs$font.size
+
+            prefs$dev.features <-
+                if (is.null(prefs$dev.features) || !is.logical(prefs$dev.features)) defs$dev.features
+                else prefs$dev.features
 
             prefs
 
