@@ -1127,6 +1127,7 @@ iNZGUI <- setRefClass(
                 state,
                 function(doc) {
                     setDocument(doc$document)
+                    Sys.sleep(0.2)
                     getActiveDoc()$setSettings(doc$plot_settings, reset = TRUE)
                     ctrlWidget$setState(doc$plot_settings)
                 }

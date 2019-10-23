@@ -40,7 +40,7 @@ iNZMenuBarWidget <- setRefClass(
             svalue(menubar)[[what]] <<- with
         },
         FileMenu = function() {
-            list(
+            m <- list(
                 import =
                     gaction("Import data ...",
                         icon = "symbol_diamond",
@@ -67,6 +67,61 @@ iNZMenuBarWidget <- setRefClass(
                         icon = "symbol_diamond",
                         handler = function(h, ...) GUI$close())
             )
+            if (GUI$preferences$dev.features) {
+                m <- c(
+                    list(
+                        save = gaction("Save [beta]",
+                            icon = "save",
+                            tooltip = "Save the current iNZight session",
+                            handler = function(h, ...) {
+                                f <- gfile(
+                                    text = "Save [beta]",
+                                    type = "save",
+                                    initial.filename = "untitled.inzsave",
+                                    filter = list(
+                                        "iNZight save files (*.inzsave)" = list(patterns = c(".inzsave")),
+                                        "All files" = list(patterns = "*")
+                                    )
+                                )
+                                if (length(f) == 0) return()
+                                if (tools::file_ext(f) != "inzsave")
+                                    f <- paste(f, "inzsave", sep =  ".")
+                                GUI$saveState(f)
+                                gmessage("Your session has been saved.",
+                                    title = "Session saved",
+                                    icon = "info"
+                                )
+                            }
+                        ),
+                        load = gaction("Load [beta]",
+                            icon = "load",
+                            tooltip = "Load a saved iNZight session",
+                            handler = function(h, ...) {
+                                f <- gfile(
+                                    text = "Load [beta]",
+                                    type = "open",
+                                    filter = list(
+                                        "iNZight save files (*.inzsave)" = list(patterns = c("*.inzsave")),
+                                        "All files" = list(patterns = "*")
+                                    )
+                                )
+                                # ga <- galert("Please wait while session loads",
+                                #     title = "Loading session",
+                                #     delay = -1,
+                                #     parent = GUI$win
+                                # )
+                                # Sys.sleep(0.1)
+                                GUI$loadState(f)
+                                # ga$FUN()
+                                invisible(NULL)
+                            }
+                        ),
+                        gseparator()
+                    ),
+                    m
+                )
+            }
+            m
         },
         DataMenu = function() {
             if (!hasData()) return(placeholder("Dataset"))
@@ -109,7 +164,7 @@ iNZMenuBarWidget <- setRefClass(
                           icon = "symbol_diamond",
                           handler = function(h, ...) iNZValidateWin$new(GUI)),
                 gseparator(),
-                view = 
+                view =
                     gaction("View full dataset",
                         icon = "symbol_diamon",
                         handler = function(h, ...) GUI$view_dataset()
@@ -364,7 +419,7 @@ iNZMenuBarWidget <- setRefClass(
                 #     gaction("Add or remove modules ...",
                 #         icon = "symbol_diamond",
                 #         tooltip = "Add or remove add-on iNZight modules",
-                #         handler = function(h, ...) 
+                #         handler = function(h, ...)
                 #             iNZightModules::InstallModules$new(GUI)
                 #     ),
                 gseparator(),
@@ -381,7 +436,7 @@ iNZMenuBarWidget <- setRefClass(
                     mods <- lapply(modules, function(mod) {
                         gaction(mod$display_name,
                             handler = function(h, ...) {
-                                x <- sprintf("mod$%s$new(GUI, name = '%s')", 
+                                x <- sprintf("mod$%s$new(GUI, name = '%s')",
                                     mod$name,
                                     mod$display_name
                                 )

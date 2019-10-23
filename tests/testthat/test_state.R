@@ -8,7 +8,7 @@ test_that("Application state can be saved", {
     Sys.sleep(2)
 
     ui$setDocument(
-        iNZDocument$new(data = census.at.school.500), 
+        iNZDocument$new(data = census.at.school.500),
         reset = TRUE
     )
     svalue(ui$ctrlWidget$V1box) <- "height"
