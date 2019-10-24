@@ -108,6 +108,8 @@ iNZcodeWidget <- setRefClass(
               "#               'https://cran.rstudio.com'))",
               "",
               sep(),
+              "",
+              "library(magrittr)  # enabled the pipe (%>%) operator",
               "")
         },
         sep = function(width = 80) {
