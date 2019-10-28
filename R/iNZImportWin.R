@@ -10,6 +10,7 @@ iNZImportWin <- setRefClass(
         filetype = "ANY",
         fColTypes = "ANY",
         rdaName = "ANY",
+        rdaLabel = "ANY",
         prevGp = "ANY",
         prevLbl = "ANY",
         prev = "ANY",
@@ -351,6 +352,9 @@ iNZImportWin <- setRefClass(
                     svalue(rdaName) <<- cur_val
                 unblockHandlers(rdaName)
             }
+            if (!is.null(rdaName)) {
+                svalue(rdaLabel) <<- ifelse(fext %in% c("xls", "xlsx"), "Sheet :", "Dataset :")
+            }
         },
         ## Generate a preview
         generatePreview = function(h, ..., reload = FALSE) {
@@ -462,10 +466,10 @@ iNZImportWin <- setRefClass(
         },
         createDataName = function() {
             if (is.null(rdaName)) {
-                lbl <- glabel("Dataset :")
-                font(lbl) <- list(weight = "bold")
+                rdaLabel <<- glabel("Dataset :")
+                font(rdaLabel) <<- list(weight = "bold")
                 rdaName <<- gcombobox("(none)")
-                fileTbl[3, 1, anchor = c(1, 0)] <<- lbl
+                fileTbl[3, 1, anchor = c(1, 0)] <<- rdaLabel
                 fileTbl[3, 2:5, expand = TRUE] <<- rdaName
                 addHandlerChanged(rdaName, generatePreview)
             }
@@ -475,6 +479,7 @@ iNZImportWin <- setRefClass(
                 delete(fileTbl, fileTbl[3,1])
                 delete(fileTbl, fileTbl[3,2])
                 rdaName <<- NULL
+                rdaLabel <<- NULL
             }
         },
         advancedOptions = function() {
