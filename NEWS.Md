@@ -16,6 +16,7 @@ __Release date__: TBA
 - sortable plots now have ascending/descending option
 - enable inference for survey designs
 - addon modules now available (as a developmental feature)
+- add option to export as rda
 
 
 ## iNZight 3.4.6
