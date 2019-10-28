@@ -76,7 +76,7 @@ iNZGUI <- setRefClass(
         ## This is the main method of iNZight and calls all the other
         ## methods of the GUI class.
         initializeGui = function(
-            data = NULL, 
+            data = NULL,
             disposeR = FALSE,
             addonDir = NULL
         ) {
@@ -156,10 +156,10 @@ iNZGUI <- setRefClass(
                 addonModuleDir <<- addonDir
             } else {
                 addonModuleDir <<- switch(OS,
-                    "windows" = 
+                    "windows" =
                         file.path("~", "iNZightVIT", "modules"),
                     "mac" = ,
-                    "linux" = 
+                    "linux" =
                         file.path("~", "Documents", "iNZightVIT", "modules")
                 )
                 if (!dir.exists(addonModuleDir))
@@ -263,7 +263,7 @@ iNZGUI <- setRefClass(
 
             ## init statusbar
             statusbar <<- gstatusbar("iNZight is ready")# , container = win) ## disabled
-            
+
             plot_history <<- NULL
 
             invisible(0)
@@ -680,8 +680,8 @@ iNZGUI <- setRefClass(
                         ii <- ii + 1
 
                         doHypTest <- grepl("ttest|anova|table", INFTYPE)
-                        if (doHypTest && 
-                            is_survey && 
+                        if (doHypTest &&
+                            is_survey &&
                             grepl("oneway-table", INFTYPE)) {
                             ## don't do it for chi-square (yet)
                             doHypTest <- length(levels(curSet$x)) == 2
@@ -692,9 +692,9 @@ iNZGUI <- setRefClass(
                             "twosample-ttest" = "Two Sample t-test",
                             "anova"           = "ANOVA",
                             "regression"      = "Regression Analysis",
-                            "oneway-table"    = 
-                                ifelse(is_survey && length(levels(curSet$x)) == 2, 
-                                    "Test proportion", 
+                            "oneway-table"    =
+                                ifelse(is_survey && length(levels(curSet$x)) == 2,
+                                    "Test proportion",
                                     "Chi-square test"
                                 ),
                             "twoway-table"    = "Chi-square test"
@@ -712,7 +712,7 @@ iNZGUI <- setRefClass(
                                 gradio(c("None", "Two Sample t-test", "ANOVA"), horizontal = TRUE)
                             else if (PROPTEST2 && !is_survey)
                                 gradio(c("None", "Chi-square test", "Test proportion"), horizontal = TRUE)
-                            else 
+                            else
                                 gcheckbox(test.type, checked = FALSE)
 
                         if (doHypTest) {
@@ -764,18 +764,18 @@ iNZGUI <- setRefClass(
                                 enabled(hypEqualVar) <- svalue(hypTest, index = TRUE) == 2
                             }
 
-                            hypSimPval <- gcheckbox("Simulate p-value", 
+                            hypSimPval <- gcheckbox("Simulate p-value",
                                 checked = FALSE)
                             if (CHI2 && !is_survey) {
                                 tbl[ii, 4:6, expand = TRUE] <- hypSimPval
                                 ii <- ii + 1
 
-                                enabled(hypSimPval) <- 
+                                enabled(hypSimPval) <-
                                     if (PROPTEST2) svalue(hypTest, index = TRUE) == 2
                                     else svalue(hypTest)
                             }
 
-                            hypExactPval <- gcheckbox("Calculate exact p-value", 
+                            hypExactPval <- gcheckbox("Calculate exact p-value",
                                 checked = FALSE)
                             if (PROPTEST2 && !is_survey) {
                                 tbl[ii, 4:6, expand = TRUE] <- hypExactPval
@@ -787,13 +787,13 @@ iNZGUI <- setRefClass(
 
                         addHandlerChanged(hypTest, function(h, ...) {
                             if (CHI2)
-                                enabled(hypSimPval) <- 
+                                enabled(hypSimPval) <-
                                     if (PROPTEST2 && !is_survey) svalue(hypTest, index = TRUE) == 2
                                     else svalue(hypTest)
-                            enabled(hypExactPval) <- 
+                            enabled(hypExactPval) <-
                                 if (PROPTEST2 && !is_survey) svalue(hypTest, index = TRUE) == 3
                                 else FALSE
-                            enabled(hypEqualVar) <- 
+                            enabled(hypEqualVar) <-
                             enabled(hypAlt) <-
                             enabled(hypVal) <-
                                 if (TTEST2) svalue(hypTest, index = TRUE) == 2
@@ -900,7 +900,7 @@ iNZGUI <- setRefClass(
                                         hypothesis.var.equal = svalue(hypEqualVar),
                                         hypothesis.simulated.p.value = svalue(hypSimPval),
                                         hypothesis.use.exact = svalue(hypExactPval),
-                                        hypothesis.test = 
+                                        hypothesis.test =
                                             if (TTEST2)
                                                 switch(
                                                     svalue(hypTest, index = TRUE),

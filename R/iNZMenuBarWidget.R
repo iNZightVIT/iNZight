@@ -109,7 +109,7 @@ iNZMenuBarWidget <- setRefClass(
                           icon = "symbol_diamond",
                           handler = function(h, ...) iNZValidateWin$new(GUI)),
                 gseparator(),
-                view = 
+                view =
                     gaction("View full dataset",
                         icon = "symbol_diamon",
                         handler = function(h, ...) GUI$view_dataset()
@@ -301,6 +301,13 @@ iNZMenuBarWidget <- setRefClass(
                 ))
             }
 
+            ## As of R 3.6.?, overwriting s3 methods is a verbose message
+            ## when loading a package namespace. This prevents those messages
+            ## from showing up.
+            ## Info: it's because iNZightRegression and iNZightMR both define
+            ## moecalc methods - not sure why/which is more up to date, either ...
+            suppressMessages(requireNamespace("iNZightModules", quietly = TRUE))
+
             adv <- list(
                 "Quick Explore" = list(
                     missing =
@@ -364,7 +371,7 @@ iNZMenuBarWidget <- setRefClass(
                 #     gaction("Add or remove modules ...",
                 #         icon = "symbol_diamond",
                 #         tooltip = "Add or remove add-on iNZight modules",
-                #         handler = function(h, ...) 
+                #         handler = function(h, ...)
                 #             iNZightModules::InstallModules$new(GUI)
                 #     ),
                 gseparator(),
@@ -381,7 +388,7 @@ iNZMenuBarWidget <- setRefClass(
                     mods <- lapply(modules, function(mod) {
                         gaction(mod$display_name,
                             handler = function(h, ...) {
-                                x <- sprintf("mod$%s$new(GUI, name = '%s')", 
+                                x <- sprintf("mod$%s$new(GUI, name = '%s')",
                                     mod$name,
                                     mod$display_name
                                 )
