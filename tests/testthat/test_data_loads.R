@@ -241,8 +241,6 @@ test_that("Excel files load and display available sheets", {
     imp <- iNZImportWin$new(ui)
     imp$fname <- "sheet.xlsx"
     expect_silent(imp$setfile())
-    print(getwd())
-    print(imp$rdaName)
     skip_if(is.null(imp$rdaName))
 
     expect_equal(imp$rdaName$get_items(), c("Africa", "Americas", "Asia", "Europe", "Oceania"))
