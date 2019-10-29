@@ -241,6 +241,8 @@ test_that("Excel files load and display available sheets", {
     expect_silent(imp$setfile())
     print(getwd())
     print(imp$rdaName)
+    skip_if(is.null(imp$rdaName))
+
     expect_equal(imp$rdaName$get_items(), c("Africa", "Americas", "Asia", "Europe", "Oceania"))
     expect_equal(svalue(imp$rdaName), "Africa")
     expect_silent(svalue(imp$rdaName, index = TRUE) <- 3)
