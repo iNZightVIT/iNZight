@@ -1,8 +1,10 @@
 context("Data is loaded into the UI")
 
+wd <- getwd()
 ui <- iNZGUI$new()
 ui$initializeGui()
 on.exit(gWidgets2::dispose(ui$win))
+setwd(wd)
 
 doc <- NULL
 test_that("New document is created correctly when data loaded", {
