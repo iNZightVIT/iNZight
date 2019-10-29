@@ -10,6 +10,7 @@ iNZImportWin <- setRefClass(
         filetype = "ANY",
         fColTypes = "ANY",
         rdaName = "ANY",
+        rdaLabel = "ANY",
         prevGp = "ANY",
         prevLbl = "ANY",
         prev = "ANY",
@@ -200,7 +201,7 @@ iNZImportWin <- setRefClass(
                     ## give the dataset a name ...
                     if (is.null(attr(tmpData, "name", exact = TRUE)))
                         attr(tmpData, "name") <<-
-                            if (fext %in% c("RData", "rda")) 
+                            if (fext %in% c("RData", "rda"))
                                 svalue(rdaName)
                             else
                                 make.names(
@@ -246,9 +247,9 @@ iNZImportWin <- setRefClass(
 
             blockHandlers(filetype)
             match <- which(sapply(filetypes[-1],
-                function(ft) 
+                function(ft)
                     grepl(
-                        paste0(ft$patterns, "$", collapse = "|"), 
+                        paste0(ft$patterns, "$", collapse = "|"),
                         paste0(".", fext)
                     )
             ))
@@ -258,6 +259,7 @@ iNZImportWin <- setRefClass(
 
             # and reset some things about the dataset
             fColTypes <<- NULL
+            removeDataName()
 
             generatePreview(...)
         },
@@ -266,9 +268,9 @@ iNZImportWin <- setRefClass(
             if (all(fColTypes == "auto")) return(NULL)
 
             vnames <- colnames(tmpData)[fColTypes != "auto"]
-            vtypes <- sapply(fColTypes[fColTypes != "auto"], 
+            vtypes <- sapply(fColTypes[fColTypes != "auto"],
                 function(x) {
-                    switch(x, 
+                    switch(x,
                         "numeric" = "n",
                         "categorical" = "c",
                         "date" = "D",
@@ -308,12 +310,22 @@ iNZImportWin <- setRefClass(
                     cur_val <- svalue(rdaName)
                     blockHandlers(rdaName)
                     rdaName$set_items(dnames)
-                    if (!cur_val %in% dnames) 
+                    if (!cur_val %in% dnames)
                         svalue(rdaName) <<- dnames[1]
                     else
                         svalue(rdaName) <<- cur_val
                     unblockHandlers(rdaName)
                     tmpData <<- data_list[[svalue(rdaName)]]
+                },
+                "xls" = ,
+                "xlsx" = {
+                    tmpData <<- iNZightTools::smart_read(
+                        fname,
+                        fext,
+                        preview = preview,
+                        column_types = col_types(),
+                        sheet = if (svalue(rdaName) == "(none)") NULL else svalue(rdaName)
+                    )
                 },
                 {
                     tmpData <<- iNZightTools::smart_read(
@@ -328,6 +340,21 @@ iNZImportWin <- setRefClass(
             ## do a check that col classes match requested ...
             if (is.null(fColTypes) || length(fColTypes) != ncol(tmpData))
                 fColTypes <<- rep("auto", ncol(tmpData))
+
+            if (!is.null(iNZightTools::sheets(tmpData))) {
+                sheet_list <- iNZightTools::sheets(tmpData)
+                cur_val <- svalue(rdaName)
+                blockHandlers(rdaName)
+                rdaName$set_items(sheet_list)
+                if (!cur_val %in% sheet_list)
+                    svalue(rdaName) <<- sheet_list[1]
+                else
+                    svalue(rdaName) <<- cur_val
+                unblockHandlers(rdaName)
+            }
+            if (!is.null(rdaName)) {
+                svalue(rdaLabel) <<- ifelse(fext %in% c("xls", "xlsx"), "Sheet :", "Dataset :")
+            }
         },
         ## Generate a preview
         generatePreview = function(h, ..., reload = FALSE) {
@@ -340,13 +367,13 @@ iNZImportWin <- setRefClass(
 
                 ## do extra stuff if its an RData file
                 can_edit_types <- TRUE
-                if (fext %in% c("RData", "rda")) {
+                if (fext %in% c("RData", "rda", "xls", "xlsx")) {
                     createDataName()
                     can_edit_types <- FALSE
                 } else {
                     removeDataName()
                 }
-                
+
                 ## load the preview ...
                 tryCatch(
                     {
@@ -368,8 +395,8 @@ iNZImportWin <- setRefClass(
                             invisible(prev$add_popup(function(col_index) {
                                 j <- prev$get_column_index(col_index)
                                 types <- c(
-                                    "auto", 
-                                    "numeric", 
+                                    "auto",
+                                    "numeric",
                                     "categorical",
                                     "date",
                                     "time",
@@ -426,9 +453,9 @@ iNZImportWin <- setRefClass(
             if (is.null(fColTypes))
                 return(NULL)
             types <- lapply(fColTypes, function(x)
-                switch(x, 
-                    "numeric" = "n", 
-                    "factor" = "c", 
+                switch(x,
+                    "numeric" = "n",
+                    "factor" = "c",
                     "date" = "D",
                     "time" = "t",
                     "datetime" = "dt",
@@ -439,10 +466,10 @@ iNZImportWin <- setRefClass(
         },
         createDataName = function() {
             if (is.null(rdaName)) {
-                lbl <- glabel("Dataset :")
-                font(lbl) <- list(weight = "bold")
+                rdaLabel <<- glabel("Dataset :")
+                font(rdaLabel) <<- list(weight = "bold")
                 rdaName <<- gcombobox("(none)")
-                fileTbl[3, 1, anchor = c(1, 0)] <<- lbl
+                fileTbl[3, 1, anchor = c(1, 0)] <<- rdaLabel
                 fileTbl[3, 2:5, expand = TRUE] <<- rdaName
                 addHandlerChanged(rdaName, generatePreview)
             }
@@ -452,6 +479,7 @@ iNZImportWin <- setRefClass(
                 delete(fileTbl, fileTbl[3,1])
                 delete(fileTbl, fileTbl[3,2])
                 rdaName <<- NULL
+                rdaLabel <<- NULL
             }
         },
         advancedOptions = function() {

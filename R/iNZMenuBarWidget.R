@@ -356,6 +356,13 @@ iNZMenuBarWidget <- setRefClass(
                 ))
             }
 
+            ## As of R 3.6.?, overwriting s3 methods is a verbose message
+            ## when loading a package namespace. This prevents those messages
+            ## from showing up.
+            ## Info: it's because iNZightRegression and iNZightMR both define
+            ## moecalc methods - not sure why/which is more up to date, either ...
+            suppressMessages(requireNamespace("iNZightModules", quietly = TRUE))
+
             adv <- list(
                 "Quick Explore" = list(
                     missing =
