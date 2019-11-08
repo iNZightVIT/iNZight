@@ -29,7 +29,8 @@ iNZplothistory <- setRefClass(
     i = "numeric",
     temp.dir = "ANY",
     plot_list = "ANY",
-    code_box = "ANY"
+    code_box = "ANY",
+    copy_chunk = "logical"
   ),
   methods = list(
     initialize = function(gui) {
@@ -37,15 +38,16 @@ iNZplothistory <- setRefClass(
         GUI = gui, 
         history = list(), 
         i = 0L, 
-        temp.dir = tempdir()
+        temp.dir = tempdir(),
+        copy_chunk = FALSE
       )
     },
-    add = function(plot) {
+    add = function(plot, code = NULL, module = NULL) {
       i <<- i + 1
       
       class(plot) <- c("gg", "ggplot")
       
-      if (attr(plot, "plottype") == "gg_gridplot") {
+      if (!is.null(attr(plot, "plottype")) && attr(plot, "plottype") == "gg_gridplot") {
         tryCatch({
           ggplot2::ggsave(
             file.path(temp.dir, sprintf("plot%d.png", i)),
@@ -67,9 +69,20 @@ iNZplothistory <- setRefClass(
         })
       }
       
+      if (is.null(attr(plot, "plottype")) || !grepl("^gg", attr(plot, "plottype"))) {
+        if (is.null(code)) {
+          attr(plot, "code_expr") <- rlang::parse_expr(paste(attr(plot, "code")[-1], collapse = " "))
+          attr(plot, "data_name") <- "map.data"
+        } else {
+          attr(plot, "code") <- code
+          attr(plot, "code_expr") <- rlang::parse_expr(paste(code[-1], collapse = " "))
+          attr(plot, "data_name") <- "region.data"
+        }
+      }
+      
       new_item <- history_item(
         name = paste0("Plot ", i),
-        code = paste0(attr(plot, "code"), collapse = "\n\n"),
+        code = paste0(attr(plot, "code"), collapse = "\n"),
         expr = attr(plot, "code_expr"),
         data_name = attr(plot, "data_name"),
         img = file.path(temp.dir, sprintf("plot%d.png", i)),
@@ -87,9 +100,14 @@ iNZplothistory <- setRefClass(
       visible(code_group) <- FALSE
       code_group_horizontal <- ggroup()
       code_box <<- gtext("# Copy and paste R code into this text box")
+      as_chunk <- gcheckbox("Wrap copied code in Rmarkdown code chunk")
+      addHandlerChanged(as_chunk, function(h, ...) {
+        copy_chunk <<- svalue(as_chunk)
+      })
       
       gWidgets2::add(w, g)
       gWidgets2::add(g, glabel("The following is a list of the plots you have stored"))
+      gWidgets2::add(g, as_chunk)
       gWidgets2::add(g, plot_list, expand = TRUE)
       gWidgets2::add(g, code_group)
       gWidgets2::add(code_group_horizontal, code_box, expand = TRUE)
@@ -111,11 +129,13 @@ iNZplothistory <- setRefClass(
       plot_group <- glayout(expand = TRUE, fill = TRUE)
       plot_image <- gimage(item$img_file)
       addHandlerClicked(plot_image, function(h, ...) {
-        # print(item$plot)
-        eval_env <- rlang::env(!!rlang::sym(item$data_name) := GUI$getActiveData())
-        
+        # if (is.null(module)) {
+          eval_env <- rlang::env(!!rlang::sym(attr(GUI$getActiveData(), "name")) := GUI$getActiveData())
+        # } else {
+        #   eval_env <- rlang::env(region.data := module$combinedData[['region.data']])
+        # }
         eval_results <- lapply(item$expr, eval, envir = eval_env)
-        
+        # print(eval_results)
         print(eval_results[[length(eval_results)]])
       })
       
@@ -134,13 +154,17 @@ iNZplothistory <- setRefClass(
       })
       
       plot_group[1:2, 1] <- plot_image
-      plot_group[1:2, 2, fill = "x", expand = TRUE, anchor = c(-1, 0)] <- gedit(item$name, handler = function(h, ...) {
+      plot_group[1:2, 2, fill = "x", anchor = c(-1, 0)] <- gedit(item$name, handler = function(h, ...) {
         history[[i]]$name <<- svalue(h$obj)
       })
       plot_group[1:2, 3:9, fill = "x", expand = TRUE] <- gtext(item$code)
       plot_group[1, 10] <- gbutton("Copy", handler = function(h, ...) {
         tryCatch({
-          clipr::write_clip(item$code)
+          if (copy_chunk) {
+            clipr::write_clip(paste("```{r}", item$code, "```", sep = "\n"))
+          } else {
+            clipr::write_clip(item$code)
+          }
           gmessage("Successfully copied to clipboard", parent = window)
         }, error = function(e) gmessage(e, icon = "error", parent = window))
       })
@@ -169,8 +193,12 @@ iNZplothistory <- setRefClass(
       
       code_text <- parse(text = svalue(code_box))
       parsed <- find_libraries(code_text)
-
-      eval_env <- rlang::env(!!rlang::sym(attr(GUI$getActiveData(), "name")) := GUI$getActiveData())
+      
+      # if (is.null(module)) {
+        eval_env <- rlang::env(!!rlang::sym(attr(GUI$getActiveData(), "name")) := GUI$getActiveData())
+      # } else {
+      #   eval_env <- rlang::env(region.data := module$combinedData[['region.data']])
+      # }
       
       if (length(parsed$libraries) > 0) {
         code_text <- with_packages(parsed$libraries, parsed$expr)
