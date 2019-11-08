@@ -18,7 +18,8 @@ __Release date__: TBA
 - addon modules now available (as a developmental feature)
 - add option to export as rda
 - allow user to select which Excel sheet to import
-
+- enable transparency for ridgeline plots
+- enable palettes, colouring, etc. for barcode plots
 
 ## iNZight 3.4.6
 __Release date__: 23 September 2019
