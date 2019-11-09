@@ -1401,7 +1401,7 @@ iNZPlotMod <- setRefClass(
             if (
               grepl("^gg_", PLOTTYPE) && 
               (PLOTTYPE %in% c("gg_pie", "gg_donut", "gg_column", "gg_heatmap", "gg_stackedcolumn", "gg_poppyramid", "gg_spine", "gg_mosaic", "gg_divergingstackedbar", "gg_gridplot")) ||
-              (!attr(PLOTTYPES, "null.y") && PLOTTYPE %in% c("gg_violin", "gg_barcode", "gg_boxplot", "gg_cumcurve", "gg_freqpolygon", "gg_dotstrip", "gg_density", "gg_quasirandom", "gg_lollipop2", "gg_ridgeline"))
+              (!attr(PLOTTYPES, "null.y") && PLOTTYPE %in% c("gg_violin", "gg_barcode", "gg_boxplot", "gg_cumcurve", "gg_freqpolygon", "gg_dotstrip", "gg_density", "gg_quasirandom", "gg_lollipop2", "gg_ridgeline", "gg_barcode3"))
             ) {
               lbl <- glabel("Colour palette :")
               palette_options <- c("default", "greyscale", "viridis", "magma", "plasma", "inferno", "BrBG", "PiYG", "PRGn",
@@ -1419,8 +1419,7 @@ iNZPlotMod <- setRefClass(
             }
             
             if (
-              PLOTTYPE %in% c("gg_violin", "gg_column2", "gg_lollipop", "gg_boxplot", "gg_density", "gg_cumcurve", "gg_quasirandom", "gg_lollipop2", "gg_barcode3") && attr(PLOTTYPES, "null.y") || 
-              PLOTTYPE %in% c("gg_barcode", "gg_dotstrip")
+              PLOTTYPE %in% c("gg_violin", "gg_column2", "gg_lollipop", "gg_boxplot", "gg_density", "gg_cumcurve", "gg_quasirandom", "gg_lollipop2", "gg_barcode3", "gg_barcode", "gg_dotstrip") && attr(PLOTTYPES, "null.y")
             ) {
               if (!(PLOTTYPE %in% c("gg_cumcurve"))) {
                 tbl[ii, 1:2, anchor = c(1, 0), expand = TRUE] <- glabel("Fill colour:")
@@ -1784,7 +1783,7 @@ iNZPlotMod <- setRefClass(
               ii <- ii + 1
             }
             
-            if (PLOTTYPE %in% c("gg_density")) {
+            if (PLOTTYPE %in% c("gg_density", "gg_ridgeline")) {
               tbl[ii, 1:2, anchor = c(1, 0), expand = TRUE] <- glabel("Transparency :")
               transpSlider <- gslider(from = 0, to = 100,
                                       by = 1, 
@@ -2119,20 +2118,12 @@ iNZPlotMod <- setRefClass(
                   
                   if(grepl("^gg_", PLOTTYPE) && 
                      (PLOTTYPE %in% c("gg_pie", "gg_donut", "gg_column", "gg_heatmap", "gg_stackedcolumn", "gg_poppyramid", "gg_spine", "gg_mosaic", "gg_divergingstackedbar", "gg_gridplot")) ||
-                     (!attr(PLOTTYPES, "null.y") && PLOTTYPE %in% c("gg_violin", "gg_barcode", "gg_boxplot", "gg_cumcurve", "gg_freqpolygon", "gg_dotstrip", "gg_density", "gg_quasirandom", "gg_lollipop2", "gg_ridgeline"))
+                     (!attr(PLOTTYPES, "null.y") && PLOTTYPE %in% c("gg_violin", "gg_barcode", "gg_boxplot", "gg_cumcurve", "gg_freqpolygon", "gg_dotstrip", "gg_density", "gg_quasirandom", "gg_lollipop2", "gg_ridgeline", "gg_barcode3"))
                   ) {
                     newSet$palette <- svalue(paletteCombobox)
                   }
                   
-                  if (PLOTTYPE %in% c("gg_violin", "gg_column2", "gg_lollipop", "gg_boxplot", "gg_density", "gg_cumcurve", "gg_quasirandom", "gg_lollipop2", "gg_barcode3") && attr(PLOTTYPES, "null.y")) {
-                    if (svalue(colourCombobox) != "" && valid_colour(svalue(colourCombobox))) {
-                      newSet$fill_colour <- svalue(colourCombobox)
-                    } else if (svalue(colourCombobox) == "") {
-                      newSet$fill_colour <- ""
-                    }
-                  }
-                  
-                  if (PLOTTYPE %in% c("gg_barcode", "gg_dotstrip")) {
+                  if (PLOTTYPE %in% c("gg_violin", "gg_column2", "gg_lollipop", "gg_boxplot", "gg_density", "gg_cumcurve", "gg_quasirandom", "gg_lollipop2", "gg_barcode3", "gg_barcode", "gg_dotstrip") && attr(PLOTTYPES, "null.y")) {
                     if (svalue(colourCombobox) != "" && valid_colour(svalue(colourCombobox))) {
                       newSet$fill_colour <- svalue(colourCombobox)
                     } else if (svalue(colourCombobox) == "") {
@@ -2156,7 +2147,7 @@ iNZPlotMod <- setRefClass(
                     newSet$alpha <- 1 - svalue(transpSlider) / 100
                   }
                   
-                  if (PLOTTYPE %in% c("gg_density")) {
+                  if (PLOTTYPE %in% c("gg_density", "gg_ridgeline")) {
                     if (attr(PLOTTYPES, "null.y")) {
                       newSet$alpha <- 1 - svalue(transpSlider) / 100
                     } else {
