@@ -119,11 +119,11 @@ test_that("Get inference window - ANOVA dot plots", {
     expect_is(w2[[1]]$children[[1]], "GText")
     expect_match(
         svalue(w2[[1]]$children[[1]]),
-        "Null Hypothesis: true group means are equal"
+        "Null Hypothesis: true group means are all equal"
     )
     expect_match(
         svalue(w2[[1]]$children[[1]]),
-        "Alternative Hypothesis: true group means are not equal"
+        "Alternative Hypothesis: true group means are not all equal"
     )
     dispose(w2[[1]])
 })
@@ -321,19 +321,29 @@ ui$close()
 data(api, package = "survey")
 ui <- iNZGUI$new()
 ui$initializeGui(apiclus2)
+Sys.sleep(2)
 
-
-test_that("Get inference disabled for surveys", {
+test_that("Get inference for surveys", {
     expect_true(enabled(ui$infBtn))
     swin <- iNZSurveyDesign$new(ui)
     svalue(swin$clus1Var) <- "dnum"
     svalue(swin$clus2Var) <- "snum"
     svalue(swin$fpcVar) <- "fpc1 + fpc2"
     swin$createBtn$invoke_change_handler()
-    expect_false(enabled(ui$infBtn))
+    expect_true(enabled(ui$infBtn))
+
+    svalue(ui$ctrlWidget$V1box) <- "api00"
+    iwin <- ui$infBtn$invoke_change_handler()
+    svalue(iwin[[1]]$children[[1]]$children[[1]]$children[[2]]) <- TRUE
+    out <- iwin[[1]]$children[[1]]$children[[2]]$invoke_change_handler()
+    expect_match(
+        svalue(out[[1]]$children[[1]]),
+        "survey::svydesign"
+    )
+    dispose(out[[1]])
 })
 
-test_that("Get inference reenabled for non-surveys", {
+test_that("Get inference still enabled for non-surveys", {
     ui$removeDesign()
     expect_true(enabled(ui$infBtn))
 })

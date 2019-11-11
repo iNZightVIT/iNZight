@@ -41,15 +41,6 @@ iNZMenuBarWidget <- setRefClass(
         },
         FileMenu = function() {
             list(
-                load =
-                    gaction("Load ...",
-                        icon = "symbol_diamond",
-                        handler = function(h, ...) iNZLoadSaveWin$new(GUI, what = "load")),
-                save =
-                    gaction("Save ...",
-                        icon = "save",
-                        handler = function(h, ...) iNZLoadSaveWin$new(GUI, what = "save")),
-                gseparator(),
                 import =
                     gaction("Import data ...",
                         icon = "symbol_diamond",
@@ -118,7 +109,7 @@ iNZMenuBarWidget <- setRefClass(
                           icon = "symbol_diamond",
                           handler = function(h, ...) iNZValidateWin$new(GUI)),
                 gseparator(),
-                view = 
+                view =
                     gaction("View full dataset",
                         icon = "symbol_diamon",
                         handler = function(h, ...) GUI$view_dataset()
@@ -310,7 +301,14 @@ iNZMenuBarWidget <- setRefClass(
                 ))
             }
 
-            list(
+            ## As of R 3.6.?, overwriting s3 methods is a verbose message
+            ## when loading a package namespace. This prevents those messages
+            ## from showing up.
+            ## Info: it's because iNZightRegression and iNZightMR both define
+            ## moecalc methods - not sure why/which is more up to date, either ...
+            suppressMessages(requireNamespace("iNZightModules", quietly = TRUE))
+
+            adv <- list(
                 "Quick Explore" = list(
                     missing =
                         gaction("Missing values",
@@ -368,6 +366,14 @@ iNZMenuBarWidget <- setRefClass(
                     gaction("Maps ...",
                         icon = "symbol_diamond",
                         handler = function(h, ...) iNZightModules::iNZightMapLanding$new(GUI)),
+                # gseparator(),
+                # install =
+                #     gaction("Add or remove modules ...",
+                #         icon = "symbol_diamond",
+                #         tooltip = "Add or remove add-on iNZight modules",
+                #         handler = function(h, ...)
+                #             iNZightModules::InstallModules$new(GUI)
+                #     ),
                 gseparator(),
                 rcode =
                     gaction("R code history [beta] ...",
@@ -375,6 +381,25 @@ iNZMenuBarWidget <- setRefClass(
                         tooltip = "Show the R code history for your session",
                         handler = function(h, ...) GUI$showHistory())
             )
+            if (!is.null(GUI$addonModuleDir)) {
+                modules <- iNZightModules:::getModules(GUI$addonModuleDir)
+                if (length(modules)) {
+                    instindex <- which(names(adv) == "maps") + 1
+                    mods <- lapply(modules, function(mod) {
+                        gaction(mod$display_name,
+                            handler = function(h, ...) {
+                                x <- sprintf("mod$%s$new(GUI, name = '%s')",
+                                    mod$name,
+                                    mod$display_name
+                                )
+                                eval(parse(text = x))
+                            }
+                        )
+                    })
+                    adv <- c(adv[1:(instindex-1)], mods, adv[instindex:length(adv)])
+                }
+            }
+            adv
         },
         HelpMenu = function() {
             guides <- list(user_guides.basics = "The Basics",

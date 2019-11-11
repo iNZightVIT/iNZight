@@ -60,7 +60,8 @@ iNZGUI <- setRefClass(
             ## keep a track of R code history
             rhistory = "ANY",
             plot_history = "ANY",
-            disposer = "logical"
+            disposer = "logical",
+            addonModuleDir = "character"
         ),
         prototype = list(
             activeDoc = 1,
@@ -74,7 +75,11 @@ iNZGUI <- setRefClass(
         ##              closing the gui
         ## This is the main method of iNZight and calls all the other
         ## methods of the GUI class.
-        initializeGui = function(data = NULL, disposeR = FALSE) {
+        initializeGui = function(
+            data = NULL,
+            disposeR = FALSE,
+            addonDir = NULL
+        ) {
             "Initiates the GUI"
             iNZDocuments <<- list(iNZDocument$new(data = data))
             disposer <<- disposeR
@@ -147,6 +152,19 @@ iNZGUI <- setRefClass(
                 }
             )
 
+            if (!is.null(addonDir) && dir.exists(addonDir)) {
+                addonModuleDir <<- addonDir
+            } else {
+                addonModuleDir <<- switch(OS,
+                    "windows" =
+                        file.path("~", "iNZightVIT", "modules"),
+                    "mac" = ,
+                    "linux" =
+                        file.path("~", "Documents", "iNZightVIT", "modules")
+                )
+                if (!dir.exists(addonModuleDir))
+                    addonModuleDir <<- NULL
+            }
 
             ## Grab settings file (or try to!)
             getPreferences()
@@ -245,7 +263,7 @@ iNZGUI <- setRefClass(
 
             ## init statusbar
             statusbar <<- gstatusbar("iNZight is ready")# , container = win) ## disabled
-            
+
             plot_history <<- NULL
 
             invisible(0)
@@ -630,9 +648,11 @@ iNZGUI <- setRefClass(
 
                         ## Design or data?
                         curMod <- getActiveDoc()$getModel()
+                        is_survey <- FALSE
                         if (!is.null(curMod$dataDesign)) {
                             curSet$data <- NULL
                             curSet$design <- curMod$createSurveyObject()
+                            is_survey <- TRUE
                         }
 
                         w <- gwindow(
@@ -651,38 +671,50 @@ iNZGUI <- setRefClass(
                         ## Inference method
                         lbl <- glabel("Method :")
                         infMthd <- gradio(c("Normal", "Bootstrap"), horizontal = TRUE)
-                        tbl[ii, 1:3, anchor = c(1, 0), expand = TRUE] <- lbl
-                        tbl[ii, 4:6, expand = TRUE] <- infMthd
-                        ii <- ii + 1
+                        if (!is_survey) {
+                            tbl[ii, 1:3, anchor = c(1, 0), expand = TRUE] <- lbl
+                            tbl[ii, 4:6, expand = TRUE] <- infMthd
+                            ii <- ii + 1
+                        }
 
                         ii <- ii + 1
-
 
                         doHypTest <- grepl("ttest|anova|table", INFTYPE)
+                        if (doHypTest &&
+                            is_survey &&
+                            grepl("oneway-table", INFTYPE)) {
+                            ## don't do it for chi-square (yet)
+                            doHypTest <- length(levels(curSet$x)) == 2
+                        }
                         test.type <- switch(
                             INFTYPE,
                             "onesample-ttest" = "One Sample t-test",
                             "twosample-ttest" = "Two Sample t-test",
                             "anova"           = "ANOVA",
                             "regression"      = "Regression Analysis",
-                            "oneway-table"    = ,
+                            "oneway-table"    =
+                                ifelse(is_survey && length(levels(curSet$x)) == 2,
+                                    "Test proportion",
+                                    "Chi-square test"
+                                ),
                             "twoway-table"    = "Chi-square test"
                         )
-
 
                         ## Checkbox: perform hypothesis test? Activates hypothesis options.
                         TTEST <- grepl("ttest", INFTYPE)
                         TTEST2 <- INFTYPE == "twosample-ttest"
-                        CHI2 <- grepl("-table", INFTYPE)
+                        CHI2 <- grepl("twoway-table", INFTYPE) ||
+                            (grepl("oneway-table", INFTYPE) && !is_survey)
                         PROPTEST <- INFTYPE == "oneway-table"
                         PROPTEST2 <- PROPTEST && length(levels(curSet$x)) == 2
                         hypTest <-
                             if (TTEST2)
                                 gradio(c("None", "Two Sample t-test", "ANOVA"), horizontal = TRUE)
-                            else if (PROPTEST2)
+                            else if (PROPTEST2 && !is_survey)
                                 gradio(c("None", "Chi-square test", "Test proportion"), horizontal = TRUE)
                             else
                                 gcheckbox(test.type, checked = FALSE)
+
                         if (doHypTest) {
                             lbl <- glabel("Hypothesis Testing")
                             font(lbl) <- list(weight = "bold")
@@ -720,7 +752,7 @@ iNZGUI <- setRefClass(
 
                             enabled(hypAlt) <- enabled(hypVal) <-
                                 if (TTEST2) svalue(hypTest, index = TRUE) == 2
-                                else if (PROPTEST2) svalue(hypTest, index = TRUE) == 3
+                                else if (PROPTEST2 && !is_survey) svalue(hypTest, index = TRUE) == 3
                                 else svalue(hypTest)
 
                             ## use equal variance assumption?
@@ -732,20 +764,20 @@ iNZGUI <- setRefClass(
                                 enabled(hypEqualVar) <- svalue(hypTest, index = TRUE) == 2
                             }
 
-                            hypSimPval <- gcheckbox("Simulate p-value", 
+                            hypSimPval <- gcheckbox("Simulate p-value",
                                 checked = FALSE)
-                            if (CHI2) {
+                            if (CHI2 && !is_survey) {
                                 tbl[ii, 4:6, expand = TRUE] <- hypSimPval
                                 ii <- ii + 1
 
-                                enabled(hypSimPval) <- 
+                                enabled(hypSimPval) <-
                                     if (PROPTEST2) svalue(hypTest, index = TRUE) == 2
                                     else svalue(hypTest)
                             }
 
-                            hypExactPval <- gcheckbox("Calculate exact p-value", 
+                            hypExactPval <- gcheckbox("Calculate exact p-value",
                                 checked = FALSE)
-                            if (PROPTEST2) {
+                            if (PROPTEST2 && !is_survey) {
                                 tbl[ii, 4:6, expand = TRUE] <- hypExactPval
                                 ii <- ii + 1
 
@@ -755,17 +787,17 @@ iNZGUI <- setRefClass(
 
                         addHandlerChanged(hypTest, function(h, ...) {
                             if (CHI2)
-                                enabled(hypSimPval) <- 
-                                    if (PROPTEST2) svalue(hypTest, index = TRUE) == 2
+                                enabled(hypSimPval) <-
+                                    if (PROPTEST2 && !is_survey) svalue(hypTest, index = TRUE) == 2
                                     else svalue(hypTest)
-                            enabled(hypExactPval) <- 
-                                if (PROPTEST2) svalue(hypTest, index = TRUE) == 3
+                            enabled(hypExactPval) <-
+                                if (PROPTEST2 && !is_survey) svalue(hypTest, index = TRUE) == 3
                                 else FALSE
-                            enabled(hypEqualVar) <- 
+                            enabled(hypEqualVar) <-
                             enabled(hypAlt) <-
                             enabled(hypVal) <-
                                 if (TTEST2) svalue(hypTest, index = TRUE) == 2
-                                else if (PROPTEST2) svalue(hypTest, index = TRUE) == 3
+                                else if (PROPTEST2 && !is_survey) svalue(hypTest, index = TRUE) == 3
                                 else svalue(h$obj)
                         })
 
@@ -811,6 +843,11 @@ iNZGUI <- setRefClass(
                             infType <- svalue(infMthd, index = TRUE)
                             curSet <- getActiveDoc()$getSettings()
                             curSet$plottype <- NULL
+                            curMod <- getActiveDoc()$getModel()
+                            if (!is.null(curMod$dataDesign)) {
+                                curSet$data <- NULL
+                                curSet$design <- curMod$createSurveyObject()
+                            }
                             if (!is.null(curSet$freq))
                                 curSet$freq <- getActiveData()[[curSet$freq]]
                             if (!is.null(curSet$x)) {
@@ -823,6 +860,16 @@ iNZGUI <- setRefClass(
                                     curSet$varnames$y <- v$x
                                 }
                             }
+                            if (is.null(curSet$g1) & !is.null(curSet$g2)) {
+                                if (curSet$g2.level != "_ALL") {
+                                    curSet$g1 <- curSet$g2
+                                    curSet$g1.level <- curSet$g2.level
+                                    curSet$varnames$g1 <- curSet$varnames$g2
+                                }
+                                curSet$g2 <- NULL
+                                curSet$g2.level <- NULL
+                                curSet$varnames$g2 <- NULL
+                            }
                             curSet <- modifyList(
                                 curSet,
                                 list(bs.inference = infType == 2,
@@ -830,9 +877,9 @@ iNZGUI <- setRefClass(
                                      inference.type = "conf",
                                      inference.par = NULL)
                             )
-                            # if (ifelse(TTEST2, svalue(hypTest, index = TRUE) > 1, svalue(hypTest))) {
                             if ((TTEST2 && svalue(hypTest, index = TRUE) > 1) ||
-                                (PROPTEST2 && svalue(hypTest, index = TRUE) > 1) ||
+                                (PROPTEST2 && !is_survey && svalue(hypTest, index = TRUE) > 1) ||
+                                (PROPTEST2 && is_survey && svalue(hypTest)) ||
                                 (!TTEST2 && !PROPTEST2 && svalue(hypTest))) {
                                 if (is.na(as.numeric(svalue(hypVal)))) {
                                     gmessage(
@@ -853,16 +900,18 @@ iNZGUI <- setRefClass(
                                         hypothesis.var.equal = svalue(hypEqualVar),
                                         hypothesis.simulated.p.value = svalue(hypSimPval),
                                         hypothesis.use.exact = svalue(hypExactPval),
-                                        hypothesis.test = 
+                                        hypothesis.test =
                                             if (TTEST2)
                                                 switch(
                                                     svalue(hypTest, index = TRUE),
                                                     "default", "t.test", "anova"
                                                 )
-                                            else if (PROPTEST2)
+                                            else if (PROPTEST2 && !is_survey)
                                                 switch(svalue(hypTest, index = TRUE),
                                                     "default", "chi2", "proportion"
                                                 )
+                                            else if (PROPTEST2 && is_survey)
+                                                "proportion"
                                             else
                                                 "default"
                                     )
@@ -944,10 +993,16 @@ iNZGUI <- setRefClass(
                             invisible(w2)
                         })
 
+                        ## if no hypothesis to choose from, skip window
+
                         addSpring(g)
                         add(g, btn)
 
-                        visible(w) <- TRUE
+                        # if (!doHypTest) {
+                            # btn$invoke_change_handler()
+                        # } else {
+                            visible(w) <- TRUE
+                        # }
                         invisible(w)
                     } else {
                         gmessage("Please select at least one variable",
@@ -1183,7 +1238,7 @@ iNZGUI <- setRefClass(
             # enabled(menubar$menu_list[["Variables"]][["Numeric Variables"]][[2]]) <<- TRUE
             # enabled(menubar$menu_list[["Plot"]][[3]]) <<- TRUE
             # enabled(sumBtn) <<- TRUE
-            enabled(infBtn) <<- TRUE
+            # enabled(infBtn) <<- TRUE
         },
         ## display warning message
         displayMsg = function(module, type) {
