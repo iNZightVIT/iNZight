@@ -1,5 +1,5 @@
-## iNZight 3.4.6.9000
-__Release date__: TBA
+## iNZight 3.5
+__Release date__: 11 November 2019
 
 - allow users to change column types for all import types (cat/num)
 - reset axis limits when either V1 or V2 change (temp fix until something less aggressive is implemented)
