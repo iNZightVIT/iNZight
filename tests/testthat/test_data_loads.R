@@ -1,8 +1,10 @@
 context("Data is loaded into the UI")
 
+wd <- getwd()
 ui <- iNZGUI$new()
 ui$initializeGui()
 on.exit(gWidgets2::dispose(ui$win))
+setwd(wd)
 
 doc <- NULL
 test_that("New document is created correctly when data loaded", {
@@ -214,4 +216,34 @@ test_that("Changing file resets column types", {
     imp$fColTypes <- c("numeric", "numeric", "auto")
     expect_silent(imp$setfile())
     expect_true(all(imp$fColTypes == "auto"))
+})
+
+test_that("RData files display list of objects", {
+    save(census.at.school.500, iris, file = "test.rda")
+    on.exit(unlink("test.rda"))
+    imp <- iNZImportWin$new(ui)
+    imp$fname <- "test.rda"
+    expect_silent(imp$setfile())
+    expect_equal(svalue(imp$rdaName), "iris")
+    expect_equal(imp$rdaName$get_items(), c("iris", "census.at.school.500"))
+    expect_silent(svalue(imp$rdaName, index = TRUE) <- 2)
+    imp$okBtn$invoke_change_handler()
+})
+
+
+
+# try(ui$close());
+# ui <- iNZGUI$new()
+# ui$initializeGui()
+# on.exit(gWidgets2::dispose(ui$win))
+
+test_that("Excel files load and display available sheets", {
+    imp <- iNZImportWin$new(ui)
+    imp$fname <- "sheet.xlsx"
+    expect_silent(imp$setfile())
+    expect_equal(imp$rdaName$get_items(), c("Africa", "Americas", "Asia", "Europe", "Oceania"))
+    expect_equal(svalue(imp$rdaName), "Africa")
+    expect_silent(svalue(imp$rdaName, index = TRUE) <- 3)
+    expect_silent(imp$okBtn$invoke_change_handler())
+    expect_true(all(as.character(ui$getActiveData()$continent) == "Asia"))
 })
