@@ -369,7 +369,8 @@ iNZGUI <- setRefClass(
                         curSet$freq <- getActiveData()[[curSet$freq]]
                     if (!is.null(curSet$x)) {
                         xvar <- .dataset[[curSet$x]]
-                        if (is_num(xvar) & is_num(curSet$y)) {
+                        yvar <- .dataset[[curSet$y]]
+                        if (is_num(xvar) & is_num(yvar)) {
                             tmp.x <- curSet$y
                             curSet$y <- curSet$x
                             curSet$x <- tmp.x
@@ -411,9 +412,9 @@ iNZGUI <- setRefClass(
                         if (is.null(curSet$g1) &&
                             is.null(curSet$g2) &&
                             !is.null(curSet$y) &&
-                            (is_num(curSet$x) | is_num(curSet$y)) &&
+                            (is_num(xvar) | is_num(yvar)) &&
                             (!is.null(curSet$trend) | curSet$smooth > 0 |
-                             !is_num(curSet$x) | !is_num(curSet$y))) {
+                             !is_num(xvar) | !is_num(yvar))) {
                             btngrp <- ggroup(container = g)
                             addSpace(btngrp, 5)
 
@@ -451,12 +452,12 @@ iNZGUI <- setRefClass(
                                 fittedName <- gedit(
                                     sprintf(
                                         "%s.%s",
-                                        curSet$varnames[[ifelse(is_num(curSet$y), "y", "x")]],
+                                        curSet$varnames[[ifelse(is_num(yvar), "y", "x")]],
                                         varType),
                                     width = 25
                                 )
 
-                                if (is_cat(xvar) || is_cat(curSet$y)) { ##} || length(curSet$trend) == 1) {
+                                if (is_cat(xvar) || is_cat(yvar)) {
                                     tbl[ii, 1:3, anchor = c(1, 0), expand = TRUE] <- fittedLbl
                                     tbl[ii, 4:6, expand = TRUE] <- fittedName
                                     ii <- ii + 1
@@ -514,7 +515,7 @@ iNZGUI <- setRefClass(
                                     width = 25
                                 )
                                 if (curSet$smooth > 0 && is_num(xvar) &&
-                                    is_num(curSet$y)) {
+                                    is_num(yvar)) {
                                     tbl[ii, 1:3, anchor = c(1, 0), expand = TRUE] <- fittedLbl.smth
                                     tbl[ii, 4:6, expand = TRUE] <- fittedName.smth
                                     ii <- ii + 1
@@ -538,9 +539,9 @@ iNZGUI <- setRefClass(
                                                     residuals(object)
 
                                         pred <- NULL
-                                        if (is_cat(xvar) || is_cat(curSet$y)) { #} || length(curSet$trend) == 1) {
+                                        if (is_cat(xvar) || is_cat(yvar)) {
                                             ## just the one
-                                            fit <- with(curSet, lm(if (is_num(curSet$y)) y ~ x else x ~ y, na.action = na.exclude))
+                                            fit <- with(curSet, lm(if (is_num(yvar)) y ~ x else x ~ y, na.action = na.exclude))
                                             pred <- data.frame(FUN(fit))
                                             colnames(pred) <- svalue(fittedName)
                                         } else if (length(curSet$trend) >= 1) {
@@ -565,8 +566,8 @@ iNZGUI <- setRefClass(
                                             newdata <- getActiveData()
 
 
-                                        if (curSet$smooth > 0 && is_num(xvar) && is_num(curSet$y)) {
-                                            tmp <- data.frame(x = xvar, y = curSet$y)
+                                        if (curSet$smooth > 0 && is_num(xvar) && is_num(yvar)) {
+                                            tmp <- data.frame(x = xvar, y = yvar)
                                             fit <- with(curSet, loess(y ~ x, span = curSet$smooth, family = "gaussian", degree = 1, na.action = "na.exclude"))
                                             pred <- data.frame(FUN(fit))
                                             colnames(pred) <- svalue(fittedName.smth)
@@ -630,12 +631,12 @@ iNZGUI <- setRefClass(
                         if (is.null(curSet$y)) {
                             INFTYPE <- ifelse(xnum, "onesample-ttest", "oneway-table")
                         } else {
-                            ynum <- is_num(curSet$y)
+                            ynum <- is_num(yvar)
                             if (xnum && ynum) {
                                 INFTYPE <- "regression"
                             } else if (xnum | ynum) {
                                 M <-
-                                    if (xnum) length(levels(curSet$y))
+                                    if (xnum) length(levels(yvar))
                                     else length(levels(xvar))
                                 if (M == 2) INFTYPE <- "twosample-ttest"
                                 if (M > 2) INFTYPE <- "anova"
@@ -861,7 +862,8 @@ iNZGUI <- setRefClass(
                                 curSet$freq <- getActiveData()[[curSet$freq]]
                             if (!is.null(curSet$x)) {
                                 xvar <- .dataset[[curSet$x]]
-                                if (is.numeric(xvar) & is.numeric(curSet$y)) {
+                                yvar <- .dataset[[curSet$y]]
+                                if (is.numeric(xvar) & is.numeric(yvar)) {
                                     tmp.x <- curSet$y
                                     curSet$y <- curSet$x
                                     curSet$x <- tmp.x
