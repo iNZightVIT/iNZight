@@ -1,3 +1,8 @@
+## iNZight 3.5.0.9000
+
+- add option to import data from a URL as well as local files
+
+
 ## iNZight 3.5
 __Release date__: 11 November 2019
 

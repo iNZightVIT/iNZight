@@ -249,12 +249,19 @@ test_that("Excel files load and display available sheets", {
 })
 
 
-try(ui$close());
-ui <- iNZGUI$new()
-ui$initializeGui()
-on.exit(gWidgets2::dispose(ui$win))
+# try(ui$close()); load_all()
+# ui <- iNZGUI$new()
+# ui$initializeGui()
+# on.exit(gWidgets2::dispose(ui$win))
 
 test_that("User can choose to load a URL", {
     imp <- iNZImportWin$new(ui)
-
+    svalue(imp$loadURL) <- TRUE
+    svalue(imp$fileurl) <- "https://raw.githubusercontent.com/iNZightVIT/iNZight/dev/tests/testthat/cas5.csv"
+    expect_equal(imp$fext, "csv")
+    expect_silent(imp$okBtn$invoke_change_handler())
+    expect_equivalent(
+        ui$getActiveData(),
+        iNZightTools::smart_read("cas5.csv")
+    )
 })

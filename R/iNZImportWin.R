@@ -153,6 +153,7 @@ iNZImportWin <- setRefClass(
                         addHandlerChanged(fileurl,
                             function(h, ...) {
                                 fname <<- svalue(fileurl)
+                                setfile()
                                 generatePreview(h, ...)
                             }
                         )
@@ -390,7 +391,8 @@ iNZImportWin <- setRefClass(
         },
         ## Generate a preview
         generatePreview = function(h, ..., reload = FALSE) {
-            if (length(fname) && file.exists(fname)) {
+            if (length(fname) &&
+                (file.exists(fname) || svalue(loadURL))) {
                 if (!is.null(prev)) {
                     delete(prevGp, prev)
                     prev <<- NULL
