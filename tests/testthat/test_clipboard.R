@@ -15,11 +15,11 @@ test_that("Data can be loaded from the 'clipboard'", {
     expect_silent(cpy$pasteHandler())
     expect_equivalent(
         cpy$dataOut$get_items(),
-        readr::read_delim(demo, "\t")
+        iNZightTools::read_text(demo, "\t")
     )
     expect_silent(cpy$okBtn$invoke_change_handler())
     expect_equivalent(
         ui$getActiveData(),
-        readr::read_delim(demo, "\t")
+        iNZightTools::read_text(demo, "\t")
     )
 })
