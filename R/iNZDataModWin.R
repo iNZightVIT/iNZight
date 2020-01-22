@@ -58,10 +58,10 @@ iNZDataModWin <- setRefClass(
         names(newData) <- make.names(c(names(GUI$getActiveData()),
                                        name), unique = TRUE)
       }
-      
+
       if (!is.null(msg))
         do.call(gmessage, msg)
-      
+
       GUI$getActiveDoc()$getModel()$updateData(newData)
       if (closeAfter)
         dispose(GUI$modWin)
@@ -117,19 +117,19 @@ iNZconToCatWin <- setRefClass(
   methods = list(
     initialize = function(gui) {
       callSuper(gui)
-      
+
       svalue(GUI$modWin) <<- "Convert to Categorical"
       size(GUI$modWin) <<- c(200, 250)
       mainGroup <- gvbox()
       mainGroup$set_borderwidth(15)
-      
+
       helpbtn <- gimagebutton(stock.id = "gw-help", anchor = c(1, -1), cont = mainGroup, handler = function(h, ...){
         browseURL("https://www.stat.auckland.ac.nz/~wild/iNZight/user_guides/variables/#convert1")
       })
-      
+
       tbl <- glayout(container = mainGroup)
       ii <- 1
-      
+
       lbl <- glabel(paste("1. Drag and drop a variable name onto the",
                           "label below to create a categorical version",
                           "of that variable", sep = "\n"))
@@ -137,27 +137,27 @@ iNZconToCatWin <- setRefClass(
 
       tbl[ii, 1, anchor = c(-1, 0), expand = TRUE] <- lbl
       ii <- ii + 1
-      
+
       tbl[ii, 1] <- gseparator()
       ii <- ii + 1
-      
+
       dropLbl <- glabel("DROP VARIABLE HERE")
       font(dropLbl) <- list(size = 14)
       tbl[ii, 1] <- dropLbl
       ii <- ii + 1
-      
+
       tbl[ii, 1] <- gseparator()
       ii <- ii + 1
-      
+
       lbl <- glabel("2. Type name for the new variable: ")
       font(lbl) <- list(weight = "bold", family = "sans")
       tbl[ii, 1, encho = c(-1, 0), expand = TRUE] <- lbl
       ii <- ii + 1
-      
+
       name.txt <- gedit("No Variable Selected", width = 20)
       tbl[ii, 1] <- name.txt
       ii <- ii + 1
-      
+
       okButton <- gbutton("Update Data",
                           handler = function(h, ...) {
                             orgVar <- svalue(dropLbl)
@@ -179,8 +179,8 @@ iNZconToCatWin <- setRefClass(
       font(okButton) <- list(weight="bold", family = "sans")
       tbl[ii, 1] <- okButton
       ii <- ii + 1
-      
-      
+
+
       addDropTarget(dropLbl,
                     handler = function(h, ...) {
                       dropData <- GUI$getActiveDoc()$getData()[h$dropdata][[1]]
@@ -193,7 +193,7 @@ iNZconToCatWin <- setRefClass(
                         varData <<- dropData
                       }
                     })
-      
+
       add(GUI$modWin, mainGroup, expand = TRUE)
       visible(GUI$modWin) <<- TRUE
     })
@@ -216,16 +216,16 @@ iNZtrnsWin <- setRefClass(
       })
       lbl1 <- glabel("Drag and drop variable names onto the labels below\nto create new transformed variables.")
       font(lbl1) <- list(weight="bold", family = "sans", size = 11)
-      
+
       tbl <- glayout(container = mainGroup)
       ii <- 1
-      
+
       tbl[ii, 1, expand = TRUE, anchor = c(-1, 0)] <- lbl1
       ii <- ii + 1
-      
+
       tbl[ii, 1] <- gseparator()
       ii <- ii + 1
-      
+
       ## function names: the X will be converted to the variable name (e.g., log.height, height.squared, etc)
       ##                  Display name           new name     function
       transforms <- list("LOG (e)"          = c("log.e.X",   "log"),
@@ -234,12 +234,12 @@ iNZtrnsWin <- setRefClass(
                          "SQUARE (X^2)"     = c("X.squared", "square"),
                          "SQUARE ROOT"      = c("root.X",    "sqrt"),
                          "RECIPROCAL (1/X)" = c("recip.X",   "reciprocal"))
-      
+
       trLbls <- sapply(seq_along(transforms), function(i) {
         lbl <- glabel(names(transforms)[i])
         font(lbl) <- list(weight = "bold", family = "sans", size = 14, color = "navy")
         tbl[ii + i - 1, 1, expand = TRUE, anchor = c(0, 0)] <- lbl
-        
+
         addDropTarget(lbl, handler = function(h, ...) {
           var <- h$dropdata
           dropData <- GUI$getActiveDoc()$getData()[var][[1]]
@@ -255,7 +255,7 @@ iNZtrnsWin <- setRefClass(
           }
         })
       })
-      
+
       add(GUI$modWin, mainGroup, expand = TRUE)
       visible(GUI$modWin) <<- TRUE
     },
@@ -442,7 +442,7 @@ iNZrenameWin <- setRefClass(
           sapply(tbl$children[5:length(tbl$children)],
                  tbl$remove_child)))
       }
-      
+
       lbl3 <- glabel("Levels")
       font(lbl3) <- list(weight = "bold",
                          family = "sans")
@@ -500,70 +500,70 @@ iNZreorderWin <- setRefClass(
       scrolledWindow <- gtkScrolledWindow()
       ## setting this will only display a scrollbar if necessary
       scrolledWindow$setPolicy("GTK_POLICY_AUTOMATIC","GTK_POLICY_AUTOMATIC")
-      
+
       mainGroup <- ggroup(expand = TRUE, horizontal = FALSE)
       mainGroup$set_borderwidth(15)
-      
+
       helpbtn <- gimagebutton(stock.id = "gw-help", cont = mainGroup, anchor = c(1, -1), handler = function(h, ...){
         browseURL("https://www.stat.auckland.ac.nz/~wild/iNZight/user_guides/variables/#reorderlevs")
       })
-      
+
       tbl <- glayout()
-      
+
       ## Choose variable to reorder:
       tbl[1, 1, expand = TRUE, anchor = c(1, 0)] <- glabel("Variable to reorder:")
       factorIndices <- sapply(GUI$getActiveData(), is_cat)
       factorMenu <- gcombobox(names(GUI$getActiveData())[factorIndices],
                               selected = 0)
       tbl[1, 2, expand = TRUE] <- factorMenu
-      
+
       ## Name for the new variable
       tbl[2, 1, expand = TRUE, anchor = c(1, 0)] <- glabel("New variable name:")
       factorName <- gedit("")
       tbl[2, 2] <- factorName
-      
+
       ## Sort method: frequency (default), or manual
       tbl[3, 1, expand = TRUE, anchor = c(1, 0)] <- glabel("Sort levels ")
       sortMenu <- gcombobox(c("by frequency", "manually"), selected = 1)
       tbl[3, 2, expand = TRUE] <- sortMenu
-      
+
       ## For manual ordering, gdf or gtable with up/down arrows ...
       levelGrp <- ggroup()
       levelOrder <- gtable(data.frame(), container = levelGrp)
       size(levelOrder) <- c(-1, 280)
       tbl[4:5, 2, expand = TRUE] <- levelGrp
-      
+
       levelBtnGrp <- gvbox()
       addSpace(levelBtnGrp, 20)
       levelUp <- iNZight:::gimagebutton("up", container = levelBtnGrp, size = 'LARGE_TOOLBAR',
                                         expand = FALSE, anchor = c(1, 0))
       levelDown <- iNZight:::gimagebutton("down", container = levelBtnGrp, size = 'LARGE_TOOLBAR',
                                           expand = FALSE, anchor = c(1, 0))
-      levelHelp <- glabel("Select level, then\nuse arrows to reorder.", 
+      levelHelp <- glabel("Select level, then\nuse arrows to reorder.",
                           container = levelBtnGrp, anchor = c(1, 0))
       tbl[4:5, 1, anchor = c(1, 1)] <- levelBtnGrp
-      
+
       visible(levelBtnGrp) <- visible(levelGrp) <- FALSE
-      
-      
+
+
       ## Done button
       reorderButton <- gbutton("-REORDER-")
       tbl[6, 2, expand = TRUE] <- reorderButton
-      
+
       ## Add everything to main window
       add(mainGroup, tbl)
-      
+
       ## HANDLERS
       addHandlerChanged(factorMenu, handler = function(h, ...) {
         svalue(factorName) <- makeNames(sprintf("%s.reord", svalue(factorMenu)))
-        levelOrder$set_items(data.frame(Levels = 
+        levelOrder$set_items(data.frame(Levels =
                                           levels(GUI$getActiveData()[, svalue(factorMenu)])))
       })
-      
+
       addHandlerChanged(sortMenu, handler = function(h, ...) {
         visible(levelBtnGrp) <- visible(levelGrp) <- svalue(sortMenu, index = TRUE) == 2
       })
-      
+
       addHandlerClicked(levelUp, function(h, ...) {
         # blockHandlers(levelUp)
         # blockHandlers(levelDown)
@@ -600,12 +600,12 @@ iNZreorderWin <- setRefClass(
         # unblockHandlers(levelUp)
         # unblockHandlers(levelDown)
       })
-      
+
       addHandlerClicked(reorderButton, function(h, ...) {
         var <- svalue(factorMenu)
         varname <- svalue(factorName)
         .dataset <- GUI$getActiveData()
-        
+
         if (checkNames(varname)) {
           if (svalue(sortMenu, TRUE) == 1)
             data <- iNZightTools::reorderLevels(.dataset, var, freq = TRUE, name = varname)
@@ -617,8 +617,8 @@ iNZreorderWin <- setRefClass(
           dispose(GUI$modWin)
         }
       })
-      
-      
+
+
       ## final few details
       scrolledWindow$addWithViewport(mainGroup$widget)
       add(GUI$modWin, scrolledWindow, expand = TRUE, fill = TRUE)
@@ -650,7 +650,7 @@ iNZcmbCatWin <- setRefClass(
       titlelyt <- glayout(homegenous = FALSE)
       titlelyt[1, 4:19, expand = TRUE, anchor = c(0,0)] <- lbl1
       titlelyt[1, 20, expand = TRUE, anchor = c(1, -1)] <- helpbtn
-      
+
       lbl2 <- glabel("(Hold Ctrl to choose many)")
       font(lbl2) <- list(weight = "bold",
                          family = "sans")
@@ -668,7 +668,7 @@ iNZcmbCatWin <- setRefClass(
       ## automatically fill the name field when variables are selected
       addHandlerSelectionChanged(factorNames, handler = function(h, ...) {
         if (length(svalue(factorNames)) > 1)
-          svalue(newName) <- makeNames(paste(svalue(factorNames), 
+          svalue(newName) <- makeNames(paste(svalue(factorNames),
                                              collapse = svalue(varSep)))
         else svalue(newName) <- ""
       })
@@ -690,7 +690,7 @@ iNZcmbCatWin <- setRefClass(
             vars <- svalue(factorNames)
             name <- svalue(newName)
             sep <- svalue(varSep)
-            
+
             if (checkNames(name)) {
               .dataset <- GUI$getActiveData()
               data <- iNZightTools::combineCatVars(.dataset, vars, sep, name)
@@ -764,7 +764,7 @@ iNZcrteVarWin <- setRefClass(
           err <- strsplit(data, "\n")[[1]]
           ew <- grepl('Evaluation error', err, fixed = TRUE)
           err <- ifelse(any(ew), gsub('Evaluation error:', '', err[ew]), '')
-          gmessage(paste(sep = "\n\n", 'Invalid expression:', err), 
+          gmessage(paste(sep = "\n\n", 'Invalid expression:', err),
                    icon = 'error', parent = GUI$modWin)
           return()
         }
@@ -829,23 +829,23 @@ iNZfrmIntWin <- setRefClass(
                                 "Equal count intervals", "Specified intervals"),
                               horizontal = FALSE, selected = 1)
       proceedButton <- gbutton("- Proceed -", handler = function(h, ...) {
-        
+
         bins <- svalue(binSlider)
         levelLabels <- TRUE
         if (svalue(levelNameChoices) == "[closed left, open right)")
           levelLabels <- FALSE
-        
+
         dataSet <- GUI$getActiveData()
-        VarValues <- dataSet[, svalue(NumericListMenu)] 
+        VarValues <- dataSet[, svalue(NumericListMenu)]
         if (svalue(binningChoices) == "Equal width intervals")
-          newVarValues <- try(cut(VarValues, bins, 
+          newVarValues <- try(cut(VarValues, bins,
                                   right = levelLabels, include.lowest = TRUE))
         else if (svalue(binningChoices) == "Equal count intervals")
-          newVarValues <- try(cut(VarValues, 
-                                  quantile(VarValues, probs=seq(0,1,1/bins),na.rm=TRUE), 
+          newVarValues <- try(cut(VarValues,
+                                  quantile(VarValues, probs=seq(0,1,1/bins),na.rm=TRUE),
                                   include.lowest = TRUE,
                                   right = levelLabels))
-        
+
         else if(svalue(binningChoices) == "Specified intervals"){
           bins <- bins # due to the R lazy evaluation, I active them here.
           VarValues = VarValues
@@ -854,13 +854,13 @@ iNZfrmIntWin <- setRefClass(
           levelLabels = levelLabels
           e1 <- environment()
           e1$open <- TRUE
-          opt(bins = bins, VarValues = VarValues, 
+          opt(bins = bins, VarValues = VarValues,
               newVarName = newVarName,
               dataSet = dataSet,
               levelLabels = levelLabels,
               env = e1)  # assign the value into opt() environment
           return()
-          
+
         }
         ####%%%%%%%%%%%%%
         if(class(newVarValues)[1] == "try-error")
@@ -900,62 +900,62 @@ iNZfrmIntWin <- setRefClass(
       add(mainGroup, tbl)
       add(GUI$modWin, mainGroup, expand = TRUE, fill = TRUE)
       visible(GUI$modWin) <<- TRUE
-    }, 
+    },
     opt = function(bins, VarValues, newVarName, levelLabels, dataSet, env) {
       # windows for "Specified intervals"
       textboxList =  list()
       breaksNeeded = bins - 1
-      
+
       newVarName # because R is lazy eval, we need to activate here first.
       env # because R is lazy eval, we need to activate here first.
       newBreaks = glayout()
-      
+
       parentmodeWin <- GUI$modWin  # copy the previouos mod windows before we create a new one.
-      
-      GUI$modWin <<- gwindow("User Intervals", 
+
+      GUI$modWin <<- gwindow("User Intervals",
                              parent = GUI$win, width = 150, height = 200)
       #addhandlerunrealize(levelNamesWin, handler = function(h,...){dispose(levelNamesWin)})
       breaksMain = ggroup(horizontal = FALSE, cont = GUI$modWin)
-      
-      
+
+
       lbl1 = glabel(paste("Specified", bins, "intervals.\nNeed", breaksNeeded, "break points"))
       font(lbl1) = list(weight = "bold", style = "normal")
-      
+
       add(breaksMain, lbl1)
       newBreaks[1,2] = glabel(as.character(min(VarValues, na.rm = TRUE)))
-      
-      
+
+
       for(i in 1:breaksNeeded){                                                     #,",width = 60, height = 20 )"
         eval(parse(text=paste(c("textboxList$","lbl",i, "= gtext(\"","\"",",width = 80, height = 20)"), collapse="")))
         newBreaks[i+1,2] = eval(parse(text = paste(c("textboxList$","lbl",i), collapse="")))
       }
-      
-      
+
+
       newBreaks[breaksNeeded+2,2] = glabel(as.character(max(VarValues, na.rm = TRUE)))
-      
-      
+
+
       visible(newBreaks) = TRUE
       add(breaksMain, newBreaks)
-      
+
       out <- NULL
       finalButton = gbutton("Submit Breaks", handler = function(h,...){
-        
+
         cutOffPoints = numeric(0)
         for(i in 1:breaksNeeded)
           cutOffPoints= c(cutOffPoints, gsub(pattern = '\\n+', replacement = "", x = svalue(textboxList[[i]]), perl = TRUE))
-        
-        
-        cutOffPoints = c(min(VarValues, na.rm = TRUE), 
-                         gsub(pattern = '\\s+', replacement = "", x = cutOffPoints, perl = TRUE), 
+
+
+        cutOffPoints = c(min(VarValues, na.rm = TRUE),
+                         gsub(pattern = '\\s+', replacement = "", x = cutOffPoints, perl = TRUE),
                          max(VarValues, na.rm = TRUE))
-        
+
         x <- NULL
         if(any(cutOffPoints %in% c("", " ", "", "   ", "\n", "\n\n")))
           gmessage(title = "ERROR", message = "Fill in all text boxes", icon = "error", parent = GUI$modWin)
         else if(length(unique(cutOffPoints[c(-1,-length(cutOffPoints))])) != length(cutOffPoints)-2)
           gmessage(title = "ERROR", message = "Breaks must be unique values.", icon = "error", parent = GUI$modWin)
         else{
-          
+
           x <- TRUE
           newVarValues = try(cut(VarValues, cutOffPoints, include.lowest = TRUE, right = levelLabels))
           if(class(newVarValues)[1] == "try-error")
@@ -979,15 +979,15 @@ iNZfrmIntWin <- setRefClass(
               ),
               closeAfter = TRUE)
           }
-          
+
         }
         dispose(parentmodeWin)
       }
       )
       add(breaksMain, finalButton)
-      
+
     }
-  )    
+  )
 )
 
 
@@ -1241,7 +1241,7 @@ iNZrankNumWin <- setRefClass(
           vars <- svalue(numVar)
           .dataset <- GUI$getActiveData()
           data <- iNZightTools::rankVars(.dataset, vars)
-          updateData(data)    
+          updateData(data)
         }
         else {
           gmessage("Select at leat one variable!",
@@ -1313,17 +1313,17 @@ iNZrenameDataWin <- setRefClass(
       callSuper(gui)
       svalue(GUI$modWin) <<- "Rename dataset"
       size(GUI$modWin) <<- c(250, 150)
-      
+
       mainGroup <- ggroup(expand = TRUE, horizontal = FALSE)
       mainGroup$set_borderwidth(15)
-      
+
       lbl <- glabel("Enter a new name for the current dataset")
       font(lbl) <- list(weight = "bold", family = "sans")
-      
+
       curname <- attr(GUI$getActiveData(), "name", exact = TRUE)
       if (length(curname) == 0) curname <- ""
       name <- gedit(curname)
-      
+
       okbtn <- gbutton("OK")
       addHandlerClicked(okbtn, function(h, ...) {
         newname <- svalue(name)
@@ -1336,17 +1336,17 @@ iNZrenameDataWin <- setRefClass(
           dispose(GUI$modWin)
         }
       })
-      
+
       cancelbtn <- gbutton("Cancel")
       addHandlerClicked(cancelbtn, function(h, ...) dispose(GUI$modWin))
-      
+
       add(mainGroup, lbl)
       add(mainGroup, name)
       add(mainGroup, okbtn)
       add(mainGroup, cancelbtn)
-      
+
       add(GUI$modWin, mainGroup, expand = TRUE, fill = TRUE)
-      
+
       visible(GUI$modWin) <<- TRUE
     }
   )
@@ -1361,13 +1361,13 @@ iNZconTodtWin <- setRefClass(
     initialize = function(gui) {
       callSuper(gui)
       svalue(GUI$modWin) <<- "Convert to Dates and Times"
-      
+
       scrolledWindow <- gtkScrolledWindow()
       scrolledWindow$setPolicy("GTK_POLICY_AUTOMATIC","GTK_POLICY_AUTOMATIC")
-      
+
       mainGroup <- ggroup(expand = TRUE, horizontal = FALSE)
       mainGroup$set_borderwidth(15)
-      
+
       title <- glabel("Convert to a Date-Time variable")
       font(title) <- list(size = 14, weight = "bold")
       helpbtn <- gimagebutton(stock.id = "gw-help", handler = function(h, ...){
@@ -1378,9 +1378,9 @@ iNZconTodtWin <- setRefClass(
       titlelyt[1, 20, expand = TRUE, anchor = c(1, -1)] <- helpbtn
       add(mainGroup, titlelyt)
       addSpace(mainGroup, 5)
-      
+
       date_string <- glabel("Select variable to convert from", container = mainGroup, anchor = c(-1, 0))
-      
+
       var1 = gcombobox(c("", names(GUI$getActiveData())), cont = mainGroup, handler = function(h, ...) {
         varname = svalue(var1)
         if (varname == "") {
@@ -1409,7 +1409,7 @@ iNZconTodtWin <- setRefClass(
           }
         }
       })
-      
+
       factorsbox = gvbox(cont = mainGroup)
       factors = gtable(names(GUI$getActiveData()),multiple = TRUE, expand = TRUE, cont = factorsbox)
       names(factors) = "Variables"
@@ -1443,7 +1443,7 @@ iNZconTodtWin <- setRefClass(
       })
       visible(factorsbox) = FALSE
       size(factorsbox) = c(-1, 250)
-      
+
       checkbox = gcheckbox(text = "Click to use multiple variables", cont = mainGroup, handler = function(h, ...) {
         if (svalue(checkbox) == TRUE) {
           visible(factorsbox) = TRUE
@@ -1455,23 +1455,23 @@ iNZconTodtWin <- setRefClass(
           date_string$set_value("Select variable to convert from")
         }
       })
-      
+
       addSpace(mainGroup, 5)
-      
+
       name_string <- glabel("Name for the new variable", container = mainGroup, anchor = c(-1, 0))
       newVarname = gedit("", cont = mainGroup)
-      
+
       dt.formats <- c("",
-                      "year month date", 
-                      "year month date Hour Minute Second", 
-                      "year month date Hour Minute Second pm/am", 
-                      "day month year", 
-                      "day month year Hour Minute Second", 
+                      "year month date",
+                      "year month date Hour Minute Second",
+                      "year month date Hour Minute Second pm/am",
+                      "day month year",
+                      "day month year Hour Minute Second",
                       "day month year Hour Minute Second pm/am",
                       "Unix timestamp (secs from 1970)")
-      
+
       for.var <- glabel("Select the order format of your data", container = mainGroup, anchor = c(-1, 0))
-      
+
       var2 <- gcombobox(items = dt.formats, container = mainGroup, editable = TRUE, handler = function(h,...){
         if (svalue(checkbox) == TRUE) {
           factorname = svalue(factors)
@@ -1495,10 +1495,10 @@ iNZconTodtWin <- setRefClass(
             })
         }
       })
-      
+
       g2 <- gexpandgroup(container = mainGroup, text = "Advanced selection")
       visible(g2) <- FALSE
-      
+
       tbl = glayout(cont = g2, expand = TRUE)
       tbl[1,1] <- gbutton("year", handler = function(h,...){svalue(var2) = paste(svalue(var2), svalue(h$obj))})
       tbl[1,2] <- gbutton("month", handler = function(h,...){svalue(var2) = paste(svalue(var2), svalue(h$obj))})
@@ -1516,13 +1516,13 @@ iNZconTodtWin <- setRefClass(
         }
       })
       tbl[3,4] <- gbutton("clear", handler = function(h,...){svalue(var2) = ""})
-      
+
       g3 = ggroup(cont = mainGroup)
       dfview = gtable(data.frame(Original = ""), cont = g3)
       size(dfview) = c(-1, 250)
       convertedview = gtable(data.frame(Converted = ""), cont = g3)
       size(convertedview) = c(-1, 250)
-      
+
       okbtn <- gbutton("Convert", container = mainGroup, handler = function(h,...) {
         if (svalue(checkbox) == TRUE) {
           factorname = svalue(factors)
@@ -1535,7 +1535,7 @@ iNZconTodtWin <- setRefClass(
         updateData(var.dt)
         dispose(GUI$modWin)
       })
-      
+
       scrolledWindow$addWithViewport(mainGroup$widget)
       add(GUI$modWin, scrolledWindow, expand = TRUE, fill = TRUE)
       size(GUI$modWin) <<- c(300, 600)
@@ -1558,13 +1558,13 @@ iNZExtfromdtWin <- setRefClass(
     initialize = function(gui) {
       callSuper(gui)
       svalue(GUI$modWin) <<- "Convert to Dates and Times"
-      
+
       scrolledWindow <- gtkScrolledWindow()
       scrolledWindow$setPolicy("GTK_POLICY_AUTOMATIC","GTK_POLICY_AUTOMATIC")
-      
+
       mainGroup <- gvbox()
       mainGroup$set_borderwidth(15)
-      
+
       title <- glabel("Extract parts of the datetime")
       font(title) <- list(size = 14, weight = "bold")
       helpbtn <- gimagebutton(stock.id = "gw-help", handler = function(h, ...){
@@ -1575,10 +1575,10 @@ iNZExtfromdtWin <- setRefClass(
       titlelyt[1, 20, expand = TRUE, anchor = c(1, -1)] <- helpbtn
       add(mainGroup, titlelyt)
       addSpace(mainGroup, 5)
-      
-      date_string <- glabel("Select variable to extract information from", 
+
+      date_string <- glabel("Select variable to extract information from",
                             container = mainGroup, anchor = c(-1, 0))
-      
+
       var1 <- gcombobox(items = c("", c(names(dplyr::select_if(GUI$getActiveData(), lubridate::is.Date)), names(dplyr::select_if(GUI$getActiveData(), lubridate::is.POSIXct)))), container = mainGroup, handler = function(h,...){
         varname <<- svalue(var1)
         if (varname == "") {
@@ -1589,13 +1589,13 @@ iNZExtfromdtWin <- setRefClass(
           dfview$set_items(data.frame(Original = as.character(varx)))
           if (component == "") {
             return()
-          } 
+          }
           updatePreview()
         }
       })
-      
+
       for.var <- glabel("Select elements to extract \n(click + of lowest-level information for options)", container = mainGroup, anchor = c(-1, 0))
-      
+
       offspring <- function(path=character(0), lst, ...) {
         if(length(path))
           obj <- lst[[path]]
@@ -1609,35 +1609,35 @@ iNZExtfromdtWin <- setRefClass(
         data.frame(Name=nms, hasOffspring=hasOffspring, ## fred=nms,
                    stringsAsFactors=FALSE)
       }
-      
-      l <- list(Date = list("Date only" = "Date only", 
-                            Year = list("Year" = "Year", "Century" = "Century", "Decimal Year" = "Decimal Year"), 
+
+      l <- list(Date = list("Date only" = "Date only",
+                            Year = list("Year" = "Year", "Century" = "Century", "Decimal Year" = "Decimal Year"),
                             Quarter = list("Year Quarter" = "Year Quarter", "Quarter" = "Quarter"),
                             Month = list("Year Month" = "Year Month", "Month (full)" = "Month (full)", "Month (abbreviated)" = "Month (abbreviated)", "Month (number)" = "Month (number)"),
                             Week = list("Week of the year (Sunday as first day of the week)" = "Week of the year (Sunday as first day of the week)", "Week of the year (Monday as first day of the week)" = "Week of the year (Monday as first day of the week)"),
                             Day = list("Day of the year" = "Day of the year", "Day of the week (name)" = "Day of the week (name)", "Day of the week (abbreviated)" = "Day of the week (abbreviated)", "Day of the week (number, Monday as 1)" = "Day of the week (number, Monday as 1)", "Day of the week (number, Sunday as 0)" = "Day of the week (number, Sunday as 0)","Day" = "Day")),
                 Time = list("Time only" = "Time only", "Hours (decimal)" = "Hours (decimal)", "Hour" = "Hour", "Minute" = "Minute", "Second" = "Second")
       )
-      
+
 
       atree <- gtree(offspring=offspring, offspring.data=l, cont = mainGroup)
-      
+
       component <<- ""
       addHandlerClicked(atree, function(h, ...) {
         component <<- svalue(atree)[length(svalue(atree))]
-        svalue(newVarname) = makeNames(paste(varname, ".", switch(component, "Date only" = "Date", 
+        svalue(newVarname) = makeNames(paste(varname, ".", switch(component, "Date only" = "Date",
                                                                   "Decimal Year" = "Decimal.Year",
-                                                                  "Year Quarter" = "Year.Quarter", 
-                                                                  "Year Month" = "Year.Month", 
-                                                                  "Month (abbreviated)" = "Month.cat", 
-                                                                  "Month (full)" = "Month.cat", 
-                                                                  "Month (number)" = "Month.number", 
-                                                                  "Week of the year (Sunday as first day of the week)" = "Week.year", 
+                                                                  "Year Quarter" = "Year.Quarter",
+                                                                  "Year Month" = "Year.Month",
+                                                                  "Month (abbreviated)" = "Month.cat",
+                                                                  "Month (full)" = "Month.cat",
+                                                                  "Month (number)" = "Month.number",
+                                                                  "Week of the year (Sunday as first day of the week)" = "Week.year",
                                                                   "Week of the year (Monday as first day of the week)" = "Week.year",
-                                                                  "Day of the year" = "Day.year", 
-                                                                  "Day of the week (name)" = "Day.week", 
+                                                                  "Day of the year" = "Day.year",
+                                                                  "Day of the week (name)" = "Day.week",
                                                                   "Day of the week (abbreviated)" = "Day.week.abbreviated",
-                                                                  "Day of the week (number)" = "Day.week.number", 
+                                                                  "Day of the week (number)" = "Day.week.number",
                                                                   "Day of the week (number, Monday as 1)" = "Day.week.number",
                                                                   "Day of the week (number, Sunday as 0)" = "Day.week.number",
                                                                   "Time only" = "Time",
@@ -1645,29 +1645,29 @@ iNZExtfromdtWin <- setRefClass(
         newname <<- svalue(newVarname)
         updatePreview()
       })
-      
+
       date_string <- glabel("Name for new variable", container = mainGroup, anchor = c(-1, 0))
       newVarname = gedit("", cont = mainGroup)
       addHandlerKeystroke(newVarname, function(h, ...) {
         newname <<- ifelse(svalue(newVarname)=="", "Extracted", svalue(newVarname))
         updatePreview()
       })
-      
+
       preview_string = glabel("Preview", cont = mainGroup, anchor = c(-1, 0))
-      
+
       g2 = ggroup(cont = mainGroup)
       dfview = gtable(data.frame(Original = ""), cont = g2)
       size(dfview) = c(-1, 250)
       extractedview <<- gtable(data.frame(Extracted = ""), cont = g2)
       size(extractedview) <<- c(-1, 250)
-      
+
       okbtn <- gbutton("Extract", container = mainGroup, handler = function(h,...) {
         .dataset = GUI$getActiveData()
         exp = iNZightTools::extract_part(.dataset, varname, component, newname)
         updateData(exp)
         dispose(GUI$modWin)
       })
-      
+
       scrolledWindow$addWithViewport(mainGroup$widget)
       add(GUI$modWin, scrolledWindow, expand = TRUE, fill = TRUE)
       size(GUI$modWin) <<- c(300, 700)
@@ -1675,11 +1675,11 @@ iNZExtfromdtWin <- setRefClass(
     },
     updatePreview = function() {
       .dataset <- GUI$getActiveData()
-      list <- list("Date only", "Year", "Century", "Decimal Year", "Year Quarter", "Quarter", 
-                   "Year Month", "Month (full)", "Month (abbreviated)", "Month (number)", "Year Week", 
-                   "Week of the year (Monday as first day of the week)", "Week of the year (Sunday as first day of the week)", 
-                   "Day of the year", "Day of the week (name)", "Day of the week (abbreviated)", 
-                   "Day of the week (number, Monday as 1)", "Day of the week (number, Sunday as 0)", 
+      list <- list("Date only", "Year", "Century", "Decimal Year", "Year Quarter", "Quarter",
+                   "Year Month", "Month (full)", "Month (abbreviated)", "Month (number)", "Year Week",
+                   "Week of the year (Monday as first day of the week)", "Week of the year (Sunday as first day of the week)",
+                   "Day of the year", "Day of the week (name)", "Day of the week (abbreviated)",
+                   "Day of the week (number, Monday as 1)", "Day of the week (number, Sunday as 0)",
                    "Day", "Time only", "Hours (decimal)", "Hour", "Minute", "Second")
       if (component %in% list) {
         d <- iNZightTools::extract_part(.dataset, varname, component, newname)
@@ -1706,24 +1706,24 @@ iNZAggregatedtWin <- setRefClass(
     initialize = function(gui) {
       callSuper(gui)
       svalue(GUI$modWin) <<- "Aggregate datetimes to monthly or quarterly"
-      
+
       mainGroup <- gvbox()
       mainGroup$set_borderwidth(15)
-      
+
       title <- glabel("Aggregate datetimes to monthly or quarterly")
       font(title) <- list(size = 14, weight = "bold")
       helpbtn <- gimagebutton(stock.id = "gw-help", handler = function(h, ...){
         browseURL("https://www.stat.auckland.ac.nz/~wild/iNZight/user_guides/variables/#dtaggregate")
       })
-      
+
       titlelyt <- glayout(homegenous = FALSE)
       titlelyt[1, 4:19, expand = TRUE, anchor = c(0,0)] <- title
       titlelyt[1, 20, expand = TRUE, anchor = c(1, -1)] <- helpbtn
       add(mainGroup, titlelyt)
       addSpace(mainGroup, 5)
-      
+
       var1_string <- glabel("Select a column", container = mainGroup)
-      
+
       col <<- ""
       var1 <- gcombobox(items = c("", names(GUI$getActiveData())), cont = mainGroup)
       addHandlerChanged(var1, function(h, ...) {
@@ -1748,11 +1748,11 @@ iNZAggregatedtWin <- setRefClass(
           newview$set_items("Selected variable not supported")
         }
       })
-      
+
       formatlist <- c("", "Weekly", "Monthly", "Quarterly", "Yearly")
-      
+
       var2_string <- glabel("Choose format", cont = mainGroup)
-      
+
       format <<- ""
       var2 <- gcombobox(items = formatlist, cont = mainGroup)
       addHandlerChanged(var2, function(h, ...) {
@@ -1764,9 +1764,9 @@ iNZAggregatedtWin <- setRefClass(
           updateView()
         }
       })
-      
+
       var3_string <- glabel("How to aggregate", cont = mainGroup)
-      
+
       method <<- ""
       var3 <- gtable(c("Sum", "Mean", "Median"), cont = mainGroup)
       size(var3) <- c(-1, 150)
@@ -1774,23 +1774,23 @@ iNZAggregatedtWin <- setRefClass(
         method <<- svalue(var3)
         updateView()
       })
-      
+
       name <<- "newcol"
-      
+
       prevTbl <- glayout(homogeneous = FALSE, container = mainGroup)
-      
+
       string1 <- glabel("Original dataset")
       originview <- gtable(data.frame(GUI$getActiveData()))
       prevTbl[1,1, expand = TRUE] <- string1
       prevTbl[2,1, expand = TRUE] <- originview
       size(originview) = c(-1, 250)
-      
+
       string2 <- glabel("New dataset")
       newview <<- gtable(data.frame(""))
       prevTbl[1,2, expand = TRUE] <- string2
       prevTbl[2,2, expand = TRUE] <- newview
       size(newview) <<- c(-1, 250)
-      
+
       aggregatebtn <- gbutton("Aggregate", cont = mainGroup, handler = function(h,...) {
         .dataset <- GUI$getActiveData()
         data <- aggregate()
@@ -1799,7 +1799,7 @@ iNZAggregatedtWin <- setRefClass(
         GUI$setDocument(iNZDocument$new(data = data))
         dispose(GUI$modWin)
       })
-      
+
       add(GUI$modWin, mainGroup, expand = TRUE)
       visible(GUI$modWin) <<- TRUE
     },
