@@ -24,6 +24,7 @@ iNZSaveWin <- setRefClass(
                 l$data[[gettext("Comma Separated Values (CSV)")]] <- "csv"
                 l$data[[gettext("Tab Separated Values (TXT)")]] <- "txt"
                 l$data[[gettext("Space Separated Values (TXT)")]] <- "txt"
+                l$data[[gettext("RData (RDA)")]] <- "rda"
 
                 fileExtensions <- l[[type]]
                 pop <- function(x) x[-length(x)]
@@ -60,7 +61,8 @@ iNZSaveWin <- setRefClass(
                                             type = type,
                                             fileBrowse = filebrowse,
                                             filetype = filetype,
-                                            fileExtensions = fileExtensions
+                                            fileExtensions = fileExtensions,
+                                            dataname = attr(gui$getActiveData(), "name")
                                             )
                                         l2 <- modifyList(l1, extra.args)
                                         do.call(.self$okButtonHandler, l2)

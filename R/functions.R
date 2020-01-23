@@ -157,6 +157,12 @@ iNZSaveFile <- function(theFile, ext, ...) {
     TRUE
 }
 
+.iNZSaveFile.rda <- function(theFile, ext, data, dataname, ...) {
+    assign(dataname, data)
+    save(list = dataname, file = theFile)
+    TRUE
+}
+
 
 ####################################
 ## modifyList is defined again here
