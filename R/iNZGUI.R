@@ -757,7 +757,7 @@ iNZGUI <- setRefClass(
 
                             ## use equal variance assumption?
                             hypEqualVar <- gcheckbox("Use equal-variance", checked = FALSE)
-                            if (TTEST2) {
+                            if (TTEST2 && !is_survey) {
                                 tbl[ii, 4:6, expand = TRUE] <- hypEqualVar
                                 ii <- ii + 1
 
