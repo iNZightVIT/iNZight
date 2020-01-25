@@ -217,7 +217,7 @@ test_that("Replicate weights can be specified by file", {
         swin$rscalesTbl$get_items(),
         data.frame(rep.weight = character(), rscales = numeric())
     )
-    
+
     expect_silent(swin$set_rscales(f2))
     expect_equal(
         swin$rscalesTbl$get_items(),
@@ -329,7 +329,7 @@ test_that("Post stratification can be removed", {
 
 test_that("Frequency tables are saved", {
     expect_equal(
-        ui$getActiveDoc()$getModel()$getFreqTables(), 
+        ui$getActiveDoc()$getModel()$getFreqTables(),
         list(stype = pop.types)
     )
 })

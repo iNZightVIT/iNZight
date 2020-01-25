@@ -2,6 +2,7 @@
 
 - load from clipboard option
 - add option to import data from a URL as well as local files
+- remove equal variance checkbox for survey design (two way t-test)
 
 
 ## iNZight 3.5
