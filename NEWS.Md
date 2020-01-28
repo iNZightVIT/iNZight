@@ -3,6 +3,7 @@
 - load from clipboard option
 - add option to import data from a URL as well as local files
 - remove equal variance checkbox for survey design (two way t-test)
+- survey design code pasted together with a new line when `deparse` returns multiple lines (#281, @tmelliott)
 
 
 ## iNZight 3.5
