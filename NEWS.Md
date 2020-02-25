@@ -1,4 +1,4 @@
-## iNZight 3.5.0.9000
+## iNZight 3.5.0
 
 - load from clipboard option
 - add option to import data from a URL as well as local files
