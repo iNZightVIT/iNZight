@@ -145,7 +145,7 @@ iNZSurveyDesign <- setRefClass(
                     dispose(designWin)
 
                     ## write design call
-                    call <- deparse(setOK$call)
+                    call <- paste(deparse(setOK$call), collapse = "\n")
 
                     call <- sprintf("%s <- %s",
                         GUI$getActiveDoc()$getModel()$dataDesignName,
@@ -297,7 +297,7 @@ iNZSurveyDesign <- setRefClass(
 
             g2 <- gvbox(container = g, expand = TRUE)
             ## type, scale, etc.
-            
+
             tbl2 <- glayout(container = g2)
             ii <- 1
 
@@ -360,7 +360,7 @@ iNZSurveyDesign <- setRefClass(
             ii <- ii + 1
 
             ## initialize repRscales
-            repRscales <<- 
+            repRscales <<-
                 data.frame(rep.weight = character(), rscales = numeric())
             rscalesTbl <<- gtable(repRscales)
             tbl3[ii, 2:3, expand = TRUE] <- rscalesTbl
@@ -373,7 +373,7 @@ iNZSurveyDesign <- setRefClass(
                 # )
                 # display_scales()
             })
-            
+
             addHandlerChanged(repType, function(h, ...) {
                 visible(scalesG) <- !svalue(h$obj) %in% c("BRR", "Fay", "JK1", "JKn")
             })
@@ -522,7 +522,7 @@ iNZSurveyPostStrat <- setRefClass(
             addSpring(gmain)
             btnGrp <- ggroup(container = gmain)
 
-            rmvBtn <<- gbutton("Remove", 
+            rmvBtn <<- gbutton("Remove",
                 # icon = "delete",
                 handler = function(h, ...) {
                     svalue(PSvar, index = TRUE) <<- 0

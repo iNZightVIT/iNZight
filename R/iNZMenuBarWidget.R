@@ -51,6 +51,14 @@ iNZMenuBarWidget <- setRefClass(
                         icon = "symbol_diamond",
                         handler = function(h, ...) iNZSaveWin$new(GUI, type = "data", data = GUI$getActiveData())),
                 gseparator(),
+                paste =
+                    gaction("Paste from ...",
+                        icon = "symbol_diamond",
+                        tooltip = "Import data by pasting/clipboard",
+                        handler = function(h, ...)
+                            iNZClipboard$new(GUI, type = "paste")
+                    ),
+                gseparator(),
                 example =
                     gaction("Example data ...",
                         icon = "symbol_diamond",
