@@ -31,10 +31,10 @@ test_that("Modules launch and close", {
     )
 })
 
-# test_that("Add/remove modules window", {
-#     addrm <- svalue(ui$menuBarWidget$menubar)$Advanced$install
-#     expect_is(addrm, "GAction")
-#     ## more tests later
-# })
+test_that("Add/remove modules window", {
+    addrm <- svalue(ui$menuBarWidget$menubar)$Advanced$install
+    expect_is(addrm, "GAction")
+    ## more tests later
+})
 
 ui$close()

@@ -374,14 +374,14 @@ iNZMenuBarWidget <- setRefClass(
                     gaction("Maps ...",
                         icon = "symbol_diamond",
                         handler = function(h, ...) iNZightModules::iNZightMapLanding$new(GUI)),
-                # gseparator(),
-                # install =
-                #     gaction("Add or remove modules ...",
-                #         icon = "symbol_diamond",
-                #         tooltip = "Add or remove add-on iNZight modules",
-                #         handler = function(h, ...)
-                #             iNZightModules::InstallModules$new(GUI)
-                #     ),
+                gseparator(),
+                install =
+                    gaction("Add or remove modules ...",
+                        icon = "symbol_diamond",
+                        tooltip = "Add or remove add-on iNZight modules",
+                        handler = function(h, ...)
+                            iNZightModules::InstallModules$new(GUI)
+                    ),
                 gseparator(),
                 rcode =
                     gaction("R code history [beta] ...",
