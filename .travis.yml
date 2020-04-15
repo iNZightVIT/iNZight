@@ -29,7 +29,7 @@ repos:
 
 r_github_packages:
   - jverzani/gWidgets2RGtk2
-  - iNZightVIT/iNZightModules@dev
+  - iNZightVIT/iNZightModules@feature/module-install
   - iNZightVIT/iNZightPlots@dev
   - iNZightVIT/iNZightTools@dev
 
