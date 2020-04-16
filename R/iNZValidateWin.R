@@ -120,7 +120,7 @@ iNZValidateWin <- setRefClass(
       })
 
       update.details <- function(h, ...) {
-        i <- which(svalue(results.box) == validate::as.data.frame(vali)[["rule"]])
+        i <- which(svalue(results.box) == validate::as.data.frame(vali, stringsAsFactors = TRUE)[["rule"]])
 
         if (svalue(dropdown.identifier, TRUE) == 1) {
           id.var <- NA

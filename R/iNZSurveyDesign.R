@@ -190,7 +190,8 @@ iNZSurveyDesign <- setRefClass(
                             if (!is.null(curDes$rscales)) {
                                 repRscales <<- data.frame(
                                     rep.weight = curDes$repweights,
-                                    rscales = curDes$rscales
+                                    rscales = curDes$rscales,
+                                    stringsAsFactors = TRUE
                                 )
                                 display_scales()
                             }
@@ -343,7 +344,8 @@ iNZSurveyDesign <- setRefClass(
                 handler = function(h, ...) {
                     repRscales <<- data.frame(
                         rep.weight = character(),
-                        rscales = numeric()
+                        rscales = numeric(),
+                        stringsAsFactors = TRUE
                     )
                     display_scales()
                 }
@@ -361,7 +363,9 @@ iNZSurveyDesign <- setRefClass(
 
             ## initialize repRscales
             repRscales <<-
-                data.frame(rep.weight = character(), rscales = numeric())
+                data.frame(rep.weight = character(), rscales = numeric(),
+                    stringsAsFactors = TRUE
+                )
             rscalesTbl <<- gtable(repRscales)
             tbl3[ii, 2:3, expand = TRUE] <- rscalesTbl
             size(rscalesTbl) <<- c(-1, 200)
@@ -397,7 +401,7 @@ iNZSurveyDesign <- setRefClass(
             }
             names(df)[1] <- "rscales"
             repRscales <<- cbind(
-                data.frame(rep.weight = svalue(repVars)),
+                data.frame(rep.weight = svalue(repVars), stringsAsFactors = TRUE),
                 df
             )
             display_scales()
@@ -572,7 +576,8 @@ iNZSurveyPostStrat <- setRefClass(
                 if (is.null(lvldf[[v]])) {
                     d <- data.frame(
                         a = levels(GUI$getActiveData()[[v]]),
-                        b = NA
+                        b = NA,
+                        stringsAsFactors = TRUE
                     )
                     names(d) <- c(v, "Freq")
                     lvldf[[v]] <<- d

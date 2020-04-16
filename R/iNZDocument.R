@@ -12,9 +12,9 @@ iNZDataModel <- setRefClass(
             freqtables = "list"
         ),
         prototype = list(
-            dataSet = data.frame(empty = " "),
-            origDataSet = data.frame(empty = " "),
-            rowDataSet = data.frame(Row.names = 1, empty = " "),
+            dataSet = data.frame(empty = " ", stringsAsFactors = TRUE),
+            origDataSet = data.frame(empty = " ", stringsAsFactors = TRUE),
+            rowDataSet = data.frame(Row.names = 1, empty = " ", stringsAsFactors = TRUE),
             dataDesign = NULL,
             name = "data", oldname = "",
             freqtables = list()
@@ -38,7 +38,8 @@ iNZDataModel <- setRefClass(
             dataSet <<- data
             origDataSet <<- data
             rowData <- data.frame(Row.names = 1:nrow(data), data,
-                                  check.names = TRUE)
+                                  check.names = TRUE,
+                                  stringsAsFactors = TRUE)
             rowDataSet <<- rowData
             name <<- attr(data, "name", exact = TRUE)
             oldname <<- ""
@@ -273,7 +274,7 @@ iNZPlotSettings <- setRefClass(
                 settings$xlim <<- NULL
                 settings$ylim <<- NULL
             }
-            
+
             if (reset)
                 setList <- modifyList(setList,
                                       defaultSettings,
