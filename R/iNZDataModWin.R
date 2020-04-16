@@ -44,7 +44,8 @@ iNZDataModWin <- setRefClass(
         newData <- data.frame(
           GUI$getActiveData()[, 1:index],
           data,
-          GUI$getActiveData()[, (index+1):ncol(GUI$getActiveData())]
+          GUI$getActiveData()[, (index+1):ncol(GUI$getActiveData())],
+          stringsAsFactors = TRUE
         )
         newNames <- c(
           names(GUI$getActiveData())[1:index],
@@ -54,7 +55,7 @@ iNZDataModWin <- setRefClass(
         newNames <- make.names(newNames, unique = TRUE)
         names(newData) <- newNames
       } else {
-        newData <- data.frame(GUI$getActiveData(), data)
+        newData <- data.frame(GUI$getActiveData(), data, stringsAsFactors = TRUE)
         names(newData) <- make.names(c(names(GUI$getActiveData()),
                                        name), unique = TRUE)
       }
@@ -69,19 +70,7 @@ iNZDataModWin <- setRefClass(
     ## this is used to autogenerate names for variables
     makeNames = function(vars) {
       vnames <- names(GUI$getActiveData())
-      names <- character(length(vars))
-      for (v in seq_along(vars)) {
-        if (vars[v] %in% vnames) {
-          i = 1
-          while (paste0(vars[v], i) %in% vnames) i <- i + 1
-          vv <- paste0(vars[v], i)
-        } else {
-          vv <- vars[v]
-        }
-        vnames <- c(vnames, vv)
-        names[v] <- vv
-      }
-      names
+      iNZightTools::make_names(vars, vnames)
     },
     ## this checks names exist; returns TRUE if everything is OK
     checkNames = function(var) {
@@ -529,7 +518,7 @@ iNZreorderWin <- setRefClass(
 
       ## For manual ordering, gdf or gtable with up/down arrows ...
       levelGrp <- ggroup()
-      levelOrder <- gtable(data.frame(), container = levelGrp)
+      levelOrder <- gtable(data.frame(stringsAsFactors = TRUE), container = levelGrp)
       size(levelOrder) <- c(-1, 280)
       tbl[4:5, 2, expand = TRUE] <- levelGrp
 
@@ -556,8 +545,12 @@ iNZreorderWin <- setRefClass(
       ## HANDLERS
       addHandlerChanged(factorMenu, handler = function(h, ...) {
         svalue(factorName) <- makeNames(sprintf("%s.reord", svalue(factorMenu)))
-        levelOrder$set_items(data.frame(Levels =
-                                          levels(GUI$getActiveData()[, svalue(factorMenu)])))
+        levelOrder$set_items(
+          data.frame(
+            Levels = levels(GUI$getActiveData()[, svalue(factorMenu)]),
+            stringsAsFactors = TRUE
+          )
+        )
       })
 
       addHandlerChanged(sortMenu, handler = function(h, ...) {
@@ -577,7 +570,7 @@ iNZreorderWin <- setRefClass(
         li <- lvls[i]
         lvls[i] <- lvls[i-1]
         lvls[i-1] <- li
-        levelOrder$set_items(data.frame(Levels = lvls))
+        levelOrder$set_items(data.frame(Levels = lvls, stringsAsFactors = TRUE))
         svalue(levelOrder) <- li
         # unblockHandlers(levelUp)
         # unblockHandlers(levelDown)
@@ -595,7 +588,7 @@ iNZreorderWin <- setRefClass(
         li <- lvls[i]
         lvls[i] <- lvls[i+1]
         lvls[i+1] <- li
-        levelOrder$set_items(data.frame(Levels = lvls))
+        levelOrder$set_items(data.frame(Levels = lvls, stringsAsFactors = TRUE))
         svalue(levelOrder) <- li
         # unblockHandlers(levelUp)
         # unblockHandlers(levelDown)
@@ -1390,7 +1383,7 @@ iNZconTodtWin <- setRefClass(
         } else {
           varx = GUI$getActiveData()[[varname]]
           svalue(newVarname) = makeNames(paste(varname, ".dt", sep = ""))
-          dfview$set_items(data.frame(Original = varx))
+          dfview$set_items(data.frame(Original = varx, stringsAsFactors = TRUE))
           if (svalue(var2) == "") {
             return()
           } else {
@@ -1398,12 +1391,23 @@ iNZconTodtWin <- setRefClass(
             .dataset = GUI$getActiveData()
             name = svalue(newVarname)
             data = tryCatch(
-              convertedview$set_items(data.frame(Converted = iNZightTools::convert_to_datetime(.dataset, varname, convname, name)[[svalue(newVarname)]])),
+              convertedview$set_items(
+                data.frame(
+                  Converted = iNZightTools::convert_to_datetime(.dataset, varname, convname, name)[[svalue(newVarname)]],
+                  stringsAsFactors = TRUE
+                  )
+                ),
               warning = function(w) {
                 if (w$message == "Failed to parse") {
-                  convertedview$set_items(data.frame(Converted = "Invalid format"))
+                  convertedview$set_items(data.frame(
+                    Converted = "Invalid format",
+                    stringsAsFactors = TRUE
+                  ))
                 } else {
-                  convertedview$set_items(data.frame(Converted = w$message))
+                  convertedview$set_items(data.frame(
+                    Converted = w$message,
+                    stringsAsFactors = TRUE
+                  ))
                 }
               })
           }
@@ -1422,7 +1426,7 @@ iNZconTodtWin <- setRefClass(
           varx = paste(varx, GUI$getActiveData()[[name]])
           new_name = paste(new_name, name, ".", sep = "")
         }
-        dfview$set_items(data.frame(Original = varx))
+        dfview$set_items(data.frame(Original = varx, stringsAsFactors = TRUE))
         svalue(newVarname) = makeNames(paste(new_name, "dt", sep = ""))
         if (svalue(var2) == ""){
           return()
@@ -1431,12 +1435,21 @@ iNZconTodtWin <- setRefClass(
           .dataset = GUI$getActiveData()
           name = svalue(newVarname)
           data = tryCatch(
-            convertedview$set_items(data.frame(Converted = iNZightTools::convert_to_datetime(.dataset, factorname, convname, name)[[svalue(newVarname)]])),
+            convertedview$set_items(
+              data.frame(
+                Converted = iNZightTools::convert_to_datetime(.dataset, factorname, convname, name)[[svalue(newVarname)]],
+                stringsAsFactors = TRUE
+              )
+            ),
             warning = function(w) {
               if (w$message == "Failed to parse") {
-                convertedview$set_items(data.frame(Converted = "Invalid format"))
+                convertedview$set_items(
+                  data.frame(Converted = "Invalid format", stringsAsFactors = TRUE)
+                )
               } else {
-                convertedview$set_items(data.frame(Converted = w$message))
+                convertedview$set_items(
+                  data.frame(Converted = w$message, stringsAsFactors = TRUE)
+                )
               }
             })
         }
@@ -1485,12 +1498,21 @@ iNZconTodtWin <- setRefClass(
           .dataset = GUI$getActiveData()
           name = svalue(newVarname)
           data = tryCatch(
-            convertedview$set_items(data.frame(Converted = iNZightTools::convert_to_datetime(.dataset, factorname, convname, name)[[svalue(newVarname)]])),
+            convertedview$set_items(
+              data.frame(
+                Converted = iNZightTools::convert_to_datetime(.dataset, factorname, convname, name)[[svalue(newVarname)]],
+                stringsAsFactors = TRUE
+              )
+            ),
             warning = function(w) {
               if (w$message == "Failed to parse") {
-                convertedview$set_items(data.frame(Converted = "Invalid format"))
+                convertedview$set_items(
+                  data.frame(Converted = "Invalid format", stringsAsFactors = TRUE)
+                )
               } else {
-                convertedview$set_items(data.frame(Converted = w$message))
+                convertedview$set_items(
+                  data.frame(Converted = w$message, stringsAsFactors = TRUE)
+                )
               }
             })
         }
@@ -1518,9 +1540,9 @@ iNZconTodtWin <- setRefClass(
       tbl[3,4] <- gbutton("clear", handler = function(h,...){svalue(var2) = ""})
 
       g3 = ggroup(cont = mainGroup)
-      dfview = gtable(data.frame(Original = ""), cont = g3)
+      dfview = gtable(data.frame(Original = "", stringsAsFactors = TRUE), cont = g3)
       size(dfview) = c(-1, 250)
-      convertedview = gtable(data.frame(Converted = ""), cont = g3)
+      convertedview = gtable(data.frame(Converted = "", stringsAsFactors = TRUE), cont = g3)
       size(convertedview) = c(-1, 250)
 
       okbtn <- gbutton("Convert", container = mainGroup, handler = function(h,...) {
@@ -1582,11 +1604,11 @@ iNZExtfromdtWin <- setRefClass(
       var1 <- gcombobox(items = c("", c(names(dplyr::select_if(GUI$getActiveData(), lubridate::is.Date)), names(dplyr::select_if(GUI$getActiveData(), lubridate::is.POSIXct)))), container = mainGroup, handler = function(h,...){
         varname <<- svalue(var1)
         if (varname == "") {
-          dfview$set_items(data.frame(Original = ""))
-          extractedview$set_items(data.frame(Extracted = ""))
+          dfview$set_items(data.frame(Original = "", stringsAsFactors = TRUE))
+          extractedview$set_items(data.frame(Extracted = "", stringsAsFactors = TRUE))
         } else {
           varx = GUI$getActiveData()[[varname]]
-          dfview$set_items(data.frame(Original = as.character(varx)))
+          dfview$set_items(data.frame(Original = as.character(varx), stringsAsFactors = TRUE))
           if (component == "") {
             return()
           }
@@ -1656,9 +1678,9 @@ iNZExtfromdtWin <- setRefClass(
       preview_string = glabel("Preview", cont = mainGroup, anchor = c(-1, 0))
 
       g2 = ggroup(cont = mainGroup)
-      dfview = gtable(data.frame(Original = ""), cont = g2)
+      dfview = gtable(data.frame(Original = "", stringsAsFactors = TRUE), cont = g2)
       size(dfview) = c(-1, 250)
-      extractedview <<- gtable(data.frame(Extracted = ""), cont = g2)
+      extractedview <<- gtable(data.frame(Extracted = "", stringsAsFactors = TRUE), cont = g2)
       size(extractedview) <<- c(-1, 250)
 
       okbtn <- gbutton("Extract", container = mainGroup, handler = function(h,...) {
@@ -1683,7 +1705,9 @@ iNZExtfromdtWin <- setRefClass(
                    "Day", "Time only", "Hours (decimal)", "Hour", "Minute", "Second")
       if (component %in% list) {
         d <- iNZightTools::extract_part(.dataset, varname, component, newname)
-        extractedview$set_items(data.frame(Extracted = as.character(d[[newname]])))
+        extractedview$set_items(
+          data.frame(Extracted = as.character(d[[newname]]), stringsAsFactors = TRUE)
+        )
       }
     }
   ))
@@ -1780,13 +1804,13 @@ iNZAggregatedtWin <- setRefClass(
       prevTbl <- glayout(homogeneous = FALSE, container = mainGroup)
 
       string1 <- glabel("Original dataset")
-      originview <- gtable(data.frame(GUI$getActiveData()))
+      originview <- gtable(data.frame(GUI$getActiveData(), stringsAsFactors = TRUE))
       prevTbl[1,1, expand = TRUE] <- string1
       prevTbl[2,1, expand = TRUE] <- originview
       size(originview) = c(-1, 250)
 
       string2 <- glabel("New dataset")
-      newview <<- gtable(data.frame(""))
+      newview <<- gtable(data.frame("", stringsAsFactors = TRUE))
       prevTbl[1,2, expand = TRUE] <- string2
       prevTbl[2,2, expand = TRUE] <- newview
       size(newview) <<- c(-1, 250)

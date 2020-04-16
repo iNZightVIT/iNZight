@@ -8,7 +8,7 @@ setwd(wd)
 
 doc <- NULL
 test_that("New document is created correctly when data loaded", {
-    testdata <- data.frame(A = 1:10, B = LETTERS[1:10])
+    testdata <- data.frame(A = 1:10, B = LETTERS[1:10], stringsAsFactors = TRUE)
     attr(testdata, "name") <- "testdata"
 
     expect_silent(doc <<- iNZDocument$new(data = testdata))

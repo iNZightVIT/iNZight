@@ -1,7 +1,7 @@
 Package: iNZight
 Type: Package
 Title: iNZight GUI for Data Exploration and Visualisation
-Version: 3.5.1
+Version: 3.5.1.9000
 Date: 2020-02-25
 Authors@R: c(person("Tom", "Elliott", role = c("aut", "cre"),
                     email = "tom.elliott@auckland.ac.nz"),
@@ -51,4 +51,4 @@ Suggests:
 Additional_repositories: https://r.docker.stat.auckland.ac.nz
 LazyData: true
 Encoding: UTF-8
-RoxygenNote: 7.0.2
+RoxygenNote: 7.1.0

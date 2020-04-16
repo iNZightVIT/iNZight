@@ -1,3 +1,6 @@
+- move makeNames() method (part of iNZDataModWin) to 'iNZightTools' package
+  as iNZightTools::make_names()
+
 ## iNZight 3.5.0
 
 - load from clipboard option
