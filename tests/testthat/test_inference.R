@@ -1,5 +1,7 @@
 context("Get Inference window")
 
+options(stringsAsFactors = TRUE)
+
 # ui$close()
 # devtools::load_all("../..")
 ui <- iNZGUI$new()
@@ -347,4 +349,3 @@ test_that("Get inference still enabled for non-surveys", {
     ui$removeDesign()
     expect_true(enabled(ui$infBtn))
 })
-
