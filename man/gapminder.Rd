@@ -4,7 +4,8 @@
 \name{gapminder}
 \alias{gapminder}
 \title{Gap Minder}
-\format{A data frame with 3577 rows and 55 variables:
+\format{
+A data frame with 3577 rows and 55 variables:
 \describe{
   \item{Country}{the country name}
   \item{Region.Geo}{geographical region}
@@ -61,7 +62,8 @@
   \item{UrbanpopulationTotal}{}
   \item{Urbanpopulationgrowth}{}
   \item{YearlyCO2emission}{}
-}}
+}
+}
 \usage{
 gapminder
 }

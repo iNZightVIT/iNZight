@@ -117,9 +117,14 @@ iNZPlotWidget <- setRefClass(
             if (GUI$plotType %in% c("dot", "scatter", "terrain", "terrain-background", "toner-lite", "toner")) {
                 labHTML <- glabel("Select additional variables to export", container = gHTML)
                 font(labHTML) <- list(size = 12, weight = "bold")
-                
-                tabHTML <- gtable(data.frame(Variable = colnames(GUI$getActiveData())),
-                          container = gHTML, multiple = TRUE)
+
+                tabHTML <- gtable(
+                    data.frame(
+                        Variable = colnames(GUI$getActiveData()),
+                        stringsAsFactors = TRUE
+                    ),
+                    container = gHTML, multiple = TRUE
+                )
                 size(tabHTML) <- c(-1, 160)
                 subHTML <- glabel("Hold CTRL to select multiple", container = gHTML)
                 font(subHTML) <- list(size = 9)
@@ -128,7 +133,7 @@ iNZPlotWidget <- setRefClass(
                 })
             }
 
-            
+
             addSpace(g, 5)
             glabel("Developmental - only working for base plots.\nDoesn't check for existing file.", container = g)
 
@@ -161,22 +166,22 @@ iNZPlotWidget <- setRefClass(
                                                dat <- NULL
                                                vars <- NULL
                                            }
-                                         
+
                                            plot.settings <- GUI$getActiveDoc()$getSettings()
-                                           
+
                                            if (isTRUE(length(plot.settings$locate.id) > 0)) {
                                              print(plot.settings$locate.settings)
                                              if (isTRUE(plot.settings$locate.settings$txtVar != "id")) {
                                                dat <- GUI$getActiveData()
                                                vars <- c(vars, plot.settings$locate.settings$txtVar)
                                              }
-                                             
+
                                              if (isTRUE(plot.settings$locate.settings$matchChk)) {
                                                dat <- GUI$getActiveData()
                                                vars <- c(vars, plot.settings$locate.settings$matchVar)
                                              }
                                            }
-                                         
+
                                            fp <- filetypes[[svalue(fileType)]](fun, f, data = dat, extra.vars = vars)
                                        },
                                        error = function(e) {
@@ -214,7 +219,7 @@ iNZPlotWidget <- setRefClass(
                                        finally = {
                                            ## I don't really know what to do here
                                        })
-                                       
+
                                        if (fp == "") return()
                                        ## `fp` is of class `inzHTML` and has a print method that'll open it in a browser
                                        print(fp)

@@ -37,7 +37,7 @@ iNZClipboard <- setRefClass(
             )
 
             dataOut <<- gdf(
-                data.frame("Preview" = "Paste data above"),
+                data.frame("Preview" = "Paste data above", stringsAsFactors = TRUE),
                 container = g
             )
 
@@ -85,7 +85,7 @@ iNZClipboard <- setRefClass(
 
             if (txt == "") {
                 dataOut$set_items(
-                    data.frame("Preview" = "Paste data above")
+                    data.frame("Preview" = "Paste data above", stringsAsFactors = TRUE)
                 )
             }
 
@@ -105,7 +105,8 @@ iNZClipboard <- setRefClass(
             } else {
                 dataOut$set_items(
                     data.frame(
-                        Error = "Cannot parse data. Try specifying delimiter below."
+                        Error = "Cannot parse data. Try specifying delimiter below.",
+                        stringsAsFactors = TRUE
                     )
                 )
             }
