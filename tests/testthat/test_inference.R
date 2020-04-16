@@ -1,7 +1,5 @@
 context("Get Inference window")
 
-options(stringsAsFactors = TRUE)
-
 # ui$close()
 # devtools::load_all("../..")
 ui <- iNZGUI$new()

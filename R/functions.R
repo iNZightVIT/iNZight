@@ -18,6 +18,8 @@
     packageStartupMessage("")
     packageStartupMessage(header)
 
+    options(stringsAsFactors = TRUE)
+
     ## try to load extension packages
     #for (lib in c("iNZightModules", "iNZightTS", "iNZightMR")) {
     #    if (lib %in% installed.packages())
