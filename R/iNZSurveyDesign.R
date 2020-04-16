@@ -394,7 +394,7 @@ iNZSurveyDesign <- setRefClass(
             # if first row is a character, file has a header
             x1 <- readLines(file, n = 1)
             file_has_header <- suppressWarnings(is.na(as.numeric(x1)))
-            df <- read.csv(file, header = file_has_header)
+            df <- read.csv(file, header = file_has_header, stringsAsFactors = TRUE)
             if (nrow(df) != length(svalue(repVars))) {
                 gmessage("You need to specify one scale per replicate.")
                 return()
@@ -656,7 +656,7 @@ iNZSurveyPostStrat <- setRefClass(
                         )
                         if (length(f) == 0) return()
 
-                        df <- read.csv(f)
+                        df <- read.csv(f, stringsAsFactors = TRUE)
                         rowj <- which(sapply(PSlvls[, 3],
                             function(z) identical(z, h$obj)
                         ))

@@ -211,7 +211,7 @@ test_that("Replicate weights can be specified by file", {
         swin$rscalesTbl$get_items(),
         data.frame(
             rep.weight = paste("rakedw", 1:80, sep = ""),
-            rscales = read.csv(f1, header = FALSE)[[1]],
+            rscales = read.csv(f1, header = FALSE, stringsAsFactors = TRUE)[[1]],
             stringsAsFactors = TRUE
         )
     )
@@ -229,7 +229,7 @@ test_that("Replicate weights can be specified by file", {
         swin$rscalesTbl$get_items(),
         data.frame(
             rep.weight = paste("rakedw", 1:80, sep = ""),
-            rscales = read.csv(f2)[[1]],
+            rscales = read.csv(f2, stringsAsFactors = TRUE)[[1]],
             stringsAsFactors = TRUE
         )
     )
@@ -289,7 +289,7 @@ test_that("Post stratification set by importing additional dataset", {
     # read from file
     tmp <- tempfile(fileext = ".csv")
     write.csv(pop.types, file = tmp, quote = FALSE, row.names = FALSE)
-    expect_silent(swin$set_freqs("stype", read.csv(tmp)))
+    expect_silent(swin$set_freqs("stype", read.csv(tmp, stringsAsFactors = TRUE)))
     expect_equal(
         sapply(swin$PSlvls$children[c(5, 8, 11)], svalue),
         as.character(pop.types$Freq)
