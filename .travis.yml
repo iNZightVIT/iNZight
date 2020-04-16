@@ -31,7 +31,7 @@ r_github_packages:
   - jverzani/gWidgets2RGtk2
   - iNZightVIT/iNZightModules@dev
   - iNZightVIT/iNZightPlots@dev
-  - iNZightVIT/iNZightTools@dev
+  - iNZightVIT/iNZightTools@feature/make-names
 
 addons:
   apt:

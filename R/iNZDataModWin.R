@@ -69,19 +69,7 @@ iNZDataModWin <- setRefClass(
     ## this is used to autogenerate names for variables
     makeNames = function(vars) {
       vnames <- names(GUI$getActiveData())
-      names <- character(length(vars))
-      for (v in seq_along(vars)) {
-        if (vars[v] %in% vnames) {
-          i = 1
-          while (paste0(vars[v], i) %in% vnames) i <- i + 1
-          vv <- paste0(vars[v], i)
-        } else {
-          vv <- vars[v]
-        }
-        vnames <- c(vnames, vv)
-        names[v] <- vv
-      }
-      names
+      iNZightTools::make_names(vars, vnames)
     },
     ## this checks names exist; returns TRUE if everything is OK
     checkNames = function(var) {
