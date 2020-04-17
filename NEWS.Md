@@ -1,5 +1,6 @@
 - move makeNames() method (part of iNZDataModWin) to 'iNZightTools' package
   as iNZightTools::make_names()
+- specify `stringsAsFactors = TRUE` for upcoming R 4.0.0
 
 ## iNZight 3.5.0
 
