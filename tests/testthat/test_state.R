@@ -1,6 +1,8 @@
 context("Save and load application state")
 
 tmp <- tempfile(fileext = ".inzsave")
+on.exit(unlink(tmp))
+
 test_that("Application state can be saved", {
     ui <- iNZGUI$new()
     ui$initializeGui()
@@ -43,6 +45,3 @@ test_that("Application state can be loaded", {
         "gender"
     )
 })
-
-## clean up after ourselves
-unlink(tmp)
