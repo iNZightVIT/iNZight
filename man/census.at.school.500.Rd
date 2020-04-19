@@ -4,7 +4,8 @@
 \name{census.at.school.500}
 \alias{census.at.school.500}
 \title{Census at School 500}
-\format{A data frame with 500 rows and 10 variables:
+\format{
+A data frame with 500 rows and 10 variables:
 \describe{
   \item{cellsource}{the source of cellphone money}
   \item{rightfoot}{length of the right foot, mm}
@@ -16,7 +17,8 @@
   \item{year}{their school year}
   \item{armspan}{their armspan measurement, cm}
   \item{cellcost}{money spent on cellphones}
-}}
+}
+}
 \source{
 \url{http://new.censusatschool.org.nz/}
 }

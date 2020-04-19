@@ -4,8 +4,7 @@
 \alias{gimagebutton}
 \title{iNZight Image Button}
 \usage{
-gimagebutton(stock.id = NULL, filename, old_cursor = NULL,
-  tooltip = NULL, ...)
+gimagebutton(stock.id = NULL, filename, old_cursor = NULL, tooltip = NULL, ...)
 }
 \arguments{
 \item{stock.id}{the icon to use}

@@ -8,7 +8,7 @@ setwd(wd)
 
 doc <- NULL
 test_that("New document is created correctly when data loaded", {
-    testdata <- data.frame(A = 1:10, B = LETTERS[1:10])
+    testdata <- data.frame(A = 1:10, B = LETTERS[1:10], stringsAsFactors = TRUE)
     attr(testdata, "name") <- "testdata"
 
     expect_silent(doc <<- iNZDocument$new(data = testdata))
@@ -246,4 +246,22 @@ test_that("Excel files load and display available sheets", {
     expect_silent(svalue(imp$rdaName, index = TRUE) <- 3)
     expect_silent(imp$okBtn$invoke_change_handler())
     expect_true(all(as.character(ui$getActiveData()$continent) == "Asia"))
+})
+
+
+# try(ui$close()); load_all()
+# ui <- iNZGUI$new()
+# ui$initializeGui()
+# on.exit(gWidgets2::dispose(ui$win))
+
+test_that("User can choose to load a URL", {
+    imp <- iNZImportWin$new(ui)
+    svalue(imp$loadURL) <- TRUE
+    svalue(imp$fileurl) <- "https://raw.githubusercontent.com/iNZightVIT/iNZight/dev/tests/testthat/cas5.csv"
+    expect_equal(imp$fext, "csv")
+    expect_silent(imp$okBtn$invoke_change_handler())
+    expect_equivalent(
+        ui$getActiveData(),
+        iNZightTools::smart_read("cas5.csv")
+    )
 })

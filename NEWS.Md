@@ -1,5 +1,17 @@
-## iNZight 3.4.6.9000
-__Release date__: TBA
+- move makeNames() method (part of iNZDataModWin) to 'iNZightTools' package
+  as iNZightTools::make_names()
+- specify `stringsAsFactors = TRUE` for upcoming R 4.0.0
+
+## iNZight 3.5.0
+
+- load from clipboard option
+- add option to import data from a URL as well as local files
+- remove equal variance checkbox for survey design (two way t-test)
+- survey design code pasted together with a new line when `deparse` returns multiple lines (#281, @tmelliott)
+
+
+## iNZight 3.5
+__Release date__: 11 November 2019
 
 - allow users to change column types for all import types (cat/num)
 - reset axis limits when either V1 or V2 change (temp fix until something less aggressive is implemented)
@@ -18,7 +30,8 @@ __Release date__: TBA
 - addon modules now available (as a developmental feature)
 - add option to export as rda
 - allow user to select which Excel sheet to import
-
+- enable transparency for ridgeline plots
+- enable palettes, colouring, etc. for barcode plots
 
 ## iNZight 3.4.6
 __Release date__: 23 September 2019

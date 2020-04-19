@@ -3,9 +3,11 @@ iNZImportWin <- setRefClass(
     fields = list(
         GUI = "ANY",
         importFileWin = "ANY",
+        loadURL = "ANY",
         filetypes = "list",
         fileTbl = "ANY",
-        fname = "character", filename = "ANY",
+        fname = "character", filename = "ANY", fileurl = "ANY",
+        browseBtn = "ANY",
         fext = "ANY",
         filetype = "ANY",
         fColTypes = "ANY",
@@ -95,7 +97,7 @@ iNZImportWin <- setRefClass(
             lbl <- glabel("File Name :")
             font(lbl) <- list(weight = "bold")
             filename <<- glabel("")
-            browseBtn <- gbutton("Browse",
+            browseBtn <<- gbutton("Browse",
                 handler = function(h, ...) {
                     fname <<- gfile(
                         text = "Choose a file",
@@ -109,8 +111,13 @@ iNZImportWin <- setRefClass(
             )
             fileTbl[ii, 1, anchor = c(1, 0)] <<- lbl
             font(lbl) <- list(weight = "bold")
-            fileTbl[ii, 2:4, expand = TRUE, anchor = c(-1, 0)] <<- filename
+            fileTbl[ii, 2:4, expand = TRUE, anchor = c(1, 0)] <<- filename
             fileTbl[ii, 5] <<- browseBtn
+            ii <- ii + 1
+
+            ## --- URL?
+            loadURL <<- gcheckbox("Import from URL", checked = FALSE)
+            fileTbl[ii, 2:5, expand = TRUE, anchor = c(-1, 0)] <<- loadURL
             ii <- ii + 1
 
             ## --- Extension
@@ -130,6 +137,31 @@ iNZImportWin <- setRefClass(
                         filetypes[[svalue(h$obj, index = TRUE) + 1]]$patterns[1]
                     )
                     generatePreview(h, ...)
+                }
+            )
+            addHandlerChanged(loadURL,
+                function(h, ...) {
+                    ## Switch to loading a URL
+                    fileTbl[1,1]$set_value(
+                        ifelse(svalue(loadURL), "File URL :", "File Name :")
+                    )
+                    visible(browseBtn) <<- !svalue(loadURL)
+                    if (svalue(loadURL)) {
+                        delete(fileTbl, fileTbl[1, 2])
+                        fileurl <<- gedit(text = "https://", width = 40)
+                        fileTbl[1, 2:5, expand = TRUE] <<- fileurl
+                        addHandlerChanged(fileurl,
+                            function(h, ...) {
+                                fname <<- svalue(fileurl)
+                                setfile()
+                                generatePreview(h, ...)
+                            }
+                        )
+                    } else {
+                        delete(fileTbl, fileTbl[1, 2])
+                        filename <<- glabel("")
+                        fileTbl[1, 2:4, expand = TRUE, anchor = c(1, 0)] <<- filename
+                    }
                 }
             )
 
@@ -282,6 +314,7 @@ iNZImportWin <- setRefClass(
             structure(vtypes, .Names = vnames)
         },
         readData = function(preview = FALSE) {
+            file_is_url <- svalue(loadURL)
             ## Read data using object values:
             ## this needs to be conditionally constructed ..
             switch(fext,
@@ -358,7 +391,8 @@ iNZImportWin <- setRefClass(
         },
         ## Generate a preview
         generatePreview = function(h, ..., reload = FALSE) {
-            if (length(fname) && file.exists(fname)) {
+            if (length(fname) &&
+                (file.exists(fname) || svalue(loadURL))) {
                 if (!is.null(prev)) {
                     delete(prevGp, prev)
                     prev <<- NULL
@@ -469,15 +503,15 @@ iNZImportWin <- setRefClass(
                 rdaLabel <<- glabel("Dataset :")
                 font(rdaLabel) <<- list(weight = "bold")
                 rdaName <<- gcombobox("(none)")
-                fileTbl[3, 1, anchor = c(1, 0)] <<- rdaLabel
-                fileTbl[3, 2:5, expand = TRUE] <<- rdaName
+                fileTbl[4, 1, anchor = c(1, 0)] <<- rdaLabel
+                fileTbl[4, 2:5, expand = TRUE] <<- rdaName
                 addHandlerChanged(rdaName, generatePreview)
             }
         },
         removeDataName = function() {
             if (!is.null(rdaName)) {
-                delete(fileTbl, fileTbl[3,1])
-                delete(fileTbl, fileTbl[3,2])
+                delete(fileTbl, fileTbl[4,1])
+                delete(fileTbl, fileTbl[4,2])
                 rdaName <<- NULL
                 rdaLabel <<- NULL
             }

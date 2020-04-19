@@ -11,7 +11,10 @@ test_that("GUI is loaded and initialized without problems", {
     expect_equal(ui$initializeGui(), 0)
 
     ## the new initialized UI window should have several important objects ...
-    expect_equal(ui$getActiveData(), data.frame(empty = " "))
+    expect_equal(
+        ui$getActiveData(),
+        data.frame(empty = " ", stringsAsFactors = TRUE)
+    )
     expect_equal(length(ui$iNZDocuments), 1)
     expect_is(ui$iNZDocuments[[1]], "iNZDocument")
 })
