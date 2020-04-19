@@ -145,7 +145,7 @@ iNZSurveyDesign <- setRefClass(
                     dispose(designWin)
 
                     ## write design call
-                    call <- deparse(setOK$call)
+                    call <- paste(deparse(setOK$call), collapse = "\n")
 
                     call <- sprintf("%s <- %s",
                         GUI$getActiveDoc()$getModel()$dataDesignName,
@@ -190,7 +190,8 @@ iNZSurveyDesign <- setRefClass(
                             if (!is.null(curDes$rscales)) {
                                 repRscales <<- data.frame(
                                     rep.weight = curDes$repweights,
-                                    rscales = curDes$rscales
+                                    rscales = curDes$rscales,
+                                    stringsAsFactors = TRUE
                                 )
                                 display_scales()
                             }
@@ -297,7 +298,7 @@ iNZSurveyDesign <- setRefClass(
 
             g2 <- gvbox(container = g, expand = TRUE)
             ## type, scale, etc.
-            
+
             tbl2 <- glayout(container = g2)
             ii <- 1
 
@@ -343,7 +344,8 @@ iNZSurveyDesign <- setRefClass(
                 handler = function(h, ...) {
                     repRscales <<- data.frame(
                         rep.weight = character(),
-                        rscales = numeric()
+                        rscales = numeric(),
+                        stringsAsFactors = TRUE
                     )
                     display_scales()
                 }
@@ -360,8 +362,10 @@ iNZSurveyDesign <- setRefClass(
             ii <- ii + 1
 
             ## initialize repRscales
-            repRscales <<- 
-                data.frame(rep.weight = character(), rscales = numeric())
+            repRscales <<-
+                data.frame(rep.weight = character(), rscales = numeric(),
+                    stringsAsFactors = TRUE
+                )
             rscalesTbl <<- gtable(repRscales)
             tbl3[ii, 2:3, expand = TRUE] <- rscalesTbl
             size(rscalesTbl) <<- c(-1, 200)
@@ -373,7 +377,7 @@ iNZSurveyDesign <- setRefClass(
                 # )
                 # display_scales()
             })
-            
+
             addHandlerChanged(repType, function(h, ...) {
                 visible(scalesG) <- !svalue(h$obj) %in% c("BRR", "Fay", "JK1", "JKn")
             })
@@ -390,14 +394,14 @@ iNZSurveyDesign <- setRefClass(
             # if first row is a character, file has a header
             x1 <- readLines(file, n = 1)
             file_has_header <- suppressWarnings(is.na(as.numeric(x1)))
-            df <- read.csv(file, header = file_has_header)
+            df <- read.csv(file, header = file_has_header, stringsAsFactors = TRUE)
             if (nrow(df) != length(svalue(repVars))) {
                 gmessage("You need to specify one scale per replicate.")
                 return()
             }
             names(df)[1] <- "rscales"
             repRscales <<- cbind(
-                data.frame(rep.weight = svalue(repVars)),
+                data.frame(rep.weight = svalue(repVars), stringsAsFactors = TRUE),
                 df
             )
             display_scales()
@@ -522,7 +526,7 @@ iNZSurveyPostStrat <- setRefClass(
             addSpring(gmain)
             btnGrp <- ggroup(container = gmain)
 
-            rmvBtn <<- gbutton("Remove", 
+            rmvBtn <<- gbutton("Remove",
                 # icon = "delete",
                 handler = function(h, ...) {
                     svalue(PSvar, index = TRUE) <<- 0
@@ -572,7 +576,8 @@ iNZSurveyPostStrat <- setRefClass(
                 if (is.null(lvldf[[v]])) {
                     d <- data.frame(
                         a = levels(GUI$getActiveData()[[v]]),
-                        b = NA
+                        b = NA,
+                        stringsAsFactors = TRUE
                     )
                     names(d) <- c(v, "Freq")
                     lvldf[[v]] <<- d
@@ -651,7 +656,7 @@ iNZSurveyPostStrat <- setRefClass(
                         )
                         if (length(f) == 0) return()
 
-                        df <- read.csv(f)
+                        df <- read.csv(f, stringsAsFactors = TRUE)
                         rowj <- which(sapply(PSlvls[, 3],
                             function(z) identical(z, h$obj)
                         ))

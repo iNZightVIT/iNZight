@@ -51,6 +51,14 @@ iNZMenuBarWidget <- setRefClass(
                         icon = "symbol_diamond",
                         handler = function(h, ...) iNZSaveWin$new(GUI, type = "data", data = GUI$getActiveData())),
                 gseparator(),
+                paste =
+                    gaction("Paste from ...",
+                        icon = "symbol_diamond",
+                        tooltip = "Import data by pasting/clipboard",
+                        handler = function(h, ...)
+                            iNZClipboard$new(GUI, type = "paste")
+                    ),
+                gseparator(),
                 example =
                     gaction("Example data ...",
                         icon = "symbol_diamond",
@@ -366,14 +374,14 @@ iNZMenuBarWidget <- setRefClass(
                     gaction("Maps ...",
                         icon = "symbol_diamond",
                         handler = function(h, ...) iNZightModules::iNZightMapLanding$new(GUI)),
-                # gseparator(),
-                # install =
-                #     gaction("Add or remove modules ...",
-                #         icon = "symbol_diamond",
-                #         tooltip = "Add or remove add-on iNZight modules",
-                #         handler = function(h, ...)
-                #             iNZightModules::InstallModules$new(GUI)
-                #     ),
+                gseparator(),
+                install =
+                    gaction("Add or remove modules ...",
+                        icon = "symbol_diamond",
+                        tooltip = "Add or remove add-on iNZight modules",
+                        handler = function(h, ...)
+                            iNZightModules::InstallModules$new(GUI)
+                    ),
                 gseparator(),
                 rcode =
                     gaction("R code history [beta] ...",

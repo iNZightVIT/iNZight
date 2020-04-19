@@ -518,7 +518,8 @@ iNZPlotModWin <- setRefClass(
                     x = curSet$x,
                     locate = locVar,
                     id = 1:nrow(GUI$getActiveData()),
-                    match = matchVar
+                    match = matchVar,
+                    stringsAsFactors = TRUE
                 )
                 if (!dot)
                     d$y <- curSet$y

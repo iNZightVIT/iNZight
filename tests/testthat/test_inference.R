@@ -347,4 +347,3 @@ test_that("Get inference still enabled for non-surveys", {
     ui$removeDesign()
     expect_true(enabled(ui$infBtn))
 })
-

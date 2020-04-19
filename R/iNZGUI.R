@@ -532,7 +532,7 @@ iNZGUI <- setRefClass(
                                                 function(object)
                                                     predict(
                                                         object,
-                                                        newdata = data.frame(x = xvar)
+                                                        newdata = data.frame(x = xvar, stringsAsFactors = TRUE)
                                                     )
                                             else
                                                 function(object)
@@ -542,7 +542,7 @@ iNZGUI <- setRefClass(
                                         if (is_cat(xvar) || is_cat(yvar)) {
                                             ## just the one
                                             fit <- with(curSet, lm(if (is_num(yvar)) y ~ x else x ~ y, na.action = na.exclude))
-                                            pred <- data.frame(FUN(fit))
+                                            pred <- data.frame(FUN(fit), stringsAsFactors = TRUE)
                                             colnames(pred) <- svalue(fittedName)
                                         } else if (length(curSet$trend) >= 1) {
                                             ## for each trend line
@@ -561,17 +561,17 @@ iNZGUI <- setRefClass(
                                             })
                                         }
                                         if (!is.null(pred))
-                                            newdata <- data.frame(getActiveData(), pred)
+                                            newdata <- data.frame(getActiveData(), pred, stringsAsFactors = TRUE)
                                         else
                                             newdata <- getActiveData()
 
 
                                         if (curSet$smooth > 0 && is_num(xvar) && is_num(yvar)) {
-                                            tmp <- data.frame(x = xvar, y = yvar)
+                                            tmp <- data.frame(x = xvar, y = yvar, stringsAsFactors = TRUE)
                                             fit <- with(curSet, loess(y ~ x, span = curSet$smooth, family = "gaussian", degree = 1, na.action = "na.exclude"))
-                                            pred <- data.frame(FUN(fit))
+                                            pred <- data.frame(FUN(fit), stringsAsFactors = TRUE)
                                             colnames(pred) <- svalue(fittedName.smth)
-                                            newdata <- data.frame(newdata, pred)
+                                            newdata <- data.frame(newdata, pred, stringsAsFactors = TRUE)
                                         }
 
 
@@ -765,7 +765,7 @@ iNZGUI <- setRefClass(
 
                             ## use equal variance assumption?
                             hypEqualVar <- gcheckbox("Use equal-variance", checked = FALSE)
-                            if (TTEST2) {
+                            if (TTEST2 && !is_survey) {
                                 tbl[ii, 4:6, expand = TRUE] <- hypEqualVar
                                 ii <- ii + 1
 

@@ -187,7 +187,8 @@ test_that("Replicate weight window repopulated correctly", {
         swin$rscalesTbl$get_items(),
         data.frame(
             rep.weight = paste("rakedw", 1:80, sep = ""),
-            rscales = rep(1, 80)
+            rscales = rep(1, 80),
+            stringsAsFactors = TRUE
         )
     )
     swin$cancelBtn$invoke_change_handler()
@@ -200,7 +201,9 @@ test_that("Replicate weights can be specified by file", {
     expect_silent(swin$repRscalesClear$invoke_change_handler())
     expect_equal(
         swin$rscalesTbl$get_items(),
-        data.frame(rep.weight = character(), rscales = numeric())
+        data.frame(rep.weight = character(), rscales = numeric(),
+            stringsAsFactors = TRUE
+        )
     )
 
     expect_silent(swin$set_rscales(f1))
@@ -208,22 +211,26 @@ test_that("Replicate weights can be specified by file", {
         swin$rscalesTbl$get_items(),
         data.frame(
             rep.weight = paste("rakedw", 1:80, sep = ""),
-            rscales = read.csv(f1, header = FALSE)[[1]]
+            rscales = read.csv(f1, header = FALSE, stringsAsFactors = TRUE)[[1]],
+            stringsAsFactors = TRUE
         )
     )
 
     expect_silent(swin$repRscalesClear$invoke_change_handler())
     expect_equal(
         swin$rscalesTbl$get_items(),
-        data.frame(rep.weight = character(), rscales = numeric())
+        data.frame(rep.weight = character(), rscales = numeric(),
+            stringsAsFactors = TRUE
+        )
     )
-    
+
     expect_silent(swin$set_rscales(f2))
     expect_equal(
         swin$rscalesTbl$get_items(),
         data.frame(
             rep.weight = paste("rakedw", 1:80, sep = ""),
-            rscales = read.csv(f2)[[1]]
+            rscales = read.csv(f2, stringsAsFactors = TRUE)[[1]],
+            stringsAsFactors = TRUE
         )
     )
 })
@@ -234,7 +241,10 @@ ui$close()
 data(api, package = "survey")
 # replicate this:
 dclus1 <- svydesign(id = ~dnum, weights = ~pw, data = apiclus1, fpc = ~fpc)
-pop.types <- data.frame(stype = c("E", "H", "M"), Freq = c(4421, 755, 1018))
+pop.types <- data.frame(
+    stype = c("E", "H", "M"), Freq = c(4421, 755, 1018),
+    stringsAsFactors = TRUE
+)
 vec <- structure(
     c(sum(pop.types$Freq), pop.types$Freq[-1]),
     .Names = c("(Intercept)", paste0("stype", as.character(pop.types$stype[-1])))
@@ -265,7 +275,9 @@ test_that("Post stratification set by importing additional dataset", {
 
     expect_equal(
         swin$lvldf,
-        list(stype = data.frame(stype = c("E", "H", "M"), Freq = NA))
+        list(stype =
+            data.frame(stype = c("E", "H", "M"), Freq = NA, stringsAsFactors = TRUE)
+        )
     )
 
     # now the tbl should have length(levels(style)) + 2 rows
@@ -277,7 +289,7 @@ test_that("Post stratification set by importing additional dataset", {
     # read from file
     tmp <- tempfile(fileext = ".csv")
     write.csv(pop.types, file = tmp, quote = FALSE, row.names = FALSE)
-    expect_silent(swin$set_freqs("stype", read.csv(tmp)))
+    expect_silent(swin$set_freqs("stype", read.csv(tmp, stringsAsFactors = TRUE)))
     expect_equal(
         sapply(swin$PSlvls$children[c(5, 8, 11)], svalue),
         as.character(pop.types$Freq)
@@ -329,7 +341,7 @@ test_that("Post stratification can be removed", {
 
 test_that("Frequency tables are saved", {
     expect_equal(
-        ui$getActiveDoc()$getModel()$getFreqTables(), 
+        ui$getActiveDoc()$getModel()$getFreqTables(),
         list(stype = pop.types)
     )
 })
@@ -343,7 +355,11 @@ test_that("Post stratification set by manually entering values", {
 
     expect_equal(
         swin$lvldf,
-        list(stype = data.frame(stype = c("E", "H", "M"), Freq = NA))
+        list(stype =
+            data.frame(stype = c("E", "H", "M"), Freq = NA,
+                stringsAsFactors = TRUE
+            )
+        )
     )
 
     # now the tbl should have length(levels(style)) + 2 rows
@@ -397,7 +413,10 @@ test_that("Multiple variables can be specified (raking calibration)", {
         swin$lvldf,
         list(
             stype = pop.types,
-            sch.wide = data.frame(sch.wide = c("No", "Yes"), Freq = NA)
+            sch.wide =
+                data.frame(sch.wide = c("No", "Yes"), Freq = NA,
+                    stringsAsFactors = TRUE
+                )
         )
     )
 
@@ -405,7 +424,8 @@ test_that("Multiple variables can be specified (raking calibration)", {
     expect_silent(swin$display_tbl())
     pop.types2 <- data.frame(
         sch.wide = c("No", "Yes"),
-        Freq = as.numeric(table(apipop$sch.wide))
+        Freq = as.numeric(table(apipop$sch.wide)),
+        stringsAsFactors = TRUE
     )
 
     # and trigger the save

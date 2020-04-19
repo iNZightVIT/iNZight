@@ -1,3 +1,15 @@
+- move makeNames() method (part of iNZDataModWin) to 'iNZightTools' package
+  as iNZightTools::make_names()
+- specify `stringsAsFactors = TRUE` for upcoming R 4.0.0
+
+## iNZight 3.5.0
+
+- load from clipboard option
+- add option to import data from a URL as well as local files
+- remove equal variance checkbox for survey design (two way t-test)
+- survey design code pasted together with a new line when `deparse` returns multiple lines (#281, @tmelliott)
+
+
 ## iNZight 3.5
 __Release date__: 11 November 2019
 
