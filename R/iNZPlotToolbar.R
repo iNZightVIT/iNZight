@@ -74,11 +74,25 @@ iNZPlotToolbar <- setRefClass(
             if (is.null(export.fn)) {
                 exportFn = function() {
                     try({
+                        # Grab identification var
+                        plot.settings <- GUI$getActiveDoc()$getSettings()
+
+                        vars <- character()
+                        if (isTRUE(length(plot.settings$locate.id) > 0)) {
+                            if (isTRUE(plot.settings$locate.settings$txtVar != "id")) {
+                            vars <- c(vars, plot.settings$locate.settings$txtVar)
+                            }
+
+                            if (isTRUE(plot.settings$locate.settings$matchChk)) {
+                            vars <- c(vars, plot.settings$locate.settings$matchVar)
+                            }
+                        }
+
                         tmpurl <- iNZightPlots::exportHTML(
                             refreshFn,
                             file = tempfile(fileext = ".html"),
                             data = GUI$getActiveData(),
-                            extra.vars = character()
+                            extra.vars = vars
                         )
                         if (inherits(tmpurl, "htmlwidget")) print(tmpurl)
                         else browseURL(tmpurl)
