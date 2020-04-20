@@ -1,6 +1,9 @@
+# iNZight 3.5.2
 - move makeNames() method (part of iNZDataModWin) to 'iNZightTools' package
   as iNZightTools::make_names()
 - specify `stringsAsFactors = TRUE` for upcoming R 4.0.0
+- manage modules from the Advanced menu
+- pass colby and locate variable to interactive plot
 
 ## iNZight 3.5.0
 
