@@ -28,11 +28,11 @@ repos:
   docker: https://r.docker.stat.auckland.ac.nz
 
 r_github_packages:
-  - iNZightVIT/iNZightTools@release/1.8.4
-  - iNZightVIT/iNZightTS@dev
-  - iNZightVIT/iNZightMR@dev
-  - iNZightVIT/iNZightPlots@release/2.11.1
-  - iNZightVIT/iNZightModules@release/2.4.9
+  - iNZightVIT/iNZightTools@1.8.4
+  - iNZightVIT/iNZightTS
+  - iNZightVIT/iNZightMR
+  - iNZightVIT/iNZightPlots@2.11.1
+  - iNZightVIT/iNZightModules@2.4.9
 
 addons:
   apt:
