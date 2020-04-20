@@ -11,3 +11,17 @@ test_that("Export RDA", {
     load("test.rda")
     expect_equal(cas, census.at.school.500)
 })
+
+
+if (FALSE) {
+    ## Run manually (cannot be automated at this point in time)
+    svalue(ui$ctrlWidget$V1box) <- "height"
+    svalue(ui$ctrlWidget$V2box) <- "travel"
+    ui$getActiveDoc()$setSettings(
+        list(
+            colby = census.at.school.500$gender,
+            varnames = list(colby = "gender")
+        )
+    )
+    ui$plotWidget$savePlot()
+}

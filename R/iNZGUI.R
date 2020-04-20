@@ -527,7 +527,7 @@ iNZGUI <- setRefClass(
                                                 function(object)
                                                     predict(
                                                         object,
-                                                        newdata = data.frame(x = curSet$x)
+                                                        newdata = data.frame(x = curSet$x, stringsAsFactors = TRUE)
                                                     )
                                             else
                                                 function(object)
@@ -537,7 +537,7 @@ iNZGUI <- setRefClass(
                                         if (is_cat(curSet$x) || is_cat(curSet$y)) { #} || length(curSet$trend) == 1) {
                                             ## just the one
                                             fit <- with(curSet, lm(if (is_num(curSet$y)) y ~ x else x ~ y, na.action = na.exclude))
-                                            pred <- data.frame(FUN(fit))
+                                            pred <- data.frame(FUN(fit), stringsAsFactors = TRUE)
                                             colnames(pred) <- svalue(fittedName)
                                         } else if (length(curSet$trend) >= 1) {
                                             ## for each trend line
@@ -556,17 +556,17 @@ iNZGUI <- setRefClass(
                                             })
                                         }
                                         if (!is.null(pred))
-                                            newdata <- data.frame(getActiveData(), pred)
+                                            newdata <- data.frame(getActiveData(), pred, stringsAsFactors = TRUE)
                                         else
                                             newdata <- getActiveData()
 
 
                                         if (curSet$smooth > 0 && is_num(curSet$x) && is_num(curSet$y)) {
-                                            tmp <- data.frame(x = curSet$x, y = curSet$y)
+                                            tmp <- data.frame(x = curSet$x, y = curSet$y, stringsAsFactors = TRUE)
                                             fit <- with(curSet, loess(y ~ x, span = curSet$smooth, family = "gaussian", degree = 1, na.action = "na.exclude"))
-                                            pred <- data.frame(FUN(fit))
+                                            pred <- data.frame(FUN(fit), stringsAsFactors = TRUE)
                                             colnames(pred) <- svalue(fittedName.smth)
-                                            newdata <- data.frame(newdata, pred)
+                                            newdata <- data.frame(newdata, pred, stringsAsFactors = TRUE)
                                         }
 
 

@@ -4,7 +4,8 @@
 \name{SURFIncomeSurvey_200}
 \alias{SURFIncomeSurvey_200}
 \title{SURF Income Survey}
-\format{A data frame with 200 rows and 8 variables:
+\format{
+A data frame with 200 rows and 8 variables:
 \describe{
   \item{Personid}{a random unique ID number for each record in the Super SURF}
   \item{Gender}{male and female}
@@ -14,7 +15,8 @@
   \item{Income}{total usual weekly income from all sources}
   \item{Marital}{marital status}
   \item{Ethnicity}{six categories}
-}}
+}
+}
 \source{
 \url{http://www.stats.govt.nz/tools_and_services/university-students/NZIS-Super-SURF.aspx}
 }

@@ -298,15 +298,23 @@ iNZMenuBarWidget <- setRefClass(
         AdvancedMenu = function() {
             if (!hasData()) {
                 ## just provide the ability to install modules
-                return(list(
-                    "Maps" = list(
+                return(
+                    list(
                         installmaps =
-                            gaction("Install",
+                            gaction("Install Maps",
                                 icon = "symbol_diamond",
                                 "tooltip" = "Install the Maps module",
-                                handler = function(h, ...) InstallMaps(GUI))
+                                handler = function(h, ...) InstallMaps(GUI)
+                            ),
+                        install =
+                            gaction("Manage modules ...",
+                                icon = "symbol_diamond",
+                                tooltip = "Add, update, and remove add-on modules.",
+                                handler = function(h, ...)
+                                    iNZightModules::InstallModules$new(GUI)
+                            )
                     )
-                ))
+                )
             }
 
             ## As of R 3.6.?, overwriting s3 methods is a verbose message
@@ -374,14 +382,14 @@ iNZMenuBarWidget <- setRefClass(
                     gaction("Maps ...",
                         icon = "symbol_diamond",
                         handler = function(h, ...) iNZightModules::iNZightMapLanding$new(GUI)),
-                # gseparator(),
-                # install =
-                #     gaction("Add or remove modules ...",
-                #         icon = "symbol_diamond",
-                #         tooltip = "Add or remove add-on iNZight modules",
-                #         handler = function(h, ...)
-                #             iNZightModules::InstallModules$new(GUI)
-                #     ),
+                gseparator(),
+                install =
+                    gaction("Manage modules ...",
+                        icon = "symbol_diamond",
+                        tooltip = "Add, update, and remove add-on modules.",
+                        handler = function(h, ...)
+                            iNZightModules::InstallModules$new(GUI)
+                    ),
                 gseparator(),
                 rcode =
                     gaction("R code history [beta] ...",
