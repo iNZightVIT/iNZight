@@ -3,6 +3,7 @@
   as iNZightTools::make_names()
 - specify `stringsAsFactors = TRUE` for upcoming R 4.0.0
 - manage modules from the Advanced menu
+- pass colby to interactive plot
 
 ## iNZight 3.5.0
 
