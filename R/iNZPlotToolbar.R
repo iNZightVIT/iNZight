@@ -74,7 +74,12 @@ iNZPlotToolbar <- setRefClass(
             if (is.null(export.fn)) {
                 exportFn = function() {
                     try({
-                        tmpurl <- iNZightPlots::exportHTML(refreshFn, file = tempfile(fileext = ".html"))
+                        tmpurl <- iNZightPlots::exportHTML(
+                            refreshFn,
+                            file = tempfile(fileext = ".html"),
+                            data = GUI$getActiveData(),
+                            extra.vars = character()
+                        )
                         if (inherits(tmpurl, "htmlwidget")) print(tmpurl)
                         else browseURL(tmpurl)
                     })
