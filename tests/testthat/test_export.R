@@ -13,7 +13,7 @@ test_that("Export RDA", {
 })
 
 
-if (false) {
+if (FALSE) {
     ## Run manually (cannot be automated at this point in time)
     svalue(ui$ctrlWidget$V1box) <- "height"
     svalue(ui$ctrlWidget$V2box) <- "travel"
