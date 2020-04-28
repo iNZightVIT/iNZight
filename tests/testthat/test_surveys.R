@@ -238,13 +238,21 @@ test_that("Replicate weights can be specified by file", {
 
 ui$close()
 
-ui <- iNZGUI$new()
-ui$initializeGui(apijk)
 
 
 # apides <- svrepdesign(weights = ~pw, repweights = "repw[0-9]+",
 #     data = apijk, type = "JK1")
 # svymean(~api00, des=apides)
+# svymean(~enroll, des=apides)
+
+# # iNZightPlot(api00, design = apides)
+
+# x <- try(iNZightPlot(enroll, design = apides))
+
+ui <- iNZGUI$new()
+ui$initializeGui(apijk)
+
+
 test_that("JK1 works", {
     expect_silent(swin <- iNZSurveyDesign$new(ui, type = "replicate"))
     svalue(swin$wtVar) <- "pw"
@@ -265,6 +273,8 @@ test_that("JK1 works", {
             type = "replicate"
         )
     )
+
+    # svalue(ui$ctrlWidget$V1box) <- "enroll"
 })
 
 ui$close()
