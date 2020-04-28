@@ -306,12 +306,12 @@ iNZMenuBarWidget <- setRefClass(
                                 "tooltip" = "Install the Maps module",
                                 handler = function(h, ...) InstallMaps(GUI)
                             ),
-                        install =
+                        manage =
                             gaction("Manage modules ...",
                                 icon = "symbol_diamond",
                                 tooltip = "Add, update, and remove add-on modules.",
                                 handler = function(h, ...)
-                                    iNZightModules::InstallModules$new(GUI)
+                                    iNZightModules::ModuleManager$new(GUI)
                             )
                     )
                 )
@@ -383,12 +383,12 @@ iNZMenuBarWidget <- setRefClass(
                         icon = "symbol_diamond",
                         handler = function(h, ...) iNZightModules::iNZightMapLanding$new(GUI)),
                 gseparator(),
-                install =
+                manage =
                     gaction("Manage modules ...",
                         icon = "symbol_diamond",
                         tooltip = "Add, update, and remove add-on modules.",
                         handler = function(h, ...)
-                            iNZightModules::InstallModules$new(GUI)
+                            iNZightModules::ModuleManager$new(GUI)
                     ),
                 gseparator(),
                 rcode =
