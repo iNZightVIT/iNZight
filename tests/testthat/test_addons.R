@@ -1,7 +1,5 @@
 context("Add-on Modules")
 
-skip_on_appveyor()
-
 moduledir <- file.path(getwd(), "modules")
 # load_all("../../../iNZightModules")
 # load_all()
