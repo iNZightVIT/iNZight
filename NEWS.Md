@@ -1,3 +1,6 @@
+- pass NULL to scale/rscale when specifying survey replicate design
+  type that does not ask user for them
+
 # iNZight 3.5.2
 - move makeNames() method (part of iNZDataModWin) to 'iNZightTools' package
   as iNZightTools::make_names()

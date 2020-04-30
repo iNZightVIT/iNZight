@@ -208,8 +208,7 @@ iNZDataModel <- setRefClass(
                     )
                 )
             }
-
-            eval(obj)
+            suppressWarnings(eval(obj))
         },
         getDesign = function() {
             dataDesign

@@ -35,8 +35,8 @@ build_script:
   - 7z x ..\..\gtk64.zip > nul
   - cd ..
   - cd ..
-  - if exist c:\RLibrary\RGtk2\gtk\ rd /s /q c:\RLibrary\RGtk2\gtk
-  - mv gtk c:\RLibrary\RGtk2
+  - if exist c:\RLibrary\4.0\RGtk2\gtk\ rd /s /q c:\RLibrary\4.0\RGtk2\gtk
+  - mv gtk c:\RLibrary\4.0\RGtk2
   - del gtk32.zip
   - del gtk64.zip
   - travis-tool.sh install_github iNZightVIT/iNZightTools@dev
@@ -47,10 +47,10 @@ build_script:
 
 test_script:
   - md C:\Users\appveyor\Documents\iNZightVIT
-  - travis-tool.sh run_tests
+  # - travis-tool.sh run_tests
 
 on_success:
-  - Rscript -e "covr::codecov()"
+  # - Rscript -e "covr::codecov()"
 
 on_failure:
   - 7z a failure.zip *.Rcheck\*
