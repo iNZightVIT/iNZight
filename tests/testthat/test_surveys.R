@@ -6,6 +6,8 @@ apijk <- iNZightTools::smart_read("apiclus2-jk1.csv")
 
 test_dir <- getwd()
 
+skip_on_appveyor()
+
 # ui$close()
 ui <- iNZGUI$new()
 ui$initializeGui(apiclus2)

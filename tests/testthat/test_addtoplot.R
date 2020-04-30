@@ -1,5 +1,7 @@
 context("Add to Plot window")
 
+skip_on_appveyor()
+
 ui <- iNZGUI$new()
 ui$initializeGui()
 on.exit(gWidgets2::dispose(ui$win))
@@ -31,10 +33,10 @@ test_that("Add to Plot shows correct options by plot", {
     atptbl <- ui$moduleWindow$body$children[[1]]$children[[1]]$children
     expect_equal(svalue(atptbl[[3]]), "dot plot")
     expect_equal(
-        atptbl[[3]]$get_items(), 
+        atptbl[[3]]$get_items(),
         c(
             "dot plot", "histogram", "(gg) dot strip", "(gg) barcode",
-            "(gg) boxplot", "(gg) beeswarm", "(gg) violin", "(gg) density", 
+            "(gg) boxplot", "(gg) beeswarm", "(gg) violin", "(gg) density",
             "(gg) column/row bar", "(gg) lollipop", "(gg) cumulative curve"
         )
     )
@@ -50,7 +52,7 @@ test_that("Add to Plot shows correct options by plot", {
 
     atptbl <- ui$moduleWindow$body$children[[1]]$children[[1]]$children
     expect_equal(svalue(atptbl[[3]]), "scatter")
-    expect_equal(atptbl[[3]]$get_items(), 
+    expect_equal(atptbl[[3]]$get_items(),
         c("scatter", "hexagonal binning", "grid-density")
     )
 
@@ -65,9 +67,9 @@ test_that("Add to Plot shows correct options by plot", {
     expect_equal(cmbo$get_items(), atpOpts[c(1, 3)])
 
     atptbl <- ui$moduleWindow$body$children[[1]]$children[[1]]$children
-    expect_equal(atptbl[[3]]$get_items(), 
+    expect_equal(atptbl[[3]]$get_items(),
         c(
-            "barplot", "(gg) column/row bar", "(gg) stacked column/row", 
+            "barplot", "(gg) column/row bar", "(gg) stacked column/row",
             "(gg) lollipop", "(gg) gridplot", "(gg) pie", "(gg) donut"
         )
     )

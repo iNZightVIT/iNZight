@@ -1,5 +1,7 @@
 context("Code writing")
 
+skip_on_appveyor()
+
 # try(ui$close())
 ui <- iNZGUI$new()
 ui$initializeGui()
