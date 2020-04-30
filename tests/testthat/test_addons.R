@@ -7,7 +7,7 @@ moduledir <- file.path(getwd(), "modules")
 
 # try(ui$close())
 ui <- iNZGUI$new()
-ui$initializeGui(iris, addonDir = moduledir)
+ui$initializeGui(iris)#, addonDir = moduledir)
 
 test_that("Modules loaded into menu", {
     # advmenu <- svalue(ui$menuBarWidget$menubar)$Advanced
