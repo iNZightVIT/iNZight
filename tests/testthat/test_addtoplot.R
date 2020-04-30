@@ -1,7 +1,5 @@
 context("Add to Plot window")
 
-skip_on_appveyor()
-
 ui <- iNZGUI$new()
 ui$initializeGui()
 on.exit(gWidgets2::dispose(ui$win))
