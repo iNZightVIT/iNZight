@@ -47,7 +47,7 @@ build_script:
 
 test_script:
   - md C:\Users\appveyor\Documents\iNZightVIT
-  - travis-tool.sh run_tests
+  # - travis-tool.sh run_tests
 
 on_success:
   - Rscript -e "covr::codecov()"
