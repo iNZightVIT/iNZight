@@ -1,15 +1,16 @@
 context("Add-on Modules")
 
-skip_on_appveyor()
-
 moduledir <- file.path(getwd(), "modules")
 
 # load_all("../../../iNZightModules")
 # load_all()
 
 # try(ui$close())
+print(moduledir)
 ui <- iNZGUI$new()
+print("UI loaded ... loading GUI")
 ui$initializeGui(iris, addonDir = moduledir)
+print("GUI loaded")
 
 test_that("Modules loaded into menu", {
     advmenu <- svalue(ui$menuBarWidget$menubar)$Advanced
