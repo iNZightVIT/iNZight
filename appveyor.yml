@@ -43,7 +43,7 @@ build_script:
   - travis-tool.sh install_github iNZightVIT/iNZightTS@dev
   - travis-tool.sh install_github iNZightVIT/iNZightMR@dev
   - travis-tool.sh install_github iNZightVIT/iNZightPlots@dev
-  - travis-tool.sh install_github iNZightVIT/iNZightModules@dev
+  - travis-tool.sh install_github iNZightVIT/iNZightModules@feature/addon-installer
 
 test_script:
   - md C:\Users\appveyor\Documents\iNZightVIT
