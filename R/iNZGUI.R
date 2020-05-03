@@ -1074,21 +1074,73 @@ iNZGUI <- setRefClass(
                 curPlSet$data_name <- dataNameWidget$datName
 
                 ## Suppress the warnings produced by iNZightPlot ...
-                suppressWarnings({
-                    ## Generate the plot ... and update the interaction button
-                    curPlot <<- unclass(rawpl <- do.call(iNZightPlot, curPlSet))
-                    if (allow.redraw & !is.null(attr(curPlot, "dotplot.redraw")))
-                        if (attr(curPlot, "dotplot.redraw"))
-                            curPlot <<- unclass(rawpl <- do.call(iNZightPlot, curPlSet))
-                    enabled(plotToolbar$exportplotBtn) <<- can.interact(rawpl)
-                })
+                dop <- try({
+                    # suppressWarnings({
+                        ## Generate the plot ... and update the interaction button
+                        curPlot <<- unclass(rawpl <- do.call(iNZightPlot, curPlSet))
+                        if (allow.redraw & !is.null(attr(curPlot, "dotplot.redraw")))
+                            if (attr(curPlot, "dotplot.redraw"))
+                                curPlot <<- unclass(rawpl <- do.call(iNZightPlot, curPlSet))
+
+                    # })
+                }, silent = TRUE)
+
+                if (inherits(dop, "try-error")) {
+                    ## Oops!
+
+                    message("Call: ")
+                    message(attr(dop, "condition")$call)
+                    message("\nMessage: ")
+                    message(attr(dop, "condition")$message)
+
+                    n_max <- 4
+                    err_call <- capture.output(attr(dop, "condition")$call)
+                    if (length(err_call) > n_max) {
+                        err_call <- c(
+                            err_call[1:n_max],
+                            sprintf("+ %i more lines (printed to R console)",
+                                length(err_call) - n_max
+                            )
+                        )
+                    }
+                    err_msg <- capture.output(cat(attr(dop, "condition")$message))
+                    if (length(err_msg) > n_max) {
+                        err_msg <- c(
+                            err_msg[1:n_max],
+                            sprintf("+ %i more lines (printed to R console)",
+                                length(err_msg) - n_max
+                            )
+                        )
+                    }
+                    plotMessage(
+                        heading = "Oops ... that plot isn't working!",
+                        message = paste(
+                            "Call: \n",
+                            paste(collapse = "\n ", err_call),
+                            "\n\nError: \n",
+                            paste(collapse = "\n ", err_msg)
+                        ),
+                        footer = paste(sep = "\n",
+                            "If you continue to experience this problem, please send a bug report to",
+                            "inzight_support@stat.auckland.ac.nz including",
+                            "- a screenshot of the current window",
+                            "- a copy of the contents of the R Console",
+                            "- a copy of the data (if possible)"
+                        )
+                    )
+                    return(invisible(NULL))
+                }
+
+                enabled(plotToolbar$exportplotBtn) <<- can.interact(rawpl)
                 plotType <<- attr(curPlot, "plottype")
-            } else {
-                rawpl <- plotSplashScreen()
-                curPlot <<- NULL
-                plotType <<- "none"
-                enabled(plotToolbar$exportplotBtn) <<- FALSE
+                return(invisible(rawpl))
             }
+
+            # only runs if unsuccessful
+            rawpl <- plotSplashScreen()
+            curPlot <<- NULL
+            plotType <<- "none"
+            enabled(plotToolbar$exportplotBtn) <<- FALSE
             invisible(rawpl)
         },
         ## set a new iNZDocument and make it the active one
@@ -1454,6 +1506,92 @@ iNZGUI <- setRefClass(
                     icon = "warning"
                 )
             }
+        },
+        plotMessage = function(heading, message, footer) {
+            curPlot <<- NULL
+            plotType <<- "none"
+            enabled(plotToolbar$exportplotBtn) <<- FALSE
+
+            if (missing(heading) || missing(message))
+                plotSplashScreen()
+
+            grid::grid.newpage()
+            grid::pushViewport(
+                grid::viewport(
+                    height = unit(0.9, "npc"),
+                    layout = grid::grid.layout(
+                        nrow = 3,
+                        ncol = 1,
+                        heights = unit.c(
+                            unit(0.1, "npc"),
+                            unit(1, "null"),
+                            unit(5, "lines")
+                        )
+                    )
+                )
+            )
+
+            if (requireNamespace("png", quietly = TRUE)) {
+                img <- png::readPNG(
+                    system.file("images/inzight_transp.png", package = "iNZight")
+                )
+                grid::pushViewport(grid::viewport(layout.pos.row = 1))
+                grid::grid.raster(img,
+                    x = unit(0.1, "npc"),
+                    y = unit(1, "npc"),
+                    hjust = 0, vjust = 1
+                )
+                grid::upViewport()
+            }
+
+            grid::pushViewport(grid::viewport(layout.pos.row = 2))
+            grid::pushViewport(
+                grid::viewport(
+                    y = unit(0.45, "npc"),
+                    width = unit(0.8, "npc"),
+                    height = unit(0.9, "npc")
+                )
+            )
+            grid::grid.text(
+                heading,
+                y = 1, x = 0, just = c("left", "top"),
+                gp = gpar(fontsize = 12, fontface = 'bold')
+            )
+
+            grid::grid.text(
+                paste0(
+                    "The following error message was reported:"
+                ),
+                y = unit(1, "npc") - unit(3, "lines"),
+                x = 0, just = c("left", "top"),
+                gp = gpar(fontsize = 11)
+            )
+            grid::grid.text(
+                message,
+                y = unit(1, "npc") - unit(6, "lines"),
+                x = 0, just = c("left", "top"),
+                gp = gpar(fontsize = 10, fontfamily = "monospace")
+            )
+            grid::upViewport()
+
+            if (!missing(footer)) {
+                grid::pushViewport(grid::viewport(layout.pos.row = 3))
+                grid::pushViewport(
+                    grid::viewport(
+                        y = unit(0.45, "npc"),
+                        width = unit(0.8, "npc"),
+                        height = unit(0.9, "npc")
+                    )
+                )
+                grid::grid.text(
+                    footer,
+                    y = 0, x = 0, just = c("left", "bottom"),
+                    gp = gpar(fontsize = 10)
+                )
+                grid::upViewport()
+            }
+
+            grDevices::dev.flush()
         },
         plotSplashScreen = function() {
             if (requireNamespace("png", quietly = TRUE)) {
