@@ -32,7 +32,7 @@ r_github_packages:
   - iNZightVIT/iNZightTS@dev
   - iNZightVIT/iNZightMR@dev
   - iNZightVIT/iNZightPlots@dev
-  - iNZightVIT/iNZightModules@dev
+  - iNZightVIT/iNZightModules@feature/addon-installer
 
 addons:
   apt:

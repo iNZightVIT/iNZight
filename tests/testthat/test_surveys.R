@@ -1,4 +1,5 @@
 context("Survey data")
+
 data(api, package = "survey")
 chis <- iNZightTools::smart_read("chis.csv")
 ncsr <- iNZightTools::smart_read("ncsr.csv")

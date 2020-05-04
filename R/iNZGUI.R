@@ -95,6 +95,15 @@ iNZGUI <- setRefClass(
                 else if (Sys.info()["sysname"] == "Darwin") "mac"
                 else "linux"
 
+            # cat(getwd(), "\n")
+            # cat(path.expand(file.path("~", "iNZightVIT")), "\n")
+
+            # cat(dir.exists(path.expand("~")), "\n")
+            # cat(list.files(path.expand("~")), sep = "\n", "\n")
+
+            # cat("\n", Sys.getenv("R_USER"), "\n")
+
+
             ## We must set the correct directory correctly ...
             switch(
                 OS,
@@ -102,6 +111,8 @@ iNZGUI <- setRefClass(
                     done <- FALSE
                     if (file.exists(file.path("~", "iNZightVIT"))) {
                         setwd(file.path("~", "iNZightVIT"))
+                    } else if (file.exists(file.path("~", "Documents", "iNZightVIT"))) {
+                        setwd(file.path("~", "Documents", "iNZightVIT"))
                     } else {
                         ## Create it:
                         conf <- gconfirm(
