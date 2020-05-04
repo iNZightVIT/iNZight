@@ -90,6 +90,8 @@ iNZGUI <- setRefClass(
                 sep = ""
             )
 
+            stop("HERE")
+
             OS <<-
                 if (.Platform$OS == "windows") "windows"
                 else if (Sys.info()["sysname"] == "Darwin") "mac"
