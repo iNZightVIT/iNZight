@@ -111,6 +111,8 @@ iNZGUI <- setRefClass(
                     done <- FALSE
                     if (file.exists(file.path("~", "iNZightVIT"))) {
                         setwd(file.path("~", "iNZightVIT"))
+                    } else if (file.exists(file.path("~", "Documents", "iNZightVIT"))) {
+                        setwd(file.path("~", "Documents", "iNZightVIT"))
                     } else {
                         ## Create it:
                         stop("NO DIRECTORY! AWAITING CONF")
