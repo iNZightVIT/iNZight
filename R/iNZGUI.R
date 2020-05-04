@@ -90,8 +90,6 @@ iNZGUI <- setRefClass(
                 sep = ""
             )
 
-            stop("HERE")
-
             OS <<-
                 if (.Platform$OS == "windows") "windows"
                 else if (Sys.info()["sysname"] == "Darwin") "mac"
@@ -106,6 +104,7 @@ iNZGUI <- setRefClass(
                         setwd(file.path("~", "iNZightVIT"))
                     } else {
                         ## Create it:
+                        stop("NO DIRECTORY! AWAITING CONF")
                         conf <- gconfirm(
                             paste("Do you want to create an iNZightVIT directory",
                                   "in your My Documents folder to save data and preferences?"),
@@ -153,6 +152,7 @@ iNZGUI <- setRefClass(
                     ## no need to do anything (yet..)
                 }
             )
+            stop("HERE")
 
             if (!is.null(addonDir) && dir.exists(addonDir)) {
                 addonModuleDir <<- addonDir
