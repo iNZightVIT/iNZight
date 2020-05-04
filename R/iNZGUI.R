@@ -96,7 +96,8 @@ iNZGUI <- setRefClass(
                 else "linux"
 
             cat(getwd(), "\n")
-            cat(file.path("~", "iNZightVIT"), "\n")
+            cat(path.expand(file.path("~", "iNZightVIT")), "\n")
+
 
             ## We must set the correct directory correctly ...
             switch(
