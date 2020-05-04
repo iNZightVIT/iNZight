@@ -95,13 +95,13 @@ iNZGUI <- setRefClass(
                 else if (Sys.info()["sysname"] == "Darwin") "mac"
                 else "linux"
 
-            cat(getwd(), "\n")
-            cat(path.expand(file.path("~", "iNZightVIT")), "\n")
+            # cat(getwd(), "\n")
+            # cat(path.expand(file.path("~", "iNZightVIT")), "\n")
 
-            cat(dir.exists(path.expand("~")), "\n")
-            cat(list.files(path.expand("~")), sep = "\n", "\n")
+            # cat(dir.exists(path.expand("~")), "\n")
+            # cat(list.files(path.expand("~")), sep = "\n", "\n")
 
-            cat("\n", Sys.getenv("R_USER"), "\n")
+            # cat("\n", Sys.getenv("R_USER"), "\n")
 
 
             ## We must set the correct directory correctly ...
@@ -163,7 +163,6 @@ iNZGUI <- setRefClass(
                     ## no need to do anything (yet..)
                 }
             )
-            stop("HERE")
 
             if (!is.null(addonDir) && dir.exists(addonDir)) {
                 addonModuleDir <<- addonDir
