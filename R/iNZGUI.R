@@ -95,6 +95,9 @@ iNZGUI <- setRefClass(
                 else if (Sys.info()["sysname"] == "Darwin") "mac"
                 else "linux"
 
+            warning(getwd())
+            warning(file.path("~", "iNZightVIT"))
+
             ## We must set the correct directory correctly ...
             switch(
                 OS,
