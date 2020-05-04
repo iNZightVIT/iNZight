@@ -1,5 +1,5 @@
 context("Data is exported from the UI")
-
+skip_on_appveyor()
 # try(ui$close())
 ui <- iNZGUI$new()
 ui$initializeGui(census.at.school.500)

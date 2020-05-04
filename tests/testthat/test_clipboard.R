@@ -1,5 +1,5 @@
 context("Import/export clipboard data")
-
+skip_on_appveyor()
 # try(ui$close()); load_all()
 ui <- iNZGUI$new()
 ui$initializeGui()
