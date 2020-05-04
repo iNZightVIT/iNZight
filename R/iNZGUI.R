@@ -101,6 +101,8 @@ iNZGUI <- setRefClass(
             cat(dir.exists(path.expand("~")), "\n")
             cat(list.files(path.expand("~")), sep = "\n", "\n")
 
+            cat("\n", Sys.getenv("R_USER"), "\n")
+
 
             ## We must set the correct directory correctly ...
             switch(
