@@ -1,5 +1,5 @@
 context("Data is loaded into the UI")
-skip_on_appveyor()
+
 wd <- getwd()
 ui <- iNZGUI$new()
 ui$initializeGui()

@@ -1,5 +1,4 @@
 context("Survey data")
-skip_on_appveyor()
 
 data(api, package = "survey")
 chis <- iNZightTools::smart_read("chis.csv")

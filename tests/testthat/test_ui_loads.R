@@ -1,5 +1,5 @@
 context("The user interface loads")
-skip_on_appveyor()
+
 ui <- NULL
 
 test_that("GUI is loaded and initialized without problems", {
