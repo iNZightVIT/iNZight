@@ -115,7 +115,6 @@ iNZGUI <- setRefClass(
                         setwd(file.path("~", "Documents", "iNZightVIT"))
                     } else {
                         ## Create it:
-                        stop("NO DIRECTORY! AWAITING CONF")
                         conf <- gconfirm(
                             paste("Do you want to create an iNZightVIT directory",
                                   "in your My Documents folder to save data and preferences?"),
