@@ -268,26 +268,50 @@ test_that("User can choose to load a URL", {
 
 
 ## Many columns file:
-many_cols <- data.frame(X1 = 1:5)
-for (i in 2:50)
-    many_cols[[sprintf("X%i", i)]] <- sample(50, 5)
-for (i in sample(50, 20, FALSE))
-    many_cols[[i]] <- sample(LETTERS, 5)
+many_cols <- data.frame(X1 = 1:20)
+for (i in 2:30)
+    many_cols[[sprintf("X%i", i)]] <- sample(50, 20)
+for (i in 31:40)
+    many_cols[[sprintf("X%i", i)]] <- sample(LETTERS[1:5], 20, TRUE)
+for (i in 41:50)
+    many_cols[[sprintf("X%i", i)]] <- sample(LETTERS, 20)
 
 tf <- tempfile(fileext = ".csv")
 on.exit(unlink(tf))
 write.csv(many_cols, tf, quote = FALSE, row.names = FALSE)
 
-if (FALSE) {
+if (interactive()) {
     try(ui$close()); load_all()
     ui <- iNZGUI$new()
     ui$initializeGui()
     on.exit(gWidgets2::dispose(ui$win))
 }
 
+imp <- iNZImportWin$new(ui)
 test_that("Data sets with many columns display only var names", {
-    imp <- iNZImportWin$new(ui)
     imp$fname <- tf
     expect_silent(imp$setfile())
-    expect_equal(dim(imp$prevGp$children[[2]]), c(rows = 50L, cols = 2L))
+    expect_equal(dim(imp$prev), c(rows = 50L, cols = 3L))
+    expect_false(imp$prev$is_editable(1L))
+    expect_true(imp$prev$is_editable(2L))
+    expect_false(imp$prev$is_editable(3L))
 })
+
+test_that("Data sets with many columns can change var types", {
+    imp$fColTypes[1] <- "categorical"
+    imp$generatePreview(NULL, reload = TRUE)
+    expect_match(
+        as.character(imp$prev$get_frame()$Values[1]),
+        "^Categories: ",
+        all = FALSE
+    )
+
+    imp$fColTypes[1] <- "auto"
+    imp$generatePreview(NULL, reload = TRUE)
+    expect_match(
+        as.character(imp$prev$get_frame()$Values[1]),
+        paste(1:5, collapse = " "),
+        all = FALSE
+    )
+})
+imp$cancelBtn$invoke_change_handler()
