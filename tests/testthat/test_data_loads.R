@@ -265,3 +265,27 @@ test_that("User can choose to load a URL", {
         iNZightTools::smart_read("cas5.csv")
     )
 })
+
+
+## Many columns file:
+many_cols <- data.frame(X1 = 1:5)
+for (i in 2:50)
+    many_cols[[sprintf("X%i", i)]] <- sample(50, 5)
+for (i in sample(50, 20, FALSE))
+    many_cols[[i]] <- sample(LETTERS, 5)
+
+tf <- tempfile(fileext = ".csv")
+on.exit(unlink(tf))
+write.csv(many_cols, tf, quote = FALSE, row.names = FALSE)
+
+try(ui$close()); load_all()
+ui <- iNZGUI$new()
+ui$initializeGui()
+on.exit(gWidgets2::dispose(ui$win))
+
+test_that("Data sets with many columns display only var names", {
+    imp <- iNZImportWin$new(ui)
+    imp$fname <- tf
+    expect_silent(imp$setfile())
+    expect_equal(dim(imp$prevGp$children[[2]]), c(rows = 50L, cols = 2L))
+})
