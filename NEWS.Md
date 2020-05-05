@@ -9,7 +9,7 @@
 - manage modules from the Advanced menu
 - pass colby and locate variable to interactive plot
 
-## iNZight 3.5.0
+## iNZight 3.5.1
 
 - load from clipboard option
 - add option to import data from a URL as well as local files
