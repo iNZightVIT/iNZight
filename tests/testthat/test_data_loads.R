@@ -278,10 +278,12 @@ tf <- tempfile(fileext = ".csv")
 on.exit(unlink(tf))
 write.csv(many_cols, tf, quote = FALSE, row.names = FALSE)
 
-try(ui$close()); load_all()
-ui <- iNZGUI$new()
-ui$initializeGui()
-on.exit(gWidgets2::dispose(ui$win))
+if (FALSE) {
+    try(ui$close()); load_all()
+    ui <- iNZGUI$new()
+    ui$initializeGui()
+    on.exit(gWidgets2::dispose(ui$win))
+}
 
 test_that("Data sets with many columns display only var names", {
     imp <- iNZImportWin$new(ui)
