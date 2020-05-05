@@ -1,8 +1,9 @@
+## iNZight 3.5.3
 - pass NULL to scale/rscale when specifying survey replicate design
   type that does not ask user for them
 - New Module Manager
 
-# iNZight 3.5.2
+## iNZight 3.5.2
 - move makeNames() method (part of iNZDataModWin) to 'iNZightTools' package
   as iNZightTools::make_names()
 - specify `stringsAsFactors = TRUE` for upcoming R 4.0.0
@@ -17,7 +18,7 @@
 - survey design code pasted together with a new line when `deparse` returns multiple lines (#281, @tmelliott)
 
 
-## iNZight 3.5
+# iNZight 3.5
 __Release date__: 11 November 2019
 
 - allow users to change column types for all import types (cat/num)
