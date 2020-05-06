@@ -2,6 +2,7 @@
 - pass NULL to scale/rscale when specifying survey replicate design
   type that does not ask user for them
 - New Module Manager
+- fix function name from iNZightPlots
 
 ## iNZight 3.5.2
 - move makeNames() method (part of iNZDataModWin) to 'iNZightTools' package
