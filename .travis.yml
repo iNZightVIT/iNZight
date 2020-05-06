@@ -34,7 +34,7 @@ r_github_packages:
   - iNZightVIT/iNZightTS@dev
   - iNZightVIT/iNZightMR@dev
   - iNZightVIT/iNZightPlots@release/2.11.5
-  - iNZightVIT/iNZightModules@dev
+  - iNZightVIT/iNZightModules@release@2.5
 
 addons:
   apt:
