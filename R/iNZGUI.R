@@ -380,7 +380,7 @@ iNZGUI <- setRefClass(
                         curSet$freq <- getActiveData()[[curSet$freq]]
                     if (!is.null(curSet$x)) {
                         xvar <- .dataset[[curSet$x]]
-                        yvar <- .dataset[[curSet$y]]
+                        yvar <- if (!is.null(curSet$y)) .dataset[[curSet$y]] else NULL
                         if (is_num(xvar) & is_num(yvar)) {
                             tmp.x <- curSet$y
                             curSet$y <- curSet$x
@@ -636,13 +636,15 @@ iNZGUI <- setRefClass(
                         curSet$freq <- getActiveData()[[curSet$freq]]
                     if (!is.null(curSet$x)) {
                         xvar <- .dataset[[curSet$x]]
+                        yvar <- if (!is.null(curSet$y)) .dataset[[curSet$y]] else NULL
                         ## Figure out what type of inference will be happening:
                         xnum <- is_num(xvar)
+                        ynum <- is_num(yvar)
 
-                        if (is.null(curSet$y)) {
+                        if (is.null(yvar)) {
                             INFTYPE <- ifelse(xnum, "onesample-ttest", "oneway-table")
                         } else {
-                            ynum <- is_num(yvar)
+
                             if (xnum && ynum) {
                                 INFTYPE <- "regression"
                             } else if (xnum | ynum) {
@@ -1085,8 +1087,9 @@ iNZGUI <- setRefClass(
                 curPlSet$freq <- getActiveData()[[curPlSet$freq]]
             if(!is.null(curPlSet$x)) {
                 varx <- .dataset[[curPlSet$x]]
+                vary <- if (!is.null(curPlSet$y)) .dataset[[curPlSet$y]] else NULL
                 # Switch x and y:
-                if (is_num(varx) & is_num(curPlSet$y)) {
+                if (is_num(varx) & is_num(vary)) {
                     x.tmp <- curPlSet$y
                     curPlSet$y <- curPlSet$x
                     curPlSet$x <- x.tmp

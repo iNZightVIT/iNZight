@@ -2659,8 +2659,10 @@ iNZPlotMod <- setRefClass(
             PLOTTYPE <- GUI$plotType
             YAX <- TRUE
             YAXlbl <- FALSE
+            xvar <- GUI$getActiveData()[[curSet$x]]
+            yvar <- if (!is.null(curSet$y)) GUI$getActiveData()[[curSet$y]] else NULL
             if (PLOTTYPE %in% c("dot", "hist", "bar")) {
-              YAXlbl <- YAX <- PLOTTYPE %in% c("dot", "hist") & !is.null(curSet$y)
+              YAXlbl <- YAX <- PLOTTYPE %in% c("dot", "hist") & !is.null(yvar)
             }
 
             ## AXIS LABELS
@@ -2757,7 +2759,7 @@ iNZPlotMod <- setRefClass(
                 tbl[ii, 3:6, expand = TRUE] <- ycounts
 
                 ii <- ii + 1
-                if (length(levels(curSet$x)) > 2) {
+                if (length(levels(xvar)) > 2) {
                     ## Number of bars
                     tbl[ii,  1:2, anchor = c(-1,-1), expand = TRUE] <- sectionTitle("Number of Bars")
                     ii <- ii + 1
@@ -2765,14 +2767,14 @@ iNZPlotMod <- setRefClass(
                     zoom <- if (!is.null(curSet$zoombars)) curSet$zoombars else NULL
 
                     lbl <- glabel("Number of bars: ")
-                    NBARS <- gslider(2, min(30, length(levels(curSet$x))),
-                                     by = 1, value = min(30, length(levels(curSet$x))))
+                    NBARS <- gslider(2, min(30, length(levels(xvar))),
+                                     by = 1, value = min(30, length(levels(xvar))))
                     tbl[ii, 1:2, expand = TRUE, fill = TRUE, anchor = c(-1, 0)] <- lbl
                     tbl[ii, 3:6, expand = TRUE] <- NBARS
                     ii <- ii + 1
 
                     lbl <- glabel("Starting point: ")
-                    START <- gslider(levels(curSet$x)[1:(length(levels(curSet$x)) - 1)])
+                    START <- gslider(levels(xvar)[1:(length(levels(xvar)) - 1)])
                     tbl[ii, 1:2, expand = TRUE, fill = TRUE, anchor = c(-1, 0)] <- lbl
                     tbl[ii, 3:6, expand = TRUE] <- START
                     ii <- ii + 1
@@ -2790,7 +2792,7 @@ iNZPlotMod <- setRefClass(
                         svalue(START, index = TRUE) <- 1
                         unblockHandlers(START)
                         blockHandlers(NBARS)
-                        svalue(NBARS) <- min(30, length(levels(curSet$x)))
+                        svalue(NBARS) <- min(30, length(levels(xvar)))
                         unblockHandlers(NBARS)
 
                         GUI$getActiveDoc()$setSettings(
@@ -2816,12 +2818,12 @@ iNZPlotMod <- setRefClass(
                 ii <- ii + 1
 
                 if (PLOTTYPE %in% c("scatter", "hex", "grid")) {
-                    isNA <- is.na(curSet$x) | is.na(curSet$y)
-                    xrange <- range(curSet$y[!isNA])
-                    yrange <- range(curSet$x[!isNA])
+                    isNA <- is.na(xvar) | is.na(yvar)
+                    xrange <- range(yvar[!isNA])
+                    yrange <- range(xvar[!isNA])
                 } else {
-                    isNA <- is.na(curSet$x)
-                    xrange <- range(curSet$x[!isNA])
+                    isNA <- is.na(xvar)
+                    xrange <- range(xvar[!isNA])
                 }
 
                 xlim <- curSet$xlim
@@ -2904,6 +2906,9 @@ iNZPlotMod <- setRefClass(
                     transform = list()
                 )
 
+                xvar <- GUI$getActiveData()[[curSet$x]]
+                yvar <- if (!is.null(curSet$y)) GUI$getActiveData()[[curSet$y]] else NULL
+
                 if (YAX) newSet$ylab <- if (svalue(labYlab) == "") NULL else svalue(labYlab)
                 if (YAXlbl) newSet$internal.labels <- svalue(intLabs)
 
@@ -2916,9 +2921,9 @@ iNZPlotMod <- setRefClass(
 
                 if (PLOTTYPE == "bar") {
                     newSet$bar.counts <- svalue(ycounts, index = TRUE) == 2
-                    if (length(levels(curSet$x)) > 2) {
+                    if (length(levels(xvar)) > 2) {
                         newSet$zoombars <-
-                            if (svalue(NBARS) == length(levels(curSet$x)) & svalue(START, index = TRUE) == 1)
+                            if (svalue(NBARS) == length(levels(xvar)) & svalue(START, index = TRUE) == 1)
                                 NULL
                             else
                                 c(svalue(START, index = TRUE), svalue(NBARS))
@@ -3014,7 +3019,7 @@ iNZPlotMod <- setRefClass(
 
             if (PLOTTYPE == "bar") {
                 addHandlerChanged(ycounts, function(h, ...) updateEverything())
-                if (length(levels(curSet$x)) > 2) {
+                if (length(levels(xvar)) > 2) {
                     addHandlerChanged(NBARS, function(h, ...) updateEverything())
                     addHandlerChanged(START, function(h, ...) updateEverything())
                 }
