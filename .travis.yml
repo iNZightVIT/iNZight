@@ -15,6 +15,8 @@ services:
 matrix:
   include:
     - os: linux
+      r: oldrel
+    - os: linux
       r: release
     - os: linux
       r: devel
@@ -28,10 +30,11 @@ repos:
   docker: https://r.docker.stat.auckland.ac.nz
 
 r_github_packages:
-  - jverzani/gWidgets2RGtk2
-  - iNZightVIT/iNZightModules@dev
-  - iNZightVIT/iNZightPlots@dev
   - iNZightVIT/iNZightTools@dev
+  - iNZightVIT/iNZightTS@dev
+  - iNZightVIT/iNZightMR@dev
+  - iNZightVIT/iNZightPlots@dev
+  - iNZightVIT/iNZightModules@dev
 
 addons:
   apt:

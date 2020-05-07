@@ -1,7 +1,9 @@
 context("Survey data")
+
 data(api, package = "survey")
 chis <- iNZightTools::smart_read("chis.csv")
 ncsr <- iNZightTools::smart_read("ncsr.csv")
+apijk <- iNZightTools::smart_read("apiclus2-jk1.csv")
 
 test_dir <- getwd()
 
@@ -236,6 +238,48 @@ test_that("Replicate weights can be specified by file", {
 })
 
 ui$close()
+
+
+
+# apides <- svrepdesign(weights = ~pw, repweights = "repw[0-9]+",
+#     data = apijk, type = "JK1")
+# svymean(~api00, des=apides)
+# svymean(~enroll, des=apides)
+
+# # iNZightPlot(api00, design = apides)
+
+# x <- try(iNZightPlot(enroll, design = apides))
+
+ui <- iNZGUI$new()
+ui$initializeGui(apijk)
+
+
+test_that("JK1 works", {
+    expect_silent(swin <- iNZSurveyDesign$new(ui, type = "replicate"))
+    svalue(swin$wtVar) <- "pw"
+    svalue(swin$repVars) <-
+        paste("repw", formatC(1:40, width = 2, flag = "0"), sep = "")
+    svalue(swin$repType) <- "JK1"
+    expect_silent(swin$createBtn$invoke_change_handler())
+    expect_equal(
+        ui$iNZDocuments[[ui$activeDoc]]$getModel()$getDesign(),
+        list(
+            wt = "pw",
+            repweights =
+                paste("repw", formatC(1:40, width = 2, flag = "0"), sep = ""),
+            reptype = "JK1",
+            scale = NULL,
+            rscales = NULL,
+            poststrat = NULL,
+            type = "replicate"
+        )
+    )
+
+    # svalue(ui$ctrlWidget$V1box) <- "enroll"
+})
+
+ui$close()
+
 
 # devtools::load_all()
 data(api, package = "survey")

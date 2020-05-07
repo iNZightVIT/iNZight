@@ -298,15 +298,23 @@ iNZMenuBarWidget <- setRefClass(
         AdvancedMenu = function() {
             if (!hasData()) {
                 ## just provide the ability to install modules
-                return(list(
-                    "Maps" = list(
+                return(
+                    list(
                         installmaps =
-                            gaction("Install",
+                            gaction("Install Maps",
                                 icon = "symbol_diamond",
                                 "tooltip" = "Install the Maps module",
-                                handler = function(h, ...) InstallMaps(GUI))
+                                handler = function(h, ...) InstallMaps(GUI)
+                            ),
+                        manage =
+                            gaction("Manage modules ...",
+                                icon = "symbol_diamond",
+                                tooltip = "Add, update, and remove add-on modules.",
+                                handler = function(h, ...)
+                                    iNZightModules::ModuleManager$new(GUI)
+                            )
                     )
-                ))
+                )
             }
 
             ## As of R 3.6.?, overwriting s3 methods is a verbose message
@@ -375,12 +383,12 @@ iNZMenuBarWidget <- setRefClass(
                         icon = "symbol_diamond",
                         handler = function(h, ...) iNZightModules::iNZightMapLanding$new(GUI)),
                 gseparator(),
-                install =
-                    gaction("Add or remove modules ...",
+                manage =
+                    gaction("Manage modules ...",
                         icon = "symbol_diamond",
-                        tooltip = "Add or remove add-on iNZight modules",
+                        tooltip = "Add, update, and remove add-on modules.",
                         handler = function(h, ...)
-                            iNZightModules::InstallModules$new(GUI)
+                            iNZightModules::ModuleManager$new(GUI)
                     ),
                 gseparator(),
                 rcode =
