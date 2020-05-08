@@ -1,6 +1,7 @@
 context("Add-on Modules")
 
 moduledir <- file.path(getwd(), "modules")
+
 # load_all("../../../iNZightModules")
 # load_all()
 
@@ -32,8 +33,8 @@ test_that("Modules launch and close", {
 })
 
 test_that("Add/remove modules window", {
-    addrm <- svalue(ui$menuBarWidget$menubar)$Advanced$install
-    expect_is(addrm, "GAction")
+    # addrm <- svalue(ui$menuBarWidget$menubar)$Advanced$install
+    # expect_is(addrm, "GAction")
     ## more tests later
 })
 

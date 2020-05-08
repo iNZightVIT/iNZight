@@ -1,8 +1,15 @@
+- pass NULL to scale/rscale when specifying survey replicate design
+  type that does not ask user for them
+- New Module Manager
+
+# iNZight 3.5.2
 - move makeNames() method (part of iNZDataModWin) to 'iNZightTools' package
   as iNZightTools::make_names()
 - specify `stringsAsFactors = TRUE` for upcoming R 4.0.0
+- manage modules from the Advanced menu
+- pass colby and locate variable to interactive plot
 
-## iNZight 3.5.0
+## iNZight 3.5.1
 
 - load from clipboard option
 - add option to import data from a URL as well as local files
