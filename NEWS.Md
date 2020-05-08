@@ -1,7 +1,8 @@
 ## iNZight 3.5.3
+- New Module Manager
+- Beta functionality: save and load the iNZight session. Accessible by first going to File > Preferences and turning on developmental features (requires restart).
 - pass NULL to scale/rscale when specifying survey replicate design
   type that does not ask user for them
-- New Module Manager
 - fix function name from iNZightPlots
 
 ## iNZight 3.5.2
