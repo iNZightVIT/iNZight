@@ -1,6 +1,7 @@
 - pass NULL to scale/rscale when specifying survey replicate design
   type that does not ask user for them
 - New Module Manager
+- Beta functionality: save and load the iNZight session. Accessible by first going to File > Preferences and turning on developmental features (requires restart).
 
 # iNZight 3.5.2
 - move makeNames() method (part of iNZDataModWin) to 'iNZightTools' package
