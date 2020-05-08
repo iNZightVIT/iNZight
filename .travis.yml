@@ -33,7 +33,7 @@ r_github_packages:
   - iNZightVIT/iNZightTools@dev
   - iNZightVIT/iNZightTS@dev
   - iNZightVIT/iNZightMR@dev
-  - iNZightVIT/iNZightPlots@dev
+  - iNZightVIT/iNZightPlots@feature/code-writing
   - iNZightVIT/iNZightModules@dev
 
 addons:

@@ -24,3 +24,10 @@ test_that("magrittr library call is included", {
         fixed = TRUE
     )
 })
+
+test_that("Plot code is generated correctly", {
+    svalue(ui$ctrlWidget$V1box) <- "height"
+    expect_equal(
+        ui$curPlot
+    )
+})

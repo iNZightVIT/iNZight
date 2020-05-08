@@ -1079,8 +1079,12 @@ iNZGUI <- setRefClass(
             curMod <- getActiveDoc()$getModel()
 
             plot_call <- construct_call(curPlSet, curMod)
+            print(plot_call)
 
             .dataset <- getActiveData()
+
+
+
             curPlSet$data <- quote(.dataset)
 
             if (!is.null(curPlSet$freq))

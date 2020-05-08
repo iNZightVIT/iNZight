@@ -195,7 +195,7 @@ modifyList <- function (x, val, keep.null = FALSE)
     x
 }
 
-
+## THIS SHOULD HAPPEN IN INZIGHTPLOTS
 construct_call <- function(settings, model, data = quote(.dataset)) {
     # go through settings and compare to default settings
     default_args <- formals(iNZightPlots::iNZightPlot)
@@ -203,8 +203,8 @@ construct_call <- function(settings, model, data = quote(.dataset)) {
     defaults <- c(default_args, inz_args)
     lapply(names(settings), function(s_name) {
         is_same <- identical(
-            settings[[s_name]], 
-            defaults[[s_name]], 
+            settings[[s_name]],
+            defaults[[s_name]],
             ignore.bytecode = TRUE,
             ignore.environment = TRUE
         )
@@ -235,5 +235,5 @@ construct_call <- function(settings, model, data = quote(.dataset)) {
     call <- gsub("^list", "iNZightPlot", call)
     call <- gsub(".DROP = ", "", call)
 
-    paste(call, collapse = "\n")
+    parse(text = paste(call, collapse = "\n"))
 }
