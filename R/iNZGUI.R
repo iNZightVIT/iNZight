@@ -875,7 +875,7 @@ iNZGUI <- setRefClass(
                                 curSet$freq <- getActiveData()[[curSet$freq]]
                             if (!is.null(curSet$x)) {
                                 xvar <- .dataset[[curSet$x]]
-                                yvar <- .dataset[[curSet$y]]
+                                yvar <- if (!is.null(curSet$y)) .dataset[[curSet$y]] else NULL
                                 if (is.numeric(xvar) & is.numeric(yvar)) {
                                     tmp.x <- curSet$y
                                     curSet$y <- curSet$x
