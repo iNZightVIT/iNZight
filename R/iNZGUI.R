@@ -1178,7 +1178,7 @@ iNZGUI <- setRefClass(
                 # This will be moved to a separate function at some point ...
                 # rhistory$add(code, keep = FALSE)
                 # rhistory$update()
-                print(code)
+                # print(code)
 
                 enabled(plotToolbar$exportplotBtn) <<- can.interact(rawpl)
                 plotType <<- attr(curPlot, "plottype")

@@ -1,6 +1,6 @@
 context("Update Plot method and code writing")
 
-# devtools::load_all(); ui$close(); 
+# devtools::load_all(); ui$close();
 ui <- iNZGUI$new()
 ui$initializeGui(census.at.school.500)
 on.exit(gWidgets2::dispose(ui$win))
@@ -12,14 +12,14 @@ test_that("Construct call function works", {
     model <- ui$getActiveDoc()$getModel()
     settings$xlab <- NULL
     expect_equal(
-        construct_call(settings, model),
-        "iNZightPlot(height, varnames = list(x = \"height\"), data = .dataset)"
+        as.character(construct_call(settings, model)),
+        "iNZightPlot(height, data = .dataset)"
     )
 
     settings$col.pt <- "blue"
     expect_equal(
-        construct_call(settings, model),
-        "iNZightPlot(height, varnames = list(x = \"height\"), data = .dataset, \n    col.pt = \"blue\")"
+        as.character(construct_call(settings, model)),
+        "iNZightPlot(height, data = .dataset, col.pt = \"blue\")"
     )
 })
 
