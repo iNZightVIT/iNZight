@@ -1076,15 +1076,18 @@ iNZGUI <- setRefClass(
         ## plot with the current active plot settings
         updatePlot = function(allow.redraw = TRUE) {
             curPlSet <- getActiveDoc()$getSettings()
-            curMod <- getActiveDoc()$getModel()
+            # curMod <- getActiveDoc()$getModel()
 
-            plot_call <- construct_call(curPlSet, curMod)
-            print(plot_call)
+            # plot_call <- construct_call(curPlSet, curMod)
+            # if (is.null(plot_call)) return()
+
+            # .dataset <- getActiveData()
+            # curPlot <- eval(plot_call)
+
+
+            # return()
 
             .dataset <- getActiveData()
-
-
-
             curPlSet$data <- quote(.dataset)
 
             if (!is.null(curPlSet$freq))
@@ -1113,14 +1116,12 @@ iNZGUI <- setRefClass(
 
                 ## Suppress the warnings produced by iNZightPlot ...
                 dop <- try({
-                    # suppressWarnings({
-                        ## Generate the plot ... and update the interaction button
-                        curPlot <<- unclass(rawpl <- do.call(iNZightPlot, curPlSet))
-                        if (allow.redraw & !is.null(attr(curPlot, "dotplot.redraw")))
-                            if (attr(curPlot, "dotplot.redraw"))
-                                curPlot <<- unclass(rawpl <- do.call(iNZightPlot, curPlSet))
-
-                    # })
+                    ## Generate the plot ... and update the interaction button
+                    plot_call <- construct_call(curPlSet, curMod)
+                    curPlot <<- unclass(rawpl <- eval(plot_call))
+                    if (allow.redraw & !is.null(attr(curPlot, "dotplot.redraw")))
+                        if (attr(curPlot, "dotplot.redraw"))
+                            curPlot <<- unclass(rawpl <- eval(plot_call))
                 }, silent = TRUE)
 
                 if (inherits(dop, "try-error")) {
@@ -1168,6 +1169,19 @@ iNZGUI <- setRefClass(
                     )
                     return(invisible(NULL))
                 }
+
+                dname <- attr(getActiveData(), "name", exact = TRUE)
+                if (is.null(dname) || dname == "")
+                    dname <- sprintf("data%s",
+                        ifelse(activeDoc == 1, "", activeDoc)
+                    )
+                dname <- iNZightTools:::create_varname(dname)
+                code <- as.character(plot_call)
+                code <- gsub(".dataset", dname, code, fixed = TRUE)
+
+                rhistory$add(code, keep = FALSE)
+                rhistory$update()
+                print(rhistory$get())
 
                 enabled(plotToolbar$exportplotBtn) <<- can.interact(rawpl)
                 plotType <<- attr(curPlot, "plottype")

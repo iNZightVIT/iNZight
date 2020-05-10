@@ -197,6 +197,7 @@ modifyList <- function (x, val, keep.null = FALSE)
 
 ## THIS SHOULD HAPPEN IN INZIGHTPLOTS
 construct_call <- function(settings, model, data = quote(.dataset)) {
+    if (is.null(settings$x)) return(NULL)
     # go through settings and compare to default settings
     default_args <- formals(iNZightPlots::iNZightPlot)
     inz_args <- iNZightPlots::inzpar()
@@ -224,6 +225,19 @@ construct_call <- function(settings, model, data = quote(.dataset)) {
     name_order <- c(names(default_args),  names(inz_args))
     name_order <- name_order[name_order %in% names(settings)]
     settings <- settings[name_order]
+
+    # only include overwritten varnames
+    vnames <- settings$varnames
+    for (vn in names(vnames)) {
+        if (is.null(settings[[vn]]) ||
+            is.null(vnames[[vn]]) ||
+            settings[[vn]] == vnames[[vn]])
+            vnames[[vn]] <- NULL
+    }
+    settings$varnames <- if (length(vnames)) vnames else NULL
+
+    ## remove any NULLs
+    settings <- modifyList(list(), settings)
 
     ## drop "x = " and "y = "
     names(settings) <- ifelse(names(settings) %in% c("x", "y"),
