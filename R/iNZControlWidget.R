@@ -347,9 +347,10 @@ iNZControlWidget <- setRefClass(
                             createSlider(pos = 6, val)
                             changePlotSettings(
                                 list(
-                                    g1 = iNZightPlots:::convert.to.factor(
-                                        GUI$getActiveDoc()$getData()[val][[1]]
-                                    ),
+                                    # g1 = iNZightPlots:::convert.to.factor(
+                                    #     GUI$getActiveDoc()$getData()[val][[1]]
+                                    # ),
+                                    g1 = as.name(val),
                                     g1.level = "_MULTI",
                                     main = NULL,
                                     varnames = list(
@@ -394,9 +395,10 @@ iNZControlWidget <- setRefClass(
                             createSlider(pos = 8, val)
                             changePlotSettings(
                                 list(
-                                    g2 = iNZightPlots:::convert.to.factor(
-                                        GUI$getActiveDoc()$getData()[val][[1]]
-                                    ),
+                                    g2 = as.name(val),
+                                    # g2 = iNZightPlots:::convert.to.factor(
+                                    #     GUI$getActiveDoc()$getData()[val][[1]]
+                                    # ),
                                     g2.level = "_ALL",
                                     main = NULL,
                                     varnames = list(
@@ -642,7 +644,7 @@ iNZControlWidget <- setRefClass(
             if (!is.null(set$g1) && set$varnames$g1 %in% vars) {
                 ## set variable 3 to whatever it's supposed to be
                 svalue(G1box) <<- set$varnames$g1
-                set$g1 <- data[[set$varnames$g1]]
+                set$g1 <- as.name(set$varnames$g1)
                 g1level <- set$g1.level
                 set$g1.level <- NULL
                 sld1 <- ctrlGp$children[[1]][6, 1]
@@ -660,7 +662,7 @@ iNZControlWidget <- setRefClass(
             if (!is.null(set$g2) && set$varnames$g2 %in% vars) {
                 ## set variable 3 to whatever it's supposed to be
                 svalue(G2box) <<- set$varnames$g2
-                set$g2 <- data[[set$varnames$g2]]
+                set$g2 <- as.name(set$varnames$g2)
                 g2level <- set$g2.level
                 set$g2.level <- NULL
                 sld2 <- ctrlGp$children[[1]][8, 1]

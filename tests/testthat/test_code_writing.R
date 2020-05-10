@@ -28,6 +28,25 @@ test_that("magrittr library call is included", {
 test_that("Plot code is generated correctly", {
     svalue(ui$ctrlWidget$V1box) <- "height"
     expect_equal(
-        ui$curPlot
+        attr(ui$curPlot, "code"),
+        "iNZightPlot(height, data = data)"
+    )
+
+    svalue(ui$ctrlWidget$V2box) <- "travel"
+    expect_equal(
+        attr(ui$curPlot, "code"),
+        "iNZightPlot(height, travel, data = data)"
+    )
+
+    svalue(ui$ctrlWidget$G1box) <- "gender"
+    expect_equal(
+        attr(ui$curPlot, "code"),
+        "iNZightPlot(height, travel, g1 = gender, data = data)"
+    )
+
+    svalue(ui$ctrlWidget$G2box) <- "age"
+    expect_equal(
+        attr(ui$curPlot, "code"),
+        "iNZightPlot(height, travel, g1 = gender, g2 = age, data = data)"
     )
 })

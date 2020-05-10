@@ -480,9 +480,10 @@ iNZPlotModWin <- setRefClass(
 
 
             locator <- function(h, remove = FALSE, btn, dot = FALSE, ...) {
-                x <- curSet$x  # used for removing missing values ...
+                .data <- GUI$getActiveData()
+                x <- .data[[curSet$x]]  # used for removing missing values ...
                 if (!dot)
-                    y <- curSet$y
+                    y <- .data[[curSet$y]]
                 v <- svalue(varmenu)
 
                 w <- rep(TRUE, length(x))
@@ -492,14 +493,15 @@ iNZPlotModWin <- setRefClass(
                     } else if (curSet$g1.level == "_MULTI") {
                         cantDo()
                     }
-                    w[curSet$g1 != curSet$g1.level] <- FALSE
+                    var_g1 <- .data[[curSet$g1]]
+                    w[var_g1 != curSet$g1.level] <- FALSE
                 }
                 if (!is.null(curSet$g2)) {
+                    var_g2 <- .data[[curSet$g2]]
                     if (curSet$g2.level == "_MULTI") {
                         cantDo()
-                    } else {
-                        if (curSet$g2.level != "_ALL")
-                            w[curSet$g2 != curSet$g2.level] <- FALSE
+                    } else if (curSet$g2.level != "_ALL") {
+                        w[var_g2 != curSet$g2.level] <- FALSE
                     }
                 }
 
@@ -515,21 +517,21 @@ iNZPlotModWin <- setRefClass(
 
                 ## Entire data set - ignore missing values etc etc
                 d <- data.frame(
-                    x = curSet$x,
+                    x = .data[[curSet$x]],
                     locate = locVar,
-                    id = 1:nrow(GUI$getActiveData()),
+                    id = seq_len(nrow(GUI$getActiveData())),
                     match = matchVar,
                     stringsAsFactors = TRUE
                 )
                 if (!dot)
-                    d$y <- curSet$y
+                    d$y <- .data[[curSet$y]]
 
                 if (!is.null(curSet$g1)) {
-                    w[curSet$g1 != curSet$g1.level] <- FALSE
+                    w[var_g1 != curSet$g1.level] <- FALSE
                 }
                 if (!is.null(curSet$g2)) {
                     if (curSet$g2.level != "_ALL") {
-                        w[curSet$g2 != curSet$g2.level] <- FALSE
+                        w[var_g2 != curSet$g2.level] <- FALSE
                     }
                 }
 
@@ -539,9 +541,9 @@ iNZPlotModWin <- setRefClass(
                     isNA <- is.na(x) | is.na(y)
 
                 if (!is.null(curSet$g1))
-                    isNA <- isNA | is.na(curSet$g1)
+                    isNA <- isNA | is.na(var_g1)
                 if (!is.null(curSet$g2))
-                    isNA <- isNA | is.na(curSet$g2)
+                    isNA <- isNA | is.na(var_g2)
 
                 dp <- grid.get(ifelse(dot,
                     "inz-DOTPOINTS.1.1.1",

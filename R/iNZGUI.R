@@ -1076,18 +1076,9 @@ iNZGUI <- setRefClass(
         ## plot with the current active plot settings
         updatePlot = function(allow.redraw = TRUE) {
             curPlSet <- getActiveDoc()$getSettings()
-            # curMod <- getActiveDoc()$getModel()
-
-            # plot_call <- construct_call(curPlSet, curMod)
-            # if (is.null(plot_call)) return()
-
-            # .dataset <- getActiveData()
-            # curPlot <- eval(plot_call)
-
-
-            # return()
 
             .dataset <- getActiveData()
+            .design <- NULL
             curPlSet$data <- quote(.dataset)
 
             if (!is.null(curPlSet$freq))
@@ -1109,7 +1100,8 @@ iNZGUI <- setRefClass(
                 curMod <- getActiveDoc()$getModel()
                 if (!is.null(curMod$dataDesign)) {
                     curPlSet$data <- NULL
-                    curPlSet$design <- curMod$createSurveyObject()
+                    .design <- curMod$createSurveyObject()
+                    curPlSet$design <- .design
                 }
 
                 curPlSet$data_name <- dataNameWidget$datName
@@ -1178,13 +1170,19 @@ iNZGUI <- setRefClass(
                 dname <- iNZightTools:::create_varname(dname)
                 code <- as.character(plot_call)
                 code <- gsub(".dataset", dname, code, fixed = TRUE)
+                if (!is.null(.design))
+                    code <- gsub(".design", curMod$dataDesignName, code,
+                        fixed = TRUE
+                    )
 
-                rhistory$add(code, keep = FALSE)
-                rhistory$update()
-                print(rhistory$get())
+                # This will be moved to a separate function at some point ...
+                # rhistory$add(code, keep = FALSE)
+                # rhistory$update()
+                print(code)
 
                 enabled(plotToolbar$exportplotBtn) <<- can.interact(rawpl)
                 plotType <<- attr(curPlot, "plottype")
+                attr(curPlot, "code") <<- code
                 return(invisible(rawpl))
             }
 

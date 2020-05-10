@@ -236,6 +236,28 @@ construct_call <- function(settings, model, data = quote(.dataset)) {
     }
     settings$varnames <- if (length(vnames)) vnames else NULL
 
+    ## g1.level/g2.level
+    if (isTRUE(settings$g1.level == "_MULTI")) settings$g1.level <- NULL
+    if (isTRUE(settings$g2.level == "_ALL")) settings$g2.level <- NULL
+
+    ## Locator:
+    #### if nothing being located, no need to pass "order.first" setting
+    # if (is.null(settings$locate) || is.null(settings$locate.id) ||
+    #     length(settings$locate.id) == 0 ||
+    #     highlight
+    ## actually I think this will do ...
+    # if (!is.null(settings$plot.features$order.first) &&
+    #     is.null(settings$locate) &&
+    #     is.null(settings$locate.id) &&
+    #     is.null(settings$hightlight)) {
+
+    #     plopt <- settings$plot.features
+    #     plopt$order.first <- NULL
+    #     plopt <- modifyList(list(), plopt)
+    #     if (length(plopt) == 0) plopt <- NULL
+    #     settings$plot.features <- plopt
+    # }
+
     ## remove any NULLs
     settings <- modifyList(list(), settings)
 
