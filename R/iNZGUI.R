@@ -1105,15 +1105,20 @@ iNZGUI <- setRefClass(
                 }
 
                 curPlSet$data_name <- dataNameWidget$datName
+                e <- new.env()
+                e$.dataset <- .dataset
+                e$.design <- .design
 
                 ## Suppress the warnings produced by iNZightPlot ...
                 dop <- try({
                     ## Generate the plot ... and update the interaction button
                     plot_call <- construct_call(curPlSet, curMod)
-                    curPlot <<- unclass(rawpl <- eval(plot_call))
+                    # print(plot_call)
+                    rawpl <- eval(plot_call, e)
+                    curPlot <<- unclass(rawpl)
                     if (allow.redraw & !is.null(attr(curPlot, "dotplot.redraw")))
                         if (attr(curPlot, "dotplot.redraw"))
-                            curPlot <<- unclass(rawpl <- eval(plot_call))
+                            curPlot <<- unclass(rawpl <- eval(plot_call, e))
                 }, silent = TRUE)
 
                 if (inherits(dop, "try-error")) {

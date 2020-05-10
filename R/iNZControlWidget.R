@@ -111,11 +111,11 @@ iNZControlWidget <- setRefClass(
                     svalue(V2box) <<- V1
 
                     valX <- svalue(V1box)
-                    newX <- GUI$getActiveDoc()$getData()[valX][[1]]
+                    newX <- valX #GUI$getActiveDoc()$getData()[valX][[1]]
                     newXname <- valX
 
                     valY <- svalue(V2box)
-                    newY <- GUI$getActiveDoc()$getData()[valY][[1]]
+                    newY <- valY #GUI$getActiveDoc()$getData()[valY][[1]]
                     newYname <- valY
 
                     changePlotSettings(
@@ -156,7 +156,7 @@ iNZControlWidget <- setRefClass(
                         newY <- NULL
                     } else {
                         valY <- svalue(V2box)
-                        newY <- GUI$getActiveDoc()$getData()[valY][[1]]
+                        newY <- valY # GUI$getActiveDoc()$getData()[valY][[1]]
                     }
                     newYname <- valY
 
@@ -178,9 +178,10 @@ iNZControlWidget <- setRefClass(
                         )
                     } else {
                         valG1 <- svalue(G1box)
-                        newG1 <-  iNZightPlots:::convert.to.factor(
-                            GUI$getActiveDoc()$getData()[valG1][[1]]
-                        )
+                        newG1 <- valG1
+                        # newG1 <-  iNZightPlots:::convert.to.factor(
+                        #     GUI$getActiveDoc()$getData()[valG1][[1]]
+                        # )
                         newG1name <- valG1
 
                         createSlider(pos = 6, valG1)
@@ -228,9 +229,10 @@ iNZControlWidget <- setRefClass(
                         newG1level <- NULL
                     } else {
                         valG1 <- svalue(G1box)
-                        newG1 <- iNZightPlots:::convert.to.factor(
-                            GUI$getActiveDoc()$getData()[valG1][[1]]
-                        )
+                        newG1 <- valG1
+                        # newG1 <- iNZightPlots:::convert.to.factor(
+                        #     GUI$getActiveDoc()$getData()[valG1][[1]]
+                        # )
                         newG1name <- valG1
                         newG1level <- "_MULTI"
                         createSlider(pos = 6, valG1)
@@ -242,9 +244,10 @@ iNZControlWidget <- setRefClass(
                         newG2level <- NULL
                     } else {
                         valG2 <- svalue(G2box)
-                        newG2 <- iNZightPlots:::convert.to.factor(
-                            GUI$getActiveDoc()$getData()[valG2][[1]]
-                        )
+                        newG2 <- valG2
+                        # newG2 <- iNZightPlots:::convert.to.factor(
+                        #     GUI$getActiveDoc()$getData()[valG2][[1]]
+                        # )
                         newG2name <- valG2
                         newG2level <- "_ALL"
                         createSlider(pos = 8, valG2)

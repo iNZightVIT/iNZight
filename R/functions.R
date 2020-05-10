@@ -196,7 +196,9 @@ modifyList <- function (x, val, keep.null = FALSE)
 }
 
 ## THIS SHOULD HAPPEN IN INZIGHTPLOTS
-construct_call <- function(settings, model, data = quote(.dataset)) {
+construct_call <- function(settings, model,
+                           data = quote(.dataset),
+                           what = c("plot", "summary", "inference")) {
     if (is.null(settings$x)) return(NULL)
     # go through settings and compare to default settings
     default_args <- formals(iNZightPlots::iNZightPlot)
@@ -212,6 +214,8 @@ construct_call <- function(settings, model, data = quote(.dataset)) {
         if (is_same) settings[[s_name]] <<- NULL
     })
 
+    what <- match.arg(what)
+
     ## set the data
     settings$data <- data
 
@@ -226,49 +230,117 @@ construct_call <- function(settings, model, data = quote(.dataset)) {
     name_order <- name_order[name_order %in% names(settings)]
     settings <- settings[name_order]
 
-    # only include overwritten varnames
-    vnames <- settings$varnames
-    for (vn in names(vnames)) {
-        if (is.null(settings[[vn]]) ||
-            is.null(vnames[[vn]]) ||
-            settings[[vn]] == vnames[[vn]])
-            vnames[[vn]] <- NULL
+    # formula
+    if (!is.null(settings$y) || !is.null(settings$g1) || !is.null(settings$g2)) {
+        fmla <- as.character(settings$x)
+        if (!is.null(settings$y)) {
+            fmla <- paste(fmla, as.character((settings$y)), sep = " ~ ")
+        } else {
+            fmla <- paste(fmla, ".", sep = " ~ ")
+        }
+        if (!is.null(settings$g1) || !is.null(settings$g2)) {
+            if (is.null(settings$g1)) {
+                if (settings$g2.level == "_ALL") {
+                    gfm <- NULL
+                    settings$g2.level <- NULL
+                } else {
+                    gfm <- as.character(settings$g2)
+                    settings$g1.level <- settings$g2.level
+                    settings$g2.level <- NULL
+                }
+            } else if (is.null(settings$g2) || settings$g2.level == "_ALL") {
+                gfm <- as.character(settings$g1)
+            } else {
+                gfm <- paste(
+                    as.character(settings$g1),
+                    as.character(settings$g2),
+                    sep = " + "
+                )
+            }
+
+            if (!is.null(gfm))
+                fmla <- paste(fmla, "|", gfm)
+        }
+        if (grepl(" ~ \\.$", fmla)) {
+            fmla <- settings$x
+        } else {
+            fmla <- eval(parse(text = fmla))
+        }
+        settings <- c(list(f = fmla), settings)
+        settings$x <- NULL
+        settings$y <- NULL
+        settings$g1 <- NULL
+        settings$g2 <- NULL
     }
-    settings$varnames <- if (length(vnames)) vnames else NULL
+
+    # only include overwritten varnames
+    # vnames <- settings$varnames
+    # for (vn in names(vnames)) {
+    #     if (is.null(settings[[vn]]) ||
+    #         is.null(vnames[[vn]]) ||
+    #         settings[[vn]] == vnames[[vn]])
+    #         vnames[[vn]] <- NULL
+    # }
+    # settings$varnames <- if (length(vnames)) vnames else NULL
+    settings$varnames <- NULL
 
     ## g1.level/g2.level
     if (isTRUE(settings$g1.level == "_MULTI")) settings$g1.level <- NULL
     if (isTRUE(settings$g2.level == "_ALL")) settings$g2.level <- NULL
 
-    ## Locator:
-    #### if nothing being located, no need to pass "order.first" setting
-    # if (is.null(settings$locate) || is.null(settings$locate.id) ||
-    #     length(settings$locate.id) == 0 ||
-    #     highlight
-    ## actually I think this will do ...
-    # if (!is.null(settings$plot.features$order.first) &&
-    #     is.null(settings$locate) &&
-    #     is.null(settings$locate.id) &&
-    #     is.null(settings$hightlight)) {
+    if (what == "plot") {
+        ## things unique to plots
 
-    #     plopt <- settings$plot.features
-    #     plopt$order.first <- NULL
-    #     plopt <- modifyList(list(), plopt)
-    #     if (length(plopt) == 0) plopt <- NULL
-    #     settings$plot.features <- plopt
-    # }
+
+        ## Locator:
+        #### if nothing being located, no need to pass "order.first" setting
+        # if (is.null(settings$locate) || is.null(settings$locate.id) ||
+        #     length(settings$locate.id) == 0 ||
+        #     highlight
+        ## actually I think this will do ...
+        # if (!is.null(settings$plot.features$order.first) &&
+        #     is.null(settings$locate) &&
+        #     is.null(settings$locate.id) &&
+        #     is.null(settings$hightlight)) {
+
+        #     plopt <- settings$plot.features
+        #     plopt$order.first <- NULL
+        #     plopt <- modifyList(list(), plopt)
+        #     if (length(plopt) == 0) plopt <- NULL
+        #     settings$plot.features <- plopt
+        # }
+
+    } else {
+        ## things unique to summary/inference
+
+
+        if (what == "summary") {
+            ## things unique to summary
+
+        }
+        if (what == "inference") {
+            ## things unique to inference
+
+        }
+    }
+
 
     ## remove any NULLs
     settings <- modifyList(list(), settings)
 
     ## drop "x = " and "y = "
-    names(settings) <- ifelse(names(settings) %in% c("x", "y"),
+    names(settings) <- ifelse(names(settings) %in% c("f", "x", "y"),
         paste0(names(settings), "DROP"),
         names(settings)
     )
 
     call <- capture.output(dput(settings))
-    call <- gsub("^list", "iNZightPlot", call)
+    fn <- switch(what,
+        plot = "iNZPlot",
+        summary = "iNZSumary",
+        inference = "INZInference"
+    )
+    call <- gsub("^list", fn, call)
     call <- gsub(".DROP = ", "", call)
 
     parse(text = paste(call, collapse = "\n"))
