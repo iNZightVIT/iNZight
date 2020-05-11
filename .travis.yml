@@ -30,6 +30,7 @@ repos:
   docker: https://r.docker.stat.auckland.ac.nz
 
 r_github_packages:
+  - iNZightVIT/gWidgets2RGtk2@inz
   - iNZightVIT/iNZightTools@dev
   - iNZightVIT/iNZightTS@dev
   - iNZightVIT/iNZightMR@dev
