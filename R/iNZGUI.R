@@ -1086,15 +1086,21 @@ iNZGUI <- setRefClass(
             if(!is.null(curPlSet$x)) {
                 varx <- .dataset[[curPlSet$x]]
                 vary <- if (!is.null(curPlSet$y)) .dataset[[curPlSet$y]] else NULL
-                # Switch x and y:
-                if (is_num(varx) & is_num(vary)) {
-                    x.tmp <- curPlSet$y
-                    curPlSet$y <- curPlSet$x
-                    curPlSet$x <- x.tmp
+                # # Switch x and y:
+                # if (is_num(varx) & is_num(vary)) {
+                #     x.tmp <- curPlSet$y
+                #     curPlSet$y <- curPlSet$x
+                #     curPlSet$x <- x.tmp
 
-                    x.tmp <- curPlSet$varnames$y
-                    curPlSet$varnames$y <- curPlSet$varnames$x
-                    curPlSet$varnames$x <- x.tmp
+                #     x.tmp <- curPlSet$varnames$y
+                #     curPlSet$varnames$y <- curPlSet$varnames$x
+                #     curPlSet$varnames$x <- x.tmp
+                # }
+                # if x and y are categorical, OR x is cat, y is num ... switch
+                if (!is.null(vary) && is_cat(varx)) {
+                    x <- curPlSet$x
+                    curPlSet$x <- curPlSet$y
+                    curPlSet$y <- x
                 }
                 ## Design or data?
                 curMod <- getActiveDoc()$getModel()
