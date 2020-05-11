@@ -107,12 +107,17 @@ iNZSurveyDesign <- setRefClass(
                         wts <- svalue_or_null(wtVar)
                         repWts <- svalue(repVars, index = FALSE)
                         reptype <- svalue(repType)
-                        scale <- as.numeric(svalue(repScale))
-                        rscales <- as.numeric(repRscales$rscales)
-                        if (length(rscales) == 0)
-                            rscales <- rep(scale, length(repWts))
-                        else if(any(is.na(rscales)))
+                        if (reptype %in% c("bootstrap", "other")) {
+                            scale <- as.numeric(svalue(repScale))
+                            rscales <- as.numeric(repRscales$rscales)
+                            if (length(rscales) == 0)
+                                rscales <- rep(scale, length(repWts))
+                            else if(any(is.na(rscales)))
+                                rscales <- NULL
+                        } else {
+                            scale <- NULL
                             rscales <- NULL
+                        }
                         clear <- is.null(wts) && length(repWts) == 0
                         GUI$getActiveDoc()$getModel()$setDesign(
                             wt = wts,

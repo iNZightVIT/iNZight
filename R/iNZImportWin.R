@@ -412,60 +412,122 @@ iNZImportWin <- setRefClass(
                 tryCatch(
                     {
                         readData(preview = TRUE)
-                        ## set the preview
-                        if (can_edit_types)
-                            svalue(prevLbl) <<-
-                                paste(
-                                    "Right-click column names to change the type",
-                                    "(c = categorical, n = numeric,",
-                                    "d = date, t = time)\n"
-                                )
-                        else
-                            svalue(prevLbl) <<- ""
-                        prev <<- gdf(head(tmpData, 5), container = prevGp)
-                        invisible(prev$remove_popup_menu())
 
-                        if (can_edit_types) {
-                            invisible(prev$add_popup(function(col_index) {
-                                j <- prev$get_column_index(col_index)
-                                types <- c(
-                                    "auto",
-                                    "numeric",
-                                    "categorical",
-                                    "date",
-                                    "time",
-                                    "datetime"
-                                )
-                                if (!fext %in% c("csv", "txt"))
-                                    types <- types[1:3]
-                                list(
-                                    gradio(types,
-                                        selected = match(fColTypes[j], types),
-                                        handler = function(h, ...) {
-                                            fColTypes[j] <<-
-                                                types[svalue(h$obj, index = TRUE)]
-                                            generatePreview(h, ..., reload = TRUE)
-                                        }
+                        if (ncol(tmpData) > 20L) {
+                            can_edit_types <- FALSE
+                            dfinfo <- data.frame(
+                                Name = colnames(tmpData),
+                                Type = factor(
+                                    fColTypes,
+                                    levels = c(
+                                        "auto",
+                                        "numeric",
+                                        "categorical",
+                                        "date",
+                                        "time",
+                                        "datetime"
                                     )
-                                )
-                            }))
+                                ),
+                                Values = sapply(tmpData,
+                                    function(d) {
+                                        if (is_cat(d)) {
+                                            if (length(levels(d)) > 10) {
+                                                lvls <- paste0(
+                                                    paste0(
+                                                        "\"", levels(d)[1:6], "\"",
+                                                        collapse = ", "
+                                                    ),
+                                                    ", and ",
+                                                    length(levels(d)) - 6,
+                                                    " more"
+                                                )
+                                            } else {
+                                                lvls <- paste0(
+                                                    "\"", levels(d), "\"",
+                                                    collapse = ", "
+                                                )
+                                            }
+                                            sprintf("Categories: %s", lvls)
+                                        } else {
+                                            paste(
+                                                paste(d[1:5], collapse = " "),
+                                                "..."
+                                            )
+                                        }
+                                    }
+                                ),
+                                stringsAsFactors = TRUE
+                            )
+                            rownames(dfinfo) <- seq_len(nrow(dfinfo))
+                            prev <<- gdf(dfinfo, container = prevGp)
+                            prev$set_editable(FALSE, 1L)
+                            prev$set_editable(FALSE, 3L)
+                            addHandlerChanged(prev,
+                                handler = function(h, ...) {
+                                    fColTypes <<- as.character(h$obj$get_frame()$Type)
+                                    generatePreview(h, ..., reload = TRUE)
+                                }
+                            )
+                            invisible(prev$remove_popup_menu())
+                            svalue(prevLbl) <<- "Select values in the 'Type' column, then click and use the drop-down to change the type."
+                            # add handler to changing values in RHS column
+                        } else {
+
+                            ## set the preview
+                            if (can_edit_types)
+                                svalue(prevLbl) <<-
+                                    paste(
+                                        "Right-click column names to change the type",
+                                        "(c = categorical, n = numeric,",
+                                        "d = date, t = time)\n"
+                                    )
+                            else
+                                svalue(prevLbl) <<- ""
+                            prev <<- gdf(head(tmpData, 5), container = prevGp)
+
+                            invisible(prev$remove_popup_menu())
+                            if (can_edit_types) {
+                                invisible(prev$add_popup(function(col_index) {
+                                    j <- prev$get_column_index(col_index)
+                                    types <- c(
+                                        "auto",
+                                        "numeric",
+                                        "categorical",
+                                        "date",
+                                        "time",
+                                        "datetime"
+                                    )
+                                    if (!fext %in% c("csv", "txt"))
+                                        types <- types[1:3]
+                                    list(
+                                        gradio(types,
+                                            selected = match(fColTypes[j], types),
+                                            handler = function(h, ...) {
+                                                fColTypes[j] <<-
+                                                    types[svalue(h$obj, index = TRUE)]
+                                                generatePreview(h, ..., reload = TRUE)
+                                            }
+                                        )
+                                    )
+                                }))
+                            }
+                            names(prev) <<- paste0(
+                                names(prev),
+                                " (",
+                                sapply(tmpData, function(x)
+                                    switch(class(x)[1],
+                                        "integer" = ,
+                                        "numeric" = "n",
+                                        "factor" = ,
+                                        "character" = "c",
+                                        "Date" = "d",
+                                        "hms" = "t",
+                                        "POSIXct" = "dt"
+                                    )
+                                ),
+                                ")"
+                            )
                         }
-                        names(prev) <<- paste0(
-                            names(prev),
-                            " (",
-                            sapply(tmpData, function(x)
-                                switch(class(x)[1],
-                                    "integer" = ,
-                                    "numeric" = "n",
-                                    "factor" = ,
-                                    "character" = "c",
-                                    "Date" = "d",
-                                    "hms" = "t",
-                                    "POSIXct" = "dt"
-                                )
-                            ),
-                            ")"
-                        )
                     },
                     error = function(e) {
                         svalue(prevLbl) <<-

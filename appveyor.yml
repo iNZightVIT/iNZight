@@ -10,8 +10,8 @@ init:
 install:
   ps: Bootstrap
 
-#cache:
-#  - c:\RLibrary
+cache:
+ - c:\RLibrary
 
 environment:
   USE_RTOOLS: true
@@ -35,15 +35,16 @@ build_script:
   - 7z x ..\..\gtk64.zip > nul
   - cd ..
   - cd ..
-  - if exist c:\RLibrary\RGtk2\gtk\ rd /s /q c:\RLibrary\RGtk2\gtk
-  - mv gtk c:\RLibrary\RGtk2
+  - if exist c:\RLibrary\4.0\RGtk2\gtk\ rd /s /q c:\RLibrary\4.0\RGtk2\gtk
+  - mv gtk c:\RLibrary\4.0\RGtk2
   - del gtk32.zip
   - del gtk64.zip
-  - travis-tool.sh install_github iNZightVIT/iNZightTools@1.8.4
-  - travis-tool.sh install_github iNZightVIT/iNZightTS
-  - travis-tool.sh install_github iNZightVIT/iNZightMR
-  - travis-tool.sh install_github iNZightVIT/iNZightPlots@2.11.1
-  - travis-tool.sh install_github iNZightVIT/iNZightModules@2.4.9
+  - travis-tool.sh install_github iNZightVIT/gWidgets2RGtk2@inz
+  - travis-tool.sh install_github iNZightVIT/iNZightTools@dev
+  - travis-tool.sh install_github iNZightVIT/iNZightTS@dev
+  - travis-tool.sh install_github iNZightVIT/iNZightMR@dev
+  - travis-tool.sh install_github iNZightVIT/iNZightPlots@dev
+  - travis-tool.sh install_github iNZightVIT/iNZightModules@dev
 
 test_script:
   - md C:\Users\appveyor\Documents\iNZightVIT
