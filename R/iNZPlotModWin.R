@@ -173,7 +173,7 @@ iNZPlotModWin <- setRefClass(
                 ),
                 colourPalettes = list(
                     cat = iNZightPlots::cat_palette_names(),
-                    cont = iNZightPlots::const_palette_names(),
+                    cont = iNZightPlots::cont_palette_names(),
                     emphasize = iNZightPlots::emphasize_pal_colour
                 ),
                 EMPH.LEVEL = 0,

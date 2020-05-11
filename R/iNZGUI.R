@@ -1204,6 +1204,49 @@ iNZGUI <- setRefClass(
             enabled(plotToolbar$exportplotBtn) <<- FALSE
             invisible(rawpl)
         },
+        saveState = function(file) {
+            state <- lapply(
+                seq_along(iNZDocuments),
+                function(i) {
+                    list(
+                        document = iNZDocuments[[i]],
+                        plot_settings = iNZDocuments[[i]]$getSettings()
+                    )
+                }
+            )
+            save(state, file = file)
+        },
+        loadState = function(file, .alert = TRUE) {
+            if (!file.exists(file)) {
+                if (.alert)
+                    gmessage("File doesn't exist", icon = "error")
+                return()
+            }
+
+            e <- new.env()
+            load(file, envir = e)
+            if (is.null(e$state)) {
+                if (.alert)
+                    gmessage("That file doesn't seem to be a valid iNZight save.",
+                        icon = "error"
+                    )
+                return()
+            }
+
+            setState(e$state)
+        },
+        setState = function(state) {
+            lapply(
+                state,
+                function(doc) {
+                    setDocument(doc$document)
+                    Sys.sleep(0.2)
+                    getActiveDoc()$setSettings(doc$plot_settings, reset = TRUE)
+                    ctrlWidget$setState(doc$plot_settings)
+                }
+            )
+            invisible(NULL)
+        },
         ## set a new iNZDocument and make it the active one
         setDocument = function(document, reset = FALSE) {
             if (reset) {
@@ -1442,28 +1485,25 @@ iNZGUI <- setRefClass(
         defaultPrefs = function() {
             ## The default iNZight settings:
             list(
-                track = "ask",
-                track.id = NULL,
                 check.updates = TRUE,
                 window.size = c(1250, 850),
                 popout = FALSE,
-                font.size = 10
+                font.size = 10,
+                dev.features = FALSE
             )
         },
         checkPrefs = function(prefs) {
-            allowed.names <- c("track", "track.id", "check.updates",
-                               "window.size", "popout", "font.size")
+            allowed.names <- c(
+                "check.updates",
+                "window.size",
+                "popout",
+                "font.size",
+                "dev.features"
+            )
 
             ## Only keep allowed preferences --- anything else is discarded
             prefs <- prefs[names(prefs) %in% allowed.names]
             defs <- defaultPrefs()
-
-            ## TRACK = TRUE | FALSE | "ask"
-            prefs$track <-
-                if (is.null(prefs$track)) defs$track
-                else if (!is.na(prefs$track) & (prefs$track == "ask" | is.logical(prefs$track))) prefs$track
-                else defs$track
-
 
             ## check.updates = TRUE | FALSE
             prefs$check.updates <-
@@ -1488,6 +1528,10 @@ iNZGUI <- setRefClass(
             prefs$font.size <-
                 if (is.null(prefs$font.size) || !is_num(prefs$font.size)) defs$font.size
                 else prefs$font.size
+
+            prefs$dev.features <-
+                if (is.null(prefs$dev.features) || !is.logical(prefs$dev.features)) defs$dev.features
+                else prefs$dev.features
 
             prefs
 
