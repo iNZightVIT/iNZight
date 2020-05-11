@@ -371,6 +371,9 @@ iNZGUI <- setRefClass(
             sumBtn <<- gbutton(
                 "Get Summary",
                 handler = function(h, ...) {
+                    iNZGetSummary$new(.self)
+                    return()
+
                     curSet <- getActiveDoc()$getSettings()
                     curSet$plottype <- NULL
                     .dataset <- getActiveData()
@@ -1120,7 +1123,7 @@ iNZGUI <- setRefClass(
                 dop <- try({
                     ## Generate the plot ... and update the interaction button
                     plot_call <- construct_call(curPlSet, curMod)
-                    # print(plot_call)
+                    print(plot_call)
                     rawpl <- eval(plot_call, e)
                     curPlot <<- unclass(rawpl)
                     if (allow.redraw & !is.null(attr(curPlot, "dotplot.redraw")))

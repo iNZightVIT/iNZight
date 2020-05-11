@@ -337,7 +337,7 @@ construct_call <- function(settings, model,
     call <- capture.output(dput(settings))
     fn <- switch(what,
         plot = "iNZPlot",
-        summary = "iNZSumary",
+        summary = "iNZSummary",
         inference = "INZInference"
     )
     call <- gsub("^list", fn, call)

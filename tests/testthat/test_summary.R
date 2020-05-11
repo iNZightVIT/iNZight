@@ -10,7 +10,7 @@ if (!interactive()) Sys.sleep(5)
 
 test_that("Get summary window opens", {
     ui$ctrlWidget$V1box$set_value("height")
-    sw <- ui$sumBtn$invoke_change_handler()
-    # expect_is(sw, "iNZInfoWindow")
+    sw <- iNZGetSummary$new(ui)
+    expect_is(sw, "iNZGetSummary")
 
 })
