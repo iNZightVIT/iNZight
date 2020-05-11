@@ -1,3 +1,5 @@
+
+
 ## iNZight 3.5.3
 - New Module Manager
 - Beta functionality: save and load the iNZight session. Accessible by first going to File > Preferences and turning on developmental features (requires restart).
