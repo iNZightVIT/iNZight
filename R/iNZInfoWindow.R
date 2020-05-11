@@ -111,7 +111,7 @@ iNZGetSummary <- setRefClass(
             callSuper(gui, controls = "bottom", name = "Summary")
 
             smry_call <- gen_call()
-            print(smry_call)
+            # print(smry_call)
 
             e <- new.env()
             e$.dataset <- .dataset
