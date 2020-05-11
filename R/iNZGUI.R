@@ -618,6 +618,7 @@ iNZGUI <- setRefClass(
                         )
                         visible(w) <- TRUE
                     }
+                    return(invisible(w))
                 }
             )
             infBtn <<- gbutton(
