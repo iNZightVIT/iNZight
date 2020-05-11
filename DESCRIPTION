@@ -37,7 +37,7 @@ Imports:
 Suggests:
     RODBC,
     iNZightMR (>= 2.2.4),
-    iNZightModules (>= 2.4.9.9000),
+    iNZightModules (>= 2.5),
     png,
     viridis,
     RColorBrewer,
