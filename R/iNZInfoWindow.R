@@ -2,14 +2,14 @@ iNZInfoWindow <- setRefClass(
     "iNZInfoWindow",
     fields = list(
         GUI = "ANY",
-        .dataset = "ANY",
-        .design = "ANY",
+        env = "ANY",
+        dataname = "ANY",
         curSet = "ANY", curMod = "ANY",
         win = "ANY",
         control_position = "character",
         info_text = "ANY", info_font = "list",
         ctrl_panel = "ANY",
-        code_panel = "ANY",
+        code_panel = "ANY", code_box = "ANY",
         font_size = "numeric"
     ),
     methods = list(
@@ -22,8 +22,7 @@ iNZInfoWindow <- setRefClass(
             )
 
             # Check that the data exists
-            .dataset <<- GUI$getActiveData()
-            .design <<- NULL
+            env <<- new.env()
             curSet <<- GUI$getActiveDoc()$getSettings()
             if (is.null(curSet$x)) {
                 gmessage("No variable selected.")
@@ -33,14 +32,14 @@ iNZInfoWindow <- setRefClass(
             gen_set_list()
 
             win <<- gwindow(title = name,
-                width = 800 * font_size / 10,
-                height = 500 * font_size / 10,
+                width = 900 * font_size / 10,
+                height = 600 * font_size / 10,
                 parent = GUI$win,
                 visible = FALSE
             )
 
             code_panel <<- ggroup()
-            code_box <- gtext("info_function(...)",
+            code_box <<- gtext("info_function(...)",
                 expand = TRUE,
                 wrap = FALSE,
                 font.attr = list(
@@ -77,24 +76,20 @@ iNZInfoWindow <- setRefClass(
         },
         gen_set_list = function() {
             "Generate the initial settings list"
-            curSet$data <<- quote(.dataset)
-            curSet$data_name <<- GUI$dataNameWidget$datName
+            dataname <<- GUI$dataNameWidget$datName
+            curSet$data <<- as.name(dataname)
+            curSet$data_name <<- dataname
             ## Design or data?
             curMod <<- GUI$getActiveDoc()$getModel()
+            assign(dataname, GUI$getActiveData(), envir = env)
+
             if (!is.null(curMod$dataDesign)) {
+                stop("not working yet")
                 curSet$data <<- NULL
-                .design <<- curMod$createSurveyObject()
-                curSet$design <<- .design
+                # assign
+                # design <<- curMod$createSurveyObject()
+                # curSet$design <<- .design
             }
-
-            varx <- .dataset[[curSet$x]]
-            vary <- if (!is.null(curSet$y)) .dataset[[curSet$y]] else NULL
-            if (!is.null(vary) && is_cat(varx)) {
-                x <- curSet$x
-                curSet$x <<- curSet$y
-                curSet$y <<- x
-            }
-
         }
     )
 )
@@ -111,18 +106,12 @@ iNZGetSummary <- setRefClass(
             callSuper(gui, controls = "bottom", name = "Summary")
 
             smry_call <- gen_call()
-            # print(smry_call)
+            svalue(code_box) <<- smry_call
+            font(code_box) <<- info_font
 
-            e <- new.env()
-            e$.dataset <- .dataset
-            e$.design <- .design
-            smry <- eval(smry_call, e)
-            info_text$set_value("")
-            insert(info_text,
-                paste(smry, collapse = "\n"),
-                where = "end",
-                font.attr = info_font
-            )
+            smry <- eval(smry_call, env)
+            svalue(info_text) <<- paste(smry, collapse = "\n")
+            font(info_text) <<- info_font
 
             visible(win) <<- TRUE
         },
@@ -132,7 +121,10 @@ iNZGetSummary <- setRefClass(
             # This will, at some stage, fetch values from the CODE CALL
             # when it is modified by the user ... and update curSet ... =]
 
-            construct_call(curSet, curMod, what = "summary")
+            construct_call(curSet, curMod,
+                data = as.name(dataname),
+                what = "summary"
+            )
         }
     )
 )
