@@ -35,4 +35,5 @@ ui$getActiveDoc()$getModel()$setDesign(
 # myenv <- new.env()
 # myenv$data <- apiclus1
 # myenv$design <- ui$getActiveDoc()$getModel()$createSurveyObject()
-# call <- expression(iNZPlot(api00, design = design))
+# call <- expression(iNZPlot(api00, design = !!design))
+# eval(call, myenv)
