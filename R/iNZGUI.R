@@ -1085,8 +1085,8 @@ iNZGUI <- setRefClass(
             .design <- NULL
             curPlSet$data <- quote(.dataset)
 
-            if (!is.null(curPlSet$freq))
-                curPlSet$freq <- getActiveData()[[curPlSet$freq]]
+            # if (!is.null(curPlSet$freq))
+            #     curPlSet$freq <- getActiveData()[[curPlSet$freq]]
             if(!is.null(curPlSet$x)) {
                 varx <- .dataset[[curPlSet$x]]
                 vary <- if (!is.null(curPlSet$y)) .dataset[[curPlSet$y]] else NULL
