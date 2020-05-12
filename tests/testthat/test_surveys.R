@@ -101,7 +101,7 @@ test_that("Frequency column specification is passed to settings", {
 
     expect_silent(swin$createBtn$invoke_change_handler())
     expect_equal(
-        ui$iNZDocuments[[ui$activeDoc]]$getSettings()$freq,
+        as.character(ui$iNZDocuments[[ui$activeDoc]]$getSettings()$freq),
         "frequency"
     )
 })

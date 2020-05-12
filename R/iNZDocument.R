@@ -74,7 +74,7 @@ iNZDataModel <- setRefClass(
                 gui$getActiveDoc()$setSettings(list(freq = NULL))
             }
             gui$getActiveDoc()$setSettings(list(
-                freq = freq # gui$getActiveData()[[freq]]
+                freq = as.name(freq) # gui$getActiveData()[[freq]]
             ))
             # remove any non-categorical variables
             newdata <- gui$getActiveData()
