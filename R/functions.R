@@ -198,6 +198,7 @@ modifyList <- function (x, val, keep.null = FALSE)
 ## THIS SHOULD HAPPEN IN INZIGHTPLOTS
 construct_call <- function(settings, model,
                            data = quote(.dataset),
+                           design = quote(!!.design),
                            what = c("plot", "summary", "inference")) {
     if (is.null(settings$x)) return(NULL)
     # go through settings and compare to default settings
@@ -218,11 +219,10 @@ construct_call <- function(settings, model,
 
     ## set the data
     settings$data <- data
-
     if (!is.null(model$dataDesign)) {
         settings$data <- NULL
-        .design <- model$createSurveyObject()
-        settings$design <- quote(.design)
+        # .design <- model$createSurveyObject()
+        settings$design <- design
     }
 
     ## order of list

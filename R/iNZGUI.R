@@ -61,7 +61,10 @@ iNZGUI <- setRefClass(
             rhistory = "ANY",
             plot_history = "ANY",
             disposer = "logical",
-            addonModuleDir = "character"
+            addonModuleDir = "character",
+            ## This will be used to store the dataset, design, etc..
+            ## rather than passing around the full object.
+            code_env = "ANY"
         ),
         prototype = list(
             activeDoc = 1,
@@ -78,7 +81,8 @@ iNZGUI <- setRefClass(
         initializeGui = function(
             data = NULL,
             disposeR = FALSE,
-            addonDir = NULL
+            addonDir = NULL,
+            code_env = new.env()
         ) {
             "Initiates the GUI"
             iNZDocuments <<- list(iNZDocument$new(data = data))

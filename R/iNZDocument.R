@@ -341,10 +341,10 @@ iNZDocument <- setRefClass(
         updateSettings = function() {
             settings <- plotSettings$settings
             if (!is.null(settings$x) && !is.null(settings$varnames$x)) {
-                settings$x <- getData()[[settings$varnames$x]]
+                settings$x <- as.name(settings$varnames$x)
             }
             if (!is.null(settings$y) && !is.null(settings$varnames$y)) {
-                settings$y <- getData()[[settings$varnames$y]]
+                settings$y <- as.name(settings$varnames$y)
             }
             setSettings(settings)
         },
