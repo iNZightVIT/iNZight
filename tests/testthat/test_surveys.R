@@ -10,7 +10,7 @@ test_dir <- getwd()
 # ui$close()
 ui <- iNZGUI$new()
 ui$initializeGui(apiclus2)
-on.exit(try(ui$close(), TRUE))
+on.exit(gWidgets2::dispose(ui$win))
 
 test_that("Survey design window defaults are empty", {
     expect_silent(swin <- iNZSurveyDesign$new(ui))
@@ -91,7 +91,6 @@ suppressWarnings({
 # ui$close()
 ui <- iNZGUI$new()
 ui$initializeGui(cas2)
-on.exit(gWidgets2::dispose(ui$win))
 
 test_that("Frequency column specification is passed to settings", {
     expect_silent(swin <- iNZSurveyDesign$new(ui, type = "frequency"))
