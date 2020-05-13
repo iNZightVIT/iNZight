@@ -25,5 +25,5 @@ jobs:
         file-url: https://mac.r-project.org/libs/GTK_2.24.17-X11.pkg 
     
     - name: Install gtk2+
-      run: installer -pkg GTK_2.24.17-X11.pkg -target /
+      run: sudo installer -pkg GTK_2.24.17-X11.pkg -target /
 
