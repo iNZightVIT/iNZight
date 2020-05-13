@@ -39,9 +39,9 @@ jobs:
         sudo hdiutil unmount /Volumes/XQuartz-2.7.11
     
     - name: Install R
-      uses: r-lib/actions/setup-r@v1
+      uses: r-lib/actions/setup-r@master
       with: 
-        r-version: 4.0.0
+        r-version: '4.0'
     
     - name: Install RGtk2
       run: Rscript -e 'install.packages("RGtk2", type = "source")'
