@@ -44,9 +44,10 @@ jobs:
         r-version: '4.0'
 
     - name: Install RGtk2
-      run: Rscript -e 'print("hello")'
+      run: print("hello")
       # run: Rscript -e 'install.packages("RGtk2", type = "source")'
       env:
         PKG_CONFIG_PATH: /Library/Frameworks/GTK+.framework/Resources/lib/pkgconfig:$PKG_CONFIG_PATH
         PATH: /opt/local/bin:/opt/local/sbin:$PATH
         CPPFLAGS: -I/opt/X11/include
+      shell: Rscript {0}
