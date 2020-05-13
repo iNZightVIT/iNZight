@@ -26,4 +26,16 @@ jobs:
     
     - name: Install gtk2+
       run: sudo installer -pkg GTK_2.24.17-X11.pkg -target /
+    
+    - name: Download XQuartz
+      uses: carlosperate/download-file-action@v1.0.3
+      with:
+        file-url: https://dl.bintray.com/xquartz/downloads/XQuartz-2.7.11.dmg
+    
+    - name: Install XQuartz
+      run: |
+        sudo hdiutil attach XQuartz-2.7.11.dmg
+        sudo installer -pkg /Volumes/XQuartz-2.7.11/XQuartz.pkg -target /
+        sudo hdiutil unmount /Volumes/XQuartz-2.7.11
+        
 
