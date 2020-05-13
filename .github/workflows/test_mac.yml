@@ -19,11 +19,11 @@ jobs:
     - uses: actions/checkout@v2
 
     # Runs a single command using the runners shell
-    - name: Run a one-line script
-      run: echo Hello, world!
+    - name: Download gtk2+
+      uses: carlosperate/download-file-action@v1.0.3
+      with:
+        file-url: https://mac.r-project.org/libs/GTK_2.24.17-X11.pkg 
+    
+    - name: Install gtk2+
+      run: installer -pkg GTK_2.24.17-X11.pkg -target /
 
-    # Runs a set of commands using the runners shell
-    - name: Run a multi-line script
-      run: |
-        echo Add other actions to build,
-        echo test, and deploy your project.
