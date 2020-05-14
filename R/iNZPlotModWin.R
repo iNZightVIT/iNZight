@@ -1068,6 +1068,8 @@ iNZPlotMod <- setRefClass(
             defts <- iNZightPlots:::inzpar()
             TYPE <- PLOTTYPE <- GUI$plotType
 
+            .data <- GUI$getActiveData()
+
             ## ----- GENERAL APPEARANCE ----------------------------------------------------------
             ##
             ##        Plot type : [default, scatter, hex, grid-density]
@@ -1096,11 +1098,11 @@ iNZPlotMod <- setRefClass(
                   newSet <- list(plottype = plotTypeValues[[svalue(plotTypeList, index = TRUE)]])
                   if (!is.null(curSet$colby)) {
                       ## when switching scatter <-> hex, need to swtich numeric colby <-> factor colby
-                      newSet$colby <-
-                          if (newSet$plottype == "hex")
-                              iNZightPlots::convert.to.factor(curSet$colby)
-                          else
-                              GUI$getActiveData()[[curSet$varnames$colby]]
+                    #   newSet$colby <- as.name()
+                    #       if (newSet$plottype == "hex")
+                    #           iNZightPlots::convert.to.factor(curSet$colby)
+                    #       else
+                    #           GUI$getActiveData()[[curSet$varnames$colby]]
                   }
                   if (newSet$plottype == "gg_gridplot") {
                     n_fun <- function(n) {
@@ -1303,7 +1305,7 @@ iNZPlotMod <- setRefClass(
                         gcombobox(c("", colVarNames),
                                   selected = ifelse(
                                       is.null(curSet$colby),
-                                      1, which(colVarNames == curSet$varnames$colby)[1] + 1
+                                      1, which(colVarNames == as.character(curSet$colby))[1] + 1
                                       ))
                     tbl[ii, 1:2, anchor = c(1, 0), expand = TRUE] <- lbl
                     tbl[ii, 3:6, expand = TRUE] <- colVar
@@ -1335,7 +1337,7 @@ iNZPlotMod <- setRefClass(
 
                 if (!is.null(curSet$colby) & (!bars | is.null(curSet$y)) & !hist) {
                     ## already set - need to match
-                    cval <- curSet$varnames$colby
+                    cval <- as.character(curSet$colby)
                     svalue(colVar) <- cval
                     if (bars) visible(barCol) <- FALSE
                     else visible(ptCol) <- FALSE
@@ -1363,36 +1365,44 @@ iNZPlotMod <- setRefClass(
                     cycleLbl <- glabel("Cycle levels :")
                     cyclePanel <- ggroup()
                     addSpace(cyclePanel, 10)
-                    cyclePrev <- gimagebutton(stock.id = "1leftarrow", container = cyclePanel,
-                                              handler = function(h, ...) {
-                                                  nl <-
-                                                      if (is_cat(curSet$colby)) length(levels(curSet$colby))
-                                                      else svalue(cycleN)
-                                                  EMPH.LEVEL <<- ifelse(EMPH.LEVEL == 0, nl, EMPH.LEVEL - 1)
-                                                  updateEverything()
-                                              })
-                    cycleNext <- gimagebutton(stock.id = "1rightarrow", container = cyclePanel,
-                                              handler = function(h, ...) {
-                                                  nl <-
-                                                      if (is_cat(curSet$colby)) length(levels(curSet$colby))
-                                                      else svalue(cycleN)
-                                                  EMPH.LEVEL <<- ifelse(EMPH.LEVEL == nl, 0, EMPH.LEVEL + 1)
-                                                  updateEverything()
-                                              })
+                    cyclePrev <- gimagebutton(
+                        stock.id = "1leftarrow",
+                        container = cyclePanel,
+                        handler = function(h, ...) {
+                            nl <-
+                                if (is_cat(.data[[curSet$colby]])) length(levels(.data[[curSet$colby]]))
+                                else svalue(cycleN)
+                            EMPH.LEVEL <<- ifelse(EMPH.LEVEL == 0, nl, EMPH.LEVEL - 1)
+                            updateEverything()
+                        }
+                    )
+                    cycleNext <- gimagebutton(
+                        stock.id = "1rightarrow",
+                        container = cyclePanel,
+                        handler = function(h, ...) {
+                            nl <-
+                                if (is_cat(.data[[curSet$colby]])) length(levels(.data[[curSet$colby]]))
+                                else svalue(cycleN)
+                            EMPH.LEVEL <<- ifelse(EMPH.LEVEL == nl, 0, EMPH.LEVEL + 1)
+                            updateEverything()
+                        }
+                    )
                     addSpace(cyclePanel, 20)
-                    cycleStop <- gimagebutton(filename = system.file("images/icon-undo.png", package = "iNZight"),
-                                              container = cyclePanel,
-                                              handler = function(h, ...) {
-                                                  EMPH.LEVEL <<- 0
-                                                  updateEverything()
-                                              })
+                    cycleStop <- gimagebutton(
+                        filename = system.file("images/icon-undo.png", package = "iNZight"),
+                        container = cyclePanel,
+                        handler = function(h, ...) {
+                            EMPH.LEVEL <<- 0
+                            updateEverything()
+                        }
+                    )
                     addSpace(cyclePanel, 20)
                     cycleNlab <- glabel("# quantiles :", container = cyclePanel)
                     font(cycleNlab) <- list(size = 9)
                     cycleN <- gspinbutton(4, 10, by = 1, container = cyclePanel)
 
                     visible(cycleLbl) <- visible(cyclePanel) <- !is.null(curSet$colby)
-                    if (is_num(curSet$colby)) {
+                    if (is_num(.data[[curSet$colby]])) {
                         svalue(cycleLbl) <- "Cycle quantiles :"
                     } else {
                         visible(cycleNlab) <- visible(cycleN) <- FALSE
@@ -2004,13 +2014,12 @@ iNZPlotMod <- setRefClass(
                     if (setPal) {
                         ## colouring by a variable - and a palette
                         if (!bars | is.null(curSet$y)) {
-                          newSet$colby <-
-                              if (PLOTTYPE == "hex")
-                                  iNZightPlots::convert.to.factor(
-                                      GUI$getActiveData()[[svalue(colVar)]])
-                              else GUI$getActiveData()[[svalue(colVar)]]
-                          newSet$varnames <- c(newSet$varnames,
-                                               list(colby = svalue(colVar)))
+                          newSet$colby <- as.name(svalue(colVar))
+                            #   if (PLOTTYPE == "hex")
+                            #       iNZightPlots::convert.to.factor(
+                            #           GUI$getActiveData()[[svalue(colVar)]])
+                            #   else GUI$getActiveData()[[svalue(colVar)]]
+                          newSet$varnames <- c(newSet$varnames, list(colby = svalue(colVar)))
                           newSet$col.method <- ifelse(svalue(useRank), "rank", "linear")
                         }
                         newSet$reverse.palette <- svalue(revPal)
@@ -2039,18 +2048,18 @@ iNZPlotMod <- setRefClass(
                         newSet$plot.features <- list(order.first = NULL)
                         if (!bars) {
                           if (EMPH.LEVEL > 0) {
+                              vcolby <- .data[[newSet$colby]]
                               ## need to add "order.first" to plot features:
-                              if (is_cat(newSet$colby)) {
+                              if (is_cat(vcolby)) {
                                   newSet$plot.features <-
-                                      list(order.first = which(newSet$colby ==
-                                                               levels(newSet$colby)[EMPH.LEVEL]))
-                              } else if (is_num(newSet$colby)) {
-                                  Qs <- seq(min(newSet$colby, na.rm = TRUE),
-                                            max(newSet$colby, na.rm = TRUE),
+                                      list(order.first = which(vcolby == levels(vcolby)[EMPH.LEVEL]))
+                              } else if (is_num(vcolby)) {
+                                  Qs <- seq(min(vcolby, na.rm = TRUE),
+                                            max(vcolby, na.rm = TRUE),
                                             length = svalue(cycleN) + 1)
                                   newSet$plot.features <-
-                                      list(order.first = which(newSet$colby >= Qs[EMPH.LEVEL] &
-                                                               newSet$colby < Qs[EMPH.LEVEL + 1]))
+                                      list(order.first = which(vcolby >= Qs[EMPH.LEVEL] &
+                                                               vcolby < Qs[EMPH.LEVEL + 1]))
                               }
                           }
 
