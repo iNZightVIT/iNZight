@@ -273,6 +273,13 @@ construct_call <- function(settings, model,
         settings$g2 <- NULL
     }
 
+    ## plot.features
+    if (!is.null(settings$plot.features)) {
+        settings$plot.features <- modifyList(list(), settings$plot.features)
+        if (length(settings$plot.features) == 0)
+            settings$plot.features <- NULL
+    }
+
     # only include overwritten varnames
     # vnames <- settings$varnames
     # for (vn in names(vnames)) {
@@ -283,6 +290,12 @@ construct_call <- function(settings, model,
     # }
     # settings$varnames <- if (length(vnames)) vnames else NULL
     settings$varnames <- NULL
+
+    ## remove names:
+    rem_names <- c("pch")
+    for (n in rem_names) {
+        names(settings[[n]]) <- NULL
+    }
 
     ## g1.level/g2.level
     if (isTRUE(settings$g1.level == "_MULTI")) settings$g1.level <- NULL
