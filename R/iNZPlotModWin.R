@@ -1182,12 +1182,13 @@ iNZPlotMod <- setRefClass(
                     ## SIZE BY
                     lbl <- glabel("Resize points by :")
                     sizeVarNames <- names(GUI$getActiveData())[sapply(GUI$getActiveData(), is_num)]
-                    sizeVar <-
-                        gcombobox(c("", sizeVarNames),
-                                  selected = ifelse(
-                                      is.null(curSet$sizeby),
-                                      1, which(sizeVarNames == curSet$varnames$sizeby)[1] + 1
-                                      ))
+                    sizeVar <- gcombobox(c("", sizeVarNames),
+                        selected = ifelse(
+                            is.null(curSet$sizeby),
+                            1,
+                            which(sizeVarNames == as.character(curSet$sizeby))[1] + 1
+                        )
+                    )
                     tbl[ii, 1:2, anchor = c(1, 0), expand = TRUE] <- lbl
                     tbl[ii, 3:6, expand = TRUE] <- sizeVar
                     ii <- ii + 1
@@ -1521,11 +1522,13 @@ iNZPlotMod <- setRefClass(
 
 
                 lbl <- glabel("Symbol :")
-                symbolList <- list(circle = 21,
-                                   square = 22,
-                                   diamond = 23,
-                                   triangle = 24,
-                                   'inverted triangle' = 25)
+                symbolList <- list(
+                    circle = 21L,
+                    square = 22L,
+                    diamond = 23L,
+                    triangle = 24L,
+                    'inverted triangle' = 25L
+                )
                 symVals <- do.call(c, symbolList)
                 symPch <- gcombobox(names(symbolList), selected = 1)
                 if (curSet$pch %in% symVals) svalue(symPch, TRUE) <- which(symVals == curSet$pch)
@@ -1997,10 +2000,15 @@ iNZPlotMod <- setRefClass(
                          "hex"     = newSet$hex.bins <- iNZightPlots::inzpar()$hex.bins / svalue(cexPt))
                 }
                 if (PLOTTYPE == "scatter") {
-                    newSet <- c(newSet, list(sizeby = GUI$getActiveData()[[svalue(sizeVar)]]))
-                    newSet$varnames <- c(newSet$varnames,
-                                         list(sizeby = svalue(sizeVar)))
-                    newSet$resize.method <- svalue(sizeMethod)
+                    if (svalue(sizeVar, index = TRUE) > 1L) {
+                        newSet <- c(newSet, list(sizeby = as.name(svalue(sizeVar))))
+                        newSet$varnames <- c(newSet$varnames, list(sizeby = svalue(sizeVar)))
+                        newSet$resize.method <- svalue(sizeMethod)
+                    } else {
+                        newSet <- c(newSet, list(sizeby = NULL))
+                        newSet$varnames <- c(newSet$varnames, list(sizeby = NULL))
+                        newSet["resize.method"] <- list(NULL)
+                    }
                 }
                 if (PLOTTYPE == "hex")
                     newSet <- c(newSet, list(hex.style = svalue(hexStyle)))
@@ -2109,7 +2117,7 @@ iNZPlotMod <- setRefClass(
                             newSet$varnames$symbolby = newSet$varnames$colby
                         }
                     } else if (svalue(symVar, TRUE) > 1) {
-                        newSet$symbolby <- GUI$getActiveData()[[svalue(symVar)]]
+                        newSet$symbolby <- as.name(svalue(symVar))
                         newSet$varnames$symbolby <- svalue(symVar)
                     }
                     newSet$pch <- symVals[svalue(symPch, index = TRUE)]

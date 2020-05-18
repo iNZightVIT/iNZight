@@ -201,6 +201,13 @@ construct_call <- function(settings, model,
                            design = quote(!!.design),
                            what = c("plot", "summary", "inference")) {
     if (is.null(settings$x)) return(NULL)
+
+    ## remove names:
+    rem_names <- c("pch")
+    for (n in rem_names) {
+        names(settings[[n]]) <- NULL
+    }
+
     # go through settings and compare to default settings
     default_args <- formals(iNZightPlots::iNZightPlot)
     inz_args <- iNZightPlots::inzpar()

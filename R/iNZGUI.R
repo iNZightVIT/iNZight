@@ -64,7 +64,8 @@ iNZGUI <- setRefClass(
             addonModuleDir = "character",
             ## This will be used to store the dataset, design, etc..
             ## rather than passing around the full object.
-            code_env = "ANY"
+            code_env = "ANY",
+            code_panel = "ANY", code_input = "ANY"
         ),
         prototype = list(
             activeDoc = 1,
@@ -255,6 +256,20 @@ iNZGUI <- setRefClass(
             size(plotToolbar) <<- if (popOut) c(-1, -1) else c(-1, 45)
             initializePlotToolbar(plotToolbar)
 
+
+            ## code panel for latest R function call
+            ## - this will become a new widget/RC
+            code_panel <<- ggroup()
+            code_input <<- gtext("Hello",
+                height = 5,
+                container = code_panel,
+                expand = TRUE,
+                font.attr = list(family = "monospace")
+            )
+
+            if (preferences$dev.features) {
+                add(gtop, code_panel, fill = TRUE)
+            }
 
             visible(win) <<- TRUE
 
@@ -1124,7 +1139,7 @@ iNZGUI <- setRefClass(
                 e$.design <- .design
 
                 ## Suppress the warnings produced by iNZightPlot ...
-                dop <- try({1})
+                dop <- try({
                     ## Generate the plot ... and update the interaction button
                     plot_call <- construct_call(curPlSet, curMod)
                     # print(plot_call)
@@ -1133,7 +1148,7 @@ iNZGUI <- setRefClass(
                     if (allow.redraw & !is.null(attr(curPlot, "dotplot.redraw")))
                         if (attr(curPlot, "dotplot.redraw"))
                             curPlot <<- unclass(rawpl <- eval(plot_call, e))
-                # }, silent = TRUE)
+                }, silent = TRUE)
 
                 if (inherits(dop, "try-error")) {
                     ## Oops!
@@ -1198,6 +1213,8 @@ iNZGUI <- setRefClass(
                 # rhistory$add(code, keep = FALSE)
                 # rhistory$update()
                 # print(code)
+                svalue(code_input) <<- ""
+                insert(code_input, code, font.attr = list(family = "monospace"))
 
                 enabled(plotToolbar$exportplotBtn) <<- can.interact(rawpl)
                 plotType <<- attr(curPlot, "plottype")
