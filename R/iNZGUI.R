@@ -260,8 +260,7 @@ iNZGUI <- setRefClass(
             ## code panel for latest R function call
             ## - this will become a new widget/RC
             code_panel <<- ggroup()
-            code_input <<- gtext("Hello",
-                height = 5,
+            code_input <<- gtext("",
                 container = code_panel,
                 expand = TRUE,
                 font.attr = list(family = "monospace")
@@ -269,6 +268,7 @@ iNZGUI <- setRefClass(
 
             if (preferences$dev.features) {
                 add(gtop, code_panel, fill = TRUE)
+                size(code_panel) <<- c(-1, 80)
             }
 
             visible(win) <<- TRUE
