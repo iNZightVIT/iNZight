@@ -141,6 +141,7 @@ if (interactive()) {
     try(ui$close()); load_all()
     ui <- iNZGUI$new()
     ui$initializeGui(census.at.school.500)
+    Sys.sleep(5)
 }
 
 

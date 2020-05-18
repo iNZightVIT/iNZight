@@ -2069,6 +2069,7 @@ iNZPlotMod <- setRefClass(
                         }
                     } else {
                         newSet <- c(newSet, list(colby = NULL))
+                        newSet["col.fun"] <- list(NULL)
                         newSet$varnames <- c(newSet$varnames, list(colby = NULL))
                         if (bars) {
                           newSet$bar.fill <-
