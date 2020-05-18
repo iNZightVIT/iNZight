@@ -1106,7 +1106,7 @@ iNZGUI <- setRefClass(
 
             # if (!is.null(curPlSet$freq))
             #     curPlSet$freq <- getActiveData()[[curPlSet$freq]]
-            if(!is.null(curPlSet$x)) {
+            if (!is.null(curPlSet$x)) {
                 varx <- .dataset[[curPlSet$x]]
                 vary <- if (!is.null(curPlSet$y)) .dataset[[curPlSet$y]] else NULL
                 # # Switch x and y:
@@ -1125,6 +1125,18 @@ iNZGUI <- setRefClass(
                     curPlSet$x <- curPlSet$y
                     curPlSet$y <- x
                 }
+                if (!is.null(vary) && is_cat(vary) && is_cat(varx)) {
+                    # if both x and y are categorical - two-way bar graph
+                    # -> requires specifying colour palette!
+                    if (is.null(curPlSet$col.fun)) {
+                        curPlSet$col.fun <- "contrast"
+                    }
+                    curPlSet["colby"] <- list(NULL)
+                } else if (is.null(curPlSet$colby)) {
+                    # otherwise, no colby set? remove col.fun
+                    curPlSet["col.fun"] <- list(NULL)
+                }
+
                 ## Design or data?
                 curMod <- getActiveDoc()$getModel()
                 if (!is.null(curMod$dataDesign)) {
