@@ -2830,6 +2830,9 @@ iNZPlotMod <- setRefClass(
                 tbl[ii,  1:2, anchor = c(-1,-1), expand = TRUE] <- sectionTitle("Axis Limits")
                 ii <- ii + 1
 
+                ## Need some new way of handling this to "remember" the
+                ## default values and only pass x/y lims when changed
+                # axis.limits.default <- list(x = NULL, y = NULL)
                 if (PLOTTYPE %in% c("scatter", "hex", "grid")) {
                     isNA <- is.na(xvar) | is.na(yvar)
                     xrange <- range(yvar[!isNA])

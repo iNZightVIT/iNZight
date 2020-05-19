@@ -70,7 +70,7 @@ iNZInfoWindow <- setRefClass(
             g <- gvbox(spacing = 0, container = win)
 
             if (controls == "top") add(g, ctrl_panel)
-            # add(g, code_panel)
+            if (GUI$preferences$dev.features) add(g, code_panel)
             add(g, info_text, expand = TRUE)
             if (controls == "bottom") add(g, ctrl_panel)
 

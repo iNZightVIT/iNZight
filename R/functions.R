@@ -287,6 +287,13 @@ construct_call <- function(settings, model,
             settings$plot.features <- NULL
     }
 
+    ## transformations
+    if (!is.null(settings$transform)) {
+        settings$transform <- modifyList(list(), settings$transform)
+        if (length(settings$transform) == 0)
+            settings$transform <- NULL
+    }
+
     # only include overwritten varnames
     # vnames <- settings$varnames
     # for (vn in names(vnames)) {
