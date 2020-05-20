@@ -204,6 +204,8 @@ construct_call <- function(settings, model,
                            what = c("plot", "summary", "inference")) {
     if (is.null(settings$x)) return(NULL)
 
+    what <- match.arg(what)
+
     ## remove names:
     rem_names <- c("pch")
     for (n in rem_names) {
@@ -213,6 +215,11 @@ construct_call <- function(settings, model,
     # go through settings and compare to default settings
     default_args <- formals(iNZightPlots::iNZightPlot)
     inz_args <- iNZightPlots::inzpar()
+    if (what %in% c("summary", "inference")) {
+        smry_args <- formals(iNZightPlots::getPlotSummary)
+        smry_args <- smry_args[names(smry_args) %notin% names(default_args)]
+        default_args <- c(default_args, smry_args)
+    }
     defaults <- c(default_args, inz_args)
     lapply(names(settings), function(s_name) {
         is_same <- identical(
@@ -223,8 +230,6 @@ construct_call <- function(settings, model,
         )
         if (is_same) settings[[s_name]] <<- NULL
     })
-
-    what <- match.arg(what)
 
     ## set the data
     settings$data <- data
@@ -356,6 +361,7 @@ construct_call <- function(settings, model,
 
     ## remove any NULLs
     settings <- modifyList(list(), settings)
+    settings <- lapply(settings, function(x) if (x == "NULL") NULL else x)
 
     ## drop "x = " and "y = "
     names(settings) <- ifelse(names(settings) %in% c("f", "x", "y"),

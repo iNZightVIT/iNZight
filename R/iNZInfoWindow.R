@@ -339,13 +339,20 @@ iNZGetInference <- setRefClass(
     contains = "iNZInfoWindow",
     fields = list(
         inf_method = "ANY",
-        hypothesis_test = "ANY"
+        hypothesis_test = "ANY",
+        hyp_null = "ANY",
+        hyp_alt = "ANY",
+        hyp_equalvar = "ANY",
+        hyp_exactp = "ANY",
+        hyp_simulatep = "ANY",
+        g_hypctrls = "ANY",
+        g_hyptbl = "ANY"
     ),
     methods = list(
         initialize = function(gui) {
             callSuper(gui, controls = "bottom", name = "Inference")
 
-            update_inference()
+            # update_inference()
 
             ## Control panel
             setup_panel()
@@ -357,7 +364,6 @@ iNZGetInference <- setRefClass(
 
             # This will, at some stage, fetch values from the CODE CALL
             # when it is modified by the user ... and update curSet ... =]
-
             construct_call(curSet, curMod,
                 data = as.name(dataname),
                 what = "inference"
@@ -370,7 +376,6 @@ iNZGetInference <- setRefClass(
                 font(info_text) <<- info_font
                 Sys.sleep(0.1)
             }
-
             smry_call <- gen_call()
             svalue(code_box) <<- smry_call
             font(code_box) <<- info_font
@@ -435,6 +440,14 @@ iNZGetInference <- setRefClass(
                 do_hyp_test <- length(levels(xvar)) == 2
             }
 
+            hyp_null <<- NULL
+            hyp_alt <<- NULL
+            hyp_equalvar <<- NULL
+            hyp_exactp <<- NULL
+            hyp_simulatep <<- NULL
+            g_hypctrls <<- NULL
+            g_hyptbl <<- NULL
+
             if (do_hyp_test) {
                 addSpace(ctrl_panel, 20)
                 g_hypothesis <- gvbox(container = ctrl_panel)
@@ -465,15 +478,143 @@ iNZGetInference <- setRefClass(
 
                 test_options <- c("None", test_names[hyp_tests])
 
+                addSpace(ctrl_panel, 20)
+                g_hypargs <- ggroup(container = g_hypothesis)
+
                 hypothesis_test <<- gradio(test_options,
                     horizontal = FALSE,
-                    container = g_hypothesis,
-                    handler = function(h, ...) {
-
-                    }
+                    container = gvbox(container = g_hypargs),
+                    handler = function(h, ...) handle_test()
                 )
+
+                ### hypothesis test arguments:
+                addSpace(g_hypargs, 20)
+                g_hypctrls <<- gvbox(container = g_hypargs)
+                visible(g_hypctrls) <<- FALSE
+
+                # null value/alternative [t.test, t.test2, proportion]
+                if (any(c("t.test", "t.test2", "proportion") %in% hyp_tests)) {
+                    g_hyptbl <<- glayout(container = g_hypctrls)
+
+                    lbl <- glabel("Null value :")
+                    g_hyptbl[1, 1, anchor = c(1, 0), expand = TRUE] <<- lbl
+                    hyp_null <<- gedit(ifelse("proportion" %in% hyp_tests, 0.5, 0),
+                        handler = function(h, ...) {
+                            curSet$hypothesis.value <<- as.numeric(svalue(h$obj))
+                            update_inference()
+                        }
+                    )
+                    g_hyptbl[1, 2, expand = TRUE] <<- hyp_null
+
+                    lbl <- glabel("Alternative hypothesis :")
+                    g_hyptbl[2, 1, anchor = c(1, 0), expand = TRUE] <<- lbl
+                    hyp_alt <<- gcombobox(c("two-sided", "greater than", "less than"),
+                        handler = function(h, ...) {
+                            curSet$hypothesis.alt <<- switch(
+                                svalue(h$obj, index = TRUE),
+                                "two.sided", "greater", "less"
+                            )
+                            update_inference()
+                        }
+                    )
+                    g_hyptbl[2, 2, expand = TRUE] <<- hyp_alt
+
+                    # equal var [t.test2]
+                    if ("t.test2" %in% hyp_tests) {
+                        hyp_equalvar <<- gcheckbox("Use equal variance",
+                            checked = FALSE,
+                            container = g_hypctrls,
+                            anchor = c(1, 0),
+                            expand = TRUE,
+                            handler = function(h, ...) {
+                                curSet$hypothesis.var.equal <<- svalue(h$obj)
+                                update_inference()
+                            }
+                        )
+                    }
+
+                    # exact p-value [proportion]
+                    if ("proportion" %in% hyp_tests) {
+                        hyp_exactp <<- gcheckbox("Calculate exact p-value",
+                            checked = FALSE,
+                            container = g_hypctrls,
+                            anchor = c(1, 0),
+                            expand = TRUE,
+                            handler = function(h, ...) {
+                                curSet$hypothesis.use.exact <<- svalue(h$obj)
+                                update_inference()
+                            }
+                        )
+                    }
+
+                    size(ctrl_panel) <<- c(-1, 140)
+                }
+
+                if ("chi2" %in% hyp_tests) {
+                    hyp_simulatep <<- gcheckbox("Simulate p-value",
+                        checked = FALSE,
+                        container = g_hypctrls,
+                        anchor = c(1, 0),
+                        expand = TRUE,
+                        handler = function(h, ...) {
+                            curSet$hypothesis.simulated.p.value <<- svalue(h$obj)
+                            update_inference()
+                        }
+                    )
+                }
+
+                handle_test()
             }
 
+
+        },
+        handle_test = function() {
+            # Triggered when the hypothesis test radio is changed
+            curSet$hypothesis.value <<- NULL
+            curSet$hypothesis.alt <<- NULL
+            curSet$var.equal <<- NULL
+            curSet$use.exact <<- NULL
+            curSet$hypothesis.test <<- NULL
+            curSet$hypothesis.simulated.p.value <<- NULL
+            curSet$hypothesis <<- if (svalue(hypothesis_test) == "None") "NULL" else NULL
+
+            if (!is.null(g_hypctrls)) visible(g_hypctrls) <<- FALSE
+            if (!is.null(hyp_exactp)) visible(hyp_exactp) <<- FALSE
+            if (!is.null(hyp_simulatep)) visible(hyp_simulatep) <<- FALSE
+            if (!is.null(g_hyptbl)) visible(g_hyptbl) <<- FALSE
+
+            switch(svalue(hypothesis_test),
+                "One sample t-test" = ,
+                "Two sample t-test" = ,
+                "Test proportion" = {
+                    visible(g_hypctrls) <<- TRUE
+                    visible(g_hyptbl) <<- TRUE
+                    curSet$hypothesis.value <<- as.numeric(svalue(hyp_null))
+                    curSet$hypothesis.alt <<- switch(
+                        svalue(hyp_alt, index = TRUE),
+                        "two.sided", "greater", "less"
+                    )
+                    if (svalue(hypothesis_test) == "Test proportion") {
+                        visible(hyp_exactp) <<- TRUE
+                        curSet$hypothesis.test <<- "proportion"
+                        curSet$hypothesis.use.exact <<- svalue(hyp_exactp)
+                    }
+                    if (svalue(hypothesis_test) == "Two sample t-test") {
+                        # equal variance
+                        curSet$hypothesis.var.equal <<- svalue(hyp_equalvar)
+                    }
+                },
+                "ANOVA" = {
+                    curSet$hypothesis.test <<- "anova"
+                },
+                "Chi-square test" = {
+                    visible(g_hypctrls) <<- TRUE
+                    visible(hyp_simulatep) <<- TRUE
+                    curSet$hypothesis.simulated.p.value <<- svalue(hyp_simulatep)
+                }
+            )
+
+            update_inference()
         }
     )
 )
