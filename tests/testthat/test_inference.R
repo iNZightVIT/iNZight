@@ -17,6 +17,8 @@ test_that("Get inference window - dot plots", {
 
     expect_equal(svalue(iwin$inf_method), "Normal theory")
 
+    expect_equal(iwin$hypothesis_test$get_items(), c("None", "One sample t-test"))
+
     # chk <- iwin[[1]]$children[[1]]$children[[1]]$children[[4]]
     # expect_equal(
     #     chk$widget$label,
@@ -67,6 +69,7 @@ test_that("Get inference window - two-way dot plots", {
     expect_is(iwin, "iNZGetInference")
 
     expect_equal(svalue(iwin$inf_method), "Normal theory")
+    expect_equal(iwin$hypothesis_test$get_items(), c("None", "Two sample t-test", "ANOVA"))
 
     # rdo <- iwin[[1]]$children[[1]]$children[[1]]$children[[4]]
     # expect_is(rdo, "GRadio")
@@ -115,6 +118,7 @@ test_that("Get inference window - ANOVA dot plots", {
     expect_is(iwin, "iNZGetInference")
 
     expect_equal(svalue(iwin$inf_method), "Normal theory")
+    expect_equal(iwin$hypothesis_test$get_items(), c("None", "ANOVA"))
 
     # chk <- iwin[[1]]$children[[1]]$children[[1]]$children[[4]]
     # expect_equal(
@@ -148,6 +152,7 @@ test_that("Get inference window - one way bar plots, two levels", {
     expect_is(iwin, "iNZGetInference")
 
     expect_equal(svalue(iwin$inf_method), "Normal theory")
+    expect_equal(iwin$hypothesis_test$get_items(), c("None", "Test proportion", "Chi-square test"))
 
     # chk <- iwin[[1]]$children[[1]]$children[[1]]$children[[4]]
     # null <- iwin[[1]]$children[[1]]$children[[1]]$children[[6]]
@@ -198,6 +203,7 @@ test_that("Get inference window - one way bar plots", {
     expect_is(iwin, "iNZGetInference")
 
     expect_equal(svalue(iwin$inf_method), "Normal theory")
+    expect_equal(iwin$hypothesis_test$get_items(), c("None", "Chi-square test"))
 
     # chk <- iwin[[1]]$children[[1]]$children[[1]]$children[[4]]
     # null <- iwin[[1]]$children[[1]]$children[[1]]$children[[5]]
@@ -238,6 +244,7 @@ test_that("Get inference window - two way bar plots", {
     expect_is(iwin, "iNZGetInference")
 
     expect_equal(svalue(iwin$inf_method), "Normal theory")
+    expect_equal(iwin$hypothesis_test$get_items(), c("None", "Chi-square test"))
 
     # chk <- iwin[[1]]$children[[1]]$children[[1]]$children[[4]]
     # sim <- iwin[[1]]$children[[1]]$children[[1]]$children[[5]]
@@ -282,6 +289,7 @@ test_that("Get inference window - scatter plots", {
     expect_is(iwin, "iNZGetInference")
 
     expect_equal(svalue(iwin$inf_method), "Normal theory")
+    expect_is(iwin$hypothesis_test, "uninitializedField")
 
     # chk <- iwin[[1]]$children[[1]]$children[[1]]$children[[4]]
     # expect_equal(
@@ -324,6 +332,18 @@ ui$initializeGui(cas2)
 ui$getActiveDoc()$getModel()$setFrequencies("frequency", ui)
 
 test_that("Get inference works for frequencies", {
+    svalue(ui$ctrlWidget$V1box) <- "gender"
+    expect_true(enabled(ui$infBtn))
+
+    iwin <- iNZGetInference$new(ui)
+    on.exit(gWidgets2::dispose(iwin$win))
+    expect_is(iwin, "iNZGetInference")
+
+    expect_equal(svalue(iwin$inf_method), "Normal theory")
+    expect_equal(iwin$hypothesis_test$get_items(), c("None", "Test proportion", "Chi-square test"))
+
+    gWidgets2::dispose(iwin$win)
+
     svalue(ui$ctrlWidget$V1box) <- "travel"
     expect_true(enabled(ui$infBtn))
 
@@ -332,6 +352,7 @@ test_that("Get inference works for frequencies", {
     expect_is(iwin, "iNZGetInference")
 
     expect_equal(svalue(iwin$inf_method), "Normal theory")
+    expect_equal(iwin$hypothesis_test$get_items(), c("None", "Chi-square test"))
 
     gWidgets2::dispose(iwin$win)
 
@@ -343,6 +364,7 @@ test_that("Get inference works for frequencies", {
     expect_is(iwin, "iNZGetInference")
 
     expect_equal(svalue(iwin$inf_method), "Normal theory")
+    expect_equal(iwin$hypothesis_test$get_items(), c("None", "Chi-square test"))
 })
 
 
@@ -370,6 +392,7 @@ test_that("Get inference for surveys", {
     expect_is(iwin, "iNZGetInference")
 
     expect_equal(svalue(iwin$inf_method), "Normal theory")
+    expect_equal(iwin$hypothesis_test$get_items(), c("None", "One sample t-test"))
 
     # svalue(iwin[[1]]$children[[1]]$children[[1]]$children[[2]]) <- TRUE
     # out <- iwin[[1]]$children[[1]]$children[[2]]$invoke_change_handler()

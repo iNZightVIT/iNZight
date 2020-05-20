@@ -195,6 +195,8 @@ modifyList <- function (x, val, keep.null = FALSE)
     x
 }
 
+`%notin%` <- function(x, table) !(x %in% table)
+
 ## THIS SHOULD HAPPEN IN INZIGHTPLOTS
 construct_call <- function(settings, model,
                            data = quote(.dataset),

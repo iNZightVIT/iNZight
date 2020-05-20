@@ -338,7 +338,8 @@ iNZGetInference <- setRefClass(
     "iNZGetInference",
     contains = "iNZInfoWindow",
     fields = list(
-        inf_method = "ANY"
+        inf_method = "ANY",
+        hypothesis_test = "ANY"
     ),
     methods = list(
         initialize = function(gui) {
@@ -427,8 +428,51 @@ iNZGetInference <- setRefClass(
                 )
             }
 
-            # hypothesis testing
+            # hypothesis testing (all except regression, for now)
+            do_hyp_test <- INFTYPE %notin% c("regression")
+            if (is_survey && do_hyp_test && INFTYPE == "oneway-table") {
+                # survey lets us do prop.test, but not chi-square (one-way)
+                do_hyp_test <- length(levels(xvar)) == 2
+            }
 
+            if (do_hyp_test) {
+                addSpace(ctrl_panel, 20)
+                g_hypothesis <- gvbox(container = ctrl_panel)
+                lbl <- glabel("Hypothesis test",
+                    container = g_hypothesis,
+                    anchor = c(-1, 0)
+                )
+                font(lbl) <- list(weight = "bold")
+
+                hyp_tests <- switch(INFTYPE,
+                    "onesample-ttest" = "t.test",
+                    "twosample-ttest" = c("t.test2", "anova"),
+                    "anova" = "anova",
+                    "oneway-table" =
+                        if (is_survey) "proportion"
+                        else if (length(levels(xvar)) == 2L) c("proportion", "chi2")
+                        else "chi2",
+                    "twoway-table" = "chi2"
+                )
+
+                test_names <- c(
+                    t.test = "One sample t-test",
+                    t.test2 = "Two sample t-test",
+                    anova = "ANOVA",
+                    proportion = "Test proportion",
+                    chi2 = "Chi-square test"
+                )
+
+                test_options <- c("None", test_names[hyp_tests])
+
+                hypothesis_test <<- gradio(test_options,
+                    horizontal = FALSE,
+                    container = g_hypothesis,
+                    handler = function(h, ...) {
+
+                    }
+                )
+            }
 
         }
     )
