@@ -70,7 +70,10 @@ iNZInfoWindow <- setRefClass(
             g <- gvbox(spacing = 0, container = win)
 
             if (controls == "top") add(g, ctrl_panel)
-            if (GUI$preferences$dev.features) add(g, code_panel)
+            if (GUI$preferences$dev.features) {
+                add(g, code_panel)
+                addSpace(g, 5)
+            }
             add(g, info_text, expand = TRUE)
             if (controls == "bottom") add(g, ctrl_panel)
 
@@ -325,6 +328,108 @@ iNZGetSummary <- setRefClass(
 
                 # addSpace(g, 0)
             }
+        }
+    )
+)
+
+
+## A summary window
+iNZGetInference <- setRefClass(
+    "iNZGetInference",
+    contains = "iNZInfoWindow",
+    fields = list(
+        inf_method = "ANY"
+    ),
+    methods = list(
+        initialize = function(gui) {
+            callSuper(gui, controls = "bottom", name = "Inference")
+
+            update_inference()
+
+            ## Control panel
+            setup_panel()
+
+            visible(win) <<- TRUE
+        },
+        gen_call = function() {
+            "Generate the function call based on user's chosen vars/settings"
+
+            # This will, at some stage, fetch values from the CODE CALL
+            # when it is modified by the user ... and update curSet ... =]
+
+            construct_call(curSet, curMod,
+                data = as.name(dataname),
+                what = "inference"
+            )
+        },
+        update_inference = function() {
+            ## display a message about bootstrapping
+            if (curSet$bs.inference) {
+                svalue(info_text) <<- "Performing bootstraps ... "
+                font(info_text) <<- info_font
+                Sys.sleep(0.1)
+            }
+
+            smry_call <- gen_call()
+            svalue(code_box) <<- smry_call
+            font(code_box) <<- info_font
+
+            smry <- try(eval(smry_call, env), silent = TRUE)
+            if (inherits(smry, "try-error")) smry <- "Unable to generate inference."
+            svalue(info_text) <<- paste(smry, collapse = "\n")
+            font(info_text) <<- info_font
+        },
+        setup_panel = function() {
+            ## this depends on the type of analysis going on
+            ds <- GUI$getActiveData()
+            xvar <- ds[[curSet$x]]
+            yvar <- if (!is.null(curSet$y)) ds[[curSet$y]] else NULL
+
+            xnum <- is_num(xvar)
+            ynum <- is_num(yvar)
+            if (is.null(yvar)) {
+                INFTYPE <- ifelse(xnum, "onesample-ttest", "oneway-table")
+            } else {
+                if (xnum && ynum) {
+                    INFTYPE <- "regression"
+                } else if (xnum | ynum) {
+                    M <-
+                        if (xnum) length(levels(yvar))
+                        else length(levels(xvar))
+                    if (M == 2) INFTYPE <- "twosample-ttest"
+                    if (M > 2) INFTYPE <- "anova"
+                } else {
+                    INFTYPE <- "twoway-table"
+                }
+            }
+
+            # curMod <- getActiveDoc()$getModel()
+            is_survey <- !is.null(curMod$dataDesign)
+
+            if (is_survey) {
+                inf_method <<- gradio("Normal theory")
+            } else {
+                ## Inference method
+                g_method <- gvbox(container = ctrl_panel)
+                lbl <- glabel("Inference method",
+                    container = g_method,
+                    anchor = c(-1, 0)
+                )
+                font(lbl) <- list(weight = "bold")
+
+                inf_method <<- gradio(c("Normal theory", "Bootstrap"),
+                    horizontal = FALSE,
+                    container = g_method,
+                    handler = function(h, ...) {
+                        curSet$bs.inference <<- svalue(h$obj, index = TRUE) == 2L
+                        update_inference()
+                    }
+                )
+            }
+
+            # hypothesis testing
+
+
         }
     )
 )
