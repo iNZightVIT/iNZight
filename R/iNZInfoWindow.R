@@ -507,18 +507,20 @@ iNZGetInference <- setRefClass(
                     )
                     g_hyptbl[1, 2, expand = TRUE] <<- hyp_null
 
-                    lbl <- glabel("Alternative hypothesis :")
-                    g_hyptbl[2, 1, anchor = c(1, 0), expand = TRUE] <<- lbl
-                    hyp_alt <<- gcombobox(c("two-sided", "greater than", "less than"),
-                        handler = function(h, ...) {
-                            curSet$hypothesis.alt <<- switch(
-                                svalue(h$obj, index = TRUE),
-                                "two.sided", "greater", "less"
-                            )
-                            update_inference()
-                        }
-                    )
-                    g_hyptbl[2, 2, expand = TRUE] <<- hyp_alt
+                    if (!is_survey) {
+                        lbl <- glabel("Alternative hypothesis :")
+                        g_hyptbl[2, 1, anchor = c(1, 0), expand = TRUE] <<- lbl
+                        hyp_alt <<- gcombobox(c("two-sided", "greater than", "less than"),
+                            handler = function(h, ...) {
+                                curSet$hypothesis.alt <<- switch(
+                                    svalue(h$obj, index = TRUE),
+                                    "two.sided", "greater", "less"
+                                )
+                                update_inference()
+                            }
+                        )
+                        g_hyptbl[2, 2, expand = TRUE] <<- hyp_alt
+                    }
 
                     # equal var [t.test2]
                     if ("t.test2" %in% hyp_tests) {
@@ -612,6 +614,8 @@ iNZGetInference <- setRefClass(
             curSet$hypothesis.simulated.p.value <<- NULL
             curSet$hypothesis <<- if (svalue(hypothesis_test) == "None") "NULL" else NULL
 
+            is_survey <- !is.null(curMod$dataDesign)
+
             if (!is.null(g_hypctrls)) visible(g_hypctrls) <<- FALSE
             if (!is.null(hyp_exactp)) visible(hyp_exactp) <<- FALSE
             if (!is.null(hyp_simulatep)) visible(hyp_simulatep) <<- FALSE
@@ -624,10 +628,12 @@ iNZGetInference <- setRefClass(
                     visible(g_hypctrls) <<- TRUE
                     visible(g_hyptbl) <<- TRUE
                     curSet$hypothesis.value <<- as.numeric(svalue(hyp_null))
-                    curSet$hypothesis.alt <<- switch(
-                        svalue(hyp_alt, index = TRUE),
-                        "two.sided", "greater", "less"
-                    )
+                    if (!is_survey) {
+                        curSet$hypothesis.alt <<- switch(
+                            svalue(hyp_alt, index = TRUE),
+                            "two.sided", "greater", "less"
+                        )
+                    }
                     if (svalue(hypothesis_test) == "Test proportion") {
                         visible(hyp_exactp) <<- TRUE
                         curSet$hypothesis.test <<- "proportion"

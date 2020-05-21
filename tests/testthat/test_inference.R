@@ -296,16 +296,17 @@ test_that("Get inference for surveys", {
     on.exit(gWidgets2::dispose(iwin$win))
     expect_is(iwin, "iNZGetInference")
 
-    expect_equal(svalue(iwin$inf_method), "Normal theory")
     expect_equal(iwin$hypothesis_test$get_items(), c("None", "One sample t-test"))
+    expect_false(visible(iwin$g_hypctrls))
+    expect_false(grepl("Design-based One Sample t-test", svalue(iwin$info_text)))
 
-    # svalue(iwin[[1]]$children[[1]]$children[[1]]$children[[2]]) <- TRUE
-    # out <- iwin[[1]]$children[[1]]$children[[2]]$invoke_change_handler()
-    # expect_match(
-    #     svalue(out[[1]]$children[[1]]),
-    #     "survey::svydesign"
-    # )
-    # dispose(out[[1]])
+    expect_silent(iwin$hypothesis_test$set_index(2L))
+    expect_true(visible(iwin$g_hypctrls))
+    expect_match(svalue(iwin$info_text), "Design-based One Sample t-test")
+
+    expect_silent(iwin$hyp_null$set_value("650"))
+    expect_match(svalue(iwin$info_text), "true mean is equal to 650")
+    expect_match(svalue(iwin$info_text), "true mean is not equal to 650")
 })
 
 test_that("Get inference still enabled for non-surveys", {
