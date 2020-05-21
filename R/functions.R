@@ -361,7 +361,7 @@ construct_call <- function(settings, model,
 
     ## remove any NULLs
     settings <- modifyList(list(), settings)
-    settings <- lapply(settings, function(x) if (x == "NULL") NULL else x)
+    settings <- lapply(settings, function(x) if (is.null(x) || x == "NULL") NULL else x)
 
     ## drop "x = " and "y = "
     names(settings) <- ifelse(names(settings) %in% c("f", "x", "y"),
