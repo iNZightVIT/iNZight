@@ -346,7 +346,8 @@ iNZGetInference <- setRefClass(
         hyp_exactp = "ANY",
         hyp_simulatep = "ANY",
         g_hypctrls = "ANY",
-        g_hyptbl = "ANY"
+        g_hyptbl = "ANY",
+        trend_choice = "list"
     ),
     methods = list(
         initialize = function(gui) {
@@ -566,7 +567,40 @@ iNZGetInference <- setRefClass(
                 handle_test()
             }
 
+            if (INFTYPE == "regression") {
+                addSpace(ctrl_panel, 20)
+                g_trendopt <- gvbox(container = ctrl_panel)
+                lbl <- glabel("Trend options",
+                    container = g_trendopt,
+                    anchor = c(-1, 0)
+                )
+                font(lbl) <- list(weight = "bold")
 
+                trend_choice <<- list(
+                    linear = gcheckbox("Linear",
+                        container = g_trendopt,
+                        handler = function(h, ...) {
+                            handle_trend()
+                        }
+                    ),
+                    quadratic = gcheckbox("Quadratic",
+                        container = g_trendopt,
+                        handler = function(h, ...) {
+                            handle_trend()
+                        }
+                    ),
+                    cubic = gcheckbox("Cubic",
+                        container = g_trendopt,
+                        handler = function(h, ...) {
+                            handle_trend()
+                        }
+                    )
+                )
+
+                handle_trend()
+            }
+
+            update_inference()
         },
         handle_test = function() {
             # Triggered when the hypothesis test radio is changed
@@ -614,6 +648,11 @@ iNZGetInference <- setRefClass(
                 }
             )
 
+            update_inference()
+        },
+        handle_trend = function() {
+            chosen <- sapply(trend_choice, function(x) svalue(x))
+            curSet$trend <<- if (any(chosen)) names(trend_choice)[chosen] else NULL
             update_inference()
         }
     )

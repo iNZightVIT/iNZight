@@ -206,24 +206,13 @@ test_that("Get inference window - scatter plots", {
 
     expect_equal(svalue(iwin$inf_method), "Normal theory")
     expect_is(iwin$hypothesis_test, "uninitializedField")
+    expect_match(svalue(iwin$info_text), "Please specify a trend line")
 
-    # chk <- iwin[[1]]$children[[1]]$children[[1]]$children[[4]]
-    # expect_equal(
-    #     chk$widget$label,
-    #     "Linear trend"
-    # )
-    # expect_silent(svalue(chk) <- TRUE)
+    expect_silent(iwin$trend_choice$linear$set_value(TRUE))
+    expect_match(svalue(iwin$info_text), "Linear Trend Coefficients")
 
-    # expect_silent(
-    #     w2 <- iwin[[1]]$children[[1]]$children[[2]]$invoke_change_handler()
-    # )
-    # expect_is(w2[[1]], "GWindow")
-    # expect_is(w2[[1]]$children[[1]], "GText")
-    # expect_match(
-    #     svalue(w2[[1]]$children[[1]]),
-    #     "p-values for the null hypothesis of no association"
-    # )
-    # dispose(w2[[1]])
+    expect_silent(iwin$trend_choice$linear$set_value(FALSE))
+    expect_match(svalue(iwin$info_text), "Please specify a trend line")
 })
 
 cas <- census.at.school.500
