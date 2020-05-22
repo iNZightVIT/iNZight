@@ -242,6 +242,16 @@ construct_call <- function(settings, model,
     ## order of list
     name_order <- c(names(default_args),  names(inz_args))
     name_order <- name_order[name_order %in% names(settings)]
+
+    ## missing args
+    missing <-
+        names(settings) %notin% name_order &
+        names(settings) %notin% c("data_name")
+    if (any(missing)) {
+        name_miss <- names(settings)[missing]
+        name_order <- c(name_order, name_miss)
+    }
+
     settings <- settings[name_order]
 
     # formula
