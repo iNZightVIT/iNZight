@@ -351,7 +351,7 @@ iNZGetInference <- setRefClass(
     ),
     methods = list(
         initialize = function(gui) {
-            callSuper(gui, controls = "bottom", name = "Inference")
+            callSuper(gui, controls = "top", name = "Inference")
 
             # update_inference()
 
