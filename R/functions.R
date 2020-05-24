@@ -393,3 +393,24 @@ construct_call <- function(settings, model,
 
     parse(text = paste(call, collapse = "\n"))
 }
+
+# a very roundabout way to get the code correct ...
+mend_call <- function(call, gui) {
+    # adjust name
+    dname <- attr(gui$getActiveData(), "name", exact = TRUE)
+    if (is.null(dname) || dname == "")
+        dname <- sprintf("data%s",
+            ifelse(activeDoc == 1, "", activeDoc)
+        )
+    dname <- iNZightTools:::create_varname(dname)
+    code <- as.character(call)
+    code <- gsub(".dataset", dname, code, fixed = TRUE)
+    if (!is.null(call[[1]]$design)) {
+        code <- gsub("!!.design", ".design", code, fixed = TRUE)
+        code <- gsub(".design", gui$getActiveDoc()$getModel()$dataDesignName,
+            code,
+            fixed = TRUE
+        )
+    }
+    code
+}

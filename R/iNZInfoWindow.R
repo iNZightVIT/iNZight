@@ -112,7 +112,7 @@ iNZGetSummary <- setRefClass(
             callSuper(gui, controls = "bottom", name = "Summary")
 
             smry_call <- gen_call()
-            svalue(code_box) <<- smry_call
+            svalue(code_box) <<- mend_call(smry_call, GUI)
             font(code_box) <<- info_font
 
             smry <- eval(smry_call, env)
@@ -378,7 +378,7 @@ iNZGetInference <- setRefClass(
                 Sys.sleep(0.1)
             }
             smry_call <- gen_call()
-            svalue(code_box) <<- smry_call
+            svalue(code_box) <<- mend_call(smry_call, GUI)
             font(code_box) <<- info_font
 
             smry <- try(eval(smry_call, env), silent = TRUE)

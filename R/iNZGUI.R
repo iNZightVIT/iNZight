@@ -546,18 +546,7 @@ iNZGUI <- setRefClass(
                     return(invisible(NULL))
                 }
 
-                dname <- attr(getActiveData(), "name", exact = TRUE)
-                if (is.null(dname) || dname == "")
-                    dname <- sprintf("data%s",
-                        ifelse(activeDoc == 1, "", activeDoc)
-                    )
-                dname <- iNZightTools:::create_varname(dname)
-                code <- as.character(plot_call)
-                code <- gsub(".dataset", dname, code, fixed = TRUE)
-                if (!is.null(.design))
-                    code <- gsub(".design", curMod$dataDesignName, code,
-                        fixed = TRUE
-                    )
+                code <- mend_call(plot_call, .self)
 
                 # This will be moved to a separate function at some point ...
                 # rhistory$add(code, keep = FALSE)
