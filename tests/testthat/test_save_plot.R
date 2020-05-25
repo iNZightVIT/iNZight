@@ -22,6 +22,11 @@ test_that("Interactive graphs can be saved 100% locally", {
 
     gg$children[[4]]$set_value(TRUE)
 
-    w$children[[1]]$children[[4]]$children[[2]]$invoke_change_handler()
+    op <- options(viewer = print.default)
+    on.exit(options(op), add = TRUE)
+    expect_output(
+        w$children[[1]]$children[[4]]$children[[2]]$invoke_change_handler(),
+        file.path(tempdir(), "test.html")
+    )
     expect_true(dir.exists(file.path(tempdir(), "assets")))
 })
