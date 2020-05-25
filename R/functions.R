@@ -402,7 +402,7 @@ mend_call <- function(call, gui) {
         dname <- sprintf("data%s",
             ifelse(activeDoc == 1, "", activeDoc)
         )
-    dname <- iNZightTools:::create_varname(dname)
+    dname <- iNZightTools::create_varname(dname)
     code <- as.character(call)
     code <- gsub(".dataset", dname, code, fixed = TRUE)
     if (!is.null(call[[1]]$design)) {

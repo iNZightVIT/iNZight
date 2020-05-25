@@ -2968,6 +2968,7 @@ iNZPlotMod <- setRefClass(
                     }
 
                     # need to explicitely add NULL to the list
+                    newSet$transform
                     newSet$transform["x"] <- list(
                         if (svalue(xLog)) "log10" else NULL
                     )
@@ -2994,10 +2995,15 @@ iNZPlotMod <- setRefClass(
                     }
 
                     visible(errlbl) <- err
-                    newSet$xlim <- c(xl, xu)
+                    newSet["xlim"] <-
+                        if (any(c(xl, xu) != xrange)) list(c(xl, xu))
+                        else list(NULL)
 
-                    if (PLOTTYPE %in% c("scatter", "hex", "grid"))
-                        newSet$ylim <- c(yl, yu)
+                    if (PLOTTYPE %in% c("scatter", "hex", "grid")) {
+                        newSet["ylim"] <-
+                            if (any(c(yl, yu) != yrange)) list(c(yl, yu))
+                            else list(NULL)
+                    }
 
                     # newSet$xlim <- NULL
                     # newSet$ylim <- NULL
@@ -3046,16 +3052,16 @@ iNZPlotMod <- setRefClass(
                 addHandlerKeystroke(xupper, updT)
                 addHandlerChanged(xLog, function(h, ...) {
                     # log/exp axis limits
-                    blockHandlers(xlower)
-                    blockHandlers(xupper)
-                    svalue(xlower) <-
-                        if (svalue(xLog)) signif(log10(as.numeric(svalue(xlower))), 5)
-                        else signif(10^(as.numeric(svalue(xlower))), 5)
-                    svalue(xupper) <-
-                        if (svalue(xLog)) signif(log10(as.numeric(svalue(xupper))), 5)
-                        else signif(10^(as.numeric(svalue(xupper))), 5)
-                    unblockHandlers(xlower)
-                    unblockHandlers(xupper)
+                    # blockHandlers(xlower)
+                    # blockHandlers(xupper)
+                    # svalue(xlower) <-
+                    #     if (svalue(xLog)) signif(log10(as.numeric(svalue(xlower))), 5)
+                    #     else signif(10^(as.numeric(svalue(xlower))), 5)
+                    # svalue(xupper) <-
+                    #     if (svalue(xLog)) signif(log10(as.numeric(svalue(xupper))), 5)
+                    #     else signif(10^(as.numeric(svalue(xupper))), 5)
+                    # unblockHandlers(xlower)
+                    # unblockHandlers(xupper)
                     updateEverything()
                 })
                 if (PLOTTYPE %in% c("scatter", "hex", "grid")) {
@@ -3063,16 +3069,16 @@ iNZPlotMod <- setRefClass(
                     addHandlerKeystroke(yupper, updT)
                     addHandlerChanged(yLog, function(h, ...) {
                         # log/exp axis limits
-                        blockHandlers(ylower)
-                        blockHandlers(yupper)
-                        svalue(ylower) <-
-                            if (svalue(yLog)) signif(log10(as.numeric(svalue(ylower))), 5)
-                            else signif(10^(as.numeric(svalue(ylower))), 5)
-                        svalue(yupper) <-
-                            if (svalue(yLog)) signif(log10(as.numeric(svalue(yupper))), 5)
-                            else signif(10^(as.numeric(svalue(yupper))), 5)
-                        unblockHandlers(ylower)
-                        unblockHandlers(yupper)
+                        # blockHandlers(ylower)
+                        # blockHandlers(yupper)
+                        # svalue(ylower) <-
+                        #     if (svalue(yLog)) signif(log10(as.numeric(svalue(ylower))), 5)
+                        #     else signif(10^(as.numeric(svalue(ylower))), 5)
+                        # svalue(yupper) <-
+                        #     if (svalue(yLog)) signif(log10(as.numeric(svalue(yupper))), 5)
+                        #     else signif(10^(as.numeric(svalue(yupper))), 5)
+                        # unblockHandlers(ylower)
+                        # unblockHandlers(yupper)
                         updateEverything()
                     })
                 }

@@ -137,12 +137,12 @@ test_that("Changing variable resets axis limits", {
     expect_null(ui$getActiveDoc()$getSettings()$xlim)
 })
 
-if (interactive()) {
-    try(ui$close()); load_all()
-    ui <- iNZGUI$new()
-    ui$initializeGui(census.at.school.500)
-    Sys.sleep(5)
-}
+# if (interactive()) {
+#     try(ui$close()); load_all()
+#     ui <- iNZGUI$new()
+#     ui$initializeGui(census.at.school.500)
+#     Sys.sleep(5)
+# }
 
 
 test_that("Axes and Labels - scatter plots", {
@@ -152,8 +152,6 @@ test_that("Axes and Labels - scatter plots", {
     svalue(ui$moduleWindow$header$children[[2]]$children[[1]], TRUE) <- 3
 
     axtbl <- ui$moduleWindow$body$children[[1]]$children[[1]]
-    # axtbl <- axtbl_layout$children
-
     vals <- sapply(seq_len(axtbl$get_dim()[1L]),
         function(x) {
             x <- svalue(axtbl[x, 1L])
@@ -215,7 +213,6 @@ test_that("Axes and Labels - scatter plots", {
     expect_equal(ui$curPlot[[1]][[1]]$ylim, c(100, 200))
 
     ui$moduleWindow$footer$children[[2]]$invoke_change_handler()
-    ui$getActiveDoc()$setSettings(list(xlim = NULL, ylim = NULL))
 
     svalue(ui$ctrlWidget$V2box, TRUE) <- 1
     svalue(ui$ctrlWidget$V1box, TRUE) <- 1
