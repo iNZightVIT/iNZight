@@ -2925,7 +2925,10 @@ iNZPlotMod <- setRefClass(
                 xvar <- GUI$getActiveData()[[curSet$x]]
                 yvar <- if (!is.null(curSet$y)) GUI$getActiveData()[[curSet$y]] else NULL
 
-                if (YAX) newSet$ylab <- if (svalue(labYlab) == "") NULL else svalue(labYlab)
+                if (YAX)
+                    newSet["ylab"] <-
+                        if (svalue(labYlab) == "") list(NULL)
+                        else list(svalue(labYlab))
                 if (YAXlbl) newSet$internal.labels <- svalue(intLabs)
 
                 if (PLOTTYPE == "scatter") {
