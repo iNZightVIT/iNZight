@@ -137,12 +137,12 @@ test_that("Changing variable resets axis limits", {
     expect_null(ui$getActiveDoc()$getSettings()$xlim)
 })
 
-# if (interactive()) {
-#     try(ui$close()); load_all()
-#     ui <- iNZGUI$new()
-#     ui$initializeGui(census.at.school.500)
-#     Sys.sleep(5)
-# }
+if (interactive()) {
+    # try(ui$close()); load_all()
+    ui <- iNZGUI$new()
+    ui$initializeGui(census.at.school.500)
+    Sys.sleep(5)
+}
 
 
 test_that("Axes and Labels - scatter plots", {
