@@ -4,6 +4,7 @@ context("Save plot")
 ui <- iNZGUI$new()
 ui$initializeGui(census.at.school.500)
 on.exit(gWidgets2::dispose(ui$win))
+Sys.sleep(5)
 
 test_that("Interactive graphs can be saved 100% locally", {
     ui$ctrlWidget$V1box$set_value("height")
