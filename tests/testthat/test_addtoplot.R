@@ -137,63 +137,82 @@ test_that("Changing variable resets axis limits", {
     expect_null(ui$getActiveDoc()$getSettings()$xlim)
 })
 
+if (interactive()) {
+    # try(ui$close()); load_all()
+    ui <- iNZGUI$new()
+    ui$initializeGui(census.at.school.500)
+    Sys.sleep(5)
+}
+
+
 test_that("Axes and Labels - scatter plots", {
     svalue(ui$ctrlWidget$V1box) <- "height"
     svalue(ui$ctrlWidget$V2box) <- "armspan"
     ui$plotToolbar$addToPlot(message = FALSE)
     svalue(ui$moduleWindow$header$children[[2]]$children[[1]], TRUE) <- 3
 
-    axtbl <- ui$moduleWindow$body$children[[1]]$children[[1]]$children
-    # quick check that indices are valid
-    # note: future testing should detect these via iteration
-    #       to make it easier to modify in future
-    expect_equal(svalue(axtbl[[18]]), "x axis :")
-    expect_equal(svalue(axtbl[[21]]), "y axis :")
+    axtbl <- ui$moduleWindow$body$children[[1]]$children[[1]]
+    vals <- sapply(seq_len(axtbl$get_dim()[1L]),
+        function(x) {
+            x <- svalue(axtbl[x, 1L])
+            if (is.null(x)) NA else x
+        }
+    )
+    xi <- grep("x axis", vals)
+    yi <- grep("y axis", vals)
     pl.xlims <- ui$curPlot[[1]][[1]]$xlim
     pl.ylims <- ui$curPlot[[1]][[1]]$ylim
-    expect_equal(as.numeric(svalue(axtbl[[19]])), pl.xlims[1])
-    expect_equal(as.numeric(svalue(axtbl[[20]])), pl.xlims[2])
-    expect_equal(as.numeric(svalue(axtbl[[22]])), pl.ylims[1])
-    expect_equal(as.numeric(svalue(axtbl[[23]])), pl.ylims[2])
+    expect_equal(as.numeric(svalue(axtbl[xi, 3])), pl.xlims[1])
+    expect_equal(as.numeric(svalue(axtbl[xi, 5])), pl.xlims[2])
+    expect_equal(as.numeric(svalue(axtbl[yi, 3])), pl.ylims[1])
+    expect_equal(as.numeric(svalue(axtbl[yi, 5])), pl.ylims[2])
 
     # update button
     svalue(ui$moduleWindow$body$children[[2]]$children[[1]]) <- FALSE
     upd <- ui$moduleWindow$body$children[[2]]$children[[2]]
 
     # set new limits
-    svalue(axtbl[[19]]) <- "150"
-    svalue(axtbl[[20]]) <- "160"
-    svalue(axtbl[[22]]) <- "140"
-    svalue(axtbl[[23]]) <- "160"
+    xli <- which(sapply(axtbl$child_positions, function(x) identical(x$child, axtbl[xi, 3])))
+    xui <- which(sapply(axtbl$child_positions, function(x) identical(x$child, axtbl[xi, 5])))
+    yli <- which(sapply(axtbl$child_positions, function(x) identical(x$child, axtbl[yi, 3])))
+    yui <- which(sapply(axtbl$child_positions, function(x) identical(x$child, axtbl[yi, 5])))
+    xLower <- axtbl$child_positions[[xli]]$child
+    xUpper <- axtbl$child_positions[[xui]]$child
+    yLower <- axtbl$child_positions[[yli]]$child
+    yUpper <- axtbl$child_positions[[yui]]$child
+
+    svalue(xLower) <- "150"
+    svalue(xUpper) <- "160"
+    svalue(yLower) <- "140"
+    svalue(yUpper) <- "160"
     upd$invoke_change_handler()
     expect_equal(ui$getActiveDoc()$getSettings()$xlim, c(150, 160))
     expect_equal(ui$getActiveDoc()$getSettings()$ylim, c(140, 160))
 
-    svalue(axtbl[[19]]) <- pl.xlims[1]
-    svalue(axtbl[[20]]) <- pl.xlims[2]
-    svalue(axtbl[[22]]) <- pl.ylims[1]
-    svalue(axtbl[[23]]) <- pl.ylims[2]
+    svalue(xLower) <- pl.xlims[1]
+    svalue(xUpper) <- pl.xlims[2]
+    svalue(yLower) <- pl.ylims[1]
+    svalue(yUpper) <- pl.ylims[2]
     upd$invoke_change_handler()
 
     # log x/y
-    expect_equal(svalue(axtbl[[26]]), "Log (base 10) :")
-    expect_false(svalue(axtbl[[27]]))
-    expect_false(svalue(axtbl[[28]]))
-    svalue(axtbl[[27]]) <- TRUE
-    svalue(axtbl[[28]]) <- TRUE
+    expect_equal(svalue(axtbl$children[[26]]), "Log (base 10) :")
+    expect_false(svalue(axtbl$children[[27]]))
+    expect_false(svalue(axtbl$children[[28]]))
+    svalue(axtbl$children[[27]]) <- TRUE
+    svalue(axtbl$children[[28]]) <- TRUE
     upd$invoke_change_handler()
     expect_equal(ui$curPlot[[1]][[1]]$xlim, log10(c(20, 200)))
     expect_equal(ui$curPlot[[1]][[1]]$ylim, log10(c(100, 200)))
 
     # unlogging x/x
-    svalue(axtbl[[27]]) <- FALSE
-    svalue(axtbl[[28]]) <- FALSE
+    svalue(axtbl$children[[27]]) <- FALSE
+    svalue(axtbl$children[[28]]) <- FALSE
     upd$invoke_change_handler()
     expect_equal(ui$curPlot[[1]][[1]]$xlim, c(20, 200))
     expect_equal(ui$curPlot[[1]][[1]]$ylim, c(100, 200))
 
     ui$moduleWindow$footer$children[[2]]$invoke_change_handler()
-    ui$getActiveDoc()$setSettings(list(xlim = NULL, ylim = NULL))
 
     svalue(ui$ctrlWidget$V2box, TRUE) <- 1
     svalue(ui$ctrlWidget$V1box, TRUE) <- 1

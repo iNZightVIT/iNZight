@@ -19,6 +19,11 @@ Main class that builds the iNZight GUI
 \section{Methods}{
 
 \describe{
-\item{\code{initializeGui(data = NULL, disposeR = FALSE, addonDir = NULL)}}{Initiates the GUI}
+\item{\code{initializeGui(
+  data = NULL,
+  disposeR = FALSE,
+  addonDir = NULL,
+  code_env = new.env()
+)}}{Initiates the GUI}
 }}
 

@@ -256,6 +256,9 @@ iNZPlotModWin <- setRefClass(
         ## up the curSet class variable
         updateSettings = function() {
             curSet <<- GUI$getActiveDoc()$getSettings()
+            # if (!is.null(curSet$x))
+            #     curSet$x <<- GUI$getActiveData()[[curSet$x]]
+            # if (!)
         },
         iNZLocatePoints = function(dot = GUI$plotType == "dot") {
             ## Do checking first
@@ -477,9 +480,10 @@ iNZPlotModWin <- setRefClass(
 
 
             locator <- function(h, remove = FALSE, btn, dot = FALSE, ...) {
-                x <- curSet$x  # used for removing missing values ...
+                .data <- GUI$getActiveData()
+                x <- .data[[curSet$x]]  # used for removing missing values ...
                 if (!dot)
-                    y <- curSet$y
+                    y <- .data[[curSet$y]]
                 v <- svalue(varmenu)
 
                 w <- rep(TRUE, length(x))
@@ -489,14 +493,15 @@ iNZPlotModWin <- setRefClass(
                     } else if (curSet$g1.level == "_MULTI") {
                         cantDo()
                     }
-                    w[curSet$g1 != curSet$g1.level] <- FALSE
+                    var_g1 <- .data[[curSet$g1]]
+                    w[var_g1 != curSet$g1.level] <- FALSE
                 }
                 if (!is.null(curSet$g2)) {
+                    var_g2 <- .data[[curSet$g2]]
                     if (curSet$g2.level == "_MULTI") {
                         cantDo()
-                    } else {
-                        if (curSet$g2.level != "_ALL")
-                            w[curSet$g2 != curSet$g2.level] <- FALSE
+                    } else if (curSet$g2.level != "_ALL") {
+                        w[var_g2 != curSet$g2.level] <- FALSE
                     }
                 }
 
@@ -512,21 +517,21 @@ iNZPlotModWin <- setRefClass(
 
                 ## Entire data set - ignore missing values etc etc
                 d <- data.frame(
-                    x = curSet$x,
+                    x = .data[[curSet$x]],
                     locate = locVar,
-                    id = 1:nrow(GUI$getActiveData()),
+                    id = seq_len(nrow(GUI$getActiveData())),
                     match = matchVar,
                     stringsAsFactors = TRUE
                 )
                 if (!dot)
-                    d$y <- curSet$y
+                    d$y <- .data[[curSet$y]]
 
                 if (!is.null(curSet$g1)) {
-                    w[curSet$g1 != curSet$g1.level] <- FALSE
+                    w[var_g1 != curSet$g1.level] <- FALSE
                 }
                 if (!is.null(curSet$g2)) {
                     if (curSet$g2.level != "_ALL") {
-                        w[curSet$g2 != curSet$g2.level] <- FALSE
+                        w[var_g2 != curSet$g2.level] <- FALSE
                     }
                 }
 
@@ -536,9 +541,9 @@ iNZPlotModWin <- setRefClass(
                     isNA <- is.na(x) | is.na(y)
 
                 if (!is.null(curSet$g1))
-                    isNA <- isNA | is.na(curSet$g1)
+                    isNA <- isNA | is.na(var_g1)
                 if (!is.null(curSet$g2))
-                    isNA <- isNA | is.na(curSet$g2)
+                    isNA <- isNA | is.na(var_g2)
 
                 dp <- grid.get(ifelse(dot,
                     "inz-DOTPOINTS.1.1.1",
@@ -1063,6 +1068,8 @@ iNZPlotMod <- setRefClass(
             defts <- iNZightPlots:::inzpar()
             TYPE <- PLOTTYPE <- GUI$plotType
 
+            .data <- GUI$getActiveData()
+
             ## ----- GENERAL APPEARANCE ----------------------------------------------------------
             ##
             ##        Plot type : [default, scatter, hex, grid-density]
@@ -1091,11 +1098,11 @@ iNZPlotMod <- setRefClass(
                   newSet <- list(plottype = plotTypeValues[[svalue(plotTypeList, index = TRUE)]])
                   if (!is.null(curSet$colby)) {
                       ## when switching scatter <-> hex, need to swtich numeric colby <-> factor colby
-                      newSet$colby <-
-                          if (newSet$plottype == "hex")
-                              iNZightPlots::convert.to.factor(curSet$colby)
-                          else
-                              GUI$getActiveData()[[curSet$varnames$colby]]
+                    #   newSet$colby <- as.name()
+                    #       if (newSet$plottype == "hex")
+                    #           iNZightPlots::convert.to.factor(curSet$colby)
+                    #       else
+                    #           GUI$getActiveData()[[curSet$varnames$colby]]
                   }
                   if (newSet$plottype == "gg_gridplot") {
                     n_fun <- function(n) {
@@ -1175,12 +1182,13 @@ iNZPlotMod <- setRefClass(
                     ## SIZE BY
                     lbl <- glabel("Resize points by :")
                     sizeVarNames <- names(GUI$getActiveData())[sapply(GUI$getActiveData(), is_num)]
-                    sizeVar <-
-                        gcombobox(c("", sizeVarNames),
-                                  selected = ifelse(
-                                      is.null(curSet$sizeby),
-                                      1, which(sizeVarNames == curSet$varnames$sizeby)[1] + 1
-                                      ))
+                    sizeVar <- gcombobox(c("", sizeVarNames),
+                        selected = ifelse(
+                            is.null(curSet$sizeby),
+                            1,
+                            which(sizeVarNames == as.character(curSet$sizeby))[1] + 1
+                        )
+                    )
                     tbl[ii, 1:2, anchor = c(1, 0), expand = TRUE] <- lbl
                     tbl[ii, 3:6, expand = TRUE] <- sizeVar
                     ii <- ii + 1
@@ -1298,7 +1306,7 @@ iNZPlotMod <- setRefClass(
                         gcombobox(c("", colVarNames),
                                   selected = ifelse(
                                       is.null(curSet$colby),
-                                      1, which(colVarNames == curSet$varnames$colby)[1] + 1
+                                      1, which(colVarNames == as.character(curSet$colby))[1] + 1
                                       ))
                     tbl[ii, 1:2, anchor = c(1, 0), expand = TRUE] <- lbl
                     tbl[ii, 3:6, expand = TRUE] <- colVar
@@ -1330,7 +1338,7 @@ iNZPlotMod <- setRefClass(
 
                 if (!is.null(curSet$colby) & (!bars | is.null(curSet$y)) & !hist) {
                     ## already set - need to match
-                    cval <- curSet$varnames$colby
+                    cval <- as.character(curSet$colby)
                     svalue(colVar) <- cval
                     if (bars) visible(barCol) <- FALSE
                     else visible(ptCol) <- FALSE
@@ -1358,36 +1366,46 @@ iNZPlotMod <- setRefClass(
                     cycleLbl <- glabel("Cycle levels :")
                     cyclePanel <- ggroup()
                     addSpace(cyclePanel, 10)
-                    cyclePrev <- gimagebutton(stock.id = "1leftarrow", container = cyclePanel,
-                                              handler = function(h, ...) {
-                                                  nl <-
-                                                      if (is_cat(curSet$colby)) length(levels(curSet$colby))
-                                                      else svalue(cycleN)
-                                                  EMPH.LEVEL <<- ifelse(EMPH.LEVEL == 0, nl, EMPH.LEVEL - 1)
-                                                  updateEverything()
-                                              })
-                    cycleNext <- gimagebutton(stock.id = "1rightarrow", container = cyclePanel,
-                                              handler = function(h, ...) {
-                                                  nl <-
-                                                      if (is_cat(curSet$colby)) length(levels(curSet$colby))
-                                                      else svalue(cycleN)
-                                                  EMPH.LEVEL <<- ifelse(EMPH.LEVEL == nl, 0, EMPH.LEVEL + 1)
-                                                  updateEverything()
-                                              })
+                    cyclePrev <- gimagebutton(
+                        stock.id = "1leftarrow",
+                        container = cyclePanel,
+                        handler = function(h, ...) {
+                            if (is.null(curSet$colby)) return()
+                            nl <-
+                                if (is_cat(.data[[curSet$colby]])) length(levels(.data[[curSet$colby]]))
+                                else svalue(cycleN)
+                            EMPH.LEVEL <<- ifelse(EMPH.LEVEL == 0, nl, EMPH.LEVEL - 1)
+                            updateEverything()
+                        }
+                    )
+                    cycleNext <- gimagebutton(
+                        stock.id = "1rightarrow",
+                        container = cyclePanel,
+                        handler = function(h, ...) {
+                            if (is.null(curSet$colby)) return()
+                            nl <-
+                                if (is_cat(.data[[curSet$colby]])) length(levels(.data[[curSet$colby]]))
+                                else svalue(cycleN)
+                            EMPH.LEVEL <<- ifelse(EMPH.LEVEL == nl, 0, EMPH.LEVEL + 1)
+                            updateEverything()
+                        }
+                    )
                     addSpace(cyclePanel, 20)
-                    cycleStop <- gimagebutton(filename = system.file("images/icon-undo.png", package = "iNZight"),
-                                              container = cyclePanel,
-                                              handler = function(h, ...) {
-                                                  EMPH.LEVEL <<- 0
-                                                  updateEverything()
-                                              })
+                    cycleStop <- gimagebutton(
+                        filename = system.file("images/icon-undo.png", package = "iNZight"),
+                        container = cyclePanel,
+                        handler = function(h, ...) {
+                            EMPH.LEVEL <<- 0
+                            updateEverything()
+                        }
+                    )
                     addSpace(cyclePanel, 20)
                     cycleNlab <- glabel("# quantiles :", container = cyclePanel)
                     font(cycleNlab) <- list(size = 9)
                     cycleN <- gspinbutton(4, 10, by = 1, container = cyclePanel)
 
                     visible(cycleLbl) <- visible(cyclePanel) <- !is.null(curSet$colby)
-                    if (is_num(curSet$colby)) {
+                    if (!is.null(curSet$colby) && is_num(.data[[curSet$colby]])) {
                         svalue(cycleLbl) <- "Cycle quantiles :"
                     } else {
                         visible(cycleNlab) <- visible(cycleN) <- FALSE
@@ -1504,11 +1522,13 @@ iNZPlotMod <- setRefClass(
 
 
                 lbl <- glabel("Symbol :")
-                symbolList <- list(circle = 21,
-                                   square = 22,
-                                   diamond = 23,
-                                   triangle = 24,
-                                   'inverted triangle' = 25)
+                symbolList <- list(
+                    circle = 21L,
+                    square = 22L,
+                    diamond = 23L,
+                    triangle = 24L,
+                    'inverted triangle' = 25L
+                )
                 symVals <- do.call(c, symbolList)
                 symPch <- gcombobox(names(symbolList), selected = 1)
                 if (curSet$pch %in% symVals) svalue(symPch, TRUE) <- which(symVals == curSet$pch)
@@ -1980,10 +2000,15 @@ iNZPlotMod <- setRefClass(
                          "hex"     = newSet$hex.bins <- iNZightPlots::inzpar()$hex.bins / svalue(cexPt))
                 }
                 if (PLOTTYPE == "scatter") {
-                    newSet <- c(newSet, list(sizeby = GUI$getActiveData()[[svalue(sizeVar)]]))
-                    newSet$varnames <- c(newSet$varnames,
-                                         list(sizeby = svalue(sizeVar)))
-                    newSet$resize.method <- svalue(sizeMethod)
+                    if (svalue(sizeVar, index = TRUE) > 1L) {
+                        newSet <- c(newSet, list(sizeby = as.name(svalue(sizeVar))))
+                        newSet$varnames <- c(newSet$varnames, list(sizeby = svalue(sizeVar)))
+                        newSet$resize.method <- svalue(sizeMethod)
+                    } else {
+                        newSet <- c(newSet, list(sizeby = NULL))
+                        newSet$varnames <- c(newSet$varnames, list(sizeby = NULL))
+                        newSet["resize.method"] <- list(NULL)
+                    }
                 }
                 if (PLOTTYPE == "hex")
                     newSet <- c(newSet, list(hex.style = svalue(hexStyle)))
@@ -1999,14 +2024,9 @@ iNZPlotMod <- setRefClass(
                     if (setPal) {
                         ## colouring by a variable - and a palette
                         if (!bars | is.null(curSet$y)) {
-                          newSet$colby <-
-                              if (PLOTTYPE == "hex")
-                                  iNZightPlots::convert.to.factor(
-                                      GUI$getActiveData()[[svalue(colVar)]])
-                              else GUI$getActiveData()[[svalue(colVar)]]
-                          newSet$varnames <- c(newSet$varnames,
-                                               list(colby = svalue(colVar)))
-                          newSet$col.method <- ifelse(svalue(useRank), "rank", "linear")
+                            newSet$colby <- as.name(svalue(colVar))
+                            newSet$varnames <- c(newSet$varnames, list(colby = svalue(colVar)))
+                            newSet$col.method <- ifelse(svalue(useRank), "rank", "linear")
                         }
                         newSet$reverse.palette <- svalue(revPal)
                         palCatName <-
@@ -2014,48 +2034,42 @@ iNZPlotMod <- setRefClass(
                         palContName <-
                             names(colourPalettes$cont)[svalue(palCont, index = TRUE)]
                         if (bars) {
-                          newSet$col.fun <- iNZightPlots::inzpalette(palCatName)
+                            newSet$col.fun <- palCatName
                         } else {
-                          newSet$col.fun <-
-                              if (EMPH.LEVEL > 0)
-                                  function(n)
-                                      iNZightPlots::emphasize_pal_colour(
-                                          n, k = EMPH.LEVEL, cat = is.factor(newSet$colby),
-                                          ncat = svalue(cycleN),
-                                          fn = if (is.numeric(newSet$colby))
-                                                   iNZightPlots::inzpalette(palContName)
-                                               else iNZightPlots::inzpalette(palCatName)
-                                      )
-                              else if (is.numeric(newSet$colby))
-                                  iNZightPlots::inzpalette(palContName)
-                              else iNZightPlots::inzpalette(palCatName)
+                            newSet$col.emph <- as.integer(EMPH.LEVEL)
+                            newSet$col.emphn <-
+                                if (EMPH.LEVEL > 0L) as.integer(svalue(cycleN)) else NULL
+                            newSet$col.fun <-
+                                if (is_num(.data[[newSet$colby]])) palContName else palCatName
                         }
 
                         newSet$plot.features <- list(order.first = NULL)
                         if (!bars) {
-                          if (EMPH.LEVEL > 0) {
-                              ## need to add "order.first" to plot features:
-                              if (is_cat(newSet$colby)) {
-                                  newSet$plot.features <-
-                                      list(order.first = which(newSet$colby ==
-                                                               levels(newSet$colby)[EMPH.LEVEL]))
-                              } else if (is_num(newSet$colby)) {
-                                  Qs <- seq(min(newSet$colby, na.rm = TRUE),
-                                            max(newSet$colby, na.rm = TRUE),
-                                            length = svalue(cycleN) + 1)
-                                  newSet$plot.features <-
-                                      list(order.first = which(newSet$colby >= Qs[EMPH.LEVEL] &
-                                                               newSet$colby < Qs[EMPH.LEVEL + 1]))
-                              }
-                          }
+                            if (EMPH.LEVEL > 0) {
+                                vcolby <- .data[[newSet$colby]]
+                                ## need to add "order.first" to plot features:
+                                if (is_cat(vcolby)) {
+                                    newSet$plot.features <-
+                                        list(order.first = which(vcolby == levels(vcolby)[EMPH.LEVEL]))
+                                } else if (is_num(vcolby)) {
+                                    Qs <- seq(min(vcolby, na.rm = TRUE),
+                                                max(vcolby, na.rm = TRUE),
+                                                length = svalue(cycleN) + 1)
+                                    newSet$plot.features <-
+                                        list(order.first = which(vcolby >= Qs[EMPH.LEVEL] &
+                                                                vcolby < Qs[EMPH.LEVEL + 1]))
+                                }
+                            }
 
-                          visible(cycleLbl) <- visible(cyclePanel) <- TRUE
-                          visible(cycleNlab) <- visible(cycleN) <- is_num(newSet$colby)
-                          svalue(cycleLbl) <- ifelse(visible(cycleN),
-                                                     "Cycle quantiles :", "Cycle levels :")
+                            visible(cycleLbl) <- visible(cyclePanel) <- TRUE
+                            visible(cycleNlab) <- visible(cycleN) <-
+                                !is.null(curSet$colby) && is_num(.data[[newSet$colby]])
+                            svalue(cycleLbl) <- ifelse(visible(cycleN),
+                                                        "Cycle quantiles :", "Cycle levels :")
                         }
                     } else {
                         newSet <- c(newSet, list(colby = NULL))
+                        newSet["col.fun"] <- list(NULL)
                         newSet$varnames <- c(newSet$varnames, list(colby = NULL))
                         if (bars) {
                           newSet$bar.fill <-
@@ -2099,12 +2113,12 @@ iNZPlotMod <- setRefClass(
                     newSet <- c(newSet, list(symbolby = NULL))
                     newSet$varnames <- c(newSet$varnames, list(symbolby = NULL))
                     if (svalue(pchMatch) & !is.null(newSet$colby)) {
-                        if (length(levels(newSet$colby)) %in% 1:5) {
+                        if (length(levels(.data[[newSet$colby]])) %in% 1:5) {
                             newSet$symbolby <- newSet$colby
                             newSet$varnames$symbolby = newSet$varnames$colby
                         }
                     } else if (svalue(symVar, TRUE) > 1) {
-                        newSet$symbolby <- GUI$getActiveData()[[svalue(symVar)]]
+                        newSet$symbolby <- as.name(svalue(symVar))
                         newSet$varnames$symbolby <- svalue(symVar)
                     }
                     newSet$pch <- symVals[svalue(symPch, index = TRUE)]
@@ -2351,6 +2365,7 @@ iNZPlotMod <- setRefClass(
             ii <- 3
 
             PLOTTYPE <- GUI$plotType
+            .data <- GUI$getActiveData()
 
             ## PLOT APPEARANCE
             tbl[ii,  1:6, anchor = c(-1,-1), expand = TRUE] <- sectionTitle("Trend Curves")
@@ -2446,7 +2461,7 @@ iNZPlotMod <- setRefClass(
                 joinPointsCol$widget$setSizeRequest(colBoxWidth, -1)
                 ii <- ii + 1
 
-                if (is_cat(curSet$colby)) {
+                if (!is.null(curSet$colby) && is_cat(.data[[curSet$colby]])) {
                     joinPointsBy <- gcheckbox(paste("For each level of", curSet$varnames$colby),
                                               selected = curSet$lines.by)
                     tbl[ii, 1:6, anchor = c(-1, 0), expand = TRUE] <- joinPointsBy
@@ -2459,7 +2474,7 @@ iNZPlotMod <- setRefClass(
             ii <- ii + 1
 
             ## For each level of COLBY
-            if (is_cat(curSet$colby)) {
+            if (!is.null(curSet$colby) && is_cat(.data[[curSet$colby]])) {
                 trendBy <- gcheckbox(paste("For each level of", curSet$varnames$colby),
                                      checked = curSet$trend.by)
                 trendParallel <- gcheckbox("Parallel trend lines (common slope)",
@@ -2470,6 +2485,7 @@ iNZPlotMod <- setRefClass(
                 ii <- ii + 1
             }
             activateOptions <- function() {
+                if (is.null(curSet$colby)) return()
                 if (is_cat(curSet$colby)) {
                     if (PLOTTYPE == "scatter") {
                         enabled(joinPointsBy) <- svalue(joinPoints)
@@ -2546,7 +2562,7 @@ iNZPlotMod <- setRefClass(
                 }
 
                 newSet$lines.by <- FALSE
-                if (is_cat(curSet$colby)) {
+                if (!is.null(curSet$colby) && is_cat(.data[[curSet$colby]])) {
                     newSet$trend.by <- svalue(trendBy)
                     newSet$trend.parallel <- svalue(trendParallel)
                     if (PLOTTYPE == "scatter")
@@ -2636,7 +2652,7 @@ iNZPlotMod <- setRefClass(
                                       }, one.shot = TRUE)
                                   })
             }
-            if (is_cat(curSet$colby)) {
+            if (!is.null(curSet$colby) && is_cat(.data[[curSet$colby]])) {
                 addHandlerChanged(trendBy, function(h, ...) updateEverything())
                 addHandlerChanged(trendParallel, function(h, ...) updateEverything())
                 if (PLOTTYPE == "scatter")
@@ -2656,8 +2672,10 @@ iNZPlotMod <- setRefClass(
             PLOTTYPE <- GUI$plotType
             YAX <- TRUE
             YAXlbl <- FALSE
+            xvar <- GUI$getActiveData()[[curSet$x]]
+            yvar <- if (!is.null(curSet$y)) GUI$getActiveData()[[curSet$y]] else NULL
             if (PLOTTYPE %in% c("dot", "hist", "bar")) {
-              YAXlbl <- YAX <- PLOTTYPE %in% c("dot", "hist") & !is.null(curSet$y)
+              YAXlbl <- YAX <- PLOTTYPE %in% c("dot", "hist") & !is.null(yvar)
             }
 
             ## AXIS LABELS
@@ -2754,7 +2772,7 @@ iNZPlotMod <- setRefClass(
                 tbl[ii, 3:6, expand = TRUE] <- ycounts
 
                 ii <- ii + 1
-                if (length(levels(curSet$x)) > 2) {
+                if (length(levels(xvar)) > 2) {
                     ## Number of bars
                     tbl[ii,  1:2, anchor = c(-1,-1), expand = TRUE] <- sectionTitle("Number of Bars")
                     ii <- ii + 1
@@ -2762,14 +2780,14 @@ iNZPlotMod <- setRefClass(
                     zoom <- if (!is.null(curSet$zoombars)) curSet$zoombars else NULL
 
                     lbl <- glabel("Number of bars: ")
-                    NBARS <- gslider(2, min(30, length(levels(curSet$x))),
-                                     by = 1, value = min(30, length(levels(curSet$x))))
+                    NBARS <- gslider(2, min(30, length(levels(xvar))),
+                                     by = 1, value = min(30, length(levels(xvar))))
                     tbl[ii, 1:2, expand = TRUE, fill = TRUE, anchor = c(-1, 0)] <- lbl
                     tbl[ii, 3:6, expand = TRUE] <- NBARS
                     ii <- ii + 1
 
                     lbl <- glabel("Starting point: ")
-                    START <- gslider(levels(curSet$x)[1:(length(levels(curSet$x)) - 1)])
+                    START <- gslider(levels(xvar)[1:(length(levels(xvar)) - 1)])
                     tbl[ii, 1:2, expand = TRUE, fill = TRUE, anchor = c(-1, 0)] <- lbl
                     tbl[ii, 3:6, expand = TRUE] <- START
                     ii <- ii + 1
@@ -2787,7 +2805,7 @@ iNZPlotMod <- setRefClass(
                         svalue(START, index = TRUE) <- 1
                         unblockHandlers(START)
                         blockHandlers(NBARS)
-                        svalue(NBARS) <- min(30, length(levels(curSet$x)))
+                        svalue(NBARS) <- min(30, length(levels(xvar)))
                         unblockHandlers(NBARS)
 
                         GUI$getActiveDoc()$setSettings(
@@ -2812,13 +2830,16 @@ iNZPlotMod <- setRefClass(
                 tbl[ii,  1:2, anchor = c(-1,-1), expand = TRUE] <- sectionTitle("Axis Limits")
                 ii <- ii + 1
 
+                ## Need some new way of handling this to "remember" the
+                ## default values and only pass x/y lims when changed
+                # axis.limits.default <- list(x = NULL, y = NULL)
                 if (PLOTTYPE %in% c("scatter", "hex", "grid")) {
-                    isNA <- is.na(curSet$x) | is.na(curSet$y)
-                    xrange <- range(curSet$y[!isNA])
-                    yrange <- range(curSet$x[!isNA])
+                    isNA <- is.na(xvar) | is.na(yvar)
+                    xrange <- range(yvar[!isNA])
+                    yrange <- range(xvar[!isNA])
                 } else {
-                    isNA <- is.na(curSet$x)
-                    xrange <- range(curSet$x[!isNA])
+                    isNA <- is.na(xvar)
+                    xrange <- range(xvar[!isNA])
                 }
 
                 xlim <- curSet$xlim
@@ -2901,7 +2922,13 @@ iNZPlotMod <- setRefClass(
                     transform = list()
                 )
 
-                if (YAX) newSet$ylab <- if (svalue(labYlab) == "") NULL else svalue(labYlab)
+                xvar <- GUI$getActiveData()[[curSet$x]]
+                yvar <- if (!is.null(curSet$y)) GUI$getActiveData()[[curSet$y]] else NULL
+
+                if (YAX)
+                    newSet["ylab"] <-
+                        if (svalue(labYlab) == "") list(NULL)
+                        else list(svalue(labYlab))
                 if (YAXlbl) newSet$internal.labels <- svalue(intLabs)
 
                 if (PLOTTYPE == "scatter") {
@@ -2913,9 +2940,9 @@ iNZPlotMod <- setRefClass(
 
                 if (PLOTTYPE == "bar") {
                     newSet$bar.counts <- svalue(ycounts, index = TRUE) == 2
-                    if (length(levels(curSet$x)) > 2) {
+                    if (length(levels(xvar)) > 2) {
                         newSet$zoombars <-
-                            if (svalue(NBARS) == length(levels(curSet$x)) & svalue(START, index = TRUE) == 1)
+                            if (svalue(NBARS) == length(levels(xvar)) & svalue(START, index = TRUE) == 1)
                                 NULL
                             else
                                 c(svalue(START, index = TRUE), svalue(NBARS))
@@ -2944,6 +2971,7 @@ iNZPlotMod <- setRefClass(
                     }
 
                     # need to explicitely add NULL to the list
+                    newSet$transform
                     newSet$transform["x"] <- list(
                         if (svalue(xLog)) "log10" else NULL
                     )
@@ -2970,10 +2998,15 @@ iNZPlotMod <- setRefClass(
                     }
 
                     visible(errlbl) <- err
-                    newSet$xlim <- c(xl, xu)
+                    newSet["xlim"] <-
+                        if (any(c(xl, xu) != xrange)) list(c(xl, xu))
+                        else list(NULL)
 
-                    if (PLOTTYPE %in% c("scatter", "hex", "grid"))
-                        newSet$ylim <- c(yl, yu)
+                    if (PLOTTYPE %in% c("scatter", "hex", "grid")) {
+                        newSet["ylim"] <-
+                            if (any(c(yl, yu) != yrange)) list(c(yl, yu))
+                            else list(NULL)
+                    }
 
                     # newSet$xlim <- NULL
                     # newSet$ylim <- NULL
@@ -3011,7 +3044,7 @@ iNZPlotMod <- setRefClass(
 
             if (PLOTTYPE == "bar") {
                 addHandlerChanged(ycounts, function(h, ...) updateEverything())
-                if (length(levels(curSet$x)) > 2) {
+                if (length(levels(xvar)) > 2) {
                     addHandlerChanged(NBARS, function(h, ...) updateEverything())
                     addHandlerChanged(START, function(h, ...) updateEverything())
                 }
@@ -3022,16 +3055,16 @@ iNZPlotMod <- setRefClass(
                 addHandlerKeystroke(xupper, updT)
                 addHandlerChanged(xLog, function(h, ...) {
                     # log/exp axis limits
-                    blockHandlers(xlower)
-                    blockHandlers(xupper)
-                    svalue(xlower) <-
-                        if (svalue(xLog)) signif(log10(as.numeric(svalue(xlower))), 5)
-                        else signif(10^(as.numeric(svalue(xlower))), 5)
-                    svalue(xupper) <-
-                        if (svalue(xLog)) signif(log10(as.numeric(svalue(xupper))), 5)
-                        else signif(10^(as.numeric(svalue(xupper))), 5)
-                    unblockHandlers(xlower)
-                    unblockHandlers(xupper)
+                    # blockHandlers(xlower)
+                    # blockHandlers(xupper)
+                    # svalue(xlower) <-
+                    #     if (svalue(xLog)) signif(log10(as.numeric(svalue(xlower))), 5)
+                    #     else signif(10^(as.numeric(svalue(xlower))), 5)
+                    # svalue(xupper) <-
+                    #     if (svalue(xLog)) signif(log10(as.numeric(svalue(xupper))), 5)
+                    #     else signif(10^(as.numeric(svalue(xupper))), 5)
+                    # unblockHandlers(xlower)
+                    # unblockHandlers(xupper)
                     updateEverything()
                 })
                 if (PLOTTYPE %in% c("scatter", "hex", "grid")) {
@@ -3039,16 +3072,16 @@ iNZPlotMod <- setRefClass(
                     addHandlerKeystroke(yupper, updT)
                     addHandlerChanged(yLog, function(h, ...) {
                         # log/exp axis limits
-                        blockHandlers(ylower)
-                        blockHandlers(yupper)
-                        svalue(ylower) <-
-                            if (svalue(yLog)) signif(log10(as.numeric(svalue(ylower))), 5)
-                            else signif(10^(as.numeric(svalue(ylower))), 5)
-                        svalue(yupper) <-
-                            if (svalue(yLog)) signif(log10(as.numeric(svalue(yupper))), 5)
-                            else signif(10^(as.numeric(svalue(yupper))), 5)
-                        unblockHandlers(ylower)
-                        unblockHandlers(yupper)
+                        # blockHandlers(ylower)
+                        # blockHandlers(yupper)
+                        # svalue(ylower) <-
+                        #     if (svalue(yLog)) signif(log10(as.numeric(svalue(ylower))), 5)
+                        #     else signif(10^(as.numeric(svalue(ylower))), 5)
+                        # svalue(yupper) <-
+                        #     if (svalue(yLog)) signif(log10(as.numeric(svalue(yupper))), 5)
+                        #     else signif(10^(as.numeric(svalue(yupper))), 5)
+                        # unblockHandlers(ylower)
+                        # unblockHandlers(yupper)
                         updateEverything()
                     })
                 }

@@ -1,4 +1,7 @@
 - add option to save interactive plots locally (including assets)
+- New `iNZInfoWindow` class to support both "Get Summary" and "Get Inference" which includes future scalability to code-writing and manual user-modifiable code snippets, plus an extensible command panel.
+- Added code-writing capabilities to iNZight
+
 
 ## iNZight 3.5.3
 - New Module Manager
