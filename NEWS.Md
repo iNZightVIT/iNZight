@@ -1,4 +1,4 @@
-
+- add option to save interactive plots locally (including assets)
 
 ## iNZight 3.5.3
 - New Module Manager
