@@ -54,7 +54,7 @@ before_install:
       rm gtk.pkg;
       mkdir ~/Documents/iNZightVIT;
     fi
-  - Rscript -e 'remotes::install_github("iNZightVIT/iNZightPlots@features/refactor-interactive-plots", dependencies = TRUE)'
+  - Rscript -e 'remotes::install_github("iNZightVIT/iNZightPlots@feature/refactor-interactive-plots", dependencies = TRUE)'
 
 after_success:
   - Rscript -e 'covr::codecov()'
