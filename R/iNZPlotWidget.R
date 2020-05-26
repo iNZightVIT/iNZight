@@ -203,7 +203,7 @@ iNZPlotWidget <- setRefClass(
                             # fp <- filetypes[[svalue(fileType)]](fun, f, data = dat, extra.vars = vars)
                         },
                         error = function(e) {
-                            if (!interactive()) stop(e)
+                            if (!interactive()) stop("Error", e)
                             if (grepl("Required packages aren't installed", e$message)) {
                                 ## Ask use if they want to install:
                                 conf <- gconfirm(paste("To export HTML and SVG, you need to install a few additional packages.",
