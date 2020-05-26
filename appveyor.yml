@@ -43,7 +43,7 @@ build_script:
   - travis-tool.sh install_github iNZightVIT/iNZightTools@dev
   - travis-tool.sh install_github iNZightVIT/iNZightTS@dev
   - travis-tool.sh install_github iNZightVIT/iNZightMR@dev
-  - Rscript -e 'remotes::install_github("iNZightVIT/iNZightPlots@feature/refactor-interactive-plots", dependencies = TRUE)'
+  - Rscript -e "remotes::install_github('iNZightVIT/iNZightPlots@feature/refactor-interactive-plots', dependencies = TRUE)"
   # - travis-tool.sh install_github iNZightVIT/iNZightPlots@feature/refactor-interactive-plots
   - travis-tool.sh install_github iNZightVIT/iNZightModules@dev
 
