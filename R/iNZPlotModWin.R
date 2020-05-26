@@ -1402,7 +1402,13 @@ iNZPlotMod <- setRefClass(
                     addSpace(cyclePanel, 20)
                     cycleNlab <- glabel("# quantiles :", container = cyclePanel)
                     font(cycleNlab) <- list(size = 9)
-                    cycleN <- gspinbutton(4, 10, by = 1, container = cyclePanel)
+                    cycleN <- gspinbutton(4, 10, by = 1,
+                        container = cyclePanel,
+                        handler = function(h, ...) {
+                            EMPH.LEVEL <<- min(EMPH.LEVEL, svalue(h$obj))
+                            updateEverything()
+                        }
+                    )
 
                     visible(cycleLbl) <- visible(cyclePanel) <- !is.null(curSet$colby)
                     if (!is.null(curSet$colby) && is_num(.data[[curSet$colby]])) {
@@ -2043,29 +2049,22 @@ iNZPlotMod <- setRefClass(
                                 if (is_num(.data[[newSet$colby]])) palContName else palCatName
                         }
 
-                        newSet$plot.features <- list(order.first = NULL)
                         if (!bars) {
                             if (EMPH.LEVEL > 0) {
-                                vcolby <- .data[[newSet$colby]]
-                                ## need to add "order.first" to plot features:
-                                if (is_cat(vcolby)) {
-                                    newSet$plot.features <-
-                                        list(order.first = which(vcolby == levels(vcolby)[EMPH.LEVEL]))
-                                } else if (is_num(vcolby)) {
-                                    Qs <- seq(min(vcolby, na.rm = TRUE),
-                                                max(vcolby, na.rm = TRUE),
-                                                length = svalue(cycleN) + 1)
-                                    newSet$plot.features <-
-                                        list(order.first = which(vcolby >= Qs[EMPH.LEVEL] &
-                                                                vcolby < Qs[EMPH.LEVEL + 1]))
-                                }
+                                newSet$col.emph <- as.integer(EMPH.LEVEL)
+                                newSet$col.emphn <- as.integer(svalue(cycleN))
+                            } else {
+                                newSet["col.emph"] <- list(NULL)
+                                newSet["col.emphn"] <- list(NULL)
                             }
 
                             visible(cycleLbl) <- visible(cyclePanel) <- TRUE
-                            visible(cycleNlab) <- visible(cycleN) <-
-                                !is.null(curSet$colby) && is_num(.data[[newSet$colby]])
-                            svalue(cycleLbl) <- ifelse(visible(cycleN),
-                                                        "Cycle quantiles :", "Cycle levels :")
+                            visible(cycleNlab) <- visible(cycleN) <- is_num(.data[[newSet$colby]])
+                            svalue(cycleLbl) <- ifelse(
+                                visible(cycleN),
+                                "Cycle quantiles :",
+                                "Cycle levels :"
+                            )
                         }
                     } else {
                         newSet <- c(newSet, list(colby = NULL))
