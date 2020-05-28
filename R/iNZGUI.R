@@ -489,7 +489,7 @@ iNZGUI <- setRefClass(
                 e$.design <- .design
 
                 ## Suppress the warnings produced by iNZightPlot ...
-                dop <- try({
+                dop <- try({0
                     ## Generate the plot ... and update the interaction button
                     plot_call <- construct_call(curPlSet, curMod)
                     # print(plot_call)

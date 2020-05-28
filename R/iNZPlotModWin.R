@@ -333,7 +333,7 @@ iNZPlotModWin <- setRefClass(
 
                 GUI$getActiveDoc()$setSettings(list(
                     locate = locate,
-                    locate.id = unique(id),
+                    locate.id = if (is_num(id)) unique(id) else id,
                     locate.col = col,
                     locate.extreme = ext,
                     locate.same.level = loc.lvl,
@@ -687,28 +687,31 @@ iNZPlotModWin <- setRefClass(
                     )
 
                     addHandlerChanged(selectSlide, function(h, ...) {
-                        ids <-
-                            which(GUI$getActiveData()[, svalue(selectVar)] ==
-                                svalue(selectSlide))
-                        locSet$ID <<- ids
+                        # ids <-
+                        #     which(GUI$getActiveData()[, svalue(selectVar)] ==
+                        #         svalue(selectSlide))
+                        # locSet$ID <<- ids
 
-                        if (svalue(matchChk)) {
-                            levs <-
-                                unique(as.character(
-                                    GUI$getActiveData()[ids, svalue(matchVar)]
-                                ))
-                            ids <- which(
-                                GUI$getActiveData()[, svalue(matchVar)] %in%
-                                    levs
-                            )
-                        }
+                        # if (svalue(matchChk)) {
+                        #     levs <-
+                        #         unique(as.character(
+                        #             GUI$getActiveData()[ids, svalue(matchVar)]
+                        #         ))
+                        #     ids <- which(
+                        #         GUI$getActiveData()[, svalue(matchVar)] %in%
+                        #             levs
+                        #     )
+                        # }
 
                         v <- svalue(varmenu)
                         locVar <- if (v == "id") v else as.name(v)
 
+                        ids_expr <- rlang::expr(
+                            !!rlang::sym(svalue(selectVar)) == !!svalue(selectSlide)
+                        )
                         updateEverything(
                             locate = if (svalue(txtLabs)) locVar else NULL,
-                            id = ids,
+                            id = ids_expr,
                             col = if (svalue(colLabs)) svalue(colmenu) else NULL
                         )
                     })
@@ -840,25 +843,30 @@ iNZPlotModWin <- setRefClass(
 
                 wb <- gbutton("Done", cont = wg)
                 addHandlerClicked(wb, function(h, ...) {
-                    ids <-  which(GUI$getActiveData()[, svalue(selectVar)] %in%
-                        svalue(selectLevels))
-                    locSet$ID <<- ids
+                    # ids <-  which(GUI$getActiveData()[, svalue(selectVar)] %in%
+                    #     svalue(selectLevels))
+                    # locSet$ID <<- ids
 
-                    if (svalue(matchChk)) {
-                        levs <- unique(as.character(
-                            GUI$getActiveData()[ids, svalue(matchVar)]
-                        ))
-                        ids <- which(
-                            GUI$getActiveData()[, svalue(matchVar)] %in% levs
-                        )
-                    }
+                    # if (svalue(matchChk)) {
+                    #     levs <- unique(as.character(
+                    #         GUI$getActiveData()[ids, svalue(matchVar)]
+                    #     ))
+                    #     ids <- which(
+                    #         GUI$getActiveData()[, svalue(matchVar)] %in% levs
+                    #     )
+                    # }
 
                     v <- svalue(varmenu)
                     locVar <- if (v == "id") v else as.name(v)
 
+                    lvls <- svalue(selectLevels)
+                    id_expr <- rlang::expr(
+                        !!rlang::sym(svalue(selectVar)) %in% !!svalue(selectLevels)
+                    )
+
                     updateEverything(
                         locate = if (svalue(txtLabs)) locVar else NULL,
-                        id = ids,
+                        id = id_expr,
                         col = if (svalue(colLabs)) svalue(colmenu) else NULL
                     )
 

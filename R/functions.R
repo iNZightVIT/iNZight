@@ -372,12 +372,11 @@ construct_call <- function(settings, model,
         }
     }
 
-
     ## remove any NULLs
     settings <- modifyList(list(), settings)
     settings <- lapply(settings,
         function(x)
-            if (is.null(x) || all(x == "NULL")) NULL else x
+            if (is.null(x) || (is.character(x) && all(x == "NULL"))) NULL else x
     )
 
     ## drop "x = " and "y = "
