@@ -212,6 +212,10 @@ construct_call <- function(settings, model,
         names(settings[[n]]) <- NULL
     }
 
+    ## remove options
+    rmv_args <- c("locate.settings")
+    settings <- settings[names(settings) %notin% rmv_args]
+
     # go through settings and compare to default settings
     default_args <- formals(iNZightPlots::iNZightPlot)
     inz_args <- iNZightPlots::inzpar()

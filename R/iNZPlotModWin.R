@@ -313,7 +313,9 @@ iNZPlotModWin <- setRefClass(
 
                 curSet$locate.settings <<- locSet
 
+                loc.lvl <- NULL
                 if (locSet$matchChk) {
+                    loc.lvl <- as.name(locSet$matchVar)
                     levs <-
                         unique(GUI$getActiveData()[highlight, locSet$matchVar])
 
@@ -334,6 +336,7 @@ iNZPlotModWin <- setRefClass(
                     locate.id = unique(id),
                     locate.col = col,
                     locate.extreme = ext,
+                    locate.same.level = loc.lvl,
                     locate.settings = locSet,
                     highlight = highlight,
                     subtitle = subt,
@@ -379,18 +382,14 @@ iNZPlotModWin <- setRefClass(
             addHandlerChanged(txtLabs, function(h, ...) {
                 enabled(varmenu) <- svalue(txtLabs)  #labMthd, TRUE) == 1
                 v <- svalue(varmenu)
-                locVar <-
-                    if (v == "id") 1:nrow(GUI$getActiveData())
-                    else GUI$getActiveData()[, v]
+                locVar <- if (v == "id") v else as.name(v)
                 updateEverything(
                     locate = if (svalue(txtLabs)) locVar else NULL
                 )
             })
             addHandlerChanged(varmenu, function(h, ...) {
                 v <- svalue(varmenu)
-                locVar <-
-                    if (v == "id") 1:nrow(GUI$getActiveData())
-                    else GUI$getActiveData()[, v]
+                locVar <- if (v == "id") v else as.name(v)
                 updateEverything(
                     locate = if (svalue(txtLabs)) locVar else NULL
                 )
@@ -432,30 +431,30 @@ iNZPlotModWin <- setRefClass(
                 if (svalue(matchChk)) {
                     ## Add all the points:
 
-                    matchVar <-
-                        as.character(GUI$getActiveData()[, svalue(matchVar)])
-                    matchVar[is.na(matchVar)] <- "missing"
+                    # matchVar <-
+                    #     as.character(GUI$getActiveData()[, svalue(matchVar)])
+                    # matchVar[is.na(matchVar)] <- "missing"
 
-                    matchLvls <- unique(matchVar[locSet$ID])
-                    newIDS <- which(matchVar %in% matchLvls)
+                    # matchLvls <- unique(matchVar[locSet$ID])
+                    # newIDS <- which(matchVar %in% matchLvls)
 
-                    updateEverything(id = newIDS)
+                    updateEverything()
                 } else {
                     ## Remove all the points:
 
-                    updateEverything(id = locSet$ID)
+                    updateEverything()
                 }
             })
 
             addHandlerChanged(matchVar, function(h, ...) {
-                matchVar <-
-                    as.character(GUI$getActiveData()[, svalue(matchVar)])
-                matchVar[is.na(matchVar)] <- "missing"
+                # matchVar <-
+                #     as.character(GUI$getActiveData()[, svalue(matchVar)])
+                # matchVar[is.na(matchVar)] <- "missing"
 
-                matchLvls <- unique(matchVar[locSet$ID])
-                newIDS <- which(matchVar %in% matchLvls)
+                # matchLvls <- unique(matchVar[locSet$ID])
+                # newIDS <- which(matchVar %in% matchLvls)
 
-                updateEverything(id = newIDS)
+                updateEverything()#id = newIDS)
             })
 
 
@@ -507,9 +506,7 @@ iNZPlotModWin <- setRefClass(
 
                 match.all <- svalue(matchChk)
 
-                locVar <-
-                    if (v == "id") 1:nrow(GUI$getActiveData())
-                    else GUI$getActiveData()[, v]
+                locVar <- if (v == "id") v else as.name(v)
 
                 matchVar <-
                     as.character(GUI$getActiveData()[, svalue(matchVar)])
@@ -518,7 +515,7 @@ iNZPlotModWin <- setRefClass(
                 ## Entire data set - ignore missing values etc etc
                 d <- data.frame(
                     x = .data[[curSet$x]],
-                    locate = locVar,
+                    locate = if (v == "id") 1:nrow(.data) else .data[[as.character(locVar)]],
                     id = seq_len(nrow(GUI$getActiveData())),
                     match = matchVar,
                     stringsAsFactors = TRUE
@@ -605,12 +602,12 @@ iNZPlotModWin <- setRefClass(
                         locSet$ID <<- unique(c(locSet$ID, o$id))
 
                     ## Grab the label:
-                    if (match.all) {
-                        ## Match all instances of the same label:
-                        pid <- which(matchVar == o[, 'match'])
-                    } else {
+                    # if (match.all) {
+                    #     ## Match all instances of the same label:
+                    #     pid <- which(matchVar == o[, 'match'])
+                    # } else {
                         pid <- o$id
-                    }
+                    # }
 
                     newID <-
                         if (svalue(txtLabs) | !match.all)
@@ -707,9 +704,7 @@ iNZPlotModWin <- setRefClass(
                         }
 
                         v <- svalue(varmenu)
-                        locVar <-
-                            if (v == "id") 1:nrow(GUI$getActiveData())
-                            else GUI$getActiveData()[, v]
+                        locVar <- if (v == "id") v else as.name(v)
 
                         updateEverything(
                             locate = if (svalue(txtLabs)) locVar else NULL,
@@ -742,9 +737,7 @@ iNZPlotModWin <- setRefClass(
 
                 updateMe <- function(h, ...) {
                     v <- svalue(varmenu)
-                    locVar <-
-                        if (v == "id") 1:nrow(GUI$getActiveData())
-                        else GUI$getActiveData()[, v]
+                    locVar <- if (v == "id") v else as.name(v)
                     updateEverything(
                         locate = if (svalue(txtLabs)) locVar else NULL,
                         id = NULL,
@@ -766,9 +759,7 @@ iNZPlotModWin <- setRefClass(
                     curSet$locate.extreme
                 addHandlerChanged(extN, handler = function(h, ...) {
                     v <- svalue(varmenu)
-                    locVar <-
-                        if (v == "id") 1:nrow(GUI$getActiveData())
-                        else GUI$getActiveData()[, v]
+                    locVar <- if (v == "id") v else as.name(v)
 
                     updateEverything(
                         locate = if (svalue(txtLabs)) locVar else NULL,
@@ -810,9 +801,7 @@ iNZPlotModWin <- setRefClass(
 
                 locSet$ID <<- ids
                 v <- svalue(varmenu)
-                locVar <-
-                    if (v == "id") 1:nrow(GUI$getActiveData())
-                    else GUI$getActiveData()[, v]
+                locVar <- if (v == "id") v else as.name(v)
 
                 if (svalue(matchChk)) {
                     mVar <-
@@ -865,9 +854,7 @@ iNZPlotModWin <- setRefClass(
                     }
 
                     v <- svalue(varmenu)
-                    locVar <-
-                        if (v == "id") 1:nrow(GUI$getActiveData())
-                        else GUI$getActiveData()[, v]
+                    locVar <- if (v == "id") v else as.name(v)
 
                     updateEverything(
                         locate = if (svalue(txtLabs)) locVar else NULL,
