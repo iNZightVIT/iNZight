@@ -34,7 +34,7 @@ r_github_packages:
   - iNZightVIT/iNZightTools@dev
   - iNZightVIT/iNZightTS@dev
   - iNZightVIT/iNZightMR@dev
-  - iNZightVIT/iNZightPlots@feature/code-writing
+  - iNZightVIT/iNZightPlots@code-and-interactive-refactor
   - iNZightVIT/iNZightModules@dev
 
 addons:
@@ -45,9 +45,6 @@ addons:
       - xorg-dev
       - libxml2-dev
       - libnlopt-dev
-      # - r-cran-rodbc
-      # - r-cran-rgtk2
-      # - r-cran-cairodevice
 
 before_install:
   - if [ "$TRAVIS_OS_NAME" == "osx" ]; then
