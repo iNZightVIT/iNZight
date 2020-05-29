@@ -408,7 +408,8 @@ mend_call <- function(call, gui) {
     dname <- iNZightTools::create_varname(dname)
     code <- as.character(call)
     code <- gsub(".dataset", dname, code, fixed = TRUE)
-    if (!is.null(call[[1]]$design)) {
+    # if (is.expression(call) && !is.null(call[[1]]$design)) {
+    if (any(grepl(".design", code, fixed = TRUE))) {
         code <- gsub("!!.design", ".design", code, fixed = TRUE)
         code <- gsub(".design", gui$getActiveDoc()$getModel()$dataDesignName,
             code,

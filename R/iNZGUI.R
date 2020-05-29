@@ -546,7 +546,12 @@ iNZGUI <- setRefClass(
                     return(invisible(NULL))
                 }
 
-                code <- mend_call(plot_call, .self)
+                if (is.null(attr(curPlot, "code"))) {
+                    code <- mend_call(plot_call, .self)
+                } else {
+                    code <- mend_call(attr(curPlot, "code"), .self)
+                }
+                attr(curPlot, "code") <<- code
 
                 # This will be moved to a separate function at some point ...
                 # rhistory$add(code, keep = FALSE)
@@ -557,7 +562,6 @@ iNZGUI <- setRefClass(
 
                 enabled(plotToolbar$exportplotBtn) <<- can.interact(rawpl)
                 plotType <<- attr(curPlot, "plottype")
-                attr(curPlot, "code") <<- code
                 return(invisible(rawpl))
             }
 
