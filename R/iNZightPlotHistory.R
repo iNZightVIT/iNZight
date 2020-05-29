@@ -35,25 +35,25 @@ iNZplothistory <- setRefClass(
   methods = list(
     initialize = function(gui) {
       initFields(
-        GUI = gui, 
-        history = list(), 
-        i = 0L, 
+        GUI = gui,
+        history = list(),
+        i = 0L,
         temp.dir = tempdir(),
         copy_chunk = FALSE
       )
     },
     add = function(plot, code = NULL, module = NULL) {
       i <<- i + 1
-      
+
       class(plot) <- c("gg", "ggplot")
-      
+
       if (!is.null(attr(plot, "plottype")) && attr(plot, "plottype") == "gg_gridplot") {
         tryCatch({
           ggplot2::ggsave(
             file.path(temp.dir, sprintf("plot%d.png", i)),
-            waffle::waffle(c(a = 3, b = 1), rows = 1) + ggplot2::theme_void(), 
-            width = 1.5, 
-            height = 1.5, 
+            waffle::waffle(c(a = 3, b = 1), rows = 1) + ggplot2::theme_void(),
+            width = 1.5,
+            height = 1.5,
             dpi = 50
           )
         })
@@ -61,14 +61,14 @@ iNZplothistory <- setRefClass(
         tryCatch({
           ggplot2::ggsave(
             file.path(temp.dir, sprintf("plot%d.png", i)),
-            plot + ggplot2::theme_void() + ggplot2::theme(legend.position="none", title = ggplot2::element_blank()), 
-            width = 1.5, 
-            height = 1.5, 
+            plot + ggplot2::theme_void() + ggplot2::theme(legend.position="none", title = ggplot2::element_blank()),
+            width = 1.5,
+            height = 1.5,
             dpi = 50
           )
         })
       }
-      
+
       if (is.null(attr(plot, "plottype")) || !grepl("^gg", attr(plot, "plottype"))) {
         if (is.null(code)) {
           attr(plot, "code_expr") <- rlang::parse_expr(paste(attr(plot, "code")[-1], collapse = " "))
@@ -79,7 +79,10 @@ iNZplothistory <- setRefClass(
           attr(plot, "data_name") <- "region.data"
         }
       }
-      
+
+      # ew but ...
+      ce <- mend_call(capture.output(print(attr(plot, "code_expr")$data)), GUI)
+      attr(plot, "code_expr")$data <- rlang::parse_expr(paste(ce, collapse = "\n"))
       new_item <- history_item(
         name = paste0("Plot ", i),
         code = paste0(attr(plot, "code"), collapse = "\n"),
@@ -88,8 +91,8 @@ iNZplothistory <- setRefClass(
         img = file.path(temp.dir, sprintf("plot%d.png", i)),
         id = i
       )
-      
-      
+
+
       history[[as.character(i)]] <<- new_item
     },
     show = function() {
@@ -104,7 +107,7 @@ iNZplothistory <- setRefClass(
       addHandlerChanged(as_chunk, function(h, ...) {
         copy_chunk <<- svalue(as_chunk)
       })
-      
+
       gWidgets2::add(w, g)
       gWidgets2::add(g, glabel("The following is a list of the plots you have stored"))
       gWidgets2::add(g, as_chunk)
@@ -119,7 +122,7 @@ iNZplothistory <- setRefClass(
       }))
       if (length(history) > 0) {
         plot_items <- lapply(names(history), function(i) plot_entry(history[[i]], window = w, i = i))
-      
+
         invisible(lapply(plot_items, gWidgets2::add, obj = plot_list, expand = TRUE, fill = "x"))
       } else {
         gWidgets2::add(plot_list, glabel("You haven't stored any plots yet - click the \"Store Code\" button in the plotting menu to keep a list \nof the plots you'd like the R code for"), anchor = c(0, 0), expand = TRUE, fill = TRUE)
@@ -138,21 +141,21 @@ iNZplothistory <- setRefClass(
         # print(eval_results)
         print(eval_results[[length(eval_results)]])
       })
-      
+
       # old_cursor <- getToolkitWidget(plot_image)$getWindow()$getCursor()
       hover <- gdkCursorNew("GDK_HAND1")
-      
+
       addHandler(plot_image, "enter-notify-event", handler=function(h,...) {
         getToolkitWidget(plot_image)$getWindow()$setCursor(hover)
         TRUE
       })
-      
-      
+
+
       addHandler(plot_image, "leave-notify-event", handler=function(h,...) {
         getToolkitWidget(plot_image)$getWindow()$setCursor(gdkCursorNew("GDK_LEFT_PTR"))
         TRUE
       })
-      
+
       plot_group[1:2, 1] <- plot_image
       plot_group[1:2, 2, fill = "x", anchor = c(-1, 0)] <- gedit(item$name, handler = function(h, ...) {
         history[[i]]$name <<- svalue(h$obj)
@@ -175,7 +178,7 @@ iNZplothistory <- setRefClass(
           gWidgets2::add(plot_list, glabel("You haven't stored any plots yet - click the \"Store Code\" button in the plotting menu to keep a list \nof the plots you'd like the R code for"), anchor = c(0, 0), expand = TRUE, fill = TRUE)
         }
       })
-      
+
       plot_group
     },
     submitCode = function() {
@@ -184,26 +187,26 @@ iNZplothistory <- setRefClass(
         lines_containing_library <- unlist(lapply(which_libraries, function(x) x > 0))
         libraries <- unlist(lapply(regmatches(expr, which_libraries), function(x) if (length(x) > 0 && x[1] == "library") x[2]))
         new_expr <- expr[!lines_containing_library]
-        
+
         list(
           expr = new_expr,
           libraries = libraries
         )
       }
-      
+
       code_text <- parse(text = svalue(code_box))
       parsed <- find_libraries(code_text)
-      
+
       # if (is.null(module)) {
         eval_env <- rlang::env(!!rlang::sym(attr(GUI$getActiveData(), "name")) := GUI$getActiveData())
       # } else {
       #   eval_env <- rlang::env(region.data := module$combinedData[['region.data']])
       # }
-      
+
       if (length(parsed$libraries) > 0) {
         code_text <- with_packages(parsed$libraries, parsed$expr)
       }
-      
+
       eval_results <- eval(code_text, envir = eval_env)
       print(eval_results)
     }
