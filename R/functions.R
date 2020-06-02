@@ -198,7 +198,7 @@ modifyList <- function (x, val, keep.null = FALSE)
 `%notin%` <- function(x, table) !(x %in% table)
 
 ## THIS SHOULD HAPPEN IN INZIGHTPLOTS
-construct_call <- function(settings, model,
+construct_call <- function(settings, model, vartypes,
                            data = quote(.dataset),
                            design = quote(!!.design),
                            what = c("plot", "summary", "inference")) {
@@ -406,6 +406,25 @@ mend_call <- function(call, gui) {
             ifelse(activeDoc == 1, "", activeDoc)
         )
     dname <- iNZightTools::create_varname(dname)
+
+    if (is.expression(call)) {
+        print(call)
+        ## and remove invalid vars (for plot_type/method combination)
+        cnames <- names(call[[1]])
+        print(cnames)
+        keep <- iNZightPlots:::valid_par(
+            cnames,
+            attr(gui$curPlot, "plottype"),
+            switch(as.character(call[[1]])[1],
+                "iNZPlot" = "plot",
+                "iNZSummary" = "summary",
+                "iNZInference" = "inference"
+            )
+        )
+        print(keep)
+        call[[1]] <- call[[1]][keep]
+    }
+
     code <- as.character(call)
     code <- gsub(".dataset", dname, code, fixed = TRUE)
     # if (is.expression(call) && !is.null(call[[1]]$design)) {

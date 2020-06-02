@@ -489,10 +489,15 @@ iNZGUI <- setRefClass(
                 e$.design <- .design
 
                 ## Suppress the warnings produced by iNZightPlot ...
-                dop <- try({0
+                dop <- try({
                     ## Generate the plot ... and update the interaction button
-                    plot_call <- construct_call(curPlSet, curMod)
-                    # print(plot_call)
+                    vartypes <- list(
+                        x = iNZightTools::vartype(.dataset[[curPlSet$x]]),
+                        y = NULL
+                    )
+                    if (!is.null(curPlSet$y))
+                        vartypes$y <- iNZightTools::vartype(.dataset[[curPlSet$y]])
+                    plot_call <- construct_call(curPlSet, curMod, vartypes)
                     rawpl <- eval(plot_call, e)
                     curPlot <<- unclass(rawpl)
                     if (allow.redraw & !is.null(attr(curPlot, "dotplot.redraw")))
