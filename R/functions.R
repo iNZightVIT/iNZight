@@ -408,10 +408,8 @@ mend_call <- function(call, gui) {
     dname <- iNZightTools::create_varname(dname)
 
     if (is.expression(call)) {
-        print(call)
         ## and remove invalid vars (for plot_type/method combination)
         cnames <- names(call[[1]])
-        print(cnames)
         keep <- iNZightPlots:::valid_par(
             cnames,
             attr(gui$curPlot, "plottype"),
@@ -421,7 +419,6 @@ mend_call <- function(call, gui) {
                 "iNZInference" = "inference"
             )
         )
-        print(keep)
         call[[1]] <- call[[1]][keep]
     }
 
