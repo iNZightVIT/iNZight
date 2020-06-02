@@ -129,8 +129,13 @@ iNZGetSummary <- setRefClass(
 
             # This will, at some stage, fetch values from the CODE CALL
             # when it is modified by the user ... and update curSet ... =]
-
-            construct_call(curSet, curMod,
+            vartypes <- list(
+                x = iNZightTools::vartype(GUI$getActiveData()[[curSet$x]]),
+                y = NULL
+            )
+            if (!is.null(curSet$y))
+                vartypes$y <- iNZightTools::vartype(GUI$getActiveData()[[curSet$y]])
+            construct_call(curSet, curMod, vartypes,
                 data = as.name(dataname),
                 what = "summary"
             )
@@ -365,7 +370,13 @@ iNZGetInference <- setRefClass(
 
             # This will, at some stage, fetch values from the CODE CALL
             # when it is modified by the user ... and update curSet ... =]
-            construct_call(curSet, curMod,
+            vartypes <- list(
+                x = iNZightTools::vartype(GUI$getActiveData()[[curSet$x]]),
+                y = NULL
+            )
+            if (!is.null(curSet$y))
+                vartypes$y <- iNZightTools::vartype(GUI$getActiveData()[[curSet$y]])
+            construct_call(curSet, curMod, vartypes,
                 data = as.name(dataname),
                 what = "inference"
             )
