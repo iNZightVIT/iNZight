@@ -187,10 +187,10 @@ iNZPlotModWin <- setRefClass(
               plot_history <<- GUI$initializePlotHistory()
 
 
-                modwin <- GUI$initializeModuleWindow(scroll = FALSE)
-                mainGrp <- modwin$body
+                modWin <<- GUI$initializeModuleWindow(scroll = FALSE)
+                mainGrp <- modWin$body
 
-                topGrp <- modwin$header
+                topGrp <- modWin$header
                 lbl <- glabel("Add to Plot :")
                 font(lbl) <- list(weight="bold",
                                   family = "sans",
@@ -229,7 +229,7 @@ iNZPlotModWin <- setRefClass(
                     visible(updateBtn) <- !svalue(h$obj)
                 })
 
-                btnGrp <- modwin$footer
+                btnGrp <- modWin$footer
 
                 helpButton <- gbutton("Help",
                     expand = TRUE,
