@@ -396,6 +396,23 @@ iNZGetInference <- setRefClass(
             if (inherits(smry, "try-error")) smry <- "Unable to generate inference."
             svalue(info_text) <<- paste(smry, collapse = "\n")
             font(info_text) <<- info_font
+
+            # disable simulate p-value checkbox if expected counts small
+            if (!is.null(hyp_simulatep)) {
+                exp_match <- any(grepl("since some expected counts <", smry, fixed = TRUE))
+                if (enabled(hyp_simulatep) && exp_match) {
+                    blockHandlers(hyp_simulatep)
+                    hyp_simulatep$set_value(TRUE)
+                    enabled(hyp_simulatep) <<- FALSE
+                    unblockHandlers(hyp_simulatep)
+                }
+                if (!enabled(hyp_simulatep) && !exp_match) {
+                    blockHandlers(hyp_simulatep)
+                    hyp_simulatep$set_value(FALSE)
+                    enabled(hyp_simulatep) <<- TRUE
+                    unblockHandlers(hyp_simulatep)
+                }
+            }
         },
         setup_panel = function() {
             ## this depends on the type of analysis going on
