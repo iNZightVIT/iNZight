@@ -410,9 +410,17 @@ mend_call <- function(call, gui) {
     if (is.expression(call)) {
         ## and remove invalid vars (for plot_type/method combination)
         cnames <- names(call[[1]])
+        ptype <- attr(gui$curPlot, "plottype")
+        if (ptype == "bar") {
+            vnames <- attr(gui$curPlot, "varnames")
+            vtypes <- attr(gui$curPlot, "vartypes")
+            xcat <- vtypes[[vnames$x]] == "factor"
+            ycat <- !is.null(vnames$y) && vtypes[[vnames$y]] == "factor"
+            if (xcat && ycat) ptype <- "bar2"
+        }
         keep <- iNZightPlots:::valid_par(
             cnames,
-            attr(gui$curPlot, "plottype"),
+            ptype,
             switch(as.character(call[[1]])[1],
                 "iNZPlot" = "plot",
                 "iNZSummary" = "summary",
