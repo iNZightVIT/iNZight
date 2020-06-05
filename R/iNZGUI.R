@@ -82,8 +82,7 @@ iNZGUI <- setRefClass(
         initializeGui = function(
             data = NULL,
             disposeR = FALSE,
-            addonDir = NULL,
-            code_env = new.env()
+            addonDir = NULL
         ) {
             "Initiates the GUI"
             iNZDocuments <<- list(iNZDocument$new(data = data))
@@ -286,6 +285,7 @@ iNZGUI <- setRefClass(
             statusbar <<- gstatusbar("iNZight is ready")# , container = win) ## disabled
 
             plot_history <<- NULL
+            code_env <<- new.env()
 
             invisible(0)
         }, ## end initialization
