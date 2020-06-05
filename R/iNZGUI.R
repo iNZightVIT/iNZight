@@ -65,7 +65,7 @@ iNZGUI <- setRefClass(
             ## This will be used to store the dataset, design, etc..
             ## rather than passing around the full object.
             code_env = "ANY",
-            code_panel = "ANY", code_input = "ANY"
+            code_panel = "ANY"
         ),
         prototype = list(
             activeDoc = 1,
@@ -258,18 +258,9 @@ iNZGUI <- setRefClass(
 
 
             ## code panel for latest R function call
-            ## - this will become a new widget/RC
-            code_panel <<- ggroup()
-            code_input <<- gtext("",
-                container = code_panel,
-                expand = TRUE,
-                font.attr = list(family = "monospace")
-            )
-
-            if (preferences$dev.features) {
-                add(gtop, code_panel, fill = TRUE)
-                size(code_panel) <<- c(-1, 80)
-            }
+            code_panel <<- iNZCodePanel$new(.self)
+            if (preferences$dev.features)
+                add(gtop, code_panel$panel, fill = TRUE)
 
             visible(win) <<- TRUE
 
@@ -562,8 +553,7 @@ iNZGUI <- setRefClass(
                 # rhistory$add(code, keep = FALSE)
                 # rhistory$update()
                 # print(code)
-                svalue(code_input) <<- ""
-                insert(code_input, code, font.attr = list(family = "monospace"))
+                code_panel$set_input(code)
 
                 enabled(plotToolbar$exportplotBtn) <<- can.interact(rawpl)
                 plotType <<- attr(curPlot, "plottype")
