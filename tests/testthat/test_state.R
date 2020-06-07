@@ -28,8 +28,8 @@ test_that("Application state can be saved", {
 test_that("Application state can be loaded", {
     ui <- iNZGUI$new()
     ui$initializeGui()
-    Sys.sleep(2)
     on.exit(gWidgets2::dispose(ui$win))
+    Sys.sleep(2)
 
     ui$loadState(tmp, .alert = FALSE)
     Sys.sleep(5)

@@ -8,6 +8,7 @@ moduledir <- file.path(getwd(), "modules")
 # try(ui$close())
 ui <- iNZGUI$new()
 ui$initializeGui(iris, addonDir = moduledir)
+on.exit(gWidgets2::dispose(ui$win))
 
 test_that("Modules loaded into menu", {
     advmenu <- svalue(ui$menuBarWidget$menubar)$Advanced
@@ -37,5 +38,3 @@ test_that("Add/remove modules window", {
     # expect_is(addrm, "GAction")
     ## more tests later
 })
-
-ui$close()
