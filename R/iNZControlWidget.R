@@ -442,7 +442,7 @@ iNZControlWidget <- setRefClass(
             G2box$set_items(c(G2box$get_items()[1], datavars))
             G2box$set_value(GUI$ctrlWidget$G2box$get_items()[g2])
         },
-        createSlider = function(pos, dropdata) {
+        createSlider = function(pos, dropdata, index = 1L) {
             ## make sure there is no slider at the pos
             deleteSlider(pos)
 
@@ -458,8 +458,7 @@ iNZControlWidget <- setRefClass(
             else
                 lev <- c("_ALL", levels(grpData), "_MULTI")
             lev <- factor(lev, levels = lev)
-            slider <- gslider(from = lev,
-                              value = 1)
+            slider <- gslider(from = lev, value = index)
 
             #add(sliderGrp, slider, expand = FALSE)
             if (pos == 6)
