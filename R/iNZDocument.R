@@ -275,15 +275,14 @@ iNZPlotSettings <- setRefClass(
             }
 
             if (reset)
-                setList <- modifyList(setList,
-                                      defaultSettings,
-                                      keep.null = TRUE)
-            settings <<- modifyList(settings, setList,
-                                    keep.null = TRUE)
+                setList <- modifyList(setList, defaultSettings, keep.null = TRUE)
+
+            settings <<- modifyList(settings, setList, keep.null = TRUE)
             defaultSettings <<- modifyList(
                 defaultSettings,
                 extractDefaults(settings),
-                keep.null = TRUE)
+                keep.null = TRUE
+            )
         },
         ## reset the plot settings (except the data fields)
         resetSettings = function() {

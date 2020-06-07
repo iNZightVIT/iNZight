@@ -339,25 +339,6 @@ construct_call <- function(settings, model, vartypes,
     if (what == "plot") {
         ## things unique to plots
 
-
-        ## Locator:
-        #### if nothing being located, no need to pass "order.first" setting
-        # if (is.null(settings$locate) || is.null(settings$locate.id) ||
-        #     length(settings$locate.id) == 0 ||
-        #     highlight
-        ## actually I think this will do ...
-        # if (!is.null(settings$plot.features$order.first) &&
-        #     is.null(settings$locate) &&
-        #     is.null(settings$locate.id) &&
-        #     is.null(settings$hightlight)) {
-
-        #     plopt <- settings$plot.features
-        #     plopt$order.first <- NULL
-        #     plopt <- modifyList(list(), plopt)
-        #     if (length(plopt) == 0) plopt <- NULL
-        #     settings$plot.features <- plopt
-        # }
-
     } else {
         ## things unique to summary/inference
 
