@@ -542,19 +542,13 @@ iNZGUI <- setRefClass(
                     return(invisible(NULL))
                 }
 
-                if (is.null(attr(curPlot, "code"))) {
-                    code <- mend_call(plot_call, .self)
-                } else {
-                    code <- mend_call(attr(curPlot, "code"), .self)
+                if (!is.null(attr(curPlot, "code"))) {
+                    attr(curPlot, "gg_code") <<- mend_call(attr(curPlot, "code"), .self)
                 }
+                code <- mend_call(plot_call, .self)
                 attr(curPlot, "code") <<- code
 
-                # This will be moved to a separate function at some point ...
-                # rhistory$add(code, keep = FALSE)
-                # rhistory$update()
-                # print(code)
                 code_panel$set_input(code)
-
                 enabled(plotToolbar$exportplotBtn) <<- can.interact(rawpl)
                 plotType <<- attr(curPlot, "plottype")
                 return(invisible(rawpl))

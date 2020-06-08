@@ -71,7 +71,7 @@ iNZplothistory <- setRefClass(
 
       if (is.null(attr(plot, "plottype")) || !grepl("^gg", attr(plot, "plottype"))) {
         if (is.null(code)) {
-          attr(plot, "code_expr") <- rlang::parse_expr(paste(attr(plot, "code")[-1], collapse = " "))
+          attr(plot, "code_expr") <- rlang::parse_expr(paste(attr(plot, "gg_code")[-1], collapse = " "))
           attr(plot, "data_name") <- "map.data"
         } else {
           attr(plot, "code") <- code
@@ -85,7 +85,7 @@ iNZplothistory <- setRefClass(
       attr(plot, "code_expr")$data <- rlang::parse_expr(paste(ce, collapse = "\n"))
       new_item <- history_item(
         name = paste0("Plot ", i),
-        code = paste0(attr(plot, "code"), collapse = "\n"),
+        code = paste0(attr(plot, "gg_code"), collapse = "\n"),
         expr = attr(plot, "code_expr"),
         data_name = attr(plot, "data_name"),
         img = file.path(temp.dir, sprintf("plot%d.png", i)),
@@ -137,6 +137,7 @@ iNZplothistory <- setRefClass(
         # } else {
         #   eval_env <- rlang::env(region.data := module$combinedData[['region.data']])
         # }
+        GUI$code_panel$input$set_value("")
         eval_results <- lapply(item$expr, eval, envir = eval_env)
         # print(eval_results)
         print(eval_results[[length(eval_results)]])

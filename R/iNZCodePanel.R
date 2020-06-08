@@ -64,6 +64,8 @@ iNZCodePanel <- setRefClass(
             font(run_btn) <<- list(size = 9)
             font(reset_btn) <<- list(size = 9)
 
+            addHandlerChanged(input, .self$input_handler)
+            addHandlerKeystroke(input, .self$input_handler)
             enabled(store_btn) <<- enabled(run_btn) <<- enabled(reset_btn) <<-
                 svalue(input) != ""
 
@@ -118,7 +120,8 @@ iNZCodePanel <- setRefClass(
                     print(rawpl)
                 }
 
-                if (!inherits(rawpl, "inzplotoutput")) break
+                if (!grepl("^iNZPlot", svalue(input))) break
+                # if (!inherits(rawpl, "inzplotoutput")) break
 
                 curpl <- unclass(rawpl)
                 if (!is.null(attr(curpl, "dotplot.redraw")))
@@ -227,18 +230,20 @@ iNZCodePanel <- setRefClass(
                 if (length(call_set)) {
                     # determine settings relevant to this plot, but not set
                     # and remove them from settings (set to NULL)
-                    pargs <- iNZightPlots:::plot_types[, attr(rawpl, "plottype")]
-                    pargs <- names(pargs[grepl("p", pargs)])
-                    def_args <- structure(
-                        vector("list", length(pargs)),
-                        .Names = pargs
-                    )
+                    if (!is.null(attr(rawpl, "plottype")) &&
+                        attr(rawpl, "plottype") %in% colnames(iNZightPlots:::plot_types)) {
+                        pargs <- iNZightPlots:::plot_types[, attr(rawpl, "plottype")]
+                        pargs <- names(pargs[grepl("p", pargs)])
+                        def_args <- structure(
+                            vector("list", length(pargs)),
+                            .Names = pargs
+                        )
+                        call_set <- modifyList(def_args, call_set, keep.null = TRUE)
+                    }
 
                     GUI$getActiveDoc()$plotSettings$.changed$block()
                     GUI$getActiveDoc()$plotSettings$.settingsChanged$block()
-                    GUI$getActiveDoc()$setSettings(
-                        modifyList(def_args, call_set, keep.null = TRUE)
-                    )
+                    GUI$getActiveDoc()$setSettings(call_set)
                     GUI$getActiveDoc()$plotSettings$.changed$unblock()
                     GUI$getActiveDoc()$plotSettings$.settingsChanged$unblock()
                 }
@@ -255,6 +260,9 @@ iNZCodePanel <- setRefClass(
                                 envir = GUI$code_env
                             )
                         )
+                if ( !is.null( attr(GUI$curPlot, "code") ) ) {
+                    attr(GUI$curPlot, "gg_code") <<- attr(GUI$curPlot, "code")
+                }
                 attr(GUI$curPlot, "code") <<- svalue(input)
                 enabled(GUI$plotToolbar$exportplotBtn) <<- can.interact(rawpl)
                 GUI$plotType <<- attr(GUI$curPlot, "plottype")
@@ -263,6 +271,10 @@ iNZCodePanel <- setRefClass(
         reset_code = function() {
             set_input(original_code)
             run_code()
+        },
+        input_handler = function(h, ...) {
+            enabled(store_btn) <<- enabled(run_btn) <<- enabled(reset_btn) <<-
+                svalue(input) != ""
         }
     )
 )
