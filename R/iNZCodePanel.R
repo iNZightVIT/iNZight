@@ -103,156 +103,162 @@ iNZCodePanel <- setRefClass(
                     )
                 },
                 error = function(e) {
-                    cat("There was an error ... \n")
-                    print(e)
-                },
-                finally = {
-                    if (inherits(rawpl, "ggplot")) {
-                        print(rawpl)
+                    gmessage(
+                        sprintf("There was an error in your plot code:\n\n%s", e$message),
+                        title = "Error",
+                        icon = "error",
+                        parent = GUI$win
+                    )
+                }
+            )
+
+            if (exists("rawpl")) {
+
+                if (inherits(rawpl, "ggplot")) {
+                    print(rawpl)
+                }
+
+                if (!inherits(rawpl, "inzplotoutput")) break
+
+                curpl <- unclass(rawpl)
+                if (!is.null(attr(curpl, "dotplot.redraw")))
+                    if (attr(curpl, "dotplot.redraw"))
+                        rawpl <- eval(
+                            parse(text = svalue(input)),
+                            envir = GUI$code_env
+                        )
+
+                # update settings .....
+                pcall <- as.list(as.call(parse(text = svalue(input)))[[1]])[-1]
+
+                # first term is x/y
+                call_xy <- as.list(pcall[[1]])
+                pcall <- pcall[-1]
+                vars <- list(
+                    x = NULL,
+                    y = NULL,
+                    g1 = NULL, g1.level = NULL,
+                    g2 = NULL, g2.level = NULL
+                )
+
+                if (length(call_xy) == 1) {
+                    # just a single variable
+                    vars$x <- as.character(call_xy[[1]])
+                } else {
+                    # a more complex formula
+                    vars$x <- as.character(call_xy[[2]])
+                    call_yg <- as.list(call_xy[[3]])
+                    if (length(call_yg) == 1) {
+                        # no subsetting
+                        vars$y <- as.character(call_yg[[1]])
+                    } else {
+                        if (as.character(call_yg[[2]]) != ".") {
+                            vars$y <- as.character(call_yg[[2]])
+                        }
+                        call_g <- call_yg[[3]]
+                        if (length(call_g) == 1) {
+                            # just one subset
+                            vars$g1 <- as.character(call_g)
+                        } else {
+                            # two subsets
+                            vars$g1 <- as.character(call_g[[2]])
+                            vars$g2 <- as.character(call_g[[3]])
+                        }
+                    }
+                }
+
+                # g1.level and g2.level -> depend on g1 and g2
+                if (!is.null(pcall$g1.level) && !is.null(vars$g1)) {
+                    vars$g1.level <- as.character(pcall$g1.level)
+                }
+                if (!is.null(pcall$g2.level) && !is.null(vars$g2) && !is.null(vars$g1)) {
+                    vars$g2.level <- as.character(pcall$g2.level)
+                }
+
+                # update control widget
+                if (!is.null(vars$x)) {
+                    blockHandlers(GUI$ctrlWidget$V1box)
+                    GUI$ctrlWidget$V1box$set_value(vars$x)
+                    unblockHandlers(GUI$ctrlWidget$V1box)
+                    vars$x <- as.name(vars$x)
+
+                    if (!is.null(vars$y)) {
+                        blockHandlers(GUI$ctrlWidget$V2box)
+                        GUI$ctrlWidget$V2box$set_value(vars$y)
+                        unblockHandlers(GUI$ctrlWidget$V2box)
+                        vars$y <- as.name(vars$y)
                     }
 
-                    if (!inherits(rawpl, "inzplotoutput")) break
+                    if (!is.null(vars$g1)) {
+                        blockHandlers(GUI$ctrlWidget$G1box)
+                        GUI$ctrlWidget$G1box$set_value(vars$g1)
+                        unblockHandlers(GUI$ctrlWidget$G1box)
 
-                    curpl <- unclass(rawpl)
-                    if (!is.null(attr(curpl, "dotplot.redraw")))
-                        if (attr(curpl, "dotplot.redraw"))
+                        vindex <- 1L
+                        if (!is.null(vars$g1.level) && vars$g1.level != "_MULTI") {
+                            vindex <- vars$g1.level
+                        }
+                        GUI$ctrlWidget$createSlider(pos = 6, vars$g1, vindex)
+                        vars$g1 <- as.name(vars$g1)
+                    }
+
+                    if (!is.null(vars$g2)) {
+                        blockHandlers(GUI$ctrlWidget$G2box)
+                        GUI$ctrlWidget$G2box$set_value(vars$g2)
+                        unblockHandlers(GUI$ctrlWidget$G2box)
+
+                        vindex <- 1L
+                        if (!is.null(vars$g2.level) && vars$g2.level != "_ALL") {
+                            if (vars$g2.level != "_MULTI") {
+                                vindex <- vars$g2.level
+                            } else {
+                                lvls <- levels(GUI$getActiveData()[[vars$g2]])
+                                vindex <- length(lvls) + 1L
+                            }
+                        }
+                        GUI$ctrlWidget$createSlider(pos = 8, vars$g2, vindex)
+                        vars$g2 <- as.name(vars$g2)
+                    }
+                }
+
+                # remove data/design
+                call_set <- pcall[names(pcall) %notin% c("data", "design", "g1.level", "g2.level")]
+                call_set <- c(vars, call_set)
+                if (length(call_set)) {
+                    # determine settings relevant to this plot, but not set
+                    # and remove them from settings (set to NULL)
+                    pargs <- iNZightPlots:::plot_types[, attr(rawpl, "plottype")]
+                    pargs <- names(pargs[grepl("p", pargs)])
+                    def_args <- structure(
+                        vector("list", length(pargs)),
+                        .Names = pargs
+                    )
+
+                    GUI$getActiveDoc()$plotSettings$.changed$block()
+                    GUI$getActiveDoc()$plotSettings$.settingsChanged$block()
+                    GUI$getActiveDoc()$setSettings(
+                        modifyList(def_args, call_set, keep.null = TRUE)
+                    )
+                    GUI$getActiveDoc()$plotSettings$.changed$unblock()
+                    GUI$getActiveDoc()$plotSettings$.settingsChanged$unblock()
+                }
+
+                ### This can be activated once the UI can be reconfigured based on
+                ### what the user types ... if ever!!
+                GUI$curPlot <<- unclass(rawpl)
+
+                if (!is.null(attr(GUI$curPlot, "dotplot.redraw")))
+                    if (attr(GUI$curPlot, "dotplot.redraw"))
+                        GUI$curPlot <<- unclass(
                             rawpl <- eval(
                                 parse(text = svalue(input)),
                                 envir = GUI$code_env
                             )
-
-                    # update settings .....
-                    pcall <- as.list(as.call(parse(text = svalue(input)))[[1]])[-1]
-
-                    # first term is x/y
-                    call_xy <- as.list(pcall[[1]])
-                    pcall <- pcall[-1]
-                    vars <- list(
-                        x = NULL,
-                        y = NULL,
-                        g1 = NULL, g1.level = NULL,
-                        g2 = NULL, g2.level = NULL
-                    )
-
-                    if (length(call_xy) == 1) {
-                        # just a single variable
-                        vars$x <- as.character(call_xy[[1]])
-                    } else {
-                        # a more complex formula
-                        vars$x <- as.character(call_xy[[2]])
-                        call_yg <- as.list(call_xy[[3]])
-                        if (length(call_yg) == 1) {
-                            # no subsetting
-                            vars$y <- as.character(call_yg[[1]])
-                        } else {
-                            if (as.character(call_yg[[2]]) != ".") {
-                                vars$y <- as.character(call_yg[[2]])
-                            }
-                            call_g <- call_yg[[3]]
-                            if (length(call_g) == 1) {
-                                # just one subset
-                                vars$g1 <- as.character(call_g)
-                            } else {
-                                # two subsets
-                                vars$g1 <- as.character(call_g[[2]])
-                                vars$g2 <- as.character(call_g[[3]])
-                            }
-                        }
-                    }
-
-                    # g1.level and g2.level -> depend on g1 and g2
-                    if (!is.null(pcall$g1.level) && !is.null(vars$g1)) {
-                        vars$g1.level <- as.character(pcall$g1.level)
-                    }
-                    if (!is.null(pcall$g2.level) && !is.null(vars$g2) && !is.null(vars$g1)) {
-                        vars$g2.level <- as.character(pcall$g2.level)
-                    }
-
-                    # update control widget
-                    if (!is.null(vars$x)) {
-                        blockHandlers(GUI$ctrlWidget$V1box)
-                        GUI$ctrlWidget$V1box$set_value(vars$x)
-                        unblockHandlers(GUI$ctrlWidget$V1box)
-                        vars$x <- as.name(vars$x)
-
-                        if (!is.null(vars$y)) {
-                            blockHandlers(GUI$ctrlWidget$V2box)
-                            GUI$ctrlWidget$V2box$set_value(vars$y)
-                            unblockHandlers(GUI$ctrlWidget$V2box)
-                            vars$y <- as.name(vars$y)
-                        }
-
-                        if (!is.null(vars$g1)) {
-                            blockHandlers(GUI$ctrlWidget$G1box)
-                            GUI$ctrlWidget$G1box$set_value(vars$g1)
-                            unblockHandlers(GUI$ctrlWidget$G1box)
-
-                            vindex <- 1L
-                            if (!is.null(vars$g1.level) && vars$g1.level != "_MULTI") {
-                                vindex <- vars$g1.level
-                            }
-                            GUI$ctrlWidget$createSlider(pos = 6, vars$g1, vindex)
-                            vars$g1 <- as.name(vars$g1)
-                        }
-
-                        if (!is.null(vars$g2)) {
-                            blockHandlers(GUI$ctrlWidget$G2box)
-                            GUI$ctrlWidget$G2box$set_value(vars$g2)
-                            unblockHandlers(GUI$ctrlWidget$G2box)
-
-                            vindex <- 1L
-                            if (!is.null(vars$g2.level) && vars$g2.level != "_ALL") {
-                                if (vars$g2.level != "_MULTI") {
-                                    vindex <- vars$g2.level
-                                } else {
-                                    lvls <- levels(GUI$getActiveData()[[vars$g2]])
-                                    vindex <- length(lvls) + 1L
-                                }
-                            }
-                            GUI$ctrlWidget$createSlider(pos = 8, vars$g2, vindex)
-                            vars$g2 <- as.name(vars$g2)
-                        }
-                    }
-
-                    # remove data/design
-                    call_set <- pcall[names(pcall) %notin% c("data", "design", "g1.level", "g2.level")]
-                    call_set <- c(vars, call_set)
-                    if (length(call_set)) {
-                        # determine settings relevant to this plot, but not set
-                        # and remove them from settings (set to NULL)
-                        pargs <- iNZightPlots:::plot_types[, attr(rawpl, "plottype")]
-                        pargs <- names(pargs[grepl("p", pargs)])
-                        def_args <- structure(
-                            vector("list", length(pargs)),
-                            .Names = pargs
                         )
-
-                        GUI$getActiveDoc()$plotSettings$.changed$block()
-                        GUI$getActiveDoc()$plotSettings$.settingsChanged$block()
-                        GUI$getActiveDoc()$setSettings(
-                            modifyList(def_args, call_set, keep.null = TRUE)
-                        )
-                        GUI$getActiveDoc()$plotSettings$.changed$unblock()
-                        GUI$getActiveDoc()$plotSettings$.settingsChanged$unblock()
-                    }
-
-                    ### This can be activated once the UI can be reconfigured based on
-                    ### what the user types ... if ever!!
-                    GUI$curPlot <<- unclass(rawpl)
-
-                    if (!is.null(attr(GUI$curPlot, "dotplot.redraw")))
-                        if (attr(curPlot, "dotplot.redraw"))
-                            GUI$curPlot <<- unclass(
-                                rawpl <- eval(
-                                    parse(text = svalue(input)),
-                                    envir = GUI$code_env
-                                )
-                            )
-                    attr(GUI$curPlot, "code") <<- svalue(input)
-                    enabled(GUI$plotToolbar$exportplotBtn) <<- can.interact(rawpl)
-                    GUI$plotType <<- attr(GUI$curPlot, "plottype")
-                }
-            )
+                attr(GUI$curPlot, "code") <<- svalue(input)
+                enabled(GUI$plotToolbar$exportplotBtn) <<- can.interact(rawpl)
+                GUI$plotType <<- attr(GUI$curPlot, "plottype")
+            }
         },
         reset_code = function() {
             set_input(original_code)
