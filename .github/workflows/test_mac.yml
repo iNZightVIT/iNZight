@@ -50,3 +50,9 @@ jobs:
         PKG_CONFIG_PATH: /Library/Frameworks/GTK+.framework/Resources/lib/pkgconfig:$PKG_CONFIG_PATH
         CPPFLAGS: -I/opt/X11/include
       shell: Rscript {0}
+
+    # - name: Run RGtk2
+    #   shell: Rscript {0}
+    #   run: |
+    #     library(RGtk2)
+    #     gtkHScaleNewWithRange(0, 5, 1)
