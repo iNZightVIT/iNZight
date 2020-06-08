@@ -10,6 +10,10 @@ init:
 install:
   ps: Bootstrap
 
+branches:
+  except:
+    - gh-actions
+
 cache:
  - c:\RLibrary
 

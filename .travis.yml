@@ -12,6 +12,10 @@ pandoc: false
 services:
   - xvfb
 
+branches:
+  except:
+    - gh-actions
+
 matrix:
   include:
     - os: linux
