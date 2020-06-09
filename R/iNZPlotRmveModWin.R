@@ -367,5 +367,48 @@ plot_modifications <- list(
             (attr(plot, "plottype") %in% c("scatter")) + 1L
         },
         default = list(sizeby = NULL, varnames = list(sizeby = NULL))
+    ),
+    trend = list(
+        text = "Remove trend curves",
+        remove = function(settings, plot) {
+            if (is.null(settings$trend)) return(0L)
+            (attr(plot, "plottype") %in% c("scatter", "grid", "hex")) + 1L
+        }
+    ),
+    LOE = list(
+        text = "Remove y = x line",
+        remove = function(settings, plot) {
+            if (is.null(settings$trend)) return(0L)
+            (attr(plot, "plottype") %in% c("scatter", "grid", "hex")) + 1L
+        }
+    ),
+    smooth = list(
+        text = "Remove smoothers",
+        remove = function(settings, plot) {
+            if (settings$smooth == 0 && is.null(settings$quant.smooth)) return(0L)
+            (attr(plot, "plottype") %in% c("scatter", "grid", "hex")) + 1L
+        },
+        default = list(smooth = 0, quant.smooth = NULL)
+    ),
+    jitter = list(
+        text = "Remove jitter",
+        remove = function(settings, plot) {
+            if (settings$jitter == "") return(0L)
+            (attr(plot, "plottype") %in% c("scatter")) + 1L
+        }
+    ),
+    rugs = list(
+        text = "Remove rugs",
+        remove = function(settings, plot) {
+            if (settings$jitter == "") return(0L)
+            (attr(plot, "plottype") %in% c("scatter")) + 1L
+        }
+    ),
+    join = list(
+        text = "Remove connecting lines",
+        remove = function(settings, plot) {
+            if (settings$join) return(0L)
+            (attr(plot, "plottype") %in% c("scatter")) + 1L
+        }
     )
 )
