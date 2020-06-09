@@ -6,11 +6,115 @@ iNZPlotRmveModWin <- setRefClass(
     fields = list(
         GUI = "ANY",
         curSet = "ANY", ## the current plot settings
-        defSet = "ANY" ## the default plot settings
-        ),
+        defSet = "ANY", ## the default plot settings
+        add_cur = "list",
+        add_other = "list",
+        g_cur = "ANY",
+        g_other = "ANY",
+        rmvBtn = "ANY"
+    ),
     methods = list(
         initialize = function(gui = NULL, new = TRUE) {
             initFields(GUI = gui)
+
+            curSet <<- GUI$getActiveDoc()$getSettings()
+            defSet <<- iNZightPlots:::inzpar()
+
+            additions <- lapply(names(plot_modifications),
+                function(name) {
+                    x <- plot_modifications[[name]]
+                    list(
+                        text = if (is.character(x$text)) x$text else x$text(curSet),
+                        remove =
+                            if (is.null(x$remove)) as.integer(!is.null(curSet[[name]]))
+                            else x$remove(curSet, GUI$curPlot),
+                        default =
+                            if (is.null(x$default)) structure(list(defSet[[name]]), .Names = name)
+                            else x$default
+                    )
+                }
+            )
+            add_cur <<- additions[sapply(additions, function(x) x$remove == 2L)]
+            add_other <<- additions[sapply(additions, function(x) x$remove == 1L)]
+
+            modwin <- GUI$initializeModuleWindow(title = "Remove additions", scroll = TRUE)
+
+            # main group with all the check boxes
+            mainGrp <- modwin$body
+            g_cur <<- gvbox()
+            g_other <<- gvbox()
+
+            no_add <- TRUE
+            if (length(add_cur)) {
+                no_add <- FALSE
+                lbl <- glabel("Additions for the current plot")
+                font(lbl) <- list(weight = "bold")
+                add(mainGrp, lbl, anchor = c(-1, 0))
+                add(mainGrp, g_cur)
+
+                sapply(add_cur,
+                    function(x) {
+                        gcheckbox(x$text,
+                            container = g_cur,
+                            handler = .self$check_box
+                        )
+                    }
+                )
+
+                addSpace(mainGrp, 10)
+            }
+
+            if (length(add_other)) {
+                no_add <- FALSE
+                lbl <- glabel("Other additions currently ignored")
+                font(lbl) <- list(weight = "bold")
+                add(mainGrp, lbl, anchor = c(-1, 0))
+                add(mainGrp, g_other)
+
+                sapply(add_other,
+                    function(x) {
+                        gcheckbox(x$text,
+                            container = g_other,
+                            handler = .self$check_box
+                        )
+                    }
+                )
+            }
+
+            if (no_add) {
+                lbl <- glabel("No additions to remove")
+                font(lbl) <- list(weight = "bold")
+                add(mainGrp, lbl, anchor = c(-1, 0))
+            }
+
+            # footer group
+            btnGrp <- modwin$footer
+            mainGrp$set_borderwidth(5)
+
+            # if any checkboxes ticked, rename to "Remove selected"
+            rmvBtn <<- gbutton("Remove all",
+                container = btnGrp,
+                expand = TRUE,
+                fill = TRUE,
+                handler = function(h, ...) {
+                    remove_additions()
+                }
+            )
+            rmvBtn$set_icon("delete")
+            enabled(rmvBtn) <<- !no_add
+
+            closeButton <- gbutton("Home",
+                container = btnGrp,
+                expand = TRUE,
+                fill = TRUE,
+                handler = function(h, ...) {
+                    delete(GUI$leftMain, GUI$leftMain$children[[2]])
+                    visible(GUI$gp1) <<- TRUE
+                }
+            )
+
+            return()
+
             if(!is.null(GUI)) {
                 curSet <<- GUI$getActiveDoc()$getSettings()
                 defSet <<- iNZightPlots:::inzpar()
@@ -125,17 +229,17 @@ iNZPlotRmveModWin <- setRefClass(
                     }
                     return()
                 }
-                
+
                 ## open in leftMain
                 modwin <- GUI$initializeModuleWindow(title = "Remove additions", scroll = TRUE)
-                
+
                 mainGrp <- modwin$body
-                
+
                 selectGrp <- ggroup(horizontal = FALSE,
                                     container = mainGrp,
                                     expand = FALSE)
-                
-                
+
+
                 btnGrp <- modwin$footer
                 mainGrp$set_borderwidth(5)
 
@@ -151,15 +255,40 @@ iNZPlotRmveModWin <- setRefClass(
 
                 sapply(additions[curAdditions], function(x) {
                        gcheckbox(x, cont = selectGrp, handler = function(h, ...) checkOK())})
-                
-                
+
+
                 ## add observer to the data
                 ## if it changes, remove all current additions
                 GUI$getActiveDoc()$addDataObserver(
                     function() removeAdditions(TRUE)
                     )
-                
+
             }
+        },
+        check_box = function(h, ...) {
+            any_checked <- any(sapply(c(g_cur$children, g_other$children), svalue))
+
+            blockHandler(rmvBtn)
+            rmvBtn$set_value(ifelse(any_checked, "Remove selected", "Remove all"))
+            unblockHandler(rmvBtn)
+        },
+        remove_additions = function() {
+            # get selected
+            checked <- which(sapply(c(g_cur$children, g_other$children), svalue))
+
+            newSet <- list()
+            if (length(checked)) {
+                rmvSet <- c(add_cur, add_other)[checked]
+                for (i in checked)
+                    newSet <- modifyList(newSet, rmvSet[[i]]$default, keep.null = TRUE)
+            } else {
+                if (!gconfirm("Are you sure you want to reset all plot modifications?")) return()
+                rmvSet <- c(add_cur, add_other)
+                for (i in seq_along(rmvSet))
+                    newSet <- modifyList(newSet, rmvSet[[i]]$default, keep.null = TRUE)
+            }
+            GUI$getActiveDoc()$setSettings(newSet)
+            iNZPlotRmveModWin$new(GUI, new = FALSE)
         },
         ## remove plot additions from the plot settings
         ## additions: logical vector representing which
@@ -208,3 +337,35 @@ iNZPlotRmveModWin <- setRefClass(
                 )
         })
     )
+
+
+# each item in the list
+# - is named by the associated parameter for plotting
+# - has two components:
+#   * the text displayed (either static or a function of the settings list)
+#   * a function (of the settings list and current plot) which returns
+#     - 0 if setting is not set,
+#     - 1 if setting is set, but unused in the current plot,
+#     - 2 if setting is set and used in current plot
+#   * a default value (if NULL, replaced by default settings list)
+
+plot_modifications <- list(
+    colby = list(
+        text = function(settings)
+            sprintf("Remove colour coding by %s", as.character(settings$colby)),
+        remove = function(settings, plot) {
+            if (is.null(settings$colby)) return(0L)
+            (attr(plot, "plottype") %in% c("dot", "scatter", "bar")) + 1L
+        },
+        default = list(colby = NULL, varnames = list(colby = NULL))
+    ),
+    sizeby = list(
+        text = function(settings)
+            sprintf("Remove resizing by %s", as.character(settings$sizeby)),
+        remove = function(settings, plot) {
+            if (is.null(settings$sizeby)) return(0L)
+            (attr(plot, "plottype") %in% c("scatter")) + 1L
+        },
+        default = list(sizeby = NULL, varnames = list(sizeby = NULL))
+    )
+)
