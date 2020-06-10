@@ -5,6 +5,7 @@ iNZPlotRmveModWin <- setRefClass(
     "iNZPlotRmveModWin",
     fields = list(
         GUI = "ANY",
+        modWin = "ANY",
         curSet = "ANY", ## the current plot settings
         defSet = "ANY", ## the default plot settings
         add_cur = "list",
@@ -19,6 +20,7 @@ iNZPlotRmveModWin <- setRefClass(
 
             curSet <<- GUI$getActiveDoc()$getSettings()
             defSet <<- iNZightPlots:::inzpar()
+            ptypes <- iNZightPlots:::plot_types
 
             additions <- lapply(names(plot_modifications),
                 function(name) {
@@ -26,10 +28,26 @@ iNZPlotRmveModWin <- setRefClass(
                     list(
                         text = if (is.character(x$text)) x$text else x$text(curSet),
                         remove =
-                            if (is.null(x$remove)) as.integer(!is.null(curSet[[name]]))
-                            else x$remove(curSet, GUI$curPlot),
+                            if (is.null(x$remove)) {
+                                if (!is.null(x$default) && is.character(x$default)) {
+                                    c <- curSet[x$default]
+                                    d <- defSet[x$default]
+                                } else {
+                                    c <- curSet[name]
+                                    d <- defSet[name]
+                                }
+
+                                if (all(sapply(c, is.null)) || identical(c, d)) 0L
+                                else if (is.null(x$plot_types) && !name %in% rownames(ptypes)) 2L
+                                else if (is.null(x$plot_types))
+                                    grepl("p", ptypes[name, GUI$plotType]) + 1L
+                                else (GUI$plotType %in% x$plot_types) + 1L
+                            } else x$remove(curSet, GUI$curPlot),
                         default =
-                            if (is.null(x$default)) structure(list(defSet[[name]]), .Names = name)
+                            if (is.null(x$default))
+                                structure(list(defSet[[name]]), .Names = name)
+                            else if (is.character(x$default))
+                                structure(defSet[x$default], .Names = x$default)
                             else x$default
                     )
                 }
@@ -37,10 +55,10 @@ iNZPlotRmveModWin <- setRefClass(
             add_cur <<- additions[sapply(additions, function(x) x$remove == 2L)]
             add_other <<- additions[sapply(additions, function(x) x$remove == 1L)]
 
-            modwin <- GUI$initializeModuleWindow(title = "Remove additions", scroll = TRUE)
+            modWin <<- GUI$initializeModuleWindow(title = "Remove additions", scroll = TRUE)
 
             # main group with all the check boxes
-            mainGrp <- modwin$body
+            mainGrp <- modWin$body
             g_cur <<- gvbox()
             g_other <<- gvbox()
 
@@ -88,7 +106,7 @@ iNZPlotRmveModWin <- setRefClass(
             }
 
             # footer group
-            btnGrp <- modwin$footer
+            btnGrp <- modWin$footer
             mainGrp$set_borderwidth(5)
 
             # if any checkboxes ticked, rename to "Remove selected"
@@ -120,23 +138,23 @@ iNZPlotRmveModWin <- setRefClass(
                 defSet <<- iNZightPlots:::inzpar()
                 ## labels for all possible additions
                 additions <- c(
-                    "Remove all additions",
-                    paste("Remove colour coding by", curSet$varnames$by),
-                    paste("Remove resizing by",curSet$varnames$sizeby),
-                    "Remove trend curves",
-                    "Remove y = x line",
-                    "Remove smoothers",
-                    "Remove jitter",
-                    "Remove rugs",
-                    "Remove connecting lines",
-                    paste("Remove colour by", curSet$varnames$by),
-                    "Remove all inference information",  # "confidence intervals",
+                    # "Remove all additions",
+                    # paste("Remove colour coding by", curSet$varnames$by),
+                    # paste("Remove resizing by",curSet$varnames$sizeby),
+                    # "Remove trend curves",
+                    # "Remove y = x line",
+                    # "Remove smoothers",
+                    # "Remove jitter",
+                    # "Remove rugs",
+                    # "Remove connecting lines",
+                    # paste("Remove colour by", curSet$varnames$by),
+                    # "Remove all inference information",  # "confidence intervals",
                     "Remove symbol interior colouring",
-                    "Restore default symbol colours",
-                    "Restore default plotting symbol sizes",
-                    "Remove symbol coding by", curSet$varnames$symbolby,
-                    "Restore default symbol transparency",
-                    "Restore default background colour",
+                    # "Restore default symbol colours",
+                    # "Restore default plotting symbol sizes",
+                    # "Remove symbol coding by", curSet$varnames$symbolby,
+                    # "Restore default symbol transparency",
+                    # "Restore default background colour",
                     "Restore default line thickness",
                     "Restore default plot type",
                     "Restore default plot labels",
@@ -145,9 +163,9 @@ iNZPlotRmveModWin <- setRefClass(
                     "Restore default number of grid bins",
                     "Restore default number of hexs",
                     "Restore default plot type",
-                    "Remove point labels",
-                    "Restore default axis limits",
-                    "Restore all bars of bar chart",
+                    # "Remove point labels",
+                    # "Restore default axis limits",
+                    # "Restore all bars of bar chart",
                     "Restore default size scale")
                 ## check for presence of all additions
                 curAdditions <- c(
@@ -272,18 +290,18 @@ iNZPlotRmveModWin <- setRefClass(
             rmvBtn$set_value(ifelse(any_checked, "Remove selected", "Remove all"))
             unblockHandler(rmvBtn)
         },
-        remove_additions = function() {
+        remove_additions = function(confirm = FALSE) {
             # get selected
             checked <- which(sapply(c(g_cur$children, g_other$children), svalue))
 
             newSet <- list()
+            rmvSet <- c(add_cur, add_other)
             if (length(checked)) {
-                rmvSet <- c(add_cur, add_other)[checked]
+
                 for (i in checked)
                     newSet <- modifyList(newSet, rmvSet[[i]]$default, keep.null = TRUE)
             } else {
-                if (!gconfirm("Are you sure you want to reset all plot modifications?")) return()
-                rmvSet <- c(add_cur, add_other)
+                if (!confirm && !gconfirm("Are you sure you want to reset all plot modifications?")) return()
                 for (i in seq_along(rmvSet))
                     newSet <- modifyList(newSet, rmvSet[[i]]$default, keep.null = TRUE)
             }
@@ -353,62 +371,72 @@ plot_modifications <- list(
     colby = list(
         text = function(settings)
             sprintf("Remove colour coding by %s", as.character(settings$colby)),
-        remove = function(settings, plot) {
-            if (is.null(settings$colby)) return(0L)
-            (attr(plot, "plottype") %in% c("dot", "scatter", "bar")) + 1L
-        },
         default = list(colby = NULL, varnames = list(colby = NULL))
     ),
     sizeby = list(
         text = function(settings)
             sprintf("Remove resizing by %s", as.character(settings$sizeby)),
-        remove = function(settings, plot) {
-            if (is.null(settings$sizeby)) return(0L)
-            (attr(plot, "plottype") %in% c("scatter")) + 1L
-        },
         default = list(sizeby = NULL, varnames = list(sizeby = NULL))
     ),
-    trend = list(
-        text = "Remove trend curves",
-        remove = function(settings, plot) {
-            if (is.null(settings$trend)) return(0L)
-            (attr(plot, "plottype") %in% c("scatter", "grid", "hex")) + 1L
-        }
+    symbolby = list(
+        text = function(settings)
+            sprintf("Remove symbol coding by %s", as.character(settings$symbolby)),
+        default = list(symbolby = NULL, varnames = list(symbolby = NULL))
     ),
-    LOE = list(
-        text = "Remove y = x line",
-        remove = function(settings, plot) {
-            if (is.null(settings$trend)) return(0L)
-            (attr(plot, "plottype") %in% c("scatter", "grid", "hex")) + 1L
-        }
+    locate = list(
+        text = "Remove point labels",
+        default = c("locate", "locate.id", "locate.col", "locate.extreme",
+            "locate.same.level", "highlight")
     ),
+    xlim = list(text = "Reset x-axis limits"),
+    ylim = list(text = "Reset y-axis limits"),
+    zoombars = list(text = "Restore all bars of barchart"),
+    pch = list(text = "Restore default plot symbol"),
+    col.pt = list(text = "Restore default point colour"),
+    col.fun = list(text = "Restore default colour palette"),
+    col.emph = list(
+        text = "Remove emphasised colour",
+        default = c("col.emph", "col.emphn", "emph.on.top")
+    ),
+    reverse.palette = list(text = "Remove colour palette reveral"),
+    col.method = list(text = "Restore default colour-by method"),
+    cex = list(text = "Reset default scale"),
+    cex.pt = list(text = "Reset default point size"),
+    cex.dotpt = list(text = "Reset default dot size"),
+    resize.method = list(text = "Restore default point sizing method"),
+    alpha = list(text = "Remove point transparency"),
+    bg = list(text = "Restore default background colour"),
+    fill.pt = list(text = "Remove point fill"),
+    lwd = list(text = "Restore default line width multiplier"),
+    lwd.pt = list(text = "Restore default point border width"),
+    col.line = list(text = "Restore default colour for connecting lines"),
+    jitter = list(text = "Remove jitter"),
+    rugs = list(text = "Remove rugs"),
+    trend = list(text = "Remove trend curves"),
     smooth = list(
         text = "Remove smoothers",
-        remove = function(settings, plot) {
-            if (settings$smooth == 0 && is.null(settings$quant.smooth)) return(0L)
-            (attr(plot, "plottype") %in% c("scatter", "grid", "hex")) + 1L
-        },
-        default = list(smooth = 0, quant.smooth = NULL)
+        default = c("smooth", "quant.smooth")
     ),
-    jitter = list(
-        text = "Remove jitter",
-        remove = function(settings, plot) {
-            if (settings$jitter == "") return(0L)
-            (attr(plot, "plottype") %in% c("scatter")) + 1L
-        }
-    ),
-    rugs = list(
-        text = "Remove rugs",
-        remove = function(settings, plot) {
-            if (settings$jitter == "") return(0L)
-            (attr(plot, "plottype") %in% c("scatter")) + 1L
-        }
-    ),
+    LOE = list(text = "Remove y = x line"),
     join = list(
         text = "Remove connecting lines",
-        remove = function(settings, plot) {
-            if (settings$join) return(0L)
-            (attr(plot, "plottype") %in% c("scatter")) + 1L
-        }
-    )
+        default = c("join")
+    ),
+    col.trend = list(text = "Restore default trend line colours"),
+    lty.trend = list(text = "Restore default trend line patterns"),
+    col.smooth = list(text = "Restore default smoother colour"),
+    mean_indicator = list(text = "Remove mean indicator"),
+    boxplot = list(text = "Restore boxplot"),
+    bar.fill = list(text = "Restore default bar colour"),
+    bar.counts = list(text = "Restore percentages for barchart y-axis"),
+    inference.type = list(
+        text = "Remove plot inference",
+        default = c("inference.type", "inference.par", "bs.inference")
+    ),
+    scatter.grid.bins = list(text = "Restore default number of grid bins"),
+    hex.bins = list(text = "Restore default number of hexagonal bins"),
+    hex.style = list(text = "Restore default hexagon style"),
+    hist.bins = list(text = "Restore default number of histogram bins"),
+    internal.labels = list(text = "Restore internal group labels"),
+    plottype = list(text = "Restore default plot type")
 )

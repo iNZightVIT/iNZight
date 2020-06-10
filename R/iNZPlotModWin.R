@@ -2051,8 +2051,8 @@ iNZPlotMod <- setRefClass(
                                 newSet$col.emph <- as.integer(EMPH.LEVEL)
                                 newSet$col.emphn <- as.integer(svalue(cycleN))
                             } else {
-                                newSet["col.emph"] <- list(NULL)
-                                newSet["col.emphn"] <- list(NULL)
+                                newSet["col.emph"] <- 0L
+                                # newSet["col.emphn"] <- list(NULL)
                             }
 
                             visible(cycleLbl) <- visible(cyclePanel) <- TRUE
