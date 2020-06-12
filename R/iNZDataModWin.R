@@ -1729,7 +1729,7 @@ iNZAggregatedtWin <- setRefClass(
   methods = list(
     initialize = function(gui) {
       callSuper(gui)
-      svalue(GUI$modWin) <<- "Aggregate datetimes"
+      svalue(GUI$modWin) <<- "Aggregate dates and times"
 
       mainGroup <- gvbox()
       mainGroup$set_borderwidth(15)
