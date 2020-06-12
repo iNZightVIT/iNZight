@@ -1729,7 +1729,7 @@ iNZAggregatedtWin <- setRefClass(
   methods = list(
     initialize = function(gui) {
       callSuper(gui)
-      svalue(GUI$modWin) <<- "Aggregate datetimes to monthly or quarterly"
+      svalue(GUI$modWin) <<- "Aggregate datetimes"
 
       mainGroup <- gvbox()
       mainGroup$set_borderwidth(15)

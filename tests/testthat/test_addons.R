@@ -5,7 +5,7 @@ moduledir <- file.path(getwd(), "modules")
 # load_all("../../../iNZightModules")
 # load_all()
 
-# try(ui$close())
+# try(ui$close(), TRUE); load_all()
 ui <- iNZGUI$new()
 ui$initializeGui(iris, addonDir = moduledir)
 
