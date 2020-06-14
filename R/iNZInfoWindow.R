@@ -144,6 +144,10 @@ iNZGetSummary <- setRefClass(
             ds <- GUI$getActiveData()
             xvar <- ds[[curSet$x]]
             yvar <- if (!is.null(curSet$y)) ds[[curSet$y]] else NULL
+            if (!is.null(yvar) && is_num(yvar)) {
+                xvar <- ds[[curSet$y]]
+                yvar <- ds[[curSet$x]]
+            }
             if (is.null(curSet$g1) &&
                 is.null(curSet$g2) &&
                 !is.null(curSet$y) &&
@@ -189,7 +193,7 @@ iNZGetSummary <- setRefClass(
                     fittedName <- gedit(
                         sprintf(
                             "%s.%s",
-                            curSet$varnames[[ifelse(is_num(yvar), "y", "x")]],
+                            curSet$varnames[[ifelse(is_num(ds[[curSet$y]]), "y", "x")]],
                             varType),
                         width = 25
                     )
@@ -205,7 +209,7 @@ iNZGetSummary <- setRefClass(
                         ifelse(length(curSet$trend) > 1, "Linear :", "")
                     )
                     fittedName.lin <- gedit(
-                        sprintf("%s.%s%s", curSet$varnames$y, varType,
+                        sprintf("%s.%s%s", curSet$varnames$x, varType,
                                 ifelse(length(curSet$trend) > 1, ".linear", "")),
                         width = 25
                     )
@@ -220,7 +224,7 @@ iNZGetSummary <- setRefClass(
                         ifelse(length(curSet$trend) > 1, "Quadratic :", "")
                     )
                     fittedName.quad <- gedit(
-                        sprintf("%s.%s%s", curSet$varnames$y, varType,
+                        sprintf("%s.%s%s", curSet$varnames$x, varType,
                                 ifelse(length(curSet$trend) > 1, ".quadratic", "")),
                         width = 25
                     )
@@ -235,7 +239,7 @@ iNZGetSummary <- setRefClass(
                         ifelse(length(curSet$trend) > 1, "Cubic :", "")
                     )
                     fittedName.cub <- gedit(
-                        sprintf("%s.%s%s", curSet$varnames$y, varType,
+                        sprintf("%s.%s%s", curSet$varnames$x, varType,
                                 ifelse(length(curSet$trend) > 1, ".cubic", "")),
                         width = 25
                     )
@@ -248,7 +252,7 @@ iNZGetSummary <- setRefClass(
                     ## Predicted values for SMOOTHER:
                     fittedLbl.smth <- glabel("Smoother :")
                     fittedName.smth <- gedit(
-                        sprintf("%s.%s.smooth", curSet$varnames$y, varType),
+                        sprintf("%s.%s.smooth", curSet$varnames$x, varType),
                         width = 25
                     )
                     if (scatter && curSet$smooth > 0 && is_num(xvar) &&
@@ -267,10 +271,10 @@ iNZGetSummary <- setRefClass(
                             FUN <-
                                 if (varType == "predict")
                                     function(object)
-                                        predict(
-                                            object,
-                                            newdata = data.frame(x = xvar, stringsAsFactors = TRUE)
-                                        )
+                                        predict(object)
+                                        #     object,
+                                        #     newdata = data.frame(xvar = xvar, stringsAsFactors = TRUE)
+                                        # )
                                 else
                                     function(object)
                                         residuals(object)
@@ -278,16 +282,16 @@ iNZGetSummary <- setRefClass(
                             pred <- NULL
                             if (is_cat(xvar) || is_cat(yvar)) {
                                 ## just the one
-                                fit <- lm(if (is_num(yvar)) yvar ~ xvar else xvar ~ yvar, na.action = na.exclude)
+                                fit <- lm(xvar ~ yvar, na.action = na.exclude)
                                 pred <- data.frame(FUN(fit), stringsAsFactors = TRUE)
                                 colnames(pred) <- svalue(fittedName)
                             } else if (length(curSet$trend) >= 1) {
                                 ## for each trend line
                                 fits <- lapply(curSet$trend, function(ord) {
                                     switch(ord,
-                                        "linear"    = lm(yvar ~ xvar, data = ds, na.action = na.exclude),
-                                        "quadratic" = lm(yvar ~ xvar + I(x^2), data = ds, na.action = na.exclude),
-                                        "cubic"     = lm(yvar ~ xvar + I(x^2) + I(x^3), data = ds, na.action = na.exclude)
+                                        "linear"    = lm(yvar ~ xvar, na.action = na.exclude),
+                                        "quadratic" = lm(yvar ~ xvar + I(xvar^2), na.action = na.exclude),
+                                        "cubic"     = lm(yvar ~ xvar + I(xvar^2) + I(xvar^3), na.action = na.exclude)
                                     )
                                 })
                                 pred <- sapply(fits, function(f) FUN(f))
@@ -306,7 +310,12 @@ iNZGetSummary <- setRefClass(
 
                             if (curSet$smooth > 0 && is_num(xvar) && is_num(yvar)) {
                                 tmp <- data.frame(x = xvar, y = yvar, stringsAsFactors = TRUE)
-                                fit <- with(curSet, loess(y ~ x, span = curSet$smooth, family = "gaussian", degree = 1, na.action = "na.exclude"))
+                                fit <- loess(yvar ~ xvar,
+                                    span = curSet$smooth,
+                                    family = "gaussian",
+                                    degree = 1,
+                                    na.action = "na.exclude"
+                                )
                                 pred <- data.frame(FUN(fit), stringsAsFactors = TRUE)
                                 colnames(pred) <- svalue(fittedName.smth)
                                 newdata <- data.frame(newdata, pred, stringsAsFactors = TRUE)
