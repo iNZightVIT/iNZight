@@ -18,9 +18,18 @@ test_that("Get summary window opens", {
 
 test_that("Buttons for linear regression", {
     ui$ctrlWidget$V2box$set_value("armspan")
-    ui$getActiveDoc()$setSettings(list(trend = "linear"))
     sw <- iNZGetSummary$new(ui)
+    on.exit(gWidgets2::dispose(sw$win))
 
+    expect_is(sw$predBtn, "GButton")
+    expect_is(sw$residBtn, "GButton")
+    expect_false(enabled(sw$predBtn))
+    expect_false(enabled(sw$residBtn))
+
+    # $menu_list$linear$set_value(TRUE)
+    # x <- sw$ctrl_panel$children[[3]]
+    # expect_true(enabled(sw$predBtn))
+    # expect_true(enabled(sw$residBtn))
 })
 
 

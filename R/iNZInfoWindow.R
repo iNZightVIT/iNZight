@@ -106,18 +106,13 @@ iNZGetSummary <- setRefClass(
     "iNZGetSummary",
     contains = "iNZInfoWindow",
     fields = list(
+        predBtn = "ANY",
+        residBtn = "ANY",
+        trend = "list"
     ),
     methods = list(
         initialize = function(gui) {
             callSuper(gui, controls = "bottom", name = "Summary")
-
-            smry_call <- gen_call()
-            svalue(code_box) <<- mend_call(smry_call, GUI)
-            font(code_box) <<- info_font
-
-            smry <- eval(smry_call, env)
-            svalue(info_text) <<- paste(smry, collapse = "\n")
-            font(info_text) <<- info_font
 
             ## Control panel
             setup_panel()
@@ -135,15 +130,107 @@ iNZGetSummary <- setRefClass(
             )
             if (!is.null(curSet$y))
                 vartypes$y <- iNZightTools::vartype(GUI$getActiveData()[[curSet$y]])
+
             construct_call(curSet, curMod, vartypes,
                 data = as.name(dataname),
                 what = "summary"
             )
         },
+        update_summary = function() {
+            smry_call <- gen_call()
+            svalue(code_box) <<- mend_call(smry_call, GUI)
+            font(code_box) <<- info_font
+
+            smry <- try(eval(smry_call, env), silent = TRUE)
+            if (inherits(smry, "try-error")) smry <- "Unable to generate summary."
+            svalue(info_text) <<- paste(smry, collapse = "\n")
+            font(info_text) <<- info_font
+        },
+        store_values = function(what = c("predict", "residual")) {
+            what <- match.arg(what)
+
+            print("storing ...")
+        },
+        trend_handler = function(h, ...) {
+            ds <- GUI$getActiveData()
+            xvar <- ds[[curSet$x]]
+            yvar <- if (!is.null(curSet$y)) ds[[curSet$y]] else NULL
+            xnum <- is_num(xvar)
+            ynum <- is_num(yvar)
+
+            trend[[tolower(h$obj$widget$label)]] <<- svalue(h$obj)
+            curSet$trend <<- names(trend)[unlist(trend)]
+            if ((is.null(curSet$trend) || length(curSet$trend) == 0) &&
+                curSet$smooth == 0) {
+                enabled(predBtn) <<- FALSE
+                enabled(residBtn) <<- FALSE
+            } else {
+                enabled(predBtn) <<- TRUE
+                enabled(residBtn) <<- TRUE
+            }
+            update_summary()
+        },
         setup_panel = function() {
             ds <- GUI$getActiveData()
             xvar <- ds[[curSet$x]]
             yvar <- if (!is.null(curSet$y)) ds[[curSet$y]] else NULL
+
+            xnum <- is_num(xvar)
+            ynum <- is_num(yvar)
+
+            # show predicted/residual buttons?
+            if (!is.null(yvar) && (xnum || ynum)) {
+                predBtn <<- gbutton("Store fitted values",
+                    container = ctrl_panel,
+                    handler = function(h, ...) store_values("predict")
+                )
+                residBtn <<- gbutton("Store residuals",
+                    container = ctrl_panel,
+                    handler = function(h, ...) store_values("residual")
+                )
+
+                # are they visible?
+                if (xnum && ynum &&
+                    (is.null(curSet$trend) || length(curSet$trend) == 0) &&
+                    curSet$smooth == 0) {
+                    enabled(predBtn) <<- FALSE
+                    enabled(residBtn) <<- FALSE
+                }
+            }
+
+            # abilty to add/remove trend lines
+            if (xnum && ynum) {
+                trend_btn <- gbutton("Add trend ...",
+                    container = ctrl_panel
+                )
+                trend <<- list(
+                    linear = "linear" %in% curSet$trend,
+                    quadratic = "quadratic" %in% curSet$trend,
+                    cubic = "cubic" %in% curSet$trend
+                )
+                menu <- gmenu(
+                    list(
+                        linear = gcheckbox("Linear",
+                            checked = trend$linear,
+                            handler = .self$trend_handler
+                        ),
+                        quadratic = gcheckbox("Quadratic",
+                            checked = trend$quadratic,
+                            handler = .self$trend_handler
+                        ),
+                        cubic = gcheckbox("Cubic",
+                            checked = trend$cubic,
+                            handler = .self$trend_handler
+                        )
+                    ),
+                    popup = TRUE
+                )
+                addPopupMenu(trend_btn, menu)
+            }
+
+            update_summary()
+            return()
+
             if (!is.null(yvar) && is_num(yvar)) {
                 xvar <- ds[[curSet$y]]
                 yvar <- ds[[curSet$x]]
@@ -331,14 +418,14 @@ iNZGetSummary <- setRefClass(
                     visible(w2) <- TRUE
                 }
 
-                predBtn <- gbutton("Store fitted values",
-                    container = ctrl_panel,
-                    handler = btnHandler
-                )
-                residBtn <- gbutton("Store residuals",
-                    container = ctrl_panel,
-                    handler = btnHandler
-                )
+                # predBtn <- gbutton("Store fitted values",
+                #     container = ctrl_panel,
+                #     handler = btnHandler
+                # )
+                # residBtn <- gbutton("Store residuals",
+                #     container = ctrl_panel,
+                #     handler = btnHandler
+                # )
 
                 # addSpace(g, 0)
             }
