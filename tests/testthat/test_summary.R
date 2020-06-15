@@ -16,7 +16,7 @@ test_that("Get summary window opens", {
 })
 
 
-test_that("Buttons for linear regression", {
+test_that("Buttons for linear regression give correct predicted values", {
     ui$ctrlWidget$V2box$set_value("armspan")
     sw <- iNZGetSummary$new(ui)
     on.exit(gWidgets2::dispose(sw$win))
@@ -26,10 +26,22 @@ test_that("Buttons for linear regression", {
     expect_false(enabled(sw$predBtn))
     expect_false(enabled(sw$residBtn))
 
-    # $menu_list$linear$set_value(TRUE)
-    # x <- sw$ctrl_panel$children[[3]]
-    # expect_true(enabled(sw$predBtn))
-    # expect_true(enabled(sw$residBtn))
+    svalue(sw$trend_menu$menu_list$linear) <- TRUE
+    expect_true(enabled(sw$predBtn))
+    expect_true(enabled(sw$residBtn))
+
+    store <- sw$store_values("predict")
+    expect_equal(svalue(store$children[[1]]$children[[2]]$children[[2]]), "height.predict")
+    expect_silent(store$children[[1]]$children[[3]]$invoke_change_handler())
+
+    expect_equal(
+        ui$getActiveData()$height.predict,
+        as.numeric(
+            predict(
+                lm(height ~ armspan, data = census.at.school.500, na.action = na.exclude)
+            )
+        )
+    )
 })
 
 

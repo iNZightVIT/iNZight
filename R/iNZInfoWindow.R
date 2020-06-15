@@ -108,7 +108,8 @@ iNZGetSummary <- setRefClass(
     fields = list(
         predBtn = "ANY",
         residBtn = "ANY",
-        trend = "list"
+        trend = "list",
+        trend_menu = "ANY"
     ),
     methods = list(
         initialize = function(gui) {
@@ -146,10 +147,201 @@ iNZGetSummary <- setRefClass(
             svalue(info_text) <<- paste(smry, collapse = "\n")
             font(info_text) <<- info_font
         },
-        store_values = function(what = c("predict", "residual")) {
-            what <- match.arg(what)
+        store_values = function(varType = c("predict", "residual")) {
+            varType <- match.arg(varType)
 
-            print("storing ...")
+            if (is.null(curSet$y)) return()
+
+            ds <- GUI$getActiveData()
+            xvar <- ds[[curSet$x]]
+            yvar <- ds[[curSet$y]]
+            xnum <- is_num(xvar)
+            ynum <- is_num(yvar)
+            xname <- as.character(curSet$x)
+            yname <- as.character(curSet$y)
+
+            # scatter: y <-> x
+            # OR
+            # dot plot: num ~ cat
+            if ((xnum && ynum) || xnum) {
+                xvar <- ds[[curSet$y]]
+                yvar <- ds[[curSet$x]]
+                xnum <- is_num(xvar)
+                ynum <- is_num(yvar)
+                xname <- as.character(curSet$y)
+                yname <- as.character(curSet$x)
+            }
+
+            ## window asking for variable names:
+            w2 <- gwindow("Store fitted values",
+                width = 350,
+                parent = win,
+                visible = FALSE
+            )
+
+            g2 <- gvbox(container = w2)
+            g2$set_borderwidth(15)
+
+            scatter <- xnum && ynum
+
+            lbl <- glabel(
+                sprintf(
+                    "Specify names for the new variable%s",
+                    ifelse(scatter && length(curSet$trend) > 1, "s", "")),
+                container = g2,
+                anchor = c(-1, -1)
+            )
+            font(lbl) <- list(size = 12, weight = "bold")
+
+            addSpace(g2, 20)
+
+
+            tbl <- glayout(container = g2)
+            ii <- 1
+
+            ## Predicted values for GROUP MEANS:
+            fittedLbl <- glabel("")
+            fittedName <- gedit(
+                sprintf("%s.%s", yname, varType),
+                width = 25
+            )
+
+            if (is_cat(xvar) || is_cat(yvar)) {
+                tbl[ii, 1:3, anchor = c(1, 0), expand = TRUE] <- fittedLbl
+                tbl[ii, 4:6, expand = TRUE] <- fittedName
+                ii <- ii + 1
+            }
+
+            ## Predicted values for LINEAR trend:
+            fittedLbl.lin <- glabel(
+                ifelse(length(curSet$trend) > 1, "Linear :", "")
+            )
+            fittedName.lin <- gedit(
+                sprintf("%s.%s%s", yname, varType,
+                        ifelse(length(curSet$trend) > 1, ".linear", "")),
+                width = 25
+            )
+            if (scatter && length(curSet$trend) >= 1 && "linear" %in% curSet$trend) {
+                tbl[ii, 1:3, anchor = c(1, 0), expand = TRUE] <- fittedLbl.lin
+                tbl[ii, 4:6, expand = TRUE] <- fittedName.lin
+                ii <- ii + 1
+            }
+
+            ## Predicted values for QUADRATIC trend:
+            fittedLbl.quad <- glabel(
+                ifelse(length(curSet$trend) > 1, "Quadratic :", "")
+            )
+            fittedName.quad <- gedit(
+                sprintf("%s.%s%s", yname, varType,
+                        ifelse(length(curSet$trend) > 1, ".quadratic", "")),
+                width = 25
+            )
+            if (scatter && length(curSet$trend) >= 1 && "quadratic" %in% curSet$trend) {
+                tbl[ii, 1:3, anchor = c(1, 0), expand = TRUE] <- fittedLbl.quad
+                tbl[ii, 4:6, expand = TRUE] <- fittedName.quad
+                ii <- ii + 1
+            }
+
+            ## Predicted values for CUBIC trend:
+            fittedLbl.cub <- glabel(
+                ifelse(length(curSet$trend) > 1, "Cubic :", "")
+            )
+            fittedName.cub <- gedit(
+                sprintf("%s.%s%s", yname, varType,
+                        ifelse(length(curSet$trend) > 1, ".cubic", "")),
+                width = 25
+            )
+            if (scatter && length(curSet$trend) >= 1 && "cubic" %in% curSet$trend) {
+                tbl[ii, 1:3, anchor = c(1, 0), expand = TRUE] <- fittedLbl.cub
+                tbl[ii, 4:6, expand = TRUE] <- fittedName.cub
+                ii <- ii + 1
+            }
+
+            ## Predicted values for SMOOTHER:
+            fittedLbl.smth <- glabel("Smoother :")
+            fittedName.smth <- gedit(
+                sprintf("%s.%s.smooth", yname, varType),
+                width = 25
+            )
+            if (scatter && curSet$smooth > 0 && xnum && ynum) {
+                tbl[ii, 1:3, anchor = c(1, 0), expand = TRUE] <- fittedLbl.smth
+                tbl[ii, 4:6, expand = TRUE] <- fittedName.smth
+                ii <- ii + 1
+            }
+
+            addSpring(g2)
+
+            okBtn <- gbutton(
+                "Ok",
+                icon = "save",
+                handler = function(h, ...) {
+                    FUN <-
+                        if (varType == "predict")
+                            function(object)
+                                predict(object)
+                        else
+                            function(object)
+                                residuals(object)
+
+                    pred <- NULL
+                    if (!xnum || !ynum) {
+                        ## just the one
+                        fit <- lm(yvar ~ xvar, na.action = na.exclude)
+                        pred <- data.frame(FUN(fit), stringsAsFactors = TRUE)
+                        colnames(pred) <- svalue(fittedName)
+                    } else if (length(curSet$trend) >= 1) {
+                        ## for each trend line
+                        fits <- lapply(curSet$trend,
+                            function(ord) {
+                                switch(ord,
+                                    "linear"    = lm(yvar ~ xvar, na.action = na.exclude),
+                                    "quadratic" = lm(yvar ~ xvar + I(xvar^2), na.action = na.exclude),
+                                    "cubic"     = lm(yvar ~ xvar + I(xvar^2) + I(xvar^3), na.action = na.exclude)
+                                )
+                            }
+                        )
+                        pred <- sapply(fits, function(f) FUN(f))
+                        colnames(pred) <- sapply(curSet$trend,
+                             function(ord) {
+                                switch(ord,
+                                    "linear" = svalue(fittedName.lin),
+                                    "quadratic" = svalue(fittedName.quad),
+                                    "cubic" = svalue(fittedName.cub))
+                            }
+                        )
+                    }
+                    if (!is.null(pred))
+                        newdata <- data.frame(
+                            GUI$getActiveData(),
+                            pred,
+                            stringsAsFactors = TRUE
+                        )
+                    else
+                        newdata <- GUI$getActiveData()
+
+
+                    if (curSet$smooth > 0 && xnum && ynum) {
+                        fit <- loess(yvar ~ xvar,
+                            span = curSet$smooth,
+                            family = "gaussian",
+                            degree = 1,
+                            na.action = "na.exclude"
+                        )
+                        pred <- data.frame(FUN(fit), stringsAsFactors = TRUE)
+                        colnames(pred) <- svalue(fittedName.smth)
+                        newdata <- data.frame(newdata, pred, stringsAsFactors = TRUE)
+                    }
+
+
+                    GUI$getActiveDoc()$getModel()$updateData(newdata)
+
+                    dispose(w2)
+                },
+                container = g2
+            )
+
+            visible(w2) <- TRUE
+            invisible(w2)
         },
         trend_handler = function(h, ...) {
             ds <- GUI$getActiveData()
@@ -200,7 +392,7 @@ iNZGetSummary <- setRefClass(
 
             # abilty to add/remove trend lines
             if (xnum && ynum) {
-                trend_btn <- gbutton("Add trend ...",
+                trend_btn <- gbutton("Trend lines ...",
                     container = ctrl_panel
                 )
                 trend <<- list(
@@ -208,7 +400,7 @@ iNZGetSummary <- setRefClass(
                     quadratic = "quadratic" %in% curSet$trend,
                     cubic = "cubic" %in% curSet$trend
                 )
-                menu <- gmenu(
+                trend_menu <<- gmenu(
                     list(
                         linear = gcheckbox("Linear",
                             checked = trend$linear,
@@ -225,7 +417,7 @@ iNZGetSummary <- setRefClass(
                     ),
                     popup = TRUE
                 )
-                addPopupMenu(trend_btn, menu)
+                addPopupMenu(trend_btn, trend_menu)
             }
 
             update_summary()
