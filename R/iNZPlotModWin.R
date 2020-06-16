@@ -2482,7 +2482,7 @@ iNZPlotMod <- setRefClass(
             }
             activateOptions <- function() {
                 if (is.null(curSet$colby)) return()
-                if (is_cat(curSet$colby)) {
+                if (is_cat(.data[[curSet$colby]])) {
                     if (PLOTTYPE == "scatter") {
                         enabled(joinPointsBy) <- svalue(joinPoints)
                         enabled(joinPointsCol) <- !svalue(joinPointsBy)
