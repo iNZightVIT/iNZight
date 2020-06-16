@@ -12,13 +12,13 @@ test_that("Construct call function works", {
     model <- ui$getActiveDoc()$getModel()
     settings$xlab <- NULL
     expect_equal(
-        as.character(construct_call(settings, model)),
+        as.character(construct_call(settings, model, list(x = "num"))),
         "iNZPlot(height, data = .dataset)"
     )
 
     settings$col.pt <- "blue"
     expect_equal(
-        as.character(construct_call(settings, model)),
+        as.character(construct_call(settings, model, list(x = "num"))),
         "iNZPlot(height, data = .dataset, col.pt = \"blue\")"
     )
 })
