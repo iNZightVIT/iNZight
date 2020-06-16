@@ -336,6 +336,12 @@ construct_call <- function(settings, model, vartypes,
     if (isTRUE(settings$g1.level == "_MULTI")) settings$g1.level <- NULL
     if (isTRUE(settings$g2.level == "_ALL")) settings$g2.level <- NULL
 
+    ## fix "inference.type"
+    if (vartypes$x == "num" && !is.null(vartypes$y) && vartypes$y == "num") {
+        if ("conf" %in% settings$inference.type)
+            settings$inference.type <- "conf"
+    }
+
     if (what == "plot") {
         ## things unique to plots
 

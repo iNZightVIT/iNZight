@@ -412,7 +412,10 @@ plot_modifications <- list(
     col.line = list(text = "Restore default colour for connecting lines"),
     jitter = list(text = "Remove jitter"),
     rugs = list(text = "Remove rugs"),
-    trend = list(text = "Remove trend curves"),
+    trend = list(
+        text = "Remove trend curves",
+        default = c("trend", "trend.by", "trend.parallel")
+    ),
     smooth = list(
         text = "Remove smoothers",
         default = c("smooth", "quant.smooth")
