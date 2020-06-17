@@ -223,11 +223,14 @@ iNZDotchartInf <- setRefClass(
                 bs.inf <- svalue(mthd, index = TRUE) == 2
                 GUI$getActiveDoc()$setSettings(
                     list(
+                        # override settings
+                        boxplot = TRUE,
+                        mean_indicator = FALSE,
                         inference.type = inf.type,
                         inference.par = inf.par,
                         bs.inference = bs.inf
-                        )
                     )
+                )
                 updateSettings()
             }
 
