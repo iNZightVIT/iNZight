@@ -1564,19 +1564,26 @@ iNZPlotMod <- setRefClass(
             ii <- ii + 1
 
             if (PLOTTYPE %in% c("dot", "hist")) {
-              tbl[ii,  1:6, anchor = c(-1, 0), expand = TRUE] <- sectionTitle("Summaries")
-              ii <- ii + 1
+                tbl[ii,  1:6, anchor = c(-1, 0), expand = TRUE] <- sectionTitle("Summaries")
+                ii <- ii + 1
 
-              tbl[ii, 1:2, anchor = c(1, 0), expand = TRUE] <- glabel("Show :")
+                tbl[ii, 1:2, anchor = c(1, 0), expand = TRUE] <- glabel("Show :")
 
-              showBoxplot <- gcheckbox("Boxplot", checked = curSet$boxplot, handler = function(h, ...) updateEverything())
-              showMean <- gcheckbox("Mean indicator", checked = curSet$mean_indicator, handler = function(h, ...) updateEverything())
+                showBoxplot <- gcheckbox("Boxplot",
+                    checked = curSet$boxplot,
+                    handler = function(h, ...) updateEverything()
+                )
+                showMean <- gcheckbox("Mean indicator",
+                    checked = curSet$mean_indicator,
+                    handler = function(h, ...) updateEverything()
+                )
+                enabled(showBoxplot) <- enabled(showMean) <- is.null(curSet$inference.par)
 
-              tbl[ii, 3:6, anchor = c(1, 0), expand = TRUE] <- showBoxplot
-              ii <- ii + 1
+                tbl[ii, 3:6, anchor = c(1, 0), expand = TRUE] <- showBoxplot
+                ii <- ii + 1
 
-              tbl[ii, 3:6, anchor = c(1, 0), expand = TRUE] <- showMean
-              ii <- ii + 1
+                tbl[ii, 3:6, anchor = c(1, 0), expand = TRUE] <- showMean
+                ii <- ii + 1
             }
 
             ## FT PLOT OPTIONS
