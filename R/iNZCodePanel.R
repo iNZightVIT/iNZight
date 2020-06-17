@@ -234,10 +234,8 @@ iNZCodePanel <- setRefClass(
                         attr(rawpl, "plottype") %in% colnames(iNZightPlots:::plot_types)) {
                         pargs <- iNZightPlots:::plot_types[, attr(rawpl, "plottype")]
                         pargs <- names(pargs[grepl("p", pargs)])
-                        def_args <- structure(
-                            vector("list", length(pargs)),
-                            .Names = pargs
-                        )
+                        dflts <- unclass(iNZightPlots:::inzpar())
+                        def_args <- dflts[names(dflts) %in% pargs]
                         call_set <- modifyList(def_args, call_set, keep.null = TRUE)
                     }
 
