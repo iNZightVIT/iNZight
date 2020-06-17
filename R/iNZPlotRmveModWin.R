@@ -55,7 +55,10 @@ iNZPlotRmveModWin <- setRefClass(
             add_cur <<- additions[sapply(additions, function(x) x$remove == 2L)]
             add_other <<- additions[sapply(additions, function(x) x$remove == 1L)]
 
-            modWin <<- GUI$initializeModuleWindow(title = "Remove additions", scroll = TRUE)
+            modWin <<- GUI$initializeModuleWindow(
+                title = "Actions to remove additions",
+                scroll = TRUE
+            )
 
             # main group with all the check boxes
             mainGrp <- modWin$body
@@ -65,7 +68,7 @@ iNZPlotRmveModWin <- setRefClass(
             no_add <- TRUE
             if (length(add_cur)) {
                 no_add <- FALSE
-                lbl <- glabel("Additions for the current plot")
+                lbl <- glabel("Active in current plot")
                 font(lbl) <- list(weight = "bold")
                 add(mainGrp, lbl, anchor = c(-1, 0))
                 add(mainGrp, g_cur)
@@ -84,7 +87,7 @@ iNZPlotRmveModWin <- setRefClass(
 
             if (length(add_other)) {
                 no_add <- FALSE
-                lbl <- glabel("Other additions currently ignored")
+                lbl <- glabel("Inactive in current plot")
                 font(lbl) <- list(weight = "bold")
                 add(mainGrp, lbl, anchor = c(-1, 0))
                 add(mainGrp, g_other)
