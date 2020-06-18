@@ -362,7 +362,7 @@ iNZScatterInf <- setRefClass(
             is.survey <- !is.null(GUI$getActiveDoc()$getModel()$getDesign())
 
             ## Parameters
-            parm <- glabel("Trend line")
+            parm <- glabel("Trend lines and smoothers")
 
             parTab[3, 1, expand = TRUE, anchor = c(-1, 0)] <<- parm
 
@@ -371,6 +371,12 @@ iNZScatterInf <- setRefClass(
                 mthd <- gradio(c("Normal"), selected = 1)
             else
                 mthd <- gradio(c("Normal", "Bootstrap *"), selected = 1)
+
+            enabled(mthd) <- FALSE
+            if (!is.null(curSet$trend) && length(curSet$trend))
+                enabled(mthd) <- TRUE
+            if (curSet$smooth > 0 && !curSet$trend.by && is.null(curSet$quant.smooth))
+                enabled(mthd) <- TRUE
 
             metTab[3, 1] <<- mthd
 
