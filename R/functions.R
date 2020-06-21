@@ -219,21 +219,24 @@ construct_call <- function(settings, model, vartypes,
     # go through settings and compare to default settings
     default_args <- formals(iNZightPlots::iNZightPlot)
     inz_args <- iNZightPlots::inzpar()
+    gg_args <- iNZightPlots:::gg_defaults
     if (what %in% c("summary", "inference")) {
         smry_args <- formals(iNZightPlots::getPlotSummary)
         smry_args <- smry_args[names(smry_args) %notin% names(default_args)]
         default_args <- c(default_args, smry_args)
     }
-    defaults <- c(default_args, inz_args)
-    lapply(names(settings), function(s_name) {
-        is_same <- identical(
-            settings[[s_name]],
-            defaults[[s_name]],
-            ignore.bytecode = TRUE,
-            ignore.environment = TRUE
-        )
-        if (is_same) settings[[s_name]] <<- NULL
-    })
+    defaults <- c(default_args, inz_args, gg_args)
+    lapply(names(settings),
+        function(s_name) {
+            is_same <- identical(
+                settings[[s_name]],
+                defaults[[s_name]],
+                ignore.bytecode = TRUE,
+                ignore.environment = TRUE
+            )
+            if (is_same) settings[[s_name]] <<- NULL
+        }
+    )
 
     ## set the data
     settings$data <- data

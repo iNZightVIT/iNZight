@@ -2300,7 +2300,7 @@ iNZPlotMod <- setRefClass(
                         newSet$gg_method <- svalue(swarmMethod)
                     }
 
-                    newSet$gg_theme <- available.themes[svalue(themeCombobox)]
+                    newSet$gg_theme <- available.themes[[svalue(themeCombobox)]]
 
                     if (!(PLOTTYPE %in% c("gg_pie", "gg_donut"))) {
                         newSet$rotate_labels <- list()
