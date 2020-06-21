@@ -19,7 +19,7 @@ iNZPlotRmveModWin <- setRefClass(
             initFields(GUI = gui)
 
             curSet <<- GUI$getActiveDoc()$getSettings()
-            defSet <<- iNZightPlots:::inzpar()
+            defSet <<- c(iNZightPlots:::inzpar(), iNZightPlots:::gg_defaults)
             ptypes <- iNZightPlots:::plot_types
 
             additions <- lapply(names(plot_modifications),
@@ -444,5 +444,25 @@ plot_modifications <- list(
     hex.style = list(text = "Restore default hexagon style"),
     hist.bins = list(text = "Restore default number of histogram bins"),
     internal.labels = list(text = "Restore internal group labels"),
-    plottype = list(text = "Restore default plot type")
+    plottype = list(text = "Restore default plot type"),
+    adjust = list(text = "Reset adjustment (gg)"),
+    alpha_densitygroup = list(text = "Reset density transparency (gg)"),
+    gg_lwd = list(text = "Restore default line width (gg)"),
+    gg_size = list(text = "Restore deafault point size (gg)"),
+    ordered = list(text = "Restore default order (gg)"),
+    gg_barSize = list(text = "Restore default bar size (gg)"),
+    gg_bins = list(text = "Restore default number of bins (gg)"),
+    gg_height = list(text = "Reset barcode bar height (gg)"),
+    gg_width = list(text = "Reset barcode bar width (gg)"),
+    gg_perN = list(text = "Restore default number of observations per grid square (gg)"),
+    gg_swarmwidth = list(text = "Restore default swarm width (gg)"),
+    gg_method = list(text = "Reset default beeswarm method (gg)"),
+    gg_cutpoint = list(text = "Reset cut point (gg)"),
+    gg_theme = list(text = "Reset default theme (gg)"),
+    fill_colour = list(text = "Restore default fill colour (gg)"),
+    rotation = list(text = "Restore default plot orientation (gg)"),
+    rotate_labels = list(text = "Restore default plot label orientation (gg)"),
+    caption = list(text = "Remove caption (gg)"),
+    desc = list(text = "Restore default sort order (gg)"),
+    palette = list(text = "Restore default colour palette (gg)")
 )
