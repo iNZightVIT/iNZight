@@ -44,6 +44,25 @@ test_that("Buttons for linear regression give correct predicted values", {
     )
 })
 
+if (interactive()) {
+    # try(ui$close(), TRUE); devtools::load_all()
+    ui <- iNZGUI$new()
+    ui$initializeGui(census.at.school.500)
+    on.exit(ui$close())
+}
+
+test_that("Summary function call can be modified", {
+    ui$ctrlWidget$V1box$set_value("height")
+    ui$ctrlWidget$V2box$set_index(1L)
+    sw <- iNZGetSummary$new(ui)
+    on.exit(gWidgets2::dispose(sw$win))
+
+    expect_equal(svalue(sw$code_box), "iNZSummary(height, data = data)\n")
+    sw$set_input("iNZSummary(armspan, data = data)")
+    expect_silent(sw$run_btn$invoke_change_handler())
+    expect_match(svalue(sw$info_text), "Summary of armspan")
+})
+
 
 data(api, package = "survey")
 ui$setDocument(iNZDocument$new(data = apiclus1), reset = TRUE)
