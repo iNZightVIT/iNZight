@@ -328,7 +328,7 @@ test_that("JSON files load", {
     t <- tempfile(fileext = ".json")
     jsonlite::write_json(iris, t)
     imp <- iNZImportWin$new(ui)
-    on.exit(gWidgets2::dispose(imp$importFileWin))
+    on.exit(try(gWidgets2::dispose(imp$importFileWin), TRUE))
 
     imp$fname <- t
     imp$setfile()
