@@ -167,6 +167,14 @@ iNZMenuBarWidget <- setRefClass(
                             tooltip = "Unite columns",
                             handler = function(h, ...) iNZUniteDataWin$new(GUI))
                 ),
+                if (requireNamespace("dataMaid", quietly = TRUE)) {
+                    report =
+                        gaction(
+                            "Generate data report ...",
+                            icon = "symbol_diamond",
+                            handler = function(h, ...) iNZDataReportWin$new(GUI)
+                        )
+                },
                 validate =
                   gaction("Validate ...",
                           icon = "symbol_diamond",

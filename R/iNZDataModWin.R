@@ -1863,3 +1863,112 @@ iNZAggregatedtWin <- setRefClass(
       }
     }
   ))
+
+iNZDataReportWin <- setRefClass(
+    "iNZDataReportWin",
+    fields = list(
+        GUI = "ANY",
+        win = "ANY",
+        output_format = "ANY",
+        file_path = "ANY",
+        file_ext = "ANY",
+        generateBtn = "ANY"
+    ),
+    methods = list(
+        initialize = function(gui) {
+            if (!requireNamespace("dataMaid", quietly = TRUE)) {
+                gmessage("Unable to do that ... missing dependencies.")
+                return()
+            }
+
+            initFields(GUI = gui)
+
+            win <<- gwindow("Generate Data Report",
+                parent = GUI$win,
+                width = 300,
+                height = 200,
+                visible = FALSE
+            )
+
+            g <- gvbox(container = win)
+            g$set_borderwidth(5)
+
+            tbl <- glayout(container = g)
+            ii <- 1
+
+            lbl <- glabel("Report format :")
+            font(lbl) <- list(weight = "bold")
+            output_format <<- gcombobox(
+                c("PDF", "Word Document", "HTML"),
+                selected = 3L,
+                handler = function(h, ...) {
+                    # if (svalue(h$obj) != "HTML") {
+                    #     gmessage("Not yet supported", type = "warning")
+                    #     h$obj$set_index(3L)
+                    # }
+
+                    # file_ext <<- switch(
+                    #     svalue(h$obj),
+                    #     "PDF" = ".pdf",
+                    #     "Word Document" = ".docx",
+                    #     "HTML" = ".html"
+                    # )
+                    file_path <<- tempfile(fileext = ".Rmd")
+                }
+            )
+            tbl[ii, 1, anchor = c(1, 0), fill = TRUE] <- lbl
+            tbl[ii, 2:4, expand = TRUE] <- output_format
+            ii <- ii + 1
+
+            # invoke change to set file_ext, file_path (DRY)
+            output_format$invoke_change_handler()
+
+            # lbl <- glabel("File name :")
+            # font(lbl) <- list(weight = "bold")
+            # file_path <<- gfilebrowse(
+            #     initial.filename = sprintf("%s.%s"),
+            #     type = "save",
+            #     filter = c("PDF" = "pdf", "Word Document" = "docx", "HTML" = "html"),
+            #     handler = function(h, ...) {
+            #         print(svalue(h$obj))
+            #     }
+            # )
+            # tbl[ii, 1, anchor = c(1, 0), fill = TRUE] <- lbl
+            # tbl[ii, 2:4, expand = TRUE] <- file_path
+            # ii <- ii + 1
+
+            generateBtn <<- gbutton(
+                "Generate report",
+                handler = function(h, ...) {
+                    success <- FALSE
+                    tryCatch(
+                        {
+                            dataMaid::makeDataReport(
+                                GUI$getActiveData(),
+                                output = switch(svalue(output_format),
+                                    "PDF" = "pdf",
+                                    "Word Document" = "word",
+                                    "HTML" = "html"
+                                ),
+                                file = file_path,
+                                reportTitle = GUI$dataNameWidget$datName,
+                                replace = TRUE
+                            )
+                            success <- TRUE
+                        },
+                        error = function(e) {
+                            gmessage("Unable to generate report :(", type = "error")
+                            print(e)
+                        }
+                    )
+
+                    if (success) dispose(win)
+                }
+            )
+
+            tbl[ii, 2:4, expand = TRUE] <- generateBtn
+
+            visible(win) <<- TRUE
+        }
+    )
+)
