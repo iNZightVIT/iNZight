@@ -1,4 +1,5 @@
 - add option to save interactive plots locally (including assets)
+- add support for JSON files
 
 ## iNZight 3.5.3
 - New Module Manager

@@ -39,6 +39,7 @@ iNZImportWin <- setRefClass(
                     "97-2003 Excel Files (.xls)" = list(patterns = c("*.xls")),
                     "2007 Excel Files (.xlsx)" = list(patterns = c("*.xlsx")),
                     "STATA Files (.dta)" = list(patterns = c("*.dta")),
+                    "JSON (.json)" = list(patterns = c("*.json")),
                     "R Object (.rds)" = list(patterns = c("*.rds")),
                     "RData Files (.RData, .rda)" = list(patterns = c("*.RData", "*.rda"))
                 ),
