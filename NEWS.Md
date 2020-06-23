@@ -1,4 +1,4 @@
-
+- add support for JSON files
 
 ## iNZight 3.5.3
 - New Module Manager
