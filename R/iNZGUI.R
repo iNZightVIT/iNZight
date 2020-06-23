@@ -61,7 +61,11 @@ iNZGUI <- setRefClass(
             rhistory = "ANY",
             plot_history = "ANY",
             disposer = "logical",
-            addonModuleDir = "character"
+            addonModuleDir = "character",
+            ## This will be used to store the dataset, design, etc..
+            ## rather than passing around the full object.
+            code_env = "ANY",
+            code_panel = "ANY"
         ),
         prototype = list(
             activeDoc = 1,
@@ -252,6 +256,11 @@ iNZGUI <- setRefClass(
             initializePlotToolbar(plotToolbar)
 
 
+            ## code panel for latest R function call
+            code_panel <<- iNZCodePanel$new(.self)
+            if (preferences$dev.features)
+                add(gtop, code_panel$panel, fill = TRUE)
+
             visible(win) <<- TRUE
 
             ## ensures that all plot control btns are visible on startup
@@ -276,6 +285,7 @@ iNZGUI <- setRefClass(
             statusbar <<- gstatusbar("iNZight is ready")# , container = win) ## disabled
 
             plot_history <<- NULL
+            code_env <<- new.env()
 
             invisible(0)
         }, ## end initialization
@@ -370,656 +380,12 @@ iNZGUI <- setRefClass(
             sumGrp <- ggroup()
             sumBtn <<- gbutton(
                 "Get Summary",
-                handler = function(h, ...) {
-                    curSet <- getActiveDoc()$getSettings()
-                    curSet$plottype <- NULL
-                    if (!is.null(curSet$freq))
-                        curSet$freq <- getActiveData()[[curSet$freq]]
-                    if (!is.null(curSet$x)) {
-                        if (is_num(curSet$x) & is_num(curSet$y)) {
-                            tmp.x <- curSet$y
-                            curSet$y <- curSet$x
-                            curSet$x <- tmp.x
-                            v <- curSet$varnames
-                            curSet$varnames$x <- v$y
-                            curSet$varnames$y <- v$x
-                        }
-
-                        ## Design or data?
-                        curMod <- getActiveDoc()$getModel()
-                        if (!is.null(curMod$dataDesign)) {
-                            curSet$data <- NULL
-                            curSet$design <- curMod$createSurveyObject()
-                        }
-
-                        w <- gwindow(
-                            "Summary",
-                            width = 800 * preferences$font.size / 10,
-                            height = 400 * preferences$font.size / 10,
-                            visible = FALSE,
-                            parent = win
-                        )
-                        g <- gvbox(container = w)
-                        txtSmry <- gtext(
-                            text = paste(
-                                do.call(iNZightPlots:::getPlotSummary, curSet),
-                                collapse = "\n"
-                            ),
-                            expand = TRUE,
-                            container = g,
-                            wrap = FALSE,
-                            font.attr = list(
-                                family = "monospace",
-                                size = preferences$font.size
-                            )
-                        )
-
-                        ## if regression OR anova is going on:
-                        if (is.null(curSet$g1) &&
-                            is.null(curSet$g2) &&
-                            !is.null(curSet$y) &&
-                            (is_num(curSet$x) | is_num(curSet$y)) &&
-                            (!is.null(curSet$trend) | curSet$smooth > 0 |
-                             !is_num(curSet$x) | !is_num(curSet$y))) {
-                            btngrp <- ggroup(container = g)
-                            addSpace(btngrp, 5)
-
-                            btnHandler <- function(h, ...) {
-                                varType <- ifelse(
-                                    grepl("residuals", svalue(h$obj)),
-                                    "residual",
-                                    "predict"
-                                )
-
-                                ## window asking for variable names:
-                                w2 <- gwindow("Store fitted values", width = 350,
-                                              parent = w, visible = FALSE)
-
-                                g2 <- gvbox(container = w2)
-                                g2$set_borderwidth(15)
-
-                                lbl <- glabel(
-                                    sprintf(
-                                        "Specify names for the new variable%s",
-                                        ifelse(length(curSet$trend) > 1, "s", "")),
-                                    container = g2,
-                                    anchor = c(-1, -1)
-                                )
-                                font(lbl) <- list(size = 12, weight = "bold")
-
-                                addSpace(g2, 20)
-
-
-                                tbl <- glayout(container = g2)
-                                ii <- 1
-
-                                ## Predicted values for GROUP MEANS:
-                                fittedLbl <- glabel("")
-                                fittedName <- gedit(
-                                    sprintf(
-                                        "%s.%s",
-                                        curSet$varnames[[ifelse(is_num(curSet$y), "y", "x")]],
-                                        varType),
-                                    width = 25
-                                )
-
-                                if (is_cat(curSet$x) || is_cat(curSet$y)) { ##} || length(curSet$trend) == 1) {
-                                    tbl[ii, 1:3, anchor = c(1, 0), expand = TRUE] <- fittedLbl
-                                    tbl[ii, 4:6, expand = TRUE] <- fittedName
-                                    ii <- ii + 1
-                                }
-
-                                ## Predicted values for LINEAR trend:
-                                fittedLbl.lin <- glabel(
-                                    ifelse(length(curSet$trend) > 1, "Linear :", "")
-                                )
-                                fittedName.lin <- gedit(
-                                    sprintf("%s.%s%s", curSet$varnames$y, varType,
-                                            ifelse(length(curSet$trend) > 1, ".linear", "")),
-                                    width = 25
-                                )
-                                if (length(curSet$trend) >= 1 && "linear" %in% curSet$trend) {
-                                    tbl[ii, 1:3, anchor = c(1, 0), expand = TRUE] <- fittedLbl.lin
-                                    tbl[ii, 4:6, expand = TRUE] <- fittedName.lin
-                                    ii <- ii + 1
-                                }
-
-                                ## Predicted values for QUADRATIC trend:
-                                fittedLbl.quad <- glabel(
-                                    ifelse(length(curSet$trend) > 1, "Quadratic :", "")
-                                )
-                                fittedName.quad <- gedit(
-                                    sprintf("%s.%s%s", curSet$varnames$y, varType,
-                                            ifelse(length(curSet$trend) > 1, ".quadratic", "")),
-                                    width = 25
-                                )
-                                if (length(curSet$trend) >= 1 && "quadratic" %in% curSet$trend) {
-                                    tbl[ii, 1:3, anchor = c(1, 0), expand = TRUE] <- fittedLbl.quad
-                                    tbl[ii, 4:6, expand = TRUE] <- fittedName.quad
-                                    ii <- ii + 1
-                                }
-
-                                ## Predicted values for CUBIC trend:
-                                fittedLbl.cub <- glabel(
-                                    ifelse(length(curSet$trend) > 1, "Cubic :", "")
-                                )
-                                fittedName.cub <- gedit(
-                                    sprintf("%s.%s%s", curSet$varnames$y, varType,
-                                            ifelse(length(curSet$trend) > 1, ".cubic", "")),
-                                    width = 25
-                                )
-                                if (length(curSet$trend) >= 1 && "cubic" %in% curSet$trend) {
-                                    tbl[ii, 1:3, anchor = c(1, 0), expand = TRUE] <- fittedLbl.cub
-                                    tbl[ii, 4:6, expand = TRUE] <- fittedName.cub
-                                    ii <- ii + 1
-                                }
-
-                                ## Predicted values for SMOOTHER:
-                                fittedLbl.smth <- glabel("Smoother :")
-                                fittedName.smth <- gedit(
-                                    sprintf("%s.%s.smooth", curSet$varnames$y, varType),
-                                    width = 25
-                                )
-                                if (curSet$smooth > 0 && is_num(curSet$x) &&
-                                    is_num(curSet$y)) {
-                                    tbl[ii, 1:3, anchor = c(1, 0), expand = TRUE] <- fittedLbl.smth
-                                    tbl[ii, 4:6, expand = TRUE] <- fittedName.smth
-                                    ii <- ii + 1
-                                }
-
-                                addSpring(g2)
-
-                                okBtn <- gbutton(
-                                    "Ok",
-                                    icon = "save",
-                                    handler = function(h, ...) {
-                                        FUN <-
-                                            if (varType == "predict")
-                                                function(object)
-                                                    predict(
-                                                        object,
-                                                        newdata = data.frame(x = curSet$x, stringsAsFactors = TRUE)
-                                                    )
-                                            else
-                                                function(object)
-                                                    residuals(object)
-
-                                        pred <- NULL
-                                        if (is_cat(curSet$x) || is_cat(curSet$y)) { #} || length(curSet$trend) == 1) {
-                                            ## just the one
-                                            fit <- with(curSet, lm(if (is_num(curSet$y)) y ~ x else x ~ y, na.action = na.exclude))
-                                            pred <- data.frame(FUN(fit), stringsAsFactors = TRUE)
-                                            colnames(pred) <- svalue(fittedName)
-                                        } else if (length(curSet$trend) >= 1) {
-                                            ## for each trend line
-                                            fits <- lapply(curSet$trend, function(ord) {
-                                                with(curSet, switch(ord,
-                                                                    "linear"    = lm(y ~ x, na.action = na.exclude),
-                                                                    "quadratic" = lm(y ~ x + I(x^2), na.action = na.exclude),
-                                                                    "cubic"     = lm(y ~ x + I(x^2) + I(x^3), na.action = na.exclude)))
-                                            })
-                                            pred <- sapply(fits, function(f) FUN(f))
-                                            colnames(pred) <- sapply(curSet$trend, function(ord) {
-                                                switch(ord,
-                                                       "linear" = svalue(fittedName.lin),
-                                                       "quadratic" = svalue(fittedName.quad),
-                                                       "cubic" = svalue(fittedName.cub))
-                                            })
-                                        }
-                                        if (!is.null(pred))
-                                            newdata <- data.frame(getActiveData(), pred, stringsAsFactors = TRUE)
-                                        else
-                                            newdata <- getActiveData()
-
-
-                                        if (curSet$smooth > 0 && is_num(curSet$x) && is_num(curSet$y)) {
-                                            tmp <- data.frame(x = curSet$x, y = curSet$y, stringsAsFactors = TRUE)
-                                            fit <- with(curSet, loess(y ~ x, span = curSet$smooth, family = "gaussian", degree = 1, na.action = "na.exclude"))
-                                            pred <- data.frame(FUN(fit), stringsAsFactors = TRUE)
-                                            colnames(pred) <- svalue(fittedName.smth)
-                                            newdata <- data.frame(newdata, pred, stringsAsFactors = TRUE)
-                                        }
-
-
-                                        getActiveDoc()$getModel()$updateData(newdata)
-
-                                        dispose(w2)
-                                    },
-                                    container = g2)
-
-                                visible(w2) <- TRUE
-                            }
-
-                            predBtn <- gbutton("Store fitted values", container = btngrp, handler = btnHandler)
-                            residBtn <- gbutton("Store residuals", container = btngrp, handler = btnHandler)
-
-                            addSpace(g, 0)
-                        }
-
-                        visible(w) <- TRUE
-                    } else {
-                        w <- gwindow("Summary",
-                                     width = 800 * preferences$font.size / 10,
-                                     height = 400 * preferences$font.size / 10,
-                                     visible = FALSE, parent = win)
-                        g <- gvbox(container = w)
-                        txtSmry <- gtext(
-                            text = paste(
-                                iNZightPlots::getPlotSummary(data = getActiveData()),
-                                collapse = "\n"
-                            ),
-                            expand = TRUE,
-                            container = g,
-                            wrap = FALSE,
-                            font.attr = list(
-                                family = "monospace",
-                                size = preferences$font.size
-                            )
-                        )
-                        visible(w) <- TRUE
-                    }
-                }
+                handler = function(h, ...) iNZGetSummary$new(.self)
             )
             infBtn <<- gbutton(
                 "Get Inference",
-                handler = function(h, ...) {
-                    curSet <- getActiveDoc()$getSettings()
-                    curSet$plottype <- NULL
-                    if (!is.null(curSet$freq))
-                        curSet$freq <- getActiveData()[[curSet$freq]]
-                    if (!is.null(curSet$x)) {
-                        ## Figure out what type of inference will be happening:
-                        xnum <- is_num(curSet$x)
-
-                        if (is.null(curSet$y)) {
-                            INFTYPE <- ifelse(xnum, "onesample-ttest", "oneway-table")
-                        } else {
-                            ynum <- is_num(curSet$y)
-                            if (xnum && ynum) {
-                                INFTYPE <- "regression"
-                            } else if (xnum | ynum) {
-                                M <-
-                                    if (xnum) length(levels(curSet$y))
-                                    else length(levels(curSet$x))
-                                if (M == 2) INFTYPE <- "twosample-ttest"
-                                if (M > 2) INFTYPE <- "anova"
-                            } else {
-                                INFTYPE <- "twoway-table"
-                            }
-                        }
-
-                        if (INFTYPE == "regression") {
-                            tmp.x <- curSet$y
-                            curSet$y <- curSet$x
-                            curSet$x <- tmp.x
-                            v <- curSet$varnames
-                            curSet$varnames$x <- v$y
-                            curSet$varnames$y <- v$x
-                        }
-
-                        ## Design or data?
-                        curMod <- getActiveDoc()$getModel()
-                        is_survey <- FALSE
-                        if (!is.null(curMod$dataDesign)) {
-                            curSet$data <- NULL
-                            curSet$design <- curMod$createSurveyObject()
-                            is_survey <- TRUE
-                        }
-
-                        w <- gwindow(
-                            "Get Inference",
-                            width = 350,
-                            #height = 400,
-                            parent = win,
-                            visible = FALSE
-                        )
-                        g <- gvbox(container = w, expand = TRUE, fill = TRUE)
-                        g$set_borderwidth(5)
-
-                        tbl <- glayout(container = g)
-                        ii <- 1
-
-                        ## Inference method
-                        lbl <- glabel("Method :")
-                        infMthd <- gradio(c("Normal", "Bootstrap"), horizontal = TRUE)
-                        if (!is_survey) {
-                            tbl[ii, 1:3, anchor = c(1, 0), expand = TRUE] <- lbl
-                            tbl[ii, 4:6, expand = TRUE] <- infMthd
-                            ii <- ii + 1
-                        }
-
-                        ii <- ii + 1
-
-                        doHypTest <- grepl("ttest|anova|table", INFTYPE)
-                        if (doHypTest &&
-                            is_survey &&
-                            grepl("oneway-table", INFTYPE)) {
-                            ## don't do it for chi-square (yet)
-                            doHypTest <- length(levels(curSet$x)) == 2
-                        }
-                        test.type <- switch(
-                            INFTYPE,
-                            "onesample-ttest" = "One Sample t-test",
-                            "twosample-ttest" = "Two Sample t-test",
-                            "anova"           = "ANOVA",
-                            "regression"      = "Regression Analysis",
-                            "oneway-table"    =
-                                ifelse(is_survey && length(levels(curSet$x)) == 2,
-                                    "Test proportion",
-                                    "Chi-square test"
-                                ),
-                            "twoway-table"    = "Chi-square test"
-                        )
-
-                        ## Checkbox: perform hypothesis test? Activates hypothesis options.
-                        TTEST <- grepl("ttest", INFTYPE)
-                        TTEST2 <- INFTYPE == "twosample-ttest"
-                        CHI2 <- grepl("twoway-table", INFTYPE) ||
-                            (grepl("oneway-table", INFTYPE) && !is_survey)
-                        PROPTEST <- INFTYPE == "oneway-table"
-                        PROPTEST2 <- PROPTEST && length(levels(curSet$x)) == 2
-                        hypTest <-
-                            if (TTEST2)
-                                gradio(c("None", "Two Sample t-test", "ANOVA"), horizontal = TRUE)
-                            else if (PROPTEST2 && !is_survey)
-                                gradio(c("None", "Chi-square test", "Test proportion"), horizontal = TRUE)
-                            else
-                                gcheckbox(test.type, checked = FALSE)
-
-                        if (doHypTest) {
-                            lbl <- glabel("Hypothesis Testing")
-                            font(lbl) <- list(weight = "bold")
-                            tbl[ii, 1:6, anchor = c(-1, 0), expand = TRUE] <- lbl
-                            ii <- ii + 1
-
-                            tbl[ii, 1:6, anchor = c(1, 0), expand = TRUE] <- hypTest
-                            ii <- ii + 1
-                        }
-
-                        if (doHypTest) {
-                            ## Null hypothesis value
-                            lbl <- glabel("Null Value :")
-                            hypVal <- gedit("0", width = 10)
-
-                            if (TTEST) {
-                                tbl[ii, 1:3, anchor = c(1, 0), expand = TRUE] <- lbl
-                                tbl[ii, 4:6, expand = TRUE] <- hypVal
-                                ii <- ii + 1
-                            } else if (PROPTEST2) {
-                                tbl[ii, 1:3, anchor = c(1, 0), expand = TRUE] <- lbl
-                                svalue(hypVal) <- "0.5"
-                                tbl[ii, 4:6, expand = TRUE] <- hypVal
-                                ii <- ii + 1
-                            }
-
-                            ## alternative hypothesis
-                            lbl <- glabel("Alternative Hypothesis :")
-                            hypAlt <- gcombobox(c("two sided", "greater than", "less than"))
-                            if (TTEST || PROPTEST2) {
-                                tbl[ii, 1:3, anchor = c(1, 0), expand = TRUE] <- lbl
-                                tbl[ii, 4:6, expand = TRUE] <- hypAlt
-                                ii <- ii + 1
-                            }
-
-                            enabled(hypAlt) <- enabled(hypVal) <-
-                                if (TTEST2) svalue(hypTest, index = TRUE) == 2
-                                else if (PROPTEST2 && !is_survey) svalue(hypTest, index = TRUE) == 3
-                                else svalue(hypTest)
-
-                            ## use equal variance assumption?
-                            hypEqualVar <- gcheckbox("Use equal-variance", checked = FALSE)
-                            if (TTEST2 && !is_survey) {
-                                tbl[ii, 4:6, expand = TRUE] <- hypEqualVar
-                                ii <- ii + 1
-
-                                enabled(hypEqualVar) <- svalue(hypTest, index = TRUE) == 2
-                            }
-
-                            hypSimPval <- gcheckbox("Simulate p-value",
-                                checked = FALSE)
-                            if (CHI2 && !is_survey) {
-                                tbl[ii, 4:6, expand = TRUE] <- hypSimPval
-                                ii <- ii + 1
-
-                                enabled(hypSimPval) <-
-                                    if (PROPTEST2) svalue(hypTest, index = TRUE) == 2
-                                    else svalue(hypTest)
-                            }
-
-                            hypExactPval <- gcheckbox("Calculate exact p-value",
-                                checked = FALSE)
-                            if (PROPTEST2 && !is_survey) {
-                                tbl[ii, 4:6, expand = TRUE] <- hypExactPval
-                                ii <- ii + 1
-
-                                enabled(hypExactPval) <- svalue(hypTest, index = TRUE) == 3
-                            }
-                        }
-
-                        addHandlerChanged(hypTest, function(h, ...) {
-                            if (CHI2)
-                                enabled(hypSimPval) <-
-                                    if (PROPTEST2 && !is_survey) svalue(hypTest, index = TRUE) == 2
-                                    else svalue(hypTest)
-                            enabled(hypExactPval) <-
-                                if (PROPTEST2 && !is_survey) svalue(hypTest, index = TRUE) == 3
-                                else FALSE
-                            enabled(hypEqualVar) <-
-                            enabled(hypAlt) <-
-                            enabled(hypVal) <-
-                                if (TTEST2) svalue(hypTest, index = TRUE) == 2
-                                else if (PROPTEST2 && !is_survey) svalue(hypTest, index = TRUE) == 3
-                                else svalue(h$obj)
-                        })
-
-                        if (INFTYPE == "regression") {
-                            lbl <- glabel("Trend options (select at least one)")
-                            font(lbl) <- list(weight = "bold")
-                            tbl[ii, 1:6, anchor = c(-1, 0), expand = TRUE] <- lbl
-                            ii <- ii + 1
-
-                            ## clicking each will update plot settings
-                            addCurve <- function(h, ...) {
-                                newtrend <- character()
-                                if (svalue(trendLinearChk)) newtrend <- c(newtrend, "linear")
-                                if (svalue(trendQuadChk)) newtrend <- c(newtrend, "quadratic")
-                                if (svalue(trendCubicChk)) newtrend <- c(newtrend, "cubic")
-                                getActiveDoc()$setSettings(list(trend = newtrend))
-                            }
-                            curtrend <- curSet$trend
-                            trendLinearChk <- gcheckbox(
-                                "Linear trend",
-                                checked = "linear" %in% curtrend,
-                                handler = addCurve
-                            )
-                            tbl[ii, 2:6] <- trendLinearChk
-                            ii <- ii + 1
-                            trendQuadChk <- gcheckbox(
-                                "Quadratic trend",
-                                checked = "quadratic" %in% curtrend,
-                                handler = addCurve
-                            )
-                            tbl[ii, 2:6] <- trendQuadChk
-                            ii <- ii + 1
-                            trendCubicChk <- gcheckbox(
-                                "Cubic trend",
-                                checked = "cubic" %in% curtrend,
-                                handler = addCurve
-                            )
-                            tbl[ii, 2:6] <- trendCubicChk
-                            ii <- ii + 1
-                        }
-
-                        btn <- gbutton("OK", handler = function(h, ...) {
-                            infType <- svalue(infMthd, index = TRUE)
-                            curSet <- getActiveDoc()$getSettings()
-                            curSet$plottype <- NULL
-                            curMod <- getActiveDoc()$getModel()
-                            if (!is.null(curMod$dataDesign)) {
-                                curSet$data <- NULL
-                                curSet$design <- curMod$createSurveyObject()
-                            }
-                            if (!is.null(curSet$freq))
-                                curSet$freq <- getActiveData()[[curSet$freq]]
-                            if (!is.null(curSet$x)) {
-                                if (is.numeric(curSet$x) & is.numeric(curSet$y)) {
-                                    tmp.x <- curSet$y
-                                    curSet$y <- curSet$x
-                                    curSet$x <- tmp.x
-                                    v <- curSet$varnames
-                                    curSet$varnames$x <- v$y
-                                    curSet$varnames$y <- v$x
-                                }
-                            }
-                            if (is.null(curSet$g1) & !is.null(curSet$g2)) {
-                                if (curSet$g2.level != "_ALL") {
-                                    curSet$g1 <- curSet$g2
-                                    curSet$g1.level <- curSet$g2.level
-                                    curSet$varnames$g1 <- curSet$varnames$g2
-                                }
-                                curSet$g2 <- NULL
-                                curSet$g2.level <- NULL
-                                curSet$varnames$g2 <- NULL
-                            }
-                            curSet <- modifyList(
-                                curSet,
-                                list(bs.inference = infType == 2,
-                                     summary.type = "inference",
-                                     inference.type = "conf",
-                                     inference.par = NULL)
-                            )
-                            if ((TTEST2 && svalue(hypTest, index = TRUE) > 1) ||
-                                (PROPTEST2 && !is_survey && svalue(hypTest, index = TRUE) > 1) ||
-                                (PROPTEST2 && is_survey && svalue(hypTest)) ||
-                                (!TTEST2 && !PROPTEST2 && svalue(hypTest))) {
-                                if (is.na(as.numeric(svalue(hypVal)))) {
-                                    gmessage(
-                                        "Null value must be a valid number.",
-                                        title = "Invalid Value",
-                                        icon = "error"
-                                    )
-                                    return()
-                                }
-                                curSet <- modifyList(
-                                    curSet,
-                                    list(
-                                        hypothesis.value = as.numeric(svalue(hypVal)),
-                                        hypothesis.alt = switch(
-                                            svalue(hypAlt, index = TRUE),
-                                            "two.sided", "greater", "less"
-                                        ),
-                                        hypothesis.var.equal = svalue(hypEqualVar),
-                                        hypothesis.simulated.p.value = svalue(hypSimPval),
-                                        hypothesis.use.exact = svalue(hypExactPval),
-                                        hypothesis.test =
-                                            if (TTEST2)
-                                                switch(
-                                                    svalue(hypTest, index = TRUE),
-                                                    "default", "t.test", "anova"
-                                                )
-                                            else if (PROPTEST2 && !is_survey)
-                                                switch(svalue(hypTest, index = TRUE),
-                                                    "default", "chi2", "proportion"
-                                                )
-                                            else if (PROPTEST2 && is_survey)
-                                                "proportion"
-                                            else
-                                                "default"
-                                    )
-                                )
-                            } else {
-                                curSet <- modifyList(
-                                    curSet,
-                                    list(hypothesis = NULL),
-                                    keep.null = TRUE
-                                )
-                            }
-
-                            if (INFTYPE == "regression") {
-                                tr <- getActiveDoc()$getSettings()$trend
-                                if (is.null(tr) || length(tr) == 0) {
-                                    gmessage("Please choose at least one trend option", icon = "error",
-                                        title = "No trend selected", parent = win)
-                                    return()
-                                }
-                            }
-
-                            ## Close setup window and display results
-                            dispose(w)
-
-                            infTitle <- "Inference Information"
-                            if (infType == 2) {
-                                ## Not sure why this acts weird. At least on Linux, the text inside `wBoots` doesn't become visible until the
-                                ## function has finished.
-                                wBoots <- gwindow(
-                                    "Performing Bootstrap ...",
-                                    parent = win,
-                                    width=350,
-                                    height=120,
-                                    visible = FALSE
-                                )
-                                ggBoots <- ggroup(container = wBoots)
-                                addSpace(ggBoots, 5)
-                                hBoots <- gvbox(container = ggBoots, spacing = 10)
-                                addSpace(hBoots, 5)
-                                iBoots <- gimage(stock.id = "info", cont = hBoots, size = "dialog")
-                                fBoots <- gvbox(container = ggBoots, spacing = 10)
-                                fBoots$set_borderwidth(10)
-                                gBoots <- glabel(
-                                    "Please wait while iNZight\nperforms bootstrap simulations.",
-                                    anchor = c(-1, 0),
-                                    cont = fBoots
-                                )
-                                font(gBoots) <- list(size = 14, weight = "bold")
-                                gBoots2 <- glabel(
-                                    "Depending on the size of the data,\nthis could take a while.",
-                                    anchor = c(-1, 0),
-                                    cont = fBoots
-                                )
-                                visible(wBoots) <- TRUE
-                            }
-
-                            w2 <- gwindow(infTitle,
-                                          width = 800 * preferences$font.size / 10,
-                                          height = 400 * preferences$font.size / 10,
-                                          visible = FALSE, parent = win)
-                            g2 <- gtext(
-                                paste(
-                                    do.call(
-                                        iNZightPlots:::getPlotSummary,
-                                        curSet
-                                    ),
-                                    collapse = "\n"
-                                ),
-                                expand = TRUE,
-                                cont = w2,
-                                wrap = FALSE,
-                                font.attr = list(
-                                    family = "monospace",
-                                    size = preferences$font.size
-                                )
-                            )
-                            visible(w2) <- TRUE
-                            try(dispose(wBoots), silent = TRUE)
-                            invisible(w2)
-                        })
-
-                        ## if no hypothesis to choose from, skip window
-
-                        addSpring(g)
-                        add(g, btn)
-
-                        # if (!doHypTest) {
-                            # btn$invoke_change_handler()
-                        # } else {
-                            visible(w) <- TRUE
-                        # }
-                        invisible(w)
-                    } else {
-                        gmessage("Please select at least one variable",
-                                 parent = win)
-                    }
-                })
+                handler = function(h, ...) iNZGetInference$new(.self)
+            )
             font(sumBtn) <<-
                 list(weight = "bold", family = "sans", color = "navy")
             font(infBtn) <<-
@@ -1062,38 +428,72 @@ iNZGUI <- setRefClass(
         ## plot with the current active plot settings
         updatePlot = function(allow.redraw = TRUE) {
             curPlSet <- getActiveDoc()$getSettings()
-            if (!is.null(curPlSet$freq))
-                curPlSet$freq <- getActiveData()[[curPlSet$freq]]
-            if(!is.null(curPlSet$x)) {
-                # Switch x and y:
-                if (is_num(curPlSet$x) & is_num(curPlSet$y)) {
-                    x.tmp <- curPlSet$y
-                    curPlSet$y <- curPlSet$x
-                    curPlSet$x <- x.tmp
 
-                    x.tmp <- curPlSet$varnames$y
-                    curPlSet$varnames$y <- curPlSet$varnames$x
-                    curPlSet$varnames$x <- x.tmp
+            .dataset <- getActiveData()
+            .design <- NULL
+            curPlSet$data <- quote(.dataset)
+
+            # if (!is.null(curPlSet$freq))
+            #     curPlSet$freq <- getActiveData()[[curPlSet$freq]]
+            if (!is.null(curPlSet$x)) {
+                varx <- .dataset[[curPlSet$x]]
+                vary <- if (!is.null(curPlSet$y)) .dataset[[curPlSet$y]] else NULL
+                # # Switch x and y:
+                # if (is_num(varx) & is_num(vary)) {
+                #     x.tmp <- curPlSet$y
+                #     curPlSet$y <- curPlSet$x
+                #     curPlSet$x <- x.tmp
+
+                #     x.tmp <- curPlSet$varnames$y
+                #     curPlSet$varnames$y <- curPlSet$varnames$x
+                #     curPlSet$varnames$x <- x.tmp
+                # }
+                # if x and y are categorical, OR x is cat, y is num ... switch
+                if (!is.null(vary) && is_cat(varx)) {
+                    x <- curPlSet$x
+                    curPlSet$x <- curPlSet$y
+                    curPlSet$y <- x
                 }
+                if (!is.null(vary) && is_cat(vary) && is_cat(varx)) {
+                    # if both x and y are categorical - two-way bar graph
+                    # -> requires specifying colour palette!
+                    if (is.null(curPlSet$col.fun)) {
+                        curPlSet$col.fun <- "contrast"
+                    }
+                    curPlSet["colby"] <- list(NULL)
+                } else if (is.null(curPlSet$colby)) {
+                    # otherwise, no colby set? remove col.fun
+                    curPlSet["col.fun"] <- list(NULL)
+                }
+
                 ## Design or data?
                 curMod <- getActiveDoc()$getModel()
                 if (!is.null(curMod$dataDesign)) {
                     curPlSet$data <- NULL
-                    curPlSet$design <- curMod$createSurveyObject()
+                    .design <- curMod$createSurveyObject()
+                    curPlSet$design <- .design
                 }
 
                 curPlSet$data_name <- dataNameWidget$datName
+                e <- new.env()
+                e$.dataset <- .dataset
+                e$.design <- .design
 
                 ## Suppress the warnings produced by iNZightPlot ...
                 dop <- try({
-                    # suppressWarnings({
-                        ## Generate the plot ... and update the interaction button
-                        curPlot <<- unclass(rawpl <- do.call(iNZightPlot, curPlSet))
-                        if (allow.redraw & !is.null(attr(curPlot, "dotplot.redraw")))
-                            if (attr(curPlot, "dotplot.redraw"))
-                                curPlot <<- unclass(rawpl <- do.call(iNZightPlot, curPlSet))
-
-                    # })
+                    ## Generate the plot ... and update the interaction button
+                    vartypes <- list(
+                        x = iNZightTools::vartype(.dataset[[curPlSet$x]]),
+                        y = NULL
+                    )
+                    if (!is.null(curPlSet$y))
+                        vartypes$y <- iNZightTools::vartype(.dataset[[curPlSet$y]])
+                    plot_call <- construct_call(curPlSet, curMod, vartypes)
+                    rawpl <- eval(plot_call, e)
+                    curPlot <<- unclass(rawpl)
+                    if (allow.redraw & !is.null(attr(curPlot, "dotplot.redraw")))
+                        if (attr(curPlot, "dotplot.redraw"))
+                            curPlot <<- unclass(rawpl <- eval(plot_call, e))
                 }, silent = TRUE)
 
                 if (inherits(dop, "try-error")) {
@@ -1142,6 +542,13 @@ iNZGUI <- setRefClass(
                     return(invisible(NULL))
                 }
 
+                if (!is.null(attr(curPlot, "code"))) {
+                    attr(curPlot, "gg_code") <<- mend_call(attr(curPlot, "code"), .self)
+                }
+                code <- mend_call(plot_call, .self)
+                attr(curPlot, "code") <<- code
+
+                code_panel$set_input(code)
                 enabled(plotToolbar$exportplotBtn) <<- can.interact(rawpl)
                 plotType <<- attr(curPlot, "plottype")
                 return(invisible(rawpl))

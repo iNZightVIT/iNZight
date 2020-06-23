@@ -109,7 +109,8 @@ iNZcodeWidget <- setRefClass(
               "",
               sep(),
               "",
-              "library(magrittr)  # enabled the pipe (%>%) operator",
+              "library(magrittr)  # enables the pipe (%>%) operator",
+              "library(iNZightPlots)",
               "")
         },
         sep = function(width = 80) {
