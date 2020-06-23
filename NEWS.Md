@@ -1,7 +1,6 @@
 - New `iNZInfoWindow` class to support both "Get Summary" and "Get Inference" which includes future scalability to code-writing and manual user-modifiable code snippets, plus an extensible command panel.
-- New plot code panel displays the code for the current plot, and allows users to edit
-  the code by hand
-
+- New plot code panel displays the code for the current plot, and allows users to edit the code by hand
+- add support for JSON files
 
 ## iNZight 3.5.3
 - New Module Manager
