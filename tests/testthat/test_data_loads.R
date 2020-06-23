@@ -315,3 +315,30 @@ test_that("Data sets with many columns can change var types", {
     )
 })
 imp$cancelBtn$invoke_change_handler()
+
+
+if (interactive()) {
+    try(ui$close()); load_all()
+    ui <- iNZGUI$new()
+    ui$initializeGui()
+    on.exit(try(ui$close(), TRUE))
+}
+
+test_that("JSON files load", {
+    t <- tempfile(fileext = ".json")
+    jsonlite::write_json(iris, t)
+    imp <- iNZImportWin$new(ui)
+    on.exit(gWidgets2::dispose(imp$importFileWin))
+
+    imp$fname <- t
+    imp$setfile()
+    expect_equal(imp$fext, "json")
+    expect_equal(dim(imp$prev), c(rows = 5L, cols = 5L))
+    expect_silent(imp$okBtn$invoke_change_handler())
+    expect_equivalent(ui$getActiveData(), iris)
+    expect_match(
+        tail(ui$rhistory$get(), 1),
+        "jsonlite::fromJSON(",
+        fixed = TRUE
+    )
+})
