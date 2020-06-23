@@ -15,8 +15,6 @@ services:
 matrix:
   include:
     - os: linux
-      r: oldrel
-    - os: linux
       r: release
     - os: linux
       r: devel
@@ -45,9 +43,6 @@ addons:
       - xorg-dev
       - libxml2-dev
       - libnlopt-dev
-      # - r-cran-rodbc
-      # - r-cran-rgtk2
-      # - r-cran-cairodevice
 
 before_install:
   - if [ "$TRAVIS_OS_NAME" == "osx" ]; then
