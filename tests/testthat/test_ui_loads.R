@@ -1,6 +1,7 @@
 context("The user interface loads")
 
 ui <- NULL
+on.exit(gWidgets2::dispose(ui$win))
 
 test_that("GUI is loaded and initialized without problems", {
     ## load (and then close) the ui object

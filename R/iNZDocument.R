@@ -74,7 +74,7 @@ iNZDataModel <- setRefClass(
                 gui$getActiveDoc()$setSettings(list(freq = NULL))
             }
             gui$getActiveDoc()$setSettings(list(
-                freq = freq # gui$getActiveData()[[freq]]
+                freq = as.name(freq) # gui$getActiveData()[[freq]]
             ))
             # remove any non-categorical variables
             newdata <- gui$getActiveData()
@@ -275,15 +275,14 @@ iNZPlotSettings <- setRefClass(
             }
 
             if (reset)
-                setList <- modifyList(setList,
-                                      defaultSettings,
-                                      keep.null = TRUE)
-            settings <<- modifyList(settings, setList,
-                                    keep.null = TRUE)
+                setList <- modifyList(setList, defaultSettings, keep.null = TRUE)
+
+            settings <<- modifyList(settings, setList, keep.null = TRUE)
             defaultSettings <<- modifyList(
                 defaultSettings,
                 extractDefaults(settings),
-                keep.null = TRUE)
+                keep.null = TRUE
+            )
         },
         ## reset the plot settings (except the data fields)
         resetSettings = function() {
@@ -341,10 +340,10 @@ iNZDocument <- setRefClass(
         updateSettings = function() {
             settings <- plotSettings$settings
             if (!is.null(settings$x) && !is.null(settings$varnames$x)) {
-                settings$x <- getData()[[settings$varnames$x]]
+                settings$x <- as.name(settings$varnames$x)
             }
             if (!is.null(settings$y) && !is.null(settings$varnames$y)) {
-                settings$y <- getData()[[settings$varnames$y]]
+                settings$y <- as.name(settings$varnames$y)
             }
             setSettings(settings)
         },

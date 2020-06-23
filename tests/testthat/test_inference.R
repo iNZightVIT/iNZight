@@ -1,7 +1,6 @@
 context("Get Inference window")
 
-# ui$close()
-# devtools::load_all("../..")
+# try(ui$close(), TRUE); devtools::load_all()
 ui <- iNZGUI$new()
 ui$initializeGui()
 on.exit(gWidgets2::dispose(ui$win))
@@ -12,241 +11,188 @@ Sys.sleep(5)
 test_that("Get inference window - dot plots", {
     svalue(ui$ctrlWidget$V1box) <- "height"
 
-    iwin <- ui$infBtn$invoke_change_handler()
-    expect_is(iwin[[1]], "GWindow")
-    chk <- iwin[[1]]$children[[1]]$children[[1]]$children[[4]]
-    expect_equal(
-        chk$widget$label,
-        "One Sample t-test"
-    )
-    # checking this box specifies hypothesis
-    null <- iwin[[1]]$children[[1]]$children[[1]]$children[[6]]
-    alt <- iwin[[1]]$children[[1]]$children[[1]]$children[[8]]
+    iwin <- iNZGetInference$new(ui)
+    on.exit(gWidgets2::dispose(iwin$win))
+    expect_is(iwin, "iNZGetInference")
 
-    expect_false(enabled(null))
-    expect_false(enabled(alt))
+    expect_equal(svalue(iwin$inf_method), "Normal theory")
+    expect_equal(iwin$hypothesis_test$get_items(), c("None", "One sample t-test"))
+    expect_equal(svalue(iwin$hypothesis_test), "None")
+    expect_false(visible(iwin$g_hypctrls))
+    expect_false(any(grepl("One Sample t-test", svalue(iwin$info_text))))
 
-    expect_silent(
-        svalue(chk) <- TRUE
-    )
-    expect_true(enabled(null))
-    expect_true(enabled(alt))
-    expect_is(null, "GEdit")
-    expect_is(alt, "GComboBox")
-    expect_equal(svalue(null), "0")
-    expect_equal(svalue(alt), "two sided")
+    expect_silent(iwin$hypothesis_test$set_index(2L))
+    expect_true(visible(iwin$g_hypctrls))
+    expect_equal(svalue(iwin$hyp_null), "0")
+    expect_equal(svalue(iwin$hyp_alt), "two-sided")
+    expect_match(svalue(iwin$info_text), "One Sample t-test")
+    expect_match(svalue(iwin$info_text), "true mean is equal to 0")
+    expect_match(svalue(iwin$info_text), "true mean is not equal to 0")
 
-    svalue(null) <- "100"
-    svalue(alt) <- "greater than"
+    expect_true(iwin$hyp_null$set_value("100"))
+    iwin$hyp_alt$set_index(2L)
+    expect_match(svalue(iwin$info_text), "true mean is equal to 100")
+    expect_match(svalue(iwin$info_text), "true mean is greater than 100")
 
-    expect_silent(
-        w2 <- iwin[[1]]$children[[1]]$children[[2]]$invoke_change_handler()
-    )
-    expect_is(w2[[1]], "GWindow")
-    expect_is(w2[[1]]$children[[1]], "GText")
-    expect_match(
-        svalue(w2[[1]]$children[[1]]),
-        "Null Hypothesis: true mean is equal to 100"
-    )
-    expect_match(
-        svalue(w2[[1]]$children[[1]]),
-        "Alternative Hypothesis: true mean is greater than 100"
-    )
-    dispose(w2[[1]])
+    expect_silent(iwin$hypothesis_test$set_index(1L))
+    expect_false(visible(iwin$g_hypctrls))
+    expect_false(any(grepl("One Sample t-test", svalue(iwin$info_text))))
 })
 
 
 test_that("Get inference window - two-way dot plots", {
     svalue(ui$ctrlWidget$V2box) <- "gender"
 
-    iwin <- ui$infBtn$invoke_change_handler()
-    expect_is(iwin[[1]], "GWindow")
-    rdo <- iwin[[1]]$children[[1]]$children[[1]]$children[[4]]
-    expect_is(rdo, "GRadio")
-    expect_equal(svalue(rdo), "None")
-    # checking this box specifies hypothesis
-    null <- iwin[[1]]$children[[1]]$children[[1]]$children[[6]]
-    alt <- iwin[[1]]$children[[1]]$children[[1]]$children[[8]]
+    iwin <- iNZGetInference$new(ui)
+    on.exit(gWidgets2::dispose(iwin$win))
+    expect_is(iwin, "iNZGetInference")
 
-    expect_false(enabled(null))
-    expect_false(enabled(alt))
+    expect_equal(svalue(iwin$inf_method), "Normal theory")
+    expect_equal(iwin$hypothesis_test$get_items(), c("None", "Two sample t-test", "ANOVA"))
+    expect_equal(svalue(iwin$hypothesis_test), "None")
+    expect_false(visible(iwin$g_hypctrls))
+    expect_false(any(grepl("Two Sample t-test|ANOVA", svalue(iwin$info_text))))
 
-    expect_silent(svalue(rdo, index = TRUE) <- 2)
-    expect_equal(svalue(rdo), "Two Sample t-test")
+    expect_silent(iwin$hypothesis_test$set_index(2L))
+    expect_true(visible(iwin$g_hypctrls))
+    expect_equal(svalue(iwin$hyp_null), "0")
+    expect_equal(svalue(iwin$hyp_alt), "two-sided")
+    expect_false(svalue(iwin$hyp_equalvar))
+    expect_match(svalue(iwin$info_text), "Welch Two Sample t-test")
+    expect_match(svalue(iwin$info_text), "true difference in means is equal to 0")
+    expect_match(svalue(iwin$info_text), "true difference in means is not equal to 0")
 
-    expect_true(enabled(null))
-    expect_true(enabled(alt))
-    expect_is(null, "GEdit")
-    expect_is(alt, "GComboBox")
-    expect_equal(svalue(null), "0")
-    expect_equal(svalue(alt), "two sided")
+    expect_true(iwin$hyp_null$set_value("5"))
+    iwin$hyp_alt$set_index(3L)
+    iwin$hyp_equalvar$set_value(TRUE)
+    expect_match(svalue(iwin$info_text), "Two Sample t-test assuming equal variance")
+    expect_match(svalue(iwin$info_text), "true difference in means is equal to 5")
+    expect_match(svalue(iwin$info_text), "true difference in means is less than 5")
 
-    svalue(null) <- "5"
-    svalue(alt) <- "less than"
+    expect_silent(iwin$hypothesis_test$set_index(3L))
+    expect_false(visible(iwin$g_hypctrls))
+    expect_match(svalue(iwin$info_text), "One-way Analysis of Variance")
 
-    expect_silent(
-        w2 <- iwin[[1]]$children[[1]]$children[[2]]$invoke_change_handler()
-    )
-    expect_is(w2[[1]], "GWindow")
-    expect_is(w2[[1]]$children[[1]], "GText")
-    expect_match(
-        svalue(w2[[1]]$children[[1]]),
-        "Null Hypothesis: true difference in means is equal to 5"
-    )
-    expect_match(
-        svalue(w2[[1]]$children[[1]]),
-        "Alternative Hypothesis: true difference in means is less than 5"
-    )
-    dispose(w2[[1]])
+    expect_silent(iwin$hypothesis_test$set_index(1L))
+    expect_false(visible(iwin$g_hypctrls))
+    expect_false(any(grepl("Two Sample t-test|ANOVA", svalue(iwin$info_text))))
 })
 
 test_that("Get inference window - ANOVA dot plots", {
     svalue(ui$ctrlWidget$V2box) <- "getlunch"
 
-    iwin <- ui$infBtn$invoke_change_handler()
-    expect_is(iwin[[1]], "GWindow")
-    chk <- iwin[[1]]$children[[1]]$children[[1]]$children[[4]]
-    expect_equal(
-        chk$widget$label,
-        "ANOVA"
-    )
-    expect_silent(svalue(chk) <- TRUE)
+    iwin <- iNZGetInference$new(ui)
+    on.exit(gWidgets2::dispose(iwin$win))
+    expect_is(iwin, "iNZGetInference")
 
-    expect_silent(
-        w2 <- iwin[[1]]$children[[1]]$children[[2]]$invoke_change_handler()
-    )
-    expect_is(w2[[1]], "GWindow")
-    expect_is(w2[[1]]$children[[1]], "GText")
-    expect_match(
-        svalue(w2[[1]]$children[[1]]),
-        "Null Hypothesis: true group means are all equal"
-    )
-    expect_match(
-        svalue(w2[[1]]$children[[1]]),
-        "Alternative Hypothesis: true group means are not all equal"
-    )
-    dispose(w2[[1]])
+    expect_equal(svalue(iwin$inf_method), "Normal theory")
+    expect_equal(iwin$hypothesis_test$get_items(), c("None", "ANOVA"))
+    expect_equal(svalue(iwin$hypothesis_test), "None")
+    expect_false(visible(iwin$g_hypctrls))
+    expect_false(any(grepl("ANOVA", svalue(iwin$info_text))))
+
+    expect_silent(iwin$hypothesis_test$set_index(2L))
+    expect_match(svalue(iwin$info_text), "One-way Analysis of Variance")
+    expect_match(svalue(iwin$info_text), "true group means are all equal")
+    expect_match(svalue(iwin$info_text), "true group means are not all equal")
+
+    expect_silent(iwin$hypothesis_test$set_index(1L))
+    expect_false(any(grepl("ANOVA", svalue(iwin$info_text))))
 })
 
 test_that("Get inference window - one way bar plots, two levels", {
     svalue(ui$ctrlWidget$V2box, index = TRUE) <- 1
     svalue(ui$ctrlWidget$V1box) <- "gender"
 
-    iwin <- ui$infBtn$invoke_change_handler()
-    expect_is(iwin[[1]], "GWindow")
-    chk <- iwin[[1]]$children[[1]]$children[[1]]$children[[4]]
-    null <- iwin[[1]]$children[[1]]$children[[1]]$children[[6]]
-    alt <- iwin[[1]]$children[[1]]$children[[1]]$children[[8]]
-    simp <- iwin[[1]]$children[[1]]$children[[1]]$children[[9]]
-    expect_equal(svalue(chk), "None")
-    expect_equal(svalue(null), "0.5")
-    expect_equal(svalue(alt), "two sided")
-    expect_false(svalue(simp))
-    expect_false(enabled(null))
-    expect_false(enabled(alt))
-    expect_false(enabled(simp))
+    iwin <- iNZGetInference$new(ui)
+    on.exit(gWidgets2::dispose(iwin$win))
+    expect_is(iwin, "iNZGetInference")
 
-    expect_silent(svalue(chk, index = TRUE) <- 2)
-    expect_false(enabled(null))
-    expect_false(enabled(alt))
-    expect_true(enabled(simp))
+    expect_equal(svalue(iwin$inf_method), "Normal theory")
+    expect_equal(iwin$hypothesis_test$get_items(), c("None", "Test proportion", "Chi-square test"))
+    expect_equal(svalue(iwin$hypothesis_test), "None")
+    expect_false(visible(iwin$g_hypctrls))
+    expect_false(any(grepl("Chi-square test|Exact binomial test|One-sample test of a proportion", svalue(iwin$info_text))))
 
-    expect_silent(svalue(chk, index = TRUE) <- 3)
-    expect_true(enabled(null))
-    expect_true(enabled(alt))
-    expect_false(enabled(simp))
+    expect_silent(iwin$hypothesis_test$set_index(2L))
+    expect_true(visible(iwin$g_hypctrls))
+    expect_equal(svalue(iwin$hyp_null), "0.5")
+    expect_equal(svalue(iwin$hyp_alt), "two-sided")
+    expect_false(svalue(iwin$hyp_exactp))
+    expect_match(svalue(iwin$info_text), "One-sample test of a proportion")
+    expect_match(svalue(iwin$info_text), "true proportion of gender = female is 0.5")
+    expect_match(svalue(iwin$info_text), "true proportion of gender = female is not equal to 0.5")
 
-    # expect_silent(svalue(simp) <- TRUE)
+    expect_true(iwin$hyp_null$set_value("0.6"))
+    iwin$hyp_alt$set_index(2L)
+    iwin$hyp_exactp$set_value(TRUE)
+    expect_match(svalue(iwin$info_text), "Exact binomial test")
+    expect_match(svalue(iwin$info_text), "true proportion of gender = female is 0.6")
+    expect_match(svalue(iwin$info_text), "true proportion of gender = female is greater than 0.6")
 
-    expect_silent(
-        w2 <- iwin[[1]]$children[[1]]$children[[2]]$invoke_change_handler()
-    )
-    expect_is(w2[[1]], "GWindow")
-    expect_is(w2[[1]]$children[[1]], "GText")
-    expect_match(
-        svalue(w2[[1]]$children[[1]]),
-        "Null Hypothesis: true proportion of gender = female is 0.5"
-    )
-    expect_match(
-        svalue(w2[[1]]$children[[1]]),
-        "Alternative Hypothesis: true proportion of gender = female is not equal to 0.5"
-    )
-    dispose(w2[[1]])
+    expect_silent(iwin$hypothesis_test$set_index(3L))
+    expect_true(visible(iwin$g_hypctrls))
+    expect_match(svalue(iwin$info_text), "Chi-square test for equal proportions")
+
+    expect_silent(iwin$hypothesis_test$set_index(1L))
+    expect_false(visible(iwin$g_hypctrls))
+    expect_false(any(grepl("Chi-square test|Exact binomial test|One-sample test of a proportion", svalue(iwin$info_text))))
 })
 
 test_that("Get inference window - one way bar plots", {
     svalue(ui$ctrlWidget$V2box, index = TRUE) <- 1
     svalue(ui$ctrlWidget$V1box) <- "getlunch"
 
-    iwin <- ui$infBtn$invoke_change_handler()
-    expect_is(iwin[[1]], "GWindow")
-    chk <- iwin[[1]]$children[[1]]$children[[1]]$children[[4]]
-    null <- iwin[[1]]$children[[1]]$children[[1]]$children[[5]]
-    expect_equal(
-        chk$widget$label,
-        "Chi-square test"
-    )
-    expect_false(enabled(null) && svalue(null))
-    expect_silent(svalue(chk) <- TRUE)
-    expect_true(enabled(null))
-    expect_silent(svalue(null) <- TRUE)
+    iwin <- iNZGetInference$new(ui)
+    on.exit(gWidgets2::dispose(iwin$win))
+    expect_is(iwin, "iNZGetInference")
 
-    expect_silent(
-        w2 <- iwin[[1]]$children[[1]]$children[[2]]$invoke_change_handler()
-    )
-    expect_is(w2[[1]], "GWindow")
-    expect_is(w2[[1]]$children[[1]], "GText")
-    expect_match(
-        svalue(w2[[1]]$children[[1]]),
-        "Null Hypothesis: true proportions in each category are equal"
-    )
-    expect_match(
-        svalue(w2[[1]]$children[[1]]),
-        "Alternative Hypothesis: true proportions in each category are not equal"
-    )
-    expect_match(
-        svalue(w2[[1]]$children[[1]]),
-        "Simulated p-value"
-    )
-    dispose(w2[[1]])
+    expect_equal(svalue(iwin$inf_method), "Normal theory")
+    expect_equal(iwin$hypothesis_test$get_items(), c("None", "Chi-square test"))
+    expect_equal(svalue(iwin$hypothesis_test), "None")
+    expect_false(visible(iwin$g_hypctrls))
+    expect_false(any(grepl("Chi-square test", svalue(iwin$info_text))))
+
+    expect_silent(iwin$hypothesis_test$set_index(2L))
+    expect_true(visible(iwin$g_hypctrls))
+    expect_false(svalue(iwin$hyp_simulatep))
+    expect_match(svalue(iwin$info_text), "Chi-square test for equal proportions")
+    expect_false(any(grepl("Simulated p-value", svalue(iwin$info_text))))
+
+    expect_silent(iwin$hyp_simulatep$set_value(TRUE))
+    expect_match(svalue(iwin$info_text), "Simulated p-value")
+
+    expect_silent(iwin$hypothesis_test$set_index(1L))
+    expect_false(visible(iwin$g_hypctrls))
+    expect_false(any(grepl("Chi-square test", svalue(iwin$info_text))))
 })
 
 test_that("Get inference window - two way bar plots", {
+    svalue(ui$ctrlWidget$V1box) <- "cellsource"
     svalue(ui$ctrlWidget$V2box) <- "gender"
 
-    iwin <- ui$infBtn$invoke_change_handler()
-    expect_is(iwin[[1]], "GWindow")
-    chk <- iwin[[1]]$children[[1]]$children[[1]]$children[[4]]
-    sim <- iwin[[1]]$children[[1]]$children[[1]]$children[[5]]
-    expect_equal(
-        chk$widget$label,
-        "Chi-square test"
-    )
-    expect_false(enabled(sim))
-    expect_false(svalue(sim))
+    iwin <- iNZGetInference$new(ui)
+    on.exit(gWidgets2::dispose(iwin$win))
+    expect_is(iwin, "iNZGetInference")
 
-    expect_silent(svalue(chk) <- TRUE)
-    expect_true(enabled(sim))
-    expect_silent(svalue(sim) <- TRUE)
+    expect_equal(svalue(iwin$inf_method), "Normal theory")
+    expect_equal(iwin$hypothesis_test$get_items(), c("None", "Chi-square test"))
+    expect_equal(svalue(iwin$hypothesis_test), "None")
+    expect_false(visible(iwin$g_hypctrls))
+    expect_false(any(grepl("Chi-square test", svalue(iwin$info_text))))
 
-    expect_silent(
-        w2 <- iwin[[1]]$children[[1]]$children[[2]]$invoke_change_handler()
-    )
-    expect_is(w2[[1]], "GWindow")
-    expect_is(w2[[1]]$children[[1]], "GText")
-    expect_match(
-        svalue(w2[[1]]$children[[1]]),
-        "Null Hypothesis: distribution of getlunch does not depend on gender"
-    )
-    expect_match(
-        svalue(w2[[1]]$children[[1]]),
-        "Alternative Hypothesis: distribution of getlunch changes with gender"
-    )
-    expect_match(
-        svalue(w2[[1]]$children[[1]]),
-        "Simulated p-value"
-    )
-    dispose(w2[[1]])
+    expect_silent(iwin$hypothesis_test$set_index(2L))
+    expect_true(visible(iwin$g_hypctrls))
+    expect_false(svalue(iwin$hyp_simulatep))
+    expect_match(svalue(iwin$info_text), "Chi-square test for equal distributions")
+    expect_false(any(grepl("Simulated p-value", svalue(iwin$info_text))))
+
+    expect_silent(iwin$hyp_simulatep$set_value(TRUE))
+    expect_match(svalue(iwin$info_text), "Simulated p-value")
+
+    expect_silent(iwin$hypothesis_test$set_index(1L))
+    expect_false(visible(iwin$g_hypctrls))
+    expect_false(any(grepl("Chi-square test", svalue(iwin$info_text))))
 })
 
 
@@ -254,25 +200,19 @@ test_that("Get inference window - scatter plots", {
     svalue(ui$ctrlWidget$V1box) <- "height"
     svalue(ui$ctrlWidget$V2box) <- "armspan"
 
-    iwin <- ui$infBtn$invoke_change_handler()
-    expect_is(iwin[[1]], "GWindow")
-    chk <- iwin[[1]]$children[[1]]$children[[1]]$children[[4]]
-    expect_equal(
-        chk$widget$label,
-        "Linear trend"
-    )
-    expect_silent(svalue(chk) <- TRUE)
+    iwin <- iNZGetInference$new(ui)
+    on.exit(gWidgets2::dispose(iwin$win))
+    expect_is(iwin, "iNZGetInference")
 
-    expect_silent(
-        w2 <- iwin[[1]]$children[[1]]$children[[2]]$invoke_change_handler()
-    )
-    expect_is(w2[[1]], "GWindow")
-    expect_is(w2[[1]]$children[[1]], "GText")
-    expect_match(
-        svalue(w2[[1]]$children[[1]]),
-        "p-values for the null hypothesis of no association"
-    )
-    dispose(w2[[1]])
+    expect_equal(svalue(iwin$inf_method), "Normal theory")
+    expect_is(iwin$hypothesis_test, "uninitializedField")
+    expect_match(svalue(iwin$info_text), "Please specify a trend line")
+
+    expect_silent(iwin$trend_choice$linear$set_value(TRUE))
+    expect_match(svalue(iwin$info_text), "Linear Trend Coefficients")
+
+    expect_silent(iwin$trend_choice$linear$set_value(FALSE))
+    expect_match(svalue(iwin$info_text), "Please specify a trend line")
 })
 
 cas <- census.at.school.500
@@ -297,21 +237,39 @@ ui$initializeGui(cas2)
 ui$getActiveDoc()$getModel()$setFrequencies("frequency", ui)
 
 test_that("Get inference works for frequencies", {
+    svalue(ui$ctrlWidget$V1box) <- "gender"
+    expect_true(enabled(ui$infBtn))
+
+    iwin <- iNZGetInference$new(ui)
+    on.exit(gWidgets2::dispose(iwin$win))
+    expect_is(iwin, "iNZGetInference")
+
+    expect_equal(svalue(iwin$inf_method), "Normal theory")
+    expect_equal(iwin$hypothesis_test$get_items(), c("None", "Test proportion", "Chi-square test"))
+
+    gWidgets2::dispose(iwin$win)
+
     svalue(ui$ctrlWidget$V1box) <- "travel"
     expect_true(enabled(ui$infBtn))
-    iwin <- ui$infBtn$invoke_change_handler()
-    expect_silent(
-        iwin2 <- iwin[[1]]$children[[1]]$children[[2]]$invoke_change_handler()
-    )
-    dispose(iwin2[[1]])
+
+    iwin <- iNZGetInference$new(ui)
+    on.exit(gWidgets2::dispose(iwin$win))
+    expect_is(iwin, "iNZGetInference")
+
+    expect_equal(svalue(iwin$inf_method), "Normal theory")
+    expect_equal(iwin$hypothesis_test$get_items(), c("None", "Chi-square test"))
+
+    gWidgets2::dispose(iwin$win)
 
     svalue(ui$ctrlWidget$V2box) <- "gender"
     expect_true(enabled(ui$infBtn))
-    iwin <- ui$infBtn$invoke_change_handler()
-    expect_silent(
-        iwin2 <- iwin[[1]]$children[[1]]$children[[2]]$invoke_change_handler()
-    )
-    dispose(iwin2[[1]])
+
+    iwin <- iNZGetInference$new(ui)
+    on.exit(gWidgets2::dispose(iwin$win))
+    expect_is(iwin, "iNZGetInference")
+
+    expect_equal(svalue(iwin$inf_method), "Normal theory")
+    expect_equal(iwin$hypothesis_test$get_items(), c("None", "Chi-square test"))
 })
 
 
@@ -333,14 +291,22 @@ test_that("Get inference for surveys", {
     expect_true(enabled(ui$infBtn))
 
     svalue(ui$ctrlWidget$V1box) <- "api00"
-    iwin <- ui$infBtn$invoke_change_handler()
-    svalue(iwin[[1]]$children[[1]]$children[[1]]$children[[2]]) <- TRUE
-    out <- iwin[[1]]$children[[1]]$children[[2]]$invoke_change_handler()
-    expect_match(
-        svalue(out[[1]]$children[[1]]),
-        "survey::svydesign"
-    )
-    dispose(out[[1]])
+
+    iwin <- iNZGetInference$new(ui)
+    on.exit(gWidgets2::dispose(iwin$win))
+    expect_is(iwin, "iNZGetInference")
+
+    expect_equal(iwin$hypothesis_test$get_items(), c("None", "One sample t-test"))
+    expect_false(visible(iwin$g_hypctrls))
+    expect_false(grepl("Design-based One Sample t-test", svalue(iwin$info_text)))
+
+    expect_silent(iwin$hypothesis_test$set_index(2L))
+    expect_true(visible(iwin$g_hypctrls))
+    expect_match(svalue(iwin$info_text), "Design-based One Sample t-test")
+
+    expect_silent(iwin$hyp_null$set_value("650"))
+    expect_match(svalue(iwin$info_text), "true mean is equal to 650")
+    expect_match(svalue(iwin$info_text), "true mean is not equal to 650")
 })
 
 test_that("Get inference still enabled for non-surveys", {

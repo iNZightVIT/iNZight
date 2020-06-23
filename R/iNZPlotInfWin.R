@@ -46,7 +46,7 @@ iNZPlotInfWin <- setRefClass(
 
                 typLab <- glabel("Type of Interval")
                 font(typLab) <- list(weight = "bold", family = "sans", size = 9)
-                
+
                 parTab[2, 1, expand = TRUE, anchor = c(-1, 0)] <<- parLab
                 metTab[2, 1, expand = TRUE, anchor = c(-1, 0)] <<- metLab
                 typTab[2, 1, expand = TRUE, anchor = c(-1, 0)] <<- typLab
@@ -76,7 +76,7 @@ iNZPlotInfWin <- setRefClass(
                                       handler = function(h, ...) {
                                          browseURL("https://www.stat.auckland.ac.nz/~wild/iNZight/user_guides/plot_options/?topic=plot_inference")
                                       })
-                            
+
                 okButton <- gbutton("Home", expand = TRUE, fill = TRUE,
                                     cont = btnGrp,
                                     handler = function(h, ...) {
@@ -107,10 +107,10 @@ iNZBarchartInf <- setRefClass(
 
             ## Parameters
             parm <- glabel("Proportions")
-            
+
             parTab[3, 1, expand = TRUE, anchor = c(-1, 0)] <<- parm
 
-            
+
             ## Methods
             if (is.survey)
                 mthd <- gradio(c("Normal"), selected = 1)
@@ -118,8 +118,8 @@ iNZBarchartInf <- setRefClass(
                 mthd <- gradio(c("Normal", "Bootstrap *"), selected = 1)
 
             metTab[3, 1] <<- mthd
-            
-            
+
+
             ## Interval types
             compInt <- gcheckbox("Comparison Intervals",
                                  checked = TRUE)  # "comp" %in% curSet$inference.type)
@@ -127,9 +127,9 @@ iNZBarchartInf <- setRefClass(
                                  checked = TRUE)  #"conf" %in% curSet$inference.type)
 
             typTab[3, 1] <<- confInt
-            typTab[4, 1] <<- compInt            
+            typTab[4, 1] <<- compInt
 
-            
+
             ## Add function
             addIntervals <- function() {
                 ## Inference type depends on method (normal = both; bootstrap = only confidence [for now]..)
@@ -137,8 +137,8 @@ iNZBarchartInf <- setRefClass(
                     inf.type <- c("comp", "conf")[c(svalue(compInt) & svalue(mthd, index = TRUE) == 1, svalue(confInt))]
                 else
                     inf.type <- NULL
-                
-                
+
+
                 bs.inf <- svalue(mthd, index = TRUE) == 2
                 GUI$getActiveDoc()$setSettings(
                     list(
@@ -166,8 +166,9 @@ iNZBarchartInf <- setRefClass(
             addHandlerChanged(confInt, handler = function(h, ...) enabler())
 
             enabler()
-        })
+        }
     )
+)
 
 iNZDotchartInf <- setRefClass(
     "iNZDotchartInf",
@@ -183,10 +184,10 @@ iNZDotchartInf <- setRefClass(
                 parm <- gradio(c("Mean"), selected = 1)
             else
                 parm <- gradio(c("Mean", "Median"), selected = 1)
-            
+
             parTab[3, 1, expand = TRUE, anchor = c(-1, 0)] <<- parm
 
-            
+
             ## Methods
             if (is.survey)
                 mthd <- gradio(c("Normal"), selected = 1)
@@ -194,8 +195,8 @@ iNZDotchartInf <- setRefClass(
                 mthd <- gradio(c("Normal", "Bootstrap *"), selected = 1)
 
             metTab[3, 1] <<- mthd
-            
-            
+
+
             ## Interval types
             compInt <- gcheckbox("Comparison Intervals",
                                  checked = TRUE)  # "comp" %in% curSet$inference.type)
@@ -203,9 +204,9 @@ iNZDotchartInf <- setRefClass(
                                  checked = TRUE)  # "conf" %in% curSet$inference.type)
 
             typTab[3, 1] <<- confInt
-            typTab[4, 1] <<- compInt            
+            typTab[4, 1] <<- compInt
 
-            
+
             ## Add function
             addIntervals <- function() {
                 if (svalue(parm, index = TRUE) == 2 & svalue(mthd, index = TRUE) == 1) {
@@ -218,15 +219,18 @@ iNZDotchartInf <- setRefClass(
                 } else {
                     inf.type <- inf.par <- NULL
                 }
-                
+
                 bs.inf <- svalue(mthd, index = TRUE) == 2
                 GUI$getActiveDoc()$setSettings(
                     list(
+                        # override settings
+                        boxplot = TRUE,
+                        mean_indicator = FALSE,
                         inference.type = inf.type,
                         inference.par = inf.par,
                         bs.inference = bs.inf
-                        )
                     )
+                )
                 updateSettings()
             }
 
@@ -247,7 +251,7 @@ iNZDotchartInf <- setRefClass(
                 }
 
                 visible(typTab) <<- svalue(parm, index = TRUE) == 1 | svalue(mthd, index = TRUE) == 2
-                
+
                 addIntervals()
             }
 
@@ -268,7 +272,7 @@ iNZDotchartInf <- setRefClass(
             vn <- attr(pl, "varnames")
             g1 <- vn$g1
             g2 <- vn$g2
-            
+
             if (is.null(g2)) {
                 pl <- pl["all"]
             } else {
@@ -278,7 +282,7 @@ iNZDotchartInf <- setRefClass(
             for (n1 in names(pl)) {
                 ## Grab the level of g2:
                 p1 <- pl[[n1]]
-                
+
                 if (!is.null(g2))
                     out <- c(out, paste0("## ", g2, " = ", n1))
 
@@ -293,8 +297,8 @@ iNZDotchartInf <- setRefClass(
                     if (!is.list(p2$inference)) {
                         out <- c(out, "No inference", "")
                         next
-                    }                        
-                        
+                    }
+
                     y12 <- names(p2$inference)[1] == "median" & !attr(p2$inference, "bootstrap")
                     inf <- p2$inference[[1]]  ## only take the first (mean or median)
 
@@ -302,10 +306,10 @@ iNZDotchartInf <- setRefClass(
                         inf <- inf["conf"]
 
                     inf <- inf[!sapply(inf, is.null)]
-                    
+
                     if (length(inf) == 0) {
                         out <- c(out, "No values", "")
-                    } else {                    
+                    } else {
                         do.call(cbind, lapply(names(inf), function(i) {
                                                        m <- inf[[i]][, 1:2, drop = FALSE]
                                                        if (!y12)
@@ -313,26 +317,26 @@ iNZDotchartInf <- setRefClass(
                                                        m
                                                    })
                                 ) -> oo
-                        
+
                         mat <- matrix(apply(oo, 2, function(col) {
                                                     format(col, digits = 4)
                                                 }), nrow = nrow(oo))
                         mat[grep("NA", mat)] <- ""
-                        
+
                         mat <- rbind(colnames(oo), mat)
                         if (nrow(oo) > 1)
                             mat <- cbind(c("", rownames(oo)), mat)
-                        
+
                         mat <- matrix(apply(mat, 2, function(col) {
                                                      format(col, justify = "right")
                                                  }), nrow = nrow(mat))
-                        
+
                         mat <- apply(mat, 1, function(x) paste0("   ", paste(x, collapse = "   ")))
-                        
+
                         out <- c(out, mat, "")
                     }
                 }
-                
+
 
                 out <- c(out, "", "")
             }
@@ -343,5 +347,53 @@ iNZDotchartInf <- setRefClass(
                        expand = TRUE, cont = ww, wrap = FALSE,
                        font.attr = list(family = "monospace"))
             visible(ww) <- TRUE
-        })
+        }
     )
+)
+
+
+iNZScatterInf <- setRefClass(
+    "iNZScatterInf",
+    contains = "iNZPlotInfWin",
+    methods = list(
+        initialize = function(GUI) {
+            callSuper(GUI)
+
+            is.survey <- !is.null(GUI$getActiveDoc()$getModel()$getDesign())
+
+            ## Parameters
+            parm <- glabel("Trend lines and smoothers")
+
+            parTab[3, 1, expand = TRUE, anchor = c(-1, 0)] <<- parm
+
+            ## Methods
+            if (is.survey)
+                mthd <- gradio(c("Normal"), selected = 1)
+            else
+                mthd <- gradio(c("Normal", "Bootstrap *"), selected = 1)
+
+            enabled(mthd) <- FALSE
+            if (!is.null(curSet$trend) && length(curSet$trend))
+                enabled(mthd) <- TRUE
+            if (curSet$smooth > 0 && !curSet$trend.by && is.null(curSet$quant.smooth))
+                enabled(mthd) <- TRUE
+
+            metTab[3, 1] <<- mthd
+
+            ## Add function
+            addIntervals <- function() {
+                bs.inf <- svalue(mthd, index = TRUE) == 2
+                GUI$getActiveDoc()$setSettings(
+                    list(
+                        inference.type = "conf",
+                        bs.inference = bs.inf
+                    )
+                )
+                updateSettings()
+            }
+
+            addHandlerChanged(mthd, handler = function(h, ...) addIntervals())
+            addIntervals()
+        }
+    )
+)

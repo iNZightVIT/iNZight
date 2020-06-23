@@ -235,7 +235,6 @@ test_that("RData files display list of objects", {
 # try(ui$close());
 # ui <- iNZGUI$new()
 # ui$initializeGui()
-# on.exit(gWidgets2::dispose(ui$win))
 
 test_that("Excel files load and display available sheets", {
     imp <- iNZImportWin$new(ui)
@@ -252,7 +251,6 @@ test_that("Excel files load and display available sheets", {
 # try(ui$close()); load_all()
 # ui <- iNZGUI$new()
 # ui$initializeGui()
-# on.exit(gWidgets2::dispose(ui$win))
 
 test_that("User can choose to load a URL", {
     imp <- iNZImportWin$new(ui)
@@ -277,14 +275,13 @@ for (i in 41:50)
     many_cols[[sprintf("X%i", i)]] <- sample(LETTERS, 20)
 
 tf <- tempfile(fileext = ".csv")
-on.exit(unlink(tf))
+on.exit(unlink(tf), add = TRUE)
 write.csv(many_cols, tf, quote = FALSE, row.names = FALSE)
 
 if (interactive()) {
     try(ui$close()); load_all()
     ui <- iNZGUI$new()
     ui$initializeGui()
-    on.exit(gWidgets2::dispose(ui$win))
 }
 
 imp <- iNZImportWin$new(ui)
@@ -328,7 +325,7 @@ test_that("JSON files load", {
     t <- tempfile(fileext = ".json")
     jsonlite::write_json(iris, t)
     imp <- iNZImportWin$new(ui)
-    on.exit(gWidgets2::dispose(imp$importFileWin))
+    on.exit(try(gWidgets2::dispose(imp$importFileWin), TRUE))
 
     imp$fname <- t
     imp$setfile()
