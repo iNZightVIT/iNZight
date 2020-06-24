@@ -27,7 +27,7 @@ Imports:
     grid,
     gdata,
     gWidgets2RGtk2,
-    iNZightPlots (>= 2.11.5.9000),
+    iNZightPlots (>= 2.12),
     iNZightTools (>= 1.8.4),
     reshape2,
     plyr,
