@@ -9,3 +9,9 @@ test_that("Data Maid report", {
     w <- iNZDataReportWin$new(ui)
     on.exit(try(gWidgets2::dispose(w$win), TRUE))
 })
+
+test_that("Subsetting and reordering columns", {
+    # try(gWidgets2::dispose(ui$modWin), TRUE); load_all()
+    w <- iNZReorderVarsWin$new(ui)
+
+})

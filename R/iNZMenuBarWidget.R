@@ -179,9 +179,15 @@ iNZMenuBarWidget <- setRefClass(
                             )
                     } else NULL,
                 validate =
-                  gaction("Validate ...",
-                          icon = "symbol_diamond",
-                          handler = function(h, ...) iNZValidateWin$new(GUI)),
+                    gaction("Validate ...",
+                        icon = "symbol_diamond",
+                        handler = function(h, ...) iNZValidateWin$new(GUI)
+                    ),
+                reorder =
+                    gaction("Reorder and select variables ...",
+                        icon = "symbol_diamond",
+                        handler = function(h, ...) iNZReorderVarsWin$new(GUI)
+                    ),
                 gseparator(),
                 view =
                     gaction("View full dataset",
