@@ -167,7 +167,9 @@ iNZMenuBarWidget <- setRefClass(
                             tooltip = "Unite columns",
                             handler = function(h, ...) iNZUniteDataWin$new(GUI))
                 ),
-                if (requireNamespace("dataMaid", quietly = TRUE)) {
+                if (requireNamespace("dataMaid", quietly = TRUE) &&
+                    requireNamespace("rmarkdown", quietly = TRUE) &&
+                    rmarkdown::pandoc_available()) {
                     report =
                         gaction(
                             "Generate data report ...",

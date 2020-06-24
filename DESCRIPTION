@@ -49,7 +49,8 @@ Suggests:
     rlang,
     withr,
     jsonlite,
-    dataMaid
+    dataMaid,
+    rmarkdown
 Additional_repositories: https://r.docker.stat.auckland.ac.nz
 LazyData: true
 Encoding: UTF-8
