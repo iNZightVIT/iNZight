@@ -5,7 +5,7 @@ ui <- iNZGUI$new()
 ui$initializeGui(census.at.school.500)
 
 test_that("Data Maid report", {
-    skip_if_not(rmarkdown::pandoc_available(()))
+    skip_if_not(rmarkdown::pandoc_available())
     w <- iNZDataReportWin$new(ui)
     on.exit(try(gWidgets2::dispose(w$win), TRUE))
 })
