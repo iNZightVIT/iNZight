@@ -352,6 +352,7 @@ construct_call <- function(settings, model, vartypes,
     } else {
         ## things unique to summary/inference
         settings$plot.features <- NULL
+        settings$plottype <- NULL
 
         if (what == "summary") {
             ## things unique to summary
