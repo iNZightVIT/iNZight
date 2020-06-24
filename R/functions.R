@@ -306,7 +306,8 @@ construct_call <- function(settings, model, vartypes,
 
     ## plot.features
     if (!is.null(settings$plot.features)) {
-        settings$plot.features <- modifyList(list(), settings$plot.features)
+        if (length(settings$plot.features))
+            settings$plot.features <- modifyList(list(), as.list(settings$plot.features))
         if (length(settings$plot.features) == 0)
             settings$plot.features <- NULL
     }
@@ -350,7 +351,8 @@ construct_call <- function(settings, model, vartypes,
 
     } else {
         ## things unique to summary/inference
-
+        settings$plot.features <- NULL
+        settings$plottype <- NULL
 
         if (what == "summary") {
             ## things unique to summary
