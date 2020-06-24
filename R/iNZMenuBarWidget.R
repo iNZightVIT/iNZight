@@ -133,7 +133,7 @@ iNZMenuBarWidget <- setRefClass(
         },
         DataMenu = function() {
             if (!hasData()) return(placeholder("Dataset"))
-            list(
+            menu <- list(
                 filter =
                     gaction("Filter ...",
                         icon = "symbol_diamond",
@@ -167,16 +167,17 @@ iNZMenuBarWidget <- setRefClass(
                             tooltip = "Unite columns",
                             handler = function(h, ...) iNZUniteDataWin$new(GUI))
                 ),
-                if (requireNamespace("dataMaid", quietly = TRUE) &&
-                    requireNamespace("rmarkdown", quietly = TRUE) &&
-                    rmarkdown::pandoc_available()) {
-                    report =
-                        gaction(
-                            "Generate data report ...",
-                            icon = "symbol_diamond",
-                            handler = function(h, ...) iNZDataReportWin$new(GUI)
-                        )
-                },
+                report =
+                    if (requireNamespace("dataMaid", quietly = TRUE) &&
+                        requireNamespace("rmarkdown", quietly = TRUE) &&
+                        rmarkdown::pandoc_available()) {
+                        report =
+                            gaction(
+                                "Generate data report ...",
+                                icon = "symbol_diamond",
+                                handler = function(h, ...) iNZDataReportWin$new(GUI)
+                            )
+                    } else NULL,
                 validate =
                   gaction("Validate ...",
                           icon = "symbol_diamond",
@@ -255,6 +256,8 @@ iNZMenuBarWidget <- setRefClass(
                         )
                 )
             )
+            if (is.null(menu$report)) menu$report <- NULL
+            menu
         },
         VariablesMenu = function() {
             if (!hasData()) return(placeholder("Variables"))
