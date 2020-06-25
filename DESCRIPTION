@@ -28,7 +28,7 @@ Imports:
     gdata,
     gWidgets2RGtk2,
     iNZightPlots (>= 2.12),
-    iNZightTools (>= 1.8.4),
+    iNZightTools (>= 1.8.6.9000),
     reshape2,
     plyr,
     survey,
