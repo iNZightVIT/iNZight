@@ -29,7 +29,7 @@ repos:
 
 r_github_packages:
   - iNZightVIT/gWidgets2RGtk2@inz
-  - iNZightVIT/iNZightTools@dev
+  - iNZightVIT/iNZightTools@release/1.9
   - iNZightVIT/iNZightTS@dev
   - iNZightVIT/iNZightMR@dev
   - iNZightVIT/iNZightPlots@release/2.12
