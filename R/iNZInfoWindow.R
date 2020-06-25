@@ -463,6 +463,10 @@ iNZGetSummary <- setRefClass(
                 enabled(predBtn) <<- TRUE
                 enabled(residBtn) <<- TRUE
             }
+
+            # update the plot, too...
+            GUI$getActiveDoc()$setSettings(list(trend = curSet$trend))
+
             update_summary()
         },
         setup_panel = function() {
@@ -876,6 +880,8 @@ iNZGetInference <- setRefClass(
         handle_trend = function() {
             chosen <- sapply(trend_choice, function(x) svalue(x))
             curSet$trend <<- if (any(chosen)) names(trend_choice)[chosen] else NULL
+            # update the plot, too...
+            GUI$getActiveDoc()$setSettings(list(trend = curSet$trend))
             update_inference()
         }
     )
