@@ -1,17 +1,15 @@
-A few things have changed ...
+We've gone ahead and made a few improvements ...
 
-- Time travel just got cooler!
-  iNZight has started learning how to handle time data! Check out the
-  new menu option under "Variables > Dates and Times".
+- Code writing for plots, summaries, and inference!
+  It's not enabled by default, but the biggest change in this release
+  is the implementation of interactive code snippets, enabled from
+  File > Preferences. You can see the R code for the current plot,
+  and edit it to see what happens. Learning R just got easier!
 
-- Got more data? We'll merge that!
-  From the "Dataset > Merge/Join datasets" menu, you can add more columns
-  or rows from an external dataset without leaving iNZight!
+- Get Summary and Get Inference have been redesigned
+  Now more consistent with the rest of iNZight, you can quickly add and
+  remove inference information, adjust your hypothesis, and see the
+  results instantly.
 
-- Get out your violins, we've got new plot types!
-  Choose from a collection of new plot types under "Add to Plot > Plot type",
-  from density plots to violin plots, column charts to pies (or donuts, if that's your thing).
-
-- There's more, too ...
-  Survey designs have been improved, as have the model fitting and time series modules.
-  Check out all the changes from the "Help > Change history" menu.
+- And many behind-the-scenes fixes, particularly to better support
+  survey designs.
