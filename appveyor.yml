@@ -40,7 +40,7 @@ build_script:
   - del gtk32.zip
   - del gtk64.zip
   - travis-tool.sh install_github iNZightVIT/gWidgets2RGtk2@inz
-  - travis-tool.sh install_github iNZightVIT/iNZightTools@dev
+  - travis-tool.sh install_github iNZightVIT/iNZightTools@feature/sort-columns
   - travis-tool.sh install_github iNZightVIT/iNZightTS@dev
   - travis-tool.sh install_github iNZightVIT/iNZightMR@dev
   - travis-tool.sh install_github iNZightVIT/iNZightPlots@release/2.12

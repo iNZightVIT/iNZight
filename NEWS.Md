@@ -10,6 +10,7 @@ This release is a complete overhaul of the way in which variables are passed aro
 * Add option to save interactive plots locally (including assets)
 * Add support for JSON files
 * Add data report (pdf/html/word) (using 'dataMaid' package)
+* Add column selection and reordering dialog (File > Select and reorder variables)
 
 ## Bug fixes
 Since this is a major release, it includes many bug fixes as part of the above major changes.
