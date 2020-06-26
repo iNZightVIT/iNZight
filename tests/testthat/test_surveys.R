@@ -532,3 +532,29 @@ test_that("New variables show up in calibration list", {
     swin$cancelBtn$invoke_change_handler()
 
 })
+
+# load_all()
+ui$close()
+ui <- iNZGUI$new()
+ui$initializeGui(apistrat)
+
+test_that("Survey design read from file", {
+    svyfile <- tempfile("apistrat", fileext = ".svydesign")
+    write.dcf(data.frame(strata = "stype", weights = "pw", fpc = "fpc"), svyfile)
+
+    swin <- iNZSurveyDesign$new(ui)
+    expect_silent(swin$read_file(svyfile))
+    expect_equal(
+        ui$iNZDocuments[[ui$activeDoc]]$getModel()$getDesign(),
+        list(
+            strata = "stype",
+            clus1 = NULL,
+            clus2 = NULL,
+            wt = "pw",
+            fpc = "fpc",
+            nest = FALSE,
+            poststrat = NULL,
+            type = "survey"
+        )
+    )
+})
