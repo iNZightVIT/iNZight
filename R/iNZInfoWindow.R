@@ -31,11 +31,11 @@ iNZInfoWindow <- setRefClass(
             # Check that the data exists
             env <<- new.env()
             curSet <<- GUI$getActiveDoc()$getSettings()
-            if (is.null(curSet$x)) {
-                gmessage("No variable selected.")
-                dispose(win)
-                return()
-            }
+            # if (is.null(curSet$x)) {
+            #     gmessage("No variable selected.")
+            #     dispose(win)
+            #     return()
+            # }
             gen_set_list()
 
             win <<- gwindow(title = name,
@@ -231,11 +231,14 @@ iNZGetSummary <- setRefClass(
             # This will, at some stage, fetch values from the CODE CALL
             # when it is modified by the user ... and update curSet ... =]
             vartypes <- list(
-                x = iNZightTools::vartype(GUI$getActiveData()[[curSet$x]]),
+                x = NULL,
                 y = NULL
             )
-            if (!is.null(curSet$y))
-                vartypes$y <- iNZightTools::vartype(GUI$getActiveData()[[curSet$y]])
+            if (!is.null(curSet$x))  {
+                iNZightTools::vartype(GUI$getActiveData()[[curSet$x]])
+                if (!is.null(curSet$y))
+                    vartypes$y <- iNZightTools::vartype(GUI$getActiveData()[[curSet$y]])
+            }
 
             construct_call(curSet, curMod, vartypes,
                 data = as.name(dataname),
@@ -471,7 +474,11 @@ iNZGetSummary <- setRefClass(
         },
         setup_panel = function() {
             ds <- GUI$getActiveData()
-            xvar <- ds[[curSet$x]]
+            xvar <- if (!is.null(curSet$x)) ds[[curSet$x]] else NULL
+            if (is.null(xvar)) {
+                update_summary()
+                return()
+            }
             yvar <- if (!is.null(curSet$y)) ds[[curSet$y]] else NULL
 
             xnum <- is_num(xvar)

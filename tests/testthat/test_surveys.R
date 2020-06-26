@@ -541,6 +541,7 @@ ui$initializeGui(apistrat)
 test_that("Survey design read from file", {
     svyfile <- tempfile("apistrat", fileext = ".svydesign")
     write.dcf(data.frame(strata = "stype", weights = "pw", fpc = "fpc"), svyfile)
+    on.exit(unlink(svyfile))
 
     swin <- iNZSurveyDesign$new(ui)
     expect_silent(swin$read_file(svyfile))
@@ -557,4 +558,28 @@ test_that("Survey design read from file", {
             type = "survey"
         )
     )
+
+    ui$setDocument(iNZDocument$new(data = apiclus2), reset = TRUE)
+    Sys.sleep(5)
+    write.dcf(
+        data.frame(clusters = "dnum + snum", fpc = "fpc1 + fpc2"),
+        svyfile
+    )
+
+    swin <- iNZSurveyDesign$new(ui)
+    expect_silent(swin$read_file(svyfile))
+    expect_equal(
+        ui$iNZDocuments[[ui$activeDoc]]$getModel()$getDesign(),
+        list(
+            strata = NULL,
+            clus1 = "dnum",
+            clus2 = "snum",
+            wt = NULL,
+            fpc = "fpc1 + fpc2",
+            nest = FALSE,
+            poststrat = NULL,
+            type = "survey"
+        )
+    )
+
 })

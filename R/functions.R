@@ -202,7 +202,14 @@ construct_call <- function(settings, model, vartypes,
                            data = quote(.dataset),
                            design = quote(!!.design),
                            what = c("plot", "summary", "inference")) {
-    if (is.null(settings$x)) return(NULL)
+    if (is.null(settings$x)) {
+        settings <- list(data = data)
+        call <- capture.output(dput(settings))
+        call <- gsub("^list", "getPlotSummary", call)
+        call <- gsub(".DROP = ", "", call)
+
+        return(parse(text = paste(call, collapse = "\n")))
+    }
 
     what <- match.arg(what)
 
@@ -399,7 +406,7 @@ mend_call <- function(call, gui) {
         )
     dname <- iNZightTools::create_varname(dname)
 
-    if (is.expression(call)) {
+    if (is.expression(call) && as.character(call[[1]])[1] != "getPlotSummary") {
         ## and remove invalid vars (for plot_type/method combination)
         cnames <- names(call[[1]])
         ptype <- attr(gui$curPlot, "plottype")
