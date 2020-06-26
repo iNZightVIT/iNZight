@@ -235,7 +235,7 @@ iNZGetSummary <- setRefClass(
                 y = NULL
             )
             if (!is.null(curSet$x))  {
-                iNZightTools::vartype(GUI$getActiveData()[[curSet$x]])
+                vartypes$x <- iNZightTools::vartype(GUI$getActiveData()[[curSet$x]])
                 if (!is.null(curSet$y))
                     vartypes$y <- iNZightTools::vartype(GUI$getActiveData()[[curSet$y]])
             }
