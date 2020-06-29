@@ -10,7 +10,7 @@ test_dir <- getwd()
 # ui$close()
 ui <- iNZGUI$new()
 ui$initializeGui(apiclus2)
-on.exit(gWidgets2::dispose(ui$win))
+on.exit(try(gWidgets2::dispose(ui$win), TRUE))
 
 test_that("Survey design window defaults are empty", {
     expect_silent(swin <- iNZSurveyDesign$new(ui))
@@ -581,5 +581,13 @@ test_that("Survey design read from file", {
             type = "survey"
         )
     )
+
+})
+
+
+ui$close()
+
+
+test_that("Survey data can be imported from svydesign file", {
 
 })
