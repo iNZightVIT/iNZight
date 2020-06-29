@@ -269,6 +269,8 @@ iNZGetSummary <- setRefClass(
             # scatter: y <-> x
             # OR
             # dot plot: num ~ cat
+
+            cat("xnum:", xnum, "\nynum: ", ynum, "\n")
             if ((xnum && ynum) || xnum) {
                 xvar <- ds[[curSet$y]]
                 yvar <- ds[[curSet$x]]
@@ -554,7 +556,8 @@ iNZGetInference <- setRefClass(
         hyp_simulatep = "ANY",
         g_hypctrls = "ANY",
         g_hyptbl = "ANY",
-        trend_choice = "list"
+        trend_choice = "list",
+        epi_chk = "ANY"
     ),
     methods = list(
         initialize = function(gui) {
@@ -828,6 +831,19 @@ iNZGetInference <- setRefClass(
                 )
 
                 handle_trend()
+            }
+
+            if (INFTYPE == "twoway-table" && length(levels(xvar)) == 2) {
+                # epi out: cat x cat, x ~ y, x is binary
+                addSpace(ctrl_panel, 20)
+                epi_chk <<- gcheckbox("Show EPI OUTPUT",
+                    checked = curSet$epi.out,
+                    container = ctrl_panel,
+                    handler = function(h, ...) {
+                        curSet$epi.out <<- svalue(epi_chk)
+                        update_inference()
+                    }
+                )
             }
 
             update_inference()

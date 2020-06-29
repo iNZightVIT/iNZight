@@ -137,7 +137,7 @@ test_that("Changing variable resets axis limits", {
     expect_null(ui$getActiveDoc()$getSettings()$xlim)
 })
 
-if (interactive()) {
+if (FALSE) {
     # try(ui$close()); load_all()
     ui <- iNZGUI$new()
     ui$initializeGui(census.at.school.500)
