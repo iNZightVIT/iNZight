@@ -226,6 +226,7 @@ construct_call <- function(settings, model, vartypes,
         default_args <- c(default_args, smry_args)
     }
     defaults <- c(default_args, inz_args, gg_args)
+
     lapply(names(settings),
         function(s_name) {
             is_same <- identical(
@@ -237,7 +238,6 @@ construct_call <- function(settings, model, vartypes,
             if (is_same) settings[[s_name]] <<- NULL
         }
     )
-
     ## set the data
     settings$data <- data
     if (!is.null(model$dataDesign)) {
