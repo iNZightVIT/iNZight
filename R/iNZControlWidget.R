@@ -612,32 +612,32 @@ iNZControlWidget <- setRefClass(
             data <- GUI$getActiveData()
             vars <- names(data)
 
-            if (!is.null(set$x) && set$varnames$x %in% vars) {
+            if (!is.null(set$x) && as.character(set$x) %in% vars) {
                 ## set variable 1 to whatever it's supposed to be
                 blockHandlers(V1box)
-                svalue(V1box) <<- set$varnames$x
+                svalue(V1box) <<- as.character(set$x)
                 unblockHandlers(V1box)
-                set$x <- as.name(set$varnames$x)
+                set$x <- set$x
             } else {
                 ## remove variable 1
                 set$x <- NULL
-                set$varnames$x <- NULL
+                # set$varnames$x <- NULL
             }
-            if (!is.null(set$y) && set$varnames$y %in% vars) {
+            if (!is.null(set$y) && as.character(set$y) %in% vars) {
                 ## set variable 2 to whatever it's supposed to be
                 blockHandlers(V2box)
-                svalue(V2box) <<- set$varnames$y
+                svalue(V2box) <<- as.character(set$y)
                 unblockHandlers(V2box)
-                set$y <- as.name(set$varnames$y)
+                set$y <- set$y
             } else {
                 ## remove variable 1
                 set$y <- NULL
-                set$varnames$y <- NULL
+                # set$varnames$y <- NULL
             }
-            if (!is.null(set$g1) && set$varnames$g1 %in% vars) {
+            if (!is.null(set$g1) && as.character(set$g1) %in% vars) {
                 ## set variable 3 to whatever it's supposed to be
-                svalue(G1box) <<- set$varnames$g1
-                set$g1 <- as.name(set$varnames$g1)
+                svalue(G1box) <<- as.character(set$g1)
+                set$g1 <- set$g1
                 g1level <- set$g1.level
                 set$g1.level <- NULL
                 sld1 <- ctrlGp$children[[1]][6, 1]
@@ -650,12 +650,12 @@ iNZControlWidget <- setRefClass(
                 ## remove variable 3
                 set$g1 <- NULL
                 set$g1.level <- NULL
-                set$varnames$g1 <- NULL
+                # set$varnames$g1 <- NULL
             }
-            if (!is.null(set$g2) && set$varnames$g2 %in% vars) {
+            if (!is.null(set$g2) && as.character(set$g2) %in% vars) {
                 ## set variable 3 to whatever it's supposed to be
-                svalue(G2box) <<- set$varnames$g2
-                set$g2 <- as.name(set$varnames$g2)
+                svalue(G2box) <<- as.character(set$g2)
+                set$g2 <- set$g2
                 g2level <- set$g2.level
                 set$g2.level <- NULL
                 sld2 <- ctrlGp$children[[1]][8, 1]
@@ -668,27 +668,27 @@ iNZControlWidget <- setRefClass(
                 ## remove variable 3
                 set$g2 <- NULL
                 set$g2.level <- NULL
-                set$varnames$g2 <- NULL
+                # set$varnames$g2 <- NULL
             }
 
             ## other things ...
-            if (!is.null(set$sizeby) && set$varnames$sizeby %in% vars) {
-                set$sizeby <- data[[set$varnames$sizeby]]
+            if (!is.null(set$sizeby) && as.character(set$sizeby) %in% vars) {
+                set$sizeby <- set$sizeby
             } else {
                 set$sizeby <- NULL
-                set$varnames$sizeby = NULL
+                # set$varnames$sizeby = NULL
             }
-            if (!is.null(set$colby) && set$varnames$colby %in% vars) {
-                set$colby <- data[[set$varnames$colby]]
+            if (!is.null(set$colby) && as.character(set$colby) %in% vars) {
+                set$colby <- set$colby
             } else {
                 set$colby <- NULL
-                set$varnames$colby = NULL
+                # set$varnames$colby = NULL
             }
-            if (!is.null(set$symbolby) && set$varnames$symbolby %in% vars) {
-                set$symbolby <- data[[set$varnames$symbolby]]
+            if (!is.null(set$symbolby) && as.character(set$symbolby) %in% vars) {
+                set$symbolby <- set$symbolby
             } else {
                 set$symbolby <- NULL
-                set$varnames$symbolby = NULL
+                # set$varnames$symbolby = NULL
             }
 
             GUI$getActiveDoc()$setSettings(set)
