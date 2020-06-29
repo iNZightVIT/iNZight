@@ -438,6 +438,7 @@ iNZGUI <- setRefClass(
             if (!is.null(curPlSet$x)) {
                 varx <- .dataset[[curPlSet$x]]
                 vary <- if (!is.null(curPlSet$y)) .dataset[[curPlSet$y]] else NULL
+
                 # # Switch x and y:
                 # if (is_num(varx) & is_num(vary)) {
                 #     x.tmp <- curPlSet$y
@@ -449,11 +450,11 @@ iNZGUI <- setRefClass(
                 #     curPlSet$varnames$x <- x.tmp
                 # }
                 # if x and y are categorical, OR x is cat, y is num ... switch
-                if (!is.null(vary) && is_cat(varx)) {
-                    x <- curPlSet$x
-                    curPlSet$x <- curPlSet$y
-                    curPlSet$y <- x
-                }
+                # if (!is.null(vary) && (is_cat(varx) + is_cat(vary) == 1)) {
+                #     x <- curPlSet$x
+                #     curPlSet$x <- curPlSet$y
+                #     curPlSet$y <- x
+                # }
                 if (!is.null(vary) && is_cat(vary) && is_cat(varx)) {
                     # if both x and y are categorical - two-way bar graph
                     # -> requires specifying colour palette!

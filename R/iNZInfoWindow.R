@@ -266,6 +266,8 @@ iNZGetSummary <- setRefClass(
             # scatter: y <-> x
             # OR
             # dot plot: num ~ cat
+
+            cat("xnum:", xnum, "\nynum: ", ynum, "\n")
             if ((xnum && ynum) || xnum) {
                 xvar <- ds[[curSet$y]]
                 yvar <- ds[[curSet$x]]
