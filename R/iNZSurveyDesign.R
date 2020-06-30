@@ -468,7 +468,7 @@ iNZSurveyDesign <- setRefClass(
                 clus2 = clus2,
                 wt = spec$weights,
                 fpc = spec$fpc,
-                nest = if (is.null(spec$nest)) FALSE else spec$nest,
+                nest = if (is.null(spec$nest)) FALSE else as.logical(spec$nest),
                 type = "survey",
                 gui = GUI
             )

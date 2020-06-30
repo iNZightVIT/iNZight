@@ -587,6 +587,9 @@ test_that("Survey design read from file", {
 
 ui$close()
 
+# try(ui$close(), TRUE); load_all()
+ui <- iNZGUI$new()
+ui$initializeGui()
 
 test_that("Survey data can be imported from svydesign file", {
 
