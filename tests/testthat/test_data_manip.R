@@ -3,6 +3,8 @@ context("Data manipulation and information")
 # try(ui$close(), TRUE); load_all()
 ui <- iNZGUI$new()
 ui$initializeGui(census.at.school.500)
+on.exit(try(ui$close(), TRUE))
+Sys.sleep(5)
 
 test_that("Data Maid report", {
     skip_if_not(rmarkdown::pandoc_available())
