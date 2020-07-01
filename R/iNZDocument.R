@@ -15,7 +15,7 @@ iNZDataModel <- setRefClass(
             dataSet = data.frame(empty = " ", stringsAsFactors = TRUE),
             origDataSet = data.frame(empty = " ", stringsAsFactors = TRUE),
             rowDataSet = data.frame(Row.names = 1, empty = " ", stringsAsFactors = TRUE),
-            dataDesign = NULL,
+            dataDesign = structure(list(spec = list(), design = NULL), class = "inzsvyspec"),
             name = "data", oldname = "",
             freqtables = list()
         )
@@ -90,26 +90,30 @@ iNZDataModel <- setRefClass(
             if (missing(x)) {
                 dataDesign <<- NULL
                 dataDesignName <<- name
-            }
-            if (inherits(x, "inzsvyspec")) {
-                if (is.null(x$data))
-                    dataDesign <<- iNZightTools::make_survey(dataSet, spec)
-                else
-                    dataDesign <<- spec
                 return()
             }
-            spec <- structure(
-                list(
-                    ids = if (is.null(x$clusters)) 1 else x$clusters,
-                    probs = x$probs,
-                    strata = x$strata,
-                    fpc = x$fpc,
-                    nest = as.logical(x$nest),
-                    weights = x$weights
-                ),
-                class = "inzsvyspec"
-            )
-            dataDesign <<- iNZightTools::make_survey(dataSet, spec)
+            if (inherits(x, "inzsvyspec")) {
+                if (is.null(x$design))
+                    x <- iNZightTools::make_survey(dataSet, x)
+            } else {
+                spec <- structure(
+                    list(
+                        spec = list(
+                            ids = if (is.null(x$clusters)) 1 else x$clusters,
+                            probs = x$probs,
+                            strata = x$strata,
+                            fpc = x$fpc,
+                            nest = as.logical(x$nest),
+                            weights = x$weights
+                        ),
+                    ),
+                    class = "inzsvyspec"
+                )
+                x <- iNZightTools::make_survey(dataSet, spec)
+            }
+            print(x)
+            print(dataDesign)
+            dataDesign <<- x
             # dataDesignName <<-
         },
         # setDesign2 = function(strata = NULL, clus1 = NULL, clus2 = NULL,
@@ -156,7 +160,7 @@ iNZDataModel <- setRefClass(
         # },
         createSurveyObject = function() {
             des <- getDesign()
-            return(des$design)
+            return(des)
 
             weights <- if (is.null(des$wt)) "NULL" else paste("~", des$wt)
             if (des$type == "survey") {

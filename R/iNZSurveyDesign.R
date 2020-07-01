@@ -449,33 +449,35 @@ iNZSurveyDesign <- setRefClass(
                 if (length(file) == 0) return()
             }
             svyspec <- iNZightTools::import_survey(file)
-            spec <- svyspec$spec
-            clus1 <- NULL
-            clus2 <- NULL
-            if (spec$ids != 1) {
-                if (grepl("\\+", spec$ids)) {
-                    clus <- strsplit(spec$ids, "\\+")[[1]]
-                    clus <- gsub("^\\s|\\s$", "", clus)
-                    clus1 <- clus[1]
-                    clus2 <- clus[2]
-                } else {
-                    clus1 <- svyspec$ids
-                }
-            }
-            GUI$getActiveDoc()$getModel()$setDesign(
-                strata = spec$strata,
-                clus1 = clus1,
-                clus2 = clus2,
-                wt = spec$weights,
-                fpc = spec$fpc,
-                nest = if (is.null(spec$nest)) FALSE else as.logical(spec$nest),
-                type = "survey",
-                gui = GUI
-            )
+            GUI$getActiveDoc()$getModel()$setDesign(svyspec)
+
+            # spec <- svyspec$spec
+            # clus1 <- NULL
+            # clus2 <- NULL
+            # if (spec$ids != 1) {
+            #     if (grepl("\\+", spec$ids)) {
+            #         clus <- strsplit(spec$ids, "\\+")[[1]]
+            #         clus <- gsub("^\\s|\\s$", "", clus)
+            #         clus1 <- clus[1]
+            #         clus2 <- clus[2]
+            #     } else {
+            #         clus1 <- svyspec$ids
+            #     }
+            # }
+            # GUI$getActiveDoc()$getModel()$setDesign(
+            #     strata = spec$strata,
+            #     clus1 = clus1,
+            #     clus2 = clus2,
+            #     wt = spec$weights,
+            #     fpc = spec$fpc,
+            #     nest = if (is.null(spec$nest)) FALSE else as.logical(spec$nest),
+            #     type = "survey",
+            #     gui = GUI
+            # )
 
             setOK <- try(
                 GUI$getActiveDoc()$getModel()$createSurveyObject(),
-                TRUE
+                silent = TRUE
             )
 
             if (!inherits(setOK, "try-error")) {
