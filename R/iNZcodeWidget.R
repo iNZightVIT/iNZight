@@ -23,7 +23,7 @@ iNZcodeWidget <- setRefClass(
             ## append any new packages ...?
             if (any(grepl("::", x))) {
                 sapply(x[grepl("::", x)], function(y) {
-                    m <- regexpr("[a-zA-Z0-9]+::", y)
+                    m <- regexpr("[a-zA-Z0-9]+:::?", y)
                     pkg <- substr(y, m, m + attr(m, "match.length") - 2)
                     if (!pkg %in% packages) packages <<- c(packages, pkg)
                 })
