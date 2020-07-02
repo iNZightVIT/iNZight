@@ -34,6 +34,7 @@ iNZCodePanel <- setRefClass(
             RGtk2::gtkTextViewSetRightMargin(input$widget, 0)
 
             ctrl_pnl <- ggroup(container = panel, expand = TRUE, fill = TRUE)
+            size(ctrl_pnl) <- c(-1, 25)
 
             lbl <- glabel("R code for the current plot is shown above, which can be edited and run.")
             font(lbl) <- list(size = 9, weight = "bold")
@@ -69,7 +70,8 @@ iNZCodePanel <- setRefClass(
             enabled(store_btn) <<- enabled(run_btn) <<- enabled(reset_btn) <<-
                 svalue(input) != ""
 
-            size(panel) <<- c(-1, 90)
+            # size(panel) <<- c(-1, 90)
+            size(input) <<- c(-1, 60)
         },
         set_input = function(code) {
             original_code <<- code
