@@ -93,19 +93,25 @@ iNZSurveyDesign <- setRefClass(
                         strat <- svalue_or_null(stratVar)
                         clus1 <- svalue_or_null(clus1Var)
                         clus2 <- svalue_or_null(clus2Var)
+                        if (!is.null(clus1) && !is.null(clus2)) {
+                            clus <- paste(clus1, clus2, sep = " + ")
+                        } else {
+                            clus <- ifelse(is.null(clus1), clus2, clus1)
+                        }
                         wts <- svalue_or_null(wtVar)
                         fpc <- svalue_or_null(fpcVar)
                         nest <- as.logical(svalue(nestChk))
                         clear <- is.null(strat) && is.null(clus1) &&
                             is.null(clus2) && is.null(wts) && is.null(fpc)
                         GUI$getActiveDoc()$getModel()$setDesign(
-                            strata = strat,
-                            clus1 = clus1,
-                            clus2 = clus2,
-                            wt = wts,
-                            nest = nest,
-                            fpc = fpc,
-                            type = "survey",
+                            list(
+                                strata = strat,
+                                clusters = clus,
+                                weights = wts,
+                                nest = nest,
+                                fpc = fpc,
+                                type = "survey"
+                            ),
                             gui = GUI
                         )
                     },

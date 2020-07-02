@@ -7,7 +7,7 @@ apijk <- iNZightTools::smart_read("apiclus2-jk1.csv")
 
 test_dir <- getwd()
 
-# ui$close()
+# ui$close(); load_all()
 ui <- iNZGUI$new()
 ui$initializeGui(apiclus2)
 on.exit(try(gWidgets2::dispose(ui$win), TRUE))
@@ -545,18 +545,9 @@ test_that("Survey design read from file", {
 
     swin <- iNZSurveyDesign$new(ui)
     expect_silent(swin$read_file(svyfile))
-    expect_equal(
+    expect_equivalent(
         ui$iNZDocuments[[ui$activeDoc]]$getModel()$getDesign(),
-        list(
-            strata = "stype",
-            clus1 = NULL,
-            clus2 = NULL,
-            wt = "pw",
-            fpc = "fpc",
-            nest = FALSE,
-            poststrat = NULL,
-            type = "survey"
-        )
+        iNZightTools::import_survey(svyfile, apistrat)
     )
 
     ui$setDocument(iNZDocument$new(data = apiclus2), reset = TRUE)
@@ -568,20 +559,10 @@ test_that("Survey design read from file", {
 
     swin <- iNZSurveyDesign$new(ui)
     expect_silent(swin$read_file(svyfile))
-    expect_equal(
+    expect_equivalent(
         ui$iNZDocuments[[ui$activeDoc]]$getModel()$getDesign(),
-        list(
-            strata = NULL,
-            clus1 = "dnum",
-            clus2 = "snum",
-            wt = NULL,
-            fpc = "fpc1 + fpc2",
-            nest = FALSE,
-            poststrat = NULL,
-            type = "survey"
-        )
+        iNZightTools::import_survey(svyfile, apiclus2)
     )
-
 })
 
 

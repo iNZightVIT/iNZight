@@ -15,7 +15,7 @@ iNZDataModel <- setRefClass(
             dataSet = data.frame(empty = " ", stringsAsFactors = TRUE),
             origDataSet = data.frame(empty = " ", stringsAsFactors = TRUE),
             rowDataSet = data.frame(Row.names = 1, empty = " ", stringsAsFactors = TRUE),
-            dataDesign = structure(list(spec = list(), design = NULL), class = "inzsvyspec"),
+            dataDesign = NULL,
             name = "data", oldname = "",
             freqtables = list()
         )
@@ -104,17 +104,19 @@ iNZDataModel <- setRefClass(
                             strata = x$strata,
                             fpc = x$fpc,
                             nest = as.logical(x$nest),
-                            weights = x$weights
-                        ),
+                            weights = x$weights,
+                            type = x$type
+                        )
                     ),
                     class = "inzsvyspec"
                 )
                 x <- iNZightTools::make_survey(dataSet, spec)
             }
-            print(x)
-            print(dataDesign)
-            dataDesign <<- x
-            # dataDesignName <<-
+            dataDesign <<- unclass(x)
+            dataDesignName <<- sprintf("%s.%s",
+                name,
+                switch(x$spec$type, "survey" = "svy", "replicate" = "repsvy")
+            )
         },
         # setDesign2 = function(strata = NULL, clus1 = NULL, clus2 = NULL,
         #                      wt = NULL, nest = NULL, fpc = NULL,
@@ -160,7 +162,7 @@ iNZDataModel <- setRefClass(
         # },
         createSurveyObject = function() {
             des <- getDesign()
-            return(des)
+            return(des$design)
 
             weights <- if (is.null(des$wt)) "NULL" else paste("~", des$wt)
             if (des$type == "survey") {

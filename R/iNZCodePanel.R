@@ -101,6 +101,8 @@ iNZCodePanel <- setRefClass(
 
             tryCatch(
                 {
+                    print(svalue(input))
+                    print(ls(env = GUI$code_env))
                     rawpl <- eval(
                         parse(text = svalue(input)),
                         envir = GUI$code_env
