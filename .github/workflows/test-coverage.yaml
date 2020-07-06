@@ -62,5 +62,8 @@ jobs:
         shell: bash
 
       - name: Test coverage
-        run: covr::codecov()
-        shell: Rscript {0}
+        uses: nick-invision/retry@v1
+        with:
+          timeout_minutes: 10
+          max_attemps: 3
+          command: Rscript -e "covr::codecov()"
