@@ -5,10 +5,12 @@ install.packages("RGtk2")
 gtkpath <- file.path(.libPaths()[1], "RGtk2")
 if (! dir.exists(gtkpath)) stop("No directory ...")
 
-if (! dir.exists( file.path( gtkpath, "gtk" ) ) ) {
+gtkdir <- file.path(gtkpath, "gtk")
+if (! dir.exists( gtkdir ) ) {
+    dir.create(gtkdir)
     url <- "http://ftp.gnome.org/pub/gnome/binaries/win64/gtk+/2.22/gtk+-bundle_2.22.1-20101229_win64.zip"
     download.file(url, "gtk.zip")
-    unzip("gtk.zip", exdir = gtkpath)
+    unzip("gtk.zip", exdir = gtkdir)
     unlink("gtk.zip")
 }
 
