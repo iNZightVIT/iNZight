@@ -597,7 +597,8 @@ iNZGetInference <- setRefClass(
             set_input(mend_call(smry_call, GUI))
 
             smry <- try(eval(smry_call, env), silent = TRUE)
-            if (inherits(smry, "try-error")) smry <- "Unable to generate inference."
+            if (inherits(smry, "try-error"))
+                smry <- "Unable to generate inference."
             set_output(smry)
 
             # disable simulate p-value checkbox if expected counts small

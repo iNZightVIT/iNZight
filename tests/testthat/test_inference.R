@@ -275,6 +275,7 @@ test_that("Get inference works for frequencies", {
 
 ## Survey designs
 
+# load_all()
 ui$close()
 data(api, package = "survey")
 ui <- iNZGUI$new()

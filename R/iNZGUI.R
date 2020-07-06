@@ -480,6 +480,8 @@ iNZGUI <- setRefClass(
                 e$.dataset <- .dataset
                 e$.design <- .design
 
+
+
                 ## Suppress the warnings produced by iNZightPlot ...
                 dop <- try({
                     ## Generate the plot ... and update the interaction button
