@@ -200,9 +200,16 @@ modifyList <- function (x, val, keep.null = FALSE)
 ## THIS SHOULD HAPPEN IN INZIGHTPLOTS
 construct_call <- function(settings, model, vartypes,
                            data = quote(.dataset),
-                           design = quote(!!.design),
+                           design = quote(.design),
                            what = c("plot", "summary", "inference")) {
-    if (is.null(settings$x)) return(NULL)
+    if (is.null(settings$x)) {
+        settings <- list(data = data)
+        call <- capture.output(dput(settings))
+        call <- gsub("^list", "getPlotSummary", call)
+        call <- gsub(".DROP = ", "", call)
+
+        return(parse(text = paste(call, collapse = "\n")))
+    }
 
     what <- match.arg(what)
 
@@ -399,7 +406,7 @@ mend_call <- function(call, gui) {
         )
     dname <- iNZightTools::create_varname(dname)
 
-    if (is.expression(call)) {
+    if (is.expression(call) && as.character(call[[1]])[1] != "getPlotSummary") {
         ## and remove invalid vars (for plot_type/method combination)
         cnames <- names(call[[1]])
         ptype <- attr(gui$curPlot, "plottype")
@@ -408,7 +415,10 @@ mend_call <- function(call, gui) {
             vtypes <- attr(gui$curPlot, "vartypes")
             xcat <- vtypes[[vnames$x]] == "factor"
             ycat <- !is.null(vnames$y) && vtypes[[vnames$y]] == "factor"
-            if (xcat && ycat) ptype <- "bar2"
+            if (xcat && ycat)
+                ptype <- "bar2"
+            else if (length(levels(gui$getActiveData()[[vnames$x]])) == 2L)
+                ptype <- "barBinary"
         }
         keep <- iNZightPlots:::valid_par(
             cnames,
@@ -424,9 +434,8 @@ mend_call <- function(call, gui) {
 
     code <- as.character(call)
     code <- gsub(".dataset", dname, code, fixed = TRUE)
-    # if (is.expression(call) && !is.null(call[[1]]$design)) {
     if (any(grepl(".design", code, fixed = TRUE))) {
-        code <- gsub("!!.design", ".design", code, fixed = TRUE)
+        code <- gsub(".design", ".design", code, fixed = TRUE)
         code <- gsub(".design", gui$getActiveDoc()$getModel()$dataDesignName,
             code,
             fixed = TRUE

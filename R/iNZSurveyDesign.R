@@ -19,6 +19,7 @@ iNZSurveyDesign <- setRefClass(
         repRscalesClear = "ANY",
         repRscales = "ANY",
         rscalesTbl = "ANY",
+        readFileBtn = "ANY",
         createBtn = "ANY",
         cancelBtn = "ANY"
     ),
@@ -63,6 +64,7 @@ iNZSurveyDesign <- setRefClass(
             btnGrp <- ggroup(cont = gmain)
             addSpace(btnGrp, 10)
             #advancedBtn <- gbutton("Advanced", cont = btnGrp)
+            readFileBtn <<- gbutton("Read from file", cont = btnGrp)
             addSpring(btnGrp)
             cancelBtn <<- gbutton("Cancel", cont = btnGrp)
             addSpace(btnGrp, 10)
@@ -70,6 +72,10 @@ iNZSurveyDesign <- setRefClass(
             addSpace(btnGrp, 10)
 
             addSpace(gmain, 10)
+
+            addHandlerClicked(readFileBtn,
+                handler = function(h, ...) read_file()
+            )
 
             addHandlerClicked(cancelBtn, handler = function(h, ...) {
                 dispose(designWin)
@@ -433,6 +439,68 @@ iNZSurveyDesign <- setRefClass(
             add(g, lbl, expand = TRUE, anchor = c(-1, 0))
 
             g
+        },
+        read_file = function(file) {
+            if (missing(file)) {
+                file <- gfile("Select survey design file",
+                    type = "open",
+                    filter = ".svydesign"
+                )
+                if (length(file) == 0) return()
+            }
+            svyspec <- iNZightTools::import_survey(file)
+            spec <- svyspec$spec
+            clus1 <- NULL
+            clus2 <- NULL
+            if (spec$ids != 1) {
+                if (grepl("\\+", spec$ids)) {
+                    clus <- strsplit(spec$ids, "\\+")[[1]]
+                    clus <- gsub("^\\s|\\s$", "", clus)
+                    clus1 <- clus[1]
+                    clus2 <- clus[2]
+                } else {
+                    clus1 <- svyspec$ids
+                }
+            }
+            GUI$getActiveDoc()$getModel()$setDesign(
+                strata = spec$strata,
+                clus1 = clus1,
+                clus2 = clus2,
+                wt = spec$weights,
+                fpc = spec$fpc,
+                nest = if (is.null(spec$nest)) FALSE else as.logical(spec$nest),
+                type = "survey",
+                gui = GUI
+            )
+
+            setOK <- try(
+                GUI$getActiveDoc()$getModel()$createSurveyObject(),
+                TRUE
+            )
+
+            if (!inherits(setOK, "try-error")) {
+                # enabled(GUI$infBtn) <<- clear
+                dispose(designWin)
+
+                ## write design call
+                call <- paste(deparse(setOK$call), collapse = "\n")
+
+                call <- sprintf("%s <- %s",
+                    GUI$getActiveDoc()$getModel()$dataDesignName,
+                    gsub("dataSet", GUI$getActiveDoc()$getModel()$name, call))
+                GUI$rhistory$add(
+                    c("## create survey design object", call),
+                    tidy = TRUE
+                )
+
+                ## update plot
+                GUI$updatePlot()
+            } else {
+                gmessage(paste0(
+                    "There is a problem with the survey specification file:\n\n",
+                    setOK),
+                    icon = "error")
+            }
         }
     )
 )
