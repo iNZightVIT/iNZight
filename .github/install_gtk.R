@@ -11,3 +11,5 @@ if (! dir.exists( file.path( gtkpath, "gtk" ) ) ) {
     unzip("gtk.zip", exdir = gtkpath)
     unlink("gtk.zip")
 }
+
+print(list.files(gtkpath))
