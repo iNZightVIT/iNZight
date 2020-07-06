@@ -17,3 +17,4 @@ if (! dir.exists( gtkdir ) ) {
 }
 
 print(list.files(gtkpath))
+print(list.files(gtkdir))
