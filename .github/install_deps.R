@@ -10,6 +10,8 @@ github_deps <- c(
 
 options(repos = c(CRAN = "https://cloud.r-project.org"))
 
+list.files(system.file("gtk", package = "RGtk2"))
+
 if (.Platform$OS.type == "windows") {
     utils::install.packages("XML")
     if (!requireNamespace("XML")) {
