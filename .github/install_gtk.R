@@ -1,3 +1,5 @@
+options(repos = c(CRAN = "https://cloud.r-project.org"))
+
 install.packages("RGtk2")
 
 if (! dir.exists( file.path( system.file("RGtk2"), "gtk" ) ) ) {
