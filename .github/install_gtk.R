@@ -2,6 +2,8 @@ options(repos = c(CRAN = "https://cloud.r-project.org"))
 
 install.packages("RGtk2")
 
+print(system.file("RGtk2"))
+print(.libPaths())
 if (! dir.exists( file.path( system.file("RGtk2"), "gtk" ) ) ) {
     url <- "http://ftp.gnome.org/pub/gnome/binaries/win64/gtk+/2.22/gtk+-bundle_2.22.1-20101229_win64.zip"
     download.file(url, "gtk.zip")
