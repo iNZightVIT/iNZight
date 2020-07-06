@@ -65,5 +65,5 @@ jobs:
         uses: nick-invision/retry@v1
         with:
           timeout_minutes: 10
-          max_attemps: 3
+          max_attempts: 3
           command: Rscript -e "covr::codecov()"
