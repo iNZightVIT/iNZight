@@ -17,3 +17,7 @@ if (! dir.exists( gtkdir ) ) {
 
 print(list.files(gtkpath))
 print(list.files(gtkdir))
+cat("Loading RGtk2 library...\n")
+library(RGtk2)
+cat(".done.\n")
+
