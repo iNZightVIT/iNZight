@@ -13,7 +13,6 @@ jobs:
       matrix:
         config:
           - {os: windows-latest, r: 'release'}
-          - {os: macOS-latest, r: 'release'}
           - {os: ubuntu-16.04, r: 'release', rspm: "https://packagemanager.rstudio.com/cran/__linux__/xenial/latest"}
 
     env:
@@ -53,10 +52,13 @@ jobs:
           sysreqs=$(Rscript -e "cat(sysreqs::sysreq_commands('DESCRIPTION'))")
           sudo -s eval "$sysreqs"
 
+      - name: Install RGtk
+        if: runner.os == 'Windows'
+        run: Rscript ./.github/install_gtk.R
+        shell: bash
+
       - name: Install dependencies
         run: Rscript ./.github/install_deps.R
-        #   remotes::install_deps(dependencies = TRUE)
-        #   remotes::install_cran("rcmdcheck")
         shell: bash
 
       - name: Test coverage

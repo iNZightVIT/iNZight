@@ -55,7 +55,7 @@ jobs:
           sudo -s eval "$sysreqs"
 
       - name: Install RGtk
-        if: runner.os == "Windows"
+        if: runner.os == 'Windows'
         run: Rscript ./.github/install_gtk.R
         shell: bash
 
