@@ -1,4 +1,4 @@
-if ( Test-Path -Path 'D:\a\_temp\Library\RGtk2\gtk' -PathType Container ) { exit 0 }
+if ( Test-Path -Path 'D:\a\_temp\Library\RGtk2\gtk' -PathType Container ) { Exit 0 }
 
 echo "Installing RGtk2 ..."
 Rscript -e "install.packages('RGtk2', repos = 'https://cloud.r-project.org')"
