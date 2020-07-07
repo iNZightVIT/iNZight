@@ -58,16 +58,19 @@ jobs:
         if: runner.os == 'Windows'
         run: Rscript ./.github/install_gtk.R
         shell: bash
+        continue-on-error: true
 
       - name: Install dependencies
         run: Rscript ./.github/install_deps.R
         shell: bash
+        continue-on-error: true
 
       - name: Check
         env:
           _R_CHECK_CRAN_INCOMING_REMOTE_: false
         run: rcmdcheck::rcmdcheck(args = c("--no-manual", "--as-cran"), error_on = "warning", check_dir = "check")
         shell: Rscript {0}
+        continue-on-error: true
 
       - name: Upload check results
         if: failure()
