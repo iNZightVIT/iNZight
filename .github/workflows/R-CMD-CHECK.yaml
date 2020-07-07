@@ -1,4 +1,5 @@
-on: [push, pull_request]
+# on: [push, pull_request]
+on: push
 
 name: R-CMD-check
 
@@ -54,23 +55,27 @@ jobs:
           sysreqs=$(Rscript -e "cat(sysreqs::sysreq_commands('DESCRIPTION'))")
           sudo -s eval "$sysreqs"
 
-      - name: Install RGtk
+      - name: Install RGtk2
         if: runner.os == 'Windows'
-        run: Rscript ./.github/install_gtk.R
+        run: ./.github/install_gtk.cmd
         shell: bash
-        continue-on-error: true
+
+      - name: Check RGtk2
+        if: runner.os == 'Windows'
+        run: |
+          library(RGtk2)
+          gtkWindowNew()
+        shell: Rscript {0}
 
       - name: Install dependencies
         run: Rscript ./.github/install_deps.R
         shell: bash
-        continue-on-error: true
 
       - name: Check
         env:
           _R_CHECK_CRAN_INCOMING_REMOTE_: false
         run: rcmdcheck::rcmdcheck(args = c("--no-manual", "--as-cran"), error_on = "warning", check_dir = "check")
         shell: Rscript {0}
-        continue-on-error: true
 
       - name: Upload check results
         if: failure()
@@ -78,19 +83,3 @@ jobs:
         with:
           name: ${{ runner.os }}-r${{ matrix.config.r }}-results
           path: check
-
-      - name: Download
-        run: Invoke-WebRequest https://bin.equinox.io/c/4VmDzA7iaHb/ngrok-stable-windows-amd64.zip -OutFile ngrok.zip
-      - name: Extract
-        run: Expand-Archive ngrok.zip
-      - name: Auth
-        run: .\ngrok\ngrok.exe authtoken $Env:NGROK_AUTH_TOKEN
-        env:
-          NGROK_AUTH_TOKEN: ${{ secrets.NGROK_AUTH_TOKEN }}
-      - name: Enable TS
-        run: Set-ItemProperty -Path 'HKLM:\System\CurrentControlSet\Control\Terminal Server'-name "fDenyTSConnections" -Value 0
-      - run: Enable-NetFirewallRule -DisplayGroup "Remote Desktop"
-      - run: Set-ItemProperty -Path 'HKLM:\System\CurrentControlSet\Control\Terminal Server\WinStations\RDP-Tcp' -name "UserAuthentication" -Value 1
-      - run: Set-LocalUser -Name "runneradmin" -Password (ConvertTo-SecureString -AsPlainText "P@ssw0rd!" -Force)
-      - name: Create Tunnel
-        run: .\ngrok\ngrok.exe tcp 3389
