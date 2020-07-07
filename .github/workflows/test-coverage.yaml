@@ -52,10 +52,21 @@
 #           sysreqs=$(Rscript -e "cat(sysreqs::sysreq_commands('DESCRIPTION'))")
 #           sudo -s eval "$sysreqs"
 
-#       - name: Install RGtk
+#       - name: Install RGtk2
 #         if: runner.os == 'Windows'
-#         run: Rscript ./.github/install_gtk.R
+#         run: ./.github/install_gtk.cmd
 #         shell: bash
+
+#       - name: Add GTK to PATH
+#         if: runner.os == 'Windows'
+#         run: echo "::add-path::D:\a\_temp\Library\RGtk2\gtk\bin"
+
+#       - name: Check RGtk2
+#         if: runner.os == 'Windows'
+#         run: |
+#           library(RGtk2)
+#           gtkWindowNew()
+#         shell: Rscript {0}
 
 #       - name: Install dependencies
 #         run: Rscript ./.github/install_deps.R
