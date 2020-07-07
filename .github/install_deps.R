@@ -29,16 +29,10 @@ if (.Platform$OS.type == "windows") {
 
 remotes::install_github(
     github_deps,
-    build_opts = c(
-        "--no-resave-data", "--no-manual", "--no-build-vignettes",
-        "--no-multiarch"
-    )
+    INSTALL_opts = "--no-multiarch"
 )
 remotes::install_deps(
     dependencies = TRUE,
-    build_opts = c(
-        "--no-resave-data", "--no-manual", "--no-build-vignettes",
-        "--no-multiarch"
-    )
+    INSTALL_opts = "--no-multiarch"
 )
 remotes::install_cran("rcmdcheck")
