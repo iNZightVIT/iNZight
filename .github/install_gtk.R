@@ -2,7 +2,7 @@ options(repos = c(CRAN = "https://cloud.r-project.org"))
 
 install.packages("RGtk2")
 
-gtk_path <- RGtk2:::.windows_gtk_path()
+gtk_path <- file.path(system.file(package = "RGtk2"), "gtk", .Platform$r_arch)
 if (! dir.exists( gtkdir ) ) {
     dir.create(gtk_path, recursive = TRUE)
 
