@@ -29,6 +29,18 @@ if (.Platform$OS.type == "windows") {
     sessionInfo()
 }
 
-remotes::install_github(github_deps)
-remotes::install_deps(dependencies = TRUE)
+remotes::install_github(
+    github_deps,
+    build_opts = c(
+        "--no-resave-data", "--no-manual", "--no-build-vignettes",
+        "--no-multiarch"
+    )
+)
+remotes::install_deps(
+    dependencies = TRUE,
+    build_opts = c(
+        "--no-resave-data", "--no-manual", "--no-build-vignettes",
+        "--no-multiarch"
+    )
+)
 remotes::install_cran("rcmdcheck")
