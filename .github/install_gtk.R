@@ -14,10 +14,3 @@ if (! dir.exists( gtkdir ) ) {
     system(sprintf("7z x gtk.zip -o%s", gtkdir))
     unlink("gtk.zip")
 }
-
-print(list.files(gtkpath))
-print(list.files(gtkdir))
-cat("Loading RGtk2 library...\n")
-library(RGtk2)
-cat(".done.\n")
-
