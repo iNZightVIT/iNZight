@@ -25,6 +25,8 @@ if (.Platform$OS.type == "windows") {
         unzip("xml.zip", exdir = .libPaths()[1])
         unlink("xml.zip")
     }
+
+    sessionInfo()
 }
 
 remotes::install_github(github_deps)
