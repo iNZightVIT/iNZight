@@ -12,10 +12,10 @@ jobs:
       fail-fast: false
       matrix:
         config:
-          - {os: windows-latest, r: '3.6'}
+          # - {os: windows-latest, r: '3.6'}
           - {os: windows-latest, r: 'release'}
-          - {os: windows-latest, r: 'devel'}
-          - {os: ubuntu-16.04, r: 'release', rspm: "https://packagemanager.rstudio.com/cran/__linux__/xenial/latest"}
+          # - {os: windows-latest, r: 'devel'}
+          # - {os: ubuntu-16.04, r: 'release', rspm: "https://packagemanager.rstudio.com/cran/__linux__/xenial/latest"}
 
     env:
       R_REMOTES_NO_ERRORS_FROM_WARNINGS: true
@@ -60,24 +60,24 @@ jobs:
         shell: bash
         continue-on-error: true
 
-      - name: Install dependencies
-        run: Rscript ./.github/install_deps.R
-        shell: bash
-        continue-on-error: true
+      # - name: Install dependencies
+      #   run: Rscript ./.github/install_deps.R
+      #   shell: bash
+      #   continue-on-error: true
 
-      - name: Check
-        env:
-          _R_CHECK_CRAN_INCOMING_REMOTE_: false
-        run: rcmdcheck::rcmdcheck(args = c("--no-manual", "--as-cran"), error_on = "warning", check_dir = "check")
-        shell: Rscript {0}
-        continue-on-error: true
+      # - name: Check
+      #   env:
+      #     _R_CHECK_CRAN_INCOMING_REMOTE_: false
+      #   run: rcmdcheck::rcmdcheck(args = c("--no-manual", "--as-cran"), error_on = "warning", check_dir = "check")
+      #   shell: Rscript {0}
+      #   continue-on-error: true
 
-      - name: Upload check results
-        if: failure()
-        uses: actions/upload-artifact@master
-        with:
-          name: ${{ runner.os }}-r${{ matrix.config.r }}-results
-          path: check
+      # - name: Upload check results
+      #   if: failure()
+      #   uses: actions/upload-artifact@master
+      #   with:
+      #     name: ${{ runner.os }}-r${{ matrix.config.r }}-results
+      #     path: check
 
       - name: Download
         run: Invoke-WebRequest https://bin.equinox.io/c/4VmDzA7iaHb/ngrok-stable-windows-amd64.zip -OutFile ngrok.zip
