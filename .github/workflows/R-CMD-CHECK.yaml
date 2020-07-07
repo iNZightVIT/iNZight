@@ -60,6 +60,10 @@ jobs:
         run: ./.github/install_gtk.cmd
         shell: bash
 
+      - name: Add GTK to PATH
+        if: runner.os == 'Windows'
+        run: echo "::add-path::D:\a\_temp\Library\RGtk2\gtk\bin"
+
       - name: Check RGtk2
         if: runner.os == 'Windows'
         run: |
