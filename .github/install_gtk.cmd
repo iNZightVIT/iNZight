@@ -1,8 +1,4 @@
-#!/bin/bash
-
-if [ -d "D:\a\_temp\Library\RGtk2\gtk" ]; then
-  exit
-fi;
+if exist D:\a\_temp\Library\RGtk2\gtk\NUL exit 0
 
 echo "Installing RGtk2 ..."
 Rscript -e "install.packages('RGtk2', repos = 'https://cloud.r-project.org')"
