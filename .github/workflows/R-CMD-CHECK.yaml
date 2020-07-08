@@ -13,9 +13,9 @@ jobs:
       fail-fast: false
       matrix:
         config:
-          # - {os: windows-latest, r: '3.6'}
+          - {os: windows-latest, r: '3.6'}
           - {os: windows-latest, r: 'release'}
-          # - {os: windows-latest, r: 'devel'}
+          - {os: windows-latest, r: 'devel'}
           # - {os: ubuntu-16.04, r: 'release', rspm: "https://packagemanager.rstudio.com/cran/__linux__/xenial/latest"}
 
     env:
@@ -39,7 +39,6 @@ jobs:
         shell: Rscript {0}
 
       - name: Cache R packages
-        # if: runner.os != 'Windows'
         uses: actions/cache@v1
         with:
           path: ${{ env.R_LIBS_USER }}

@@ -9,9 +9,3 @@ md gtk
 7z x gtk.zip -ogtk > nul
 del gtk.zip
 mv gtk D:\a\_temp\Library\RGtk2\
-
-REM curl -L -o gtk.zip http://ftp.gnome.org/pub/gnome/binaries/win32/gtk+/2.22/gtk+-bundle_2.22.1-20101227_win32.zip
-REM md gtk
-REM 7z x gtk.zip -ogtk > nul
-REM del gtk.zip
-REM mv gtk D:\a\_temp\Library\RGtk2\
