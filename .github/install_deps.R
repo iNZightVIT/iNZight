@@ -16,6 +16,9 @@ if (.Platform$OS.type == "windows") {
 
     if (!requireNamespace("cairoDevice", quietly = TRUE))
         utils::install.packages("cairoDevice", type = "binary")
+
+    if (!requireNamespace("RODBC", quietly = TRUE))
+        utils::install.packages("RODBC", type = "binary")
 }
 
 remotes::install_github(
