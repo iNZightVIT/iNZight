@@ -77,8 +77,8 @@ jobs:
 
       - name: Create iNZightVIT directory
         if: runner.os == 'Windows'
-        run: mkdir C:\Users\runneradmin\Documents\iNZightVIT
-        shell: bash
+        run: try(dir.create(file.path("~", "Documents", "iNZightVIT"), recursive = TRUE))
+        shell: Rscript {0}
 
       - name: Check
         env:
