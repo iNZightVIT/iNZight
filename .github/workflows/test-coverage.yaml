@@ -47,9 +47,7 @@ jobs:
         env:
           RHUB_PLATFORM: linux-x86_64-ubuntu-gcc
         run: |
-          Rscript -e "remotes::install_github('r-hub/sysreqs')"
-          sysreqs=$(Rscript -e "cat(sysreqs::sysreq_commands('DESCRIPTION'))")
-          sudo -s eval "$sysreqs"
+          sudo apt install libgtk2.0-dev xorg-dev libxml2-dev libnlopt-dev
 
       - name: Install RGtk2
         if: runner.os == 'Windows'
