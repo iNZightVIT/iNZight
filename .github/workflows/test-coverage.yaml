@@ -87,15 +87,16 @@ jobs:
           max_attempts: 3
           command: xvfb-run --auto-servernum Rscript -e "covr::codecov()"
 
-      - name: Test coverage [linux]
+      - name: Test coverage [win]
         if: runner.os != 'Linux'
         uses: nick-invision/retry@v1
         with:
           timeout_minutes: 10
-          max_attempts: 3
+          max_attempts: 5
           command: Rscript -e "covr::codecov()"
 
       - name: Clean up XVFB
+        if: runner.os == 'Linux'
         run: |
           kill_xvfb () {
             local xvfb_pids=`ps aux | grep tmp/xvfb-run | grep -v grep | awk '{print $2}'`
