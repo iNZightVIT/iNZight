@@ -75,6 +75,10 @@ jobs:
         run: Rscript ./.github/install_deps.R
         shell: bash
 
+      - name: Create iNZightVIT directory
+        run: md C:\Users\runneradmin\Documents\iNZightVIT
+        shell: bash
+
       - name: Check
         env:
           _R_CHECK_CRAN_INCOMING_REMOTE_: false

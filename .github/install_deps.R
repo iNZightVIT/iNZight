@@ -10,25 +10,11 @@ github_deps <- c(
 
 options(repos = c(CRAN = "https://cloud.r-project.org"))
 
-list.files(system.file("gtk", package = "RGtk2"))
-
 if (.Platform$OS.type == "windows") {
-    if (!requireNamespace("XML"))
+    if (!requireNamespace("XML", quietly = TRUE))
         utils::install.packages("XML", type = "binary")
 
-    # if (!requireNamespace("XML")) {
-    #     download.file(
-    #         sprintf(
-    #             "https://cran.r-project.org/bin/windows/contrib/%s/XML_3.99-0.3.zip",
-    #             paste(strsplit(as.character(getRversion()), "\\.")[[1]][1:2], collapse = ".")
-    #         ),
-    #         "xml.zip"
-    #     )
-    #     unzip("xml.zip", exdir = .libPaths()[1])
-    #     unlink("xml.zip")
-    # }
-
-    if (!requireNamespace("cairoDevice"))
+    if (!requireNamespace("cairoDevice", quietly = TRUE))
         utils::install.packages("cairoDevice", type = "binary")
 }
 
