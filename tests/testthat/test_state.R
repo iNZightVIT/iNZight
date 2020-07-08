@@ -1,6 +1,6 @@
 context("Save and load application state")
 
-skip()
+skip("test")
 
 # skip_on_ci()
 

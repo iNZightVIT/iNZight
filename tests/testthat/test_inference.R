@@ -1,6 +1,6 @@
 context("Get Inference window")
 
-skip()
+skip("test")
 
 # try(ui$close(), TRUE); devtools::load_all()
 ui <- iNZGUI$new()

@@ -1,6 +1,6 @@
 context("Data is exported from the UI")
 
-skip()
+skip("test")
 
 # try(ui$close())
 ui <- iNZGUI$new()

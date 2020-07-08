@@ -1,6 +1,6 @@
 context("Survey data")
 
-skip()
+skip("test")
 
 data(api, package = "survey")
 chis <- iNZightTools::smart_read("chis.csv")

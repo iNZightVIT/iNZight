@@ -1,6 +1,6 @@
 context("Data is loaded into the UI")
 
-skip()
+skip("test")
 
 wd <- getwd()
 ui <- iNZGUI$new()

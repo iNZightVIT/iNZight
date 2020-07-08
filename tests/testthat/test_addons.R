@@ -1,6 +1,6 @@
 context("Add-on Modules")
 
-skip()
+skip("test")
 
 moduledir <- file.path(getwd(), "modules")
 

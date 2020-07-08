@@ -1,6 +1,6 @@
 context("Code writing")
 
-skip()
+skip("test")
 
 # load_all("../iNZightPlots")
 

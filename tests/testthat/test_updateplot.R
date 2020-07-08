@@ -1,6 +1,6 @@
 context("Update Plot method and code writing")
 
-skip()
+skip("test")
 
 # devtools::load_all(); ui$close();
 ui <- iNZGUI$new()

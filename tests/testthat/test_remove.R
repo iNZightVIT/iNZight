@@ -1,6 +1,6 @@
 context("Add to Plot window")
 
-skip()
+skip("test")
 
 # try(ui$close(), TRUE); load_all()
 ui <- iNZGUI$new()

@@ -1,6 +1,6 @@
 context("Validation menu")
 
-skip()
+skip("test")
 
 ui <- iNZGUI$new()
 ui$initializeGui()

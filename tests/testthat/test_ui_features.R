@@ -1,6 +1,6 @@
 context("Various UI elements")
 
-skip()
+skip("test")
 
 ui <- iNZGUI$new()
 ui$initializeGui(census.at.school.500)

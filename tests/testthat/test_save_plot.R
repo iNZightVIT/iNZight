@@ -1,6 +1,6 @@
 context("Save plot")
 
-skip()
+skip("test")
 
 skip_on_ci()
 skip_on_covr()
