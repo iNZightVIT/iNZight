@@ -76,7 +76,7 @@ jobs:
         shell: bash
 
       - name: Create iNZightVIT directory
-        run: md C:\Users\runneradmin\Documents\iNZightVIT
+        run: mkdir C:\Users\runneradmin\Documents\iNZightVIT
         shell: bash
 
       - name: Check
