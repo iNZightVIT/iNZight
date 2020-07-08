@@ -76,14 +76,24 @@ jobs:
         shell: Rscript {0}
 
       - name: Install XVFB
+        if: runner.os == 'Linux'
         run: sudo apt-get install xvfb
 
-      - name: Test coverage
+      - name: Test coverage [linux]
+        if: runner.os == 'Linux'
         uses: nick-invision/retry@v1
         with:
           timeout_minutes: 10
           max_attempts: 3
           command: xvfb-run --auto-servernum Rscript -e "covr::codecov()"
+
+      - name: Test coverage [linux]
+        if: runner.os != 'Linux'
+        uses: nick-invision/retry@v1
+        with:
+          timeout_minutes: 10
+          max_attempts: 3
+          command: Rscript -e "covr::codecov()"
 
       - name: Clean up XVFB
         run: |
