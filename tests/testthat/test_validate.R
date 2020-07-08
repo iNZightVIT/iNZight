@@ -1,5 +1,7 @@
 context("Validation menu")
 
+skip()
+
 ui <- iNZGUI$new()
 ui$initializeGui()
 on.exit(gWidgets2::dispose(ui$win))

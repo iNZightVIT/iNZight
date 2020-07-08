@@ -1,5 +1,7 @@
 context("Code writing")
 
+skip()
+
 # load_all("../iNZightPlots")
 
 # try(ui$close()); load_all()

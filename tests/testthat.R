@@ -1,4 +1,4 @@
 library(testthat)
 library(iNZight)
 
-# test_check("iNZight")
+test_check("iNZight")
