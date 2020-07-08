@@ -1,7 +1,5 @@
 context("Get Summary window")
 
-skip("test")
-
 # try(ui$close(), TRUE); devtools::load_all()
 ui <- iNZGUI$new()
 ui$initializeGui()

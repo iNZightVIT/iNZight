@@ -1,7 +1,5 @@
 context("Test FutureLearn MOOC")
 
-skip("test")
-
 skip_on_cran()
 skip_on_covr()
 

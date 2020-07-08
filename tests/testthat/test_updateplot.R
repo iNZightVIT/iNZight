@@ -1,7 +1,5 @@
 context("Update Plot method and code writing")
 
-skip("test")
-
 # devtools::load_all(); ui$close();
 ui <- iNZGUI$new()
 ui$initializeGui(census.at.school.500)

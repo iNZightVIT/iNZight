@@ -1,7 +1,5 @@
 context("Save plot")
 
-skip("test")
-
 skip_on_ci()
 skip_on_covr()
 skip_on_cran()
