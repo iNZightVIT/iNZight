@@ -117,7 +117,7 @@ iNZGUI <- setRefClass(
                         setwd(file.path("~", "iNZightVIT"))
                     } else if (file.exists(file.path("~", "Documents", "iNZightVIT"))) {
                         setwd(file.path("~", "Documents", "iNZightVIT"))
-                    } else {
+                    } else if (interactive()) {
                         ## Create it:
                         conf <- gconfirm(
                             paste("Do you want to create an iNZightVIT directory",

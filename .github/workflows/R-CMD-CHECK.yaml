@@ -76,6 +76,7 @@ jobs:
         shell: bash
 
       - name: Create iNZightVIT directory
+        if: runner.os == 'Windows'
         run: mkdir C:\Users\runneradmin\Documents\iNZightVIT
         shell: bash
 
