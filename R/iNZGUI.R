@@ -82,7 +82,8 @@ iNZGUI <- setRefClass(
         initializeGui = function(
             data = NULL,
             disposeR = FALSE,
-            addonDir = NULL
+            addonDir = NULL,
+            show = TRUE
         ) {
             "Initiates the GUI"
             iNZDocuments <<- list(iNZDocument$new(data = data))
@@ -258,10 +259,10 @@ iNZGUI <- setRefClass(
 
             ## code panel for latest R function call
             code_panel <<- iNZCodePanel$new(.self)
-            if (preferences$dev.features)
+            if (preferences$dev.features && preferences$show.code)
                 add(gtop, code_panel$panel, fill = TRUE)
 
-            visible(win) <<- TRUE
+            visible(win) <<- show
 
             ## ensures that all plot control btns are visible on startup
             #svalue(g) <- 0.375
@@ -564,8 +565,8 @@ iNZGUI <- setRefClass(
             enabled(plotToolbar$exportplotBtn) <<- FALSE
             invisible(rawpl)
         },
-        saveState = function(file) {
-            state <- lapply(
+        getState = function() {
+            lapply(
                 seq_along(iNZDocuments),
                 function(i) {
                     list(
@@ -574,6 +575,9 @@ iNZGUI <- setRefClass(
                     )
                 }
             )
+        },
+        saveState = function(file) {
+            state <- getState()
             save(state, file = file)
         },
         loadState = function(file, .alert = TRUE) {
@@ -605,7 +609,7 @@ iNZGUI <- setRefClass(
                     ctrlWidget$setState(doc$plot_settings)
                 }
             )
-            invisible(NULL)
+            invisible(TRUE)
         },
         ## set a new iNZDocument and make it the active one
         setDocument = function(document, reset = FALSE) {
@@ -858,7 +862,8 @@ iNZGUI <- setRefClass(
                 "window.size",
                 "popout",
                 "font.size",
-                "dev.features"
+                "dev.features",
+                "show.code"
             )
 
             ## Only keep allowed preferences --- anything else is discarded
@@ -892,6 +897,10 @@ iNZGUI <- setRefClass(
             prefs$dev.features <-
                 if (is.null(prefs$dev.features) || !is.logical(prefs$dev.features)) defs$dev.features
                 else prefs$dev.features
+
+            prefs$show.code <-
+                if (is.null(prefs$show.code) || !is.logical(prefs$show.code)) defs$show.code
+                else prefs$show.code
 
             prefs
 
@@ -1059,6 +1068,7 @@ iNZGUI <- setRefClass(
             grDevices::dev.flush()
         },
         plotSplashScreen = function() {
+            if (!visible(win)) return()
             if (requireNamespace("png", quietly = TRUE)) {
                 img <- png::readPNG(
                     system.file("images/inzight_transp.png", package = "iNZight")
@@ -1156,5 +1166,46 @@ iNZGUI <- setRefClass(
         },
         close = function() {
             if (disposer) q(save = "no") else dispose(win)
-        })
+        },
+        reload = function() {
+            # first, get middle of iNZight window ..
+            ipos <- RGtk2::gtkWindowGetPosition(.self$win$widget)
+
+            rwin <- gwindow("Reloading iNZight ...",
+                width = 300,
+                height = 80,
+                visible = FALSE
+            )
+            rg <- gvbox(container = rwin)
+            addSpring(rg)
+            rl <- glabel("Please wait while iNZight reloads ...",
+                container = rg
+            )
+            font(rl) <- list(weight = "bold")
+            addSpring(rg)
+
+            s <- (size(.self$win) - size(rwin)) / 2
+            gtkWindowMove(rwin$widget,
+                ipos$root.x + s[1],
+                ipos$root.y + s[2]
+            )
+
+            visible(rwin) <- TRUE
+            on.exit(dispose(rwin))
+            Sys.sleep(0.5)
+
+            # save the document
+            state <- .self$getState()
+            dispose(.self$win)
+            .self$initializeGui(disposeR = .self$disposer, show = FALSE)
+            res <- .self$setState(state)
+
+            gtkWindowMove(.self$win$widget, ipos$root.x, ipos$root.y)
+            .self$set_visible()
+        },
+        set_visible = function() {
+            visible(win) <<- TRUE
+            updatePlot()
+        }
     )
+)

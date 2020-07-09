@@ -91,14 +91,28 @@ iNZPrefsWin <- setRefClass(
                     checked = prefs$dev.features
                 )
                 add(g, devFeatures)
-                lbl <- glabel(
-                    paste(sep = "\n",
-                        "     These will be marked with [beta], and may change or have unintended side effects, such as crashing.",
-                        "     You can help us improve them by lettings us know if you experience problems!"
-                    )
+                # lbl <- glabel(
+                #     paste(sep = "\n",
+                #         "     These will be marked with [beta], and may change or have unintended side effects, such as crashing.",
+                #         "     You can help us improve them by lettings us know if you experience problems!"
+                #     )
+                # )
+                # font(lbl) <- list(size = 8)
+                # add(g, lbl, expand = TRUE, anchor = c(-1, 0))
+
+                ## Code
+                showCode <- gcheckbox(
+                    "Display editable code boxes for the current plot or summary information",
+                    checked = prefs$showCode
                 )
-                font(lbl) <- list(size = 8)
-                add(g, lbl, expand = TRUE, anchor = c(-1, 0))
+                enabled(showCode) <- svalue(devFeatures)
+                add(g, showCode)
+
+                addHandlerChanged(devFeatures,
+                    handler = function(h, ...) {
+                        enabled(showCode) <- svalue(devFeatures)
+                    }
+                )
 
                 addSpring(g)
 
@@ -123,10 +137,18 @@ iNZPrefsWin <- setRefClass(
                             window.size = as.numeric(c(svalue(winWd), svalue(winHt))),
                             popout = svalue(popoutWin),
                             font.size = svalue(fsizebtn),
-                            dev.features = svalue(devFeatures)
+                            dev.features = svalue(devFeatures),
+                            show.code = svalue(showCode)
                         )
                         GUI$savePreferences()
                         dispose(GUI$modWin)
+
+                        confmsg <- paste(sep = "\n",
+                            "Some changes require reloading iNZight. Do that now?",
+                            "All changes will be saved."
+                        )
+                        if (!interactive() || gconfirm(confmsg, icon = "question"))
+                            GUI$reload()
                     }
                 )
 
