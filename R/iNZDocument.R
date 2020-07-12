@@ -9,7 +9,8 @@ iNZDataModel <- setRefClass(
             dataDesignName = "character",
             name = "character",
             oldname = "character",
-            freqtables = "list"
+            freqtables = "list",
+            currentDesign = "list"
         ),
         prototype = list(
             dataSet = data.frame(empty = " ", stringsAsFactors = TRUE),
@@ -17,7 +18,8 @@ iNZDataModel <- setRefClass(
             rowDataSet = data.frame(Row.names = 1, empty = " ", stringsAsFactors = TRUE),
             dataDesign = NULL,
             name = "data", oldname = "",
-            freqtables = list()
+            freqtables = list(),
+            currentDesign = list()
         )
     ),
     contains = "PropertySet", ## need this to add observer to object
@@ -93,6 +95,7 @@ iNZDataModel <- setRefClass(
                              poststrat = NULL,
                              type = c("survey", "replicate"),
                              gui, ...) {
+            currentDesign <<- list()
             if (is.null(strata) & is.null(clus1) & is.null(clus2) &
                 is.null(wt) & is.null(nest) & is.null(fpc) &
                 is.null(repweights) & is.null(poststrat)) {
@@ -129,6 +132,7 @@ iNZDataModel <- setRefClass(
             }
         },
         createSurveyObject = function() {
+            if (!is.null(currentDesign$design)) return(currentDesign$design)
             des <- getDesign()
 
             weights <- if (is.null(des$wt)) "NULL" else paste("~", des$wt)
@@ -161,24 +165,26 @@ iNZDataModel <- setRefClass(
             } else {
                 ## replicate weights specified
                 repweights <- if(is.null(des$repweights)) "NULL"
-                    else paste("~", paste(des$repweights, collapse = " + "))
+                    else if (all(trimws(strsplit(des$repweights, "+", fixed = TRUE)) %in% names(dataSet)))
+                        paste("~", paste(des$repweights, collapse = " + "))
+                    else paste0("\"", des$repweights, "\"")
+
                 type <- des$reptype
                 rscales <- if (is.null(des$rscales)) "NULL"
                     else sprintf("c(%s)", paste(des$rscales, collapse = ", "))
-                obj <-
-                    parse(text =
-                        paste0("survey::svrepdesign(",
-                            if (!is.null(des$wt))
-                                sprintf("weights = %s, ", weights),
-                            sprintf("repweights = %s, ", repweights),
-                            sprintf("type = '%s', ", type),
-                            if (!is.null(des$scale))
-                                sprintf("scale = %s, ", des$scale),
-                            if (!is.null(des$rscales))
-                                sprintf("rscales = %s, ", rscales),
-                            "data = dataSet)"
-                        )
-                    )
+
+                call <- paste0("survey::svrepdesign(",
+                    if (!is.null(des$wt))
+                        sprintf("weights = %s, ", weights),
+                    sprintf("repweights = %s, ", repweights),
+                    sprintf("type = '%s', ", type),
+                    if (!is.null(des$scale))
+                        sprintf("scale = %s, ", des$scale),
+                    if (!is.null(des$rscales))
+                        sprintf("rscales = %s, ", rscales),
+                    "data = dataSet)"
+                )
+                obj <- parse(text = call)
             }
 
             if (!is.null(des$poststrat)) {
@@ -208,7 +214,8 @@ iNZDataModel <- setRefClass(
                     )
                 )
             }
-            suppressWarnings(eval(obj))
+            currentDesign <<- list(design = suppressWarnings(eval(obj)))
+            currentDesign$design
         },
         getDesign = function() {
             dataDesign
