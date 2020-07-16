@@ -1199,6 +1199,7 @@ iNZGUI <- setRefClass(
             state <- .self$getState()
             dispose(.self$win)
             .self$initializeGui(disposeR = .self$disposer, show = FALSE)
+            Sys.sleep(1L)
             res <- .self$setState(state)
 
             gtkWindowMove(.self$win$widget, ipos$root.x, ipos$root.y)
