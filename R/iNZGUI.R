@@ -853,7 +853,8 @@ iNZGUI <- setRefClass(
                 window.size = c(1250, 850),
                 popout = FALSE,
                 font.size = 10,
-                dev.features = FALSE
+                dev.features = FALSE,
+                show.code = FALSE
             )
         },
         checkPrefs = function(prefs) {
