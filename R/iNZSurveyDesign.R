@@ -10,6 +10,7 @@ iNZSurveyDesign <- setRefClass(
         clus2Var = "ANY",
         nestChk = "ANY",
         wtVar = "ANY",
+        popSize = "ANY",
         fpcVar = "ANY",
         combWts = "ANY",
         repVars = "ANY",
@@ -256,8 +257,26 @@ iNZSurveyDesign <- setRefClass(
             ii <- ii + 2
             lbl <- glabel("Weighting variable: ")
             tbl[ii, 1, expand = TRUE, fill = FALSE, anchor = c(1, 0)] <- lbl
-            wtVar <<- gcombobox(vars)
+            wtVar <<- gcombobox(vars,
+                handler = function(h, ...) {
+                    wts <- GUI$getActiveData()[[svalue(h$obj)]]
+                    svalue(popSize) <<- format(
+                        sum(wts),
+                        digits = 0L,
+                        big.mark = ",",
+                        scientific = FALSE
+                    )
+                }
+            )
             tbl[ii, 2, expand = TRUE] <- wtVar
+
+            ii <- ii + 1
+            lbl <- glabel("Estimated population size: ")
+            font(lbl) <- list(size = 9)
+            tbl[ii, 1, expand = TRUE, fill = FALSE, anchor = c(1, 0)] <- lbl
+            popSize <<- glabel("")
+            font(popSize) <<- list(size = 9)
+            tbl[ii, 2, expand = TRUE] <- popSize
 
             ii <- ii + 1
             lbl <- glabel("Finite population correction: ")
