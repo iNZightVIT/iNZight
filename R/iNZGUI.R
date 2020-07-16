@@ -178,8 +178,8 @@ iNZGUI <- setRefClass(
                     "linux" =
                         file.path("~", "Documents", "iNZightVIT", "modules")
                 )
-                if (!dir.exists(addonModuleDir))
-                    addonModuleDir <<- NULL
+                # if (!dir.exists(addonModuleDir))
+                #     addonModuleDir <<- NULL
             }
 
             ## Grab settings file (or try to!)
