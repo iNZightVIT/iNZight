@@ -13,13 +13,13 @@ test_that("Construct call function works", {
     settings$xlab <- NULL
     expect_equal(
         as.character(construct_call(settings, model, list(x = "num"))),
-        "inzplot(height, data = .dataset)"
+        "inzplot(~height, data = .dataset)"
     )
 
     settings$col.pt <- "blue"
     expect_equal(
         as.character(construct_call(settings, model, list(x = "num"))),
-        "inzplot(height, data = .dataset, col.pt = \"blue\")"
+        "inzplot(~height, data = .dataset, col.pt = \"blue\")"
     )
 })
 
