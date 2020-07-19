@@ -24,7 +24,7 @@ test_that("Filtering data leaves code OK", {
     ui$getActiveDoc()$setSettings(list(colby = as.name("gender")))
     expect_match(
         svalue(ui$code_panel$input),
-        "iNZPlot(height ~ armspan, colby = gender, data = data)",
+        "inzplot(height ~ armspan, colby = gender, data = data)",
         fixed = TRUE
     )
 
@@ -38,7 +38,7 @@ test_that("Filtering data leaves code OK", {
     )
     expect_match(
         svalue(ui$code_panel$input),
-        "iNZPlot(height ~ armspan, colby = gender, data = data.filtered)",
+        "inzplot(height ~ armspan, colby = gender, data = data.filtered)",
         fixed = TRUE
     )
 })

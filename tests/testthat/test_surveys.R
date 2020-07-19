@@ -545,8 +545,8 @@ ui$initializeGui(apistrat)
 # e$data <- apistrat
 # e$data.svy <- svydesign(ids=~1, strata = ~snum, weights = ~pw, fpc = ~fpc, data = apistrat)
 
-# eval(parse(text = "iNZPlot(api99, data = data)"), envir = e)
-# eval(parse(text = "iNZPlot(api99, design = data.svy)"), envir = e)
+# eval(parse(text = "inzplot(api99, data = data)"), envir = e)
+# eval(parse(text = "inzplot(api99, design = data.svy)"), envir = e)
 
 test_that("Survey design read from file", {
     svyfile <- tempfile("apistrat", fileext = ".svydesign")
