@@ -51,6 +51,7 @@ iNZDataModel <- setRefClass(
                 attr(data, "name") <- "data"
             dataSet <<- data
             name <<- attr(data, "name", exact = TRUE)
+            if (!is.null(dataDesign)) createSurveyObject(TRUE)
         },
         setNames = function(newNames) {
             newNames <- make.names(newNames, unique = TRUE)
@@ -131,8 +132,8 @@ iNZDataModel <- setRefClass(
                     )
             }
         },
-        createSurveyObject = function() {
-            if (!is.null(currentDesign$design)) return(currentDesign$design)
+        createSurveyObject = function(reload = FALSE) {
+            if (!is.null(currentDesign$design) && !reload) return(currentDesign$design)
             des <- getDesign()
 
             weights <- if (is.null(des$wt)) "NULL" else paste("~", des$wt)

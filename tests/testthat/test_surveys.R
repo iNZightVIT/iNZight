@@ -7,7 +7,7 @@ apijk <- iNZightTools::smart_read("apiclus2-jk1.csv")
 
 test_dir <- getwd()
 
-# ui$close()
+# ui$close(); load_all()
 ui <- iNZGUI$new()
 ui$initializeGui(apiclus2)
 on.exit(try(gWidgets2::dispose(ui$win), TRUE))
