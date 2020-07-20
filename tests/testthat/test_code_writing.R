@@ -65,13 +65,13 @@ test_that("Plot code is generated correctly", {
     svalue(ui$ctrlWidget$V2box, TRUE) <- 1L
     expect_equal(
         attr(ui$curPlot, "code"),
-        "inzplot(height ~ . | gender + age, g2.level = \"[7 - 11]\", data = data)"
+        "inzplot(~height | gender + age, g2.level = \"[7 - 11]\", data = data)"
     )
 
     svalue(ui$ctrlWidget$G1box, TRUE) <- 1L
     expect_equal(
         attr(ui$curPlot, "code"),
-        "inzplot(height ~ . | age, data = data, g1.level = \"[7 - 11]\")"
+        "inzplot(~height | age, data = data, g1.level = \"[7 - 11]\")"
     )
 
     sld$set_index(1L)
@@ -84,7 +84,7 @@ test_that("Plot code is generated correctly", {
     svalue(ui$ctrlWidget$G1box) <- "gender"
     expect_equal(
         attr(ui$curPlot, "code"),
-        "inzplot(height ~ . | gender, data = data)"
+        "inzplot(~height | gender, data = data)"
     )
     svalue(ui$ctrlWidget$G1box, TRUE) <- 1L
 })
