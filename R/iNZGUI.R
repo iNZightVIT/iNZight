@@ -65,7 +65,8 @@ iNZGUI <- setRefClass(
             ## This will be used to store the dataset, design, etc..
             ## rather than passing around the full object.
             code_env = "ANY",
-            code_panel = "ANY"
+            code_panel = "ANY",
+            is_initialized = "logical"
         ),
         prototype = list(
             activeDoc = 1,
@@ -86,6 +87,8 @@ iNZGUI <- setRefClass(
             show = TRUE
         ) {
             "Initiates the GUI"
+            initFields(is_initialized = FALSE)
+
             iNZDocuments <<- list(iNZDocument$new(data = data))
             disposer <<- disposeR
             win.title <- paste(
@@ -288,6 +291,7 @@ iNZGUI <- setRefClass(
             plot_history <<- NULL
             code_env <<- new.env()
 
+            is_initialized <<- TRUE
             invisible(0)
         }, ## end initialization
         ## set up the menu bar widget
@@ -428,6 +432,8 @@ iNZGUI <- setRefClass(
         },
         ## plot with the current active plot settings
         updatePlot = function(allow.redraw = TRUE) {
+            if (!is_initialized || !visible(win)) return()
+
             curPlSet <- getActiveDoc()$getSettings()
 
             .dataset <- getActiveData()
@@ -1198,8 +1204,15 @@ iNZGUI <- setRefClass(
             # save the document
             state <- .self$getState()
             dispose(.self$win)
+            if (popOut) try(grDevices::dev.off(), TRUE)
+            cat("\nInitializing ")
             .self$initializeGui(disposeR = .self$disposer, show = FALSE)
-            Sys.sleep(1L)
+            # Sys.sleep(1L)
+            while (!is_initialized) {
+                cat(".")
+                Sys.sleep(0.1)
+            }
+            cat(" complete\n")
             res <- .self$setState(state)
 
             gtkWindowMove(.self$win$widget, ipos$root.x, ipos$root.y)

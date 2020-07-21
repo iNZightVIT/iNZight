@@ -248,9 +248,12 @@ iNZDataModel <- setRefClass(
             .dataSetChanged$unblock()
 
             name <<- x
+        },
+        getName = function() {
+            name
         }
-        )
     )
+)
 
 iNZPlotSettings <- setRefClass(
     "iNZPlotSettings",
@@ -416,11 +419,11 @@ iNZDataNameWidget <- setRefClass(
                 }
                 enabled(nameLabel) <<- TRUE
             }
-            names <- sapply(GUI$iNZDocuments, function(d) d$getModel()$name)
+            names <- sapply(GUI$iNZDocuments, function(d) d$getModel()$getName())
             blockHandlers(nameLabel)
             nameLabel$set_items(names)
             svalue(nameLabel, index = TRUE) <<- GUI$activeDoc
             unblockHandlers(nameLabel)
         }
-        )
     )
+)
