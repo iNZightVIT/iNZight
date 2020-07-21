@@ -609,8 +609,13 @@ iNZGUI <- setRefClass(
             lapply(
                 state,
                 function(doc) {
+                    cat("\nSetting document ")
                     setDocument(doc$document)
-                    Sys.sleep(0.2)
+                    while (!is_initialized) {
+                        cat(".")
+                        Sys.sleep(0.1)
+                    }
+                    cat(" complete\n")
                     getActiveDoc()$setSettings(doc$plot_settings, reset = TRUE)
                     ctrlWidget$setState(doc$plot_settings)
                 }
@@ -619,6 +624,7 @@ iNZGUI <- setRefClass(
         },
         ## set a new iNZDocument and make it the active one
         setDocument = function(document, reset = FALSE) {
+            is_initialized <<- FALSE
             if (reset) {
                 ## delete all documents; start from scratch.
                 ctrlWidget$resetWidget()
@@ -685,6 +691,7 @@ iNZGUI <- setRefClass(
                 rhistory$update()
             }
             updatePlot()
+            is_initialized <<- TRUE
         },
         getActiveDoc = function() {
             iNZDocuments[[activeDoc]]
