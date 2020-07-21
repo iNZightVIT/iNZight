@@ -13,6 +13,7 @@ This release is a complete overhaul of the way in which variables are passed aro
 * Add data report (pdf/html/word) (using 'dataMaid' package)
 * Add column selection and reordering dialog (File > Select and reorder variables)
 * Adds ability to quickly reload iNZight from the File menu, preserving all changes
+* Added better icons to the menus
 
 ## Bug fixes
 Since this is a major release, it includes many bug fixes as part of the above major changes.
