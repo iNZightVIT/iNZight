@@ -571,6 +571,10 @@ iNZGUI <- setRefClass(
             enabled(plotToolbar$exportplotBtn) <<- FALSE
             invisible(rawpl)
         },
+        removeSignals = function() {
+            for (i in seq_along(listeners(activeDocChanged)))
+                activeDocChanged$disconnect(1)
+        },
         getState = function() {
             lapply(
                 seq_along(iNZDocuments),
@@ -606,18 +610,20 @@ iNZGUI <- setRefClass(
             setState(e$state)
         },
         setState = function(state) {
+            # removeSignals()
             lapply(
-                state,
-                function(doc) {
-                    cat("\nSetting document ")
-                    setDocument(doc$document)
+                seq_along(state),
+                function(i) {
+                    doc <- state[[i]]
+                    setDocument(doc$document, reset = i == 1)
+                    Sys.sleep(0.5)
                     while (!is_initialized) {
-                        cat(".")
                         Sys.sleep(0.1)
                     }
-                    cat(" complete\n")
                     getActiveDoc()$setSettings(doc$plot_settings, reset = TRUE)
+                    Sys.sleep(0.5)
                     ctrlWidget$setState(doc$plot_settings)
+                    first <- FALSE
                 }
             )
             invisible(TRUE)
@@ -625,6 +631,10 @@ iNZGUI <- setRefClass(
         ## set a new iNZDocument and make it the active one
         setDocument = function(document, reset = FALSE) {
             is_initialized <<- FALSE
+
+            # delete any signals from document
+            document$removeSignals()
+
             if (reset) {
                 ## delete all documents; start from scratch.
                 ctrlWidget$resetWidget()
@@ -1212,14 +1222,11 @@ iNZGUI <- setRefClass(
             state <- .self$getState()
             dispose(.self$win)
             if (popOut) try(grDevices::dev.off(), TRUE)
-            cat("\nInitializing ")
             .self$initializeGui(disposeR = .self$disposer, show = FALSE)
-            # Sys.sleep(1L)
+            Sys.sleep(0.5)
             while (!is_initialized) {
-                cat(".")
                 Sys.sleep(0.1)
             }
-            cat(" complete\n")
             res <- .self$setState(state)
 
             gtkWindowMove(.self$win$widget, ipos$root.x, ipos$root.y)

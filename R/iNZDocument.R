@@ -72,6 +72,11 @@ iNZDataModel <- setRefClass(
         addObjObserver = function(FUN, ...) {
             .self$changed$connect(FUN, ...)
         },
+        removeSignals = function() {
+            for (i in seq_along(listeners(dataSetChanged))) dataSetChanged$disconnect(1)
+            for (i in seq_along(listeners(nameChanged))) nameChanged$disconnect(1)
+            for (i in seq_along(listeners(.changed))) .changed$disconnect(1)
+        },
         setFrequencies = function(freq, gui) {
             if (is.null(freq) || freq == "") {
                 gui$getActiveDoc()$setSettings(list(freq = NULL))
@@ -314,8 +319,13 @@ iNZPlotSettings <- setRefClass(
         },
         addObjObserver = function(FUN, ...) {
             .self$changed$connect(FUN, ...)
-        })
+        },
+        removeSignals = function() {
+            for (i in seq_along(listeners(settingsChanged))) settingsChanged$disconnect(1)
+            for (i in seq_along(listeners(.changed))) .changed$disconnect(1)
+        }
     )
+)
 
 iNZDocument <- setRefClass(
     "iNZDocument",
@@ -372,9 +382,13 @@ iNZDocument <- setRefClass(
         },
         addSettingsObjObserver = function(FUN, ...) {
             plotSettings$addObjObserver(FUN, ...)
+        },
+        removeSignals = function() {
+            dataModel$removeSignals()
+            plotSettings$removeSignals()
         }
-        )
     )
+)
 
 
 iNZDataNameWidget <- setRefClass(
