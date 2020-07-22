@@ -698,8 +698,8 @@ iNZGUI <- setRefClass(
                 dataNameWidget$updateWidget()
                 rhistory$update()
             }
-            updatePlot()
             is_initialized <<- TRUE
+            updatePlot()
         },
         getActiveDoc = function() {
             iNZDocuments[[activeDoc]]
