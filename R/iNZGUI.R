@@ -615,6 +615,7 @@ iNZGUI <- setRefClass(
                 seq_along(state),
                 function(i) {
                     doc <- state[[i]]
+                    doc$document$removeSignals()
                     setDocument(doc$document, reset = i == 1)
                     Sys.sleep(0.5)
                     while (!is_initialized) {
@@ -631,9 +632,6 @@ iNZGUI <- setRefClass(
         ## set a new iNZDocument and make it the active one
         setDocument = function(document, reset = FALSE) {
             is_initialized <<- FALSE
-
-            # delete any signals from document
-            document$removeSignals()
 
             if (reset) {
                 ## delete all documents; start from scratch.
