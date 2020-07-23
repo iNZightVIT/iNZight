@@ -67,4 +67,6 @@ test_that("Reload works", {
     expect_equivalent(ui$getActiveData(), gapminder)
     expect_equal(ui$plotType, "bar")
     expect_equal(svalue(ui$ctrlWidget$V1box), "Region")
+
+    expect_true(enabled(ui$menuBarWidget$menubar$menu_list$Dataset$filter))
 })

@@ -627,6 +627,7 @@ iNZGUI <- setRefClass(
                     first <- FALSE
                 }
             )
+            menuBarWidget$defaultMenu()
             invisible(TRUE)
         },
         ## set a new iNZDocument and make it the active one
