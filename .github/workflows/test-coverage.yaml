@@ -80,6 +80,7 @@ jobs:
         run: sudo apt-get install xvfb
 
       - name: Test coverage [linux]
+        continue-on-error: true
         if: runner.os == 'Linux'
         uses: nick-invision/retry@v1
         with:
@@ -88,6 +89,7 @@ jobs:
           command: xvfb-run --auto-servernum Rscript -e "covr::codecov()"
 
       - name: Test coverage [win]
+        continue-on-error: true
         if: runner.os != 'Linux'
         uses: nick-invision/retry@v1
         with:
