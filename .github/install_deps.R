@@ -10,7 +10,10 @@ github_deps <- c(
 )
 
 options(
-    repos = c(CRAN = "https://cloud.r-project.org"),
+    repos = c(
+        RSPM = Sys.getenv("RSPM"),
+        CRAN = "https://cloud.r-project.org"
+    ),
     install.packages.compile.from.source = "never"
 )
 
