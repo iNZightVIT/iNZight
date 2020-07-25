@@ -1,0 +1,6 @@
+data: chis.csv
+weights: rakedw0
+repweights: rakedw[1-9]
+type: other
+scale: 1
+rscales: 1

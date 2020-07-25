@@ -7,7 +7,7 @@
 ## which is the same since the two are linked together)
 ## --------------------------------------------
 
-plot_list <- function(plot_type, x, y) {
+plot_list <- function(plot_type, x, y, is_survey) {
   if (plot_type %in% c(
     "scatter",
     "hex",
@@ -99,6 +99,9 @@ plot_list <- function(plot_type, x, y) {
       }
     }
   }
+
+  if (is_survey)
+    return_list <- return_list[!grepl("^gg_", names(return_list))]
 
   attr(return_list, "null.y") <- is.null(y)
 
@@ -1090,7 +1093,8 @@ iNZPlotMod <- setRefClass(
             PLOTTYPES <- plot_list(
                 TYPE,
                 GUI$getActiveData()[[varnames["x"]]],
-                GUI$getActiveData()[[varnames["y"]]]
+                GUI$getActiveData()[[varnames["y"]]],
+                !is.null(GUI$getActiveDoc()$getModel()$dataDesign)
             )
 
             # if (PLOTTYPE != "bar") {

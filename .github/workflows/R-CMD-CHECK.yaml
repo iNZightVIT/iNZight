@@ -1,0 +1,118 @@
+on: [push, pull_request]
+
+name: R-CMD-check
+
+jobs:
+  R-CMD-check:
+    runs-on: ${{ matrix.config.os }}
+
+    name: ${{ matrix.config.os }} (${{ matrix.config.r }})
+
+    strategy:
+      fail-fast: false
+      matrix:
+        config:
+          - {os: windows-latest, r: '3.6'}
+          - {os: windows-latest, r: 'release'}
+          - {os: windows-latest, r: 'devel'}
+          - {os: ubuntu-16.04, r: 'release', rspm: "https://packagemanager.rstudio.com/cran/__linux__/xenial/latest"}
+
+    env:
+      R_REMOTES_NO_ERRORS_FROM_WARNINGS: true
+      RSPM: ${{ matrix.config.rspm }}
+      GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - uses: r-lib/actions/setup-r@master
+        with:
+          r-version: ${{ matrix.config.r }}
+
+      - uses: r-lib/actions/setup-pandoc@master
+
+      - name: Query dependencies
+        run: |
+          install.packages('remotes')
+          saveRDS(remotes::dev_package_deps(dependencies = TRUE), ".github/depends.Rds", version = 2)
+        shell: Rscript {0}
+
+      - name: Cache R packages
+        uses: actions/cache@v1
+        with:
+          path: ${{ env.R_LIBS_USER }}
+          key: ${{ runner.os }}-r-${{ matrix.config.r }}-1-${{ hashFiles('.github/depends.Rds') }}
+          restore-keys: ${{ runner.os }}-r-${{ matrix.config.r }}-1-
+
+      - name: Install system dependencies
+        if: runner.os == 'Linux'
+        env:
+          RHUB_PLATFORM: linux-x86_64-ubuntu-gcc
+        run: |
+          sudo apt install libgtk2.0-dev xorg-dev libxml2-dev libnlopt-dev libcurl4-openssl-dev
+
+      - name: Install RGtk2
+        if: runner.os == 'Windows'
+        run: ./.github/install_gtk.cmd
+        shell: bash
+
+      - name: Add GTK to PATH
+        if: runner.os == 'Windows'
+        run: echo "::add-path::D:\a\_temp\Library\RGtk2\gtk\bin"
+
+      - name: Check RGtk2
+        if: runner.os == 'Windows'
+        run: |
+          library(RGtk2)
+          gtkWindowNew()
+        shell: Rscript {0}
+
+      - name: Install dependencies
+        uses: GabrielBB/xvfb-action@v1.2
+        env:
+          OS_TYPE: ${{ runner.os }}
+        with:
+          run: Rscript ./.github/install_deps.R
+
+      - name: Create iNZightVIT directory
+        if: runner.os == 'Windows'
+        run: try(dir.create(file.path("~", "Documents", "iNZightVIT"), recursive = TRUE))
+        shell: Rscript {0}
+
+      - name: Check
+        uses: GabrielBB/xvfb-action@v1.0
+        env:
+          _R_CHECK_CRAN_INCOMING_REMOTE_: false
+        with:
+          run: Rscript -e "rcmdcheck::rcmdcheck(args = c('--no-manual', '--as-cran', '--no-multiarch'), error_on = 'warning', check_dir = 'check')"
+
+      - name: Upload check results
+        if: failure()
+        uses: actions/upload-artifact@master
+        with:
+          name: ${{ runner.os }}-r${{ matrix.config.r }}-results
+          path: check
+
+      # - name: Download
+      #   if: failure()
+      #   run: Invoke-WebRequest https://bin.equinox.io/c/4VmDzA7iaHb/ngrok-stable-windows-amd64.zip -OutFile ngrok.zip
+      # - name: Extract
+      #   if: failure()
+      #   run: Expand-Archive ngrok.zip
+      # - name: Auth
+      #   if: failure()
+      #   run: .\ngrok\ngrok.exe authtoken $Env:NGROK_AUTH_TOKEN
+      #   env:
+      #     NGROK_AUTH_TOKEN: ${{ secrets.NGROK_AUTH_TOKEN }}
+      # - name: Enable TS
+      #   if: failure()
+      #   run: Set-ItemProperty -Path 'HKLM:\System\CurrentControlSet\Control\Terminal Server'-name "fDenyTSConnections" -Value 0
+      # - run: Enable-NetFirewallRule -DisplayGroup "Remote Desktop"
+      #   if: failure()
+      # - run: Set-ItemProperty -Path 'HKLM:\System\CurrentControlSet\Control\Terminal Server\WinStations\RDP-Tcp' -name "UserAuthentication" -Value 1
+      #   if: failure()
+      # - run: Set-LocalUser -Name "runneradmin" -Password (ConvertTo-SecureString -AsPlainText "P@ssw0rd!" -Force)
+      #   if: failure()
+      # - name: Create Tunnel
+      #   if: failure()
+      #   run: .\ngrok\ngrok.exe tcp 3389

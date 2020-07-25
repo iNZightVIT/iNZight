@@ -526,6 +526,230 @@ iNZstackVarWin <- setRefClass(
     })
 )
 
+iNZReorderVarsWin <- setRefClass(
+    "iNZReorderVarsWin",
+    fields = list(
+        GUI = "ANY",
+        dataVars = "ANY", chosenVars = "ANY",
+        btn_add = "ANY", btn_rmv = "ANY",
+        btn_up = "ANY", btn_down = "ANY",
+        reordering = "logical"
+    ),
+    methods = list(
+        initialize = function(gui) {
+            initFields(GUI = gui, reordering = FALSE)
+
+            try(dispose(GUI$modWin), silent = TRUE)
+            GUI$modWin <<- gwindow("Reorder and Select Variables",
+                parent = GUI$win,
+                visible = FALSE,
+                width = 600, height = 400
+            )
+
+            g <- gvbox(container = GUI$modWin, fill = TRUE, expand = TRUE)
+            g$set_borderwidth(10)
+
+            lbl <- glabel(
+                "Select variables from the left to retain in the data set (CTRL to select many)\nthen use the arrows to add/remove.",
+                container = g,
+                anchor = c(-1, 0)
+            )
+            font(lbl) <- list(weight = "bold")
+
+            # boxes with variables
+            g_vars <- ggroup(container = g, fill = TRUE, expand = TRUE)
+            dataVars <<- gtable(data.frame(Remove = names(GUI$getActiveData())),
+                multiple = TRUE,
+                container = g_vars,
+                expand = TRUE,
+                fill = TRUE
+            )
+
+            g_btns <- gvbox(container = g_vars)
+            addSpring(g_btns)
+            btn_add <<- gimagebutton("forward",
+                size = "large_toolbar",
+                container = g_btns,
+                tooltip = "Add selected",
+                handler = function(h, ...) {
+                    add_vars(svalue(dataVars, index = TRUE))
+                }
+            )
+            btn_rmv <<- gimagebutton("backward",
+                size = "large_toolbar",
+                container = g_btns,
+                tooltip = "Remove selected",
+                handler = function(h, ...) {
+                    rmv_vars(svalue(chosenVars, index = TRUE))
+                }
+            )
+            addSpring(g_btns)
+
+            chosenVars <<- gtable(data.frame(Keep = ""),
+                multiple = TRUE,
+                container = g_vars,
+                expand = TRUE,
+                fill = TRUE
+            )
+
+            g_btns2 <- gvbox(container = g_vars)
+            btn_up <<- gimagebutton("1uparrow",
+                size = "large_toolbar",
+                container = g_btns2,
+                tooltip = "Move selected variable up",
+                handler = function(h, ...) {
+                    if (reordering) return()
+                    reordering <<- TRUE
+                    on.exit(reordering <<- FALSE)
+
+                    index <- svalue(chosenVars, index = TRUE)
+                    if (length(index) != 1) return()
+                    if (index == 1) return()
+                    keep <- chosenVars$get_items()
+                    keep_index <- seq_along(keep)
+                    keep_index[index] <- index - 1
+                    keep_index[index - 1] <- index
+                    keep <- keep[keep_index]
+                    chosenVars$set_items(data.frame(Keep = keep))
+                    svalue(chosenVars) <<- index - 1
+                }
+            )
+            btn_down <<- gimagebutton("1downarrow",
+                size = "large_toolbar",
+                container = g_btns2,
+                tooltip = "Move selected variable down",
+                handler = function(h, ...) {
+                    if (reordering) return()
+                    reordering <<- TRUE
+                    on.exit(reordering <<- FALSE)
+
+                    index <- svalue(chosenVars, index = TRUE)
+                    if (length(index) != 1) return()
+                    keep <- chosenVars$get_items()
+                    if (index == length(keep)) return()
+                    keep_index <- seq_along(keep)
+                    keep_index[index] <- index + 1
+                    keep_index[index + 1] <- index
+                    keep <- keep[keep_index]
+                    chosenVars$set_items(data.frame(Keep = keep))
+                    svalue(chosenVars) <<- index + 1
+                }
+            )
+
+
+            # controls
+            g_ctrls <- ggroup(container = g)
+            add_all_btn <- gbutton("Add all",
+                container = g_ctrls,
+                handler = function(h, ...) {
+                    add_vars(-1)
+                }
+            )
+
+            addSpring(g_ctrls)
+            glabel("Sort (alphabetically): ", container = g_ctrls)
+            sort_inc <- gimagebutton(
+                "sort-ascending",
+                size = "large_toolbar",
+                container = g_ctrls,
+                handler = function(h, ...) {
+                    keep <- chosenVars$get_items()
+                    chosenVars$set_items(
+                        data.frame(Keep = sort(keep))
+                    )
+                }
+            )
+            sort_desc <- gimagebutton(
+                "sort-descending",
+                size = "large_toolbar",
+                container = g_ctrls,
+                handler = function(h, ...) {
+                    keep <- chosenVars$get_items()
+                    chosenVars$set_items(
+                        data.frame(Keep = sort(keep, decreasing = TRUE))
+                    )
+                }
+            )
+
+            btn_grp <- ggroup(container = g)
+            addSpring(btn_grp)
+            ok_btn <- gbutton("Done",
+                container = g,
+                handler = function(h, ...) {
+                    vars <- as.character(chosenVars$get_items())
+                    if (length(vars) == 1 && vars == "") {
+                        gmessage("Add variables to the 'Keep' column on the right first.",
+                            title = "No variables selected",
+                            icon = "warning",
+                            parent = GUI$modWin
+                        )
+                        return()
+                    }
+
+                    .dataset <- GUI$getActiveData()
+                    if (identical(vars, colnames(.dataset))) {
+                        gmessage("It looks like you have selected all of the variables in the same order.",
+                            title = "No change to variables",
+                            icon = "warning",
+                            parent = GUI$modWin
+                        )
+                        return()
+                    }
+
+                    data <- iNZightTools::selectVars(.dataset, vars)
+                    attr(data, "name") <- iNZightTools::add_suffix(
+                        attr(.dataset, "name", exact = TRUE),
+                        ifelse(length(vars) == ncol(.dataset), "reorder", "subset")
+                    )
+                    attr(data, "code") <- gsub(
+                        ".dataset",
+                        attr(.dataset, "name", exact = TRUE),
+                        attr(data, "code")
+                    )
+                    GUI$setDocument(iNZDocument$new(data = data))
+                    dispose(GUI$modWin)
+                }
+            )
+
+
+            visible(GUI$modWin) <<- TRUE
+        },
+        add_vars = function(index) {
+            remove <- as.character(dataVars$get_items())
+            keep <- as.character(chosenVars$get_items())
+
+            if (index[1] == -1) {
+                keep <- c(keep, remove)
+                remove <- ""
+            } else {
+                keep <- c(keep, remove[index])
+                remove <- remove[-index]
+                if (length(remove) == 0) remove <- ""
+            }
+            keep <- keep[keep != ""]
+
+            dataVars$set_items(data.frame(Remove = remove))
+            chosenVars$set_items(data.frame(Keep = keep))
+        },
+        rmv_vars = function(index) {
+            remove <- as.character(dataVars$get_items())
+            keep <- as.character(chosenVars$get_items())
+
+            if (index[1] == -1) {
+                remove <- c(remove, keep)
+                keep <- ""
+            } else {
+                remove <- c(remove, keep[index])
+                keep <- keep[-index]
+                if (length(keep) == 0) keep <- ""
+            }
+            remove <- remove[remove != ""]
+
+            dataVars$set_items(data.frame(Remove = remove))
+            chosenVars$set_items(data.frame(Keep = keep))
+        }
+    )
+)
 
 
 

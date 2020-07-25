@@ -120,7 +120,7 @@ iNZCodePanel <- setRefClass(
                 print(rawpl)
             }
 
-            if (!grepl("^iNZPlot", svalue(input))) break
+            if (!grepl("^inzplot", svalue(input))) break
             # if (!inherits(rawpl, "inzplotoutput")) break
 
             curpl <- unclass(rawpl)

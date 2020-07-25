@@ -57,8 +57,8 @@ test_that("Summary function call can be modified", {
     sw <- iNZGetSummary$new(ui)
     on.exit(gWidgets2::dispose(sw$win))
 
-    expect_equal(svalue(sw$code_box), "iNZSummary(height, data = data)\n")
-    sw$set_input("iNZSummary(armspan, data = data)")
+    expect_equal(svalue(sw$code_box), "inzsummary(~height, data = data)\n")
+    sw$set_input("inzsummary(~armspan, data = data)")
     expect_silent(sw$run_btn$invoke_change_handler())
     expect_match(svalue(sw$info_text), "Summary of armspan")
 })
@@ -84,7 +84,7 @@ test_that("Get summary works for survey design", {
 # myenv <- new.env()
 # myenv$.data <- apiclus1
 # myenv$.design <- ui$getActiveDoc()$getModel()$createSurveyObject()
-# # call <- expression(iNZPlot(api00, design = !!.design))
+# # call <- expression(inzplot(~api00, design = !!.design))
 # call <- construct_call(
 #     ui$getActiveDoc()$getSettings(),
 #     ui$getActiveDoc()$getModel(),

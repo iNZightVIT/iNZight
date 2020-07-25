@@ -7,3 +7,5 @@
 ^revdep$
 ^.*\.Rproj$
 ^\.Rproj\.user$
+^\.vscode$
+^.github$

@@ -23,6 +23,7 @@ iNZImportWin <- setRefClass(
         bigMark = "ANY", bigmarks = "list",
         encoding = "ANY", encodings = "character",
         dateFormat = "ANY", dateformats = "character",
+        svyspec = "ANY",
         okBtn = "ANY", cancelBtn = "ANY"
     ),
     methods = list(
@@ -41,7 +42,8 @@ iNZImportWin <- setRefClass(
                     "STATA Files (.dta)" = list(patterns = c("*.dta")),
                     "JSON (.json)" = list(patterns = c("*.json")),
                     "R Object (.rds)" = list(patterns = c("*.rds")),
-                    "RData Files (.RData, .rda)" = list(patterns = c("*.RData", "*.rda"))
+                    "RData Files (.RData, .rda)" = list(patterns = c("*.RData", "*.rda")),
+                    "Survey Design Files (.svydesign)" = list(patterns = "*.svydesign")
                 ),
                 fColTypes = NULL,
                 rdaName = NULL,
@@ -250,6 +252,66 @@ iNZImportWin <- setRefClass(
                         ),
                         reset = TRUE
                     )
+                    if (fext == "svydesign") {
+                        ## This needs to be updated to simply pass the spec object ...
+                        spec <- svyspec$spec
+                        clus1 <- NULL
+                        clus2 <- NULL
+                        if (!is.null(spec$ids) && spec$ids != 1) {
+                            if (grepl("\\+", spec$ids)) {
+                                clus <- strsplit(spec$ids, "\\+")[[1]]
+                                clus <- gsub("^\\s|\\s$", "", clus)
+                                clus1 <- clus[1]
+                                clus2 <- clus[2]
+                            } else {
+                                clus1 <- svyspec$ids
+                            }
+                        }
+
+                        GUI$getActiveDoc()$getModel()$setDesign(
+                            strata = spec$strata,
+                            clus1 = clus1,
+                            clus2 = clus2,
+                            wt = spec$weights,
+                            fpc = spec$fpc,
+                            nest = if (is.null(spec$nest)) FALSE else as.logical(spec$nest),
+                            reptype = spec$type,
+                            repweights = spec$repweights,
+                            scale = spec$scale,
+                            rscales = spec$rscales,
+                            type = spec$svy_type,
+                            gui = GUI
+                        )
+
+                        setOK <- try(
+                            GUI$getActiveDoc()$getModel()$createSurveyObject(),
+                            TRUE
+                        )
+
+                        if (!inherits(setOK, "try-error")) {
+                            # enabled(GUI$infBtn) <<- clear
+                            # dispose(designWin)
+
+                            ## write design call
+                            call <- paste(deparse(setOK$call), collapse = "\n")
+
+                            call <- sprintf("%s <- %s",
+                                GUI$getActiveDoc()$getModel()$dataDesignName,
+                                gsub("dataSet", GUI$getActiveDoc()$getModel()$name, call))
+                            GUI$rhistory$add(
+                                c("## create survey design object", call),
+                                tidy = TRUE
+                            )
+
+                            ## update plot
+                            GUI$updatePlot()
+                        } else {
+                            gmessage(paste0(
+                                "There is a problem with the survey specification file:\n\n",
+                                setOK),
+                                icon = "error")
+                        }
+                    }
 
                     dispose(infw)
 
@@ -361,6 +423,18 @@ iNZImportWin <- setRefClass(
                         sheet = if (svalue(rdaName) == "(none)") NULL else svalue(rdaName)
                     )
                 },
+                "svydesign" = {
+                    svyspec <<- iNZightTools::import_survey(fname)
+                    if (is.null(svyspec$data)) {
+                        gmessage("No data file included. Please load the data first, then import the survey from Data > Survey design > Specify survey design.",
+                            title = "No data included",
+                            parent = importFileWin
+                        )
+                        tmpData <<- NULL
+                        return(NULL)
+                    }
+                    tmpData <<- svyspec$data
+                },
                 {
                     tmpData <<- iNZightTools::smart_read(
                         fname,
@@ -370,6 +444,8 @@ iNZImportWin <- setRefClass(
                     )
                 }
             )
+
+            if (is.null(tmpData)) return()
 
             ## do a check that col classes match requested ...
             if (is.null(fColTypes) || length(fColTypes) != ncol(tmpData))

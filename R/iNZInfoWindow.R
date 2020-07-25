@@ -31,11 +31,11 @@ iNZInfoWindow <- setRefClass(
             # Check that the data exists
             env <<- new.env()
             curSet <<- GUI$getActiveDoc()$getSettings()
-            if (is.null(curSet$x)) {
-                gmessage("No variable selected.")
-                dispose(win)
-                return()
-            }
+            # if (is.null(curSet$x)) {
+            #     gmessage("No variable selected.")
+            #     dispose(win)
+            #     return()
+            # }
             gen_set_list()
 
             win <<- gwindow(title = name,
@@ -107,7 +107,7 @@ iNZInfoWindow <- setRefClass(
             g <- gvbox(spacing = 0, container = win)
 
             if (controls == "top") add(g, ctrl_panel)
-            if (GUI$preferences$dev.features) {
+            if (GUI$preferences$dev.features && GUI$preferences$show.code) {
                 add(g, code_panel)
                 addSpace(g, 5)
             }
@@ -231,11 +231,14 @@ iNZGetSummary <- setRefClass(
             # This will, at some stage, fetch values from the CODE CALL
             # when it is modified by the user ... and update curSet ... =]
             vartypes <- list(
-                x = iNZightTools::vartype(GUI$getActiveData()[[curSet$x]]),
+                x = NULL,
                 y = NULL
             )
-            if (!is.null(curSet$y))
-                vartypes$y <- iNZightTools::vartype(GUI$getActiveData()[[curSet$y]])
+            if (!is.null(curSet$x))  {
+                vartypes$x <- iNZightTools::vartype(GUI$getActiveData()[[curSet$x]])
+                if (!is.null(curSet$y))
+                    vartypes$y <- iNZightTools::vartype(GUI$getActiveData()[[curSet$y]])
+            }
 
             construct_call(curSet, curMod, vartypes,
                 data = as.name(dataname),
@@ -266,6 +269,8 @@ iNZGetSummary <- setRefClass(
             # scatter: y <-> x
             # OR
             # dot plot: num ~ cat
+
+            cat("xnum:", xnum, "\nynum: ", ynum, "\n")
             if ((xnum && ynum) || xnum) {
                 xvar <- ds[[curSet$y]]
                 yvar <- ds[[curSet$x]]
@@ -463,11 +468,19 @@ iNZGetSummary <- setRefClass(
                 enabled(predBtn) <<- TRUE
                 enabled(residBtn) <<- TRUE
             }
+
+            # update the plot, too...
+            GUI$getActiveDoc()$setSettings(list(trend = curSet$trend))
+
             update_summary()
         },
         setup_panel = function() {
             ds <- GUI$getActiveData()
-            xvar <- ds[[curSet$x]]
+            xvar <- if (!is.null(curSet$x)) ds[[curSet$x]] else NULL
+            if (is.null(xvar)) {
+                update_summary()
+                return()
+            }
             yvar <- if (!is.null(curSet$y)) ds[[curSet$y]] else NULL
 
             xnum <- is_num(xvar)
@@ -543,7 +556,8 @@ iNZGetInference <- setRefClass(
         hyp_simulatep = "ANY",
         g_hypctrls = "ANY",
         g_hyptbl = "ANY",
-        trend_choice = "list"
+        trend_choice = "list",
+        epi_chk = "ANY"
     ),
     methods = list(
         initialize = function(gui) {
@@ -583,7 +597,8 @@ iNZGetInference <- setRefClass(
             set_input(mend_call(smry_call, GUI))
 
             smry <- try(eval(smry_call, env), silent = TRUE)
-            if (inherits(smry, "try-error")) smry <- "Unable to generate inference."
+            if (inherits(smry, "try-error"))
+                smry <- "Unable to generate inference."
             set_output(smry)
 
             # disable simulate p-value checkbox if expected counts small
@@ -819,6 +834,19 @@ iNZGetInference <- setRefClass(
                 handle_trend()
             }
 
+            if (INFTYPE == "twoway-table" && length(levels(xvar)) == 2) {
+                # epi out: cat x cat, x ~ y, x is binary
+                addSpace(ctrl_panel, 20)
+                epi_chk <<- gcheckbox("Show EPI OUTPUT",
+                    checked = curSet$epi.out,
+                    container = ctrl_panel,
+                    handler = function(h, ...) {
+                        curSet$epi.out <<- svalue(epi_chk)
+                        update_inference()
+                    }
+                )
+            }
+
             update_inference()
         },
         handle_test = function() {
@@ -876,6 +904,8 @@ iNZGetInference <- setRefClass(
         handle_trend = function() {
             chosen <- sapply(trend_choice, function(x) svalue(x))
             curSet$trend <<- if (any(chosen)) names(trend_choice)[chosen] else NULL
+            # update the plot, too...
+            GUI$getActiveDoc()$setSettings(list(trend = curSet$trend))
             update_inference()
         }
     )
