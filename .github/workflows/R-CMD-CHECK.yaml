@@ -69,6 +69,8 @@ jobs:
 
       - name: Install dependencies
         uses: GabrielBB/xvfb-action@v1.2
+        env:
+          OS_TYPE: ${{ runner.os }}
         with:
           run: Rscript ./.github/install_deps.R
 
