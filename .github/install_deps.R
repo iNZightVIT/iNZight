@@ -9,15 +9,16 @@ github_deps <- c(
     "iNZightVIT/iNZightModules@2.5.3"
 )
 
+OS <- Sys.getenv("OS_TYPE")
 options(
     repos = c(
-        if (RSPM = Sys.getenv("RSPM"),
+        if (OS == "Linux") RSPM = Sys.getenv("RSPM"),
         CRAN = "https://cloud.r-project.org"
     ),
     install.packages.compile.from.source = "never"
 )
 
-if (.Platform$OS.type == "windows" && getRversion() < numeric_version("4")) {
+if (OS == "Windows" && getRversion() < numeric_version("4")) {
     install.packages("RODBC", type = "binary")
 }
 
