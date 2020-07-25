@@ -1,3 +1,24 @@
+# iNZight 4.0
+
+This release is a complete overhaul of the way in which variables are passed around behind the scenes, making it possible to display and modify code for the current plot. The main focus for this release is to narrow the gap between GUI and coding for users interested in learning to use R.
+
+## Major changes
+* New `iNZInfoWindow` class to support both "Get Summary" and "Get Inference" which includes future scalability to code-writing and manual user-modifiable code snippets, plus an extensible command panel.
+* New plot code panel displays the code for the current plot, and allows users to edit the code by hand.
+* Survey designs can now be loaded from a file (.svydesign)
+
+## Minor changes
+* Add option to save interactive plots locally (including assets)
+* Add support for JSON files
+* Add data report (pdf/html/word) (using 'dataMaid' package)
+* Add column selection and reordering dialog (File > Select and reorder variables)
+* Adds ability to quickly reload iNZight from the File menu, preserving all changes
+* Added better icons to the menus
+
+## Bug fixes
+Since this is a major release, it includes many bug fixes as part of the above major changes.
+
+***
 ## iNZight 3.5.3
 - New Module Manager
 - Beta functionality: save and load the iNZight session. Accessible by first going to File > Preferences and turning on developmental features (requires restart).

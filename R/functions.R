@@ -194,3 +194,24 @@ modifyList <- function (x, val, keep.null = FALSE)
     }
     x
 }
+
+#' @importFrom iNZightTools "%notin%"
+NULL
+
+construct_call <- function(settings, model, vartypes,
+                           data = quote(.dataset),
+                           design = quote(.design),
+                           what = c("plot", "summary", "inference")) {
+    if (is.null(model$dataDesign)) design <- NULL
+    iNZightPlots:::construct_call(settings, vartypes, data, design, what)
+}
+
+# a very roundabout way to get the code correct ...
+mend_call <- function(call, gui) {
+    iNZightPlots:::mend_call(
+        call,
+        gui$getActiveData(),
+        gui$getActiveDoc()$getModel()$dataDesignName,
+        gui$curPlot
+    )
+}

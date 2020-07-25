@@ -7,7 +7,7 @@
 ## which is the same since the two are linked together)
 ## --------------------------------------------
 
-plot_list <- function(plot_type, x, y) {
+plot_list <- function(plot_type, x, y, is_survey) {
   if (plot_type %in% c(
     "scatter",
     "hex",
@@ -99,6 +99,9 @@ plot_list <- function(plot_type, x, y) {
       }
     }
   }
+
+  if (is_survey)
+    return_list <- return_list[!grepl("^gg_", names(return_list))]
 
   attr(return_list, "null.y") <- is.null(y)
 
@@ -256,6 +259,9 @@ iNZPlotModWin <- setRefClass(
         ## up the curSet class variable
         updateSettings = function() {
             curSet <<- GUI$getActiveDoc()$getSettings()
+            # if (!is.null(curSet$x))
+            #     curSet$x <<- GUI$getActiveData()[[curSet$x]]
+            # if (!)
         },
         iNZLocatePoints = function(dot = GUI$plotType == "dot") {
             ## Do checking first
@@ -310,7 +316,9 @@ iNZPlotModWin <- setRefClass(
 
                 curSet$locate.settings <<- locSet
 
+                loc.lvl <- NULL
                 if (locSet$matchChk) {
+                    loc.lvl <- as.name(locSet$matchVar)
                     levs <-
                         unique(GUI$getActiveData()[highlight, locSet$matchVar])
 
@@ -328,9 +336,10 @@ iNZPlotModWin <- setRefClass(
 
                 GUI$getActiveDoc()$setSettings(list(
                     locate = locate,
-                    locate.id = unique(id),
+                    locate.id = if (is_num(id)) unique(id) else id,
                     locate.col = col,
                     locate.extreme = ext,
+                    locate.same.level = loc.lvl,
                     locate.settings = locSet,
                     highlight = highlight,
                     subtitle = subt,
@@ -376,18 +385,14 @@ iNZPlotModWin <- setRefClass(
             addHandlerChanged(txtLabs, function(h, ...) {
                 enabled(varmenu) <- svalue(txtLabs)  #labMthd, TRUE) == 1
                 v <- svalue(varmenu)
-                locVar <-
-                    if (v == "id") 1:nrow(GUI$getActiveData())
-                    else GUI$getActiveData()[, v]
+                locVar <- if (v == "id") v else as.name(v)
                 updateEverything(
                     locate = if (svalue(txtLabs)) locVar else NULL
                 )
             })
             addHandlerChanged(varmenu, function(h, ...) {
                 v <- svalue(varmenu)
-                locVar <-
-                    if (v == "id") 1:nrow(GUI$getActiveData())
-                    else GUI$getActiveData()[, v]
+                locVar <- if (v == "id") v else as.name(v)
                 updateEverything(
                     locate = if (svalue(txtLabs)) locVar else NULL
                 )
@@ -429,30 +434,30 @@ iNZPlotModWin <- setRefClass(
                 if (svalue(matchChk)) {
                     ## Add all the points:
 
-                    matchVar <-
-                        as.character(GUI$getActiveData()[, svalue(matchVar)])
-                    matchVar[is.na(matchVar)] <- "missing"
+                    # matchVar <-
+                    #     as.character(GUI$getActiveData()[, svalue(matchVar)])
+                    # matchVar[is.na(matchVar)] <- "missing"
 
-                    matchLvls <- unique(matchVar[locSet$ID])
-                    newIDS <- which(matchVar %in% matchLvls)
+                    # matchLvls <- unique(matchVar[locSet$ID])
+                    # newIDS <- which(matchVar %in% matchLvls)
 
-                    updateEverything(id = newIDS)
+                    updateEverything()
                 } else {
                     ## Remove all the points:
 
-                    updateEverything(id = locSet$ID)
+                    updateEverything()
                 }
             })
 
             addHandlerChanged(matchVar, function(h, ...) {
-                matchVar <-
-                    as.character(GUI$getActiveData()[, svalue(matchVar)])
-                matchVar[is.na(matchVar)] <- "missing"
+                # matchVar <-
+                #     as.character(GUI$getActiveData()[, svalue(matchVar)])
+                # matchVar[is.na(matchVar)] <- "missing"
 
-                matchLvls <- unique(matchVar[locSet$ID])
-                newIDS <- which(matchVar %in% matchLvls)
+                # matchLvls <- unique(matchVar[locSet$ID])
+                # newIDS <- which(matchVar %in% matchLvls)
 
-                updateEverything(id = newIDS)
+                updateEverything()#id = newIDS)
             })
 
 
@@ -477,9 +482,10 @@ iNZPlotModWin <- setRefClass(
 
 
             locator <- function(h, remove = FALSE, btn, dot = FALSE, ...) {
-                x <- curSet$x  # used for removing missing values ...
+                .data <- GUI$getActiveData()
+                x <- .data[[curSet$x]]  # used for removing missing values ...
                 if (!dot)
-                    y <- curSet$y
+                    y <- .data[[curSet$y]]
                 v <- svalue(varmenu)
 
                 w <- rep(TRUE, length(x))
@@ -489,22 +495,21 @@ iNZPlotModWin <- setRefClass(
                     } else if (curSet$g1.level == "_MULTI") {
                         cantDo()
                     }
-                    w[curSet$g1 != curSet$g1.level] <- FALSE
+                    var_g1 <- .data[[curSet$g1]]
+                    w[var_g1 != curSet$g1.level] <- FALSE
                 }
                 if (!is.null(curSet$g2)) {
+                    var_g2 <- .data[[curSet$g2]]
                     if (curSet$g2.level == "_MULTI") {
                         cantDo()
-                    } else {
-                        if (curSet$g2.level != "_ALL")
-                            w[curSet$g2 != curSet$g2.level] <- FALSE
+                    } else if (curSet$g2.level != "_ALL") {
+                        w[var_g2 != curSet$g2.level] <- FALSE
                     }
                 }
 
                 match.all <- svalue(matchChk)
 
-                locVar <-
-                    if (v == "id") 1:nrow(GUI$getActiveData())
-                    else GUI$getActiveData()[, v]
+                locVar <- if (v == "id") v else as.name(v)
 
                 matchVar <-
                     as.character(GUI$getActiveData()[, svalue(matchVar)])
@@ -512,21 +517,21 @@ iNZPlotModWin <- setRefClass(
 
                 ## Entire data set - ignore missing values etc etc
                 d <- data.frame(
-                    x = curSet$x,
-                    locate = locVar,
-                    id = 1:nrow(GUI$getActiveData()),
+                    x = .data[[curSet$x]],
+                    locate = if (v == "id") 1:nrow(.data) else .data[[as.character(locVar)]],
+                    id = seq_len(nrow(GUI$getActiveData())),
                     match = matchVar,
                     stringsAsFactors = TRUE
                 )
                 if (!dot)
-                    d$y <- curSet$y
+                    d$y <- .data[[curSet$y]]
 
                 if (!is.null(curSet$g1)) {
-                    w[curSet$g1 != curSet$g1.level] <- FALSE
+                    w[var_g1 != curSet$g1.level] <- FALSE
                 }
                 if (!is.null(curSet$g2)) {
                     if (curSet$g2.level != "_ALL") {
-                        w[curSet$g2 != curSet$g2.level] <- FALSE
+                        w[var_g2 != curSet$g2.level] <- FALSE
                     }
                 }
 
@@ -536,9 +541,9 @@ iNZPlotModWin <- setRefClass(
                     isNA <- is.na(x) | is.na(y)
 
                 if (!is.null(curSet$g1))
-                    isNA <- isNA | is.na(curSet$g1)
+                    isNA <- isNA | is.na(var_g1)
                 if (!is.null(curSet$g2))
-                    isNA <- isNA | is.na(curSet$g2)
+                    isNA <- isNA | is.na(var_g2)
 
                 dp <- grid.get(ifelse(dot,
                     "inz-DOTPOINTS.1.1.1",
@@ -600,12 +605,12 @@ iNZPlotModWin <- setRefClass(
                         locSet$ID <<- unique(c(locSet$ID, o$id))
 
                     ## Grab the label:
-                    if (match.all) {
-                        ## Match all instances of the same label:
-                        pid <- which(matchVar == o[, 'match'])
-                    } else {
+                    # if (match.all) {
+                    #     ## Match all instances of the same label:
+                    #     pid <- which(matchVar == o[, 'match'])
+                    # } else {
                         pid <- o$id
-                    }
+                    # }
 
                     newID <-
                         if (svalue(txtLabs) | !match.all)
@@ -685,30 +690,31 @@ iNZPlotModWin <- setRefClass(
                     )
 
                     addHandlerChanged(selectSlide, function(h, ...) {
-                        ids <-
-                            which(GUI$getActiveData()[, svalue(selectVar)] ==
-                                svalue(selectSlide))
-                        locSet$ID <<- ids
+                        # ids <-
+                        #     which(GUI$getActiveData()[, svalue(selectVar)] ==
+                        #         svalue(selectSlide))
+                        # locSet$ID <<- ids
 
-                        if (svalue(matchChk)) {
-                            levs <-
-                                unique(as.character(
-                                    GUI$getActiveData()[ids, svalue(matchVar)]
-                                ))
-                            ids <- which(
-                                GUI$getActiveData()[, svalue(matchVar)] %in%
-                                    levs
-                            )
-                        }
+                        # if (svalue(matchChk)) {
+                        #     levs <-
+                        #         unique(as.character(
+                        #             GUI$getActiveData()[ids, svalue(matchVar)]
+                        #         ))
+                        #     ids <- which(
+                        #         GUI$getActiveData()[, svalue(matchVar)] %in%
+                        #             levs
+                        #     )
+                        # }
 
                         v <- svalue(varmenu)
-                        locVar <-
-                            if (v == "id") 1:nrow(GUI$getActiveData())
-                            else GUI$getActiveData()[, v]
+                        locVar <- if (v == "id") v else as.name(v)
 
+                        ids_expr <- rlang::expr(
+                            !!rlang::sym(svalue(selectVar)) == !!svalue(selectSlide)
+                        )
                         updateEverything(
                             locate = if (svalue(txtLabs)) locVar else NULL,
-                            id = ids,
+                            id = ids_expr,
                             col = if (svalue(colLabs)) svalue(colmenu) else NULL
                         )
                     })
@@ -737,9 +743,7 @@ iNZPlotModWin <- setRefClass(
 
                 updateMe <- function(h, ...) {
                     v <- svalue(varmenu)
-                    locVar <-
-                        if (v == "id") 1:nrow(GUI$getActiveData())
-                        else GUI$getActiveData()[, v]
+                    locVar <- if (v == "id") v else as.name(v)
                     updateEverything(
                         locate = if (svalue(txtLabs)) locVar else NULL,
                         id = NULL,
@@ -761,9 +765,7 @@ iNZPlotModWin <- setRefClass(
                     curSet$locate.extreme
                 addHandlerChanged(extN, handler = function(h, ...) {
                     v <- svalue(varmenu)
-                    locVar <-
-                        if (v == "id") 1:nrow(GUI$getActiveData())
-                        else GUI$getActiveData()[, v]
+                    locVar <- if (v == "id") v else as.name(v)
 
                     updateEverything(
                         locate = if (svalue(txtLabs)) locVar else NULL,
@@ -805,9 +807,7 @@ iNZPlotModWin <- setRefClass(
 
                 locSet$ID <<- ids
                 v <- svalue(varmenu)
-                locVar <-
-                    if (v == "id") 1:nrow(GUI$getActiveData())
-                    else GUI$getActiveData()[, v]
+                locVar <- if (v == "id") v else as.name(v)
 
                 if (svalue(matchChk)) {
                     mVar <-
@@ -846,27 +846,30 @@ iNZPlotModWin <- setRefClass(
 
                 wb <- gbutton("Done", cont = wg)
                 addHandlerClicked(wb, function(h, ...) {
-                    ids <-  which(GUI$getActiveData()[, svalue(selectVar)] %in%
-                        svalue(selectLevels))
-                    locSet$ID <<- ids
+                    # ids <-  which(GUI$getActiveData()[, svalue(selectVar)] %in%
+                    #     svalue(selectLevels))
+                    # locSet$ID <<- ids
 
-                    if (svalue(matchChk)) {
-                        levs <- unique(as.character(
-                            GUI$getActiveData()[ids, svalue(matchVar)]
-                        ))
-                        ids <- which(
-                            GUI$getActiveData()[, svalue(matchVar)] %in% levs
-                        )
-                    }
+                    # if (svalue(matchChk)) {
+                    #     levs <- unique(as.character(
+                    #         GUI$getActiveData()[ids, svalue(matchVar)]
+                    #     ))
+                    #     ids <- which(
+                    #         GUI$getActiveData()[, svalue(matchVar)] %in% levs
+                    #     )
+                    # }
 
                     v <- svalue(varmenu)
-                    locVar <-
-                        if (v == "id") 1:nrow(GUI$getActiveData())
-                        else GUI$getActiveData()[, v]
+                    locVar <- if (v == "id") v else as.name(v)
+
+                    lvls <- svalue(selectLevels)
+                    id_expr <- rlang::expr(
+                        !!rlang::sym(svalue(selectVar)) %in% !!svalue(selectLevels)
+                    )
 
                     updateEverything(
                         locate = if (svalue(txtLabs)) locVar else NULL,
-                        id = ids,
+                        id = id_expr,
                         col = if (svalue(colLabs)) svalue(colmenu) else NULL
                     )
 
@@ -1017,37 +1020,45 @@ iNZPlotMod <- setRefClass(
 
             ## do.call(usingMethods, pageMethods)
             if (GUI$plotType %in% c("scatter", "hex", "grid")) {
-              pageMethods <<- list("Customise Plot Appearance" = appearance,
-                                   "Trend Lines and Curves" = features,
-                                   "Axes and Labels" = axes,
-                                   "Identify Points" = identify,
-                                   iNZLocatePoints)
-              usingMethods(appearance, features, identify, axes, iNZLocatePoints)
-              opts <- gcombobox(names(pageMethods[names(pageMethods) != ""]),
-                                selected = which)
+                pageMethods <<- list(
+                    "Customise Plot Appearance" = appearance,
+                    "Trend Lines and Curves" = features,
+                    "Axes and Labels" = axes,
+                    "Identify Points" = identify,
+                    iNZLocatePoints
+                )
+                usingMethods(appearance, features, identify, axes, iNZLocatePoints)
+                opts <- gcombobox(names(pageMethods[names(pageMethods) != ""]),
+                    selected = which
+                )
             } else if (GUI$plotType %in% c("dot", "hist")) {
-              pageMethods <<- list("Customise Plot Appearance" = appearance,
-                                   "Axes and Labels" = axes,
-                                   "Identify Points" = identify,
-                                   iNZLocatePoints)
-              usingMethods(appearance, identify, axes, iNZLocatePoints)
-              opts <- gcombobox(names(pageMethods[names(pageMethods) != ""]),
-                                selected = which)
+                pageMethods <<- list(
+                    "Customise Plot Appearance" = appearance,
+                    "Axes and Labels" = axes,
+                    "Identify Points" = identify,
+                    iNZLocatePoints
+                )
+                usingMethods(appearance, identify, axes, iNZLocatePoints)
+                opts <- gcombobox(names(pageMethods[names(pageMethods) != ""]),
+                    selected = which
+                )
             } else {
-              pageMethods <<- list("Customise Plot Appearance" = appearance,
-                                   "Axes and Labels" = axes)
-              usingMethods(appearance, axes)
-              opts <- gcombobox(names(pageMethods[names(pageMethods) != ""]),
-                                selected = which)
+                pageMethods <<- list("Customise Plot Appearance" = appearance,
+                                    "Axes and Labels" = axes)
+                usingMethods(appearance, axes)
+                opts <- gcombobox(names(pageMethods[names(pageMethods) != ""]),
+                    selected = which
+                )
             }
 
             add(radioGrp, opts, expand = TRUE, fill = TRUE)
             pageMethods[[which]]()
             addHandlerChanged(opts,
-                              handler = function(h, ...) {
-                                  changeOpts(svalue(h$obj,
-                                                    index = TRUE))
-                              })
+                handler = function(h, ...) {
+                    changeOpts(svalue(h$obj,
+                                    index = TRUE))
+                }
+            )
         },
         changeOpts = function(index) {
             ## delete current displayed options
@@ -1063,6 +1074,8 @@ iNZPlotMod <- setRefClass(
             defts <- iNZightPlots:::inzpar()
             TYPE <- PLOTTYPE <- GUI$plotType
 
+            .data <- GUI$getActiveData()
+
             ## ----- GENERAL APPEARANCE ----------------------------------------------------------
             ##
             ##        Plot type : [default, scatter, hex, grid-density]
@@ -1077,54 +1090,61 @@ iNZPlotMod <- setRefClass(
             lbl <- glabel("Plot type :")
 
             varnames <- unlist(attr(GUI$curPlot, "varnames"))
-            PLOTTYPES <- plot_list(TYPE, GUI$getActiveData()[[varnames["x"]]], GUI$getActiveData()[[varnames["y"]]])
+            PLOTTYPES <- plot_list(
+                TYPE,
+                GUI$getActiveData()[[varnames["x"]]],
+                GUI$getActiveData()[[varnames["y"]]],
+                !is.null(GUI$getActiveDoc()$getModel()$dataDesign)
+            )
 
             # if (PLOTTYPE != "bar") {
-              plotTypes <- do.call(c, PLOTTYPES)
-              plotTypeValues <- names(PLOTTYPES)
-              plotTypeList <- gcombobox(
-                  plotTypes,
-                  selected = which(plotTypeValues == TYPE)
-                  )
+            plotTypes <- do.call(c, PLOTTYPES)
+            plotTypeValues <- names(PLOTTYPES)
+            plotTypeList <- gcombobox(
+                plotTypes,
+                selected = which(plotTypeValues == TYPE)
+            )
 
-              addHandlerChanged(plotTypeList, handler = function(h, ...) {
-                  newSet <- list(plottype = plotTypeValues[[svalue(plotTypeList, index = TRUE)]])
-                  if (!is.null(curSet$colby)) {
-                      ## when switching scatter <-> hex, need to swtich numeric colby <-> factor colby
-                      newSet$colby <-
-                          if (newSet$plottype == "hex")
-                              iNZightPlots::convert.to.factor(curSet$colby)
-                          else
-                              GUI$getActiveData()[[curSet$varnames$colby]]
-                  }
-                  if (newSet$plottype == "gg_gridplot") {
-                    n_fun <- function(n) {
-                      if (n > 1000) {
-                        if (n > 5 * 10^ceiling(log10(n) - 1) && n > 5 * 10^ceiling(log10(n + 1) - 1)) {
-                          10^(floor(log10(n)) - 1)
-                        } else {
-                          10^(floor(log10(n)) - 2)
+            addHandlerChanged(plotTypeList,
+                handler = function(h, ...) {
+                    newSet <- list(plottype = plotTypeValues[[svalue(plotTypeList, index = TRUE)]])
+                    if (!is.null(curSet$colby)) {
+                        ## when switching scatter <-> hex, need to swtich numeric colby <-> factor colby
+                    #   newSet$colby <- as.name()
+                    #       if (newSet$plottype == "hex")
+                    #           iNZightPlots::convert.to.factor(curSet$colby)
+                    #       else
+                    #           GUI$getActiveData()[[curSet$varnames$colby]]
+                    }
+                    if (newSet$plottype == "gg_gridplot") {
+                        n_fun <- function(n) {
+                            if (n > 1000) {
+                                if (n > 5 * 10^ceiling(log10(n) - 1) && n > 5 * 10^ceiling(log10(n + 1) - 1)) {
+                                    10^(floor(log10(n)) - 1)
+                                } else {
+                                    10^(floor(log10(n)) - 2)
+                                }
+                            } else {
+                                1
+                            }
                         }
-                      } else {
-                        1
-                      }
+
+                        newSet$gg_perN <- n_fun(nrow(GUI$getActiveData()))
                     }
 
-                    newSet$gg_perN <- n_fun(nrow(GUI$getActiveData()))
-                  }
+                    GUI$getActiveDoc()$setSettings(newSet)
+                    updateSettings()
 
-                  GUI$getActiveDoc()$setSettings(newSet)
-                  updateSettings()
+                    plType <- svalue(plotTypeList, index = TRUE)
+                    if (curSet$plottype != TYPE) {
+                        iNZPlotMod$new(GUI, which = 1)
+                    }
+                }
+            )
 
-                  plType <- svalue(plotTypeList, index = TRUE)
-                  if (curSet$plottype != TYPE) {
-                      iNZPlotMod$new(GUI, which = 1)
-                  }
-              })
-
-              tbl[ii,  1:2, anchor = c(1, 0), expand = TRUE] <- lbl
-              tbl[ii,  3:6, expand = TRUE] <- plotTypeList
-              ii <- ii + 1
+            tbl[ii,  1:2, anchor = c(1, 0), expand = TRUE] <- lbl
+            tbl[ii,  3:6, expand = TRUE] <- plotTypeList
+            ii <- ii + 1
             # }
 
             ## BACKGROUND COLOUR
@@ -1134,8 +1154,10 @@ iNZPlotMod <- setRefClass(
                 bgColours <<- c(bgColours, list(custom = curSet$bg))
                 bgCols <- c(bgCols, bgColours$custom)
             }
-            bgCol <- gcombobox(names(bgColours), selected = which(bgCols == curSet$bg),
-                               editable = TRUE)
+            bgCol <- gcombobox(names(bgColours),
+                selected = which(bgCols == curSet$bg),
+                editable = TRUE
+            )
             tbl[ii, 1:2, anchor = c(1, 0), expand = TRUE] <- lbl
             tbl[ii, 3:6, expand = TRUE] <- bgCol
             ii <- ii + 1
@@ -1164,9 +1186,9 @@ iNZPlotMod <- setRefClass(
                 ## OVERALL SIZE
                 lbl <- glabel("Overall :")
                 cexPt <- gslider(from = 0.05, to = 3.5,
-                                 by = 0.05,
-                                 value = if (PLOTTYPE == "scatter") curSet$cex.pt else curSet$cex.dotpt
-                                 )
+                    by = 0.05,
+                    value = if (PLOTTYPE == "scatter") curSet$cex.pt else curSet$cex.dotpt
+                )
                 tbl[ii, 1:2, anchor = c(1, 0), expand = TRUE] <- lbl
                 tbl[ii, 3:6, expand = TRUE] <- cexPt
                 ii <- ii + 1
@@ -1175,12 +1197,13 @@ iNZPlotMod <- setRefClass(
                     ## SIZE BY
                     lbl <- glabel("Resize points by :")
                     sizeVarNames <- names(GUI$getActiveData())[sapply(GUI$getActiveData(), is_num)]
-                    sizeVar <-
-                        gcombobox(c("", sizeVarNames),
-                                  selected = ifelse(
-                                      is.null(curSet$sizeby),
-                                      1, which(sizeVarNames == curSet$varnames$sizeby)[1] + 1
-                                      ))
+                    sizeVar <- gcombobox(c("", sizeVarNames),
+                        selected = ifelse(
+                            is.null(curSet$sizeby),
+                            1,
+                            which(sizeVarNames == as.character(curSet$sizeby))[1] + 1
+                        )
+                    )
                     tbl[ii, 1:2, anchor = c(1, 0), expand = TRUE] <- lbl
                     tbl[ii, 3:6, expand = TRUE] <- sizeVar
                     ii <- ii + 1
@@ -1189,17 +1212,23 @@ iNZPlotMod <- setRefClass(
                     resizeLbl <- glabel("Resize method :")
                     sizeMethods <- c("proportional", "emphasize")
                     sizeMethod <- gcombobox(sizeMethods,
-                                            selected = which(sizeMethods == curSet$resize.method))
+                        selected = which(sizeMethods == curSet$resize.method)
+                    )
                     tbl[ii, 1:2, anchor = c(1, 0), expand = TRUE] <- resizeLbl
                     tbl[ii, 3:6, expand = TRUE] <- sizeMethod
-                    visible(resizeLbl) <- visible(sizeMethod) <- svalue(sizeVar, index = TRUE) > 1
+                    visible(resizeLbl) <- visible(sizeMethod) <-
+                        svalue(sizeVar, index = TRUE) > 1
                     ii <- ii + 1
 
-                    sizeDescs <- list(method1 =
-                                          c("Points area proportional to value of variable."),
-                                      method2 =
-                                          c("Point area linearly sized from 0.25 to 4.",
-                                            "Good for exaggerating trends."))
+                    sizeDescs <- list(
+                        method1 =
+                            c("Points area proportional to value of variable."),
+                        method2 =
+                            c(
+                                "Point area linearly sized from 0.25 to 4.",
+                                "Good for exaggerating trends."
+                            )
+                    )
                     sizeDesc <- glabel(paste(sizeDescs[[svalue(sizeMethod, index = TRUE)]]))
                     tbl[ii, 1:6, anchor = c(1, 0), expand = TRUE] <- sizeDesc
                     visible(sizeDesc) <- visible(resizeLbl)
@@ -1210,25 +1239,29 @@ iNZPlotMod <- setRefClass(
                 tbl[ii,  1:6, anchor = c(-1, 0), expand = TRUE] <- sectionTitle("Size")
                 ii <- ii + 1
 
-                lbl <- glabel(switch(PLOTTYPE,
-                                     "hex"  = "Hexagon size :",
-                                     "grid" = "Bin size :",
-                                     "hist" = "Histogram bin width :"))
+                lbl <- glabel(
+                    switch(PLOTTYPE,
+                        "hex"  = "Hexagon size :",
+                        "grid" = "Bin size :",
+                        "hist" = "Histogram bin width :"
+                    )
+                )
                 cexPt <- switch(PLOTTYPE,
-                                "hex" = {
-                                    gslider(from = 0.5, to = 4, by = 0.1,
-                                            value = curSet$hex.bins / iNZightPlots::inzpar()$hex.bins)
-                                },
-                                "grid" = {
-                                    gslider(from = 0.2, to = 5, by = 0.1,
-                                            value = curSet$scatter.grid.bins / iNZightPlots::inzpar()$scatter.grid.bins)
-                                },
-                                "hist" = {
-                                    gslider(from = 0.05, to = 3.5,
-                                            by = 0.05, value = curSet$cex.dotpt)
-                                    #gslider(from = 10, to = 100, by = 1,
-                                    #        value = length(GUI$curPlot[[1]][[1]]$toplot[[1]][[1]]))
-                                })
+                    "hex" = {
+                        gslider(from = 0.5, to = 4, by = 0.1,
+                                value = curSet$hex.bins / iNZightPlots::inzpar()$hex.bins)
+                    },
+                    "grid" = {
+                        gslider(from = 0.2, to = 5, by = 0.1,
+                                value = curSet$scatter.grid.bins / iNZightPlots::inzpar()$scatter.grid.bins)
+                    },
+                    "hist" = {
+                        gslider(from = 0.05, to = 3.5,
+                                by = 0.05, value = curSet$cex.dotpt)
+                        #gslider(from = 10, to = 100, by = 1,
+                        #        value = length(GUI$curPlot[[1]][[1]]$toplot[[1]][[1]]))
+                    }
+                )
                 tbl[ii, 1:2, anchor = c(1, 0), expand = TRUE] <- lbl
                 tbl[ii, 3:6, expand = TRUE] <- cexPt
                 ii <- ii + 1
@@ -1265,23 +1298,26 @@ iNZPlotMod <- setRefClass(
                 ii <- ii + 1
 
                 if (bars | hist) {
-                  barCols <- do.call(c, barColours)
-                  barCol <- gcombobox(names(barColours), selected = 1, editable = TRUE)
-                  if (curSet$bar.fill %in% barCols)
-                    svalue(barCol) <- names(barColours)[which(barCols %in% curSet$bar.fill)[1]]
+                    barCols <- do.call(c, barColours)
+                    barCol <- gcombobox(names(barColours), selected = 1, editable = TRUE)
+                    if (curSet$bar.fill %in% barCols)
+                        svalue(barCol) <- names(barColours)[which(barCols %in% curSet$bar.fill)[1]]
                 } else {
-                  ptCols <- do.call(c, pointColours)
-                  ptCol <- gcombobox(names(pointColours), selected = 1, editable = TRUE)
-                  if (curSet$col.pt %in% ptCols)
-                      svalue(ptCol) <- names(pointColours)[which(ptCols %in% curSet$col.pt)[1]]
+                    ptCols <- do.call(c, pointColours)
+                    ptCol <- gcombobox(names(pointColours), selected = 1, editable = TRUE)
+                    if (curSet$col.pt %in% ptCols)
+                        svalue(ptCol) <- names(pointColours)[which(ptCols %in% curSet$col.pt)[1]]
                 }
 
-                colLabel <- glabel(switch(PLOTTYPE,
-                                          "dot" = ,
-                                          "scatter" = "Point colour :",
-                                          "hex"     = "Hexagon colour :",
-                                          "hist"    = "Bar colour",
-                                          "bar"     = ifelse(is.null(curSet$y), "Bar colour :", "Colour palette : ")))
+                colLabel <- glabel(
+                    switch(PLOTTYPE,
+                        "dot" = ,
+                        "scatter" = "Point colour :",
+                        "hex"     = "Hexagon colour :",
+                        "hist"    = "Bar colour",
+                        "bar"     = ifelse(is.null(curSet$y), "Bar colour :", "Colour palette : ")
+                    )
+                )
                 tbl[ii, 1:2, anchor = c(1, 0), expand = TRUE, fill = TRUE] <- colLabel
                 tbl[ii, 3:6, expand = TRUE] <- if (bars | hist) barCol else ptCol
                 ptColROW <- ii  ## save for switching later
@@ -1298,7 +1334,7 @@ iNZPlotMod <- setRefClass(
                         gcombobox(c("", colVarNames),
                                   selected = ifelse(
                                       is.null(curSet$colby),
-                                      1, which(colVarNames == curSet$varnames$colby)[1] + 1
+                                      1, which(colVarNames == as.character(curSet$colby))[1] + 1
                                       ))
                     tbl[ii, 1:2, anchor = c(1, 0), expand = TRUE] <- lbl
                     tbl[ii, 3:6, expand = TRUE] <- colVar
@@ -1330,7 +1366,7 @@ iNZPlotMod <- setRefClass(
 
                 if (!is.null(curSet$colby) & (!bars | is.null(curSet$y)) & !hist) {
                     ## already set - need to match
-                    cval <- curSet$varnames$colby
+                    cval <- as.character(curSet$colby)
                     svalue(colVar) <- cval
                     if (bars) visible(barCol) <- FALSE
                     else visible(ptCol) <- FALSE
@@ -1358,36 +1394,52 @@ iNZPlotMod <- setRefClass(
                     cycleLbl <- glabel("Cycle levels :")
                     cyclePanel <- ggroup()
                     addSpace(cyclePanel, 10)
-                    cyclePrev <- gimagebutton(stock.id = "1leftarrow", container = cyclePanel,
-                                              handler = function(h, ...) {
-                                                  nl <-
-                                                      if (is_cat(curSet$colby)) length(levels(curSet$colby))
-                                                      else svalue(cycleN)
-                                                  EMPH.LEVEL <<- ifelse(EMPH.LEVEL == 0, nl, EMPH.LEVEL - 1)
-                                                  updateEverything()
-                                              })
-                    cycleNext <- gimagebutton(stock.id = "1rightarrow", container = cyclePanel,
-                                              handler = function(h, ...) {
-                                                  nl <-
-                                                      if (is_cat(curSet$colby)) length(levels(curSet$colby))
-                                                      else svalue(cycleN)
-                                                  EMPH.LEVEL <<- ifelse(EMPH.LEVEL == nl, 0, EMPH.LEVEL + 1)
-                                                  updateEverything()
-                                              })
+                    cyclePrev <- gimagebutton(
+                        stock.id = "1leftarrow",
+                        container = cyclePanel,
+                        handler = function(h, ...) {
+                            if (is.null(curSet$colby)) return()
+                            nl <-
+                                if (is_cat(.data[[curSet$colby]])) length(levels(.data[[curSet$colby]]))
+                                else svalue(cycleN)
+                            EMPH.LEVEL <<- ifelse(EMPH.LEVEL == 0, nl, EMPH.LEVEL - 1)
+                            updateEverything()
+                        }
+                    )
+                    cycleNext <- gimagebutton(
+                        stock.id = "1rightarrow",
+                        container = cyclePanel,
+                        handler = function(h, ...) {
+                            if (is.null(curSet$colby)) return()
+                            nl <-
+                                if (is_cat(.data[[curSet$colby]])) length(levels(.data[[curSet$colby]]))
+                                else svalue(cycleN)
+                            EMPH.LEVEL <<- ifelse(EMPH.LEVEL == nl, 0, EMPH.LEVEL + 1)
+                            updateEverything()
+                        }
+                    )
                     addSpace(cyclePanel, 20)
-                    cycleStop <- gimagebutton(filename = system.file("images/icon-undo.png", package = "iNZight"),
-                                              container = cyclePanel,
-                                              handler = function(h, ...) {
-                                                  EMPH.LEVEL <<- 0
-                                                  updateEverything()
-                                              })
+                    cycleStop <- gimagebutton(
+                        filename = system.file("images/icon-undo.png", package = "iNZight"),
+                        container = cyclePanel,
+                        handler = function(h, ...) {
+                            EMPH.LEVEL <<- 0
+                            updateEverything()
+                        }
+                    )
                     addSpace(cyclePanel, 20)
                     cycleNlab <- glabel("# quantiles :", container = cyclePanel)
                     font(cycleNlab) <- list(size = 9)
-                    cycleN <- gspinbutton(4, 10, by = 1, container = cyclePanel)
+                    cycleN <- gspinbutton(4, 10, by = 1,
+                        container = cyclePanel,
+                        handler = function(h, ...) {
+                            EMPH.LEVEL <<- min(EMPH.LEVEL, svalue(h$obj))
+                            updateEverything()
+                        }
+                    )
 
                     visible(cycleLbl) <- visible(cyclePanel) <- !is.null(curSet$colby)
-                    if (is_num(curSet$colby)) {
+                    if (!is.null(curSet$colby) && is_num(.data[[curSet$colby]])) {
                         svalue(cycleLbl) <- "Cycle quantiles :"
                     } else {
                         visible(cycleNlab) <- visible(cycleN) <- FALSE
@@ -1399,57 +1451,61 @@ iNZPlotMod <- setRefClass(
                 }
             }
 
-            if (
-              grepl("^gg_", PLOTTYPE) &&
-              (PLOTTYPE %in% c("gg_pie", "gg_donut", "gg_column", "gg_heatmap", "gg_stackedcolumn", "gg_poppyramid", "gg_spine", "gg_mosaic", "gg_divergingstackedbar", "gg_gridplot")) ||
-              (!attr(PLOTTYPES, "null.y") && PLOTTYPE %in% c("gg_violin", "gg_barcode", "gg_boxplot", "gg_cumcurve", "gg_freqpolygon", "gg_dotstrip", "gg_density", "gg_quasirandom", "gg_lollipop2", "gg_ridgeline", "gg_barcode3"))
-            ) {
-              lbl <- glabel("Colour palette :")
-              palette_options <- c("default", "greyscale", "viridis", "magma", "plasma", "inferno", "BrBG", "PiYG", "PRGn",
-                                   "Accent", "Dark2", "Paired", "Pastel1", "Set1",
-                                   "Blues", "BuGn", "BuPu", "GnBu")
-              paletteCombobox <- gcombobox(palette_options,
-                                           selected = ifelse(!is.null(curSet$palette), which(palette_options == curSet$palette), 1))
+            if (grepl("^gg_", PLOTTYPE) &&
+                (PLOTTYPE %in% c("gg_pie", "gg_donut", "gg_column", "gg_heatmap", "gg_stackedcolumn", "gg_poppyramid", "gg_spine", "gg_mosaic", "gg_divergingstackedbar", "gg_gridplot")) ||
+                (!attr(PLOTTYPES, "null.y") &&
+                    PLOTTYPE %in% c("gg_violin", "gg_barcode", "gg_boxplot", "gg_cumcurve", "gg_freqpolygon", "gg_dotstrip", "gg_density", "gg_quasirandom", "gg_lollipop2", "gg_ridgeline", "gg_barcode3")
+                )) {
+                lbl <- glabel("Colour palette :")
+                palette_options <- c(
+                    "default", "greyscale", "viridis", "magma", "plasma", "inferno", "BrBG", "PiYG", "PRGn",
+                    "Accent", "Dark2", "Paired", "Pastel1", "Set1",
+                    "Blues", "BuGn", "BuPu", "GnBu"
+                )
+                paletteCombobox <- gcombobox(palette_options,
+                    selected = ifelse(!is.null(curSet$palette),
+                        which(palette_options == curSet$palette), 1
+                    )
+                )
 
-              addHandlerChanged(paletteCombobox, function(h, ...) updateEverything())
+                addHandlerChanged(paletteCombobox, function(h, ...) updateEverything())
 
-              tbl[ii, 1:2, anchor = c(1, 0), expand = TRUE] <- lbl
-              tbl[ii, 3:6, expand = TRUE] <- paletteCombobox
+                tbl[ii, 1:2, anchor = c(1, 0), expand = TRUE] <- lbl
+                tbl[ii, 3:6, expand = TRUE] <- paletteCombobox
 
-              ii <- ii + 1
+                ii <- ii + 1
             }
 
-            if (
-              PLOTTYPE %in% c("gg_violin", "gg_column2", "gg_lollipop", "gg_boxplot", "gg_density", "gg_cumcurve", "gg_quasirandom", "gg_lollipop2", "gg_barcode3", "gg_barcode", "gg_dotstrip") && attr(PLOTTYPES, "null.y")
-            ) {
-              if (!(PLOTTYPE %in% c("gg_cumcurve"))) {
-                tbl[ii, 1:2, anchor = c(1, 0), expand = TRUE] <- glabel("Fill colour:")
-              } else {
-                tbl[ii, 1:2, anchor = c(1, 0), expand = TRUE] <- glabel("Line colour:")
-              }
+            if (PLOTTYPE %in% c("gg_violin", "gg_column2", "gg_lollipop", "gg_boxplot", "gg_density", "gg_cumcurve", "gg_quasirandom", "gg_lollipop2", "gg_barcode3", "gg_barcode", "gg_dotstrip") &&
+                attr(PLOTTYPES, "null.y")) {
+                if (!(PLOTTYPE %in% c("gg_cumcurve"))) {
+                    tbl[ii, 1:2, anchor = c(1, 0), expand = TRUE] <- glabel("Fill colour:")
+                } else {
+                    tbl[ii, 1:2, anchor = c(1, 0), expand = TRUE] <- glabel("Line colour:")
+                }
 
-              if (isTRUE(!is.null(curSet$fill_colour))) {
-                fill_colour <- curSet$fill_colour
-              } else {
-                fill_colour <- ""
-              }
+                if (isTRUE(!is.null(curSet$fill_colour))) {
+                    fill_colour <- curSet$fill_colour
+                } else {
+                    fill_colour <- ""
+                }
 
-              # colourCombobox <- gedit(fill_colour, handler = function(h, ...) updateEverything())
-              fill_colours <- c("", names(barColours))
-              colourCombobox <- gcombobox(
-                fill_colours,
-                match(fill_colour, fill_colours, nomatch = 0)[1],
-                editable = TRUE
-              )
+                # colourCombobox <- gedit(fill_colour, handler = function(h, ...) updateEverything())
+                fill_colours <- c("", names(barColours))
+                colourCombobox <- gcombobox(
+                    fill_colours,
+                    match(fill_colour, fill_colours, nomatch = 0)[1],
+                    editable = TRUE
+                )
 
-              if (fill_colour != "" && svalue(colourCombobox, index = TRUE) < 2) {
-                svalue(colourCombobox) <- fill_colour
-              }
+                if (fill_colour != "" && svalue(colourCombobox, index = TRUE) < 2) {
+                    svalue(colourCombobox) <- fill_colour
+                }
 
-              addHandlerChanged(colourCombobox, function(h, ...) updateEverything())
-              tbl[ii, 3:6, expand = TRUE] <- colourCombobox
+                addHandlerChanged(colourCombobox, function(h, ...) updateEverything())
+                tbl[ii, 3:6, expand = TRUE] <- colourCombobox
 
-              ii <- ii + 1
+                ii <- ii + 1
             }
 
             if (PLOTTYPE %in% c("scatter", "dot")) {
@@ -1504,11 +1560,13 @@ iNZPlotMod <- setRefClass(
 
 
                 lbl <- glabel("Symbol :")
-                symbolList <- list(circle = 21,
-                                   square = 22,
-                                   diamond = 23,
-                                   triangle = 24,
-                                   'inverted triangle' = 25)
+                symbolList <- list(
+                    circle = 21L,
+                    square = 22L,
+                    diamond = 23L,
+                    triangle = 24L,
+                    'inverted triangle' = 25L
+                )
                 symVals <- do.call(c, symbolList)
                 symPch <- gcombobox(names(symbolList), selected = 1)
                 if (curSet$pch %in% symVals) svalue(symPch, TRUE) <- which(symVals == curSet$pch)
@@ -1543,407 +1601,480 @@ iNZPlotMod <- setRefClass(
             ii <- ii + 1
 
             if (PLOTTYPE %in% c("dot", "hist")) {
-              tbl[ii,  1:6, anchor = c(-1, 0), expand = TRUE] <- sectionTitle("Summaries")
-              ii <- ii + 1
+                tbl[ii,  1:6, anchor = c(-1, 0), expand = TRUE] <- sectionTitle("Summaries")
+                ii <- ii + 1
 
-              tbl[ii, 1:2, anchor = c(1, 0), expand = TRUE] <- glabel("Show :")
+                tbl[ii, 1:2, anchor = c(1, 0), expand = TRUE] <- glabel("Show :")
 
-              showBoxplot <- gcheckbox("Boxplot", checked = curSet$boxplot, handler = function(h, ...) updateEverything())
-              showMean <- gcheckbox("Mean indicator", checked = curSet$mean_indicator, handler = function(h, ...) updateEverything())
+                showBoxplot <- gcheckbox("Boxplot",
+                    checked = curSet$boxplot,
+                    handler = function(h, ...) updateEverything()
+                )
+                showMean <- gcheckbox("Mean indicator",
+                    checked = curSet$mean_indicator,
+                    handler = function(h, ...) updateEverything()
+                )
+                enabled(showBoxplot) <- enabled(showMean) <- is.null(curSet$inference.par)
 
-              tbl[ii, 3:6, anchor = c(1, 0), expand = TRUE] <- showBoxplot
-              ii <- ii + 1
+                tbl[ii, 3:6, anchor = c(1, 0), expand = TRUE] <- showBoxplot
+                ii <- ii + 1
 
-              tbl[ii, 3:6, anchor = c(1, 0), expand = TRUE] <- showMean
-              ii <- ii + 1
+                tbl[ii, 3:6, anchor = c(1, 0), expand = TRUE] <- showMean
+                ii <- ii + 1
             }
 
             ## FT PLOT OPTIONS
 
             if (grepl("^gg_", PLOTTYPE)) {
-              available.themes <- c(
-                "Default" = "grey",
-                "Black & White" = "bw",
-                "Light" = "light",
-                "Dark" = "dark",
-                "Minimal" = "minimal",
-                "Classic" = "classic",
-                "Void" = "void",
-                "Stata" = "stata",
-                "Wall Street Journal" = "wsj",
-                "Tufte" = "tufte",
-                "Google Docs" = "gdocs",
-                "FiveThirtyEight" = "fivethirtyeight",
-                "Excel" = "excel",
-                "Economist" = "economist"
-              )
-
-              if ("ggthemes" %in% installed.packages()) {
-                theme.options <- names(available.themes)
-              } else {
-                theme.options <- c(
-                  names(available.themes[1:7] ),
-                  "Install additional themes..."
+                available.themes <- c(
+                    "Default" = "grey",
+                    "Black & White" = "bw",
+                    "Light" = "light",
+                    "Dark" = "dark",
+                    "Minimal" = "minimal",
+                    "Classic" = "classic",
+                    "Void" = "void",
+                    "Stata" = "stata",
+                    "Wall Street Journal" = "wsj",
+                    "Tufte" = "tufte",
+                    "Google Docs" = "gdocs",
+                    "FiveThirtyEight" = "fivethirtyeight",
+                    "Excel" = "excel",
+                    "Economist" = "economist"
                 )
-              }
 
-              tbl[ii, 1:2, anchor = c(1, 0), expand = TRUE] <- glabel("Theme :")
-              themeCombobox <- gcombobox(
-                theme.options,
-                selected = if (!is.null(curSet$gg_theme)) match(names(available.themes)[which(available.themes == curSet$gg_theme)], theme.options) else 1,
-                handler = function(h, ...) {
-                  if (svalue(themeCombobox) == "Install additional themes...") {
-                    tryCatch({
-                      if(gconfirm("Install ggthemes package?")) {
-                        install.packages(
-                          "ggthemes",
-                          repos = c("https://r.docker.stat.auckland.ac.nz",
-                                    "https://cran.stat.auckland.ac.nz")
-                        )
-                      }
-                    },
-                    finally = {
-                      svalue(themeCombobox) <- names(available.themes)[which(available.themes == curSet$gg_theme)]
-                    }
+                if ("ggthemes" %in% installed.packages()) {
+                    theme.options <- names(available.themes)
+                } else {
+                    theme.options <- c(
+                        names(available.themes[1:7] ),
+                        "Install additional themes..."
                     )
-                  } else {
-                    updateEverything()
-                  }
                 }
-              )
-              tbl[ii, 3:6, expand = TRUE] <- themeCombobox
 
-              ii <- ii + 1
+                tbl[ii, 1:2, anchor = c(1, 0), expand = TRUE] <- glabel("Theme :")
+                themeCombobox <- gcombobox(
+                    theme.options,
+                    selected =
+                        if (!is.null(curSet$gg_theme))
+                            match(names(available.themes)[which(available.themes == curSet$gg_theme)], theme.options)
+                        else 1,
+                    handler = function(h, ...) {
+                        if (svalue(themeCombobox) == "Install additional themes...") {
+                            tryCatch(
+                                {
+                                    if(gconfirm("Install ggthemes package?")) {
+                                        install.packages(
+                                            "ggthemes",
+                                            repos = c("https://r.docker.stat.auckland.ac.nz",
+                                                        "https://cran.stat.auckland.ac.nz")
+                                        )
+                                    }
+                                },
+                                finally = {
+                                    svalue(themeCombobox) <-
+                                        names(available.themes)[which(available.themes == curSet$gg_theme)]
+                                }
+                            )
+                        } else {
+                            updateEverything()
+                        }
+                    }
+                )
+                tbl[ii, 3:6, expand = TRUE] <- themeCombobox
+
+                ii <- ii + 1
             }
 
             if (grepl("^gg_", PLOTTYPE) && !(PLOTTYPE %in% c("gg_pie", "gg_donut", "gg_barcode"))) {
-              tbl[ii, 1:2, anchor = c(1, 0), expand = TRUE] <- glabel("Rotate :")
-              rotateCheck <- gcheckbox("Plot")
-              if (isTRUE(!is.null(curSet$rotation))) {
-                svalue(rotateCheck) <- curSet$rotation
-              }
-              tbl[ii, 3:6, expand = TRUE] <- rotateCheck
+                tbl[ii, 1:2, anchor = c(1, 0), expand = TRUE] <- glabel("Rotate :")
+                rotateCheck <- gcheckbox("Plot")
+                if (isTRUE(!is.null(curSet$rotation))) {
+                    svalue(rotateCheck) <- curSet$rotation
+                }
+                tbl[ii, 3:6, expand = TRUE] <- rotateCheck
 
-              addHandlerChanged(rotateCheck, function(h, ...) updateEverything())
+                addHandlerChanged(rotateCheck, function(h, ...) updateEverything())
 
-              ii <- ii + 1
+                ii <- ii + 1
 
-              rotateLabelsX <- gcheckbox("x-axis Labels")
-              tbl[ii, 3:6, expand = TRUE] <- rotateLabelsX
-              if (isTRUE(!is.null(curSet$rotate_labels$x))) {
-                svalue(rotateLabelsX) <- curSet$rotate_labels$x
-              }
+                rotateLabelsX <- gcheckbox("x-axis Labels")
+                tbl[ii, 3:6, expand = TRUE] <- rotateLabelsX
+                if (isTRUE(!is.null(curSet$rotate_labels$x))) {
+                    svalue(rotateLabelsX) <- curSet$rotate_labels$x
+                }
 
-              ii <- ii + 1
+                ii <- ii + 1
 
-              rotateLabelsY <- gcheckbox("y-axis Labels")
-              tbl[ii, 3:6, expand = TRUE] <- rotateLabelsY
-              if (isTRUE(!is.null(curSet$rotate_labels$y))) {
-                svalue(rotateLabelsY) <- curSet$rotate_labels$y
-              }
+                rotateLabelsY <- gcheckbox("y-axis Labels")
+                tbl[ii, 3:6, expand = TRUE] <- rotateLabelsY
+                if (isTRUE(!is.null(curSet$rotate_labels$y))) {
+                    svalue(rotateLabelsY) <- curSet$rotate_labels$y
+                }
 
-              ii <- ii + 1
+                ii <- ii + 1
 
-              addHandlerChanged(rotateLabelsX, function(h, ...) updateEverything())
-              addHandlerChanged(rotateLabelsY, function(h, ...) updateEverything())
+                addHandlerChanged(rotateLabelsX, function(h, ...) updateEverything())
+                addHandlerChanged(rotateLabelsY, function(h, ...) updateEverything())
             }
 
             if (PLOTTYPE %in% c("gg_violin", "gg_density")) {
-              tbl[ii, 1:6, expand = TRUE] <- sectionTitle("Density Options")
-              ii <- ii + 1
+                tbl[ii, 1:6, expand = TRUE] <- sectionTitle("Density Options")
+                ii <- ii + 1
 
-              tbl[ii, 1:2, anchor = c(1, 0), expand = TRUE] <- glabel("Smoothing :")
-              smoothSlider <- gslider(0.25, 4, 0.25, value = ifelse(is.null(curSet$adjust), 1, curSet$adjust),
-                                      handler = function(h, ...) {
-                if (!is.null(timer))
-                  if (timer$started) timer$stop_timer()
-                timer <<- gtimer(500, function(...) updateEverything(), one.shot = TRUE)
-              })
+                tbl[ii, 1:2, anchor = c(1, 0), expand = TRUE] <- glabel("Smoothing :")
+                smoothSlider <- gslider(0.25, 4, 0.25,
+                    value = ifelse(is.null(curSet$adjust), 1, curSet$adjust),
+                    handler = function(h, ...) {
+                        if (!is.null(timer))
+                        if (timer$started) timer$stop_timer()
+                        timer <<- gtimer(500,
+                            function(...) updateEverything(),
+                            one.shot = TRUE
+                        )
+                    }
+                )
 
-              # if (isTRUE(!is.null(curSet$adjust))) {
-              #   svalue(smoothSlider) <- curSet$adjust
-              # } else {
-              #   svalue(smoothSlider) <- 1
-              # }
+                # if (isTRUE(!is.null(curSet$adjust))) {
+                #   svalue(smoothSlider) <- curSet$adjust
+                # } else {
+                #   svalue(smoothSlider) <- 1
+                # }
 
-              tbl[ii, 3:6, expand = TRUE] <- smoothSlider
+                tbl[ii, 3:6, expand = TRUE] <- smoothSlider
 
-              ii <- ii + 1
+                ii <- ii + 1
             }
 
             if (PLOTTYPE %in% c("gg_barcode")) {
-              tbl[ii, 1:2, anchor = c(1, 0), expand = TRUE] <- glabel("Size :")
-              barcodeSize <- gslider(from = 5, to = 20, by = 1, value = 16)
-              tbl[ii, 3:6, expand = TRUE] <- barcodeSize
+                tbl[ii, 1:2, anchor = c(1, 0), expand = TRUE] <- glabel("Size :")
+                barcodeSize <- gslider(from = 5, to = 20, by = 1, value = 16)
+                tbl[ii, 3:6, expand = TRUE] <- barcodeSize
 
-              if (isTRUE(!is.null(curSet$gg_barSize))) {
-                svalue(barcodeSize) <- curSet$gg_barSize
-              } else {
-                svalue(barcodeSize) <- 16
-              }
+                if (isTRUE(!is.null(curSet$gg_barSize))) {
+                    svalue(barcodeSize) <- curSet$gg_barSize
+                } else {
+                    svalue(barcodeSize) <- 16
+                }
 
-              addHandlerChanged(barcodeSize, handler = function(h, ...) {
-                if (!is.null(timer))
-                  if (timer$started) timer$stop_timer()
-                timer <<- gtimer(500, function(...) updateEverything(), one.shot = TRUE)
-              })
+                addHandlerChanged(barcodeSize,
+                    handler = function(h, ...) {
+                        if (!is.null(timer))
+                        if (timer$started) timer$stop_timer()
+                        timer <<- gtimer(500,
+                            function(...) updateEverything(),
+                            one.shot = TRUE
+                        )
+                    }
+                )
 
-              ii <- ii + 1
+                ii <- ii + 1
             }
 
             if (PLOTTYPE %in% c("gg_barcode2", "gg_barcode3")) {
-              tbl[ii, 1:6, expand = TRUE] <- sectionTitle("Barcode Options")
-              ii <- ii + 1
+                tbl[ii, 1:6, expand = TRUE] <- sectionTitle("Barcode Options")
+                ii <- ii + 1
 
-              tbl[ii, 1:2, anchor = c(1, 0), expand = TRUE] <- glabel("Width :")
-              barcodeWidth <- gslider(from = 0.25, to = 3, by = 0.25, value = 1)
-              tbl[ii, 3:6, expand = TRUE] <- barcodeWidth
+                tbl[ii, 1:2, anchor = c(1, 0), expand = TRUE] <- glabel("Width :")
+                barcodeWidth <- gslider(from = 0.25, to = 3, by = 0.25, value = 1)
+                tbl[ii, 3:6, expand = TRUE] <- barcodeWidth
 
-              ii <- ii + 1
+                ii <- ii + 1
 
-              tbl[ii, 1:2, anchor = c(1, 0), expand = TRUE] <- glabel("Height :")
-              barcodeHeight <- gslider(from = 0.1, to = 1, by = 0.1, value = 0.5)
-              tbl[ii, 3:6, expand = TRUE] <- barcodeHeight
+                tbl[ii, 1:2, anchor = c(1, 0), expand = TRUE] <- glabel("Height :")
+                barcodeHeight <- gslider(from = 0.1, to = 1, by = 0.1, value = 0.5)
+                tbl[ii, 3:6, expand = TRUE] <- barcodeHeight
 
-              ii <- ii + 1
+                ii <- ii + 1
 
-              if (isTRUE(!is.null(curSet$gg_height))) {
-                svalue(barcodeHeight) <- curSet$gg_height
-              } else {
-                svalue(barcodeHeight) <- 0.5
-              }
+                if (isTRUE(!is.null(curSet$gg_height))) {
+                    svalue(barcodeHeight) <- curSet$gg_height
+                } else {
+                    svalue(barcodeHeight) <- 0.5
+                }
 
-              if (isTRUE(!is.null(curSet$gg_width))) {
-                svalue(barcodeWidth) <- curSet$gg_width
-              } else {
-                svalue(barcodeWidth) <- 1
-              }
+                if (isTRUE(!is.null(curSet$gg_width))) {
+                    svalue(barcodeWidth) <- curSet$gg_width
+                } else {
+                    svalue(barcodeWidth) <- 1
+                }
 
-              addHandlerChanged(barcodeWidth, handler = function(h, ...) {
-                if (!is.null(timer))
-                  if (timer$started) timer$stop_timer()
-                timer <<- gtimer(500, function(...) updateEverything(), one.shot = TRUE)
-              })
+                addHandlerChanged(barcodeWidth,
+                    handler = function(h, ...) {
+                        if (!is.null(timer))
+                        if (timer$started) timer$stop_timer()
+                        timer <<- gtimer(500,
+                            function(...) updateEverything(),
+                            one.shot = TRUE
+                        )
+                    }
+                )
 
-              addHandlerChanged(barcodeHeight, handler = function(h, ...) {
-                if (!is.null(timer))
-                  if (timer$started) timer$stop_timer()
-                timer <<- gtimer(500, function(...) updateEverything(), one.shot = TRUE)
-              })
+                addHandlerChanged(barcodeHeight,
+                    handler = function(h, ...) {
+                        if (!is.null(timer))
+                        if (timer$started) timer$stop_timer()
+                        timer <<- gtimer(500,
+                            function(...) updateEverything(),
+                            one.shot = TRUE
+                        )
+                    }
+                )
 
             }
 
             if (PLOTTYPE %in% c("gg_divergingstackedbar")) {
-              tbl[ii, 1:6, expand = TRUE] <- sectionTitle("Barchart Options")
-              ii <- ii + 1
+                tbl[ii, 1:6, expand = TRUE] <- sectionTitle("Barchart Options")
+                ii <- ii + 1
 
-              tbl[ii, 1:2, anchor = c(1, 0), expand = TRUE] <- glabel("Cut-point :")
-              stackedCutPoint <- gcombobox(c("Default", 1:(attr(PLOTTYPES, "cat.levels") - 1)))
-              tbl[ii, 3:6, expand = TRUE] <- stackedCutPoint
-              ii <- ii + 1
+                tbl[ii, 1:2, anchor = c(1, 0), expand = TRUE] <- glabel("Cut-point :")
+                stackedCutPoint <- gcombobox(c("Default", 1:(attr(PLOTTYPES, "cat.levels") - 1)))
+                tbl[ii, 3:6, expand = TRUE] <- stackedCutPoint
+                ii <- ii + 1
 
-              addHandlerChanged(stackedCutPoint, function(h, ...) updateEverything())
+                addHandlerChanged(stackedCutPoint, function(h, ...) updateEverything())
             }
 
             if (PLOTTYPE %in% c("gg_lollipop2", "gg_lollipop", "gg_freqpolygon", "gg_dotstrip", "gg_beeswarm")) {
-              tbl[ii, 1:6, expand = TRUE] <- sectionTitle("Point Options")
-              ii <- ii + 1
+                tbl[ii, 1:6, expand = TRUE] <- sectionTitle("Point Options")
+                ii <- ii + 1
 
-              tbl[ii, 1:2, anchor = c(1, 0), expand = TRUE] <- glabel("Size :")
-              pointSize <- gslider(from = 1, to = 10, by = 1)
-              tbl[ii, 3:6, expand = TRUE] <- pointSize
+                tbl[ii, 1:2, anchor = c(1, 0), expand = TRUE] <- glabel("Size :")
+                pointSize <- gslider(from = 1, to = 10, by = 1)
+                tbl[ii, 3:6, expand = TRUE] <- pointSize
 
-              if (isTRUE(!is.null(curSet$gg_size))) {
-                svalue(pointSize) <- curSet$gg_size
-              } else {
-                svalue(pointSize) <- 6
-              }
+                if (isTRUE(!is.null(curSet$gg_size))) {
+                    svalue(pointSize) <- curSet$gg_size
+                } else {
+                    svalue(pointSize) <- 6
+                }
 
-              addHandlerChanged(pointSize, handler = function(h, ...) {
-                if (!is.null(timer))
-                  if (timer$started) timer$stop_timer()
-                timer <<- gtimer(500, function(...) updateEverything(), one.shot = TRUE)
-              })
+                addHandlerChanged(pointSize,
+                    handler = function(h, ...) {
+                        if (!is.null(timer))
+                        if (timer$started) timer$stop_timer()
+                        timer <<- gtimer(500,
+                            function(...) updateEverything(),
+                            one.shot = TRUE
+                        )
+                    }
+                )
 
-              ii <- ii + 1
+                ii <- ii + 1
             }
 
             if (PLOTTYPE %in% c("gg_violin", "gg_barcode", "gg_dotstrip", "gg_barcode2", "gg_barcode3")) {
-              tbl[ii, 1:2, anchor = c(1, 0), expand = TRUE] <- glabel("Transparency :")
-              transpSlider <- gslider(from = 0, to = 100,
-                                      by = 1, value = 100 * (1 - curSet$alpha))
-              tbl[ii, 3:6, expand = TRUE] <- transpSlider
+                tbl[ii, 1:2, anchor = c(1, 0), expand = TRUE] <- glabel("Transparency :")
+                transpSlider <- gslider(from = 0, to = 100,
+                    by = 1,
+                    value = 100 * (1 - curSet$alpha)
+                )
+                tbl[ii, 3:6, expand = TRUE] <- transpSlider
 
-              addHandlerChanged(transpSlider,
-                                handler = function(h, ...) {
-                                  if (!is.null(timer))
-                                    if (timer$started) timer$stop_timer()
-                                  timer <<- gtimer(500, function(...) updateEverything(), one.shot = TRUE)
-                                })
+                addHandlerChanged(transpSlider,
+                    handler = function(h, ...) {
+                        if (!is.null(timer))
+                            if (timer$started) timer$stop_timer()
+                        timer <<- gtimer(500,
+                            function(...) updateEverything(),
+                            one.shot = TRUE
+                        )
+                    }
+                )
 
-              ii <- ii + 1
+                ii <- ii + 1
             }
 
             if (PLOTTYPE %in% c("gg_density", "gg_ridgeline")) {
-              tbl[ii, 1:2, anchor = c(1, 0), expand = TRUE] <- glabel("Transparency :")
-              transpSlider <- gslider(from = 0, to = 100,
-                                      by = 1,
-                                      value = ifelse(
-                                        attr(PLOTTYPES, "null.y"),
-                                        100 * (1 - curSet$alpha),
-                                        ifelse(is.null(curSet$alpha_densitygroup), 60, 100 * (1 - curSet$alpha_densitygroup))
-                                      )
-              )
-              tbl[ii, 3:6, expand = TRUE] <- transpSlider
+                tbl[ii, 1:2, anchor = c(1, 0), expand = TRUE] <- glabel("Transparency :")
+                transpSlider <- gslider(from = 0, to = 100,
+                    by = 1,
+                    value = ifelse(
+                        attr(PLOTTYPES, "null.y"),
+                        100 * (1 - curSet$alpha),
+                        ifelse(is.null(curSet$alpha_densitygroup),
+                            60,
+                            100 * (1 - curSet$alpha_densitygroup)
+                        )
+                    )
+                )
+                tbl[ii, 3:6, expand = TRUE] <- transpSlider
 
-              addHandlerChanged(transpSlider,
-                                handler = function(h, ...) {
-                                  if (!is.null(timer))
-                                    if (timer$started) timer$stop_timer()
-                                  timer <<- gtimer(500, function(...) updateEverything(), one.shot = TRUE)
-                                })
+                addHandlerChanged(transpSlider,
+                    handler = function(h, ...) {
+                        if (!is.null(timer))
+                            if (timer$started) timer$stop_timer()
+                        timer <<- gtimer(500,
+                            function(...) updateEverything(),
+                            one.shot = TRUE
+                        )
+                    }
+                )
 
-              ii <- ii + 1
+                ii <- ii + 1
             }
 
             if (PLOTTYPE %in% c("gg_poppyramid")) {
-              tbl[ii, 1:6, expand = TRUE] <- sectionTitle("Pyramid Options")
-              ii <- ii + 1
+                tbl[ii, 1:6, expand = TRUE] <- sectionTitle("Pyramid Options")
+                ii <- ii + 1
 
-              tbl[ii, 1:2, anchor = c(1, 0), expand = TRUE] <- glabel("Number of bins :")
-              pyramidBins <- gslider(5, 50, by = 5, value = 30)
-              tbl[ii, 3:6, expand = TRUE] <- pyramidBins
+                tbl[ii, 1:2, anchor = c(1, 0), expand = TRUE] <- glabel("Number of bins :")
+                pyramidBins <- gslider(5, 50, by = 5, value = 30)
+                tbl[ii, 3:6, expand = TRUE] <- pyramidBins
 
-              if (isTRUE(!is.null(curSet$gg_bins))) {
-                svalue(pyramidBins) <- curSet$gg_bins
-              } else {
-                svalue(pyramidBins) <- 30
-              }
+                if (isTRUE(!is.null(curSet$gg_bins))) {
+                    svalue(pyramidBins) <- curSet$gg_bins
+                } else {
+                    svalue(pyramidBins) <- 30
+                }
 
-              addHandlerChanged(pyramidBins, handler = function(h, ...) {
-                if (!is.null(timer))
-                  if (timer$started) timer$stop_timer()
-                timer <<- gtimer(500, function(...) updateEverything(), one.shot = TRUE)
-              })
+                addHandlerChanged(pyramidBins, handler = function(h, ...) {
+                    if (!is.null(timer))
+                    if (timer$started) timer$stop_timer()
+                    timer <<- gtimer(500, function(...) updateEverything(), one.shot = TRUE)
+                })
 
-              ii <- ii + 1
+                ii <- ii + 1
             }
 
             if (PLOTTYPE %in% c("gg_lollipop", "gg_boxplot", "gg_cumcurve", "gg_lollipop2", "gg_freqpolygon")) {
-              tbl[ii, 1:6, expand = TRUE] <- sectionTitle("Line Options")
-              ii <- ii + 1
+                tbl[ii, 1:6, expand = TRUE] <- sectionTitle("Line Options")
+                ii <- ii + 1
 
-              tbl[ii, 1:2, anchor = c(1, 0), expand = TRUE] <- glabel("Width :")
-              lwdSlider <- gslider(1, 5, value = 1)
-              tbl[ii, 3:6, expand = TRUE] <- lwdSlider
+                tbl[ii, 1:2, anchor = c(1, 0), expand = TRUE] <- glabel("Width :")
+                lwdSlider <- gslider(1, 5, value = 1)
+                tbl[ii, 3:6, expand = TRUE] <- lwdSlider
 
-              if (isTRUE(!is.null(curSet$gg_lwd))) {
-                svalue(lwdSlider) <- curSet$gg_lwd
-              } else {
-                svalue(lwdSlider) <- 1
-              }
+                if (isTRUE(!is.null(curSet$gg_lwd))) {
+                    svalue(lwdSlider) <- curSet$gg_lwd
+                } else {
+                    svalue(lwdSlider) <- 1
+                }
 
-              addHandlerChanged(lwdSlider, handler = function(h, ...) {
-                if (!is.null(timer))
-                  if (timer$started) timer$stop_timer()
-                timer <<- gtimer(500, function(...) updateEverything(), one.shot = TRUE)
-              })
+                addHandlerChanged(lwdSlider, handler = function(h, ...) {
+                    if (!is.null(timer))
+                    if (timer$started) timer$stop_timer()
+                    timer <<- gtimer(500, function(...) updateEverything(), one.shot = TRUE)
+                })
 
-              ii <- ii + 1
+                ii <- ii + 1
             }
 
             if (PLOTTYPE %in% c("gg_column", "gg_lollipop2", "gg_pie", "gg_donut")) {
-              tbl[ii, 1:6, expand = TRUE] <- sectionTitle("Sorting")
-              ii <- ii + 1
+                tbl[ii, 1:6, expand = TRUE] <- sectionTitle("Sorting")
+                ii <- ii + 1
 
-              tbl[ii, 1:2, anchor = c(1, 0), expand = TRUE] <- glabel("Sort categories by size :")
-              # sortCheck <- gcheckbox(handler = function(h, ...) updateEverything())
-              sortCheck <- gcombobox(c("None", "Ascending", "Descending"), handler = function(h, ...) updateEverything())
-              tbl[ii, 3:6, expand = TRUE] <- sortCheck
+                tbl[ii, 1:2, anchor = c(1, 0), expand = TRUE] <- glabel("Sort categories by size :")
+                # sortCheck <- gcheckbox(handler = function(h, ...) updateEverything())
+                sortCheck <- gcombobox(c("None", "Ascending", "Descending"),
+                    handler = function(h, ...) updateEverything()
+                )
+                tbl[ii, 3:6, expand = TRUE] <- sortCheck
 
-              if (isTRUE(!is.null(curSet$ordered))) {
-                print(curSet$ordered)
-                svalue(sortCheck, index = TRUE) <- ifelse(curSet$ordered == "asc", 2, ifelse(curSet$ordered == "desc", 3, 1))
-              } else {
-                svalue(sortCheck, TRUE) <- 1
-              }
+                if (isTRUE(!is.null(curSet$ordered))) {
+                    print(curSet$ordered)
+                    svalue(sortCheck, index = TRUE) <- ifelse(curSet$ordered == "asc", 2, ifelse(curSet$ordered == "desc", 3, 1))
+                } else {
+                    svalue(sortCheck, TRUE) <- 1
+                }
 
-              ii <- ii + 1
+                ii <- ii + 1
             }
 
             if (PLOTTYPE %in% c("gg_gridplot")) {
-              tbl[ii, 1:6, expand = TRUE] <- sectionTitle("Gridplot Options")
-              ii <- ii + 1
+                tbl[ii, 1:6, expand = TRUE] <- sectionTitle("Gridplot Options")
+                ii <- ii + 1
 
-              tbl[ii, 1:2, anchor = c(1, 0), expand = TRUE] <- glabel("N observations/square :")
-              n_fun <- function(n) {
-                if (n > 1000) {
-                  if (n > 5 * 10^ceiling(log10(n) - 1) && n > 5 * 10^ceiling(log10(n + 1) - 1)) {
-                    10^(floor(log10(n)) - 1)
-                  } else {
-                    10^(floor(log10(n)) - 2)
-                  }
-                } else {
-                  1
+                tbl[ii, 1:2, anchor = c(1, 0), expand = TRUE] <- glabel("N observations/square :")
+                n_fun <- function(n) {
+                    if (n > 1000) {
+                        if (n > 5 * 10^ceiling(log10(n) - 1) && n > 5 * 10^ceiling(log10(n + 1) - 1)) {
+                            10^(floor(log10(n)) - 1)
+                        } else {
+                            10^(floor(log10(n)) - 2)
+                        }
+                    } else {
+                        1
+                    }
                 }
-              }
-              gridNPerSquare <- gedit(n_fun(nrow(GUI$getActiveData())))
-              addHandlerChanged(gridNPerSquare, function(h, ...) updateEverything())
-              tbl[ii, 3:6, expand = TRUE] <- gridNPerSquare
+                gridNPerSquare <- gedit(n_fun(nrow(GUI$getActiveData())))
+                addHandlerChanged(gridNPerSquare, function(h, ...) updateEverything())
+                tbl[ii, 3:6, expand = TRUE] <- gridNPerSquare
 
-              ii <- ii + 1
+                ii <- ii + 1
             }
 
             if (PLOTTYPE %in% c("gg_quasirandom")) {
-              tbl[ii, 1:6, expand = TRUE] <- sectionTitle("Beeswarm Options")
-              ii <- ii + 1
+                tbl[ii, 1:6, expand = TRUE] <- sectionTitle("Beeswarm Options")
+                ii <- ii + 1
 
-              tbl[ii, 1:2, anchor = c(1, 0), expand = TRUE] <- glabel("Method :")
-              swarmMethod <- gcombobox(c("quasirandom", "pseudorandom", "smiley", "frowney"))
-              tbl[ii, 3:6, expand = TRUE] <- swarmMethod
-              addHandlerChanged(swarmMethod, handler = function(h, ...) updateEverything())
+                tbl[ii, 1:2, anchor = c(1, 0), expand = TRUE] <- glabel("Method :")
+                swarmMethod <- gcombobox(
+                    c("quasirandom", "pseudorandom", "smiley", "frowney")
+                )
+                tbl[ii, 3:6, expand = TRUE] <- swarmMethod
+                addHandlerChanged(swarmMethod,
+                    handler = function(h, ...) updateEverything()
+                )
 
-              ii <- ii + 1
+                ii <- ii + 1
 
-              tbl[ii, 1:2, anchor = c(1, 0), expand = TRUE] <- glabel("Swarm width :")
-              swarmWidth <- gslider(0, 1, 0.1, value = if (!is.null(curSet$gg_swarmwidth)) curSet$gg_swarmwidth else 0.4)
-              tbl[ii, 3:6, expand = TRUE] <- swarmWidth
+                tbl[ii, 1:2, anchor = c(1, 0), expand = TRUE] <- glabel("Swarm width :")
+                swarmWidth <- gslider(0, 1, 0.1,
+                    value = if (!is.null(curSet$gg_swarmwidth)) curSet$gg_swarmwidth else 0.4
+                )
+                tbl[ii, 3:6, expand = TRUE] <- swarmWidth
 
-              addHandlerChanged(swarmWidth, handler = function(h, ...) {
-                if (!is.null(timer))
-                  if (timer$started) timer$stop_timer()
-                timer <<- gtimer(500, function(...) updateEverything(), one.shot = TRUE)
-              })
+                addHandlerChanged(swarmWidth,
+                    handler = function(h, ...) {
+                        if (!is.null(timer))
+                        if (timer$started) timer$stop_timer()
+                        timer <<- gtimer(500,
+                            function(...) updateEverything(),
+                            one.shot = TRUE
+                        )
+                    }
+                )
 
-              ii <- ii + 1
+                ii <- ii + 1
             }
 
             if (grepl("^gg_", PLOTTYPE)) {
 
 
-              tbl[ii, 1:6, expand = TRUE] <- sectionTitle("Export Plot")
-              ii <- ii + 1
+                tbl[ii, 1:6, expand = TRUE] <- sectionTitle("Options (for ggplot2)")
+                ii <- ii + 1
 
-              tbl[ii, 3, expand = TRUE] <- gbutton("Store Code", handler = function(h, ...) {
-                GUI$plot_history$add(GUI$curPlot)
-                GUI$rhistory$add(paste0(attr(GUI$curPlot, "code"), collapse = "\n\n"))
-              })
+                tbl[ii, 3, expand = TRUE] <- gbutton("Store code",
+                    handler = function(h, ...) {
+                        code <-
+                            if (is.null(attr(GUI$curPlot, "gg_code"))) attr(GUI$curPlot, "code")
+                            else attr(GUI$curPlot, "gg_code")
+                        GUI$plot_history$add(GUI$curPlot)
+                        GUI$rhistory$add(paste0(code, collapse = "\n\n"))
+                    }
+                )
 
-              tbl[ii, 4, expand = TRUE] <- gbutton("View Code", handler = function(h, ...) {
-                GUI$plot_history$show()
-              })
-
-              ii <- ii + 1
-
-              if (!PLOTTYPE %in% c("gg_pie", "gg_donut", "gg_gridplot", "gg_barcode2", "gg_barcode", "gg_ridgeline")) {
-                tbl[ii, 3:4, anchor = c(1, 0), expand = TRUE] <- gbutton("Interactive Plot (via plotly)", handler = function(h, ...) {
-                  suppressWarnings(
-                    print(plotly::ggplotly())
-                  )
-                })
+                tbl[ii, 4, expand = TRUE] <- gbutton("View code",
+                    handler = function(h, ...) {
+                        GUI$plot_history$show()
+                    }
+                )
 
                 ii <- ii + 1
-              }
+
+                if (!PLOTTYPE %in% c("gg_pie", "gg_donut", "gg_gridplot", "gg_barcode2", "gg_barcode", "gg_ridgeline")) {
+                    tbl[ii, 3:4, anchor = c(1, 0), expand = TRUE] <- gbutton(
+                        "Interactive Plot (via plotly)",
+                        handler = function(h, ...) {
+                            suppressWarnings(
+                                print(plotly::ggplotly())
+                            )
+                        }
+                    )
+
+                    ii <- ii + 1
+                }
             }
 
             # if (PLOTTYPE %in% c("gg_column2", "gg_lollipop")) {
@@ -1980,10 +2111,15 @@ iNZPlotMod <- setRefClass(
                          "hex"     = newSet$hex.bins <- iNZightPlots::inzpar()$hex.bins / svalue(cexPt))
                 }
                 if (PLOTTYPE == "scatter") {
-                    newSet <- c(newSet, list(sizeby = GUI$getActiveData()[[svalue(sizeVar)]]))
-                    newSet$varnames <- c(newSet$varnames,
-                                         list(sizeby = svalue(sizeVar)))
-                    newSet$resize.method <- svalue(sizeMethod)
+                    if (svalue(sizeVar, index = TRUE) > 1L) {
+                        newSet <- c(newSet, list(sizeby = as.name(svalue(sizeVar))))
+                        newSet$varnames <- c(newSet$varnames, list(sizeby = svalue(sizeVar)))
+                        newSet$resize.method <- svalue(sizeMethod)
+                    } else {
+                        newSet <- c(newSet, list(sizeby = NULL))
+                        newSet$varnames <- c(newSet$varnames, list(sizeby = NULL))
+                        newSet["resize.method"] <- list(NULL)
+                    }
                 }
                 if (PLOTTYPE == "hex")
                     newSet <- c(newSet, list(hex.style = svalue(hexStyle)))
@@ -1992,21 +2128,16 @@ iNZPlotMod <- setRefClass(
                 if (PLOTTYPE %in% c("scatter", "hex", "dot", "bar")) {
                     setPal <- FALSE
                     if (bars & !is.null(curSet$y)) {
-                      setPal <- TRUE
+                        setPal <- TRUE
                     } else if (svalue(colVar, TRUE) > 1) {
-                      setPal <- TRUE
+                        setPal <- TRUE
                     }
                     if (setPal) {
                         ## colouring by a variable - and a palette
                         if (!bars | is.null(curSet$y)) {
-                          newSet$colby <-
-                              if (PLOTTYPE == "hex")
-                                  iNZightPlots::convert.to.factor(
-                                      GUI$getActiveData()[[svalue(colVar)]])
-                              else GUI$getActiveData()[[svalue(colVar)]]
-                          newSet$varnames <- c(newSet$varnames,
-                                               list(colby = svalue(colVar)))
-                          newSet$col.method <- ifelse(svalue(useRank), "rank", "linear")
+                            newSet$colby <- as.name(svalue(colVar))
+                            newSet$varnames <- c(newSet$varnames, list(colby = svalue(colVar)))
+                            newSet$col.method <- ifelse(svalue(useRank), "rank", "linear")
                         }
                         newSet$reverse.palette <- svalue(revPal)
                         palCatName <-
@@ -2014,48 +2145,35 @@ iNZPlotMod <- setRefClass(
                         palContName <-
                             names(colourPalettes$cont)[svalue(palCont, index = TRUE)]
                         if (bars) {
-                          newSet$col.fun <- iNZightPlots::inzpalette(palCatName)
+                            newSet$col.fun <- palCatName
                         } else {
-                          newSet$col.fun <-
-                              if (EMPH.LEVEL > 0)
-                                  function(n)
-                                      iNZightPlots::emphasize_pal_colour(
-                                          n, k = EMPH.LEVEL, cat = is.factor(newSet$colby),
-                                          ncat = svalue(cycleN),
-                                          fn = if (is.numeric(newSet$colby))
-                                                   iNZightPlots::inzpalette(palContName)
-                                               else iNZightPlots::inzpalette(palCatName)
-                                      )
-                              else if (is.numeric(newSet$colby))
-                                  iNZightPlots::inzpalette(palContName)
-                              else iNZightPlots::inzpalette(palCatName)
+                            newSet$col.emph <- as.integer(EMPH.LEVEL)
+                            newSet$col.emphn <-
+                                if (EMPH.LEVEL > 0L) as.integer(svalue(cycleN)) else NULL
+                            newSet$col.fun <-
+                                if (is_num(.data[[newSet$colby]])) palContName else palCatName
                         }
 
-                        newSet$plot.features <- list(order.first = NULL)
                         if (!bars) {
-                          if (EMPH.LEVEL > 0) {
-                              ## need to add "order.first" to plot features:
-                              if (is_cat(newSet$colby)) {
-                                  newSet$plot.features <-
-                                      list(order.first = which(newSet$colby ==
-                                                               levels(newSet$colby)[EMPH.LEVEL]))
-                              } else if (is_num(newSet$colby)) {
-                                  Qs <- seq(min(newSet$colby, na.rm = TRUE),
-                                            max(newSet$colby, na.rm = TRUE),
-                                            length = svalue(cycleN) + 1)
-                                  newSet$plot.features <-
-                                      list(order.first = which(newSet$colby >= Qs[EMPH.LEVEL] &
-                                                               newSet$colby < Qs[EMPH.LEVEL + 1]))
-                              }
-                          }
+                            if (EMPH.LEVEL > 0) {
+                                newSet$col.emph <- as.integer(EMPH.LEVEL)
+                                newSet$col.emphn <- as.integer(svalue(cycleN))
+                            } else {
+                                newSet["col.emph"] <- 0L
+                                # newSet["col.emphn"] <- list(NULL)
+                            }
 
-                          visible(cycleLbl) <- visible(cyclePanel) <- TRUE
-                          visible(cycleNlab) <- visible(cycleN) <- is_num(newSet$colby)
-                          svalue(cycleLbl) <- ifelse(visible(cycleN),
-                                                     "Cycle quantiles :", "Cycle levels :")
+                            visible(cycleLbl) <- visible(cyclePanel) <- TRUE
+                            visible(cycleNlab) <- visible(cycleN) <- is_num(.data[[newSet$colby]])
+                            svalue(cycleLbl) <- ifelse(
+                                visible(cycleN),
+                                "Cycle quantiles :",
+                                "Cycle levels :"
+                            )
                         }
                     } else {
                         newSet <- c(newSet, list(colby = NULL))
+                        newSet["col.fun"] <- list(NULL)
                         newSet$varnames <- c(newSet$varnames, list(colby = NULL))
                         if (bars) {
                           newSet$bar.fill <-
@@ -2099,12 +2217,12 @@ iNZPlotMod <- setRefClass(
                     newSet <- c(newSet, list(symbolby = NULL))
                     newSet$varnames <- c(newSet$varnames, list(symbolby = NULL))
                     if (svalue(pchMatch) & !is.null(newSet$colby)) {
-                        if (length(levels(newSet$colby)) %in% 1:5) {
+                        if (length(levels(.data[[newSet$colby]])) %in% 1:5) {
                             newSet$symbolby <- newSet$colby
                             newSet$varnames$symbolby = newSet$varnames$colby
                         }
                     } else if (svalue(symVar, TRUE) > 1) {
-                        newSet$symbolby <- GUI$getActiveData()[[svalue(symVar)]]
+                        newSet$symbolby <- as.name(svalue(symVar))
                         newSet$varnames$symbolby <- svalue(symVar)
                     }
                     newSet$pch <- symVals[svalue(symPch, index = TRUE)]
@@ -2113,96 +2231,96 @@ iNZPlotMod <- setRefClass(
                 }
 
                 if (grepl("^gg_", PLOTTYPE)) {
-                  if (!(PLOTTYPE %in% c("gg_pie", "gg_donut", "gg_cumcurve", "gg_barcode"))) {
-                    newSet$rotation <- svalue(rotateCheck)
-                  }
-
-                  if(grepl("^gg_", PLOTTYPE) &&
-                     (PLOTTYPE %in% c("gg_pie", "gg_donut", "gg_column", "gg_heatmap", "gg_stackedcolumn", "gg_poppyramid", "gg_spine", "gg_mosaic", "gg_divergingstackedbar", "gg_gridplot")) ||
-                     (!attr(PLOTTYPES, "null.y") && PLOTTYPE %in% c("gg_violin", "gg_barcode", "gg_boxplot", "gg_cumcurve", "gg_freqpolygon", "gg_dotstrip", "gg_density", "gg_quasirandom", "gg_lollipop2", "gg_ridgeline", "gg_barcode3"))
-                  ) {
-                    newSet$palette <- svalue(paletteCombobox)
-                  }
-
-                  if (PLOTTYPE %in% c("gg_violin", "gg_column2", "gg_lollipop", "gg_boxplot", "gg_density", "gg_cumcurve", "gg_quasirandom", "gg_lollipop2", "gg_barcode3", "gg_barcode", "gg_dotstrip") && attr(PLOTTYPES, "null.y")) {
-                    if (svalue(colourCombobox) != "" && valid_colour(svalue(colourCombobox))) {
-                      newSet$fill_colour <- svalue(colourCombobox)
-                    } else if (svalue(colourCombobox) == "") {
-                      newSet$fill_colour <- ""
+                    if (!(PLOTTYPE %in% c("gg_pie", "gg_donut", "gg_cumcurve", "gg_barcode"))) {
+                        newSet$rotation <- svalue(rotateCheck)
                     }
-                  }
 
-                  if (PLOTTYPE %in% c("gg_column", "gg_lollipop2", "gg_pie", "gg_donut")) {
-                    newSet$ordered <- if(svalue(sortCheck, index = TRUE) == 1) FALSE else c("asc", "desc")[svalue(sortCheck, TRUE) - 1]
-                  }
-
-                  if (PLOTTYPE %in% c("gg_lollipop", "gg_column2")) {
-                    # newSet$desc <- svalue(sortOrder) == "Descending"
-                  }
-
-                  if (PLOTTYPE %in% c("gg_violin", "gg_density")) {
-                    newSet$adjust <- svalue(smoothSlider)
-                  }
-
-                  if (PLOTTYPE %in% c("gg_violin", "gg_barcode", "gg_dotstrip", "gg_barcode2", "gg_barcode3")) {
-                    newSet$alpha <- 1 - svalue(transpSlider) / 100
-                  }
-
-                  if (PLOTTYPE %in% c("gg_density", "gg_ridgeline")) {
-                    if (attr(PLOTTYPES, "null.y")) {
-                      newSet$alpha <- 1 - svalue(transpSlider) / 100
-                    } else {
-                      newSet$alpha_densitygroup <- 1 - svalue(transpSlider) / 100
+                    if (grepl("^gg_", PLOTTYPE) &&
+                        (PLOTTYPE %in% c("gg_pie", "gg_donut", "gg_column", "gg_heatmap", "gg_stackedcolumn", "gg_poppyramid", "gg_spine", "gg_mosaic", "gg_divergingstackedbar", "gg_gridplot")) ||
+                        (!attr(PLOTTYPES, "null.y") && PLOTTYPE %in% c("gg_violin", "gg_barcode", "gg_boxplot", "gg_cumcurve", "gg_freqpolygon", "gg_dotstrip", "gg_density", "gg_quasirandom", "gg_lollipop2", "gg_ridgeline", "gg_barcode3"))
+                        ) {
+                        newSet$palette <- svalue(paletteCombobox)
                     }
-                  }
 
-                  if (PLOTTYPE %in% c("gg_barcode")) {
-                    newSet$gg_barSize <- svalue(barcodeSize)
-                  }
+                    if (PLOTTYPE %in% c("gg_violin", "gg_column2", "gg_lollipop", "gg_boxplot", "gg_density", "gg_cumcurve", "gg_quasirandom", "gg_lollipop2", "gg_barcode3", "gg_barcode", "gg_dotstrip") && attr(PLOTTYPES, "null.y")) {
+                        if (svalue(colourCombobox) != "" && valid_colour(svalue(colourCombobox))) {
+                            newSet$fill_colour <- svalue(colourCombobox)
+                        } else if (svalue(colourCombobox) == "") {
+                            newSet$fill_colour <- ""
+                        }
+                    }
 
-                  if (PLOTTYPE %in% c("gg_barcode2", "gg_barcode3")) {
-                    newSet$gg_width <- svalue(barcodeWidth)
-                    newSet$gg_height <- svalue(barcodeHeight)
-                  }
+                    if (PLOTTYPE %in% c("gg_column", "gg_lollipop2", "gg_pie", "gg_donut")) {
+                        newSet$ordered <- if(svalue(sortCheck, index = TRUE) == 1) FALSE else c("asc", "desc")[svalue(sortCheck, TRUE) - 1]
+                    }
 
-                  if (PLOTTYPE %in% c("gg_lollipop2", "gg_lollipop", "gg_freqpolygon", "gg_dotstrip", "gg_beeswarm")) {
-                    newSet$gg_size <- svalue(pointSize)
-                  }
+                    if (PLOTTYPE %in% c("gg_lollipop", "gg_column2")) {
+                        # newSet$desc <- svalue(sortOrder) == "Descending"
+                    }
 
-                  if (PLOTTYPE %in% c("gg_poppyramid")) {
-                    newSet$gg_bins <- svalue(pyramidBins)
-                  }
+                    if (PLOTTYPE %in% c("gg_violin", "gg_density")) {
+                        newSet$adjust <- svalue(smoothSlider)
+                    }
 
-                  if (PLOTTYPE %in% c("gg_lollipop", "gg_boxplot", "gg_cumcurve", "gg_lollipop2", "gg_freqpolygon")) {
-                    newSet$gg_lwd <- svalue(lwdSlider)
-                  }
+                    if (PLOTTYPE %in% c("gg_violin", "gg_barcode", "gg_dotstrip", "gg_barcode2", "gg_barcode3")) {
+                        newSet$alpha <- 1 - svalue(transpSlider) / 100
+                    }
 
-                  if (PLOTTYPE %in% c("gg_gridplot")) {
-                    newSet$gg_perN <- svalue(gridNPerSquare)
-                  }
+                    if (PLOTTYPE %in% c("gg_density", "gg_ridgeline")) {
+                        if (attr(PLOTTYPES, "null.y")) {
+                            newSet$alpha <- 1 - svalue(transpSlider) / 100
+                        } else {
+                            newSet$alpha_densitygroup <- 1 - svalue(transpSlider) / 100
+                        }
+                    }
 
-                  if (PLOTTYPE %in% c("gg_quasirandom")) {
-                    newSet$gg_swarmwidth <- svalue(swarmWidth)
-                    newSet$gg_method <- svalue(swarmMethod)
-                  }
+                    if (PLOTTYPE %in% c("gg_barcode")) {
+                        newSet$gg_barSize <- svalue(barcodeSize)
+                    }
 
-                  newSet$gg_theme <- available.themes[svalue(themeCombobox)]
+                    if (PLOTTYPE %in% c("gg_barcode2", "gg_barcode3")) {
+                        newSet$gg_width <- svalue(barcodeWidth)
+                        newSet$gg_height <- svalue(barcodeHeight)
+                    }
 
-                  if (!(PLOTTYPE %in% c("gg_pie", "gg_donut"))) {
-                    newSet$rotate_labels <- list()
+                    if (PLOTTYPE %in% c("gg_lollipop2", "gg_lollipop", "gg_freqpolygon", "gg_dotstrip", "gg_beeswarm")) {
+                        newSet$gg_size <- svalue(pointSize)
+                    }
 
-                    newSet$rotate_labels$x <- svalue(rotateLabelsX)
-                    newSet$rotate_labels$y <- svalue(rotateLabelsY)
-                  }
+                    if (PLOTTYPE %in% c("gg_poppyramid")) {
+                        newSet$gg_bins <- svalue(pyramidBins)
+                    }
 
-                  if (PLOTTYPE %in% c("gg_divergingstackedbar")) {
-                    newSet$gg_cutpoint <- svalue(stackedCutPoint)
-                  }
+                    if (PLOTTYPE %in% c("gg_lollipop", "gg_boxplot", "gg_cumcurve", "gg_lollipop2", "gg_freqpolygon")) {
+                        newSet$gg_lwd <- svalue(lwdSlider)
+                    }
+
+                    if (PLOTTYPE %in% c("gg_gridplot")) {
+                        newSet$gg_perN <- svalue(gridNPerSquare)
+                    }
+
+                    if (PLOTTYPE %in% c("gg_quasirandom")) {
+                        newSet$gg_swarmwidth <- svalue(swarmWidth)
+                        newSet$gg_method <- svalue(swarmMethod)
+                    }
+
+                    newSet$gg_theme <- available.themes[[svalue(themeCombobox)]]
+
+                    if (!(PLOTTYPE %in% c("gg_pie", "gg_donut"))) {
+                        newSet$rotate_labels <- list()
+
+                        newSet$rotate_labels$x <- svalue(rotateLabelsX)
+                        newSet$rotate_labels$y <- svalue(rotateLabelsY)
+                    }
+
+                    if (PLOTTYPE %in% c("gg_divergingstackedbar")) {
+                        newSet$gg_cutpoint <- svalue(stackedCutPoint)
+                    }
                 }
 
                 if (PLOTTYPE %in% c("dot", "hist")) {
-                  newSet$boxplot <- svalue(showBoxplot)
-                  newSet$mean_indicator <- svalue(showMean)
+                    newSet$boxplot <- svalue(showBoxplot)
+                    newSet$mean_indicator <- svalue(showMean)
                 }
 
                 GUI$getActiveDoc()$setSettings(newSet)
@@ -2210,43 +2328,53 @@ iNZPlotMod <- setRefClass(
             }
 
             addHandlerChanged(bgCol,
-                              handler = function(h, ...) {
-                                  if (!is.null(timer))
-                                      if (timer$started) timer$stop_timer()
-                                  timer <<- gtimer(500, function(...) {
-                                      if (nchar(svalue(bgCol)) >= 3)
-                                          updateEverything()
-                                  }, one.shot = TRUE)
-                              })
+                handler = function(h, ...) {
+                    if (!is.null(timer))
+                        if (timer$started) timer$stop_timer()
+                    timer <<- gtimer(500,
+                        function(...) {
+                            if (nchar(svalue(bgCol)) >= 3)
+                                updateEverything()
+                        },
+                        one.shot = TRUE
+                    )
+                }
+            )
 
             addHandlerChanged(cexMain,
-                              handler = function(h, ...) {
-                                  if (!is.null(timer))
-                                      if (timer$started) timer$stop_timer()
-                                  timer <<- gtimer(500, function(...) updateEverything(), one.shot = TRUE)
-                              })
+                handler = function(h, ...) {
+                    if (!is.null(timer))
+                        if (timer$started) timer$stop_timer()
+                    timer <<- gtimer(500, function(...) updateEverything(), one.shot = TRUE)
+                }
+            )
 
             if (!(PLOTTYPE %in% c("bar") || grepl("^gg_", PLOTTYPE))) {
                 addHandlerChanged(cexPt,
-                                  handler = function(h, ...) {
-                                      if (!is.null(timer))
-                                          if (timer$started)
-                                              if (timer$started) timer$stop_timer()
-                                      timer <<- gtimer(500, function(...) updateEverything(), one.shot = TRUE)
-                                  })
+                    handler = function(h, ...) {
+                        if (!is.null(timer))
+                            if (timer$started)
+                                if (timer$started) timer$stop_timer()
+                        timer <<- gtimer(500, function(...) updateEverything(), one.shot = TRUE)
+                    }
+                )
             }
 
             if (PLOTTYPE == "scatter") {
-                addHandlerChanged(sizeVar, handler = function(h, ...) {
-                    visible(sizeDesc) <- visible(resizeLbl) <- visible(sizeMethod) <-
-                        svalue(sizeVar, index = TRUE) > 1
+                addHandlerChanged(sizeVar,
+                    handler = function(h, ...) {
+                        visible(sizeDesc) <- visible(resizeLbl) <- visible(sizeMethod) <-
+                            svalue(sizeVar, index = TRUE) > 1
 
-                    updateEverything()
-                })
-                addHandlerChanged(sizeMethod, handler = function(h, ...) {
-                    svalue(sizeDesc) <- paste(sizeDescs[[svalue(sizeMethod, index = TRUE)]])
-                    updateEverything()
-                })
+                        updateEverything()
+                    }
+                )
+                addHandlerChanged(sizeMethod,
+                    handler = function(h, ...) {
+                        svalue(sizeDesc) <- paste(sizeDescs[[svalue(sizeMethod, index = TRUE)]])
+                        updateEverything()
+                    }
+                )
             }
             if (PLOTTYPE == "hex") {
                 addHandlerChanged(hexStyle, handler = function(h, ...) updateEverything())
@@ -2255,52 +2383,62 @@ iNZPlotMod <- setRefClass(
             if (PLOTTYPE %in% c("scatter", "hex", "dot", "bar", "hist")) {
                 if (bars | hist) {
                     addHandlerChanged(barCol,
-                                      handler = function(h, ...) {
-                                          if (!is.null(timer))
-                                              if (timer$started) timer$stop_timer()
-                                          timer <<- gtimer(500, function(...) {
-                                              if (nchar(svalue(barCol)) >= 3)
-                                                  updateEverything()
-                                          }, one.shot = TRUE)
-                                      })
+                        handler = function(h, ...) {
+                            if (!is.null(timer))
+                                if (timer$started) timer$stop_timer()
+                            timer <<- gtimer(500,
+                                function(...) {
+                                    if (nchar(svalue(barCol)) >= 3)
+                                        updateEverything()
+                                },
+                                one.shot = TRUE
+                            )
+                        }
+                    )
                 } else {
                     addHandlerChanged(ptCol,
-                                      handler = function(h, ...) {
-                                          if (!is.null(timer))
-                                              if (timer$started) timer$stop_timer()
-                                          timer <<- gtimer(500, function(...) {
-                                              if (nchar(svalue(ptCol)) >= 3)
-                                                  updateEverything()
-                                          }, one.shot = TRUE)
-                                      })
+                        handler = function(h, ...) {
+                            if (!is.null(timer))
+                                if (timer$started) timer$stop_timer()
+                            timer <<- gtimer(500,
+                                function(...) {
+                                    if (nchar(svalue(ptCol)) >= 3)
+                                        updateEverything()
+                                },
+                                one.shot = TRUE
+                            )
+                        }
+                    )
                 }
                 if (!hist & (!bars | is.null(curSet$y))) {
-                    addHandlerChanged(colVar, handler = function(h, ...) {
-                        EMPH.LEVEL <<- 0
-                        if (PLOTTYPE %in% c("dot", "scatter")) symbolMatch()
-                        if (svalue(h$obj, index = TRUE) == 1) {
-                            svalue(colLabel) <- ifelse(bars, "Bar colour : ", "Point colour :")
-                            visible(useRank) <- visible(palAdvanced) <- visible(palCont) <-
-                                visible(palCat) <- FALSE
-                            if (bars) visible(barCol) <- TRUE
-                            else visible(ptCol) <- TRUE
-                        } else {
-                            svalue(colLabel) <- "Palette :"
-                            if (bars) visible(barCol) <- FALSE
-                            else visible(ptCol) <- FALSE
-                            if (is_num(GUI$getActiveData()[[svalue(h$obj)]]) &
-                                PLOTTYPE != "hex") {
-                                visible(palCat) <- FALSE
-                                visible(useRank) <- visible(palCont) <- TRUE
+                    addHandlerChanged(colVar,
+                        handler = function(h, ...) {
+                            EMPH.LEVEL <<- 0
+                            if (PLOTTYPE %in% c("dot", "scatter")) symbolMatch()
+                            if (svalue(h$obj, index = TRUE) == 1) {
+                                svalue(colLabel) <- ifelse(bars, "Bar colour : ", "Point colour :")
+                                visible(useRank) <- visible(palAdvanced) <- visible(palCont) <-
+                                    visible(palCat) <- FALSE
+                                if (bars) visible(barCol) <- TRUE
+                                else visible(ptCol) <- TRUE
                             } else {
-                                visible(useRank) <- visible(palCont) <- FALSE
-                                visible(palCat) <- TRUE
+                                svalue(colLabel) <- "Palette :"
+                                if (bars) visible(barCol) <- FALSE
+                                else visible(ptCol) <- FALSE
+                                if (is_num(GUI$getActiveData()[[svalue(h$obj)]]) &
+                                    PLOTTYPE != "hex") {
+                                    visible(palCat) <- FALSE
+                                    visible(useRank) <- visible(palCont) <- TRUE
+                                } else {
+                                    visible(useRank) <- visible(palCont) <- FALSE
+                                    visible(palCat) <- TRUE
+                                }
+                                visible(palAdvanced) <- TRUE
                             }
-                            visible(palAdvanced) <- TRUE
+                            visible(revPal) <- visible(palCat) || visible(palCont)
+                            updateEverything()
                         }
-                        visible(revPal) <- visible(palCat) || visible(palCont)
-                        updateEverything()
-                    })
+                    )
                     addHandlerChanged(useRank, handler = function(h, ...) updateEverything())
                 }
                 if (!hist) {
@@ -2311,34 +2449,39 @@ iNZPlotMod <- setRefClass(
             }
             if (PLOTTYPE %in% c("scatter", "dot")) {
                 addHandlerChanged(transpSlider,
-                                  handler = function(h, ...) {
-                                      enabled(fillSym) <- svalue(transpSlider) == 0
-                                      if (!is.null(timer))
-                                          if (timer$started) timer$stop_timer()
-                                      timer <<- gtimer(500, function(...) updateEverything(), one.shot = TRUE)
-                                  })
+                    handler = function(h, ...) {
+                        enabled(fillSym) <- svalue(transpSlider) == 0
+                        if (!is.null(timer))
+                            if (timer$started) timer$stop_timer()
+                        timer <<- gtimer(500, function(...) updateEverything(), one.shot = TRUE)
+                    }
+                )
             }
 
             if (PLOTTYPE %in% c("scatter", "dot")) {
-                addHandlerChanged(pchMatch, handler = function(h, ...) {
-                    enabled(symVar) <- enabled(symPch) <- !svalue(pchMatch)
-                    updateEverything()
-                })
-                addHandlerChanged(symPch, handler = function(h, ...) {
-                    if (svalue(symPch, index = TRUE) %in% c(3:5) && nrow(GUI$getActiveData()) > 2000) {
-                        ## TRANSPARENCY VERY SLOW!
-                        if (svalue(transpSlider) > 0) {
-                            gmessage("Transparency reset to zero.\n\nWARNING: drawing can be VERY slow if using transparent symbols that are NOT circles or squares.")
-                            blockHandlers(transpSlider)
-                            svalue(transpSlider) <- 0
-                            unblockHandlers(transpSlider)
-                        }
-                        visible(transpWarning) <- TRUE
-                    } else {
-                        visible(transpWarning) <- FALSE
+                addHandlerChanged(pchMatch,
+                    handler = function(h, ...) {
+                        enabled(symVar) <- enabled(symPch) <- !svalue(pchMatch)
+                        updateEverything()
                     }
-                    updateEverything()
-                })
+                )
+                addHandlerChanged(symPch,
+                    handler = function(h, ...) {
+                        if (svalue(symPch, index = TRUE) %in% c(3:5) && nrow(GUI$getActiveData()) > 2000) {
+                            ## TRANSPARENCY VERY SLOW!
+                            if (svalue(transpSlider) > 0) {
+                                gmessage("Transparency reset to zero.\n\nWARNING: drawing can be VERY slow if using transparent symbols that are NOT circles or squares.")
+                                blockHandlers(transpSlider)
+                                svalue(transpSlider) <- 0
+                                unblockHandlers(transpSlider)
+                            }
+                            visible(transpWarning) <- TRUE
+                        } else {
+                            visible(transpWarning) <- FALSE
+                        }
+                        updateEverything()
+                    }
+                )
                 addHandlerChanged(symVar, handler = function(h, ...) updateEverything())
                 addHandlerChanged(symLwd, handler = function(h, ...) updateEverything())
                 addHandlerChanged(fillSym, handler = function(h, ...) updateEverything())
@@ -2351,6 +2494,7 @@ iNZPlotMod <- setRefClass(
             ii <- 3
 
             PLOTTYPE <- GUI$plotType
+            .data <- GUI$getActiveData()
 
             ## PLOT APPEARANCE
             tbl[ii,  1:6, anchor = c(-1,-1), expand = TRUE] <- sectionTitle("Trend Curves")
@@ -2360,8 +2504,10 @@ iNZPlotMod <- setRefClass(
             tbl[ii, 6, anchor = c(-1, 0), expand = TRUE] <- glabel("Line type")
             ii <- ii + 1
 
-            lineColours <- c("red", "black", "blue", "green4", "magenta",
-                             "yellow", "pink", "grey", "orange")
+            lineColours <- c(
+                "red", "black", "blue", "green4", "magenta",
+                "yellow", "pink", "grey", "orange"
+            )
             colBoxWidth <- 100
 
             trendCurves <- c("linear", "quadratic", "cubic")
@@ -2369,7 +2515,8 @@ iNZPlotMod <- setRefClass(
             trendLinCol <- gcombobox(
                 c(if (!curSet$col.trend$linear %in% lineColours) curSet$col.trend$linear, lineColours),
                 editable = TRUE,
-                selected = which(lineColours == curSet$col.trend$linear))
+                selected = which(lineColours == curSet$col.trend$linear)
+            )
             tbl[ii, 1:3, anchor = c(-1, 0), expand = TRUE] <- trendLin
             tbl[ii, 4:5] <- trendLinCol
             trendLinCol$widget$setSizeRequest(colBoxWidth, -1)
@@ -2381,7 +2528,8 @@ iNZPlotMod <- setRefClass(
             trendQuadCol <- gcombobox(
                 c(if (!curSet$col.trend$quadratic %in% lineColours) curSet$col.trend$quadratic, lineColours),
                 editable = TRUE,
-                selected = which(lineColours == curSet$col.trend$quadratic))
+                selected = which(lineColours == curSet$col.trend$quadratic)
+            )
             tbl[ii, 1:3, anchor = c(-1, 0), expand = TRUE] <- trendQuad
             tbl[ii, 4:5] <- trendQuadCol
             trendQuadCol$widget$setSizeRequest(colBoxWidth, -1)
@@ -2393,7 +2541,8 @@ iNZPlotMod <- setRefClass(
             trendCubCol <- gcombobox(
                 c(if (!curSet$col.trend$cubic %in% lineColours) curSet$col.trend$cubic, lineColours),
                 editable = TRUE,
-                selected = which(lineColours == curSet$col.trend$cubic))
+                selected = which(lineColours == curSet$col.trend$cubic)
+            )
             tbl[ii, 1:3, anchor = c(-1, 0), expand = TRUE] <- trendCub
             tbl[ii, 4:5] <- trendCubCol
             trendCubCol$widget$setSizeRequest(colBoxWidth, -1)
@@ -2407,12 +2556,14 @@ iNZPlotMod <- setRefClass(
             ii <- ii + 1
 
             smooth <- gcheckbox("Add smoother",
-                                checked = curSet$smooth != 0 | !is.null(curSet$quant.smooth))
+                checked = curSet$smooth != 0 | !is.null(curSet$quant.smooth)
+            )
             smoothCol <- gcombobox(lineColours, editable = TRUE,
-                                   selected =
-                                       if (curSet$col.smooth %in% lineColours)
-                                           which(lineColours == curSet$col.smooth)
-                                       else 1)
+                selected =
+                    if (curSet$col.smooth %in% lineColours)
+                        which(lineColours == curSet$col.smooth)
+                    else 1
+            )
             tbl[ii, 1:3, anchor = c(-1, 0), expand = TRUE] <- smooth
             tbl[ii, 4:5] <- smoothCol
             smoothCol$widget$setSizeRequest(colBoxWidth, -1)
@@ -2423,7 +2574,8 @@ iNZPlotMod <- setRefClass(
             tbl[ii, 1:3, anchor = c(-1, 0), expand = TRUE] <- qsmooth
 
             smoothF <- gslider(from = 0.1, to = 1, by = 0.01,
-                               value = ifelse(curSet$smooth == 0, 0.7, curSet$smooth))
+                value = ifelse(curSet$smooth == 0, 0.7, curSet$smooth)
+            )
             tbl[ii, 4:6] <- smoothF
             ii <- ii + 1
 
@@ -2437,18 +2589,21 @@ iNZPlotMod <- setRefClass(
 
                 joinPoints <- gcheckbox("Join points by lines", checked = curSet$join)
                 joinPointsCol <- gcombobox(lineColours, editable = TRUE,
-                                           selected =
-                                               if (curSet$col.line %in% lineColours)
-                                                   which(lineColours == curSet$col.line)
-                                               else 1)
+                    selected =
+                        if (curSet$col.line %in% lineColours)
+                            which(lineColours == curSet$col.line)
+                        else 1
+                )
                 tbl[ii, 1:4, anchor = c(-1, 0), expand = TRUE] <- joinPoints
                 tbl[ii, 5:6] <- joinPointsCol
                 joinPointsCol$widget$setSizeRequest(colBoxWidth, -1)
                 ii <- ii + 1
 
-                if (is_cat(curSet$colby)) {
-                    joinPointsBy <- gcheckbox(paste("For each level of", curSet$varnames$colby),
-                                              selected = curSet$lines.by)
+                if (!is.null(curSet$colby) && is_cat(.data[[curSet$colby]])) {
+                    joinPointsBy <- gcheckbox(
+                        paste("For each level of", curSet$varnames$colby),
+                        selected = curSet$lines.by
+                    )
                     tbl[ii, 1:6, anchor = c(-1, 0), expand = TRUE] <- joinPointsBy
                     ii <- ii + 1
                 }
@@ -2459,18 +2614,21 @@ iNZPlotMod <- setRefClass(
             ii <- ii + 1
 
             ## For each level of COLBY
-            if (is_cat(curSet$colby)) {
+            if (!is.null(curSet$colby) && is_cat(.data[[curSet$colby]])) {
                 trendBy <- gcheckbox(paste("For each level of", curSet$varnames$colby),
-                                     checked = curSet$trend.by)
+                    checked = curSet$trend.by
+                )
                 trendParallel <- gcheckbox("Parallel trend lines (common slope)",
-                                           checked = curSet$trend.parallel)
+                    checked = curSet$trend.parallel
+                )
                 tbl[ii, 1:6] <- trendBy
                 ii <- ii + 1
                 tbl[ii, 1:6] <- trendParallel
                 ii <- ii + 1
             }
             activateOptions <- function() {
-                if (is_cat(curSet$colby)) {
+                if (is.null(curSet$colby)) return()
+                if (is_cat(.data[[curSet$colby]])) {
                     if (PLOTTYPE == "scatter") {
                         enabled(joinPointsBy) <- svalue(joinPoints)
                         enabled(joinPointsCol) <- !svalue(joinPointsBy)
@@ -2506,14 +2664,17 @@ iNZPlotMod <- setRefClass(
                 activateOptions()
 
                 ## Things that don't need checking:
-                newSet <- list(trend = trendCurves[c(svalue(trendLin),
-                                                     svalue(trendQuad),
-                                                     svalue(trendCub))],
-                               LOE = svalue(loe),
-                               lty.trend =
-                                   list(linear = svalue(trendLinLTY),
-                                        quadratic = svalue(trendQuadLTY),
-                                        cubic = svalue(trendCubLTY)))
+                newSet <- list(
+                    trend = trendCurves[
+                        c(svalue(trendLin), svalue(trendQuad), svalue(trendCub))
+                    ],
+                    LOE = svalue(loe),
+                    lty.trend = list(
+                        linear = svalue(trendLinLTY),
+                        quadratic = svalue(trendQuadLTY),
+                        cubic = svalue(trendCubLTY)
+                    )
+                )
                 ## if no trend specified, set to NULL
                 if (length(newSet$trend) == 0) {
                     newSet <- modifyList(newSet, list(trend = NULL), keep.null = TRUE)
@@ -2532,7 +2693,8 @@ iNZPlotMod <- setRefClass(
                 qsmth <- if (svalue(qsmooth) & svalue(smooth)) "default" else NULL
                 newSet <- c(newSet, list(quant.smooth = qsmth))
                 newSet$smooth <- ifelse(svalue(smooth) & is.null(qsmth),
-                                        svalue(smoothF), 0)
+                    svalue(smoothF), 0
+                )
 
                 newSet$col.smooth <-
                     if (!inherits(try(col2rgb(svalue(smoothCol)), silent = TRUE), "try-error"))
@@ -2546,7 +2708,7 @@ iNZPlotMod <- setRefClass(
                 }
 
                 newSet$lines.by <- FALSE
-                if (is_cat(curSet$colby)) {
+                if (!is.null(curSet$colby) && is_cat(.data[[curSet$colby]])) {
                     newSet$trend.by <- svalue(trendBy)
                     newSet$trend.parallel <- svalue(trendParallel)
                     if (PLOTTYPE == "scatter")
@@ -2568,75 +2730,100 @@ iNZPlotMod <- setRefClass(
             addHandlerChanged(trendCubLTY, handler = function(h, ...) updateEverything())
 
             addHandlerChanged(trendLinCol,
-                              handler = function(h, ...) {
-                                  if (!is.null(timer))
-                                      if (timer$started) timer$stop_timer()
-                                  timer <<- gtimer(500, function(...) {
-                                      if (nchar(svalue(trendLinCol)) >= 3)
-                                          updateEverything()
-                                  }, one.shot = TRUE)
-                              })
+                handler = function(h, ...) {
+                    if (!is.null(timer))
+                        if (timer$started) timer$stop_timer()
+                    timer <<- gtimer(500,
+                        function(...) {
+                            if (nchar(svalue(trendLinCol)) >= 3)
+                                updateEverything()
+                        },
+                        one.shot = TRUE
+                    )
+                }
+            )
 
             addHandlerChanged(trendQuadCol,
-                              handler = function(h, ...) {
-                                  if (!is.null(timer))
-                                      if (timer$started) timer$stop_timer()
-                                  timer <<- gtimer(500, function(...) {
-                                      if (nchar(svalue(trendQuadCol)) >= 3)
-                                          updateEverything()
-                                  }, one.shot = TRUE)
-                              })
+                handler = function(h, ...) {
+                    if (!is.null(timer))
+                        if (timer$started) timer$stop_timer()
+                    timer <<- gtimer(500,
+                        function(...) {
+                            if (nchar(svalue(trendQuadCol)) >= 3)
+                                updateEverything()
+                        },
+                        one.shot = TRUE
+                    )
+                }
+            )
 
             addHandlerChanged(trendCubCol,
-                              handler = function(h, ...) {
-                                  if (!is.null(timer))
-                                      if (timer$started) timer$stop_timer()
-                                  timer <<- gtimer(500, function(...) {
-                                      if (nchar(svalue(trendCubCol)) >= 3)
-                                          updateEverything()
-                                  }, one.shot = TRUE)
-                              })
+                handler = function(h, ...) {
+                    if (!is.null(timer))
+                        if (timer$started) timer$stop_timer()
+                    timer <<- gtimer(500,
+                        function(...) {
+                            if (nchar(svalue(trendCubCol)) >= 3)
+                                updateEverything()
+                        },
+                        one.shot = TRUE
+                    )
+                }
+            )
 
-            addHandlerChanged(smooth, function(h, ...) {
-                visible(qsmooth) <- visible(smoothF) <- svalue(smooth)
-                enabled(smoothF) <- !svalue(qsmooth)
-                updateEverything()
-            })
-            addHandlerChanged(qsmooth, function(h, ...) {
-                enabled(smoothF) <- !svalue(qsmooth)
-                updateEverything()
-            })
+            addHandlerChanged(smooth,
+                function(h, ...) {
+                    visible(qsmooth) <- visible(smoothF) <- svalue(smooth)
+                    enabled(smoothF) <- !svalue(qsmooth)
+                    updateEverything()
+                }
+            )
+            addHandlerChanged(qsmooth,
+                function(h, ...) {
+                    enabled(smoothF) <- !svalue(qsmooth)
+                    updateEverything()
+                }
+            )
 
             addHandlerChanged(smoothF,
-                              handler = function(h, ...) {
-                                  if (!is.null(timer))
-                                      if (timer$started) timer$stop_timer()
-                                  timer <<- gtimer(500, function(...) updateEverything(), one.shot = TRUE)
-                              })
+                handler = function(h, ...) {
+                    if (!is.null(timer))
+                        if (timer$started) timer$stop_timer()
+                    timer <<- gtimer(500, function(...) updateEverything(), one.shot = TRUE)
+                }
+            )
 
             addHandlerChanged(smoothCol,
-                              handler = function(h, ...) {
-                                  if (!is.null(timer))
-                                      if (timer$started) timer$stop_timer()
-                                  timer <<- gtimer(500, function(...) {
-                                      if (nchar(svalue(smoothCol)) >= 3)
-                                          updateEverything()
-                                  }, one.shot = TRUE)
-                              })
+                handler = function(h, ...) {
+                    if (!is.null(timer))
+                        if (timer$started) timer$stop_timer()
+                    timer <<- gtimer(500,
+                        function(...) {
+                            if (nchar(svalue(smoothCol)) >= 3)
+                                updateEverything()
+                        },
+                        one.shot = TRUE
+                    )
+                }
+            )
 
             if (PLOTTYPE == "scatter") {
                 addHandlerChanged(joinPoints, function(h, ...) updateEverything())
                 addHandlerChanged(joinPointsCol,
-                                  handler = function(h, ...) {
-                                      if (!is.null(timer))
-                                          if (timer$started) timer$stop_timer()
-                                      timer <<- gtimer(500, function(...) {
-                                          if (nchar(svalue(joinPointsCol)) >= 3)
-                                              updateEverything()
-                                      }, one.shot = TRUE)
-                                  })
+                    handler = function(h, ...) {
+                        if (!is.null(timer))
+                            if (timer$started) timer$stop_timer()
+                        timer <<- gtimer(500,
+                            function(...) {
+                                if (nchar(svalue(joinPointsCol)) >= 3)
+                                    updateEverything()
+                            },
+                            one.shot = TRUE
+                        )
+                    }
+                )
             }
-            if (is_cat(curSet$colby)) {
+            if (!is.null(curSet$colby) && is_cat(.data[[curSet$colby]])) {
                 addHandlerChanged(trendBy, function(h, ...) updateEverything())
                 addHandlerChanged(trendParallel, function(h, ...) updateEverything())
                 if (PLOTTYPE == "scatter")
@@ -2656,8 +2843,10 @@ iNZPlotMod <- setRefClass(
             PLOTTYPE <- GUI$plotType
             YAX <- TRUE
             YAXlbl <- FALSE
+            xvar <- GUI$getActiveData()[[curSet$x]]
+            yvar <- if (!is.null(curSet$y)) GUI$getActiveData()[[curSet$y]] else NULL
             if (PLOTTYPE %in% c("dot", "hist", "bar")) {
-              YAXlbl <- YAX <- PLOTTYPE %in% c("dot", "hist") & !is.null(curSet$y)
+                YAXlbl <- YAX <- PLOTTYPE %in% c("dot", "hist") & !is.null(yvar)
             }
 
             ## AXIS LABELS
@@ -2677,18 +2866,19 @@ iNZPlotMod <- setRefClass(
             ii <- ii + 1
 
             if (YAX) {
-              lbl <- glabel("y-axis :")
-              labYlab <- gedit(ifelse(is.null(curSet$ylab), "", curSet$ylab))
-              tbl[ii, 1:2, anchor = c(1, 0), expand = TRUE] <- lbl
-              tbl[ii, 3:6, expand = TRUE] <- labYlab
-              ii <- ii + 1
-
-              if (YAXlbl) {
-                intLabs <- gcheckbox("Display group labels inside graph",
-                                     checked = curSet$internal.labels)
-                tbl[ii, 3:6, anchor = c(-1, -1), expand= TRUE] <- intLabs
+                lbl <- glabel("y-axis :")
+                labYlab <- gedit(ifelse(is.null(curSet$ylab), "", curSet$ylab))
+                tbl[ii, 1:2, anchor = c(1, 0), expand = TRUE] <- lbl
+                tbl[ii, 3:6, expand = TRUE] <- labYlab
                 ii <- ii + 1
-              }
+
+                if (YAXlbl) {
+                    intLabs <- gcheckbox("Display group labels inside graph",
+                        checked = curSet$internal.labels
+                    )
+                    tbl[ii, 3:6, anchor = c(-1, -1), expand= TRUE] <- intLabs
+                    ii <- ii + 1
+                }
             }
 
             lbl <- glabel("TAB or ENTER/RETURN to apply changes")
@@ -2754,7 +2944,7 @@ iNZPlotMod <- setRefClass(
                 tbl[ii, 3:6, expand = TRUE] <- ycounts
 
                 ii <- ii + 1
-                if (length(levels(curSet$x)) > 2) {
+                if (length(levels(xvar)) > 2) {
                     ## Number of bars
                     tbl[ii,  1:2, anchor = c(-1,-1), expand = TRUE] <- sectionTitle("Number of Bars")
                     ii <- ii + 1
@@ -2762,14 +2952,14 @@ iNZPlotMod <- setRefClass(
                     zoom <- if (!is.null(curSet$zoombars)) curSet$zoombars else NULL
 
                     lbl <- glabel("Number of bars: ")
-                    NBARS <- gslider(2, min(30, length(levels(curSet$x))),
-                                     by = 1, value = min(30, length(levels(curSet$x))))
+                    NBARS <- gslider(2, min(30, length(levels(xvar))),
+                                     by = 1, value = min(30, length(levels(xvar))))
                     tbl[ii, 1:2, expand = TRUE, fill = TRUE, anchor = c(-1, 0)] <- lbl
                     tbl[ii, 3:6, expand = TRUE] <- NBARS
                     ii <- ii + 1
 
                     lbl <- glabel("Starting point: ")
-                    START <- gslider(levels(curSet$x)[1:(length(levels(curSet$x)) - 1)])
+                    START <- gslider(levels(xvar)[1:(length(levels(xvar)) - 1)])
                     tbl[ii, 1:2, expand = TRUE, fill = TRUE, anchor = c(-1, 0)] <- lbl
                     tbl[ii, 3:6, expand = TRUE] <- START
                     ii <- ii + 1
@@ -2782,43 +2972,48 @@ iNZPlotMod <- setRefClass(
                     ii <- ii + 1
                     resetbtn <- gbutton("Reset")
                     tbl[ii, 5:6] <- resetbtn
-                    addHandlerClicked(resetbtn, function(h, ...) {
-                        blockHandlers(START)
-                        svalue(START, index = TRUE) <- 1
-                        unblockHandlers(START)
-                        blockHandlers(NBARS)
-                        svalue(NBARS) <- min(30, length(levels(curSet$x)))
-                        unblockHandlers(NBARS)
+                    addHandlerClicked(resetbtn,
+                        function(h, ...) {
+                            blockHandlers(START)
+                            svalue(START, index = TRUE) <- 1
+                            unblockHandlers(START)
+                            blockHandlers(NBARS)
+                            svalue(NBARS) <- min(30, length(levels(xvar)))
+                            unblockHandlers(NBARS)
 
-                        GUI$getActiveDoc()$setSettings(
-                           list(zoombars = NULL)
-                           )
-                        updateSettings()
-                    })
+                            GUI$getActiveDoc()$setSettings(
+                                list(zoombars = NULL)
+                            )
+                            updateSettings()
+                        }
+                    )
                     ii <- ii + 1
                 }
             } else if (grepl("^gg_", PLOTTYPE)) {
-              tbl[ii, 1:2, anchor = c(-1,-1), expand = TRUE] <- sectionTitle("Caption")
-              ii <- ii + 1
-              tbl[ii, 1:2, expand = TRUE, fill = TRUE, anchor = c(1, 0)] <- glabel("Caption/Source:")
-              captionText <- gedit(
-                text = if (!is.null(curSet$caption)) curSet$caption else "",
-                handler = function(h, ...) updateEverything()
-              )
-              tbl[ii, 3:6, expand = TRUE] <- captionText
-              ii <- ii + 1
+                tbl[ii, 1:2, anchor = c(-1,-1), expand = TRUE] <- sectionTitle("Caption")
+                ii <- ii + 1
+                tbl[ii, 1:2, expand = TRUE, fill = TRUE, anchor = c(1, 0)] <- glabel("Caption/Source:")
+                captionText <- gedit(
+                    text = if (!is.null(curSet$caption)) curSet$caption else "",
+                    handler = function(h, ...) updateEverything()
+                )
+                tbl[ii, 3:6, expand = TRUE] <- captionText
+                ii <- ii + 1
             } else {
                 ## Axis Limits
                 tbl[ii,  1:2, anchor = c(-1,-1), expand = TRUE] <- sectionTitle("Axis Limits")
                 ii <- ii + 1
 
+                ## Need some new way of handling this to "remember" the
+                ## default values and only pass x/y lims when changed
+                # axis.limits.default <- list(x = NULL, y = NULL)
                 if (PLOTTYPE %in% c("scatter", "hex", "grid")) {
-                    isNA <- is.na(curSet$x) | is.na(curSet$y)
-                    xrange <- range(curSet$y[!isNA])
-                    yrange <- range(curSet$x[!isNA])
+                    isNA <- is.na(xvar) | is.na(yvar)
+                    xrange <- range(yvar[!isNA])
+                    yrange <- range(xvar[!isNA])
                 } else {
-                    isNA <- is.na(curSet$x)
-                    xrange <- range(curSet$x[!isNA])
+                    isNA <- is.na(xvar)
+                    xrange <- range(xvar[!isNA])
                 }
 
                 xlim <- curSet$xlim
@@ -2901,21 +3096,31 @@ iNZPlotMod <- setRefClass(
                     transform = list()
                 )
 
-                if (YAX) newSet$ylab <- if (svalue(labYlab) == "") NULL else svalue(labYlab)
+                xvar <- GUI$getActiveData()[[curSet$x]]
+                yvar <- if (!is.null(curSet$y)) GUI$getActiveData()[[curSet$y]] else NULL
+
+                if (YAX)
+                    newSet["ylab"] <-
+                        if (svalue(labYlab) == "") list(NULL)
+                        else list(svalue(labYlab))
                 if (YAXlbl) newSet$internal.labels <- svalue(intLabs)
 
                 if (PLOTTYPE == "scatter") {
-                    newSet$jitter <- paste0(ifelse(svalue(xJit), "x", ""),
-                                            ifelse(svalue(yJit), "y", ""))
-                    newSet$rugs <- paste0(ifelse(svalue(xRug), "x", ""),
-                                            ifelse(svalue(yRug), "y", ""))
+                    newSet$jitter <- paste0(
+                        ifelse(svalue(xJit), "x", ""),
+                        ifelse(svalue(yJit), "y", "")
+                    )
+                    newSet$rugs <- paste0(
+                        ifelse(svalue(xRug), "x", ""),
+                        ifelse(svalue(yRug), "y", "")
+                    )
                 }
 
                 if (PLOTTYPE == "bar") {
                     newSet$bar.counts <- svalue(ycounts, index = TRUE) == 2
-                    if (length(levels(curSet$x)) > 2) {
+                    if (length(levels(xvar)) > 2) {
                         newSet$zoombars <-
-                            if (svalue(NBARS) == length(levels(curSet$x)) & svalue(START, index = TRUE) == 1)
+                            if (svalue(NBARS) == length(levels(xvar)) & svalue(START, index = TRUE) == 1)
                                 NULL
                             else
                                 c(svalue(START, index = TRUE), svalue(NBARS))
@@ -2944,6 +3149,7 @@ iNZPlotMod <- setRefClass(
                     }
 
                     # need to explicitely add NULL to the list
+                    newSet$transform
                     newSet$transform["x"] <- list(
                         if (svalue(xLog)) "log10" else NULL
                     )
@@ -2970,10 +3176,15 @@ iNZPlotMod <- setRefClass(
                     }
 
                     visible(errlbl) <- err
-                    newSet$xlim <- c(xl, xu)
+                    newSet["xlim"] <-
+                        if (any(c(xl, xu) != xrange)) list(c(xl, xu))
+                        else list(NULL)
 
-                    if (PLOTTYPE %in% c("scatter", "hex", "grid"))
-                        newSet$ylim <- c(yl, yu)
+                    if (PLOTTYPE %in% c("scatter", "hex", "grid")) {
+                        newSet["ylim"] <-
+                            if (any(c(yl, yu) != yrange)) list(c(yl, yu))
+                            else list(NULL)
+                    }
 
                     # newSet$xlim <- NULL
                     # newSet$ylim <- NULL
@@ -3011,7 +3222,7 @@ iNZPlotMod <- setRefClass(
 
             if (PLOTTYPE == "bar") {
                 addHandlerChanged(ycounts, function(h, ...) updateEverything())
-                if (length(levels(curSet$x)) > 2) {
+                if (length(levels(xvar)) > 2) {
                     addHandlerChanged(NBARS, function(h, ...) updateEverything())
                     addHandlerChanged(START, function(h, ...) updateEverything())
                 }
@@ -3020,37 +3231,41 @@ iNZPlotMod <- setRefClass(
             } else {
                 addHandlerKeystroke(xlower, updT)
                 addHandlerKeystroke(xupper, updT)
-                addHandlerChanged(xLog, function(h, ...) {
-                    # log/exp axis limits
-                    blockHandlers(xlower)
-                    blockHandlers(xupper)
-                    svalue(xlower) <-
-                        if (svalue(xLog)) signif(log10(as.numeric(svalue(xlower))), 5)
-                        else signif(10^(as.numeric(svalue(xlower))), 5)
-                    svalue(xupper) <-
-                        if (svalue(xLog)) signif(log10(as.numeric(svalue(xupper))), 5)
-                        else signif(10^(as.numeric(svalue(xupper))), 5)
-                    unblockHandlers(xlower)
-                    unblockHandlers(xupper)
-                    updateEverything()
-                })
+                addHandlerChanged(xLog,
+                    function(h, ...) {
+                        # log/exp axis limits
+                        # blockHandlers(xlower)
+                        # blockHandlers(xupper)
+                        # svalue(xlower) <-
+                        #     if (svalue(xLog)) signif(log10(as.numeric(svalue(xlower))), 5)
+                        #     else signif(10^(as.numeric(svalue(xlower))), 5)
+                        # svalue(xupper) <-
+                        #     if (svalue(xLog)) signif(log10(as.numeric(svalue(xupper))), 5)
+                        #     else signif(10^(as.numeric(svalue(xupper))), 5)
+                        # unblockHandlers(xlower)
+                        # unblockHandlers(xupper)
+                        updateEverything()
+                    }
+                )
                 if (PLOTTYPE %in% c("scatter", "hex", "grid")) {
                     addHandlerKeystroke(ylower, updT)
                     addHandlerKeystroke(yupper, updT)
-                    addHandlerChanged(yLog, function(h, ...) {
-                        # log/exp axis limits
-                        blockHandlers(ylower)
-                        blockHandlers(yupper)
-                        svalue(ylower) <-
-                            if (svalue(yLog)) signif(log10(as.numeric(svalue(ylower))), 5)
-                            else signif(10^(as.numeric(svalue(ylower))), 5)
-                        svalue(yupper) <-
-                            if (svalue(yLog)) signif(log10(as.numeric(svalue(yupper))), 5)
-                            else signif(10^(as.numeric(svalue(yupper))), 5)
-                        unblockHandlers(ylower)
-                        unblockHandlers(yupper)
-                        updateEverything()
-                    })
+                    addHandlerChanged(yLog,
+                        function(h, ...) {
+                            # log/exp axis limits
+                            # blockHandlers(ylower)
+                            # blockHandlers(yupper)
+                            # svalue(ylower) <-
+                            #     if (svalue(yLog)) signif(log10(as.numeric(svalue(ylower))), 5)
+                            #     else signif(10^(as.numeric(svalue(ylower))), 5)
+                            # svalue(yupper) <-
+                            #     if (svalue(yLog)) signif(log10(as.numeric(svalue(yupper))), 5)
+                            #     else signif(10^(as.numeric(svalue(yupper))), 5)
+                            # unblockHandlers(ylower)
+                            # unblockHandlers(yupper)
+                            updateEverything()
+                        }
+                    )
                 }
             }
 

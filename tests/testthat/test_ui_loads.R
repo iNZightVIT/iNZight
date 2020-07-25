@@ -1,6 +1,7 @@
 context("The user interface loads")
 
 ui <- NULL
+on.exit(gWidgets2::dispose(ui$win))
 
 test_that("GUI is loaded and initialized without problems", {
     ## load (and then close) the ui object
@@ -57,3 +58,16 @@ test_that("Variable list can be searched", {
         names(gapminder)[grepl("pop", names(gapminder), ignore.case = TRUE)]
     )
 })
+
+
+
+####### ICONS
+if (FALSE) {
+    all_icons <- gWidgets2:::getStockIcons()
+    w <- gwindow()
+    g <- ggroup(container = w, use.scrollwindow = "y")
+    t <- glayout(container = g)
+    for (i in seq_along(all_icons)) {
+        t[(i - 1) %/% 10 + 1, (i - 1) %% 10 + 1] <- gbutton(text = gsub("gtk-", "", all_icons[[i]]))
+    }
+}

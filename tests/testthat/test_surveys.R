@@ -7,10 +7,10 @@ apijk <- iNZightTools::smart_read("apiclus2-jk1.csv")
 
 test_dir <- getwd()
 
-# ui$close()
+# ui$close(); load_all()
 ui <- iNZGUI$new()
 ui$initializeGui(apiclus2)
-on.exit(try(ui$close(), TRUE))
+on.exit(try(gWidgets2::dispose(ui$win), TRUE))
 
 test_that("Survey design window defaults are empty", {
     expect_silent(swin <- iNZSurveyDesign$new(ui))
@@ -91,7 +91,6 @@ suppressWarnings({
 # ui$close()
 ui <- iNZGUI$new()
 ui$initializeGui(cas2)
-on.exit(gWidgets2::dispose(ui$win))
 
 test_that("Frequency column specification is passed to settings", {
     expect_silent(swin <- iNZSurveyDesign$new(ui, type = "frequency"))
@@ -102,7 +101,7 @@ test_that("Frequency column specification is passed to settings", {
 
     expect_silent(swin$createBtn$invoke_change_handler())
     expect_equal(
-        ui$iNZDocuments[[ui$activeDoc]]$getSettings()$freq,
+        as.character(ui$iNZDocuments[[ui$activeDoc]]$getSettings()$freq),
         "frequency"
     )
 })
@@ -531,5 +530,77 @@ test_that("New variables show up in calibration list", {
     expect_silent(swin <- iNZSurveyPostStrat$new(ui, .use_ui = FALSE))
     expect_true("REGION.race" %in% swin$PSvar$get_items())
     swin$cancelBtn$invoke_change_handler()
+
+})
+
+# data(api, package = "survey")
+
+# load_all()
+ui$close()
+ui <- iNZGUI$new()
+ui$initializeGui(apistrat)
+
+
+# e <- new.env()
+# e$data <- apistrat
+# e$data.svy <- svydesign(ids=~1, strata = ~snum, weights = ~pw, fpc = ~fpc, data = apistrat)
+
+# eval(parse(text = "inzplot(~api99, data = data)"), envir = e)
+# eval(parse(text = "inzplot(~api99, design = data.svy)"), envir = e)
+
+test_that("Survey design read from file", {
+    svyfile <- tempfile("apistrat", fileext = ".svydesign")
+    write.dcf(data.frame(strata = "stype", weights = "pw", fpc = "fpc"), svyfile)
+    on.exit(unlink(svyfile))
+
+    swin <- iNZSurveyDesign$new(ui)
+    expect_silent(swin$read_file(svyfile))
+    expect_equal(
+        ui$iNZDocuments[[ui$activeDoc]]$getModel()$getDesign(),
+        list(
+            strata = "stype",
+            clus1 = NULL,
+            clus2 = NULL,
+            wt = "pw",
+            fpc = "fpc",
+            nest = FALSE,
+            poststrat = NULL,
+            type = "survey"
+        )
+    )
+
+    ui$setDocument(iNZDocument$new(data = apiclus2), reset = TRUE)
+    Sys.sleep(5)
+    write.dcf(
+        data.frame(clusters = "dnum + snum", fpc = "fpc1 + fpc2"),
+        svyfile
+    )
+
+    swin <- iNZSurveyDesign$new(ui)
+    expect_silent(swin$read_file(svyfile))
+    expect_equal(
+        ui$iNZDocuments[[ui$activeDoc]]$getModel()$getDesign(),
+        list(
+            strata = NULL,
+            clus1 = "dnum",
+            clus2 = "snum",
+            wt = NULL,
+            fpc = "fpc1 + fpc2",
+            nest = FALSE,
+            poststrat = NULL,
+            type = "survey"
+        )
+    )
+
+})
+
+
+ui$close()
+
+# try(ui$close(), TRUE); load_all()
+ui <- iNZGUI$new()
+ui$initializeGui()
+
+test_that("Survey data can be imported from svydesign file", {
 
 })
