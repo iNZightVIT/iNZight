@@ -1,4 +1,6 @@
+## iNZight 4.0.1
 
+* fix UI bug requiring users to press Enter to set the null hypothesis value in the Get Inference window
 
 
 # iNZight 4.0
