@@ -731,10 +731,27 @@ iNZGetInference <- setRefClass(
 
                     lbl <- glabel("Null value :")
                     g_hyptbl[1, 1, anchor = c(1, 0), expand = TRUE] <<- lbl
-                    hyp_null <<- gedit(ifelse("proportion" %in% hyp_tests, 0.5, 0),
+                    hyp_null <<- gedit(
+                        ifelse("proportion" %in% hyp_tests, 0.5, 0),
                         handler = function(h, ...) {
-                            curSet$hypothesis.value <<- as.numeric(svalue(h$obj))
+                            x <- as.numeric(svalue(hyp_null))
+                            curSet$hypothesis.value <<- ifelse(is.na(x), 0, x)
                             update_inference()
+                        }
+                    )
+                    # we want user typing to trigger update, not
+                    # requiring them to press Enter...
+                    null_timer <- NULL
+                    addHandlerKeystroke(hyp_null,
+                        function(h, ...) {
+                            if (!is.null(null_timer) && null_timer$started)
+                                null_timer$stop_timer()
+                            null_timer <- gtimer(1000,
+                                function(...) {
+                                    hyp_null$invoke_change_handler()
+                                },
+                                one.shot = TRUE
+                            )
                         }
                     )
                     g_hyptbl[1, 2, expand = TRUE] <<- hyp_null
