@@ -133,7 +133,10 @@ iNZplothistory <- setRefClass(
       plot_image <- gimage(item$img_file)
       addHandlerClicked(plot_image, function(h, ...) {
         # if (is.null(module)) {
-          eval_env <- rlang::env(!!rlang::sym(attr(GUI$getActiveData(), "name")) := GUI$getActiveData())
+          eval_env <- rlang::env(
+            .dataset := GUI$getActiveData()
+            # !!rlang::sym(attr(GUI$getActiveData(), "name")) := GUI$getActiveData()
+          )
         # } else {
         #   eval_env <- rlang::env(region.data := module$combinedData[['region.data']])
         # }
