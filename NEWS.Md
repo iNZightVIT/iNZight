@@ -1,3 +1,8 @@
+## iNZight 4.0.1
+
+* fix UI bug requiring users to press Enter to set the null hypothesis value in the Get Inference window
+* fix bug in restore plot for ggplots
+
 # iNZight 4.0
 
 This release is a complete overhaul of the way in which variables are passed around behind the scenes, making it possible to display and modify code for the current plot. The main focus for this release is to narrow the gap between GUI and coding for users interested in learning to use R.
