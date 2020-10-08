@@ -1,3 +1,7 @@
+* refactor of the Aggregate Data functionality
+  * allows users to select more than three variables and to perform aggregation over a subset of variables
+  * implements code history for this operation
+
 ## iNZight 4.0.1
 
 * fix UI bug requiring users to press Enter to set the null hypothesis value in the Get Inference window
