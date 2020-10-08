@@ -433,7 +433,11 @@ iNZAgraDataWin <- setRefClass(
 
             .dataset <- GUI$getActiveData()
             data <- iNZightTools::aggregateData(.dataset, vars, smrs)
-            attr(data, "name") <- paste(attr(.dataset, "name", exact = TRUE), "aggregated", sep = ".")
+            attr(data, "name") <- iNZightTools::add_suffix(
+                attr(.dataset, "name", exact = TRUE),
+                "aggregated"
+            )
+            # attr(data, "name") <- paste(attr(.dataset, "name", exact = TRUE), "aggregated", sep = ".")
             attr(data, "code") <- gsub(".dataset", attr(.dataset, "name", exact = TRUE), attr(data, "code"))
             GUI$setDocument(iNZDocument$new(data = data))
             dispose(GUI$modWin)
