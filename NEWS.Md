@@ -1,6 +1,5 @@
-* refactor of the Aggregate Data functionality
-  * allows users to select more than three variables and to perform aggregation over a subset of variables
-  * implements code history for this operation
+* refactor of the Aggregate Data functionality, allowing users to select more than three variables and to perform aggregation over a subset of variables
+* fix bug when setting new data object causing code history and data's new name to be lost
 
 ## iNZight 4.0.1
 

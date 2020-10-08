@@ -26,9 +26,6 @@ iNZDataModel <- setRefClass(
     methods = list(
         initialize = function(data = NULL) {
             if(!is.null(data)) {
-                print(attr(data, "name"))
-                print(attr(data, "code"))
-                print("++++++++++++")
                 .self$setData(data)
             }
         },
