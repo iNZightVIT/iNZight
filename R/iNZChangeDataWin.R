@@ -398,6 +398,350 @@ iNZSortbyDataWin <- setRefClass(
 ## --------------------------------------------
 ## Class that handles aggregate the data set
 ## --------------------------------------------
+
+iNZAggregateWin <- setRefClass(
+    "iNZAggregateWin",
+    fields = list(
+        GUI = "ANY",
+        data = "ANY",
+        catvars = "character", numvars = "character",
+        available_aggvars = "ANY", aggvars = "ANY",
+        aggbtn_add = "ANY", aggbtn_rmv = "ANY",
+        btn_up = "ANY", btn_down = "ANY", reordering = "logical",
+        smryvars = "ANY",
+        gsmry = "ANY", smry_tbl = "ANY",
+        df_preview = "ANY",
+        close_btn = "ANY", ok_btn = "ANY",
+        adv_chk = "ANY"
+    ),
+    methods = list(
+        initialize = function(gui) {
+            initFields(
+                GUI = gui,
+                data = gui$getActiveData(),
+                reordering = FALSE
+            )
+            allvars <- colnames(data)
+            vt <- sapply(data, iNZightTools::vartype)
+            catvars <<- allvars[vt == "cat"]
+            numvars <<- allvars[vt != "cat"] # includes datetimes
+
+            try(dispose(GUI$modWin), silent = TRUE)
+
+            GUI$modWin <<- gwindow("Aggregate data",
+                parent = GUI$win,
+                visible = FALSE,
+                width = 800,
+                height = 500
+            )
+            g <- gvbox(container = GUI$modWin, expand = TRUE)
+            g$set_borderwidth(5)
+
+            ########################## Main body
+            mainGrp <- ggroup(
+                container = g,
+                expand = TRUE
+            )
+            mainGrp$set_borderwidth(10)
+
+            ### +++++++ Variable selection
+            g_var <- gvbox(container = mainGrp, expand = TRUE)
+
+            ### +++ Aggregation variables
+            g_aggvars <- gframe("1. Choose aggregation variables",
+                container = g_var)
+            font(g_aggvars) <- list(weight = "bold")
+            g_aggvars$set_borderwidth(5)
+
+            available_aggvars <<- gtable(items = list(Available = catvars),
+                multiple = TRUE,
+                container = g_aggvars)
+            size(available_aggvars) <<- c(-1, 160)
+
+            g_aggbtns <- gvbox(container = g_aggvars)
+            addSpring(g_aggbtns)
+            aggbtn_add <<- gimagebutton("forward",
+                size = "large_toolbar",
+                container = g_aggbtns,
+                tooltip = "Add selected",
+                handler = function(h, ...) {
+                    add_aggvars(svalue(available_aggvars, index = TRUE))
+                }
+            )
+            aggbtn_rmv <<- gimagebutton("backward",
+                size = "large_toolbar",
+                container = g_aggbtns,
+                tooltip = "Remove selected",
+                handler = function(h, ...) {
+                    rmv_aggvars(svalue(aggvars, index = TRUE))
+                }
+            )
+            addSpring(g_aggbtns)
+
+            aggvars <<- gtable(items = list(Selected = character()),
+                multiple = TRUE,
+                container = g_aggvars)
+            size(aggvars) <<- c(-1, 160)
+
+            g_aggbtns2 <- gvbox(container = g_aggvars)
+            btn_up <<- gimagebutton("1uparrow",
+                size = "large_toolbar",
+                container = g_aggbtns2,
+                tooltip = "Move selected variable up",
+                handler = function(h, ...) {
+                    if (reordering) return()
+                    reordering <<- TRUE
+                    on.exit(reordering <<- FALSE)
+
+                    index <- svalue(aggvars, index = TRUE)
+                    if (length(index) != 1) return()
+                    if (index == 1) return()
+                    selected <- aggvars$get_items()
+                    selected_index <- seq_along(selected)
+                    selected_index[index] <- index - 1
+                    selected_index[index - 1] <- index
+                    selected <- selected[selected_index]
+                    aggvars$set_items(data.frame(Selected = selected))
+                    svalue(aggvars) <<- index - 1
+                }
+            )
+            btn_down <<- gimagebutton("1downarrow",
+                size = "large_toolbar",
+                container = g_aggbtns2,
+                tooltip = "Move selected variable down",
+                handler = function(h, ...) {
+                    if (reordering) return()
+                    reordering <<- TRUE
+                    on.exit(reordering <<- FALSE)
+
+                    index <- svalue(aggvars, index = TRUE)
+                    if (length(index) != 1) return()
+                    selected <- aggvars$get_items()
+                    if (index == length(selected)) return()
+                    selected_index <- seq_along(selected)
+                    selected_index[index] <- index + 1
+                    selected_index[index + 1] <- index
+                    selected <- selected[selected_index]
+                    aggvars$set_items(data.frame(Selected = selected))
+                    svalue(aggvars) <<- index + 1
+                }
+            )
+
+
+
+            ### +++ Summary variables
+            g_smryvars <- gframe("2. Choose variables to summarise",
+                container = g_var)
+            font(g_smryvars) <- list(weight = "bold")
+            g_smryvars$set_borderwidth(5)
+
+            smryvars <<- gtable(list(Summarize = numvars),
+                multiple = TRUE,
+                container = g_smryvars)
+            size(smryvars) <<- c(-1, 160)
+
+
+            lbl <- glabel("CTRL or SHIFT to choose many, or CTRL+A to select all",
+                container = g_var)
+            font(lbl) <- list(weight = "bold", size = 8)
+
+
+            ### +++++++ Summary selection
+            gsmry <<- gframe("3. Summaries to calculate",
+                container = mainGrp)
+            gsmry$set_borderwidth(5)
+            smry_tbl <<- NULL
+
+            # gen_summary_table()
+
+            ### +++++++ Preview
+            gprev <- gframe("Preview", container = mainGrp, expand = TRUE)
+            gprev$set_borderwidth(5)
+
+            df_preview <<- gtable(list(Variables = character()), container = gprev)
+            size(df_preview) <<- c(-1, 150)
+
+
+            addSpring(g)
+
+            ########################## Window buttons
+            btnGrp <- ggroup(container = g)
+            close_btn <<- gbutton("Close",
+                container = btnGrp,
+                handler = function(h, ...) dispose(GUI$modWin))
+            adv_chk <<- gcheckbox("Advanced mode",
+                container = btnGrp,
+                handler = function(h, ...) set_advanced())
+            addSpring(btnGrp)
+            ok_btn <<- gbutton("Aggregate",
+                container = btnGrp,
+                handler = function(h, ...) do_aggregation())
+
+            set_advanced()
+
+            visible(GUI$modWin) <<- TRUE
+        },
+        add_aggvars = function(index) {
+            available <- as.character(available_aggvars$get_items())
+            selected <- as.character(aggvars$get_items())
+
+            if (index[1] == -1) {
+                selected <- c(selected, available)
+                available <- ""
+            } else {
+                selected <- c(selected, available[index])
+                available <- available[-index]
+                if (length(available) == 0) available <- ""
+            }
+            selected <- selected[selected != ""]
+
+            available_aggvars$set_items(data.frame(Available = available))
+            aggvars$set_items(data.frame(Selected = selected))
+        },
+        rmv_aggvars = function(index) {
+            available <- as.character(available_aggvars$get_items())
+            selected <- as.character(aggvars$get_items())
+
+            if (index[1] == -1) {
+                available <- c(available, selected)
+                selected <- ""
+            } else {
+                available <- c(available, selected[index])
+                selected <- selected[-index]
+                if (length(selected) == 0) selected <- ""
+            }
+            available <- available[available != ""]
+
+            available_aggvars$set_items(data.frame(Available = available))
+            aggvars$set_items(data.frame(Selected = selected))
+        },
+        add_summary_row = function(text,
+                                   name = paste("{var}", tolower(text), sep = "_"),
+                                   default = FALSE) {
+            i <- 1L
+            if (length(smry_tbl$children)) i <- nrow(smry_tbl) + 1L
+
+            chk <- gcheckbox(text, checked = default)
+            smry_tbl[i, 1:2, expand = TRUE] <<- chk
+
+            if (svalue(adv_chk) && !is.null(name)) {
+                txt <- gedit(name, width = 15)
+                smry_tbl[i, 3, expand = TRUE] <<- txt
+            }
+        },
+        set_advanced = function() {
+            gen_summary_table()
+        },
+        gen_summary_table = function() {
+            if (!is.null(smry_tbl) && nrow(smry_tbl) > 1L) {
+                visible(smry_tbl) <<- FALSE
+                for (i in length(smry_tbl$children):1)
+                    smry_tbl$remove_child(smry_tbl$children[[i]])
+                smry_tbl$parent$remove_child(smry_tbl)
+            }
+
+            tlbl <- function(text) {
+                lbl <- glabel(text)
+                font(lbl) <- list(weight = "bold", size = 9)
+                lbl
+            }
+
+            smry_tbl <<- glayout(container = gsmry)
+            advanced <- svalue(adv_chk)
+
+            smry_tbl[1, 1:2, anchor = c(-1, 0), expand = TRUE] <<- tlbl("     Summary")
+            if (advanced)
+                smry_tbl[1, 3, anchor = c(-1, 0), expand = TRUE] <<- tlbl("Variable name")
+
+            add_summary_row("Count", name = "count", default = TRUE)
+            add_summary_row("Mean")
+            add_summary_row("Median")
+            add_summary_row("Quantile(s)", name = "{var}_q{p}")
+            # add quantile extras
+            ii <- nrow(smry_tbl) + 1L
+            smry_tbl[ii, 2, anchor = c(1, 0), expand = TRUE] <<- glabel("p = ")
+            smry_tbl[ii, 3, expand = TRUE] <<- gedit("25, 75", width = 15L)
+
+            add_summary_row("Sum")
+            add_summary_row("Standard deviation", name = "{var}_sd")
+            add_summary_row("Interquartile range", name = "{var}_iqr")
+            if (advanced)
+                add_summary_row("Custom", name = NULL)
+
+            add_summary_row("Missing count", name = "{var}_missing", default = TRUE)
+        },
+        do_aggregation = function(preview = TRUE) {
+            adv <- svalue(adv_chk)
+            # figure out what summaries the user wants
+            summaries <- do.call(
+                rbind,
+                sapply(seq_along(1L:nrow(smry_tbl)),
+                    function(i) {
+                        w <- smry_tbl[i, 1L]
+                        if (!is(w, "GCheckbox") || !svalue(w)) return(NULL)
+                        text <- w$get_items()
+                        if (text == "Custom") return(NULL)
+                        fun <- switch(text,
+                            "Standard deviation" = "sd",
+                            "Interquartile range" = "IQR",
+                            "Quantile(s)" = "quantile",
+                            "Missing count" = "missing",
+                            tolower(text)
+                        )
+                        if (adv) {
+                            name <- smry_tbl[i, 3L]$get_value()
+                        } else {
+                            name <- iNZightTools:::agg_default_name(fun)
+                        }
+                        extra <- NULL
+                        if (fun == "quantile") {
+                            # fetch quantiles from below
+                            extra <- smry_tbl[i + 1L, 3L]$get_value()
+                        }
+
+                        c(fun, name, extra)
+                    }
+                )
+            )
+
+            quantiles <- NULL
+            if ("quantile" %in% summaries[,1]) {
+                quantiles <- summaries[summaries[,1] == "quantile", 3]
+                quantiles <- as.integer(strsplit(quantiles, ",")[[1]])
+            }
+
+            custom <- NULL
+            if (adv) {
+                # custom summary functions?
+
+            }
+
+            .dataset <- data
+            dat <- iNZightTools::aggregateData(
+                .dataset,
+                vars = aggvars$get_items(),
+                summary_vars = svalue(smryvars),
+                summaries = summaries[,1],
+                varnames = summaries[,2],
+                quantiles = quantiles,
+                custom_funs = custom
+            )
+
+            attr(dat, "name") <- iNZightTools::add_suffix(
+                attr(.dataset, "name", exact = TRUE),
+                "aggregated"
+            )
+            attr(dat, "code") <- gsub(".dataset",
+                attr(.dataset, "name", exact = TRUE),
+                attr(dat, "code")
+            )
+            GUI$setDocument(iNZDocument$new(data = dat))
+            dispose(GUI$modWin)
+        }
+    )
+)
+
+## old aggregate:
 iNZAgraDataWin <- setRefClass(
   "iNZAgraDataWin",
   fields = list(
