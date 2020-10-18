@@ -44,7 +44,7 @@ test_that("Filtering data leaves code OK", {
 })
 
 # source("R/iNZChangeDataWin.R")
-# w <- iNZAggragateWin$new(ui)
+# w <- iNZAggregateWin$new(ui)
 
 test_that("Aggregating data adds correct code", {
     w <- iNZAggregateWin$new(ui)

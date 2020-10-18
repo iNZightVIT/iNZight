@@ -479,6 +479,7 @@ iNZAggregateWin <- setRefClass(
             addSpring(g_aggbtns)
 
             aggvars <<- gtable(items = list(Selected = character()),
+                handler = function(h, ...) update_preview(),
                 multiple = TRUE,
                 container = g_aggvars)
             size(aggvars) <<- c(-1, 160)
@@ -538,6 +539,9 @@ iNZAggregateWin <- setRefClass(
             smryvars <<- gtable(list(Summarize = numvars),
                 multiple = TRUE,
                 container = g_smryvars)
+            addHandlerSelectionChanged(smryvars,
+                handler = function(h, ...) update_preview()
+            )
             size(smryvars) <<- c(-1, 160)
 
 
@@ -558,7 +562,9 @@ iNZAggregateWin <- setRefClass(
             gprev <- gframe("Preview", container = mainGrp, expand = TRUE)
             gprev$set_borderwidth(5)
 
-            df_preview <<- gtable(list(Variables = character()), container = gprev)
+            df_preview <<- gtable(list(Variables = character()),
+                container = gprev
+            )
             size(df_preview) <<- c(-1, 150)
 
 
@@ -621,13 +627,36 @@ iNZAggregateWin <- setRefClass(
             i <- 1L
             if (length(smry_tbl$children)) i <- nrow(smry_tbl) + 1L
 
-            chk <- gcheckbox(text, checked = default)
+            chk <- gcheckbox(text, checked = default, handler = function(h, ...) update_preview())
             smry_tbl[i, 1:2, expand = TRUE] <<- chk
 
             if (svalue(adv_chk) && !is.null(name)) {
                 txt <- gedit(name, width = 15)
                 smry_tbl[i, 3, expand = TRUE] <<- txt
             }
+        },
+        update_preview = function() {
+            if (length(aggvars$get_items() == 1) && aggvars$get_items()[1] == "") return()
+            if (length(svalue(smryvars)) == 0) return()
+            summaries <- get_summaries()
+            quantiles <- get_quantiles(summaries)
+            vars <- svalue(smryvars)
+            varnames <- lapply(vars,
+                function(var)  {
+                    x <- lapply(summaries[, 2],
+                        function(smry) {
+                            if (!is.null(quantiles) && grepl("{p}", smry, fixed = TRUE)) {
+                                glue::glue(smry, .envir = list(var = var, p = quantiles))
+                            } else {
+                                glue::glue(smry)
+                            }
+                        }
+                    )
+                    do.call(c, x)
+                }
+            )
+            varnames <- unique(do.call(c, varnames))
+            df_preview$set_items(data.frame(Variables = varnames))
         },
         set_advanced = function() {
             gen_summary_table()
@@ -670,15 +699,14 @@ iNZAggregateWin <- setRefClass(
 
             add_summary_row("Missing count", name = "{var}_missing", default = TRUE)
         },
-        do_aggregation = function(preview = TRUE) {
+        get_summaries = function() {
             adv <- svalue(adv_chk)
-            # figure out what summaries the user wants
-            summaries <- do.call(
+            do.call(
                 rbind,
                 sapply(seq_along(1L:nrow(smry_tbl)),
                     function(i) {
                         w <- smry_tbl[i, 1L]
-                        if (!is(w, "GCheckbox") || !svalue(w)) return(NULL)
+                        if (!methods::is(w, "GCheckbox") || !svalue(w)) return(NULL)
                         text <- w$get_items()
                         if (text == "Custom") return(NULL)
                         fun <- switch(text,
@@ -703,12 +731,20 @@ iNZAggregateWin <- setRefClass(
                     }
                 )
             )
-
+        },
+        get_quantiles = function(summaries) {
             quantiles <- NULL
             if ("quantile" %in% summaries[,1]) {
                 quantiles <- summaries[summaries[,1] == "quantile", 3]
                 quantiles <- as.integer(strsplit(quantiles, ",")[[1]])
             }
+            quantiles
+        },
+        do_aggregation = function(preview = TRUE) {
+            adv <- svalue(adv_chk)
+            # figure out what summaries the user wants
+            summaries <- get_summaries()
+            quantiles <- get_quantiles()
 
             custom <- NULL
             if (adv) {
