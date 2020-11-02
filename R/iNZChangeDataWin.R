@@ -744,7 +744,7 @@ iNZAggregateWin <- setRefClass(
             adv <- svalue(adv_chk)
             # figure out what summaries the user wants
             summaries <- get_summaries()
-            quantiles <- get_quantiles()
+            quantiles <- get_quantiles(summaries)
 
             custom <- NULL
             if (adv) {
