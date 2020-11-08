@@ -1,7 +1,7 @@
 # R script
 github_deps <- c(
     "iNZightVIT/gWidgets2RGtk2@inz",
-    "iNZightVIT/iNZightTools@1.9",
+    "iNZightVIT/iNZightTools@feature/refactor-aggregate",
     "iNZightVIT/iNZightTS@1.5.4",
     "iNZightVIT/iNZightMR@2.2.5",
     "iNZightVIT/iNZightPlots@2.12",
