@@ -5,7 +5,4 @@ skip_on_covr()
 
 # https://www.stat.auckland.ac.nz/~wild/d2i/exercises/
 
-library(testthat)
-library(iNZight)
-
 test_dir("futurelearn")
