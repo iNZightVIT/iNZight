@@ -56,7 +56,7 @@ jobs:
 
       - name: Add GTK to PATH
         if: runner.os == 'Windows'
-        run: echo "D:/a/_temp/Library/RGtk2/gtk/bin" >> $GITHUB_PATH
+        run: echo "${{env.R_LIBS_USER}}\RGtk2\gtk\bin" >> $GITHUB_PATH
 
       - name: Check RGtk2
         if: runner.os == 'Windows'
