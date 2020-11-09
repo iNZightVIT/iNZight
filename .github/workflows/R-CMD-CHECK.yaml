@@ -61,7 +61,7 @@ jobs:
         run: echo "D:\a\_temp\Library\RGtk2\gtk\bin" >> $GITHUB_PATH
 
       - name: print path
-        run: Rscript -e "print(Sys.getenv('GITHUB_PATH'))"
+        run: Rscript -e "print(Sys.getenv('PATH'))"
 
       - name: Check RGtk2
         if: runner.os == 'Windows'
