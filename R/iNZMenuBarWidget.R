@@ -3,20 +3,32 @@ iNZMenuBarWidget <- setRefClass(
     fields = list(
         GUI = "ANY", container = "ANY", disposeR = "logical",
         menubar = "ANY",
-        plotmenu = "ANY"
+        plotmenu = "ANY",
+        modules_installed = "logical"
     ),
     methods = list(
         initialize = function(gui, container, disposeR) {
-            initFields(GUI = gui, container = container, disposeR = disposeR)
+            initFields(
+                GUI = gui,
+                container = container,
+                disposeR = disposeR
+            )
 
             ## this is trickier, because it depends on a bunch of things
             plotmenu <<- placeholder("Plot")
             menubar <<- gmenu(list(), container = container)
 
+            hasModules()
+
             defaultMenu()
         },
         hasData = function() {
             !all(dim(GUI$getActiveData()) == 1)
+        },
+        hasModules = function() {
+            modules_installed <<- suppressMessages(
+                requireNamespace("iNZightModules", quietly = TRUE)
+            )
         },
         placeholder = function(name) {
             x <- gaction(name)
@@ -375,7 +387,7 @@ iNZMenuBarWidget <- setRefClass(
             updateMenu("Plot", PlotMenu())
         },
         AdvancedMenu = function() {
-            if (!hasData()) {
+            if (!hasData() && modules_installed) {
                 ## just provide the ability to install modules
                 return(
                     list(
@@ -396,87 +408,140 @@ iNZMenuBarWidget <- setRefClass(
                 )
             }
 
+            # ---- this should all be unnecessary now --- #
             ## As of R 3.6.?, overwriting s3 methods is a verbose message
             ## when loading a package namespace. This prevents those messages
             ## from showing up.
             ## Info: it's because iNZightRegression and iNZightMR both define
             ## moecalc methods - not sure why/which is more up to date, either ...
-            suppressMessages(requireNamespace("iNZightModules", quietly = TRUE))
+            # suppressMessages(requireNamespace("iNZightModules", quietly = TRUE))
+            # ---- to here --- #
 
-            adv <- list(
-                "Quick Explore" = list(
-                    missing =
-                        gaction("Missing values",
-                            icon = "symbol_diamond",
-                            tooltip = "Explore missing values",
-                            handler = function(h, ...) iNZExploreMissing$new(GUI)),
-                    all1varplot =
-                        gaction("All 1-variable plots",
-                            icon = "symbol_diamond",
-                            tooltip = "Click through a plot of each variable",
-                            handler = function(h, ...) iNZallPlots$new(GUI)),
-                    all2varsmry =
-                        gaction("All 1-variable summaries",
-                            icon = "symbol_diamond",
-                            tooltip = "Get a summary of all variables",
-                            handler = function(h, ...) iNZallSummaries$new(GUI)),
-                    all2var =
-                        gaction("Explore 2-variable plots ...",
-                            icon = "symbol_diamond",
-                            tooltip = "Click through all 2-variable plots",
-                            handler = function(h, ...) iNZall2Plots$new(GUI)),
-                    pairs =
-                        gaction("Pairs ...",
-                            icon = "symbol_diamond",
-                            tooltip = "See a pairs plot matrix",
-                            handler = function(h, ...) iNZscatterMatrix$new(GUI))
-                ),
-                plot3d =
-                    gaction("3D plot ...",
-                        icon = "3dcontour",
-                        tooltip = "Start the 3D plotting module",
-                        handler = function(h, ...) {
-                            ign <- gwindow("...", visible = FALSE)
-                            tag(ign, "dataSet") <- GUI$getActiveData()
-                            e <- list(obj = ign)
-                            e$win <- GUI$win
-                            iNZightModules::plot3D(e)
-                        }),
-                timeseries =
-                    gaction("Time series ...",
-                        icon = "ts",
-                        tooltip = "Start the time series module",
-                        handler = function(h, ...) iNZightModules::iNZightTSMod$new(GUI)),
-                modelfitting =
-                    gaction("Model fitting ...",
-                        icon = "lines",
-                        tooltip = "Start the model fitting module",
-                        handler = function(h, ...) iNZightModules::iNZightRegMod$new(GUI)),
-                multires =
-                    gaction("Multiple response ...",
-                        icon = "hist",
-                        tooltip = "Start the multiple response module",
-                        handler = function(h, ...) iNZightModules::iNZightMultiRes$new(GUI)),
-                maps =
-                    gaction("Maps ...",
-                        icon = "plot1",
-                        handler = function(h, ...) iNZightModules::iNZightMapLanding$new(GUI)),
-                gseparator(),
-                manage =
-                    gaction("Manage modules ...",
-                        icon = "execute",
-                        tooltip = "Add, update, and remove add-on modules.",
-                        handler = function(h, ...)
-                            iNZightModules::ModuleManager$new(GUI)
+            if (modules_installed) {
+                adv <- list(
+                    "Quick Explore" = list(
+                        missing =
+                            gaction("Missing values",
+                                icon = "symbol_diamond",
+                                tooltip = "Explore missing values",
+                                handler = function(h, ...) iNZExploreMissing$new(GUI)),
+                        all1varplot =
+                            gaction("All 1-variable plots",
+                                icon = "symbol_diamond",
+                                tooltip = "Click through a plot of each variable",
+                                handler = function(h, ...) iNZallPlots$new(GUI)),
+                        all2varsmry =
+                            gaction("All 1-variable summaries",
+                                icon = "symbol_diamond",
+                                tooltip = "Get a summary of all variables",
+                                handler = function(h, ...) iNZallSummaries$new(GUI)),
+                        all2var =
+                            gaction("Explore 2-variable plots ...",
+                                icon = "symbol_diamond",
+                                tooltip = "Click through all 2-variable plots",
+                                handler = function(h, ...) iNZall2Plots$new(GUI)),
+                        pairs =
+                            gaction("Pairs ...",
+                                icon = "symbol_diamond",
+                                tooltip = "See a pairs plot matrix",
+                                handler = function(h, ...) iNZscatterMatrix$new(GUI))
                     ),
-                gseparator(),
-                rcode =
-                    gaction("R code history [beta] ...",
-                        icon = "rlogo",
-                        tooltip = "Show the R code history for your session",
-                        handler = function(h, ...) GUI$showHistory())
+                    plot3d =
+                        gaction("3D plot ...",
+                            icon = "3dcontour",
+                            tooltip = "Start the 3D plotting module",
+                            handler = function(h, ...) {
+                                ign <- gwindow("...", visible = FALSE)
+                                tag(ign, "dataSet") <- GUI$getActiveData()
+                                e <- list(obj = ign)
+                                e$win <- GUI$win
+                                iNZightModules::plot3D(e)
+                            }),
+                    timeseries =
+                        gaction("Time series ...",
+                            icon = "ts",
+                            tooltip = "Start the time series module",
+                            handler = function(h, ...) iNZightModules::iNZightTSMod$new(GUI)),
+                    modelfitting =
+                        gaction("Model fitting ...",
+                            icon = "lines",
+                            tooltip = "Start the model fitting module",
+                            handler = function(h, ...) iNZightModules::iNZightRegMod$new(GUI)),
+                    multires =
+                        gaction("Multiple response ...",
+                            icon = "hist",
+                            tooltip = "Start the multiple response module",
+                            handler = function(h, ...) iNZightModules::iNZightMultiRes$new(GUI)),
+                    maps =
+                        gaction("Maps ...",
+                            icon = "plot1",
+                            handler = function(h, ...) iNZightModules::iNZightMapLanding$new(GUI)),
+                    gseparator(),
+                    manage =
+                        gaction("Manage modules ...",
+                            icon = "execute",
+                            tooltip = "Add, update, and remove add-on modules.",
+                            handler = function(h, ...)
+                                iNZightModules::ModuleManager$new(GUI))
+                )
+            } else {
+                adv <- list(
+                    install_modules =
+                        gaction("Install the Modules package ...",
+                            icon = "execute",
+                            tooltip = "Install the iNZightModules R pacakge to access add-on modules",
+                            handler = function(h, ...) {
+                                c <- gconfirm("You are about to install the iNZightModules R package. Are you sure you want to continue?",
+                                    parent = GUI$win)
+                                if (!c) return()
+                                e <- "utils::install.packages('iNZightModules',
+                                    repos = c('https://r.docker.stat.auckland.ac.nz', 'https://cran.rstudio.com'))"
+
+                                w <- gwindow("Installing packages",
+                                    width = 300, height = 100,
+                                    visible = FALSE,
+                                    parent = GUI$win)
+                                visible(w) <- FALSE
+                                gg <- gvbox(container = w)
+                                addSpace(gg, 10)
+                                ggg <- ggroup(spacing = 15, container = gg)
+                                addSpace(ggg, 0)
+                                gimage(stock.id = "gtk-info", size="dialog", cont=ggg)
+                                glabel("Please wait while the package and its dependencies are installed...", container = ggg,
+                                    anchor = c(-1, 1))
+                                addSpace(ggg, 10)
+                                addSpace(gg, 10)
+                                visible(w) <- TRUE
+                                Sys.sleep(0.1)
+
+                                eval(parse(text = e))
+
+                                Sys.sleep(0.1)
+                                dispose(w)
+
+                                gmessage("Install complete.",
+                                    title = "Installing packages complete",
+                                    parent = GUI$win)
+
+                                hasModules()
+
+                                .self$defaultMenu()
+                            }
+                        )
+                )
+            }
+
+            adv <- c(adv,
+                list(
+                    gseparator(),
+                    rcode =
+                        gaction("R code history [beta] ...",
+                            icon = "rlogo",
+                            tooltip = "Show the R code history for your session",
+                            handler = function(h, ...) GUI$showHistory())
+                )
             )
-            if (!is.null(GUI$addonModuleDir)) {
+            if (modules_installed && !is.null(GUI$addonModuleDir)) {
                 modules <- iNZightModules:::getModules(GUI$addonModuleDir)
                 if (length(modules)) {
                     instindex <- which(names(adv) == "maps") + 1
