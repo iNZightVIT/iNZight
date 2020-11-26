@@ -5,6 +5,7 @@
 #' @field activeDoc The numeric ID of the currently active document
 #' @import methods utils grDevices colorspace
 #' @importFrom magrittr %>%
+#' @importFrom translatr tr
 #' @export iNZGUI
 #' @exportClass iNZGUI
 iNZGUI <- setRefClass(
@@ -187,6 +188,13 @@ iNZGUI <- setRefClass(
 
             ## Grab settings file (or try to!)
             getPreferences()
+            tf <- system.file(sprintf("translations/%s.csv", preferences$lang), package = "iNZight")
+            if (file.exists(tf)) {
+                options(
+                    "translatr.language" = preferences$lang,
+                    "translatr.table" = read.csv(tf)
+                )
+            }
 
             ## Check for updates ... need to use try incase it fails (no connection etc)
             if (preferences$check.updates) {
@@ -876,7 +884,8 @@ iNZGUI <- setRefClass(
                 popout = FALSE,
                 font.size = 10,
                 dev.features = FALSE,
-                show.code = FALSE
+                show.code = FALSE,
+                lang = "mri"
             )
         },
         checkPrefs = function(prefs) {
@@ -886,7 +895,8 @@ iNZGUI <- setRefClass(
                 "popout",
                 "font.size",
                 "dev.features",
-                "show.code"
+                "show.code",
+                "lang"
             )
 
             ## Only keep allowed preferences --- anything else is discarded
@@ -924,6 +934,10 @@ iNZGUI <- setRefClass(
             prefs$show.code <-
                 if (is.null(prefs$show.code) || !is.logical(prefs$show.code)) defs$show.code
                 else prefs$show.code
+
+            prefs$lang <-
+                if (is.null(prefs$lang) || !is.character(prefs$lang)) defs$lang
+                else prefs$lang[1]
 
             prefs
 

@@ -31,12 +31,12 @@ iNZMenuBarWidget <- setRefClass(
             )
         },
         placeholder = function(name) {
-            x <- gaction(name)
+            x <- gaction(tr(name))
             enabled(x) <- FALSE
             x
         },
         defaultMenu = function() {
-            setMenu(
+            m <- list(
                 File = FileMenu(),
                 Dataset = DataMenu(),
                 Variables = VariablesMenu(),
@@ -44,11 +44,15 @@ iNZMenuBarWidget <- setRefClass(
                 Advanced = AdvancedMenu(),
                 Help = HelpMenu()
             )
+            names(m) <- tr(names(m))
+            z <- do.call(.self$setMenu, m)
+            invisible(NULL)
         },
         setMenu = function(...) {
             svalue(menubar) <<- list(...)
         },
         updateMenu = function(what, with) {
+            what <- tr(what)
             svalue(menubar)[[what]] <<- with
         },
         FileMenu = function() {

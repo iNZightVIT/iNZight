@@ -33,7 +33,8 @@ Imports:
     plyr,
     survey,
     colorspace,
-    magrittr
+    magrittr,
+    translatr
 Suggests:
     RODBC,
     iNZightMR (>= 2.2.4),
