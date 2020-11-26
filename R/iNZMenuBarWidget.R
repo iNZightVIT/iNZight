@@ -162,7 +162,7 @@ iNZMenuBarWidget <- setRefClass(
                 aggregate =
                     gaction("Aggregate ...",
                         icon = "dnd-multiple",
-                        handler = function(h, ...) iNZAggregateWin$new(GUI)),
+                        handler = function(h, ...) iNZAgraDataWin$new(GUI)),
                 stack =
                     gaction("Stack ...",
                         icon = "dnd-multiple",
