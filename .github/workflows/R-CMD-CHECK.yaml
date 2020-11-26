@@ -58,7 +58,7 @@ jobs:
 
       - name: Add GTK to PATH
         if: runner.os == 'Windows'
-        run: echo "${{env.R_LIBS_USER}}\RGtk2\gtk\bin" >> $GITHUB_PATH
+        run: echo "${{env.R_LIBS_USER}}\RGtk2\gtk\bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
 
       - name: print path
         run: Rscript -e "print(Sys.getenv('PATH'))"
