@@ -279,7 +279,7 @@ on.exit(unlink(tf), add = TRUE)
 write.csv(many_cols, tf, quote = FALSE, row.names = FALSE)
 
 if (interactive()) {
-    try(ui$close()); load_all()
+    try(ui$close()); test:load_all()
     ui <- iNZGUI$new()
     ui$initializeGui()
 }

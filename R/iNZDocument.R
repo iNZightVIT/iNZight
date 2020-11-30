@@ -31,7 +31,7 @@ iNZDataModel <- setRefClass(
         },
         setData = function(data) {
             ## validate names
-            names(data) <- make.names(names(data), unique = TRUE)
+            attr(data, "names") <- make.names(colnames(data), unique = TRUE)
 
             ## set data name (default = "data")
             if (is.null(attr(data, "name", exact = TRUE)))
