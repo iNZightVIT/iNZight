@@ -1,3 +1,7 @@
+## iNZight 4.0.2
+
+* fixes a bug in code widget preventing UI from updating correctly (#334, @tmelliott)
+
 ## iNZight 4.0.1
 
 * fix UI bug requiring users to press Enter to set the null hypothesis value in the Get Inference window
