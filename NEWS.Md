@@ -1,6 +1,13 @@
 * refactor of the Aggregate Data functionality, allowing users to select more than three variables and to perform aggregation over a subset of variables
 * fix bug when setting new data object causing code history and data's new name to be lost
 
+## iNZight 4.0.2
+
+* fixes a bug in code widget preventing UI from updating correctly (#334, @tmelliott)
+* fix bug in *File* > *Reload* causing crash if data hadn't been loaded yet (#332, @tmelliott)
+* disable *Identify Points* for hexbin/grid plots and histograms (#326, @tmelliott)
+* disable dot plots for survey data (#325, @tmelliott)
+
 ## iNZight 4.0.1
 
 * fix UI bug requiring users to press Enter to set the null hypothesis value in the Get Inference window
