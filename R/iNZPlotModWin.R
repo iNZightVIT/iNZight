@@ -100,8 +100,10 @@ plot_list <- function(plot_type, x, y, is_survey) {
     }
   }
 
-  if (is_survey)
+  if (is_survey) {
     return_list <- return_list[!grepl("^gg_", names(return_list))]
+    return_list <- return_list[!names(return_list) %in% c("dot")]
+  }
 
   attr(return_list, "null.y") <- is.null(y)
 
