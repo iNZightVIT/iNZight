@@ -1218,6 +1218,10 @@ iNZGUI <- setRefClass(
             Sys.sleep(0.5)
 
             # save the document
+            has_data <-
+                nrow(.self$getActiveData()) > 1L ||
+                ncol(.self$getActiveData()) > 1L ||
+                names(.self$getActiveData()) != "empty"
             state <- .self$getState()
             dispose(.self$win)
             if (popOut) try(grDevices::dev.off(), TRUE)
@@ -1226,7 +1230,8 @@ iNZGUI <- setRefClass(
             while (!is_initialized) {
                 Sys.sleep(0.1)
             }
-            res <- .self$setState(state)
+            if (has_data)
+                res <- .self$setState(state)
 
             gtkWindowMove(.self$win$widget, ipos$root.x, ipos$root.y)
             .self$set_visible()

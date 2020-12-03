@@ -70,3 +70,13 @@ test_that("Reload works", {
 
     expect_true(enabled(ui$menuBarWidget$menubar$menu_list$Dataset$filter))
 })
+
+test_that("Reload works without data", {
+    # try(ui$close()); devtools::load_all()
+    ui <- iNZGUI$new()
+    ui$initializeGui()
+    on.exit(gWidgets2::dispose(ui$win))
+    Sys.sleep(2)
+
+    expect_silent(ui$reload())
+})
