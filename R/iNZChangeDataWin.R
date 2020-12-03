@@ -576,7 +576,7 @@ iNZAggregateWin <- setRefClass(
                 container = btnGrp,
                 handler = function(h, ...) dispose(GUI$modWin))
             adv_chk <<- gcheckbox("Advanced mode",
-                container = btnGrp,
+                # container = btnGrp,
                 handler = function(h, ...) set_advanced())
             addSpring(btnGrp)
             ok_btn <<- gbutton("Aggregate",
