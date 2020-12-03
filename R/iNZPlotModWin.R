@@ -7,7 +7,7 @@
 ## which is the same since the two are linked together)
 ## --------------------------------------------
 
-plot_list <- function(plot_type, x, y) {
+plot_list <- function(plot_type, x, y, is_survey) {
   if (plot_type %in% c(
     "scatter",
     "hex",
@@ -100,6 +100,11 @@ plot_list <- function(plot_type, x, y) {
     }
   }
 
+  if (is_survey) {
+    return_list <- return_list[!grepl("^gg_", names(return_list))]
+    return_list <- return_list[!names(return_list) %in% c("dot")]
+  }
+
   attr(return_list, "null.y") <- is.null(y)
 
   return_list
@@ -184,8 +189,7 @@ iNZPlotModWin <- setRefClass(
             if (!is.null(GUI)) {
                 updateSettings()
 
-              plot_history <<- GUI$initializePlotHistory()
-
+                plot_history <<- GUI$initializePlotHistory()
 
                 modwin <- GUI$initializeModuleWindow(scroll = FALSE)
                 mainGrp <- modwin$body
@@ -1024,6 +1028,7 @@ iNZPlotMod <- setRefClass(
                     "Identify Points" = identify,
                     iNZLocatePoints
                 )
+                if (GUI$plotType != "scatter") pageMethods <<- pageMethods[1:3]
                 usingMethods(appearance, features, identify, axes, iNZLocatePoints)
                 opts <- gcombobox(names(pageMethods[names(pageMethods) != ""]),
                     selected = which
@@ -1035,6 +1040,7 @@ iNZPlotMod <- setRefClass(
                     "Identify Points" = identify,
                     iNZLocatePoints
                 )
+                if (GUI$plotType != "dot") pageMethods <<- pageMethods[1:2]
                 usingMethods(appearance, identify, axes, iNZLocatePoints)
                 opts <- gcombobox(names(pageMethods[names(pageMethods) != ""]),
                     selected = which
@@ -1090,7 +1096,8 @@ iNZPlotMod <- setRefClass(
             PLOTTYPES <- plot_list(
                 TYPE,
                 GUI$getActiveData()[[varnames["x"]]],
-                GUI$getActiveData()[[varnames["y"]]]
+                GUI$getActiveData()[[varnames["y"]]],
+                !is.null(GUI$getActiveDoc()$getModel()$dataDesign)
             )
 
             # if (PLOTTYPE != "bar") {

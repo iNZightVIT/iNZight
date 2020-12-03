@@ -24,7 +24,7 @@ test_that("Filtering data leaves code OK", {
     ui$getActiveDoc()$setSettings(list(colby = as.name("gender")))
     expect_match(
         svalue(ui$code_panel$input),
-        "iNZPlot(height ~ armspan, colby = gender, data = data)",
+        "inzplot(height ~ armspan, colby = gender, data = data)",
         fixed = TRUE
     )
 
@@ -38,7 +38,21 @@ test_that("Filtering data leaves code OK", {
     )
     expect_match(
         svalue(ui$code_panel$input),
-        "iNZPlot(height ~ armspan, colby = gender, data = data.filtered)",
+        "inzplot(height ~ armspan, colby = gender, data = data.filtered)",
         fixed = TRUE
     )
+})
+
+# source("R/iNZChangeDataWin.R")
+# w <- iNZAggregateWin$new(ui)
+
+test_that("Aggregating data adds correct code", {
+    w <- iNZAggregateWin$new(ui)
+    # w <- ui$modWin
+    # w$children[[1]]$children[[3]]$children[[2]]$set_value("gender")
+    # w$children[[1]]$children[[3]]$children[[4]]$set_value("travel")
+    # w$children[[1]]$children[[3]]$children[[7]]$set_value("Mean")
+    # expect_silent(
+    #     w$children[[1]]$children[[4]]$children[[1]]$invoke_change_handler()
+    # )
 })

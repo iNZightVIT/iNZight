@@ -1,8 +1,8 @@
 Package: iNZight
 Type: Package
-Title: iNZight GUI for Data Exploration and Visualisation
-Version: 4.0.0
-Date: 2020-05-11
+Title: A GUI for Data Exploration and Visualisation
+Version: 4.0.2.9000
+Date: 2020-12-03
 Authors@R: c(person("Tom", "Elliott", role = c("aut", "cre"),
                     email = "tom.elliott@auckland.ac.nz"),
              person("Dineika", "Chandrananda", role = "ctb"),
@@ -28,7 +28,7 @@ Imports:
     gdata,
     gWidgets2RGtk2,
     iNZightPlots (>= 2.12),
-    iNZightTools (>= 1.9),
+    iNZightTools (>= 1.9.1.9000),
     reshape2,
     plyr,
     survey,
@@ -55,4 +55,4 @@ Additional_repositories: https://r.docker.stat.auckland.ac.nz
 LazyData: true
 Encoding: UTF-8
 Language: en-GB
-RoxygenNote: 7.1.0
+RoxygenNote: 7.1.1

@@ -82,6 +82,7 @@
 #'   \item{Urbanpopulationgrowth}{}
 #'   \item{YearlyCO2emission}{}
 #' }
+#' @source \url{https://www.gapminder.org/data/}
 "gapminder"
 
 
@@ -107,5 +108,5 @@
 #'   \item{Marital}{marital status}
 #'   \item{Ethnicity}{six categories}
 #' }
-#' @source \url{http://www.stats.govt.nz/tools_and_services/university-students/NZIS-Super-SURF.aspx}
+#' @source \url{http://infoshare.stats.govt.nz/tools_and_services/university-students/NZIS-Super-SURF.aspx}
 "SURFIncomeSurvey_200"

@@ -257,7 +257,7 @@ iNZImportWin <- setRefClass(
                         spec <- svyspec$spec
                         clus1 <- NULL
                         clus2 <- NULL
-                        if (spec$ids != 1) {
+                        if (!is.null(spec$ids) && spec$ids != 1) {
                             if (grepl("\\+", spec$ids)) {
                                 clus <- strsplit(spec$ids, "\\+")[[1]]
                                 clus <- gsub("^\\s|\\s$", "", clus)
@@ -267,6 +267,7 @@ iNZImportWin <- setRefClass(
                                 clus1 <- svyspec$ids
                             }
                         }
+
                         GUI$getActiveDoc()$getModel()$setDesign(
                             strata = spec$strata,
                             clus1 = clus1,
@@ -274,7 +275,11 @@ iNZImportWin <- setRefClass(
                             wt = spec$weights,
                             fpc = spec$fpc,
                             nest = if (is.null(spec$nest)) FALSE else as.logical(spec$nest),
-                            type = "survey",
+                            reptype = spec$type,
+                            repweights = spec$repweights,
+                            scale = spec$scale,
+                            rscales = spec$rscales,
+                            type = spec$type,
                             gui = GUI
                         )
 

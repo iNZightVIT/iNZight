@@ -12,7 +12,7 @@ test_that("Exercise 1.15: Import data into iNZight", {
 
     ## Load course data files stored inside iNZight
     # File > Example data
-    expect_silent(exwin <- iNZImportExampleWin$new(ui))
+    expect_silent(exwin <- iNZight:::iNZImportExampleWin$new(ui))
 
     # > FutureLearn
     mod <- exwin$importFileWin$children[[1]]$children[[1]]$children[[2]]
@@ -37,7 +37,7 @@ test_that("Exercise 1.15: Import data into iNZight", {
     expect_equal(ui$plotType, "dot")
 
     ## Load gapminder_2008:
-    expect_silent(exwin <- iNZImportExampleWin$new(ui))
+    expect_silent(exwin <- iNZight:::iNZImportExampleWin$new(ui))
     mod <- exwin$importFileWin$children[[1]]$children[[1]]$children[[2]]
     expect_silent(svalue(mod) <- "FutureLearn")
     ds <- exwin$importFileWin$children[[1]]$children[[1]]$children[[4]]
@@ -56,7 +56,7 @@ test_that("Exercise 1.15: Import data into iNZight", {
     download.file(url, f, quiet = TRUE)
 
     # File > Import Data
-    expect_silent(imp <- iNZImportWin$new(ui))
+    expect_silent(imp <- iNZight:::iNZImportWin$new(ui))
 
     # > Browse
     imp$fname <- f

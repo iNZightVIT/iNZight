@@ -47,3 +47,36 @@ test_that("Application state can be loaded", {
         "gender"
     )
 })
+
+test_that("Reload works", {
+    # try(ui$close()); load_all()
+    ui <- iNZGUI$new()
+    ui$initializeGui(gapminder)
+    on.exit(gWidgets2::dispose(ui$win))
+    Sys.sleep(2)
+
+    ui$ctrlWidget$V1box$set_value("Region")
+
+    s <- ui$getState()
+    expect_silent(ui$reload())
+    # expect_equal(ui$getState(), s)
+
+    expect_silent(ui$reload())
+    # expect_equal(ui$getState(), s)
+
+    expect_equivalent(ui$getActiveData(), gapminder)
+    expect_equal(ui$plotType, "bar")
+    expect_equal(svalue(ui$ctrlWidget$V1box), "Region")
+
+    expect_true(enabled(ui$menuBarWidget$menubar$menu_list$Dataset$filter))
+})
+
+test_that("Reload works without data", {
+    # try(ui$close()); devtools::load_all()
+    ui <- iNZGUI$new()
+    ui$initializeGui()
+    on.exit(gWidgets2::dispose(ui$win))
+    Sys.sleep(2)
+
+    expect_silent(ui$reload())
+})

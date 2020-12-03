@@ -38,15 +38,14 @@ test_that("Survey design can be specified using window", {
 
     expect_silent(swin$createBtn$invoke_change_handler())
     expect_equal(
-        ui$iNZDocuments[[ui$activeDoc]]$getModel()$getDesign(),
+        ui$iNZDocuments[[ui$activeDoc]]$getModel()$getDesign()$spec,
         list(
+            ids = "dnum + snum",
+            probs = NULL,
             strata = NULL,
-            clus1 = "dnum",
-            clus2 = "snum",
-            wt = NULL,
             fpc = "fpc1 + fpc2",
             nest = FALSE,
-            poststrat = NULL,
+            weights = NULL,
             type = "survey"
         )
     )
@@ -533,10 +532,20 @@ test_that("New variables show up in calibration list", {
 
 })
 
+# data(api, package = "survey")
+
 # load_all()
 ui$close()
 ui <- iNZGUI$new()
 ui$initializeGui(apistrat)
+
+
+# e <- new.env()
+# e$data <- apistrat
+# e$data.svy <- svydesign(ids=~1, strata = ~snum, weights = ~pw, fpc = ~fpc, data = apistrat)
+
+# eval(parse(text = "inzplot(~api99, data = data)"), envir = e)
+# eval(parse(text = "inzplot(~api99, design = data.svy)"), envir = e)
 
 test_that("Survey design read from file", {
     svyfile <- tempfile("apistrat", fileext = ".svydesign")

@@ -101,8 +101,8 @@ iNZCodePanel <- setRefClass(
 
             tryCatch(
                 {
-                    print(svalue(input))
-                    print(ls(env = GUI$code_env))
+                    # print(svalue(input))
+                    # print(ls(env = GUI$code_env))
                     rawpl <- eval(
                         parse(text = svalue(input)),
                         envir = GUI$code_env
@@ -124,7 +124,7 @@ iNZCodePanel <- setRefClass(
                 print(rawpl)
             }
 
-            if (!grepl("^iNZPlot", svalue(input))) break
+            if (!grepl("^inzplot", svalue(input))) break
             # if (!inherits(rawpl, "inzplotoutput")) break
 
             curpl <- unclass(rawpl)
@@ -148,9 +148,9 @@ iNZCodePanel <- setRefClass(
                 g2 = NULL, g2.level = NULL
             )
 
-            if (length(call_xy) == 1) {
+            if (length(call_xy) == 2L) { # list("~", "var")
                 # just a single variable
-                vars$x <- as.character(call_xy[[1]])
+                vars$x <- as.character(call_xy[[2L]])
             } else {
                 # a more complex formula
                 vars$x <- as.character(call_xy[[2]])
@@ -189,17 +189,18 @@ iNZCodePanel <- setRefClass(
                 unblockHandlers(GUI$ctrlWidget$V1box)
                 vars$x <- as.name(vars$x)
 
+                blockHandlers(GUI$ctrlWidget$V2box)
                 if (!is.null(vars$y)) {
-                    blockHandlers(GUI$ctrlWidget$V2box)
                     GUI$ctrlWidget$V2box$set_value(vars$y)
-                    unblockHandlers(GUI$ctrlWidget$V2box)
                     vars$y <- as.name(vars$y)
+                } else {
+                    GUI$ctrlWidget$V2box$set_index(1L)
                 }
+                unblockHandlers(GUI$ctrlWidget$V2box)
 
+                blockHandlers(GUI$ctrlWidget$G1box)
                 if (!is.null(vars$g1)) {
-                    blockHandlers(GUI$ctrlWidget$G1box)
                     GUI$ctrlWidget$G1box$set_value(vars$g1)
-                    unblockHandlers(GUI$ctrlWidget$G1box)
 
                     vindex <- 1L
                     if (!is.null(vars$g1.level) && vars$g1.level != "_MULTI") {
@@ -207,12 +208,15 @@ iNZCodePanel <- setRefClass(
                     }
                     GUI$ctrlWidget$createSlider(pos = 6, vars$g1, vindex)
                     vars$g1 <- as.name(vars$g1)
+                } else {
+                    GUI$ctrlWidget$G1box$set_index(1L)
+                    GUI$ctrlWidget$deleteSlider(pos = 6L)
                 }
+                unblockHandlers(GUI$ctrlWidget$G1box)
 
+                blockHandlers(GUI$ctrlWidget$G2box)
                 if (!is.null(vars$g2)) {
-                    blockHandlers(GUI$ctrlWidget$G2box)
                     GUI$ctrlWidget$G2box$set_value(vars$g2)
-                    unblockHandlers(GUI$ctrlWidget$G2box)
 
                     vindex <- 1L
                     if (!is.null(vars$g2.level) && vars$g2.level != "_ALL") {
@@ -225,7 +229,11 @@ iNZCodePanel <- setRefClass(
                     }
                     GUI$ctrlWidget$createSlider(pos = 8, vars$g2, vindex)
                     vars$g2 <- as.name(vars$g2)
+                } else {
+                    GUI$ctrlWidget$G2box$set_index(1L)
+                    GUI$ctrlWidget$deleteSlider(pos = 8L)
                 }
+                unblockHandlers(GUI$ctrlWidget$G2box)
             }
 
             # remove data/design
