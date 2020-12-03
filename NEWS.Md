@@ -2,6 +2,7 @@
 
 * fixes a bug in code widget preventing UI from updating correctly (#334, @tmelliott)
 * fix bug in *File* > *Reload* causing crash if data hadn't been loaded yet (#332, @tmelliott)
+* disable *Identify Points* for hexbin/grid plots and histograms (#326, @tmelliott)
 
 ## iNZight 4.0.1
 

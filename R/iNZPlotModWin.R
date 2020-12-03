@@ -187,8 +187,7 @@ iNZPlotModWin <- setRefClass(
             if (!is.null(GUI)) {
                 updateSettings()
 
-              plot_history <<- GUI$initializePlotHistory()
-
+                plot_history <<- GUI$initializePlotHistory()
 
                 modwin <- GUI$initializeModuleWindow(scroll = FALSE)
                 mainGrp <- modwin$body
@@ -1027,6 +1026,7 @@ iNZPlotMod <- setRefClass(
                     "Identify Points" = identify,
                     iNZLocatePoints
                 )
+                if (GUI$plotType != "scatter") pageMethods <<- pageMethods[1:3]
                 usingMethods(appearance, features, identify, axes, iNZLocatePoints)
                 opts <- gcombobox(names(pageMethods[names(pageMethods) != ""]),
                     selected = which
@@ -1038,6 +1038,7 @@ iNZPlotMod <- setRefClass(
                     "Identify Points" = identify,
                     iNZLocatePoints
                 )
+                if (GUI$plotType != "dot") pageMethods <<- pageMethods[1:2]
                 usingMethods(appearance, identify, axes, iNZLocatePoints)
                 opts <- gcombobox(names(pageMethods[names(pageMethods) != ""]),
                     selected = which
