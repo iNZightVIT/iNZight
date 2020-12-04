@@ -113,7 +113,12 @@ iNZDataModel <- setRefClass(
                             fpc = x$fpc,
                             nest = as.logical(x$nest),
                             weights = x$weights,
-                            type = x$type
+                            type = x$type,
+                            repweights = x$repweights,
+                            scale = x$scale,
+                            rscales = x$rscales,
+                            reptype = x$reptype,
+                            poststrat = x$poststrat
                         )
                     ),
                     class = "inzsvyspec"
@@ -123,7 +128,10 @@ iNZDataModel <- setRefClass(
             dataDesign <<- unclass(x)
             dataDesignName <<- sprintf("%s.%s",
                 name,
-                switch(x$spec$type, "survey" = "svy", "replicate" = "repsvy")
+                switch(x$spec$type,
+                    "survey" = "svy",
+                    "replicate" = "repsvy"
+                )
             )
         },
         # setDesign2 = function(strata = NULL, clus1 = NULL, clus2 = NULL,

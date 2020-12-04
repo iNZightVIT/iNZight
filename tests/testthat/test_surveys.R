@@ -37,15 +37,16 @@ test_that("Survey design can be specified using window", {
     expect_equal(svalue(swin$fpcVar), "fpc1 + fpc2")
 
     expect_silent(swin$createBtn$invoke_change_handler())
+    s <- ui$iNZDocuments[[ui$activeDoc]]$getModel()$getDesign()$spec
     expect_equal(
-        ui$iNZDocuments[[ui$activeDoc]]$getModel()$getDesign()$spec,
+        s[!sapply(s, is.null)],
         list(
             ids = "dnum + snum",
-            probs = NULL,
-            strata = NULL,
+            # probs = NULL,
+            # strata = NULL,
             fpc = "fpc1 + fpc2",
             nest = FALSE,
-            weights = NULL,
+            # weights = NULL,
             type = "survey"
         )
     )
@@ -140,7 +141,7 @@ dchis <- suppressWarnings(svrepdesign(data = chis[,c(1:10, 92:96)],
     type = "other", scale = 1, rscales = 1
 ))
 
-# devtools::load_all()
+# try(ui$close()); devtools::load_all()
 ui <- iNZGUI$new()
 ui$initializeGui(chis)
 
@@ -155,16 +156,22 @@ test_that("Replicate weights can be specified", {
     svalue(swin$repScale) <- 1
 
     expect_silent(swin$createBtn$invoke_change_handler())
+    s <- ui$iNZDocuments[[ui$activeDoc]]$getModel()$getDesign()$spec
     expect_equal(
-        ui$iNZDocuments[[ui$activeDoc]]$getModel()$getDesign(),
+        s[!sapply(s, is.null)],
         list(
-            wt = "rakedw0",
+            ids = 1,
+            # probs = NULL,
+            # strata = NULL,
+            # fpc = NULL,
+            nest = logical(0),
+            weights = "rakedw0",
+            type = "replicate",
             repweights = paste("rakedw", 1:80, sep = ""),
-            reptype = "other",
             scale = 1,
             rscales = rep(1, 80),
-            poststrat = NULL,
-            type = "replicate"
+            reptype = "other"
+            # poststrat = NULL
         )
     )
 })
@@ -259,17 +266,17 @@ test_that("JK1 works", {
         paste("repw", formatC(1:40, width = 2, flag = "0"), sep = "")
     svalue(swin$repType) <- "JK1"
     expect_silent(swin$createBtn$invoke_change_handler())
+    s <- ui$iNZDocuments[[ui$activeDoc]]$getModel()$getDesign()$spec
     expect_equal(
-        ui$iNZDocuments[[ui$activeDoc]]$getModel()$getDesign(),
+        s[!sapply(s, is.null)],
         list(
-            wt = "pw",
+            ids = 1,
+            nest = logical(0),
+            weights = "pw",
+            type = "replicate",
             repweights =
                 paste("repw", formatC(1:40, width = 2, flag = "0"), sep = ""),
-            reptype = "JK1",
-            scale = NULL,
-            rscales = NULL,
-            poststrat = NULL,
-            type = "replicate"
+            reptype = "JK1"
         )
     )
 
