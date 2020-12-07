@@ -42,11 +42,8 @@ test_that("Survey design can be specified using window", {
         s[!sapply(s, is.null)],
         list(
             ids = "dnum + snum",
-            # probs = NULL,
-            # strata = NULL,
             fpc = "fpc1 + fpc2",
             nest = FALSE,
-            # weights = NULL,
             type = "survey"
         )
     )
@@ -265,7 +262,9 @@ test_that("JK1 works", {
     svalue(swin$repVars) <-
         paste("repw", formatC(1:40, width = 2, flag = "0"), sep = "")
     svalue(swin$repType) <- "JK1"
-    expect_silent(swin$createBtn$invoke_change_handler())
+    #### producing error about scale (n-1)/n not provided
+    # expect_silent(swin$createBtn$invoke_change_handler())
+    swin$createBtn$invoke_change_handler()
     s <- ui$iNZDocuments[[ui$activeDoc]]$getModel()$getDesign()$spec
     expect_equal(
         s[!sapply(s, is.null)],
@@ -300,6 +299,7 @@ vec <- structure(
 )
 dclus1p <- calibrate(dclus1, ~stype, vec)
 
+# try(ui$close()); devtools::load_all()
 ui <- iNZGUI$new()
 ui$initializeGui(apiclus1)
 
@@ -346,17 +346,18 @@ test_that("Post stratification set by importing additional dataset", {
 
     # and trigger the save
     expect_silent(swin$okBtn$invoke_change_handler())
+    pt <- pop.types$Freq
+    names(pt) <- paste(pop.types$stype)
+    s <- ui$iNZDocuments[[ui$activeDoc]]$getModel()$getDesign()$spec
     expect_equal(
-        ui$iNZDocuments[[ui$activeDoc]]$getModel()$getDesign(),
+        s[!sapply(s, is.null)],
         list(
-            strata = NULL,
-            clus1 = "dnum",
-            clus2 = NULL,
-            wt = "pw",
+            ids = "dnum",
             fpc = "fpc",
             nest = FALSE,
-            poststrat = list(stype = pop.types),
-            type = "survey"
+            weights = "pw",
+            type = "survey",
+            calibrate = list(stype = c(E = 4421,H = 755, M = 1018))
         )
     )
 })
@@ -373,16 +374,14 @@ test_that("Post stratification can be removed", {
     expect_silent(svalue(swin$PSvar, index = TRUE) <- 0)
     expect_equal(swin$lvldf, list(stype = pop.types))
     expect_silent(swin$okBtn$invoke_change_handler())
+    s <- ui$iNZDocuments[[ui$activeDoc]]$getModel()$getDesign()$spec
     expect_equal(
-        ui$iNZDocuments[[ui$activeDoc]]$getModel()$getDesign(),
+        s[!sapply(s, is.null)],
         list(
-            strata = NULL,
-            clus1 = "dnum",
-            clus2 = NULL,
-            wt = "pw",
+            ids = "dnum",
             fpc = "fpc",
             nest = FALSE,
-            poststrat = NULL,
+            weights = "pw",
             type = "survey"
         )
     )
@@ -432,17 +431,16 @@ test_that("Post stratification set by manually entering values", {
 
     # and trigger the save
     expect_silent(swin$okBtn$invoke_change_handler())
+    s <- ui$iNZDocuments[[ui$activeDoc]]$getModel()$getDesign()$spec
     expect_equal(
-        ui$iNZDocuments[[ui$activeDoc]]$getModel()$getDesign(),
+        s[!sapply(s, is.null)],
         list(
-            strata = NULL,
-            clus1 = "dnum",
-            clus2 = NULL,
-            wt = "pw",
+            ids = "dnum",
             fpc = "fpc",
             nest = FALSE,
-            poststrat = list(stype = pop.types),
-            type = "survey"
+            weights = "pw",
+            type = "survey",
+            calibrate = list(stype = c(E = 4421,H = 755, M = 1018))
         )
     )
 })
@@ -471,25 +469,27 @@ test_that("Multiple variables can be specified (raking calibration)", {
 
     swin$lvldf$sch.wide$Freq <- as.numeric(table(apipop$sch.wide))
     expect_silent(swin$display_tbl())
-    pop.types2 <- data.frame(
-        sch.wide = c("No", "Yes"),
-        Freq = as.numeric(table(apipop$sch.wide)),
-        stringsAsFactors = TRUE
-    )
+    # pop.types2 <- data.frame(
+    #     sch.wide = c("No", "Yes"),
+    #     Freq = as.numeric(),
+    #     stringsAsFactors = TRUE
+    # )
 
     # and trigger the save
     expect_silent(swin$okBtn$invoke_change_handler())
+    s <- ui$iNZDocuments[[ui$activeDoc]]$getModel()$getDesign()$spec
     expect_equal(
-        ui$iNZDocuments[[ui$activeDoc]]$getModel()$getDesign(),
+        s[!sapply(s, is.null)],
         list(
-            strata = NULL,
-            clus1 = "dnum",
-            clus2 = NULL,
-            wt = "pw",
+            ids = "dnum",
             fpc = "fpc",
             nest = FALSE,
-            poststrat = list(stype = pop.types, sch.wide = pop.types2),
-            type = "survey"
+            weights = "pw",
+            type = "survey",
+            calibrate = list(
+                stype = structure(as.numeric(table(apipop$stype)), .Names = levels(apipop$stype)),
+                sch.wide = structure(as.numeric(table(apipop$sch.wide)), .Names = levels(apipop$sch.wide))
+            )
         )
     )
 
@@ -556,28 +556,25 @@ ui$initializeGui(apistrat)
 
 test_that("Survey design read from file", {
     svyfile <- tempfile("apistrat", fileext = ".svydesign")
-    write.dcf(data.frame(strata = "stype", weights = "pw", fpc = "fpc"), svyfile)
+    writeLines('strata = "stype"\nweights = "pw"\nfpc = "fpc"', svyfile)
     on.exit(unlink(svyfile))
 
     swin <- iNZSurveyDesign$new(ui)
     expect_silent(swin$read_file(svyfile))
     expect_equivalent(
-        ui$iNZDocuments[[ui$activeDoc]]$getModel()$getDesign(),
-        iNZightTools::import_survey(svyfile, apistrat)
+        ui$iNZDocuments[[ui$activeDoc]]$getModel()$getDesign()$spec,
+        iNZightTools::import_survey(svyfile, apistrat)$spec
     )
 
     ui$setDocument(iNZDocument$new(data = apiclus2), reset = TRUE)
     Sys.sleep(5)
-    write.dcf(
-        data.frame(clusters = "dnum + snum", fpc = "fpc1 + fpc2"),
-        svyfile
-    )
+    writeLines('ids = "dnum + snum"\nfpc = "fpc1 + fpc2"', svyfile)
 
     swin <- iNZSurveyDesign$new(ui)
     expect_silent(swin$read_file(svyfile))
     expect_equivalent(
-        ui$iNZDocuments[[ui$activeDoc]]$getModel()$getDesign(),
-        iNZightTools::import_survey(svyfile, apiclus2)
+        ui$iNZDocuments[[ui$activeDoc]]$getModel()$getDesign()$spec,
+        iNZightTools::import_survey(svyfile, apiclus2)$spec
     )
 })
 

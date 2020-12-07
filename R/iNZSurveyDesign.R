@@ -107,7 +107,7 @@ iNZSurveyDesign <- setRefClass(
                         GUI$getActiveDoc()$getModel()$setDesign(
                             list(
                                 strata = strat,
-                                clusters = clus,
+                                ids = clus,
                                 weights = wts,
                                 nest = nest,
                                 fpc = fpc,
@@ -192,7 +192,7 @@ iNZSurveyDesign <- setRefClass(
                     "survey" = {
                         if (!is.null(spec$strata))
                             svalue(stratVar) <<- spec$strata
-                        if (!is.null(spec$ids) && spec$ids != "~ 1") {
+                        if (!is.null(spec$ids) && spec$ids != 1) {
                             clus <- trimws(strsplit(spec$ids, "+", fixed = TRUE)[[1]])
                             svalue(clus1Var) <<- clus[1]
                             if (length(clus) == 2L)
@@ -565,6 +565,7 @@ iNZSurveyPostStrat <- setRefClass(
                 }
                 return(invisible(NULL))
             }
+            curDes <- curDes$spec
 
             win <<- gwindow("Post Stratification",
                 parent = GUI$win,
@@ -659,8 +660,8 @@ iNZSurveyPostStrat <- setRefClass(
 
             ## populate on load
             lvldf <<- GUI$getActiveDoc()$getModel()$getFreqTables()
-            if (!is.null(curDes$poststrat)) {
-                svalue(PSvar) <<- names(curDes$poststrat)
+            if (!is.null(curDes$calibrate)) {
+                svalue(PSvar) <<- names(curDes$calibrate)
                 display_tbl()
             }
 
@@ -793,9 +794,17 @@ iNZSurveyPostStrat <- setRefClass(
         },
         set_poststrat_design = function() {
             curDes <- GUI$getActiveDoc()$getModel()$getDesign()$spec
+            cal_list <- lapply(names(lvldf),
+                function(var) {
+                    x <- lvldf[[var]]$Freq
+                    names(x) <- lvldf[[var]][[var]]
+                    x
+                }
+            )
+            names(cal_list) <- names(lvldf)
             GUI$getActiveDoc()$getModel()$setDesign(
                 modifyList(curDes,
-                    list(poststrat = if (length(svalue(PSvar))) lvldf[svalue(PSvar)] else NULL)
+                    list(calibrate = if (length(svalue(PSvar))) cal_list[svalue(PSvar)] else NULL)
                 ),
                 gui = GUI
             )
