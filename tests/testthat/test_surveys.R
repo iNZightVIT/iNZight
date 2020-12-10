@@ -581,10 +581,21 @@ test_that("Survey design read from file", {
 
 ui$close()
 
-# try(ui$close(), TRUE); load_all()
+# try(ui$close(), TRUE); devtools::load_all()
 ui <- iNZGUI$new()
 ui$initializeGui()
 
 test_that("Survey data can be imported from svydesign file", {
-
+    imp <- iNZImportWin$new(ui)
+    imp$fname <- "ncsr.svydesign"
+    imp$setfile()
+    Sys.sleep(1)
+    skip_if(length(imp$prevGp$children) == 1,
+        message = "Preview did not load."
+    )
+    expect_is(imp$prevGp$children[[2]], "GDf")
+    expect_equal(imp$prevGp$children[[2]]$get_dim(), c(rows = 30L, cols = 3L))
+    expect_silent(imp$okBtn$invoke_change_handler())
+    expect_equivalent(ui$getActiveData(), ncsr)
+    expect_is(ui$getActiveDoc()$getModel()$getDesign()$design, "survey.design")
 })
