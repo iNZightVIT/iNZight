@@ -1,0 +1,14 @@
+data = "apiclus1.csv"
+type = "survey"
+ids = "dnum"
+weights = "pw"
+fpc = "fpc"
+
+[calibrate.stype]
+E = 4421
+H = 755
+M = 1018
+
+[calibrate."sch.wide"]    # we must include quotes around variable names containing dots
+No = 1072
+Yes = 5122

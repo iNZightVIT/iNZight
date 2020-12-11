@@ -7,3 +7,6 @@ revdep
 *.Rcheck
 *.tar.gz
 *.RData
+inst/doc
+doc
+Meta
