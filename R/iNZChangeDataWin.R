@@ -404,6 +404,7 @@ iNZAggregateWin <- setRefClass(
     fields = list(
         GUI = "ANY",
         data = "ANY",
+        design = "ANY", is_survey = "logical",
         catvars = "character", numvars = "character",
         available_aggvars = "ANY", aggvars = "ANY",
         aggbtn_add = "ANY", aggbtn_rmv = "ANY",
@@ -427,6 +428,9 @@ iNZAggregateWin <- setRefClass(
             numvars <<- allvars[vt != "cat"] # includes datetimes
 
             try(dispose(GUI$modWin), silent = TRUE)
+
+            design <<- GUI$getActiveDoc()$getModel()$getDesign()
+            is_survey <<- !is.null(design)
 
             GUI$modWin <<- gwindow("Aggregate data",
                 parent = GUI$win,
@@ -752,7 +756,7 @@ iNZAggregateWin <- setRefClass(
 
             }
 
-            .dataset <- data
+            .dataset <- if (is_survey) design$design else data
             dat <- iNZightTools::aggregateData(
                 .dataset,
                 vars = aggvars$get_items(),
@@ -771,7 +775,7 @@ iNZAggregateWin <- setRefClass(
                 attr(.dataset, "name", exact = TRUE),
                 attr(dat, "code")
             )
-            GUI$setDocument(iNZDocument$new(data = dat))
+            GUI$setDocument(iNZDocument$new(data = dat$variables))
             dispose(GUI$modWin)
         }
     )
