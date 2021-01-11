@@ -1,6 +1,8 @@
 * refactor of the Aggregate Data functionality, allowing users to select more than three variables and to perform aggregation over a subset of variables
 * fix bug when setting new data object causing code history and data's new name to be lost
 * NEW: better handling of survey designs using our new 'Survey design specification' format. This allows users to load pre-configured surveys from a single 'specification' file, while may optionally point at a dataset for an all-in-one import.
+* when loading a new data set, exisiting datasets are kept (previously they were all removed; at this point I don't know why that design decision was made ...)
+* Join data now allows users to select an existing dataset, in addition to importing a new one (#340, @tmelliott)
 
 ## iNZight 4.0.2
 

@@ -1646,14 +1646,18 @@ iNZjoinDataWin <- setRefClass(
   fields = list(
     GUI = "ANY",
     newdata = "ANY",
+    prevTbl = "ANY",
     left_col = "ANY",
     right_col = "ANY",
+    data_name = "ANY",
+    impview = "ANY",
     join_method = "ANY",
     left_name = "ANY",
     right_name = "ANY",
     joinview = "ANY",
     coltbl = "ANY",
-    middle = "ANY"
+    middle = "ANY",
+    joinbtn = "ANY"
   ),
   methods = list(
     initialize = function(gui = NULL) {
@@ -1678,7 +1682,7 @@ iNZjoinDataWin <- setRefClass(
         helplyt[1, 20, expand = TRUE, anchor = c(1, -1)] <- helpbtn
         add(mainGroup, helplyt)
 
-        prevTbl <- glayout(homogeneous = FALSE, cont = mainGroup)
+        prevTbl <<- glayout(homogeneous = FALSE, cont = mainGroup)
 
         string1 <- glabel("Preview of the original dataset")
         originview <- gtable(data.frame(head(GUI$getActiveData(), 10), stringsAsFactors = TRUE))
@@ -1703,43 +1707,21 @@ iNZjoinDataWin <- setRefClass(
           updatePreview()
         })
 
-        prevTbl[1,1, expand = TRUE] <- string1
-        prevTbl[2,1, expand = TRUE] <- originview
-        prevTbl[3,1, expand = TRUE] <- string2
-        prevTbl[4,1, expand = TRUE] <- var1
-        prevTbl[5,1, expand = TRUE] <- left_name_box
+        prevTbl[1,1, expand = TRUE] <<- string1
+        prevTbl[2,1, expand = TRUE] <<- originview
+        prevTbl[3,1, expand = TRUE] <<- string2
+        prevTbl[4,1, expand = TRUE] <<- var1
+        prevTbl[5,1, expand = TRUE] <<- left_name_box
         size(originview) <- c(-1, 200)
 
-
-        string3 <- glabel("Preview of the imported dataset")
-        impview <- gtable(data.frame("", stringsAsFactors = TRUE))
-        string4 <- glabel("Import data")
-        data_name <- gfilebrowse(text = "Specify a file", initial.dir = file.path(".", "data"), handler = function(h, ...) {
-          newdata <<- iNZightTools::smart_read(svalue(data_name))
-          impview$set_items(head(newdata, 10))
-
-          left_col <<- ""
-          right_col <<- ""
-
-          d1 = tryCatch(
-            joinData(),
-            error = function(e) {
-              if (e$message == "`by` required, because the data sources have no common variables") {
-                a = tibble::tibble()
-                attr(a, "join_cols") = ""
-              }
-            }
-          )
-          attr = attr(d1, "join_cols")
-          left_col <<- as.character(attr)
-          right_col <<- left_col
-
-          create_join_table()
-          updatePreview()
-        })
-
-        right_name_box = gvbox()
-        name_string = glabel("Duplicated cols: suffix for New", cont = right_name_box, anchor = c(-1, 0))
+        string3 <- glabel("Preview of the second dataset")
+        impview <<- gtable(data.frame("", stringsAsFactors = TRUE))
+        data2frombox <- ggroup()
+        data2from <- gradio(c("Existing", "Import new"), horizontal = TRUE,
+          container = data2frombox)
+        data_name <<- glabel("test")
+        right_name_box <- gvbox()
+        name_string <- glabel("Duplicated cols: suffix for New", cont = right_name_box, anchor = c(-1, 0))
         right_name <<- "New"
         right_name_string = gedit("New", cont = right_name_box)
         addHandlerKeystroke(right_name_string, function(h, ...) {
@@ -1747,12 +1729,59 @@ iNZjoinDataWin <- setRefClass(
           updatePreview()
         })
 
-        prevTbl[1,2, expand = TRUE] <- string3
-        prevTbl[2,2, expand = TRUE] <- impview
-        prevTbl[3,2, expand = TRUE] <- string4
-        prevTbl[4,2, expand = TRUE] <- data_name
-        prevTbl[5,2, expand = TRUE] <- right_name_box
-        size(impview) <- c(-1, 200)
+        prevTbl[1,2, expand = TRUE] <<- string3
+        prevTbl[2,2, expand = TRUE] <<- impview
+        prevTbl[3,2, expand = TRUE] <<- data2frombox
+        prevTbl[4,2, expand = TRUE] <<- data_name
+        prevTbl[5,2, expand = TRUE] <<- right_name_box
+        size(impview) <<- c(-1, 200)
+
+        addHandlerChanged(data2from,
+          handler = function(h, ...) {
+            # delete current
+            prevTbl$remove_child(data_name)
+            dispose(data_name)
+
+            switch(svalue(h$obj, index = TRUE),
+              {
+                # if choose existing, show dropdown of available datasets (MINUS the current)
+                data_set_names <- GUI$dataNameWidget$nameLabel$get_items()
+                data_set_names <- data_set_names[data_set_names != GUI$dataNameWidget$datName]
+                if (length(data_set_names)) {
+                  data_name <<- gcombobox(data_set_names,
+                    selected = -1,
+                    handler = function(h, ...) {
+                      if (svalue(h$obj) == "") {
+                        newdata <<- NULL
+                        set_second_data()
+                        return()
+                      }
+                      i <- sapply(GUI$dataNameWidget$nameLabel$get_items(),
+                        function(x) x == svalue(h$obj))
+                      newdata <<- GUI$iNZDocuments[[which(i)[1]]]$getData()
+                      set_second_data()
+                    }
+                  )
+                } else {
+                  data_name <<- glabel("No datasets available")
+                }
+              },
+              {
+                # else show file chooser
+                data_name <<- gfilebrowse(
+                  text = "Specify a file",
+                  initial.dir = file.path(".", "data"),
+                  handler = function(h, ...) {
+                    newdata <<- iNZightTools::smart_read(svalue(data_name))
+                    set_second_data()
+                  }
+                )
+              }
+            )
+            prevTbl[4, 2, expand = TRUE] <<- data_name
+          }
+        )
+        data2from$invoke_change_handler()
 
         ## Middle box
         middle <<- ggroup(cont = mainGroup, horizontal = FALSE)
@@ -1765,7 +1794,7 @@ iNZjoinDataWin <- setRefClass(
         joinview <<- gtable(data.frame("", stringsAsFactors = TRUE), cont = bottom)
         size(joinview) <<- c(-1, 150)
 
-        joinbtn = gbutton("Join", cont = bottom)
+        joinbtn <<- gbutton("Join", cont = bottom)
         addHandlerChanged(joinbtn, function(h, ...) {
           .dataset <- GUI$getActiveData()
           data = joinData()
@@ -1808,6 +1837,28 @@ iNZjoinDataWin <- setRefClass(
         visible(GUI$modWin) <<- TRUE
       }
     },
+    set_second_data = function() {
+      impview$set_items(head(newdata, 10))
+
+      left_col <<- ""
+      right_col <<- ""
+
+      d1 <- tryCatch(
+        joinData(),
+        error = function(e) {
+          if (e$message == "`by` required, because the data sources have no common variables") {
+            a = tibble::tibble()
+            attr(a, "join_cols") = ""
+          }
+        }
+      )
+      attr = attr(d1, "join_cols")
+      left_col <<- as.character(attr)
+      right_col <<- left_col
+
+      create_join_table()
+      updatePreview()
+    },
     updatePreview = function() {
       "update the preview window"
       d = joinData()
@@ -1833,7 +1884,7 @@ iNZjoinDataWin <- setRefClass(
         }
         ## Now left_col contains some column namese and the mataching columns from two datasets are in the same class so JOIN
         if (all(list == TRUE)) {
-          iNZightTools::joindata(
+          d <- iNZightTools::joindata(
             GUI$getActiveData(),
             newdata,
             left_col,
@@ -1842,6 +1893,7 @@ iNZjoinDataWin <- setRefClass(
             left_name,
             right_name
           )
+          return(d)
         } else {
           joinview$set_items("Selected columns are of different types")
           return()
