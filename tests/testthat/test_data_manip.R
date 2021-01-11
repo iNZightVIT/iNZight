@@ -56,3 +56,40 @@ test_that("Aggregating data adds correct code", {
     #     w$children[[1]]$children[[4]]$children[[1]]$invoke_change_handler()
     # )
 })
+
+ui$close()
+
+# try(ui$close(), silent = TRUE); devtools::load_all()
+ui <- iNZGUI$new()
+ui$initializeGui()
+
+test_that("Existing atasets can be joined", {
+    # first, set two datasets:
+    d1 <- data.frame(x = c("A", "B", "C", "D"), y = 1:4,
+        stringsAsFactors = TRUE)
+    d2 <- data.frame(x = c("A", "B", "C", "D"), z = 1:4 * 1234,
+        stringsAsFactors = TRUE)
+
+    attr(d1, "name") <- "data1"
+    attr(d2, "name") <- "data2"
+    doc1 <- iNZDocument$new(data = d1)
+    doc2 <- iNZDocument$new(data = d2)
+    ui$setDocument(doc1)
+    expect_equivalent(ui$getActiveData(), d1)
+    ui$setDocument(doc2)
+    expect_equivalent(ui$getActiveData(), d2)
+
+    # merge data1 to data2
+    # source('R/iNZChangeDataWin.R'); try(dispose(jw), TRUE)
+    jw <- iNZjoinDataWin$new(ui)
+    expect_silent(jw$data_name$set_value("data1"))
+    expect_silent(jw$joinbtn$invoke_change_handler())
+    expect_equivalent(
+        ui$getActiveData()[,c("x", "y", "z")],
+        dplyr::inner_join(d1, d2, by = "x")
+    )
+    expect_equal(
+        code(ui$getActiveData()),
+        ""
+    )
+})
