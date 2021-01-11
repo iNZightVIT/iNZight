@@ -89,7 +89,7 @@ test_that("Existing atasets can be joined", {
         dplyr::inner_join(d1, d2, by = "x")
     )
     expect_equal(
-        code(ui$getActiveData()),
+        iNZightTools::code(ui$getActiveData()),
         ""
     )
 })
