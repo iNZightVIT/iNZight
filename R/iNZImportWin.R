@@ -250,7 +250,7 @@ iNZImportWin <- setRefClass(
                                 stringsAsFactors = TRUE
                             )
                         ),
-                        reset = TRUE
+                        reset = FALSE
                     )
                     if (fext == "svydesign") {
                         ## This needs to be updated to simply pass the spec object ...
