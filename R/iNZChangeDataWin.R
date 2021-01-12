@@ -7,19 +7,24 @@
 ## --------------------------------------------
 
 iNZFilterWinNew <- setRefClass(
-    "iNZFilterWin",
+    "iNZFilterWinNew",
     fields = list(
         GUI = "ANY",
         filter_type = "ANY",
         g_value = "ANY", g_row = "ANY", g_random = "ANY",
         filter_var = "ANY",
         cat_levels = "ANY", num_cond = "ANY", num_value = "ANY",
-        cnclBtn = "ANY", okBtn = "ANY"
+        vartype = "character",
+        new_row = "ANY",
+        cnclBtn = "ANY", okBtn = "ANY",
+        code_panel = "ANY",
+        newdata = "ANY"
     ),
     methods = list(
         initialize = function(gui = NULL) {
             if (is.null(gui)) return()
-            initFields(GUI = gui)
+            initFields(GUI = gui, newdata = NULL)
+            usingMethods("handle_filter", "update_data")
 
             try(dispose(GUI$modWin), silent = TRUE)
             GUI$modWin <<- gwindow("Filter Data ...",
@@ -79,7 +84,7 @@ iNZFilterWinNew <- setRefClass(
                 function(h, ...) {
                     varname <- svalue(h$obj)
                     var <- GUI$getActiveData()[[varname]]
-                    vartype <- iNZightTools::vartype(var)
+                    vartype <<- iNZightTools::vartype(var)
 
                     # remove all children
                     sapply(rev(tbl_value$child_positions),
@@ -89,7 +94,8 @@ iNZFilterWinNew <- setRefClass(
                         "cat" = {
                             # if categorical, choose levels to keep
                             lbl_levels <- glabel("Levels to keep :")
-                            cat_levels <<- gtable(levels(var), multiple = TRUE, -1L)
+                            cat_levels <<- gtable(levels(var), multiple = TRUE)
+                            addHandlerSelectionChanged(cat_levels, handle_filter)
                             size(cat_levels) <<- c(-1, 200)
                             tbl_value[2, 1, anchor = c(1, 1)] <- lbl_levels
                             tbl_value[2, 2:3] <- cat_levels
@@ -100,7 +106,8 @@ iNZFilterWinNew <- setRefClass(
                             lbl_condiiton <- glabel("Condition :")
                             num_cond <<- gcombobox(
                                 c("<", "<=", "==", ">=", ">", "!="),
-                                selected = 0L
+                                selected = 0L,
+                                handler = handle_filter
                             )
                             vr <- range(var, na.rm = TRUE)
                             dr <- diff(vr) / 100
@@ -112,7 +119,7 @@ iNZFilterWinNew <- setRefClass(
                             }
                             if (nr < 1 && all(as.integer(var) == var, na.rm = TRUE)) nr <- 1
 
-                            num_value <<- gspinbutton(vr[1], vr[2], nr)
+                            num_value <<- gspinbutton(vr[1], vr[2], nr, handler = handle_filter)
                             tbl_value[2, 1, anchor = c(1, 0)] <- lbl_condiiton
                             tbl_value[2, 2] <- num_cond
                             tbl_value[2, 3] <- num_value
@@ -132,15 +139,93 @@ iNZFilterWinNew <- setRefClass(
             g_random <<- gvbox(container = gmain)
 
 
-            ### footer (with buttons)
             addSpring(mainGrp)
+
+            ### dataset info:
+            ginfo <- gvbox(container = mainGrp)
+            cur_row <- glabel(sprintf("Current data has %d rows", nrow(GUI$getActiveData())),
+                container = mainGrp,
+                anchor = c(1, 0))
+            new_row <<- glabel("", container = mainGrp,
+            anchor = c(1, 0))
+            font(cur_row) <- list(size = 9)
+            font(new_row) <<- list(size = 9)
+
+
+            ### footer (with buttons)
             gfoot <- ggroup(container = mainGrp)
 
             cnclBtn <<- gbutton("Cancel", container = gfoot)
             addSpring(gfoot)
-            okBtn <<- gbutton("Filter", container = gfoot)
+            okBtn <<- gbutton("Filter", handler = update_data, container = gfoot)
+
+
+            ## code panel:
+            gcode <- ggroup(container = mainGrp)
+            code_panel <<- gtext("# R code will show here",
+                container = gcode,
+                font.attr = list(size = 8),
+                fill = TRUE,
+                expand = TRUE
+            )
 
             visible(GUI$modWin) <<- TRUE
+        },
+        handle_filter = function(h, ...) {
+            if (vartype == "cat" && length(cat_levels$get_index()) == 0) return()
+            if (vartype == "num" && svalue(num_cond) == "") return()
+
+            .dataset <- GUI$get_data_object()
+            switch(vartype,
+                "cat" = {
+                    newdata <<- iNZightTools::filterLevels(.dataset,
+                        var = svalue(filter_var),
+                        levels = svalue(cat_levels)
+                    )
+                },
+                "num" = {
+                    newdata <<- iNZightTools::filterNumeric(.dataset,
+                        var = svalue(filter_var),
+                        op = svalue(num_cond),
+                        num = svalue(num_value)
+                    )
+                }
+            )
+            attr(newdata, "code") <<- gsub(".dataset",
+                if (iNZightTools::is_survey(.dataset)) GUI$getActiveDoc()$getModel()$dataDesignName
+                else GUI$dataNameWidget$datName,
+                attr(newdata, "code")
+            )
+            # clear panel first...
+            fattr <- code_panel$font_attr
+            svalue(code_panel) <<- ""
+            font(code_panel) <<- fattr
+            insert(code_panel, paste(iNZightTools::code(newdata), collapse = "\n"), do.newline = FALSE)
+
+            # set row info
+            data <- newdata
+            if (iNZightTools::is_survey(data)) data <- data$variables
+            str <- sprintf("New data has %d rows (%d deleted)",
+                nrow(data),
+                nrow(GUI$getActiveData()) - nrow(data)
+            )
+            svalue(new_row) <<- str
+        },
+        update_data = function(h, ...) {
+            if (iNZightTools::is_survey(newdata)) {
+                des <- GUI$getActiveDoc()$getModel()$getDesign()
+                des$design <- newdata
+                des$data <- newdata$variables
+                attr(des$data, "name") <- sprintf("%s.filtered", attr(des$data, "name"))
+                attr(des$data, "code") <- attr(newdata, "code")
+                class(des) <- "inzsvyspec"
+
+                # this will need moving to iNZDocument ... at some stage ... :|
+                print(attributes(des$data))
+                # doc <- GUI$getActiveDoc()
+                # doc$setData(des$data)
+                # doc$setDesign(des)
+            }
         }
     )
 )

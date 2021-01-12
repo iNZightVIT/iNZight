@@ -16,7 +16,7 @@ test_that("Filtering surveys", {
     # filter income < 1e5
 
     # source("R/iNZChangeDataWin.R")
-    w <- iNZFilterWin$new(ui)
+    w <- iNZFilterWinNew$new(ui)
 
 
 })
