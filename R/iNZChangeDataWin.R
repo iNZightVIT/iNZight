@@ -145,7 +145,7 @@ iNZFilterWinNew <- setRefClass(
     )
 )
 
-iNZFilterWinNew <- setRefClass(
+iNZFilterWin <- setRefClass(
 "iNZFilterWin",
 fields = list(
     GUI = "ANY",
