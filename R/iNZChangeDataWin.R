@@ -6,7 +6,7 @@
 ## for that filter options is opened
 ## --------------------------------------------
 
-iNZFilterWin <- setRefClass(
+iNZFilterWinNew <- setRefClass(
     "iNZFilterWin",
     fields = list(
         GUI = "ANY",
@@ -145,9 +145,18 @@ iNZFilterWin <- setRefClass(
     )
 )
 
-x <- list(
-  list(
-    init = function() {
+iNZFilterWinNew <- setRefClass(
+"iNZFilterWin",
+fields = list(
+    GUI = "ANY",
+    filter_type = "ANY",
+    g_value = "ANY", g_row = "ANY", g_random = "ANY",
+    filter_var = "ANY",
+    cat_levels = "ANY", num_cond = "ANY", num_value = "ANY",
+    cnclBtn = "ANY", okBtn = "ANY"
+),
+methods = list(
+    initialize = function() {
       initFields(GUI = gui)
       usingMethods(opt1, opt2, opt3, opt4)
       if (!is.null(GUI)) {
