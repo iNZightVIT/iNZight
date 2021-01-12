@@ -7,12 +7,147 @@
 ## --------------------------------------------
 
 iNZFilterWin <- setRefClass(
-  "iNZFilterWin",
-  fields = list(
-    GUI = "ANY"
-  ),
-  methods = list(
-    initialize = function(gui = NULL) {
+    "iNZFilterWin",
+    fields = list(
+        GUI = "ANY",
+        filter_type = "ANY",
+        g_value = "ANY", g_row = "ANY", g_random = "ANY",
+        filter_var = "ANY",
+        cat_levels = "ANY", num_cond = "ANY", num_value = "ANY",
+        cnclBtn = "ANY", okBtn = "ANY"
+    ),
+    methods = list(
+        initialize = function(gui = NULL) {
+            if (is.null(gui)) return()
+            initFields(GUI = gui)
+
+            try(dispose(GUI$modWin), silent = TRUE)
+            GUI$modWin <<- gwindow("Filter Data ...",
+                parent = GUI$win,
+                width = 500L,
+                height = 400L,
+                visible = FALSE
+            )
+            mainGrp <- gvbox(cont = GUI$modWin, expand = TRUE)
+            mainGrp$set_borderwidth(10L)
+
+            ## --- title and help icon
+            helplyt <- glayout(homegenous = FALSE, container = mainGrp)
+
+            lbl1 <- glabel("Filter data")
+            font(lbl1) <- list(weight = "bold", style = "normal")
+
+            helpbtn <- gimagebutton(
+                stock.id = "gw-help",
+                handler = function(h, ...) {
+                    browseURL("https://inzight.nz/user_guides/data_options/#filter")
+                }
+            )
+
+            helplyt[1, 4:19, expand = TRUE, anchor = c(0,0)] <- lbl1
+            helplyt[1, 20, expand = TRUE, anchor = c(1, -1)] <- helpbtn
+
+            ## top group
+            gtop <- ggroup(container = mainGrp)
+            filter_type <<- gradio(
+                c(
+                    "by value",
+                    "by row number",
+                    "randomly"
+                ),
+                selected = 1L,
+                horizontal = TRUE,
+                container = gtop
+            )
+
+            addSpace(mainGrp, 10)
+            ### container for content
+            gmain <- ggroup(container = mainGrp, expand = TRUE, fill = TRUE)
+
+            #### --- filter by value
+            g_value <<- ggroup(container = gmain, expand = TRUE)
+            addSpring(g_value)
+            tbl_value <- glayout(container = g_value)
+
+            lbl <- glabel("Variable :")
+            filter_var <<- gcombobox(names(GUI$getActiveData()), selected = 0L)
+            size(filter_var) <<- c(250, -1)
+            tbl_value[1, 1, anchor = c(1, 0)] <- lbl
+            tbl_value[1, 2:3] <- filter_var
+
+            addHandlerChanged(filter_var,
+                function(h, ...) {
+                    varname <- svalue(h$obj)
+                    var <- GUI$getActiveData()[[varname]]
+                    vartype <- iNZightTools::vartype(var)
+
+                    # remove all children
+                    sapply(rev(tbl_value$child_positions),
+                        function(x) if (x$x > 1) tbl_value$remove_child(x$child))
+
+                    switch(vartype,
+                        "cat" = {
+                            # if categorical, choose levels to keep
+                            lbl_levels <- glabel("Levels to keep :")
+                            cat_levels <<- gtable(levels(var), multiple = TRUE, -1L)
+                            size(cat_levels) <<- c(-1, 200)
+                            tbl_value[2, 1, anchor = c(1, 1)] <- lbl_levels
+                            tbl_value[2, 2:3] <- cat_levels
+
+                        },
+                        "num" = {
+                            # if numeric, choose condition and value
+                            lbl_condiiton <- glabel("Condition :")
+                            num_cond <<- gcombobox(
+                                c("<", "<=", "==", ">=", ">", "!="),
+                                selected = 0L
+                            )
+                            vr <- range(var, na.rm = TRUE)
+                            dr <- diff(vr) / 100
+                            dr <- signif(dr, 1)
+                            if (dr >= 1) {
+                                nr <- 10^nchar(dr)
+                            } else {
+                                nr <- 10^-(nchar(dr) - 2L)
+                            }
+                            if (nr < 1 && all(as.integer(var) == var, na.rm = TRUE)) nr <- 1
+
+                            num_value <<- gspinbutton(vr[1], vr[2], nr)
+                            tbl_value[2, 1, anchor = c(1, 0)] <- lbl_condiiton
+                            tbl_value[2, 2] <- num_cond
+                            tbl_value[2, 3] <- num_value
+
+                        }
+                    )
+
+
+                }
+            )
+
+            #### --- filter by row number
+            g_row <<- gvbox(container = gmain)
+
+
+            #### --- filter randomly
+            g_random <<- gvbox(container = gmain)
+
+
+            ### footer (with buttons)
+            addSpring(mainGrp)
+            gfoot <- ggroup(container = mainGrp)
+
+            cnclBtn <<- gbutton("Cancel", container = gfoot)
+            addSpring(gfoot)
+            okBtn <<- gbutton("Filter", container = gfoot)
+
+            visible(GUI$modWin) <<- TRUE
+        }
+    )
+)
+
+x <- list(
+  list(
+    init = function() {
       initFields(GUI = gui)
       usingMethods(opt1, opt2, opt3, opt4)
       if (!is.null(GUI)) {
