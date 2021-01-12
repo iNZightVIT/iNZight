@@ -156,7 +156,7 @@ fields = list(
     cnclBtn = "ANY", okBtn = "ANY"
 ),
 methods = list(
-    initialize = function() {
+    initialize = function(gui = NULL) {
       initFields(GUI = gui)
       usingMethods(opt1, opt2, opt3, opt4)
       if (!is.null(GUI)) {
