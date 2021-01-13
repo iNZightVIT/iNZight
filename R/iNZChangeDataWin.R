@@ -212,31 +212,16 @@ iNZFilterWinNew <- setRefClass(
             svalue(new_row) <<- str
         },
         update_data = function(h, ...) {
-            attr(newdata, "name") <<- iNZightTools::add_suffix(GUI$dataNameWidget$datName, "filtered")
-            # if (iNZightTools::is_survey(newdata)) {
-            #     print(newdata)
-            #     attr(newdata$data, "name") <<- iNZightTools::add_suffix(GUI$dataNameWidget$datName, "filtered")
-            #     attr(newdata$data, "code") <<- attr(newdata, "code")
-            # } else {
+            data_name <- iNZightTools::add_suffix(GUI$dataNameWidget$datName, "filtered")
+            spec <- GUI$getActiveDoc()$getModel()$getDesign()
+            spec$design <- newdata
+            spec$data <- newdata$variables
+            attr(spec$data, "name") <- data_name
+            attr(spec$data, "code") <- attr(newdata, "code")
+            class(spec) <- "inzsvyspec"
 
-            # }
-            GUI$setDocument(iNZDocument$new(data = newdata))
+            GUI$setDocument(iNZDocument$new(data = spec))
             dispose(GUI$modWin)
-
-            # if (iNZightTools::is_survey(newdata)) {
-            #     des <- GUI$getActiveDoc()$getModel()$getDesign()
-            #     des$design <- newdata
-            #     des$data <- newdata$variables
-            #     attr(des$data, "name") <- sprintf("%s.filtered", attr(des$data, "name"))
-            #     attr(des$data, "code") <- attr(newdata, "code")
-            #     class(des) <- "inzsvyspec"
-
-            #     # this will need moving to iNZDocument ... at some stage ... :|
-            #     print(attributes(des$data))
-            #     # doc <- GUI$getActiveDoc()
-            #     # doc$setData(des$data)
-            #     # doc$setDesign(des)
-            # }
         }
     )
 )
