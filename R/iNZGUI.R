@@ -696,9 +696,9 @@ iNZGUI <- setRefClass(
                 dataViewWidget$updateWidget()
                 getActiveDoc()$updateSettings()
                 ctrlWidget$updateVariables()
-                dataNameWidget$updateWidget()
                 rhistory$update()
             }
+            dataNameWidget$updateWidget()
             is_initialized <<- TRUE
             updatePlot()
         },
@@ -768,19 +768,36 @@ iNZGUI <- setRefClass(
                     icon = "question",
                     parent = .self$win
                 )
-                if (conf) {
-                    todelete <- activeDoc
-                    activeDoc <<- activeDoc - 1
-                    rhistory$disabled <<- TRUE
-                    iNZDocuments <<- iNZDocuments[-todelete]
-                    rhistory$disabled <<- FALSE
-                    dataNameWidget$updateWidget()
-                }
             }
         },
+        do_delete_dataset = function() {
+            todelete <- activeDoc
+            activeDoc <<- activeDoc - 1
+            rhistory$disabled <<- TRUE
+            iNZDocuments <<- iNZDocuments[-todelete]
+            rhistory$disabled <<- FALSE
+            dataNameWidget$updateWidget()
+        },
         removeDesign = function() {
-            getActiveDoc()$getModel()$setDesign()
+            if (getActiveDoc()$getModel()$design_only) {
+                conf <- gconfirm(
+                    paste0(
+                        "This design was loaded directly, so removing it will delete",
+                        "the associated data. Are you sure you want to continue?"
+                    ),
+                    title = "Are you sure you want to delete this survey?",
+                    icon = "question",
+                    parent = .self$win
+                )
+                if (!conf) return()
+                # delete the current document
+                do_delete_dataset()
+            } else {
+                getActiveDoc()$getModel()$setDesign()
+            }
+
             updatePlot()
+            dataNameWidget$updateWidget()
             ## ENABLE A WHOLE LOT OF STUFF
             # enabled(menubar$menu_list[["Dataset"]][[3]]) <<- TRUE
             # enabled(menubar$menu_list[["Variables"]][["Numeric Variables"]][[2]]) <<- TRUE

@@ -10,7 +10,7 @@ ui$initializeGui(ncsr_svy$data)
 on.exit(try(ui$close(), TRUE))
 Sys.sleep(5)
 
-ui$getActiveDoc()$getModel()$setDesign(ncsr_svy$spec)
+ui$getActiveDoc()$getModel()$setDesign(ncsr_svy$spec, ui)
 
 
 test_that("Filtering surveys", {

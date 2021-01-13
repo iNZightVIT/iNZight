@@ -59,7 +59,10 @@ iNZcodeWidget <- setRefClass(
             code <- GUI$getActiveDoc()$getCode()
             if (!is.null(code)) {
                 if (length(code) == 1 && code == "") return()
-                dname <- attr(GUI$getActiveData(), "name", exact = TRUE)
+                if (is.null(GUI$getActiveDoc()$getModel()$getDesign()))
+                    dname <- attr(GUI$getActiveData(), "name", exact = TRUE)
+                else
+                    dname <- GUI$getActiveDoc()$getModel()$dataDesignName
                 if (is.null(dname) || dname == "")
                   dname <- sprintf("data%s", ifelse(GUI$activeDoc == 1, "", GUI$activeDoc))
                 dname <- iNZightTools:::create_varname(dname)

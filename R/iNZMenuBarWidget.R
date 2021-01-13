@@ -155,6 +155,10 @@ iNZMenuBarWidget <- setRefClass(
                     gaction("Filter ...",
                         icon = "subset",
                         handler = function(h, ...) iNZFilterWin$new(GUI)),
+                filternew =
+                    gaction("Filter (new) ...",
+                        icon = "subset",
+                        handler = function(h, ...) iNZFilterWinNew$new(GUI)),
                 sort =
                     gaction("Sort by variable(s) ...",
                         icon = "sort-ascending",
