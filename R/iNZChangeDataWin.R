@@ -212,20 +212,31 @@ iNZFilterWinNew <- setRefClass(
             svalue(new_row) <<- str
         },
         update_data = function(h, ...) {
-            if (iNZightTools::is_survey(newdata)) {
-                des <- GUI$getActiveDoc()$getModel()$getDesign()
-                des$design <- newdata
-                des$data <- newdata$variables
-                attr(des$data, "name") <- sprintf("%s.filtered", attr(des$data, "name"))
-                attr(des$data, "code") <- attr(newdata, "code")
-                class(des) <- "inzsvyspec"
+            attr(newdata, "name") <<- iNZightTools::add_suffix(GUI$dataNameWidget$datName, "filtered")
+            # if (iNZightTools::is_survey(newdata)) {
+            #     print(newdata)
+            #     attr(newdata$data, "name") <<- iNZightTools::add_suffix(GUI$dataNameWidget$datName, "filtered")
+            #     attr(newdata$data, "code") <<- attr(newdata, "code")
+            # } else {
 
-                # this will need moving to iNZDocument ... at some stage ... :|
-                print(attributes(des$data))
-                # doc <- GUI$getActiveDoc()
-                # doc$setData(des$data)
-                # doc$setDesign(des)
-            }
+            # }
+            GUI$setDocument(iNZDocument$new(data = newdata))
+            dispose(GUI$modWin)
+
+            # if (iNZightTools::is_survey(newdata)) {
+            #     des <- GUI$getActiveDoc()$getModel()$getDesign()
+            #     des$design <- newdata
+            #     des$data <- newdata$variables
+            #     attr(des$data, "name") <- sprintf("%s.filtered", attr(des$data, "name"))
+            #     attr(des$data, "code") <- attr(newdata, "code")
+            #     class(des) <- "inzsvyspec"
+
+            #     # this will need moving to iNZDocument ... at some stage ... :|
+            #     print(attributes(des$data))
+            #     # doc <- GUI$getActiveDoc()
+            #     # doc$setData(des$data)
+            #     # doc$setDesign(des)
+            # }
         }
     )
 )

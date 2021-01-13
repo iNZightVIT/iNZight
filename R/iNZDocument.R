@@ -25,7 +25,17 @@ iNZDataModel <- setRefClass(
     contains = "PropertySet", ## need this to add observer to object
     methods = list(
         initialize = function(data = NULL) {
-            if(!is.null(data)) {
+            if (is.null(data)) return()
+
+            if (iNZightTools::is_survey(data)) {
+                print(data)
+                print(srvyr:::survey_vars(data))
+                spec <- iNZightTools::as_survey_spec(data)
+                attr(spec$data, "name") <- attr(spec, "name")
+                attr(spec$data, "code") <- attr(spec, "code")
+                .self$setData(spec$data)
+                .self$setDesign(spec, .self)
+            } else {
                 .self$setData(data)
             }
         },
