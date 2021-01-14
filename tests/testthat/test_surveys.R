@@ -119,12 +119,10 @@ test_that("Plotting and summary of frequencies works", {
 
 test_that("Frequencies retained after filtering", {
     fwin <- iNZFilterWin$new(ui)
-    dispose(ui$modWin)
-    fwin$opt1()
-    svalue(ui$modWin$children[[1]]$children[[1]]$children[[2]]) <- "gender"
-    svalue(ui$modWin$children[[1]]$children[[2]]) <- 1
+    svalue(fwin$filter_var) <- "gender"
+    svalue(fwin$cat_levels, index = TRUE) <- 1
     expect_silent(
-        ui$modWin$children[[1]]$children[[3]]$children[[1]]$invoke_change_handler()
+        fwin$okBtn$invoke_change_handler()
     )
 })
 
