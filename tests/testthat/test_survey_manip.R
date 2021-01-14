@@ -14,12 +14,18 @@ ui$getActiveDoc()$getModel()$setDesign(ncsr_svy$spec, ui)
 
 
 test_that("Filtering surveys", {
+    expect_false(all(ui$getActiveData()$HHincome < 1e5))
+
     # filter income < 1e5
-
-    # source("R/iNZChangeDataWin.R")
-    w <- iNZFilterWinNew$new(ui)
-
-
+    w <- iNZFilterWin$new(ui)
+    expect_silent(w$filter_var$set_value("HHincome"))
+    expect_silent(svalue(w$num_cond) <- "<")
+    expect_silent(svalue(w$num_value) <- 1e5)
+    expect_true(enabled(w$okBtn))
+    expect_silent(w$okBtn$invoke_change_handler())
+    expect_true(all(ui$getActiveData()$HHincome < 1e5))
+    expect_equal(ui$dataNameWidget$datName, "ncsr.filtered")
+    expect_equal(svalue(ui$dataNameWidget$nameLabel), "ncsr.filtered.svy (survey design)")
 })
 
 

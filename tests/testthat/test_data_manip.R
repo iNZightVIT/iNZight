@@ -1,6 +1,6 @@
 context("Data manipulation and information")
 
-# try(ui$close(), TRUE); load_all()
+# try(ui$close(), TRUE); devtools::load_all()
 ui <- iNZGUI$new()
 ui$initializeGui(census.at.school.500)
 on.exit(try(ui$close(), TRUE))
@@ -29,13 +29,10 @@ test_that("Filtering data leaves code OK", {
     )
 
     w <- iNZFilterWin$new(ui)
-    gWidgets2::dispose(ui$modWin)
-    w$opt1()
-    ui$modWin$children[[1]]$children[[1]]$children[[2]]$set_value("gender")
-    svalue(ui$modWin$children[[1]]$children[[2]]) <- "male"
-    expect_silent(
-        ui$modWin$children[[1]]$children[[3]]$children[[1]]$invoke_change_handler()
-    )
+    expect_silent(w$filter_var$set_value("gender"))
+    expect_silent(svalue(w$cat_levels) <- "male")
+    expect_silent(w$cat_levels$invoke_change_handler())
+    expect_silent(w$okBtn$invoke_change_handler())
     expect_match(
         svalue(ui$code_panel$input),
         "inzplot(height ~ armspan, colby = gender, data = data.filtered)",
@@ -63,7 +60,7 @@ ui$close()
 ui <- iNZGUI$new()
 ui$initializeGui()
 
-test_that("Existing atasets can be joined", {
+test_that("Existing datasets can be joined", {
     # first, set two datasets:
     d1 <- data.frame(x = c("A", "B", "C", "D"), y = 1:4,
         stringsAsFactors = TRUE)
