@@ -15,17 +15,22 @@ iNZFilterWinNew <- setRefClass(
         filter_var = "ANY",
         cat_levels = "ANY", num_cond = "ANY", num_value = "ANY",
         row_nums = "ANY",
+        rand_size = "ANY", rand_num = "ANY", rand_msg = "ANY",
         keytimer = "ANY",
         vartype = "character",
         new_row = "ANY",
         cnclBtn = "ANY", okBtn = "ANY",
-        code_panel = "ANY",
+        code_panel = "ANY", code_font = "list",
         newdata = "ANY"
     ),
     methods = list(
         initialize = function(gui = NULL) {
             if (is.null(gui)) return()
-            initFields(GUI = gui, newdata = NULL)
+            initFields(
+                GUI = gui,
+                newdata = NULL,
+                code_font = list(size = 8, family = "monospace")
+            )
             usingMethods("handle_filter", "update_data")
 
             try(dispose(GUI$modWin), silent = TRUE)
@@ -41,7 +46,8 @@ iNZFilterWinNew <- setRefClass(
             ## --- title and help icon
             helplyt <- glayout(homegenous = FALSE, container = mainGrp)
 
-            lbl1 <- glabel("Filter data")
+            is_survey <- !is.null(GUI$getActiveDoc()$getModel()$getDesign())
+            lbl1 <- glabel(sprintf("Filter %s", ifelse(is_survey, "survey design", "data")))
             font(lbl1) <- list(weight = "bold", style = "normal")
 
             helpbtn <- gimagebutton(
@@ -56,12 +62,14 @@ iNZFilterWinNew <- setRefClass(
 
             ## top group
             gtop <- ggroup(container = mainGrp)
+            opts <- c(
+                "by value",
+                "by row number",
+                "randomly"
+            )
+            if (is_survey) opts <- opts[-3L]
             filter_type <<- gradio(
-                c(
-                    "by value",
-                    "by row number",
-                    "randomly"
-                ),
+                opts,
                 selected = 1L,
                 horizontal = TRUE,
                 container = gtop,
@@ -69,6 +77,8 @@ iNZFilterWinNew <- setRefClass(
                     visible(g_value) <<- h$obj$get_index() == 1L
                     visible(g_row) <<- h$obj$get_index() == 2L
                     visible(g_random) <<- h$obj$get_index() == 3L
+                    # and clear things:
+                    clear_result()
                 }
             )
 
@@ -191,7 +201,34 @@ iNZFilterWinNew <- setRefClass(
 
 
             #### --- filter randomly
-            g_random <<- ggroup(container = gmain, expand = TRUE)
+            g_random <<- gvbox(container = gmain, expand = TRUE)
+            g_random2 <- ggroup(container = g_random, expand = TRUE)
+            addSpring(g_random2)
+            tbl_row <- glayout(container = g_random2)
+            addSpring(g_random2)
+
+            lbl <- glabel("Sample size :")
+            rand_size <<- gedit()
+            addHandlerKeystroke(rand_size,
+                function(h, ...) {
+                    if (!is.null(keytimer))
+                        if (keytimer$started) keytimer$stop_timer()
+                    keytimer <<- gtimer(500, handle_filter, one.shot = TRUE)
+                }
+            )
+            size(rand_size) <<- c(150, -1)
+            tbl_row[1L, 1L, anchor = c(1, 0), expand = TRUE] <- lbl
+            tbl_row[1L, 2L] <- rand_size
+
+            lbl <- glabel("Number of samples :")
+            rand_num <<- gspinbutton(from = 1, to = nrow(GUI$getActiveData()), by = 1L,
+                handler = handle_filter)
+            size(rand_num) <<- c(150, -1)
+            tbl_row[2L, 1L, anchor = c(1, 0), expand = TRUE] <- lbl
+            tbl_row[2L, 2L] <- rand_num
+
+            rand_msg <<- glabel("", container = g_random)
+            font(rand_msg) <<- list(size = 9, weight = "bold", color = "orangered")
 
 
             addSpring(mainGrp)
@@ -213,16 +250,17 @@ iNZFilterWinNew <- setRefClass(
             cnclBtn <<- gbutton("Cancel", container = gfoot)
             addSpring(gfoot)
             okBtn <<- gbutton("Filter", handler = update_data, container = gfoot)
-
+            enabled(okBtn) <<- FALSE
 
             ## code panel:
             gcode <- ggroup(container = mainGrp)
             code_panel <<- gtext("# R code will show here",
                 container = gcode,
-                font.attr = list(size = 8),
+                font.attr = code_font,
                 fill = TRUE,
                 expand = TRUE
             )
+            enabled(code_panel) <<- FALSE
 
             filter_type$invoke_change_handler()
             visible(GUI$modWin) <<- TRUE
@@ -235,7 +273,10 @@ iNZFilterWinNew <- setRefClass(
                 filter_row(),
                 filter_random()
             )
-            if (is.null(newdata)) return()
+            if (is.null(newdata)) {
+                clear_result()
+                return()
+            }
 
             .dataset <- GUI$get_data_object()
             attr(newdata, "code") <<- gsub(".dataset",
@@ -244,9 +285,8 @@ iNZFilterWinNew <- setRefClass(
                 attr(newdata, "code")
             )
             # clear panel first...
-            fattr <- code_panel$font_attr
             svalue(code_panel) <<- ""
-            font(code_panel) <<- fattr
+            font(code_panel) <<- code_font
             insert(code_panel, paste(iNZightTools::code(newdata), collapse = "\n"), do.newline = FALSE)
 
             # set row info
@@ -257,6 +297,15 @@ iNZFilterWinNew <- setRefClass(
                 nrow(GUI$getActiveData()) - nrow(data)
             )
             svalue(new_row) <<- str
+            enabled(okBtn) <<- TRUE
+        },
+        clear_result = function() {
+            newdata <<- NULL
+            svalue(code_panel) <<- ""
+            font(code_panel) <<- code_font
+            insert(code_panel, "# R code will show here", do.newline = FALSE)
+            svalue(new_row) <<- ""
+            enabled(okBtn) <<- FALSE
         },
         filter_value = function() {
             if (vartype == "cat" && length(cat_levels$get_index()) == 0) return()
@@ -286,7 +335,22 @@ iNZFilterWinNew <- setRefClass(
             newdata <<- iNZightTools::filterRows(.dataset, delrows)
         },
         filter_random = function() {
-
+            if (svalue(rand_size) == "") return()
+            samplesize <- as.integer(svalue(rand_size))
+            if (is.na(samplesize)) return()
+            nsample <- svalue(rand_num)
+            if (samplesize * nsample > nrow(GUI$getActiveData())) {
+                svalue(rand_msg) <<- paste(
+                    sep = "\n",
+                    "Cannot sample more rows than in the original dataset.",
+                    "Try fewer or smaller samples."
+                )
+                return()
+            } else {
+                svalue(rand_msg) <<- ""
+            }
+            .dataset <- GUI$get_data_object()
+            newdata <<- iNZightTools::filterRandom(.dataset, nsample, samplesize)
         },
         update_data = function(h, ...) {
             if (is.null(newdata)) {
@@ -296,13 +360,19 @@ iNZFilterWinNew <- setRefClass(
 
             data_name <- iNZightTools::add_suffix(GUI$dataNameWidget$datName, "filtered")
             spec <- GUI$getActiveDoc()$getModel()$getDesign()
-            spec$design <- newdata
-            spec$data <- newdata$variables
-            attr(spec$data, "name") <- data_name
-            attr(spec$data, "code") <- attr(newdata, "code")
-            class(spec) <- "inzsvyspec"
-
-            GUI$setDocument(iNZDocument$new(data = spec))
+            print(spec)
+            data <- newdata
+            if (!is.null(spec)) {
+                spec$design <- newdata
+                spec$data <- newdata$variables
+                attr(spec$data, "name") <- data_name
+                attr(spec$data, "code") <- attr(newdata, "code")
+                class(spec) <- "inzsvyspec"
+                data <- spec
+            } else {
+                attr(data, "name") <- data_name
+            }
+            GUI$setDocument(iNZDocument$new(data = data))
             dispose(GUI$modWin)
         }
     )
