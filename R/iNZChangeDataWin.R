@@ -14,6 +14,8 @@ iNZFilterWinNew <- setRefClass(
         g_value = "ANY", g_row = "ANY", g_random = "ANY",
         filter_var = "ANY",
         cat_levels = "ANY", num_cond = "ANY", num_value = "ANY",
+        row_nums = "ANY",
+        keytimer = "ANY",
         vartype = "character",
         new_row = "ANY",
         cnclBtn = "ANY", okBtn = "ANY",
@@ -62,7 +64,12 @@ iNZFilterWinNew <- setRefClass(
                 ),
                 selected = 1L,
                 horizontal = TRUE,
-                container = gtop
+                container = gtop,
+                handler = function(h, ...) {
+                    visible(g_value) <<- h$obj$get_index() == 1L
+                    visible(g_row) <<- h$obj$get_index() == 2L
+                    visible(g_random) <<- h$obj$get_index() == 3L
+                }
             )
 
             addSpace(mainGrp, 10)
@@ -132,11 +139,59 @@ iNZFilterWinNew <- setRefClass(
             )
 
             #### --- filter by row number
-            g_row <<- gvbox(container = gmain)
+            g_row <<- ggroup(container = gmain, expand = TRUE)
+            addSpring(g_row)
+            tbl_row <- glayout(container = g_row)
+
+            lbl <- glabel("Rows to remove :")
+            row_nums <<- gedit()
+
+            keytimer <<- NULL
+            addHandlerKeystroke(row_nums,
+                function(h, ...) {
+                    if (!is.null(keytimer))
+                        if (keytimer$started) keytimer$stop_timer()
+                    keytimer <<- gtimer(500, handle_filter, one.shot = TRUE)
+                }
+            )
+            size(row_nums) <<- c(250, -1)
+            tbl_row[1, 1, anchor = c(1, 0), expand = TRUE] <- lbl
+            tbl_row[1, 2:3] <- row_nums
+
+            help_text <- paste(sep = "\n",
+                "In the box above, enter the numbers of rows to remove.",
+                "Separate multiple rows by commas (,), and specify ranges",
+                "using a colon (:). For example, "
+            )
+            lbl <- glabel(help_text)
+            font(lbl) <- list(size = 9)
+            tbl_row[2, 2:3, anchor = c(-1, 0), expand = TRUE] <- lbl
+            lbls <- list(
+                "Delete the first 5 rows: " = "1:5",
+                "Delete several rows: " = "5, 8, 20",
+                "Or a combination: " = "5, 8, 20:30, 87"
+            )
+            bleft <- gvbox(spacing = 0)
+            bright <- gvbox(spacing = 0)
+            ii <- 3L
+            for (i in seq_along(lbls)) {
+                lbl <- glabel(names(lbls)[[i]])
+                font(lbl) <- list(size = 9)
+                add(bleft, lbl, anchor = c(1, 0), expand = TRUE)
+                # tbl_row[ii, 2, anchor = c(1, 0), expand = TRUE] <- lbl
+                lbl <- glabel(lbls[[i]])
+                font(lbl) <- list(size = 9)
+                add(bright, lbl, anchor = c(-1, 0), expand = TRUE)
+                # tbl_row[ii, 3, anchor = c(-1, 0), expand = TRUE] <- lbl
+                # ii <- ii + 1L
+            }
+            tbl_row[3L, 2L] <- bleft
+            tbl_row[3L, 3L] <- bright
+
 
 
             #### --- filter randomly
-            g_random <<- gvbox(container = gmain)
+            g_random <<- ggroup(container = gmain, expand = TRUE)
 
 
             addSpring(mainGrp)
@@ -169,28 +224,20 @@ iNZFilterWinNew <- setRefClass(
                 expand = TRUE
             )
 
+            filter_type$invoke_change_handler()
             visible(GUI$modWin) <<- TRUE
         },
         handle_filter = function(h, ...) {
-            if (vartype == "cat" && length(cat_levels$get_index()) == 0) return()
-            if (vartype == "num" && svalue(num_cond) == "") return()
+            newdata <<- NULL
+
+            switch(filter_type$get_index(),
+                filter_value(),
+                filter_row(),
+                filter_random()
+            )
+            if (is.null(newdata)) return()
 
             .dataset <- GUI$get_data_object()
-            switch(vartype,
-                "cat" = {
-                    newdata <<- iNZightTools::filterLevels(.dataset,
-                        var = svalue(filter_var),
-                        levels = svalue(cat_levels)
-                    )
-                },
-                "num" = {
-                    newdata <<- iNZightTools::filterNumeric(.dataset,
-                        var = svalue(filter_var),
-                        op = svalue(num_cond),
-                        num = svalue(num_value)
-                    )
-                }
-            )
             attr(newdata, "code") <<- gsub(".dataset",
                 if (iNZightTools::is_survey(.dataset)) GUI$getActiveDoc()$getModel()$dataDesignName
                 else GUI$dataNameWidget$datName,
@@ -211,7 +258,42 @@ iNZFilterWinNew <- setRefClass(
             )
             svalue(new_row) <<- str
         },
+        filter_value = function() {
+            if (vartype == "cat" && length(cat_levels$get_index()) == 0) return()
+            if (vartype == "num" && svalue(num_cond) == "") return()
+
+            .dataset <- GUI$get_data_object()
+            switch(vartype,
+                "cat" = {
+                    newdata <<- iNZightTools::filterLevels(.dataset,
+                        var = svalue(filter_var),
+                        levels = svalue(cat_levels)
+                    )
+                },
+                "num" = {
+                    newdata <<- iNZightTools::filterNumeric(.dataset,
+                        var = svalue(filter_var),
+                        op = svalue(num_cond),
+                        num = svalue(num_value)
+                    )
+                }
+            )
+        },
+        filter_row = function() {
+            if (svalue(row_nums) == "") return()
+            .dataset <- GUI$get_data_object()
+            delrows <- sprintf("c(%s)", svalue(row_nums))
+            newdata <<- iNZightTools::filterRows(.dataset, delrows)
+        },
+        filter_random = function() {
+
+        },
         update_data = function(h, ...) {
+            if (is.null(newdata)) {
+                gmessage("No valid filtering applied.")
+                return()
+            }
+
             data_name <- iNZightTools::add_suffix(GUI$dataNameWidget$datName, "filtered")
             spec <- GUI$getActiveDoc()$getModel()$getDesign()
             spec$design <- newdata
