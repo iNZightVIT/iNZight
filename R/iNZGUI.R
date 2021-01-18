@@ -704,13 +704,13 @@ iNZGUI <- setRefClass(
         },
         new_document = function(data, suffix) {
             "Create a new document based on the existing one (`getActiveDoc()`)"
-            data_name <- iNZightTools::add_suffix(.self$dataNameWidget$datName, "aggregated")
+            data_name <- iNZightTools::add_suffix(.self$dataNameWidget$datName, suffix)
             spec <- .self$getActiveDoc()$getModel()$getDesign()
-            if (!is.null(spec) && "design" %in% names(data) && iNZightTools::is_survey(data$design)) {
+            if (!is.null(spec) && iNZightTools::is_survey(data)) {
                 spec$design <- data
                 spec$data <- data$variables
                 attr(spec$data, "name") <- data_name
-                attr(spec$data, "code") <- attr(newdata, "code")
+                attr(spec$data, "code") <- attr(data, "code")
                 class(spec) <- "inzsvyspec"
                 data <- spec
             } else {

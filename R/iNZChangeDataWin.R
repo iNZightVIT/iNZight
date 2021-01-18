@@ -358,20 +358,7 @@ iNZFilterWin <- setRefClass(
                 return()
             }
 
-            data_name <- iNZightTools::add_suffix(GUI$dataNameWidget$datName, "filtered")
-            spec <- GUI$getActiveDoc()$getModel()$getDesign()
-            data <- newdata
-            if (!is.null(spec)) {
-                spec$design <- newdata
-                spec$data <- newdata$variables
-                attr(spec$data, "name") <- data_name
-                attr(spec$data, "code") <- attr(newdata, "code")
-                class(spec) <- "inzsvyspec"
-                data <- spec
-            } else {
-                attr(data, "name") <- data_name
-            }
-            GUI$setDocument(iNZDocument$new(data = data))
+            GUI$new_document(newdata, "filtered")
             dispose(GUI$modWin)
         }
     )
@@ -837,22 +824,6 @@ iNZAggregateWin <- setRefClass(
 
             GUI$new_document(data = newdata, suffix = "aggregated")
             dispose(GUI$modWin)
-
-            # data_name <- iNZightTools::add_suffix(GUI$dataNameWidget$datName, "aggregated")
-            # spec <- GUI$getActiveDoc()$getModel()$getDesign()
-            # dat <- newdata
-            # if (!is.null(spec) && "design" %in% names(dat) && iNZightTools::is_survey(dat$design)) {
-            #     spec$design <- newdata
-            #     spec$data <- newdata$variables
-            #     attr(spec$data, "name") <- data_name
-            #     attr(spec$data, "code") <- attr(newdata, "code")
-            #     class(spec) <- "inzsvyspec"
-            #     dat <- spec
-            # } else {
-            #     attr(dat, "name") <- data_name
-            # }
-            # GUI$setDocument(iNZDocument$new(data = dat))
-            # dispose(GUI$modWin)
         }
     )
 )
