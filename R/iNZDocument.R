@@ -56,6 +56,11 @@ iNZDataModel <- setRefClass(
             oldname <<- ""
         },
         updateData = function(data) {
+            if (inherits(data, "inzsvyspec")) {
+                # updateData(data$data)
+                return()
+            }
+
             if (is.null(attr(data, "name", exact = TRUE)))
                 attr(data, "name") <- "data"
             dataSet <<- data
