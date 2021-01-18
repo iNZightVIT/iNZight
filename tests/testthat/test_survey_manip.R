@@ -38,6 +38,11 @@ test_that("Aggregating survey data is valid", {
     # - need to use survey objects more uniquely (i.e., stop using data and replace with design)
     #   -> the 'dataname' widget should show that it's a design
     #   -> survey might somehow need a 'name' (possibly attached to the survey spec?)
-
-
+    w <- iNZAggregateWin$new(ui)
+    w$aggvars$set_items(data.frame(Selected = c("race", "education")))
+    svalue(w$smryvars) <- c("HHincome", "height")
+    w$smryvars$invoke_change_handler()
+    svalue(w$gsmry$children[[1]][3,1]) <- TRUE
+    w$ok_btn$invoke_change_handler()
+    expect_null(ui$getActiveDoc()$getModel()$getDesign())
 })

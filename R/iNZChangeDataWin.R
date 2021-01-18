@@ -824,8 +824,8 @@ iNZAggregateWin <- setRefClass(
 
             }
 
-            .dataset <- if (is_survey) design$design else data
-            dat <- iNZightTools::aggregateData(
+            .dataset <- GUI$get_data_object()
+            newdata <- iNZightTools::aggregateData(
                 .dataset,
                 vars = aggvars$get_items(),
                 summary_vars = svalue(smryvars),
@@ -835,15 +835,20 @@ iNZAggregateWin <- setRefClass(
                 custom_funs = custom
             )
 
-            attr(dat, "name") <- iNZightTools::add_suffix(
-                attr(.dataset, "name", exact = TRUE),
-                "aggregated"
-            )
-            attr(dat, "code") <- gsub(".dataset",
-                attr(.dataset, "name", exact = TRUE),
-                attr(dat, "code")
-            )
-            GUI$setDocument(iNZDocument$new(data = dat$variables))
+            data_name <- iNZightTools::add_suffix(GUI$dataNameWidget$datName, "aggregated")
+            spec <- GUI$getActiveDoc()$getModel()$getDesign()
+            dat <- newdata
+            if (!is.null(spec) && "design" %in% names(dat) && iNZightTools::is_survey(dat$design)) {
+                spec$design <- newdata
+                spec$data <- newdata$variables
+                attr(spec$data, "name") <- data_name
+                attr(spec$data, "code") <- attr(newdata, "code")
+                class(spec) <- "inzsvyspec"
+                dat <- spec
+            } else {
+                attr(dat, "name") <- data_name
+            }
+            GUI$setDocument(iNZDocument$new(data = dat))
             dispose(GUI$modWin)
         }
     )
