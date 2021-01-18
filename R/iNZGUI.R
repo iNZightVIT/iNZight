@@ -702,6 +702,22 @@ iNZGUI <- setRefClass(
             is_initialized <<- TRUE
             updatePlot()
         },
+        new_document = function(data, suffix) {
+            "Create a new document based on the existing one (`getActiveDoc()`)"
+            data_name <- iNZightTools::add_suffix(.self$dataNameWidget$datName, "aggregated")
+            spec <- .self$getActiveDoc()$getModel()$getDesign()
+            if (!is.null(spec) && "design" %in% names(data) && iNZightTools::is_survey(data$design)) {
+                spec$design <- data
+                spec$data <- data$variables
+                attr(spec$data, "name") <- data_name
+                attr(spec$data, "code") <- attr(newdata, "code")
+                class(spec) <- "inzsvyspec"
+                data <- spec
+            } else {
+                attr(data, "name") <- data_name
+            }
+            .self$setDocument(iNZDocument$new(data = data))
+        },
         getActiveDoc = function() {
             iNZDocuments[[activeDoc]]
         },
