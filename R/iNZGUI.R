@@ -730,8 +730,8 @@ iNZGUI <- setRefClass(
                 data <- spec
             } else {
                 attr(data, "name") <- .self$getActiveDoc()$getModel()$name
-                .self$getActiveDoc()$getModel()$updateData(data)
             }
+            .self$getActiveDoc()$getModel()$updateData(data)
         },
         getActiveDoc = function() {
             iNZDocuments[[activeDoc]]

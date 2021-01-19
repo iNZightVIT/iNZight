@@ -12,6 +12,13 @@ Sys.sleep(5)
 
 ui$getActiveDoc()$getModel()$setDesign(ncsr_svy$spec, ui)
 
+test_that("Convert to cat", {
+    # source("R/iNZDataModWin.R")
+    w <- iNZconToCatWin$new(ui)
+    svalue(w$varLbl) <- "weight"
+    w$okButton$invoke_change_handler()
+})
+
 
 test_that("Filtering surveys", {
     expect_false(all(ui$getActiveData()$HHincome < 1e5))

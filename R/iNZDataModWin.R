@@ -100,7 +100,11 @@ iNZconToCatWin <- setRefClass(
   "iNZconToCatWin",
   contains = "iNZDataModWin",
   fields = list(
-    varData = "ANY" ## data that is dragged into droptarget
+    data = "ANY",
+    varData = "ANY", ## data that is dragged into droptarget
+    varLbl = "ANY",
+    varname = "ANY",
+    okButton = "ANY"
   ),
   methods = list(
     initialize = function(gui) {
@@ -111,77 +115,88 @@ iNZconToCatWin <- setRefClass(
       mainGroup <- gvbox()
       mainGroup$set_borderwidth(15)
 
-      helpbtn <- gimagebutton(stock.id = "gw-help", anchor = c(1, -1), cont = mainGroup, handler = function(h, ...){
-        browseURL("https://www.stat.auckland.ac.nz/~wild/iNZight/user_guides/variables/#convert1")
-      })
+      helpbtn <- gimagebutton(
+        stock.id = "gw-help",
+        anchor = c(1, -1),
+        cont = mainGroup,
+        handler = function(h, ...)
+          browseURL("https://inzight.nz/user_guides/variables/#convert1")
+      )
 
       tbl <- glayout(container = mainGroup)
-      ii <- 1
+      ii <- 1L
 
-      lbl <- glabel(paste("1. Drag and drop a variable name onto the",
-                          "label below to create a categorical version",
-                          "of that variable", sep = "\n"))
-      font(lbl) <- list(weight = "bold", family = "sans")
+      lbl <- glabel(
+        paste(sep = "\n",
+          "Choose a variable from the dropdown box below,",
+          "or drag and drop a variable onto it, to create a",
+          "categorical version of the chosen variable."
+        )
+      )
+      font(lbl) <- list(size = 10, weight = "bold")
+      tbl[ii, 1:2, anchor = c(-1, 0), expand = TRUE] <- lbl
+      ii <- ii + 1L
 
-      tbl[ii, 1, anchor = c(-1, 0), expand = TRUE] <- lbl
+
+      lbl <- glabel("Variable to convert :")
+      tbl[ii, 1L, anchor = c(1, 0), expand = TRUE] <- lbl
+
+      data <<- GUI$getActiveData()
+      numvars <- names(data)[sapply(data, iNZightTools::is_num)]
+      varLbl <<- gcombobox(numvars,
+        selected = 0L,
+        handler = function(h, ...) {
+          varData <<- svalue(varLbl)
+          svalue(varname) <<- makeNames(paste0(varData, ".cat"))
+        }
+      )
+      tbl[ii, 2L, expand = TRUE] <- varLbl
+      ii <- ii + 1L
+
+      lbl <- glabel("New variable name :")
+      tbl[ii, 1, anchor = c(1, 0), expand = TRUE] <- lbl
+
+      varname <<- gedit("", width = 20)
+      tbl[ii, 2, expand = TRUE] <- varname
       ii <- ii + 1
 
-      tbl[ii, 1] <- gseparator()
-      ii <- ii + 1
-
-      dropLbl <- glabel("DROP VARIABLE HERE")
-      font(dropLbl) <- list(size = 14)
-      tbl[ii, 1] <- dropLbl
-      ii <- ii + 1
-
-      tbl[ii, 1] <- gseparator()
-      ii <- ii + 1
-
-      lbl <- glabel("2. Type name for the new variable: ")
-      font(lbl) <- list(weight = "bold", family = "sans")
-      tbl[ii, 1, encho = c(-1, 0), expand = TRUE] <- lbl
-      ii <- ii + 1
-
-      name.txt <- gedit("No Variable Selected", width = 20)
-      tbl[ii, 1] <- name.txt
-      ii <- ii + 1
-
-      okButton <- gbutton("Update Data",
-                          handler = function(h, ...) {
-                            orgVar <- svalue(dropLbl)
-                            name <- gsub('\\n+', "", svalue(name.txt), perl = TRUE)
-                            if (name == "" || !is.character(name))
-                              gmessage("Please choose a non-empty name for the new variable",
-                                       title = "Invalid variable choice", parent = GUI$modWin)
-                            else if (orgVar == "DROP VARIABLE HERE")
-                              gmessage("Please choose a variable to convert",
-                                       title = "Invalid variable choice", parent = GUI$modWin)
-                            else if (checkNames(name)) {
-                              .dataset <- GUI$getActiveData()
-                              data <- iNZightTools::convertToCat(.dataset, orgVar, name)
-                              updateData(data)
-                              svalue(dropLbl) <- "DROP VARIABLE HERE"
-                              svalue(name.txt) <- "No Variable Selected"
-                            }
-                          })
-      font(okButton) <- list(weight="bold", family = "sans")
-      tbl[ii, 1] <- okButton
-      ii <- ii + 1
+      okButton <<- gbutton("Update Data",
+        handler = function(h, ...) {
+          orgVar <- svalue(varLbl)
+          name <- gsub('\\n+', "", svalue(varname), perl = TRUE)
+          if (name == "" || !is.character(name))
+            gmessage("Please choose a non-empty name for the new variable",
+              title = "Invalid variable choice",
+              parent = GUI$modWin)
+          else if (length(orgVar) == 0L)
+            gmessage("Please choose a variable to convert",
+              title = "Invalid variable choice",
+              parent = GUI$modWin)
+          else if (checkNames(name)) {
+            .dataset <- GUI$get_data_object()
+            newdata <- iNZightTools::convertToCat(.dataset, orgVar, name)
+            updateData(newdata)
+            varLbl$set_index(0L)
+            svalue(varname) <<- ""
+          }
+        }
+      )
+      font(okButton) <<- list(weight = "bold", family = "sans")
+      tbl[ii, 2L] <- okButton
+      ii <- ii + 1L
 
 
-      addDropTarget(dropLbl,
-                    handler = function(h, ...) {
-                      dropData <- GUI$getActiveDoc()$getData()[h$dropdata][[1]]
-                      if (all(is_cat(dropData)))
-                        gmessage("Already a categorical variable!",
-                                 parent = GUI$win, icon = 'warning')
-                      else {
-                        svalue(h$obj) <- h$dropdata
-                        svalue(name.txt) <- makeNames(paste0(h$dropdata, ".cat"))
-                        varData <<- dropData
-                      }
-                    })
-
+      addDropTarget(varLbl,
+        handler = function(h, ...) {
+          dropData <- GUI$getActiveDoc()$getData()[h$dropdata][[1]]
+          if (all(is_cat(dropData)))
+            gmessage("Already a categorical variable!",
+                      parent = GUI$win, icon = 'warning')
+          else {
+            svalue(varLbl) <<- h$dropdata
+          }
+        }
+      )
       add(GUI$modWin, mainGroup, expand = TRUE)
       visible(GUI$modWin) <<- TRUE
     })
@@ -321,7 +336,7 @@ iNZcllpsWin <- setRefClass(
                        title = 'Invalid level name', parent = GUI$modWin,
                        icon = 'warning')
             } else if (checkNames(name)) {
-              .dataset <- GUI$getActiveData()
+              .dataset <- GUI$get_data_object()
               data <- iNZightTools::collapseLevels(.dataset, var, lvls, lvlname, name)
               updateData(data)
               dispose(GUI$modWin)
