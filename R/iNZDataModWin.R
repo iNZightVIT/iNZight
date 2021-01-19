@@ -1198,7 +1198,7 @@ iNZmissCatWin <- setRefClass(
           if (length(svalue(listOfVars)) > 0) {
             vars <- svalue(listOfVars)
             names <- makeNames(paste0(vars, "_miss"))
-            .dataset <- GUI$getActiveData()
+            .dataset <- GUI$get_data_object()
             data <- iNZightTools::missingToCat(.dataset, vars, names)
             updateData(data)
             dispose(GUI$modWin)
