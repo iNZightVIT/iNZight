@@ -722,7 +722,12 @@ iNZGUI <- setRefClass(
             "Update the existing document with new data or survey design"
             spec <- .self$getActiveDoc()$getModel()$getDesign()
             if (!is.null(spec) && iNZightTools::is_survey(data)) {
-
+                spec$design <- data
+                spec$data <- data$variables
+                attr(spec$data, "name") <- .self$getActiveDoc()$getModel()$name
+                attr(spec$data, "code") <- attr(data, "code")
+                class(spec) <- "inzsvyspec"
+                data <- spec
             } else {
                 attr(data, "name") <- .self$getActiveDoc()$getModel()$name
                 .self$getActiveDoc()$getModel()$updateData(data)

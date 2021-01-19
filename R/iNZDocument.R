@@ -57,8 +57,10 @@ iNZDataModel <- setRefClass(
         },
         updateData = function(data) {
             if (inherits(data, "inzsvyspec")) {
-                # updateData(data$data)
-                return()
+                dataDesign <<- unclass(data)
+                invisible(createSurveyObject(reload = TRUE))
+                data <- data$data
+                design_only <<- TRUE
             }
 
             if (is.null(attr(data, "name", exact = TRUE)))
