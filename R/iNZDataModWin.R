@@ -765,7 +765,7 @@ iNZcrteVarWin <- setRefClass(
       submitButton = gbutton(" - SUBMIT -", handler = function(h,...) {
         expr <- svalue(newVarExp)
         name <- svalue(newVarName)
-        .dataset <- GUI$getActiveData()
+        .dataset <- GUI$get_data_object()
         data <- try(iNZightTools::createNewVar(.dataset, name, expr), silent = TRUE)
         if (inherits(data, 'try-error')) {
           err <- strsplit(data, "\n")[[1]]
@@ -1152,9 +1152,9 @@ iNZdeleteVarWin <- setRefClass(
               ),
               icon = "question")
             if (confirmDel) {
-              .dataset <- GUI$getActiveData()
+              .dataset <- GUI$get_data_object()
               data <- iNZightTools::deleteVars(.dataset, vars)
-              GUI$getActiveDoc()$getModel()$updateData(data)
+              updateData(data)
               dispose(GUI$modWin)
             }
           }
