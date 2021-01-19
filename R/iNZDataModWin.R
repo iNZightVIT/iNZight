@@ -1246,7 +1246,7 @@ iNZrankNumWin <- setRefClass(
       rankButton <- gbutton("Rank", handler = function(h, ...) {
         if (length(svalue(numVar)) > 0) {
           vars <- svalue(numVar)
-          .dataset <- GUI$getActiveData()
+          .dataset <- GUI$get_data_object()
           data <- iNZightTools::rankVars(.dataset, vars)
           updateData(data)
         }
