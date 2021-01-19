@@ -718,6 +718,16 @@ iNZGUI <- setRefClass(
             }
             .self$setDocument(iNZDocument$new(data = data))
         },
+        update_document = function(data) {
+            "Update the existing document with new data or survey design"
+            spec <- .self$getActiveDoc()$getModel()$getDesign()
+            if (!is.null(spec) && iNZightTools::is_survey(data)) {
+
+            } else {
+                attr(data, "name") <- .self$getActiveDoc()$getModel()$name
+                .self$getActiveDoc()$getModel()$updateData(data)
+            }
+        },
         getActiveDoc = function() {
             iNZDocuments[[activeDoc]]
         },

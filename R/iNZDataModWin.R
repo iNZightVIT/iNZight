@@ -91,8 +91,7 @@ iNZDataModWin <- setRefClass(
       return(TRUE)
     },
     updateData = function(newdata) {
-      attr(newdata, "name") <- GUI$getActiveDoc()$getModel()$name
-      GUI$getActiveDoc()$getModel()$updateData(newdata)
+      GUI$update_document(newdata)
     })
 )
 
