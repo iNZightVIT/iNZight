@@ -151,7 +151,10 @@ iNZDataModel <- setRefClass(
             )
             # when design changed, update the object
             invisible(createSurveyObject(reload = TRUE))
-            if (!missing(gui)) gui$dataNameWidget$updateWidget()
+            if (!missing(gui)) {
+                gui$dataNameWidget$updateWidget()
+                gui$menuBarWidget$defaultMenu()
+            }
         },
         # setDesign2 = function(strata = NULL, clus1 = NULL, clus2 = NULL,
         #                      wt = NULL, nest = NULL, fpc = NULL,

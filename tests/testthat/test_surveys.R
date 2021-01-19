@@ -597,3 +597,28 @@ test_that("Survey data can be imported from svydesign file", {
     expect_equivalent(ui$getActiveData(), ncsr)
     expect_is(ui$getActiveDoc()$getModel()$getDesign()$design, "survey.design")
 })
+
+ui$close()
+
+# devtools::load_all("../iNZightTools")
+ncsr_svy <- iNZightTools::import_survey('ncsr.svydesign')
+# ncsr_svy <- iNZightTools::import_survey('tests/testthat/ncsr.svydesign')
+
+# try(ui$close(), TRUE); devtools::load_all()
+ui <- iNZGUI$new()
+ui$initializeGui(ncsr_svy$data)
+
+test_that("Invalid menu items are disabled", {
+    m <- function() ui$menuBarWidget$menubar$get_value()
+    expect_true(enabled(m()$Dataset$stack))
+    expect_true(enabled(m()$Dataset[["Dataset operation"]]$reshape))
+    expect_true(enabled(m()$Dataset[["Merge/Join datasets"]]$appendrows))
+    expect_is(m()$Dataset[["Frequency tables"]], "list")
+
+    ui$getActiveDoc()$getModel()$setDesign(ncsr_svy$spec, ui)
+    expect_false(enabled(m()$Dataset$stack))
+    expect_false(enabled(m()$Dataset[["Dataset operation"]]$reshape))
+    expect_false(enabled(m()$Dataset[["Merge/Join datasets"]]$appendrows))
+    expect_is(m()$Dataset[["Frequency tables"]], "GAction")
+    expect_false(enabled(m()$Dataset[["Frequency tables"]]))
+})

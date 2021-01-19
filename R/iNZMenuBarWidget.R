@@ -168,18 +168,18 @@ iNZMenuBarWidget <- setRefClass(
                         icon = "dnd-multiple",
                         handler = function(h, ...) iNZstackVarWin$new(GUI)),
                 "Dataset operation" = list(
-                  reshape =
-                    gaction("Reshape dataset ...",
+                    reshape =
+                        gaction("Reshape dataset ...",
                             icon = "dataframe",
                             tooltip = "Transform from wide- to long-form data",
                             handler = function(h, ...) iNZReshapeDataWin$new(GUI)),
-                  separate =
-                    gaction("Separate column ...",
+                    separate =
+                        gaction("Separate column ...",
                             icon = "dataframe",
                             tooltip = "Separate columns",
                             handler = function(h, ...) iNZSeparateDataWin$new(GUI)),
-                  unite =
-                    gaction("Unite columns ...",
+                    unite =
+                        gaction("Unite columns ...",
                             icon = "dataframe",
                             tooltip = "Unite columns",
                             handler = function(h, ...) iNZUniteDataWin$new(GUI))
@@ -224,12 +224,12 @@ iNZMenuBarWidget <- setRefClass(
                         icon = "delete",
                         handler = function(h, ...) GUI$deleteDataset()),
                 "Merge/Join datasets" = list(
-                  joinbycol =
-                    gaction("Join by column values",
+                    joinbycol =
+                        gaction("Join by column values",
                             icon = "copy",
                             handler = function(h, ...) iNZjoinDataWin$new(GUI)),
-                  appendrows =
-                    gaction("Append new rows",
+                    appendrows =
+                        gaction("Append new rows",
                             icon = "edit",
                             handler = function(h, ...) iNZappendrowWin$new(GUI))
                 ),
@@ -280,6 +280,15 @@ iNZMenuBarWidget <- setRefClass(
                 )
             )
             if (is.null(menu$report)) menu$report <- NULL
+            if (!is.null(GUI$getActiveDoc()$getModel()$getDesign())) {
+                # disable some items for surveys
+                enabled(menu$stack) <- FALSE
+                enabled(menu[["Dataset operation"]]$reshape) <- FALSE
+                enabled(menu[["Merge/Join datasets"]]$appendrows) <- FALSE
+
+                menu[["Frequency tables"]] <- gaction("Frequency tables", enabled = FALSE)
+                enabled(menu[["Frequency tables"]]) <- FALSE
+            }
             menu
         },
         VariablesMenu = function() {
