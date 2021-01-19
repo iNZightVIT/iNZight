@@ -601,7 +601,7 @@ test_that("Survey data can be imported from svydesign file", {
 ui$close()
 
 # devtools::load_all("../iNZightTools")
-ncsr_svy <- iNZightTools::import_survey('ncsr.svydesign')
+ncsr_svy <- iNZightTools::import_survey(file.path(test_dir, "ncsr.svydesign"))
 # ncsr_svy <- iNZightTools::import_survey('tests/testthat/ncsr.svydesign')
 
 # try(ui$close(), TRUE); devtools::load_all()
