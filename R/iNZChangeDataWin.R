@@ -1121,8 +1121,9 @@ iNZReorderVarsWin <- setRefClass(
                         return()
                     }
 
-                    .dataset <- GUI$getActiveData()
-                    if (identical(vars, colnames(.dataset))) {
+                    .dataset <- GUI$get_data_object()
+                    .d <- if (iNZightTools::is_survey(.dataset)) .dataset$variables else .dataset
+                    if (identical(vars, colnames(.d))) {
                         gmessage("It looks like you have selected all of the variables in the same order.",
                             title = "No change to variables",
                             icon = "warning",
@@ -1131,21 +1132,13 @@ iNZReorderVarsWin <- setRefClass(
                         return()
                     }
 
-                    data <- iNZightTools::selectVars(.dataset, vars)
-                    attr(data, "name") <- iNZightTools::add_suffix(
-                        attr(.dataset, "name", exact = TRUE),
-                        ifelse(length(vars) == ncol(.dataset), "reorder", "subset")
+                    newdata <- iNZightTools::selectVars(.dataset, vars)
+                    GUI$new_document(data = newdata,
+                      suffix = ifelse(length(vars) == ncol(.dataset), "reorder", "subset")
                     )
-                    attr(data, "code") <- gsub(
-                        ".dataset",
-                        attr(.dataset, "name", exact = TRUE),
-                        attr(data, "code")
-                    )
-                    GUI$setDocument(iNZDocument$new(data = data))
                     dispose(GUI$modWin)
                 }
             )
-
 
             visible(GUI$modWin) <<- TRUE
         },
