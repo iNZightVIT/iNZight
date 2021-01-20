@@ -386,7 +386,7 @@ iNZSortbyDataWin <- setRefClass(
         mainGrp$set_borderwidth(15)
         btnGrp <- ggroup(horizontal = TRUE)
         helpbtn <- gimagebutton(stock.id = "gw-help", handler = function(h, ...){
-          browseURL("https://www.stat.auckland.ac.nz/~wild/iNZight/user_guides/data_options/#sort")
+          help_page("user_guides/data_options/#sort")
         })
         lbl1 <- glabel("Sort by")
         font(lbl1) <- list(weight = "bold", style = "normal")
@@ -848,7 +848,7 @@ iNZAgraDataWin <- setRefClass(
         btnGrp <- ggroup(horizontal = TRUE)
         nameList <- names(Filter(is_cat,GUI$getActiveData()))
         helpbtn <- gimagebutton(stock.id = "gw-help", handler = function(h, ...){
-          browseURL("https://www.stat.auckland.ac.nz/~wild/iNZight/user_guides/data_options/#aggregate")
+          help_page("user_guides/data_options/#aggregate")
         })
         heading <- glabel("Aggregate over variables:")
         font(heading) <- list(weight = "bold", style = "normal")
@@ -921,7 +921,7 @@ iNZstackVarWin <- setRefClass(
         mainGroup <- ggroup(expand = TRUE, horizontal = FALSE)
         mainGroup$set_borderwidth(15)
         helpbtn <- gimagebutton(stock.id = "gw-help", handler = function(h, ...){
-          browseURL("https://www.stat.auckland.ac.nz/~wild/iNZight/user_guides/data_options/#stack")
+          help_page("user_guides/data_options/#stack")
         })
         ## instructions through glabels
         lbl1 <- glabel("Choose variables to stack")
@@ -1217,7 +1217,7 @@ iNZReshapeDataWin <- setRefClass(
         mainGroup <- ggroup(cont = GUI$modWin, expand = TRUE, horizontal = FALSE)
         mainGroup$set_borderwidth(15)
         helpbtn <- gimagebutton(stock.id = "gw-help", handler = function(h, ...){
-          browseURL("https://www.stat.auckland.ac.nz/~wild/iNZight/user_guides/data_options/#reshape")
+          help_page("user_guides/data_options/#reshape")
         })
         title_string <- glabel("Reshape Dateset")
         font(title_string) <- list(size = 14, weight = "bold")
@@ -1405,7 +1405,7 @@ iNZSeparateDataWin <- setRefClass(
         mainGroup <- ggroup(cont = GUI$modWin, expand = TRUE, horizontal = FALSE)
         mainGroup$set_borderwidth(15)
         helpbtn <- gimagebutton(stock.id = "gw-help", handler = function(h, ...){
-          browseURL("https://www.stat.auckland.ac.nz/~wild/iNZight/user_guides/data_options/#separate")
+          help_page("user_guides/data_options/#separate")
         })
         title_string = glabel("Separate columns")
         font(title_string) = list(size = 14, weight = "bold")
@@ -1574,7 +1574,7 @@ iNZUniteDataWin <- setRefClass(
         mainGroup <- ggroup(cont = GUI$modWin, expand = TRUE, horizontal = FALSE)
         mainGroup$set_borderwidth(15)
         helpbtn <- gimagebutton(stock.id = "gw-help", handler = function(h, ...){
-          browseURL("https://www.stat.auckland.ac.nz/~wild/iNZight/user_guides/data_options/#unite")
+          help_page("user_guides/data_options/#unite")
         })
         title_string <- glabel("Unite columns")
         font(title_string) <- list(size = 14, weight = "bold")
@@ -1724,7 +1724,7 @@ iNZjoinDataWin <- setRefClass(
         mainGroup$set_borderwidth(15)
 
         helpbtn <- gimagebutton(stock.id = "gw-help", handler = function(h, ...){
-          browseURL("https://www.stat.auckland.ac.nz/~wild/iNZight/user_guides/data_options/#join")
+          help_page("user_guides/data_options/#join")
         })
         title_string <- glabel("Join Datasets")
         font(title_string) <- list(size = 14, weight = "bold")
@@ -2030,7 +2030,7 @@ iNZappendrowWin <- setRefClass(
         mainGroup <- ggroup(cont = GUI$modWin, expand = TRUE, horizontal = FALSE)
         mainGroup$set_borderwidth(15)
         helpbtn <- gimagebutton(stock.id = "gw-help", handler = function(h, ...){
-          browseURL("https://www.stat.auckland.ac.nz/~wild/iNZight/user_guides/data_options/#append")
+          help_page("user_guides/data_options/#append")
         })
         title_string = glabel("Append rows")
         font(title_string) = list(size = 14, weight = "bold")

@@ -590,14 +590,7 @@ iNZMenuBarWidget <- setRefClass(
                             guides[[n]],
                             icon = "help_topic",
                             tooltip = "",
-                            handler = function(h, ...) {
-                                browseURL(
-                                    sprintf(
-                                        "https://www.stat.auckland.ac.nz/~wild/iNZight/%s",
-                                        gsub(".", "/", n)
-                                    )
-                                )
-                            }
+                            handler = function(h, ...) help_page(gsub(".", "/", n, fixed = TRUE))
                         )
                     }
                 ),
@@ -606,19 +599,19 @@ iNZMenuBarWidget <- setRefClass(
                         icon = "file",
                         tooltip = "",
                         handler = function(h, ...)
-                            browseURL('https://www.stat.auckland.ac.nz/~wild/iNZight/support/changelog/?pkg=iNZight')),
+                            help_page('support/changelog/?pkg=iNZight')),
                 faq =
                     gaction("FAQ",
                         icon = "find",
                         tooltip = "",
                         handler = function(h, ...)
-                            browseURL("https://www.stat.auckland.ac.nz/~wild/iNZight/support/faq/")),
+                            help_page("support/faq/")),
                 contact =
                     gaction("Contact us or Report a Bug",
                         icon = "help",
                         tooltip = "",
                         handler = function(h, ...)
-                            browseURL("https://www.stat.auckland.ac.nz/~wild/iNZight/support/contact/"))
+                            help_page("support/contact/"))
             )
         }
     )
