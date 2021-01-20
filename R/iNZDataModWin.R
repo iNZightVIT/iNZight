@@ -1045,7 +1045,7 @@ iNZrnmVarWin <- setRefClass(
                                 w <- vnames != onames
                                 namelist <- as.list(vnames[w])
                                 names(namelist) <- onames[w]
-                                .dataset <- GUI$getActiveData()
+                                .dataset <- GUI$get_data_object()
                                 data <- iNZightTools::renameVars(.dataset, namelist)
                                 updateData(data)
                                 dispose(GUI$modWin)
