@@ -416,7 +416,7 @@ iNZrenameWin <- setRefClass(
         ## newFactor will be FALSE, if the user input was wrong
         name <- svalue(factorName)
         if (is.list(newlvls) && checkNames(name)) {
-          .dataset <- GUI$getActiveData()
+          .dataset <- GUI$get_data_object()
           data <- iNZightTools::renameLevels(.dataset, var, newlvls, name)
           updateData(data)
           dispose(GUI$modWin)
