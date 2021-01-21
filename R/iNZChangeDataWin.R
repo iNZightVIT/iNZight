@@ -402,11 +402,9 @@ iNZSortbyDataWin <- setRefClass(
             asc <- sapply(tbl[, 3], svalue, index = TRUE) == 1
             wi <- vars != ""
 
-            .dataset <- GUI$getActiveData()
-            data <- iNZightTools::sortVars(.dataset, vars[wi], asc[wi])
-            attr(data, "name") <- paste(attr(.dataset, "name", exact = TRUE), "sorted", sep = ".")
-            attr(data, "code") <- gsub(".dataset", attr(.dataset, "name", exact = TRUE), attr(data, "code"))
-            GUI$setDocument(iNZDocument$new(data = data))
+            .dataset <- GUI$get_data_object()
+            newdata <- iNZightTools::sortVars(.dataset, vars[wi], asc[wi])
+            GUI$new_document(newdata, "sorted")
             dispose(GUI$modWin)
           }
         )
@@ -1394,7 +1392,7 @@ iNZSeparateDataWin <- setRefClass(
         try(dispose(GUI$modWin), silent = TRUE)
 
         ## start my window
-        GUI$modWin <<- gwindow("Separate columns", parent = GUI$win, visible = FALSE)
+        GUI$modWin <<- gwindow("Separate columns [surveys not supported]", parent = GUI$win, visible = FALSE)
         mainGroup <- ggroup(cont = GUI$modWin, expand = TRUE, horizontal = FALSE)
         mainGroup$set_borderwidth(15)
         helpbtn <- gimagebutton(stock.id = "gw-help", handler = function(h, ...){
@@ -1409,6 +1407,8 @@ iNZSeparateDataWin <- setRefClass(
 
         format_string <- glabel("Select separate mode", cont = mainGroup)
         format.list <- c("", "Separate a column into several columns", "Separate a column to make several rows")
+        if (iNZightTools::is_survey(GUI$get_data_object()))
+          format.list <- format.list[1:2]
         format <- gcombobox(items = format.list, cont = mainGroup, handler = function(h, ...){
           col <<- ""
           sep <<- ""
@@ -1465,15 +1465,18 @@ iNZSeparateDataWin <- setRefClass(
         size(newview) <<- c(-1, 250)
 
         seperatebtn <- gbutton("Separate", cont = mainGroup, handler = function(h, ...) {
+          # .dataset <- GUI$get_data_object()
           .dataset <- GUI$getActiveData()
-          data <- separatedt()
+          newdata <- separatedt()
           i <- 1
           while (i < length(namelist)) {
             old <- namelist[i]
             new <- namelist[i+1]
-            colnames(data)[which(names(data) == old)] <- new
+            colnames(newdata)[which(names(newdata) == old)] <- new
             i <- i + 2
           }
+
+          # GUI$new_document(newdata, "separated")
           attr(data, "name") <- paste(attr(.dataset, "name", exact = TRUE), "separated", sep = ".")
           attr(data, "code") <- gsub(".dataset", attr(.dataset, "name", exact = TRUE), attr(data, "code"))
           GUI$setDocument(iNZDocument$new(data = data))
