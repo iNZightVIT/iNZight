@@ -251,7 +251,7 @@ iNZtrnsWin <- setRefClass(
             name <- makeNames(gsub("X", var, transforms[[i]][1]))
             if (checkNames(name)) {
               fn <- transforms[[i]][2]
-              .dataset <- GUI$getActiveData()
+              .dataset <- GUI$get_data_object()
               data <- iNZightTools::transformVar(.dataset, var, fn, name)
               updateData(data)
             }
