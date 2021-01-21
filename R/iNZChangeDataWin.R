@@ -1622,14 +1622,14 @@ iNZUniteDataWin <- setRefClass(
         prevTbl[2,2, expand = TRUE] <- newview
         size(newview) <<- c(-1, 250)
 
-        unitebtn <- gbutton("Unite", cont = mainGroup, handler = function(h, ...) {
-          .dataset <- GUI$getActiveData()
-          data <- iNZightTools::unite(.dataset, name, col, sep)
-          attr(data, "name") <- paste(attr(.dataset, "name", exact = TRUE), "united", sep = ".")
-          attr(data, "code") <- gsub(".dataset", attr(.dataset, "name", exact = TRUE), attr(data, "code"))
-          GUI$setDocument(iNZDocument$new(data = data))
-          dispose(GUI$modWin)
-        })
+        unitebtn <- gbutton("Unite", cont = mainGroup,
+          handler = function(h, ...) {
+            .dataset <- GUI$get_data_object()
+            newdata <- iNZightTools::unite(.dataset, name, col, sep)
+            GUI$new_document(newdata, "united")
+            dispose(GUI$modWin)
+          }
+        )
 
         visible(GUI$modWin) <<- TRUE
       }
