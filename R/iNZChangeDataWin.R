@@ -1553,10 +1553,12 @@ iNZUniteDataWin <- setRefClass(
   "iNZUniteDataWin",
   fields = list(
     GUI = "ANY",
+    var1 = "ANY", var2 = "ANY", var3 = "ANY",
     sep = "ANY",
     col = "ANY",
     name = "ANY",
-    newview = "ANY"
+    newview = "ANY",
+    unitebtn = "ANY"
   ),
   methods = list(
     initialize = function(gui = NULL) {
@@ -1566,7 +1568,11 @@ iNZUniteDataWin <- setRefClass(
         try(dispose(GUI$modWin), silent = TRUE)
 
         ## start my window
-        GUI$modWin <<- gwindow("Unite columns", parent = GUI$win, visible = FALSE)
+        GUI$modWin <<- gwindow("Unite columns",
+          parent = GUI$win,
+          visible = FALSE,
+          width = 800
+        )
         mainGroup <- ggroup(cont = GUI$modWin, expand = TRUE, horizontal = FALSE)
         mainGroup$set_borderwidth(15)
         helpbtn <- gimagebutton(stock.id = "gw-help", handler = function(h, ...){
@@ -1579,30 +1585,37 @@ iNZUniteDataWin <- setRefClass(
         helplyt[1, 20, expand = TRUE, anchor = c(1, -1)] <- helpbtn
         add(mainGroup, helplyt)
 
-        col_string <- glabel("Select columns to unite", cont = mainGroup)
+        addSpace(mainGroup, 10)
+        g_top <- ggroup(container = mainGroup)
+        g_cols <- gvbox(container = g_top)
+        addSpace(g_top, 20)
+        g_info <- gvbox(container = g_top)
 
-        var1 <- gtable(names(GUI$getActiveData()),multiple = TRUE, expand = TRUE, cont = mainGroup)
+        col_string <- glabel("Select columns to unite", cont = g_cols)
+
+        var1 <<- gtable(names(GUI$getActiveData()),multiple = TRUE, expand = TRUE, cont = g_cols)
         addHandlerSelectionChanged(var1, function(h, ...){
           col <<- svalue(var1)
-          name <<- ""
-          for (i in 1:length(col)) {
-            n <- col[i]
-            name <<- paste(name, n, sep = ".")
-          }
-          svalue(var2) <- substring(name, 2)
+          name <<- paste(col, collapse = sep)
+          svalue(var2) <<- name
           updateView()
         })
-        size(var1) <- c(-1, 150)
+        size(var1) <<- c(300, 150)
 
-        var2 <- gedit("", cont = mainGroup)
+        lbl <- glabel("New variable name :")
+        font(lbl) <- list(weight = "bold")
+        add(g_info, lbl, anchor = c(-1, 0), fill = TRUE)
+        var2 <<- gedit("", cont = g_info)
         addHandlerKeystroke(var2, function(h, ...) {
           name <<- ifelse(svalue(var2) == "", "newcol", svalue(var2))
           updateView()
         })
 
         sep <<- "_"
-        sep_string <- glabel("Enter the separator to use between values", cont = mainGroup)
-        var3 <- gedit("_", cont = mainGroup)
+        lbl <- glabel("Value separator :")
+        font(lbl) <- list(weight = "bold")
+        add(g_info, lbl, anchor = c(-1, 0), fill = TRUE)
+        var3 <<- gedit("_", cont = g_info)
         addHandlerKeystroke(var3, function(h, ...) {
           sep <<- svalue(var3)
           updateView()
@@ -1611,7 +1624,7 @@ iNZUniteDataWin <- setRefClass(
         prevTbl <- glayout(homogeneous = FALSE, container = mainGroup)
 
         string1 <- glabel("Original dataset")
-        originview = gtable(data.frame(GUI$getActiveData(), stringsAsFactors = TRUE))
+        originview = gtable(data.frame(head(GUI$getActiveData(), 10L), stringsAsFactors = TRUE))
         prevTbl[1,1, expand = TRUE] <- string1
         prevTbl[2,1, expand = TRUE] <- originview
         size(originview) = c(-1, 250)
@@ -1622,7 +1635,18 @@ iNZUniteDataWin <- setRefClass(
         prevTbl[2,2, expand = TRUE] <- newview
         size(newview) <<- c(-1, 250)
 
-        unitebtn <- gbutton("Unite", cont = mainGroup,
+
+        g_btn <- ggroup(container = mainGroup)
+
+        cancelbtn <- gbutton("Cancel",
+          container = g_btn,
+          handler = function(h, ...) dispose(GUI$modWin)
+        )
+
+        addSpring(g_btn)
+
+        unitebtn <<- gbutton("Unite",
+          container = g_btn,
           handler = function(h, ...) {
             .dataset <- GUI$get_data_object()
             newdata <- iNZightTools::unite(.dataset, name, col, sep)
@@ -1635,8 +1659,9 @@ iNZUniteDataWin <- setRefClass(
       }
     },
     updateView = function() {
-      data <- GUI$getActiveData()
+      data <- GUI$get_data_object(nrow = 10L)
       df <- iNZightTools::unite(data, name, col, sep)
+      if (iNZightTools::is_survey(df)) df <- df$variables
       newview$set_items(df)
     }
   )

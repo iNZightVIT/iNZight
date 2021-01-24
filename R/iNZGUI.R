@@ -748,11 +748,16 @@ iNZGUI <- setRefClass(
         addActDocObs = function(FUN, ...) {
             .self$activeDocChanged$connect(FUN, ...)
         },
-        get_data_object = function() {
+        get_data_object = function(nrow) {
             "return dataset or survey design, if it exists"
             curMod <- .self$getActiveDoc()$getModel()
-            if (!is.null(curMod$dataDesign)) return(curMod$dataDesign$design)
-            .self$getActiveData()
+            if (!is.null(curMod$dataDesign)) {
+                res <- curMod$dataDesign$design
+            } else {
+                res <- .self$getActiveData()
+            }
+            if (!missing(nrow)) res <- res[seq_len(min(nrow, nrow(.self$getActiveData()))), ]
+            res
         },
         view_dataset = function() {
             d <- getActiveData()

@@ -53,3 +53,18 @@ test_that("Aggregating survey data is valid", {
     w$ok_btn$invoke_change_handler()
     expect_null(ui$getActiveDoc()$getModel()$getDesign())
 })
+
+
+test_that("Uniting columns works", {
+    w <- iNZUniteDataWin$new(ui)
+    svalue(w$var1) <- c("race", "marital")
+    w$var1$invoke_change_handler()
+    expect_equal(svalue(w$var2), "race_marital")
+    expect_true("race_marital" %in% w$newview$get_names())
+    expect_silent(w$unitebtn$invoke_change_handler())
+    expect_equal(
+        ui$getActiveData()$race_marital,
+        with(ncsr_svy$data, as.factor(paste(race, marital, sep = "_")))
+    )
+    expect_true(iNZightTools::is_survey(ui$get_data_object()))
+})
