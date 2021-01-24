@@ -55,7 +55,10 @@ test_that("Aggregating survey data is valid", {
 })
 
 ui$close()
+
+ui <- iNZGUI$new()
 ui$initializeGui(ncsr_svy$data)
+Sys.sleep(5)
 ui$getActiveDoc()$getModel()$setDesign(ncsr_svy$spec, ui)
 
 test_that("Uniting columns works", {
