@@ -91,6 +91,8 @@ test_that("Existing datasets can be joined", {
     )
 })
 
+ui$close()
+
 # try(ui$close(), silent = TRUE); devtools::load_all()
 ui <- iNZGUI$new()
 ui$initializeGui(census.at.school.500)
@@ -106,4 +108,22 @@ test_that("Uniting columns works", {
         ui$getActiveData()$travel_gender,
         with(census.at.school.500, as.factor(paste(travel, gender, sep = "_")))
     )
+})
+
+test_that("Separating columns works", {
+    # source("R/iNZChangeDataWin.R")
+    w <- iNZSeparateDataWin$new(ui)
+    w$format$set_index(2L)
+    svalue(w$var1) <- "travel_gender"
+    expect_silent(w$var1$invoke_change_handler())
+    expect_true(w$var2$set_value("_"))
+    w$sep <- "_"
+    expect_silent(w$updateView())
+    expect_equal(svalue(w$leftCol), "travel")
+    expect_equal(svalue(w$rightCol), "gender")
+    expect_true(w$leftCol$set_value("mode_of_travel"))
+    expect_true(w$rightCol$set_value("sex"))
+    expect_silent(w$updateView())
+    expect_true(all(c("mode_of_travel", "sex") %in% w$newview$get_names()))
+    expect_silent(w$separatebtn$invoke_change_handler())
 })

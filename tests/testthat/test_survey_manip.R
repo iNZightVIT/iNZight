@@ -74,3 +74,28 @@ test_that("Uniting columns works", {
     )
     expect_true(iNZightTools::is_survey(ui$get_data_object()))
 })
+
+test_that("Separating columns works", {
+    w <- iNZSeparateDataWin$new(ui)
+    svalue(w$var1) <- "race_marital"
+    expect_silent(w$var1$invoke_change_handler())
+    expect_true(w$var2$set_value("_"))
+    w$sep <- "_"
+    expect_silent(w$updateView())
+    expect_equal(svalue(w$leftCol), "race")
+    expect_equal(svalue(w$rightCol), "marital")
+    expect_true(w$leftCol$set_value("new_race"))
+    expect_true(w$rightCol$set_value("new_marital"))
+    expect_silent(w$updateView())
+    expect_true(all(c("new_race", "new_marital") %in% w$newview$get_names()))
+    expect_silent(w$separatebtn$invoke_change_handler())
+    expect_true(iNZightTools::is_survey(ui$get_data_object()))
+    expect_equal(
+        ui$get_data_object()$variables$new_race,
+        as.character(ui$get_data_object()$variables$race)
+    )
+    expect_equal(
+        ui$get_data_object()$variables$new_marital,
+        as.character(ui$get_data_object()$variables$marital)
+    )
+})
