@@ -1097,7 +1097,7 @@ iNZstdVarWin <- setRefClass(
           varnames <- svalue(numVar)
           names <- makeNames(paste0(varnames, ".std"))
           print(names)
-          .dataset <- GUI$getActiveData()
+          .dataset <- GUI$get_data_object()
           data <- iNZightTools::standardizeVars(.dataset, varnames, names)
           updateData(data)
         }
