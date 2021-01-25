@@ -1789,16 +1789,24 @@ iNZjoinDataWin <- setRefClass(
         string1 <- glabel("Preview of the original dataset")
         originview <- gtable(data.frame(head(GUI$getActiveData(), 10), stringsAsFactors = TRUE))
         string2 <- glabel("Select join methods")
-        jointypes <- list("Inner Join" = "inner_join", "Left Join" = "left_join", "Full Join" = "full_join", "Semi Join" = "semi_join", "Anti Join" = "anti_join")
+        jointypes <- list(
+          "Inner Join" = "inner_join",
+          "Left Join" = "left_join",
+          "Full Join" = "full_join",
+          "Semi Join" = "semi_join",
+          "Anti Join" = "anti_join"
+        )
         var1 <- gcombobox(
           items = names(jointypes),
           selected = 2,
           handler = function(h, ...) {
             join_method <<- jointypes[[svalue(var1)]]
             updatePreview()
-          })
+          }
+        )
 
         join_method <<- "left_join"
+        enabled(var1) <- !iNZightTools::is_survey(GUI$get_data_object())
 
         left_name_box <- gvbox()
         name_string <- glabel("Duplicated cols: suffix for Original", cont = left_name_box, anchor = c(-1, 0))
