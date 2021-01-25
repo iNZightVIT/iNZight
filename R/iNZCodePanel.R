@@ -15,7 +15,7 @@ iNZCodePanel <- setRefClass(
         initialize = function(gui) {
             initFields(
                 GUI = gui,
-                button_width = 80, button_height = 25,
+                button_width = 80, button_height = -1,
                 code_font = list(family = "monospace", size = 10),
                 original_code = ""
             )
@@ -33,10 +33,19 @@ iNZCodePanel <- setRefClass(
             RGtk2::gtkTextViewSetLeftMargin(input$widget, 0)
             RGtk2::gtkTextViewSetRightMargin(input$widget, 0)
 
-            ctrl_pnl <- ggroup(container = panel, expand = TRUE, fill = TRUE)
-            size(ctrl_pnl) <- c(-1, 25)
+            ctrl_pnl <- ggroup(container = panel,
+                expand = TRUE,
+                fill = TRUE,
+                horizontal = !GUI$popOut
+            )
+            # size(ctrl_pnl) <- c(-1, 25)
 
-            lbl <- glabel("R code for the current plot is shown above, which can be edited and run.")
+            lbltxt <- paste(
+                "R code for the current plot is shown above",
+                "which can be edited and run.",
+                sep = ifelse(GUI$popOut, "\n", ", ")
+            )
+            lbl <- glabel(lbltxt)
             font(lbl) <- list(size = 9, weight = "bold")
             add(ctrl_pnl, lbl, anchor = c(-1, 0))
 
@@ -55,9 +64,13 @@ iNZCodePanel <- setRefClass(
                 container = btn_pnl,
                 handler = function(h, ...) reset_code()
             )
-            store_btn$set_icon("rlogo")
-            run_btn$set_icon("go")
-            reset_btn$set_icon("reset")
+            store_btn$set_icon("")
+            run_btn$set_icon("")
+            reset_btn$set_icon("")
+            # store_btn$set_icon("rlogo")
+            # run_btn$set_icon("go")
+            # reset_btn$set_icon("reset")
+            # button_height <<- size(store_btn)[2]
             size(store_btn) <<- c(button_width, button_height)
             size(run_btn) <<- c(button_width, button_height)
             size(reset_btn) <<- c(button_width, button_height)
