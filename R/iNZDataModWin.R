@@ -673,7 +673,7 @@ iNZcmbCatWin <- setRefClass(
       newName <- gedit()
       ## separator (. or _ for now ...)
       lbl4 <- glabel("Value separator")
-      varSep <- gcombobox(c(".", "_"), selected = 1)
+      varSep <- gcombobox(c("_", "."), selected = 1)
       ## automatically fill the name field when variables are selected
       addHandlerSelectionChanged(factorNames, handler = function(h, ...) {
         if (length(svalue(factorNames)) > 1)
@@ -684,8 +684,8 @@ iNZcmbCatWin <- setRefClass(
       addHandlerChanged(varSep, function(h, ...) {
         if (length(svalue(factorNames)) <= 1) return()
         sep <- svalue(h$obj)
-        osep <- switch(sep, "_" = ".", "." = "_")
-        oname <- makeNames(paste(svalue(factorNames), collapse = osep))
+        # osep <- switch(sep, "_" = ".", "." = "_")
+        oname <- makeNames(paste(svalue(factorNames), collapse = sep))
         if (svalue(newName) == oname) {
           ## user hasn't changed the name, so update it
           svalue(newName) <- makeNames(paste(svalue(factorNames), collapse = sep))
@@ -701,7 +701,7 @@ iNZcmbCatWin <- setRefClass(
             sep <- svalue(varSep)
 
             if (checkNames(name)) {
-              .dataset <- GUI$getActiveData()
+              .dataset <- GUI$get_data_object()
               data <- iNZightTools::combineCatVars(.dataset, vars, sep, name)
               updateData(data)
               dispose(GUI$modWin)
@@ -1096,7 +1096,6 @@ iNZstdVarWin <- setRefClass(
         if (length(svalue(numVar)) > 0) {
           varnames <- svalue(numVar)
           names <- makeNames(paste0(varnames, ".std"))
-          print(names)
           .dataset <- GUI$get_data_object()
           data <- iNZightTools::standardizeVars(.dataset, varnames, names)
           updateData(data)
@@ -1299,7 +1298,7 @@ iNZctocatmulWin <- setRefClass(
         if (length(svalue(numVar)) > 0) {
           vars <- svalue(numVar)
           varnames <- makeNames(paste(vars, "cat", sep = "."))
-          .dataset <- GUI$getActiveData()
+          .dataset <- GUI$get_data_object()
           data <- iNZightTools::convertToCat(.dataset, vars, varnames)
           updateData(data)
           dispose(GUI$modWin)

@@ -293,7 +293,7 @@ iNZMenuBarWidget <- setRefClass(
         },
         VariablesMenu = function() {
             if (!hasData()) return(placeholder("Variables"))
-            list(
+            menu <- list(
                 cont2cat =
                     gaction("Convert to categorical ...",
                         icon = "convert",
@@ -386,6 +386,13 @@ iNZMenuBarWidget <- setRefClass(
                         tooltip = "Permanently delete a variable",
                         handler = function(h, ...) iNZdeleteVarWin$new(GUI))
             )
+            if (!is.null(GUI$getActiveDoc()$getModel()$getDesign())) {
+                # disable some items for surveys
+                enabled(menu[["Numeric Variables"]]$class) <- FALSE
+                menu[["Dates and Times"]] <- gaction("Dates and Times", enabled = FALSE)
+                enabled(menu[["Dates and Times"]]) <- FALSE
+            }
+            menu
         },
         PlotMenu = function() {
             if (!hasData()) return(placeholder("Plot"))
