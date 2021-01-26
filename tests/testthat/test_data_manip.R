@@ -19,6 +19,9 @@ test_that("Subsetting and reordering columns", {
 })
 
 test_that("Filtering data leaves code OK", {
+    expect_silent(w <- iNZFilterWin$new())
+    expect_is(w$GUI, "uninitializedField")
+
     ui$ctrlWidget$V1box$set_value("height")
     ui$ctrlWidget$V2box$set_value("armspan")
     ui$getActiveDoc()$setSettings(list(colby = as.name("gender")))
@@ -29,6 +32,14 @@ test_that("Filtering data leaves code OK", {
     )
 
     w <- iNZFilterWin$new(ui)
+
+    o <- options(browser = cat)
+    on.exit(options(o))
+    expect_output(
+        ui$modWin$children[[1]]$children[[1]]$children[[2]]$invoke_change_handler(),
+        paste0(.base_url, "user_guides/data_options/#filter")
+    )
+
     expect_silent(w$filter_var$set_value("gender"))
     expect_silent(svalue(w$cat_levels) <- "male")
     expect_silent(w$cat_levels$invoke_change_handler())
@@ -38,6 +49,12 @@ test_that("Filtering data leaves code OK", {
         "inzplot(height ~ armspan, colby = gender, data = data.filtered)",
         fixed = TRUE
     )
+
+    # filter by row number
+
+
+    # filter randomly
+
 })
 
 # source("R/iNZChangeDataWin.R")
