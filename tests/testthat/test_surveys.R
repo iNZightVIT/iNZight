@@ -529,10 +529,10 @@ test_that("New variables show up in calibration list", {
     svalue(ui$modWin$children[[1]]$children[[3]]) <- c("REGION", "race")
     ui$modWin$children[[1]]$children[[3]]$invoke_change_handler()
     ui$modWin$children[[1]]$children[[5]]$invoke_change_handler()
-    expect_is(ui$getActiveData()$REGION.race, "factor")
+    expect_is(ui$getActiveData()$REGION_race, "factor")
 
     expect_silent(swin <- iNZSurveyPostStrat$new(ui, .use_ui = FALSE))
-    expect_true("REGION.race" %in% swin$PSvar$get_items())
+    expect_true("REGION_race" %in% swin$PSvar$get_items())
     swin$cancelBtn$invoke_change_handler()
 
 })
