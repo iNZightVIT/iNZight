@@ -876,7 +876,8 @@ iNZGUI <- setRefClass(
                 popout = FALSE,
                 font.size = 10,
                 dev.features = FALSE,
-                show.code = FALSE
+                show.code = FALSE,
+                language = "en"
             )
         },
         checkPrefs = function(prefs) {
@@ -886,7 +887,8 @@ iNZGUI <- setRefClass(
                 "popout",
                 "font.size",
                 "dev.features",
-                "show.code"
+                "show.code",
+                "language"
             )
 
             ## Only keep allowed preferences --- anything else is discarded
@@ -924,6 +926,10 @@ iNZGUI <- setRefClass(
             prefs$show.code <-
                 if (is.null(prefs$show.code) || !is.logical(prefs$show.code)) defs$show.code
                 else prefs$show.code
+
+            prefs$language <-
+                if (is.null(prefs$language) || !is.character(prefs$language)) defs$language
+                else prefs$language[1]
 
             prefs
 

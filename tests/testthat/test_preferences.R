@@ -6,7 +6,6 @@ ui$initializeGui(census.at.school.500)
 on.exit(try(ui$close(), TRUE))
 
 test_that("Preferences load", {
-    # source("R/iNZPreferencesWin.R")
     p <- iNZPrefsWin$new(ui)
     expect_is(p, "iNZPrefsWin")
 })
