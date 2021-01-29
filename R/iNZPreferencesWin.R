@@ -1,15 +1,79 @@
 iNZPrefsWin <- setRefClass(
     "iNZPrefsWin",
     fields = list(
-        GUI = "ANY"
-        ),
+        GUI = "ANY",
+        prefs = "list",
+        curprefs = "list",
+        sections = "ANY",
+        cancelBtn = "ANY", saveBtn = "ANY"
+    ),
     methods = list(
         initialize = function(gui = NULL) {
-            initFields(GUI = gui)
+            if (is.null(gui)) return()
+            initFields(GUI = gui, prefs = gui$preferences, curprefs = gui$preferences)
 
-            prefs <- GUI$preferences
+            try(dispose(GUI$modWin), silent = TRUE)
+            GUI$modWin <<- gwindow("iNZight Preferences",
+                parent = GUI$win,
+                width = 700,
+                height = 500,
+                visible = FALSE
+            )
 
-            if (!is.null(GUI)) {
+            g_main <- gvbox(container = GUI$modWin)
+            g_main$set_borderwidth(5L)
+
+            sections <<- gnotebook(
+                tab.pos = 3L,
+                container = g_main,
+                expand = TRUE
+            )
+
+            ## --------------------------- GENERAL
+            sec_general <- gvbox(label = "General", container = sections)
+            sec_general$set_borderwidth(5L)
+
+            ### ---------------- Check for updates
+            p_check.updates <- gcheckbox(
+                "Check for updates when iNZight launched",
+                checked = prefs$check.updates,
+                container = sec_general,
+                handler = function(h, ...) set_pref("check.updates", svalue(h$obj))
+            )
+            lbl <- glabel(paste(sep = "\n",
+                "If updates are available, this will be displayed in the title bar of iNZight.",
+                "Updates will not automatically be applied."),
+                container = sec_general,
+                anchor = c(-1, 0))
+            font(lbl) <- list(size = 9)
+
+
+            ## --------------------------- APPEARANCE
+            sec_appearance <- gvbox(label = "Appearance", container = sections)
+
+
+
+            ################ BUTTONS
+            g_buttons <- ggroup(container = g_main)
+            addSpring(g_buttons)
+
+            cancelBtn <<- gbutton("Exit without saving",
+                container = g_buttons,
+                handler = function(h, ...) dispose(GUI$modWin))
+
+            saveBtn <<- gbutton("Save changes",
+                container = g_buttons,
+                handler = function(h, ...) {
+                    print(prefs)
+                }
+            )
+            enabled(saveBtn) <<- FALSE
+
+            svalue(sections) <<- 1L
+            on.exit(visible(GUI$modWin) <<- TRUE)
+
+
+            if (FALSE) {
                 try(dispose(GUI$modWin), silent = TRUE) ## close any current mod windows
                 GUI$modWin <<- gwindow("iNZight Preferences",
                     parent = GUI$win,
@@ -159,6 +223,10 @@ iNZPrefsWin <- setRefClass(
 
                 visible(GUI$modWin) <<- TRUE
             }
+        },
+        set_pref = function(name, value) {
+            prefs[[name]] <<- value
+            enabled(saveBtn) <<- !identical(prefs, curprefs)
         }
     )
 )
