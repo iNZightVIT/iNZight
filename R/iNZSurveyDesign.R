@@ -94,19 +94,25 @@ iNZSurveyDesign <- setRefClass(
                         strat <- svalue_or_null(stratVar)
                         clus1 <- svalue_or_null(clus1Var)
                         clus2 <- svalue_or_null(clus2Var)
+                        if (!is.null(clus1) && !is.null(clus2)) {
+                            clus <- paste(clus1, clus2, sep = " + ")
+                        } else {
+                            clus <- ifelse(is.null(clus1), clus2, clus1)
+                        }
                         wts <- svalue_or_null(wtVar)
                         fpc <- svalue_or_null(fpcVar)
                         nest <- as.logical(svalue(nestChk))
                         clear <- is.null(strat) && is.null(clus1) &&
                             is.null(clus2) && is.null(wts) && is.null(fpc)
                         GUI$getActiveDoc()$getModel()$setDesign(
-                            strata = strat,
-                            clus1 = clus1,
-                            clus2 = clus2,
-                            wt = wts,
-                            nest = nest,
-                            fpc = fpc,
-                            type = "survey",
+                            list(
+                                strata = strat,
+                                ids = clus,
+                                weights = wts,
+                                nest = nest,
+                                fpc = fpc,
+                                type = "survey"
+                            ),
                             gui = GUI
                         )
                     },
@@ -127,12 +133,14 @@ iNZSurveyDesign <- setRefClass(
                         }
                         clear <- is.null(wts) && length(repWts) == 0
                         GUI$getActiveDoc()$getModel()$setDesign(
-                            wt = wts,
-                            repweights = repWts,
-                            reptype = reptype,
-                            scale = scale,
-                            rscales = rscales,
-                            type = "replicate",
+                            list(
+                                weights = wts,
+                                repweights = repWts,
+                                reptype = reptype,
+                                scale = scale,
+                                rscales = rscales,
+                                type = "replicate"
+                            ),
                             gui = GUI
                         )
                     },
@@ -179,45 +187,48 @@ iNZSurveyDesign <- setRefClass(
             ## Populate the lists:
             curDes <- GUI$getActiveDoc()$getModel()$getDesign()
             if (!is.null(curDes)) {
+                spec <- curDes$spec
                 switch(svytype,
                     "survey" = {
-                        if (!is.null(curDes$strata))
-                            svalue(stratVar) <<- curDes$strata
-                        if (!is.null(curDes$clus1))
-                            svalue(clus1Var) <<- curDes$clus1
-                        if (!is.null(curDes$clus2))
-                            svalue(clus2Var) <<- curDes$clus2
-                        if (!is.null(curDes$nest))
-                            svalue(nestChk) <<- curDes$nest
-                        if (!is.null(curDes$wt))
-                            svalue(wtVar) <<- curDes$wt
-                        if (!is.null(curDes$fpc))
-                            svalue(fpcVar) <<- curDes$fpc
+                        if (!is.null(spec$strata))
+                            svalue(stratVar) <<- spec$strata
+                        if (!is.null(spec$ids) && spec$ids != 1) {
+                            clus <- trimws(strsplit(spec$ids, "+", fixed = TRUE)[[1]])
+                            svalue(clus1Var) <<- clus[1]
+                            if (length(clus) == 2L)
+                                svalue(clus2Var) <<- clus[2]
+                        }
+                        if (!is.null(spec$nest))
+                            svalue(nestChk) <<- spec$nest
+                        if (!is.null(spec$weights))
+                            svalue(wtVar) <<- spec$weights
+                        if (!is.null(spec$fpc))
+                            svalue(fpcVar) <<- spec$fpc
                     },
                     "replicate" = {
-                        if (!is.null(curDes$wt))
-                            svalue(wtVar) <<- curDes$wt
-                        if (!is.null(curDes$repweights)) {
-                            svalue(repVars) <<- curDes$repweights
-                            if (!is.null(curDes$rscales)) {
+                        if (!is.null(spec$weights))
+                            svalue(wtVar) <<- spec$weights
+                        if (!is.null(spec$repweights)) {
+                            svalue(repVars) <<- spec$repweights
+                            if (!is.null(spec$rscales)) {
                                 repRscales <<- data.frame(
-                                    rep.weight = curDes$repweights,
-                                    rscales = curDes$rscales,
+                                    rep.weight = spec$repweights,
+                                    rscales = spec$rscales,
                                     stringsAsFactors = TRUE
                                 )
                                 display_scales()
                             }
                         }
-                        if (!is.null(curDes$reptype)) {
-                            svalue(repType) <<- curDes$reptype
+                        if (!is.null(spec$reptype)) {
+                            svalue(repType) <<- spec$reptype
                         }
-                        if (!is.null(curDes$scale)) {
-                            svalue(repScale) <<- curDes$scale
+                        if (!is.null(spec$scale)) {
+                            svalue(repScale) <<- spec$scale
                         }
                     },
                     "freq" = {
-                        if (!is.null(curDes$freq))
-                            svalue(freqVar) <<- curDes$freq
+                        if (!is.null(spec$freq))
+                            svalue(freqVar) <<- spec$freq
                     }
                 )
             }
@@ -468,33 +479,35 @@ iNZSurveyDesign <- setRefClass(
                 if (length(file) == 0) return()
             }
             svyspec <- iNZightTools::import_survey(file)
-            spec <- svyspec$spec
-            clus1 <- NULL
-            clus2 <- NULL
-            if (spec$ids != 1) {
-                if (grepl("\\+", spec$ids)) {
-                    clus <- strsplit(spec$ids, "\\+")[[1]]
-                    clus <- gsub("^\\s|\\s$", "", clus)
-                    clus1 <- clus[1]
-                    clus2 <- clus[2]
-                } else {
-                    clus1 <- svyspec$ids
-                }
-            }
-            GUI$getActiveDoc()$getModel()$setDesign(
-                strata = spec$strata,
-                clus1 = clus1,
-                clus2 = clus2,
-                wt = spec$weights,
-                fpc = spec$fpc,
-                nest = if (is.null(spec$nest)) FALSE else as.logical(spec$nest),
-                type = "survey",
-                gui = GUI
-            )
+            GUI$getActiveDoc()$getModel()$setDesign(svyspec)
+
+            # spec <- svyspec$spec
+            # clus1 <- NULL
+            # clus2 <- NULL
+            # if (spec$ids != 1) {
+            #     if (grepl("\\+", spec$ids)) {
+            #         clus <- strsplit(spec$ids, "\\+")[[1]]
+            #         clus <- gsub("^\\s|\\s$", "", clus)
+            #         clus1 <- clus[1]
+            #         clus2 <- clus[2]
+            #     } else {
+            #         clus1 <- svyspec$ids
+            #     }
+            # }
+            # GUI$getActiveDoc()$getModel()$setDesign(
+            #     strata = spec$strata,
+            #     clus1 = clus1,
+            #     clus2 = clus2,
+            #     wt = spec$weights,
+            #     fpc = spec$fpc,
+            #     nest = if (is.null(spec$nest)) FALSE else as.logical(spec$nest),
+            #     type = "survey",
+            #     gui = GUI
+            # )
 
             setOK <- try(
                 GUI$getActiveDoc()$getModel()$createSurveyObject(),
-                TRUE
+                silent = TRUE
             )
 
             if (!inherits(setOK, "try-error")) {
@@ -552,6 +565,7 @@ iNZSurveyPostStrat <- setRefClass(
                 }
                 return(invisible(NULL))
             }
+            curDes <- curDes$spec
 
             win <<- gwindow("Post Stratification",
                 parent = GUI$win,
@@ -646,8 +660,8 @@ iNZSurveyPostStrat <- setRefClass(
 
             ## populate on load
             lvldf <<- GUI$getActiveDoc()$getModel()$getFreqTables()
-            if (!is.null(curDes$poststrat)) {
-                svalue(PSvar) <<- names(curDes$poststrat)
+            if (!is.null(curDes$calibrate)) {
+                svalue(PSvar) <<- names(curDes$calibrate)
                 display_tbl()
             }
 
@@ -779,13 +793,19 @@ iNZSurveyPostStrat <- setRefClass(
 
         },
         set_poststrat_design = function() {
-            curDes <- GUI$getActiveDoc()$getModel()$getDesign()
+            curDes <- GUI$getActiveDoc()$getModel()$getDesign()$spec
+            cal_list <- lapply(names(lvldf),
+                function(var) {
+                    x <- lvldf[[var]]$Freq
+                    names(x) <- lvldf[[var]][[var]]
+                    x
+                }
+            )
+            names(cal_list) <- names(lvldf)
             GUI$getActiveDoc()$getModel()$setDesign(
-                curDes$strat, curDes$clus1, curDes$clus2,
-                curDes$wt, curDes$nest, curDes$fpc,
-                curDes$repWts,
-                poststrat = if (length(svalue(PSvar))) lvldf[svalue(PSvar)] else NULL,
-                type = curDes$type,
+                modifyList(curDes,
+                    list(calibrate = if (length(svalue(PSvar))) cal_list[svalue(PSvar)] else NULL)
+                ),
                 gui = GUI
             )
             setOK <- try(

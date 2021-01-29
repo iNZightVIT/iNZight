@@ -9,3 +9,5 @@
 ^\.Rproj\.user$
 ^\.vscode$
 ^.github$
+^doc$
+^Meta$

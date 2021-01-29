@@ -250,7 +250,7 @@ iNZImportWin <- setRefClass(
                                 stringsAsFactors = TRUE
                             )
                         ),
-                        reset = TRUE
+                        reset = FALSE
                     )
                     if (fext == "svydesign") {
                         ## This needs to be updated to simply pass the spec object ...
@@ -268,20 +268,20 @@ iNZImportWin <- setRefClass(
                             }
                         }
 
-                        GUI$getActiveDoc()$getModel()$setDesign(
-                            strata = spec$strata,
-                            clus1 = clus1,
-                            clus2 = clus2,
-                            wt = spec$weights,
-                            fpc = spec$fpc,
-                            nest = if (is.null(spec$nest)) FALSE else as.logical(spec$nest),
-                            reptype = spec$type,
-                            repweights = spec$repweights,
-                            scale = spec$scale,
-                            rscales = spec$rscales,
-                            type = spec$svy_type,
-                            gui = GUI
-                        )
+                        GUI$getActiveDoc()$getModel()$setDesign(spec, gui = GUI)
+                            # strata = spec$strata,
+                            # clus1 = clus1,
+                            # clus2 = clus2,
+                            # wt = spec$weights,
+                            # fpc = spec$fpc,
+                            # nest = if (is.null(spec$nest)) FALSE else as.logical(spec$nest),
+                            # reptype = spec$type,
+                            # repweights = spec$repweights,
+                            # scale = spec$scale,
+                            # rscales = spec$rscales,
+                            # type = spec$type,
+                            # gui = GUI
+                        # )
 
                         setOK <- try(
                             GUI$getActiveDoc()$getModel()$createSurveyObject(),
