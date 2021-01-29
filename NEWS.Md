@@ -3,8 +3,7 @@
 * NEW: better handling of survey designs using our new 'Survey design specification' format. This allows users to load pre-configured surveys from a single 'specification' file, while may optionally point at a dataset for an all-in-one import.
 * when loading a new data set, exisiting datasets are kept (previously they were all removed; at this point I don't know why that design decision was made ...)
 * Join data now allows users to select an existing dataset, in addition to importing a new one (#340, @tmelliott)
-* survey data wrangling
-  * filter data
+* survey 'data wrangling' support for almost all operations (others have been greyed out to prevent invalid actions by users); code is valid, using 'srvyr' package to provide 'dplyr'-like syntax for survey designs
 
 ## iNZight 4.0.2
 
