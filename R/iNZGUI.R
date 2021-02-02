@@ -990,7 +990,7 @@ iNZGUI <- setRefClass(
                     file.path(tools::R_user_dir("iNZight", "config"), "preferences.R")
                 else old.prefs.location
 
-            else if (getRversion() >= 4 && file.exists(old.prefs.location)) {
+            if (getRversion() >= 4 && file.exists(old.prefs.location)) {
                 move_prefs <- gconfirm(
                     sprintf(
                         paste(sep = "\n",
