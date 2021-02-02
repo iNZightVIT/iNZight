@@ -11,7 +11,7 @@ Authors@R: c(person("Tom", "Elliott", role = c("aut", "cre"),
                     email = "MarcoKuper42@gmail.com"),
              person("David", "Banks", role = "ctb"),
              person("Yiwen", "He", role = "ctb"),
-             person("Daniel", "Barnett", role = "ctb"))
+             person("Daniel", "Barnett", role = "aut"))
 Description: An interactive GUI for easy visual exploration of datasets.
 License: GPL-3
 Depends:
