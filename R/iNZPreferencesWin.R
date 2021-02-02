@@ -57,7 +57,7 @@ iNZPrefsWin <- setRefClass(
                 handler = function(h, ...) set_pref("language", names(languages)[h$obj$get_index()])
             )
             enabled(p_lang) <- length(languages) > 1L
-            visible(g_lang) <- dir.exists(system.file("translations", package = "iNZight"))
+            visible(g_lang) <- file.exists(system.file("translations.csv", package = "iNZight"))
 
 
             ## --------------------------- APPEARANCE
