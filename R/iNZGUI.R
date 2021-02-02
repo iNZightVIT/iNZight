@@ -953,7 +953,6 @@ iNZGUI <- setRefClass(
 
             ## Will need to check for old file, and move it into new format (with user permission, of course!)
 
-            prefs.location <<- file.path(tools::R_user_dir("iNZight", "config"), "preferences.R")
             old.prefs.location <- switch(
                 OS,
                 "windows" = {
@@ -986,7 +985,12 @@ iNZGUI <- setRefClass(
                     path
                 }
             )
-            if (file.exists(old.prefs.location)) {
+            prefs.location <<-
+                if (getRversion() >= 4)
+                    file.path(tools::R_user_dir("iNZight", "config"), "preferences.R")
+                else old.prefs.location
+
+            else if (getRversion() >= 4 && file.exists(old.prefs.location)) {
                 move_prefs <- gconfirm(
                     sprintf(
                         paste(sep = "\n",
@@ -1018,7 +1022,7 @@ iNZGUI <- setRefClass(
             }
         },
         savePreferences = function() {
-            if (!dir.exists(dirname(prefs.location)))
+            if (getRversion() >= 4 && !dir.exists(dirname(prefs.location)))
                 dir.create(dirname(prefs.location), recursive = TRUE)
             ## attempt to save the preferences in the expected location:
             tt <- try(dput(preferences, prefs.location), silent = TRUE)
