@@ -951,7 +951,10 @@ iNZGUI <- setRefClass(
 
             ## If Windows or Mac, set the working directory to Documents/iNZightVIT if possible ...
 
-            prefs.location <<-switch(
+            ## Will need to check for old file, and move it into new format (with user permission, of course!)
+
+            prefs.location <<- file.path(tools::R_user_dir("iNZight", "config"), "preferences.R")
+            old.prefs.location <- switch(
                 OS,
                 "windows" = {
                     if (file.exists(file.path("~", "iNZightVIT"))) {
@@ -983,20 +986,40 @@ iNZGUI <- setRefClass(
                     path
                 }
             )
-
-            tt <- try({
-                preferences <<-
-                    if (file.exists(prefs.location)) {
-                        checkPrefs(dget(prefs.location))
-                    } else {
-                        defaultPrefs()
+            if (file.exists(old.prefs.location)) {
+                move_prefs <- gconfirm(
+                    sprintf(
+                        paste(sep = "\n",
+                            "iNZight is now saving your preferences in a new location.",
+                            "We found an old preferences file in",
+                            "    %s",
+                            "Would you like to move it to the new location?"
+                        ),
+                        dirname(old.prefs.location)
+                    ),
+                    title = "Recover old preferences file?",
+                    icon = "question"
+                )
+                if (move_prefs) {
+                    tt <- try({
+                        prefs <-
+                            if (file.exists(prefs.location)) {
+                                checkPrefs(dget(prefs.location))
+                            } else {
+                                defaultPrefs()
+                            }
+                    }, TRUE)
+                    if (!inherits(tt, "try-error")) {
+                        unlink(old.prefs.location)
+                        preferences <<- defaultPrefs()
+                        savePreferences()
                     }
-            }, TRUE)
-
-            if (inherits(tt, "try-error"))
-                preferences <<- defaultPrefs()
+                }
+            }
         },
         savePreferences = function() {
+            if (!dir.exists(dirname(prefs.location)))
+                dir.create(dirname(prefs.location), recursive = TRUE)
             ## attempt to save the preferences in the expected location:
             tt <- try(dput(preferences, prefs.location), silent = TRUE)
             if (inherits(tt, "try-error")) {
