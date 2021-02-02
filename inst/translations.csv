@@ -1,0 +1,16 @@
+id,english,māori
+menu_file,File,Kōnae
+menu_file_save,Save [beta] ...,
+menu_file_load,Load [beta] ...,
+menu_file_import,Import ...,
+menu_file_export,Export ...,
+menu_file_paste,Paste from ...,
+menu_file_examples,Example data ...,Raraunga whakatauira ...
+menu_file_prefs,Preferences ...,
+menu_file_reload,Reload iNZight,
+menu_file_exit,Exit,Whakamutu
+menu_data,Dataset,Raraunga
+menu_vars,Variables,Taurangi
+menu_plot,Plot,Kauwhata
+menu_adv,Advanced,Whatutoto
+menu_help,Help,Awhina

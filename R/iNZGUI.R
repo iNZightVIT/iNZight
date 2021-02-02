@@ -188,10 +188,11 @@ iNZGUI <- setRefClass(
 
             ## Grab settings file (or try to!)
             getPreferences()
-            tf <- system.file(sprintf("translations/%s.csv", preferences$lang), package = "iNZight")
+            tf <- system.file("translations.csv", package = "iNZight")
             if (file.exists(tf)) {
                 options(
-                    "translatr.language" = preferences$lang,
+                    "translatr.language" =
+                        unique(c(tolower(preferences$lang), "english")),
                     "translatr.table" = read.csv(tf)
                 )
             }
@@ -885,7 +886,7 @@ iNZGUI <- setRefClass(
                 font.size = 10,
                 dev.features = FALSE,
                 show.code = FALSE,
-                lang = "mri"
+                lang = "Māori"
             )
         },
         checkPrefs = function(prefs) {

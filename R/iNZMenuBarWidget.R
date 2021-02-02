@@ -15,7 +15,7 @@ iNZMenuBarWidget <- setRefClass(
             )
 
             ## this is trickier, because it depends on a bunch of things
-            plotmenu <<- placeholder("Plot")
+            plotmenu <<- placeholder("menu_plot")
             menubar <<- gmenu(list(), container = container)
 
             hasModules()
@@ -37,12 +37,12 @@ iNZMenuBarWidget <- setRefClass(
         },
         defaultMenu = function() {
             m <- list(
-                File = FileMenu(),
-                Dataset = DataMenu(),
-                Variables = VariablesMenu(),
-                Plot = PlotMenu(),
-                Advanced = AdvancedMenu(),
-                Help = HelpMenu()
+                menu_file = FileMenu(),
+                menu_data = DataMenu(),
+                menu_vars = VariablesMenu(),
+                menu_plot = PlotMenu(),
+                menu_adv = AdvancedMenu(),
+                menu_help = HelpMenu()
             )
             names(m) <- tr(names(m))
             z <- do.call(.self$setMenu, m)
@@ -58,17 +58,17 @@ iNZMenuBarWidget <- setRefClass(
         FileMenu = function() {
             m <- list(
                 import =
-                    gaction("Import data ...",
+                    gaction(tr("menu_file_import"),
                         icon = "cdrom",
                         tooltip = "Import a new dataset",
                         handler = function(h, ...) iNZImportWin$new(GUI)),
                 export =
-                    gaction("Export data ...",
+                    gaction(tr("menu_file_export"),
                         icon = "save-as",
                         handler = function(h, ...) iNZSaveWin$new(GUI, type = "data", data = GUI$getActiveData())),
                 gseparator(),
                 paste =
-                    gaction("Paste from ...",
+                    gaction(tr("menu_file_paste"),
                         icon = "paste",
                         tooltip = "Import data by pasting/clipboard",
                         handler = function(h, ...)
@@ -76,30 +76,30 @@ iNZMenuBarWidget <- setRefClass(
                     ),
                 gseparator(),
                 example =
-                    gaction("Example data ...",
+                    gaction(tr("menu_file_examples"),
                         icon = "dataframe",
                         tooltip = "Load an example dataset",
                         handler = function(h, ...) iNZImportExampleWin$new(GUI)),
                 gseparator(),
                 preferences =
-                    gaction ("Preferences ...",
+                    gaction (tr("menu_file_prefs"),
                         icon = "preferences",
                         tooltip = "Customise iNZight",
                         handler = function(h, ...) iNZPrefsWin$new(GUI)),
                 reload =
-                    gaction("Reload iNZight",
+                    gaction(tr("menu_file_reload"),
                         icon = "refresh",
                         handler = function(h, ...) GUI$reload()
                     ),
                 exit =
-                    gaction("Exit",
+                    gaction(tr("menu_file_exit"),
                         icon = "quit",
                         handler = function(h, ...) GUI$close())
             )
             if (GUI$preferences$dev.features) {
                 m <- c(
                     list(
-                        save = gaction("Save [beta]",
+                        save = gaction(tr("menu_file_save"),
                             icon = "save",
                             tooltip = "Save the current iNZight session",
                             handler = function(h, ...) {
@@ -122,7 +122,7 @@ iNZMenuBarWidget <- setRefClass(
                                 )
                             }
                         ),
-                        load = gaction("Load [beta]",
+                        load = gaction(tr("menu_file_load"),
                             icon = "open",
                             tooltip = "Load a saved iNZight session",
                             handler = function(h, ...) {
@@ -153,7 +153,7 @@ iNZMenuBarWidget <- setRefClass(
             m
         },
         DataMenu = function() {
-            if (!hasData()) return(placeholder("Dataset"))
+            if (!hasData()) return(placeholder("menu_data"))
             menu <- list(
                 filter =
                     gaction("Filter ...",
@@ -287,7 +287,7 @@ iNZMenuBarWidget <- setRefClass(
             menu
         },
         VariablesMenu = function() {
-            if (!hasData()) return(placeholder("Variables"))
+            if (!hasData()) return(placeholder("menu_vars"))
             list(
                 cont2cat =
                     gaction("Convert to categorical ...",
@@ -383,12 +383,12 @@ iNZMenuBarWidget <- setRefClass(
             )
         },
         PlotMenu = function() {
-            if (!hasData()) return(placeholder("Plot"))
+            if (!hasData()) return(placeholder("menu_plot"))
             plotmenu
         },
         setPlotMenu = function(menu) {
             plotmenu <<- menu
-            updateMenu("Plot", PlotMenu())
+            updateMenu("menu_plot", PlotMenu())
         },
         AdvancedMenu = function() {
             if (!hasData() && modules_installed) {
