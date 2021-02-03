@@ -4,6 +4,8 @@
 * when loading a new data set, exisiting datasets are kept (previously they were all removed; at this point I don't know why that design decision was made ...)
 * Join data now allows users to select an existing dataset, in addition to importing a new one (#340, @tmelliott)
 * NEW: translations available for iNZight; currently in progress: Te Reo Māori
+* updated preferences window to allow new options to be added in future without getting cluttered
+* user preferences are are now stored in `tools::R_user_dir()`
 
 ## iNZight 4.0.2
 
