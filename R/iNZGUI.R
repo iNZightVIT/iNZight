@@ -706,7 +706,12 @@ iNZGUI <- setRefClass(
             "Create a new document based on the existing one (`getActiveDoc()`)"
             data_name <- iNZightTools::add_suffix(.self$dataNameWidget$datName, suffix)
             spec <- .self$getActiveDoc()$getModel()$getDesign()
-            code <- gsub(".dataset", .self$dataNameWidget$datName, attr(data, "code"))
+            prev_name <- ifelse(
+                !is.null(spec),
+                .self$getActiveDoc()$getModel()$dataDesignName,
+                .self$dataNameWidget$datName
+            )
+            code <- gsub(".dataset", prev_name, attr(data, "code"))
             attr(data, "code") <- code
             if (!is.null(spec) && iNZightTools::is_survey(data)) {
                 spec$design <- data

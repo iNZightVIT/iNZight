@@ -40,15 +40,16 @@ iNZcodeWidget <- setRefClass(
         get = function() {
             code <- do.call(c,
                 lapply(history, function(x) {
-                    return(x)
-                    y <- try({
-                        iNZightTools::tidy_all_code(
+                    # return(x)
+                    # y <- try({
+                        y <- iNZightTools::tidy_all_code(
                             paste(x, collapse = "\n"),
                             width = 80,
                             indent = 4
                         )
-                    }, silent = TRUE)
-                    if (inherits(y, "try-error")) x else c(y, "")
+                        c(y, "")
+                    # }, silent = TRUE)
+                    # if (inherits(y, "try-error")) x else c(y, "")
                 })
             )
             return(c(header(), code))
