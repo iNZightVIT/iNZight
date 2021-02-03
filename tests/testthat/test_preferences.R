@@ -1,6 +1,6 @@
 context("iNZight User Preferences")
 
-# try(ui$close(), TRUE); load_all()
+# try(ui$close(), TRUE); devtools::load_all()
 ui <- iNZGUI$new()
 ui$initializeGui(census.at.school.500)
 on.exit(try(ui$close(), TRUE))
