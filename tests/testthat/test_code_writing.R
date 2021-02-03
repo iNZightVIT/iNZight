@@ -16,7 +16,7 @@ test_that("Data set code is applied", {
 
     expect_match(
         gsub("\\s\\s+", " ", paste(ui$rhistory$get(), collapse = " ")),
-        "data <- read_csv('cas.csv')",
+        "data <- read_csv(\"cas.csv\")",
         fixed = TRUE
     )
 })
