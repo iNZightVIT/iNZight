@@ -696,11 +696,49 @@ iNZGUI <- setRefClass(
                 dataViewWidget$updateWidget()
                 getActiveDoc()$updateSettings()
                 ctrlWidget$updateVariables()
-                dataNameWidget$updateWidget()
                 rhistory$update()
             }
+            dataNameWidget$updateWidget()
             is_initialized <<- TRUE
             updatePlot()
+        },
+        new_document = function(data, suffix) {
+            "Create a new document based on the existing one (`getActiveDoc()`)"
+            data_name <- iNZightTools::add_suffix(.self$dataNameWidget$datName, suffix)
+            spec <- .self$getActiveDoc()$getModel()$getDesign()
+            prev_name <- ifelse(
+                !is.null(spec),
+                .self$getActiveDoc()$getModel()$dataDesignName,
+                .self$dataNameWidget$datName
+            )
+            code <- gsub(".dataset", prev_name, attr(data, "code"))
+            attr(data, "code") <- code
+            if (!is.null(spec) && iNZightTools::is_survey(data)) {
+                spec$design <- data
+                spec$data <- data$variables
+                attr(spec$data, "name") <- data_name
+                attr(spec$data, "code") <- attr(data, "code")
+                class(spec) <- "inzsvyspec"
+                data <- spec
+            } else {
+                attr(data, "name") <- data_name
+            }
+            .self$setDocument(iNZDocument$new(data = data))
+        },
+        update_document = function(data) {
+            "Update the existing document with new data or survey design"
+            spec <- .self$getActiveDoc()$getModel()$getDesign()
+            if (!is.null(spec) && iNZightTools::is_survey(data)) {
+                spec$design <- data
+                spec$data <- data$variables
+                attr(spec$data, "name") <- .self$getActiveDoc()$getModel()$name
+                attr(spec$data, "code") <- attr(data, "code")
+                class(spec) <- "inzsvyspec"
+                data <- spec
+            } else {
+                attr(data, "name") <- .self$getActiveDoc()$getModel()$name
+            }
+            .self$getActiveDoc()$getModel()$updateData(data)
         },
         getActiveDoc = function() {
             iNZDocuments[[activeDoc]]
@@ -714,6 +752,17 @@ iNZGUI <- setRefClass(
         ## add observer to the activeDoc class variable
         addActDocObs = function(FUN, ...) {
             .self$activeDocChanged$connect(FUN, ...)
+        },
+        get_data_object = function(nrow) {
+            "return dataset or survey design, if it exists"
+            curMod <- .self$getActiveDoc()$getModel()
+            if (!is.null(curMod$dataDesign)) {
+                res <- curMod$dataDesign$design
+            } else {
+                res <- .self$getActiveData()
+            }
+            if (!missing(nrow)) res <- res[seq_len(min(nrow, nrow(.self$getActiveData()))), ]
+            res
         },
         view_dataset = function() {
             d <- getActiveData()
@@ -762,19 +811,36 @@ iNZGUI <- setRefClass(
                     icon = "question",
                     parent = .self$win
                 )
-                if (conf) {
-                    todelete <- activeDoc
-                    activeDoc <<- activeDoc - 1
-                    rhistory$disabled <<- TRUE
-                    iNZDocuments <<- iNZDocuments[-todelete]
-                    rhistory$disabled <<- FALSE
-                    dataNameWidget$updateWidget()
-                }
             }
         },
+        do_delete_dataset = function() {
+            todelete <- activeDoc
+            activeDoc <<- activeDoc - 1
+            rhistory$disabled <<- TRUE
+            iNZDocuments <<- iNZDocuments[-todelete]
+            rhistory$disabled <<- FALSE
+            dataNameWidget$updateWidget()
+        },
         removeDesign = function() {
-            getActiveDoc()$getModel()$setDesign()
+            if (getActiveDoc()$getModel()$design_only) {
+                conf <- gconfirm(
+                    paste0(
+                        "This design was loaded directly, so removing it will delete",
+                        "the associated data. Are you sure you want to continue?"
+                    ),
+                    title = "Are you sure you want to delete this survey?",
+                    icon = "question",
+                    parent = .self$win
+                )
+                if (!conf) return()
+                # delete the current document
+                do_delete_dataset()
+            } else {
+                getActiveDoc()$getModel()$setDesign()
+            }
+
             updatePlot()
+            dataNameWidget$updateWidget()
             ## ENABLE A WHOLE LOT OF STUFF
             # enabled(menubar$menu_list[["Dataset"]][[3]]) <<- TRUE
             # enabled(menubar$menu_list[["Variables"]][["Numeric Variables"]][[2]]) <<- TRUE

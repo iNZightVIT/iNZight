@@ -168,18 +168,18 @@ iNZMenuBarWidget <- setRefClass(
                         icon = "dnd-multiple",
                         handler = function(h, ...) iNZstackVarWin$new(GUI)),
                 "Dataset operation" = list(
-                  reshape =
-                    gaction("Reshape dataset ...",
+                    reshape =
+                        gaction("Reshape dataset ...",
                             icon = "dataframe",
                             tooltip = "Transform from wide- to long-form data",
                             handler = function(h, ...) iNZReshapeDataWin$new(GUI)),
-                  separate =
-                    gaction("Separate column ...",
+                    separate =
+                        gaction("Separate column ...",
                             icon = "dataframe",
                             tooltip = "Separate columns",
                             handler = function(h, ...) iNZSeparateDataWin$new(GUI)),
-                  unite =
-                    gaction("Unite columns ...",
+                    unite =
+                        gaction("Unite columns ...",
                             icon = "dataframe",
                             tooltip = "Unite columns",
                             handler = function(h, ...) iNZUniteDataWin$new(GUI))
@@ -224,12 +224,12 @@ iNZMenuBarWidget <- setRefClass(
                         icon = "delete",
                         handler = function(h, ...) GUI$deleteDataset()),
                 "Merge/Join datasets" = list(
-                  joinbycol =
-                    gaction("Join by column values",
+                    joinbycol =
+                        gaction("Join by column values",
                             icon = "copy",
                             handler = function(h, ...) iNZjoinDataWin$new(GUI)),
-                  appendrows =
-                    gaction("Append new rows",
+                    appendrows =
+                        gaction("Append new rows",
                             icon = "edit",
                             handler = function(h, ...) iNZappendrowWin$new(GUI))
                 ),
@@ -280,11 +280,20 @@ iNZMenuBarWidget <- setRefClass(
                 )
             )
             if (is.null(menu$report)) menu$report <- NULL
+            if (!is.null(GUI$getActiveDoc()$getModel()$getDesign())) {
+                # disable some items for surveys
+                enabled(menu$stack) <- FALSE
+                enabled(menu[["Dataset operation"]]$reshape) <- FALSE
+                enabled(menu[["Merge/Join datasets"]]$appendrows) <- FALSE
+
+                menu[["Frequency tables"]] <- gaction("Frequency tables", enabled = FALSE)
+                enabled(menu[["Frequency tables"]]) <- FALSE
+            }
             menu
         },
         VariablesMenu = function() {
             if (!hasData()) return(placeholder("Variables"))
-            list(
+            menu <- list(
                 cont2cat =
                     gaction("Convert to categorical ...",
                         icon = "convert",
@@ -377,6 +386,13 @@ iNZMenuBarWidget <- setRefClass(
                         tooltip = "Permanently delete a variable",
                         handler = function(h, ...) iNZdeleteVarWin$new(GUI))
             )
+            if (!is.null(GUI$getActiveDoc()$getModel()$getDesign())) {
+                # disable some items for surveys
+                enabled(menu[["Numeric Variables"]]$class) <- FALSE
+                menu[["Dates and Times"]] <- gaction("Dates and Times", enabled = FALSE)
+                enabled(menu[["Dates and Times"]]) <- FALSE
+            }
+            menu
         },
         PlotMenu = function() {
             if (!hasData()) return(placeholder("Plot"))
@@ -581,14 +597,7 @@ iNZMenuBarWidget <- setRefClass(
                             guides[[n]],
                             icon = "help_topic",
                             tooltip = "",
-                            handler = function(h, ...) {
-                                browseURL(
-                                    sprintf(
-                                        "https://www.stat.auckland.ac.nz/~wild/iNZight/%s",
-                                        gsub(".", "/", n)
-                                    )
-                                )
-                            }
+                            handler = function(h, ...) help_page(gsub(".", "/", n, fixed = TRUE))
                         )
                     }
                 ),
@@ -597,19 +606,19 @@ iNZMenuBarWidget <- setRefClass(
                         icon = "file",
                         tooltip = "",
                         handler = function(h, ...)
-                            browseURL('https://www.stat.auckland.ac.nz/~wild/iNZight/support/changelog/?pkg=iNZight')),
+                            help_page('support/changelog/?pkg=iNZight')),
                 faq =
                     gaction("FAQ",
                         icon = "find",
                         tooltip = "",
                         handler = function(h, ...)
-                            browseURL("https://www.stat.auckland.ac.nz/~wild/iNZight/support/faq/")),
+                            help_page("support/faq/")),
                 contact =
                     gaction("Contact us or Report a Bug",
                         icon = "help",
                         tooltip = "",
                         handler = function(h, ...)
-                            browseURL("https://www.stat.auckland.ac.nz/~wild/iNZight/support/contact/"))
+                            help_page("support/contact/"))
             )
         }
     )

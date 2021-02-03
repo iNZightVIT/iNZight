@@ -119,12 +119,10 @@ test_that("Plotting and summary of frequencies works", {
 
 test_that("Frequencies retained after filtering", {
     fwin <- iNZFilterWin$new(ui)
-    dispose(ui$modWin)
-    fwin$opt1()
-    svalue(ui$modWin$children[[1]]$children[[1]]$children[[2]]) <- "gender"
-    svalue(ui$modWin$children[[1]]$children[[2]]) <- 1
+    svalue(fwin$filter_var) <- "gender"
+    svalue(fwin$cat_levels, index = TRUE) <- 1
     expect_silent(
-        ui$modWin$children[[1]]$children[[3]]$children[[1]]$invoke_change_handler()
+        fwin$okBtn$invoke_change_handler()
     )
 })
 
@@ -531,10 +529,10 @@ test_that("New variables show up in calibration list", {
     svalue(ui$modWin$children[[1]]$children[[3]]) <- c("REGION", "race")
     ui$modWin$children[[1]]$children[[3]]$invoke_change_handler()
     ui$modWin$children[[1]]$children[[5]]$invoke_change_handler()
-    expect_is(ui$getActiveData()$REGION.race, "factor")
+    expect_is(ui$getActiveData()$REGION_race, "factor")
 
     expect_silent(swin <- iNZSurveyPostStrat$new(ui, .use_ui = FALSE))
-    expect_true("REGION.race" %in% swin$PSvar$get_items())
+    expect_true("REGION_race" %in% swin$PSvar$get_items())
     swin$cancelBtn$invoke_change_handler()
 
 })
@@ -598,4 +596,29 @@ test_that("Survey data can be imported from svydesign file", {
     expect_silent(imp$okBtn$invoke_change_handler())
     expect_equivalent(ui$getActiveData(), ncsr)
     expect_is(ui$getActiveDoc()$getModel()$getDesign()$design, "survey.design")
+})
+
+ui$close()
+
+# devtools::load_all("../iNZightTools")
+ncsr_svy <- iNZightTools::import_survey(file.path(test_dir, "ncsr.svydesign"))
+# ncsr_svy <- iNZightTools::import_survey('tests/testthat/ncsr.svydesign')
+
+# try(ui$close(), TRUE); devtools::load_all()
+ui <- iNZGUI$new()
+ui$initializeGui(ncsr_svy$data)
+
+test_that("Invalid menu items are disabled", {
+    m <- function() ui$menuBarWidget$menubar$get_value()
+    expect_true(enabled(m()$Dataset$stack))
+    expect_true(enabled(m()$Dataset[["Dataset operation"]]$reshape))
+    expect_true(enabled(m()$Dataset[["Merge/Join datasets"]]$appendrows))
+    expect_is(m()$Dataset[["Frequency tables"]], "list")
+
+    ui$getActiveDoc()$getModel()$setDesign(ncsr_svy$spec, ui)
+    expect_false(enabled(m()$Dataset$stack))
+    expect_false(enabled(m()$Dataset[["Dataset operation"]]$reshape))
+    expect_false(enabled(m()$Dataset[["Merge/Join datasets"]]$appendrows))
+    expect_is(m()$Dataset[["Frequency tables"]], "GAction")
+    expect_false(enabled(m()$Dataset[["Frequency tables"]]))
 })

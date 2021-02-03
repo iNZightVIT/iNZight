@@ -74,7 +74,7 @@ iNZPlotInfWin <- setRefClass(
                 helpButton <- gbutton("Help", expand = TRUE, fill = TRUE,
                                       cont = btnGrp,
                                       handler = function(h, ...) {
-                                         browseURL("https://www.stat.auckland.ac.nz/~wild/iNZight/user_guides/plot_options/?topic=plot_inference")
+                                         help_page("user_guides/plot_options/?topic=plot_inference")
                                       })
 
                 okButton <- gbutton("Home", expand = TRUE, fill = TRUE,
