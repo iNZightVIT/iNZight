@@ -49,7 +49,7 @@ iNZPrefsWin <- setRefClass(
 
             ### ---------------- Language
             g_lang <- gformlayout(container = sec_general)
-            languages <- c("English", "Māori")
+            languages <- c("English", "Maori")
             p_lang <- gcombobox(languages,
                 selected = which(names(languages) == prefs$language),
                 label = "Language :",

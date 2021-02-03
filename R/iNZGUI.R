@@ -938,7 +938,7 @@ iNZGUI <- setRefClass(
 
             prefs$language <-
                 if (is.null(prefs$language) || !is.character(prefs$language)) defs$language
-                else if (!tolower(prefs$language) %in% c("english", "māori")) defs$language
+                else if (!tolower(prefs$language) %in% c("english", "maori")) defs$language
                 else prefs$language[1]
 
             prefs
