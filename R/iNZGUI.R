@@ -1004,22 +1004,20 @@ iNZGUI <- setRefClass(
                     title = "Recover old preferences file?",
                     icon = "question"
                 )
-                if (move_prefs) {
-                    tt <- try({
-                        prefs <-
-                            if (file.exists(prefs.location)) {
-                                checkPrefs(dget(prefs.location))
-                            } else {
-                                defaultPrefs()
-                            }
-                    }, TRUE)
-                    if (!inherits(tt, "try-error")) {
-                        unlink(old.prefs.location)
-                        preferences <<- defaultPrefs()
-                        savePreferences()
-                    }
-                }
+                if (move_prefs)
+                    file.rename(old.prefs.location, prefs.location)
             }
+            tt <- try({
+                preferences <<-
+                    if (file.exists(prefs.location)) {
+                        checkPrefs(dget(prefs.location))
+                    } else {
+                        defaultPrefs()
+                    }
+            }, TRUE)
+
+            if (inherits(tt, "try-error"))
+                preferences <<- defaultPrefs()
         },
         savePreferences = function() {
             if (getRversion() >= 4 && !dir.exists(dirname(prefs.location)))
