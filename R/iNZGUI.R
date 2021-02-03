@@ -192,7 +192,7 @@ iNZGUI <- setRefClass(
             if (file.exists(tf)) {
                 options(
                     "translatr.language" =
-                        unique(c(tolower(preferences$lang), "english")),
+                        unique(c(tolower(preferences$language), "english")),
                     "translatr.table" = read.csv(tf)
                 )
             }
@@ -938,6 +938,7 @@ iNZGUI <- setRefClass(
 
             prefs$language <-
                 if (is.null(prefs$language) || !is.character(prefs$language)) defs$language
+                else if (!tolower(prefs$language) %in% c("english", "māori")) defs$language
                 else prefs$language[1]
 
             prefs

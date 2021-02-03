@@ -49,12 +49,12 @@ iNZPrefsWin <- setRefClass(
 
             ### ---------------- Language
             g_lang <- gformlayout(container = sec_general)
-            languages <- c(en = "English")
+            languages <- c("English", "Māori")
             p_lang <- gcombobox(languages,
                 selected = which(names(languages) == prefs$language),
                 label = "Language :",
                 container = g_lang,
-                handler = function(h, ...) set_pref("language", names(languages)[h$obj$get_index()])
+                handler = function(h, ...) set_pref("language", svalue(h$obj))
             )
             enabled(p_lang) <- length(languages) > 1L
             visible(g_lang) <- file.exists(system.file("translations.csv", package = "iNZight"))
