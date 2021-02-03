@@ -876,7 +876,8 @@ iNZGUI <- setRefClass(
                 popout = FALSE,
                 font.size = 10,
                 dev.features = FALSE,
-                show.code = FALSE
+                show.code = FALSE,
+                language = "en"
             )
         },
         checkPrefs = function(prefs) {
@@ -886,7 +887,8 @@ iNZGUI <- setRefClass(
                 "popout",
                 "font.size",
                 "dev.features",
-                "show.code"
+                "show.code",
+                "language"
             )
 
             ## Only keep allowed preferences --- anything else is discarded
@@ -925,6 +927,10 @@ iNZGUI <- setRefClass(
                 if (is.null(prefs$show.code) || !is.logical(prefs$show.code)) defs$show.code
                 else prefs$show.code
 
+            prefs$language <-
+                if (is.null(prefs$language) || !is.character(prefs$language)) defs$language
+                else prefs$language[1]
+
             prefs
 
         },
@@ -945,7 +951,9 @@ iNZGUI <- setRefClass(
 
             ## If Windows or Mac, set the working directory to Documents/iNZightVIT if possible ...
 
-            prefs.location <<-switch(
+            ## Will need to check for old file, and move it into new format (with user permission, of course!)
+
+            old.prefs.location <- switch(
                 OS,
                 "windows" = {
                     if (file.exists(file.path("~", "iNZightVIT"))) {
@@ -977,7 +985,28 @@ iNZGUI <- setRefClass(
                     path
                 }
             )
+            prefs.location <<-
+                if (getRversion() >= 4)
+                    file.path(tools::R_user_dir("iNZight", "config"), "preferences.R")
+                else old.prefs.location
 
+            if (getRversion() >= 4 && file.exists(old.prefs.location)) {
+                move_prefs <- gconfirm(
+                    sprintf(
+                        paste(sep = "\n",
+                            "iNZight is now saving your preferences in a new location.",
+                            "We found an old preferences file in",
+                            "    %s",
+                            "Would you like to move it to the new location?"
+                        ),
+                        dirname(old.prefs.location)
+                    ),
+                    title = "Recover old preferences file?",
+                    icon = "question"
+                )
+                if (move_prefs)
+                    file.rename(old.prefs.location, prefs.location)
+            }
             tt <- try({
                 preferences <<-
                     if (file.exists(prefs.location)) {
@@ -991,6 +1020,8 @@ iNZGUI <- setRefClass(
                 preferences <<- defaultPrefs()
         },
         savePreferences = function() {
+            if (getRversion() >= 4 && !dir.exists(dirname(prefs.location)))
+                dir.create(dirname(prefs.location), recursive = TRUE)
             ## attempt to save the preferences in the expected location:
             tt <- try(dput(preferences, prefs.location), silent = TRUE)
             if (inherits(tt, "try-error")) {
