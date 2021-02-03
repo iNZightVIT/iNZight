@@ -333,8 +333,10 @@ test_that("JSON files load", {
     expect_equal(dim(imp$prev), c(rows = 5L, cols = 5L))
     expect_silent(imp$okBtn$invoke_change_handler())
     expect_equivalent(ui$getActiveData(), iris)
-    expect_true(
-        grepl("jsonlite::fromJSON(", fixed = TRUE),
-        ui$rhistory$get()
+    expect_match(
+        ui$rhistory$get(),
+        "jsonlite::fromJSON(",
+        fixed = TRUE,
+        all = FALSE
     )
 })
