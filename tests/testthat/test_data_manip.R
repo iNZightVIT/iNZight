@@ -1,6 +1,6 @@
 context("Data manipulation and information")
 
-# try(ui$close(), TRUE); load_all()
+# try(ui$close(), TRUE); devtools::load_all()
 ui <- iNZGUI$new()
 ui$initializeGui(census.at.school.500)
 on.exit(try(ui$close(), TRUE))
@@ -19,6 +19,9 @@ test_that("Subsetting and reordering columns", {
 })
 
 test_that("Filtering data leaves code OK", {
+    expect_silent(w <- iNZFilterWin$new())
+    expect_is(w$GUI, "uninitializedField")
+
     ui$ctrlWidget$V1box$set_value("height")
     ui$ctrlWidget$V2box$set_value("armspan")
     ui$getActiveDoc()$setSettings(list(colby = as.name("gender")))
@@ -29,18 +32,29 @@ test_that("Filtering data leaves code OK", {
     )
 
     w <- iNZFilterWin$new(ui)
-    gWidgets2::dispose(ui$modWin)
-    w$opt1()
-    ui$modWin$children[[1]]$children[[1]]$children[[2]]$set_value("gender")
-    svalue(ui$modWin$children[[1]]$children[[2]]) <- "male"
-    expect_silent(
-        ui$modWin$children[[1]]$children[[3]]$children[[1]]$invoke_change_handler()
+
+    o <- options(browser = cat)
+    on.exit(options(o))
+    expect_output(
+        ui$modWin$children[[1]]$children[[1]]$children[[2]]$invoke_change_handler(),
+        paste0(.base_url, "user_guides/data_options/#filter")
     )
+
+    expect_silent(w$filter_var$set_value("gender"))
+    expect_silent(svalue(w$cat_levels) <- "male")
+    expect_silent(w$cat_levels$invoke_change_handler())
+    expect_silent(w$okBtn$invoke_change_handler())
     expect_match(
         svalue(ui$code_panel$input),
         "inzplot(height ~ armspan, colby = gender, data = data.filtered)",
         fixed = TRUE
     )
+
+    # filter by row number
+
+
+    # filter randomly
+
 })
 
 # source("R/iNZChangeDataWin.R")
@@ -63,7 +77,7 @@ ui$close()
 ui <- iNZGUI$new()
 ui$initializeGui()
 
-test_that("Existing atasets can be joined", {
+test_that("Existing datasets can be joined", {
     # first, set two datasets:
     d1 <- data.frame(x = c("A", "B", "C", "D"), y = 1:4,
         stringsAsFactors = TRUE)
@@ -92,4 +106,41 @@ test_that("Existing atasets can be joined", {
         iNZightTools::code(ui$getActiveData()),
         ""
     )
+})
+
+ui$close()
+
+# try(ui$close(), silent = TRUE); devtools::load_all()
+ui <- iNZGUI$new()
+ui$initializeGui(census.at.school.500)
+
+test_that("Uniting columns works", {
+    w <- iNZUniteDataWin$new(ui)
+    svalue(w$var1) <- c("travel", "gender")
+    w$var1$invoke_change_handler()
+    expect_equal(svalue(w$var2), "travel_gender")
+    expect_true("travel_gender" %in% w$newview$get_names())
+    expect_silent(w$unitebtn$invoke_change_handler())
+    expect_equal(
+        ui$getActiveData()$travel_gender,
+        with(census.at.school.500, as.factor(paste(travel, gender, sep = "_")))
+    )
+})
+
+test_that("Separating columns works", {
+    # source("R/iNZChangeDataWin.R")
+    w <- iNZSeparateDataWin$new(ui)
+    w$format$set_index(2L)
+    svalue(w$var1) <- "travel_gender"
+    expect_silent(w$var1$invoke_change_handler())
+    expect_true(w$var2$set_value("_"))
+    w$sep <- "_"
+    expect_silent(w$updateView())
+    expect_equal(svalue(w$leftCol), "travel")
+    expect_equal(svalue(w$rightCol), "gender")
+    expect_true(w$leftCol$set_value("mode_of_travel"))
+    expect_true(w$rightCol$set_value("sex"))
+    expect_silent(w$updateView())
+    expect_true(all(c("mode_of_travel", "sex") %in% w$newview$get_names()))
+    expect_silent(w$separatebtn$invoke_change_handler())
 })

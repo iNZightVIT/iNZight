@@ -10,7 +10,8 @@ iNZDataModel <- setRefClass(
             name = "character",
             oldname = "character",
             freqtables = "list",
-            currentDesign = "list"
+            currentDesign = "list",
+            design_only = "logical"
         ),
         prototype = list(
             dataSet = data.frame(empty = " ", stringsAsFactors = TRUE),
@@ -19,14 +20,22 @@ iNZDataModel <- setRefClass(
             dataDesign = NULL,
             name = "data", oldname = "",
             freqtables = list(),
-            currentDesign = list()
+            currentDesign = list(),
+            design_only = FALSE
         )
     ),
     contains = "PropertySet", ## need this to add observer to object
     methods = list(
         initialize = function(data = NULL) {
-            if(!is.null(data)) {
+            if (is.null(data)) return()
+
+            if (inherits(data, "inzsvyspec")) {
+                .self$setData(data$data)
+                .self$setDesign(data)
+                design_only <<- TRUE
+            } else {
                 .self$setData(data)
+                design_only <<- FALSE
             }
         },
         setData = function(data) {
@@ -47,6 +56,13 @@ iNZDataModel <- setRefClass(
             oldname <<- ""
         },
         updateData = function(data) {
+            if (inherits(data, "inzsvyspec")) {
+                dataDesign <<- unclass(data)
+                invisible(createSurveyObject(reload = TRUE))
+                data <- data$data
+                design_only <<- TRUE
+            }
+
             if (is.null(attr(data, "name", exact = TRUE)))
                 attr(data, "name") <- "data"
             dataSet <<- data
@@ -135,6 +151,10 @@ iNZDataModel <- setRefClass(
             )
             # when design changed, update the object
             invisible(createSurveyObject(reload = TRUE))
+            if (!missing(gui)) {
+                gui$dataNameWidget$updateWidget()
+                gui$menuBarWidget$defaultMenu()
+            }
         },
         # setDesign2 = function(strata = NULL, clus1 = NULL, clus2 = NULL,
         #                      wt = NULL, nest = NULL, fpc = NULL,
@@ -476,7 +496,14 @@ iNZDataNameWidget <- setRefClass(
                 }
                 enabled(nameLabel) <<- TRUE
             }
-            names <- sapply(GUI$iNZDocuments, function(d) d$getModel()$getName())
+            names <- sapply(GUI$iNZDocuments,
+                function(d) {
+                    n <- d$getModel()$getName()
+                    if (!is.null(d$getModel()$getDesign()))
+                        n <- sprintf("%s (survey design)", d$getModel()$dataDesignName)
+                    n
+                }
+            )
             blockHandlers(nameLabel)
             nameLabel$set_items(names)
             svalue(nameLabel, index = TRUE) <<- GUI$activeDoc

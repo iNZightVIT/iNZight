@@ -52,7 +52,7 @@ iNZValidateWin <- setRefClass(
       font(lbl.results) <- list(weight = "bold")
       font(lbl.details) <- list(weight = "bold")
       helpbtn <- gimagebutton(stock.id = "gw-help", handler = function(h, ...){
-        browseURL("https://www.stat.auckland.ac.nz/~wild/iNZight/user_guides/data_options/#validate")
+        help_page("user_guides/data_options/#validate")
       })
       titlelyt <- glayout(homegenous = FALSE)
       titlelyt[1, 1:19, expand = TRUE] <- lbl.details

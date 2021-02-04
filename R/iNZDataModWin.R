@@ -91,8 +91,7 @@ iNZDataModWin <- setRefClass(
       return(TRUE)
     },
     updateData = function(newdata) {
-      attr(newdata, "name") <- GUI$getActiveDoc()$getModel()$name
-      GUI$getActiveDoc()$getModel()$updateData(newdata)
+      GUI$update_document(newdata)
     })
 )
 
@@ -101,7 +100,11 @@ iNZconToCatWin <- setRefClass(
   "iNZconToCatWin",
   contains = "iNZDataModWin",
   fields = list(
-    varData = "ANY" ## data that is dragged into droptarget
+    data = "ANY",
+    varData = "ANY", ## data that is dragged into droptarget
+    varLbl = "ANY",
+    varname = "ANY",
+    okButton = "ANY"
   ),
   methods = list(
     initialize = function(gui) {
@@ -112,77 +115,88 @@ iNZconToCatWin <- setRefClass(
       mainGroup <- gvbox()
       mainGroup$set_borderwidth(15)
 
-      helpbtn <- gimagebutton(stock.id = "gw-help", anchor = c(1, -1), cont = mainGroup, handler = function(h, ...){
-        browseURL("https://www.stat.auckland.ac.nz/~wild/iNZight/user_guides/variables/#convert1")
-      })
+      helpbtn <- gimagebutton(
+        stock.id = "gw-help",
+        anchor = c(1, -1),
+        cont = mainGroup,
+        handler = function(h, ...)
+          browseURL("https://inzight.nz/user_guides/variables/#convert1")
+      )
 
       tbl <- glayout(container = mainGroup)
-      ii <- 1
+      ii <- 1L
 
-      lbl <- glabel(paste("1. Drag and drop a variable name onto the",
-                          "label below to create a categorical version",
-                          "of that variable", sep = "\n"))
-      font(lbl) <- list(weight = "bold", family = "sans")
+      lbl <- glabel(
+        paste(sep = "\n",
+          "Choose a variable from the dropdown box below,",
+          "or drag and drop a variable onto it, to create a",
+          "categorical version of the chosen variable."
+        )
+      )
+      font(lbl) <- list(size = 10, weight = "bold")
+      tbl[ii, 1:2, anchor = c(-1, 0), expand = TRUE] <- lbl
+      ii <- ii + 1L
 
-      tbl[ii, 1, anchor = c(-1, 0), expand = TRUE] <- lbl
+
+      lbl <- glabel("Variable to convert :")
+      tbl[ii, 1L, anchor = c(1, 0), expand = TRUE] <- lbl
+
+      data <<- GUI$getActiveData()
+      numvars <- names(data)[sapply(data, iNZightTools::is_num)]
+      varLbl <<- gcombobox(numvars,
+        selected = 0L,
+        handler = function(h, ...) {
+          varData <<- svalue(varLbl)
+          svalue(varname) <<- makeNames(paste0(varData, ".cat"))
+        }
+      )
+      tbl[ii, 2L, expand = TRUE] <- varLbl
+      ii <- ii + 1L
+
+      lbl <- glabel("New variable name :")
+      tbl[ii, 1, anchor = c(1, 0), expand = TRUE] <- lbl
+
+      varname <<- gedit("", width = 20)
+      tbl[ii, 2, expand = TRUE] <- varname
       ii <- ii + 1
 
-      tbl[ii, 1] <- gseparator()
-      ii <- ii + 1
-
-      dropLbl <- glabel("DROP VARIABLE HERE")
-      font(dropLbl) <- list(size = 14)
-      tbl[ii, 1] <- dropLbl
-      ii <- ii + 1
-
-      tbl[ii, 1] <- gseparator()
-      ii <- ii + 1
-
-      lbl <- glabel("2. Type name for the new variable: ")
-      font(lbl) <- list(weight = "bold", family = "sans")
-      tbl[ii, 1, encho = c(-1, 0), expand = TRUE] <- lbl
-      ii <- ii + 1
-
-      name.txt <- gedit("No Variable Selected", width = 20)
-      tbl[ii, 1] <- name.txt
-      ii <- ii + 1
-
-      okButton <- gbutton("Update Data",
-                          handler = function(h, ...) {
-                            orgVar <- svalue(dropLbl)
-                            name <- gsub('\\n+', "", svalue(name.txt), perl = TRUE)
-                            if (name == "" || !is.character(name))
-                              gmessage("Please choose a non-empty name for the new variable",
-                                       title = "Invalid variable choice", parent = GUI$modWin)
-                            else if (orgVar == "DROP VARIABLE HERE")
-                              gmessage("Please choose a variable to convert",
-                                       title = "Invalid variable choice", parent = GUI$modWin)
-                            else if (checkNames(name)) {
-                              .dataset <- GUI$getActiveData()
-                              data <- iNZightTools::convertToCat(.dataset, orgVar, name)
-                              updateData(data)
-                              svalue(dropLbl) <- "DROP VARIABLE HERE"
-                              svalue(name.txt) <- "No Variable Selected"
-                            }
-                          })
-      font(okButton) <- list(weight="bold", family = "sans")
-      tbl[ii, 1] <- okButton
-      ii <- ii + 1
+      okButton <<- gbutton("Update Data",
+        handler = function(h, ...) {
+          orgVar <- svalue(varLbl)
+          name <- gsub('\\n+', "", svalue(varname), perl = TRUE)
+          if (name == "" || !is.character(name))
+            gmessage("Please choose a non-empty name for the new variable",
+              title = "Invalid variable choice",
+              parent = GUI$modWin)
+          else if (length(orgVar) == 0L)
+            gmessage("Please choose a variable to convert",
+              title = "Invalid variable choice",
+              parent = GUI$modWin)
+          else if (checkNames(name)) {
+            .dataset <- GUI$get_data_object()
+            newdata <- iNZightTools::convertToCat(.dataset, orgVar, name)
+            updateData(newdata)
+            varLbl$set_index(0L)
+            svalue(varname) <<- ""
+          }
+        }
+      )
+      font(okButton) <<- list(weight = "bold", family = "sans")
+      tbl[ii, 2L] <- okButton
+      ii <- ii + 1L
 
 
-      addDropTarget(dropLbl,
-                    handler = function(h, ...) {
-                      dropData <- GUI$getActiveDoc()$getData()[h$dropdata][[1]]
-                      if (all(is_cat(dropData)))
-                        gmessage("Already a categorical variable!",
-                                 parent = GUI$win, icon = 'warning')
-                      else {
-                        svalue(h$obj) <- h$dropdata
-                        svalue(name.txt) <- makeNames(paste0(h$dropdata, ".cat"))
-                        varData <<- dropData
-                      }
-                    })
-
+      addDropTarget(varLbl,
+        handler = function(h, ...) {
+          dropData <- GUI$getActiveDoc()$getData()[h$dropdata][[1]]
+          if (all(is_cat(dropData)))
+            gmessage("Already a categorical variable!",
+                      parent = GUI$win, icon = 'warning')
+          else {
+            svalue(varLbl) <<- h$dropdata
+          }
+        }
+      )
       add(GUI$modWin, mainGroup, expand = TRUE)
       visible(GUI$modWin) <<- TRUE
     })
@@ -201,7 +215,7 @@ iNZtrnsWin <- setRefClass(
       mainGroup <- ggroup(horizontal = FALSE)
       mainGroup$set_borderwidth(15)
       helpbtn <- gimagebutton(stock.id = "gw-help", cont = mainGroup, anchor = c(1, -1), handler = function(h, ...){
-        browseURL("https://www.stat.auckland.ac.nz/~wild/iNZight/user_guides/variables/#transform")
+        help_page("user_guides/variables/#transform")
       })
       lbl1 <- glabel("Drag and drop variable names onto the labels below\nto create new transformed variables.")
       font(lbl1) <- list(weight="bold", family = "sans", size = 11)
@@ -237,7 +251,7 @@ iNZtrnsWin <- setRefClass(
             name <- makeNames(gsub("X", var, transforms[[i]][1]))
             if (checkNames(name)) {
               fn <- transforms[[i]][2]
-              .dataset <- GUI$getActiveData()
+              .dataset <- GUI$get_data_object()
               data <- iNZightTools::transformVar(.dataset, var, fn, name)
               updateData(data)
             }
@@ -276,7 +290,7 @@ iNZcllpsWin <- setRefClass(
       font(lbl1) <- list(weight = "bold",
                          family = "sans")
       helpbtn <- gimagebutton(stock.id = "gw-help", handler = function(h, ...){
-        browseURL("https://www.stat.auckland.ac.nz/~wild/iNZight/user_guides/variables/#collapse")
+        help_page("user_guides/variables/#collapse")
       })
       titlelyt <- glayout(homegenous = FALSE)
       titlelyt[1, 4:19, expand = TRUE, anchor = c(0,0)] <- lbl1
@@ -322,7 +336,7 @@ iNZcllpsWin <- setRefClass(
                        title = 'Invalid level name', parent = GUI$modWin,
                        icon = 'warning')
             } else if (checkNames(name)) {
-              .dataset <- GUI$getActiveData()
+              .dataset <- GUI$get_data_object()
               data <- iNZightTools::collapseLevels(.dataset, var, lvls, lvlname, name)
               updateData(data)
               dispose(GUI$modWin)
@@ -377,7 +391,7 @@ iNZrenameWin <- setRefClass(
       mainGroup$set_borderwidth(15)
       ## instructions through glabels
       helpbtn <- gimagebutton(stock.id = "gw-help", cont = mainGroup, anchor = c(1, -1), handler = function(h, ...){
-        browseURL("https://www.stat.auckland.ac.nz/~wild/iNZight/user_guides/variables/#renamelevs")
+        help_page("user_guides/variables/#renamelevs")
       })
       lbl1 <- glabel("Choose variable: ")
       font(lbl1) <- list(weight = "bold",
@@ -402,7 +416,7 @@ iNZrenameWin <- setRefClass(
         ## newFactor will be FALSE, if the user input was wrong
         name <- svalue(factorName)
         if (is.list(newlvls) && checkNames(name)) {
-          .dataset <- GUI$getActiveData()
+          .dataset <- GUI$get_data_object()
           data <- iNZightTools::renameLevels(.dataset, var, newlvls, name)
           updateData(data)
           dispose(GUI$modWin)
@@ -493,9 +507,11 @@ iNZreorderWin <- setRefClass(
       mainGroup <- ggroup(expand = TRUE, horizontal = FALSE)
       mainGroup$set_borderwidth(15)
 
-      helpbtn <- gimagebutton(stock.id = "gw-help", cont = mainGroup, anchor = c(1, -1), handler = function(h, ...){
-        browseURL("https://www.stat.auckland.ac.nz/~wild/iNZight/user_guides/variables/#reorderlevs")
-      })
+      helpbtn <- gimagebutton(stock.id = "gw-help", cont = mainGroup, anchor = c(1, -1),
+        handler = function(h, ...) {
+          help_page("user_guides/variables/#reorderlevs")
+        }
+      )
 
       tbl <- glayout()
 
@@ -597,7 +613,7 @@ iNZreorderWin <- setRefClass(
       addHandlerClicked(reorderButton, function(h, ...) {
         var <- svalue(factorMenu)
         varname <- svalue(factorName)
-        .dataset <- GUI$getActiveData()
+        .dataset <- GUI$get_data_object()
 
         if (checkNames(varname)) {
           if (svalue(sortMenu, TRUE) == 1)
@@ -638,7 +654,7 @@ iNZcmbCatWin <- setRefClass(
       font(lbl1) <- list(weight = "bold",
                          family = "sans")
       helpbtn <- gimagebutton(stock.id = "gw-help", handler = function(h, ...){
-        browseURL("https://www.stat.auckland.ac.nz/~wild/iNZight/user_guides/variables/#catcombine")
+        help_page("user_guides/variables/#catcombine")
       })
       titlelyt <- glayout(homegenous = FALSE)
       titlelyt[1, 4:19, expand = TRUE, anchor = c(0,0)] <- lbl1
@@ -657,7 +673,7 @@ iNZcmbCatWin <- setRefClass(
       newName <- gedit()
       ## separator (. or _ for now ...)
       lbl4 <- glabel("Value separator")
-      varSep <- gcombobox(c(".", "_"), selected = 1)
+      varSep <- gcombobox(c("_", "."), selected = 1)
       ## automatically fill the name field when variables are selected
       addHandlerSelectionChanged(factorNames, handler = function(h, ...) {
         if (length(svalue(factorNames)) > 1)
@@ -668,8 +684,8 @@ iNZcmbCatWin <- setRefClass(
       addHandlerChanged(varSep, function(h, ...) {
         if (length(svalue(factorNames)) <= 1) return()
         sep <- svalue(h$obj)
-        osep <- switch(sep, "_" = ".", "." = "_")
-        oname <- makeNames(paste(svalue(factorNames), collapse = osep))
+        # osep <- switch(sep, "_" = ".", "." = "_")
+        oname <- makeNames(paste(svalue(factorNames), collapse = sep))
         if (svalue(newName) == oname) {
           ## user hasn't changed the name, so update it
           svalue(newName) <- makeNames(paste(svalue(factorNames), collapse = sep))
@@ -685,7 +701,7 @@ iNZcmbCatWin <- setRefClass(
             sep <- svalue(varSep)
 
             if (checkNames(name)) {
-              .dataset <- GUI$getActiveData()
+              .dataset <- GUI$get_data_object()
               data <- iNZightTools::combineCatVars(.dataset, vars, sep, name)
               updateData(data)
               dispose(GUI$modWin)
@@ -739,7 +755,7 @@ iNZcrteVarWin <- setRefClass(
       lbl1 = glabel("Type in an expression to compute a new variable")
       font(lbl1) <- list(weight="bold", family = "sans")
       helpbtn <- gimagebutton(stock.id = "gw-help", handler = function(h, ...){
-        browseURL("https://www.stat.auckland.ac.nz/~wild/iNZight/user_guides/variables/#create")
+        help_page("user_guides/variables/#create")
       })
       titlelyt <- glayout(homegenous = FALSE)
       titlelyt[1, 4:19, expand = TRUE, anchor = c(0,0)] <- lbl1
@@ -751,7 +767,7 @@ iNZcrteVarWin <- setRefClass(
       submitButton = gbutton(" - SUBMIT -", handler = function(h,...) {
         expr <- svalue(newVarExp)
         name <- svalue(newVarName)
-        .dataset <- GUI$getActiveData()
+        .dataset <- GUI$get_data_object()
         data <- try(iNZightTools::createNewVar(.dataset, name, expr), silent = TRUE)
         if (inherits(data, 'try-error')) {
           err <- strsplit(data, "\n")[[1]]
@@ -796,7 +812,7 @@ iNZfrmIntWin <- setRefClass(
       mainGroup <- ggroup(expand = TRUE, horizontal = FALSE)
       mainGroup$set_borderwidth(15)
       helpbtn <- gimagebutton(stock.id = "gw-help", cont = mainGroup, anchor = c(1, -1), handler = function(h, ...){
-        browseURL("https://www.stat.auckland.ac.nz/~wild/iNZight/user_guides/variables/#classints")
+        help_page("user_guides/variables/#classints")
       })
       lbl1 = glabel("Choose variable :")
       font(lbl1) = list(weight = "bold", style = "normal")
@@ -1005,7 +1021,7 @@ iNZrnmVarWin <- setRefClass(
       mainGroup <- ggroup(expand = TRUE, horizontal = FALSE)
       mainGroup$set_borderwidth(15)
       helpbtn <- gimagebutton(stock.id = "gw-help", cont = mainGroup, anchor = c(1, -1), handler = function(h, ...){
-        browseURL("https://www.stat.auckland.ac.nz/~wild/iNZight/user_guides/variables/#renamevars")
+        help_page("user_guides/variables/#renamevars")
       })
       lbl1 <- glabel("Old Variables")
       lbl2 <- glabel("New Variables")
@@ -1031,7 +1047,7 @@ iNZrnmVarWin <- setRefClass(
                                 w <- vnames != onames
                                 namelist <- as.list(vnames[w])
                                 names(namelist) <- onames[w]
-                                .dataset <- GUI$getActiveData()
+                                .dataset <- GUI$get_data_object()
                                 data <- iNZightTools::renameVars(.dataset, namelist)
                                 updateData(data)
                                 dispose(GUI$modWin)
@@ -1063,7 +1079,7 @@ iNZstdVarWin <- setRefClass(
       font(lbl1) <- list(weight = "bold",
                          family = "sans")
       helpbtn <- gimagebutton(stock.id = "gw-help", handler = function(h, ...){
-        browseURL("https://www.stat.auckland.ac.nz/~wild/iNZight/user_guides/variables/#standardize")
+        help_page("user_guides/variables/#standardize")
       })
       titlelyt <- glayout(homegenous = FALSE)
       titlelyt[1, 4:19, expand = TRUE, anchor = c(0,0)] <- lbl1
@@ -1080,8 +1096,7 @@ iNZstdVarWin <- setRefClass(
         if (length(svalue(numVar)) > 0) {
           varnames <- svalue(numVar)
           names <- makeNames(paste0(varnames, ".std"))
-          print(names)
-          .dataset <- GUI$getActiveData()
+          .dataset <- GUI$get_data_object()
           data <- iNZightTools::standardizeVars(.dataset, varnames, names)
           updateData(data)
         }
@@ -1109,7 +1124,7 @@ iNZdeleteVarWin <- setRefClass(
       lbl1 = glabel("Select Variables to delete")
       font(lbl1) <- list(weight="bold", family = "sans")
       helpbtn <- gimagebutton(stock.id = "gw-help", handler = function(h, ...){
-        browseURL("https://www.stat.auckland.ac.nz/~wild/iNZight/user_guides/variables/#deletevars")
+        help_page("user_guides/variables/#deletevars")
       })
       titlelyt <- glayout(homegenous = FALSE)
       titlelyt[1, 4:19, expand = TRUE, anchor = c(0,0)] <- lbl1
@@ -1138,9 +1153,9 @@ iNZdeleteVarWin <- setRefClass(
               ),
               icon = "question")
             if (confirmDel) {
-              .dataset <- GUI$getActiveData()
+              .dataset <- GUI$get_data_object()
               data <- iNZightTools::deleteVars(.dataset, vars)
-              GUI$getActiveDoc()$getModel()$updateData(data)
+              updateData(data)
               dispose(GUI$modWin)
             }
           }
@@ -1168,7 +1183,7 @@ iNZmissCatWin <- setRefClass(
       lbl1 = glabel("Select Variables to be transformed\nResulting Variables will be categorical with a level for missing observations")
       font(lbl1) <- list(weight="bold", family = "sans")
       helpbtn <- gimagebutton(stock.id = "gw-help", handler = function(h, ...){
-        browseURL("https://www.stat.auckland.ac.nz/~wild/iNZight/user_guides/variables/#missingcat")
+        help_page("user_guides/variables/#missingcat")
       })
       titlelyt <- glayout(homegenous = FALSE)
       titlelyt[1, 1:19, expand = TRUE] <- lbl1
@@ -1184,7 +1199,7 @@ iNZmissCatWin <- setRefClass(
           if (length(svalue(listOfVars)) > 0) {
             vars <- svalue(listOfVars)
             names <- makeNames(paste0(vars, "_miss"))
-            .dataset <- GUI$getActiveData()
+            .dataset <- GUI$get_data_object()
             data <- iNZightTools::missingToCat(.dataset, vars, names)
             updateData(data)
             dispose(GUI$modWin)
@@ -1216,7 +1231,7 @@ iNZrankNumWin <- setRefClass(
       font(lbl1) <- list(weight = "bold",
                          family = "sans")
       helpbtn <- gimagebutton(stock.id = "gw-help", handler = function(h, ...){
-        browseURL("https://www.stat.auckland.ac.nz/~wild/iNZight/user_guides/variables/#rank")
+        help_page("user_guides/variables/#rank")
       })
       titlelyt <- glayout(homegenous = FALSE)
       titlelyt[1, 4:19, expand = TRUE, anchor = c(0,0)] <- lbl1
@@ -1232,7 +1247,7 @@ iNZrankNumWin <- setRefClass(
       rankButton <- gbutton("Rank", handler = function(h, ...) {
         if (length(svalue(numVar)) > 0) {
           vars <- svalue(numVar)
-          .dataset <- GUI$getActiveData()
+          .dataset <- GUI$get_data_object()
           data <- iNZightTools::rankVars(.dataset, vars)
           updateData(data)
         }
@@ -1266,7 +1281,7 @@ iNZctocatmulWin <- setRefClass(
       font(lbl1) <- list(weight = "bold",
                          family = "sans")
       helpbtn <- gimagebutton(stock.id = "gw-help", handler = function(h, ...){
-        browseURL("https://www.stat.auckland.ac.nz/~wild/iNZight/user_guides/variables/#convert2")
+        help_page("user_guides/variables/#convert2")
       })
       titlelyt <- glayout(homegenous = FALSE)
       titlelyt[1, 4:19, expand = TRUE, anchor = c(0,0)] <- lbl1
@@ -1283,7 +1298,7 @@ iNZctocatmulWin <- setRefClass(
         if (length(svalue(numVar)) > 0) {
           vars <- svalue(numVar)
           varnames <- makeNames(paste(vars, "cat", sep = "."))
-          .dataset <- GUI$getActiveData()
+          .dataset <- GUI$get_data_object()
           data <- iNZightTools::convertToCat(.dataset, vars, varnames)
           updateData(data)
           dispose(GUI$modWin)
@@ -1364,7 +1379,7 @@ iNZconTodtWin <- setRefClass(
       title <- glabel("Convert to a Date-Time variable")
       font(title) <- list(size = 14, weight = "bold")
       helpbtn <- gimagebutton(stock.id = "gw-help", handler = function(h, ...){
-        browseURL("https://www.stat.auckland.ac.nz/~wild/iNZight/user_guides/variables/#dtconvert")
+        help_page("user_guides/variables/#dtconvert")
       })
       titlelyt <- glayout(homegenous = FALSE)
       titlelyt[1, 4:19, expand = TRUE, anchor = c(0,0)] <- title
@@ -1590,7 +1605,7 @@ iNZExtfromdtWin <- setRefClass(
       title <- glabel("Extract parts of the datetime")
       font(title) <- list(size = 14, weight = "bold")
       helpbtn <- gimagebutton(stock.id = "gw-help", handler = function(h, ...){
-        browseURL("https://www.stat.auckland.ac.nz/~wild/iNZight/user_guides/variables/#dtextract")
+        help_page("user_guides/variables/#dtextract")
       })
       titlelyt <- glayout(homegenous = FALSE)
       titlelyt[1, 4:19, expand = TRUE, anchor = c(0,0)] <- title
@@ -1737,7 +1752,7 @@ iNZAggregatedtWin <- setRefClass(
       title <- glabel("Aggregate datetimes to monthly or quarterly")
       font(title) <- list(size = 14, weight = "bold")
       helpbtn <- gimagebutton(stock.id = "gw-help", handler = function(h, ...){
-        browseURL("https://www.stat.auckland.ac.nz/~wild/iNZight/user_guides/variables/#dtaggregate")
+        help_page("user_guides/variables/#dtaggregate")
       })
 
       titlelyt <- glayout(homegenous = FALSE)
