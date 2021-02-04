@@ -292,12 +292,11 @@ iNZMenuBarWidget <- setRefClass(
 
                 menu[["FREQS"]] <- gaction(tr("menu_data_freq"))
                 enabled(menu[["FREQS"]]) <- FALSE
-            } else {
-                names(menu)[names(menu) == "FREQS"] <- tr("menu_data_freq")
             }
             names(menu)[names(menu) == "DATAOP"] <- tr("menu_data_operation")
             names(menu)[names(menu) == "MERGEJOIN"] <- tr("menu_data_mergejoin")
             names(menu)[names(menu) == "SURVEY"] <- tr("menu_data_svy")
+            names(menu)[names(menu) == "FREQS"] <- tr("menu_data_freq")
             menu
         },
         VariablesMenu = function() {
