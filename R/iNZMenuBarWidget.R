@@ -58,17 +58,17 @@ iNZMenuBarWidget <- setRefClass(
         FileMenu = function() {
             m <- list(
                 import =
-                    gaction(tr("menu_file_import"),
+                    gaction(paste(tr("menu_file_import"), "..."),
                         icon = "cdrom",
                         tooltip = "Import a new dataset",
                         handler = function(h, ...) iNZImportWin$new(GUI)),
                 export =
-                    gaction(tr("menu_file_export"),
+                    gaction(paste(tr("menu_file_export"), "..."),
                         icon = "save-as",
                         handler = function(h, ...) iNZSaveWin$new(GUI, type = "data", data = GUI$getActiveData())),
                 gseparator(),
                 paste =
-                    gaction(tr("menu_file_paste"),
+                    gaction(paste(tr("menu_file_paste"), "..."),
                         icon = "paste",
                         tooltip = "Import data by pasting/clipboard",
                         handler = function(h, ...)
@@ -76,13 +76,13 @@ iNZMenuBarWidget <- setRefClass(
                     ),
                 gseparator(),
                 example =
-                    gaction(tr("menu_file_examples"),
+                    gaction(paste(tr("menu_file_examples"), "..."),
                         icon = "dataframe",
                         tooltip = "Load an example dataset",
                         handler = function(h, ...) iNZImportExampleWin$new(GUI)),
                 gseparator(),
                 preferences =
-                    gaction (tr("menu_file_prefs"),
+                    gaction (paste(tr("menu_file_prefs"), "..."),
                         icon = "preferences",
                         tooltip = "Customise iNZight",
                         handler = function(h, ...) iNZPrefsWin$new(GUI)),
@@ -99,12 +99,12 @@ iNZMenuBarWidget <- setRefClass(
             if (GUI$preferences$dev.features) {
                 m <- c(
                     list(
-                        save = gaction(tr("menu_file_save"),
+                        save = gaction(paste(tr("menu_file_save"), "..."),
                             icon = "save",
                             tooltip = "Save the current iNZight session",
                             handler = function(h, ...) {
                                 f <- gfile(
-                                    text = "Save [beta]",
+                                    text = tr("menu_file_size"),
                                     type = "save",
                                     initial.filename = "untitled.inzsave",
                                     filter = list(
@@ -122,12 +122,12 @@ iNZMenuBarWidget <- setRefClass(
                                 )
                             }
                         ),
-                        load = gaction(tr("menu_file_load"),
+                        load = gaction(paste(tr("menu_file_load"), "..."),
                             icon = "open",
                             tooltip = "Load a saved iNZight session",
                             handler = function(h, ...) {
                                 f <- gfile(
-                                    text = "Load [beta]",
+                                    text = tr("menu_file_load"),
                                     type = "open",
                                     filter = list(
                                         "iNZight save files (*.inzsave)" = list(patterns = c("*.inzsave")),
@@ -262,20 +262,20 @@ iNZMenuBarWidget <- setRefClass(
                             handler = function(h, ...) GUI$removeDesign()
                         )
                 ),
-                "Frequency tables" = list(
+                FREQS = list(
                     expandtable =
-                        gaction("Expand table",
+                        gaction(tr("menu_data_expandtbl"),
                             icon = "datasheet",
                             handler = function(h, ...) iNZexpandTblWin$new(GUI)
                         ),
                     setfrequency =
-                        gaction("Specify frequency column",
+                        gaction(paste(tr("menu_data_setfreq"), "..."),
                             icon = "datasheet",
                             handler = function(h, ...)
                                 iNZSurveyDesign$new(GUI, type = "frequency")
                         ),
                     dropfrequency =
-                        gaction("Remove frequency column",
+                        gaction(tr("menu_data_dropfreq"),
                             icon = "delete",
                             handler = function(h, ...) {
                                 GUI$getActiveDoc()$setSettings(list(freq = NULL))
@@ -284,6 +284,7 @@ iNZMenuBarWidget <- setRefClass(
                 )
             )
             if (is.null(menu$report)) menu$report <- NULL
+            names(menu)[names(menu) == "FREQS"] <- tr("menu_data_freq")
             menu
         },
         VariablesMenu = function() {

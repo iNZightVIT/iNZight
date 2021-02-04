@@ -1,15 +1,42 @@
 id,english,maori
 menu_file,File,Kōnae
-menu_file_save,Save [beta] ...,
-menu_file_load,Load [beta] ...,
-menu_file_import,Import ...,
-menu_file_export,Export ...,
-menu_file_paste,Paste from ...,
-menu_file_examples,Example data ...,Raraunga whakatauira ...
-menu_file_prefs,Preferences ...,
+menu_file_save,Save [beta],
+menu_file_load,Load [beta],
+menu_file_import,Import,
+menu_file_export,Export,
+menu_file_paste,Paste from,
+menu_file_examples,Example data,Raraunga whakatauira
+menu_file_prefs,Preferences,
 menu_file_reload,Reload iNZight,
 menu_file_exit,Exit,Whakamutu
 menu_data,Dataset,Raraunga
+menu_data_filter,Filter,
+menu_data_sort,Sort by variable(s),
+menu_data_agg,Aggregate,
+menu_data_stack,Stack,
+menu_data_operation,Dataset operation,
+menu_data_reshape,Reshape dataset,
+menu_data_separate,Separate column,
+menu_data_unite,Unit columns,
+menu_data_report,Generate data report,
+menu_data_validate,Validate,
+menu_data_reorder,Reorder and select variables,
+menu_data_view,View full dataset,
+menu_data_rename,Rename,
+menu_data_restore,Restore original dataset,
+menu_data_delete,Delete current dataset,
+menu_data_mergejoin,Merge/Join datasets,
+menu_data_joincols,Join by column values,
+menu_data_appendrows,Append new rows,
+menu_data_svy,Survey design,
+menu_data_svyspec,Specify design,
+menu_data_svyrep,Specify replicate design,
+menu_data_svypost,Post-stratify/Calibrate,
+menu_data_svyremove,Remove design,
+menu_data_freq,Frequency tables,
+menu_data_expandtbl,Expand table,
+menu_data_setfreq,Specify frequency column,
+menu_data_dropfreq,Remove frequency column,
 menu_vars,Variables,Taurangi
 menu_plot,Plot,Kauwhata
 menu_adv,Advanced,Whatutoto
