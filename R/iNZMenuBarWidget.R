@@ -307,7 +307,7 @@ iNZMenuBarWidget <- setRefClass(
                         icon = "convert",
                         tooltip = "Convert a variable to a categorical type",
                         handler = function(h, ...) iNZconToCatWin$new(GUI)),
-                "CATVARS" = list(
+                CATVARS = list(
                     reorder =
                         gaction(paste(tr("menu_vars_reorderlevels"), "..."),
                             icon = "sort-ascending",
@@ -329,7 +329,7 @@ iNZMenuBarWidget <- setRefClass(
                             tooltip = "Combine two or more categorical variables",
                             handler = function(h, ...) iNZcmbCatWin$new(GUI))
                 ),
-                "NUMVARS" = list(
+                NUMVARS = list(
                     transform =
                         gaction(paste(tr("menu_vars_transform"), "..."),
                             icon = "convert",
@@ -356,50 +356,53 @@ iNZMenuBarWidget <- setRefClass(
                             tooltip = "Convert multiple numeric variables to categorical",
                             handler = function(h, ...) iNZctocatmulWin$new(GUI))
                 ),
-                "Dates and Times" = list(
+                DATES = list(
                   convert =
-                    gaction("Convert to ...",
+                    gaction(paste(tr("menu_vars_convert2dt"), "..."),
                             icon = "date",
                             tooltip = "Convert a variable to a dates and times type",
                             handler = function(h, ...) iNZconTodtWin$new(GUI)),
                   extract =
-                    gaction("Extract from ...",
+                    gaction(paste(tr("menu_vars_extractdt"), "..."),
                             icon = "date",
                             tooltip = "Extract parts from a dates and times variable",
                             handler = function(h, ...) iNZExtfromdtWin$new(GUI)),
                   aggregation =
-                    gaction("Aggregate to ...",
+                    gaction(paste(tr("menu_vars_aggregate2dt"), "..."),
                             icon = "date",
                             tooltip = "Aggregate date-time into monthly or quarterly",
                             handler = function(h, ...) iNZAggregatedtWin$new(GUI))
                 ),
                 rename =
-                    gaction("Rename variables ...",
+                    gaction(paste(tr("menu_vars_rename"), "..."),
                         icon = "edit",
                         tooltip = "Rename a variable",
                         handler = function(h, ...) iNZrnmVarWin$new(GUI)),
                 create =
-                    gaction("Create new variables ...",
+                    gaction(paste(tr("menu_vars_create"), "..."),
                         icon = "new",
                         tooltip = "Create a new variable using a formula",
                         handler = function(h, ...) iNZcrteVarWin$new(GUI)),
                 miss2cat =
-                    gaction("Missing to categorical ...",
+                    gaction(paste(tr("menu_vars_miss2cat"), "..."),
                         icon = "index",
                         tooltip = "Create a variable to include missingness information",
                         handler = function(h, ...) iNZmissCatWin$new(GUI)),
                 delete =
-                    gaction("Delete variables ...",
+                    gaction(paste(tr("menu_vars_delete"), "..."),
                         icon = "delete",
                         tooltip = "Permanently delete a variable",
                         handler = function(h, ...) iNZdeleteVarWin$new(GUI))
             )
             if (!is.null(GUI$getActiveDoc()$getModel()$getDesign())) {
                 # disable some items for surveys
-                enabled(menu[["Numeric Variables"]]$class) <- FALSE
-                menu[["Dates and Times"]] <- gaction("Dates and Times", enabled = FALSE)
-                enabled(menu[["Dates and Times"]]) <- FALSE
+                enabled(menu$NUMVARS$class) <- FALSE
+                menu$DATES <- gaction(tr("menu_vars_dates"), enabled = FALSE)
+                enabled(menu$DATES) <- FALSE
             }
+            names(menu)[names(menu) == "NUMVARS"] <- tr("menu_vars_numvars")
+            names(menu)[names(menu) == "CATVARS"] <- tr("menu_vars_catvars")
+            names(menu)[names(menu) == "DATES"] <- tr("menu_vars_dates")
             menu
         },
         PlotMenu = function() {

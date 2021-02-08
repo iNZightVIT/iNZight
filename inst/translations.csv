@@ -39,7 +39,7 @@ menu_data_setfreq,Specify frequency column,
 menu_data_dropfreq,Remove frequency column,
 menu_vars,Variables,Taurangi
 menu_vars_convert2cat,Convert to categorical,
-menu_vars_carvars,Categorical Variables,
+menu_vars_catvars,Categorical Variables,
 menu_vars_reorderlevels,Reorder levels,
 menu_vars_collapse,Collapse levels,
 menu_vars_renamelevels,Rename levels,
@@ -50,6 +50,14 @@ menu_vars_standardise,Standardise,
 menu_vars_classint,Form class intervals,
 menu_vars_rank,Rank variables,
 menu_vars_convert2catmulti,Convert to categorical (multiple),
+menu_vars_dates,Dates and times,
+menu_vars_convert2dt,Convert to,
+menu_vars_extractdt,Extract from,
+menu_vars_aggregate2dt,Aggregate to,
+menu_vars_rename,Rename variables,
+menu_vars_create,Create new variables,
+menu_vars_miss2cat,Missing to categorical,
+menu_vars_delete,Delete variables,
 menu_plot,Plot,Kauwhata
 menu_adv,Advanced,Whatutoto
 menu_help,Help,Awhina
