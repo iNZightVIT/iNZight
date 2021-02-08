@@ -303,55 +303,55 @@ iNZMenuBarWidget <- setRefClass(
             if (!hasData()) return(placeholder("menu_vars"))
             menu <- list(
                 cont2cat =
-                    gaction("Convert to categorical ...",
+                    gaction(paste(tr("menu_vars_convert2cat"), "..."),
                         icon = "convert",
                         tooltip = "Convert a variable to a categorical type",
                         handler = function(h, ...) iNZconToCatWin$new(GUI)),
-                "Categorical Variables" = list(
+                "CATVARS" = list(
                     reorder =
-                        gaction("Reorder levels ...",
+                        gaction(paste(tr("menu_vars_reorderlevels"), "..."),
                             icon = "sort-ascending",
                             tooltip = "Reorder the levels of a categorical variable",
                             handler = function(h, ...) iNZreorderWin$new(GUI)),
                     collapse =
-                        gaction("Collapse levels ...",
+                        gaction(paste(tr("menu_vars_collapse"), "..."),
                             icon = "dnd-multiple",
                             tooltip = "Collapse two or more levels into one",
                             handler = function(h, ...) iNZcllpsWin$new(GUI)),
                     rename =
-                        gaction("Rename levels ...",
+                        gaction(paste(tr("menu_vars_renamelevels"), "..."),
                             icon = "edit",
                             tooltip = "Rename a categorical variable's levels",
                             handler = function(h, ...) iNZrenameWin$new(GUI)),
                     combine =
-                        gaction("Combine categorical variables ...",
+                        gaction(paste(tr("menu_vars_combinecatvars"), "..."),
                             icon = "dnd-multiple",
                             tooltip = "Combine two or more categorical variables",
                             handler = function(h, ...) iNZcmbCatWin$new(GUI))
                 ),
-                "Numeric Variables" = list(
+                "NUMVARS" = list(
                     transform =
-                        gaction("Transform ...",
+                        gaction(paste(tr("menu_vars_transform"), "..."),
                             icon = "convert",
                             tooltip = "Transform a variable using a function",
                             handler = function(h, ...) iNZtrnsWin$new(GUI)),
                     standardise =
-                        gaction("Standardise ...",
+                        gaction(paste(tr("menu_vars_standardise"), "..."),
                             icon = "convert",
                             tooltip = "Standardise a numeric variable",
                             handler = function(h, ...) iNZstdVarWin$new(GUI)),
                     class =
-                        gaction("Form class intervals ...",
+                        gaction(paste(tr("menu_vars_classint"), "..."),
                             icon = "convert",
                             tooltip = "Convert numeric variable into categorical intervals",
                             handler = function(h, ...) iNZfrmIntWin$new(GUI)),
                     rank =
-                        gaction("Rank numeric variables ...",
+                        gaction(paste(tr("menu_vars_rank"), "..."),
                             icon = "sort-ascending",
                             tooltip = "Create an ordering variable",
                             handler = function(h, ...) iNZrankNumWin$new(GUI)),
                     cat =
-                        gaction("Convert to categorical (multiple) ...",
+                        gaction(paste(tr("menu_vars_convert2catmulti"), "..."),
                             icon = "convert",
                             tooltip = "Convert multiple numeric variables to categorical",
                             handler = function(h, ...) iNZctocatmulWin$new(GUI))
