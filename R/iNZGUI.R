@@ -53,6 +53,7 @@ iNZGUI <- setRefClass(
             curPlot = "ANY",
             plotType = "ANY",
             OS = "character",
+            available.languages = "character",
             prefs.location = "character",
             preferences = "list",
             statusbar = "ANY",
@@ -187,12 +188,13 @@ iNZGUI <- setRefClass(
             }
 
             ## Grab settings file (or try to!)
-            getPreferences()
             tf <- system.file("translations.csv", package = "iNZight")
+            available.languages <<- colnames(read.csv(tf, nrows = 1))[-1]
+            getPreferences()
             if (file.exists(tf)) {
                 options(
                     "translatr.language" =
-                        unique(c(tolower(preferences$language), "english")),
+                        unique(c(preferences$language, "English")),
                     "translatr.table" = read.csv(tf)
                 )
             }
@@ -953,7 +955,7 @@ iNZGUI <- setRefClass(
                 font.size = 10,
                 dev.features = FALSE,
                 show.code = FALSE,
-                language = "English"
+                language = available.languages[1]
             )
         },
         checkPrefs = function(prefs) {
@@ -1005,7 +1007,7 @@ iNZGUI <- setRefClass(
 
             prefs$language <-
                 if (is.null(prefs$language) || !is.character(prefs$language)) defs$language
-                else if (!tolower(prefs$language) %in% c("english", "maori")) defs$language
+                else if (!prefs$language %in% available.languages) defs$language
                 else prefs$language[1]
 
             prefs
