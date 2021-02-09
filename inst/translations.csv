@@ -59,5 +59,22 @@ menu_vars_create,Create new variables,
 menu_vars_miss2cat,Missing to categorical,
 menu_vars_delete,Delete variables,
 menu_plot,Plot,Kauwhata
+
 menu_adv,Advanced,Whatutoto
+menu_adv_mapsinstall,Install Maps,
+menu_adv_manage,Manage modules,
+menu_adv_quick,Quick Explore,
+menu_adv_missing,Missing values,
+menu_adv_plot1var,All 1-variable plots,
+menu_adv_smry1var,All 1-variable summaries,
+menu_adv_plot2var,Explore 2-variable plots,
+menu_adv_pairs,Pairs,
+menu_adv_plot3d,3D Plot,
+menu_adv_timeseries,Time series,
+menu_adv_modfit,Model fitting,
+menu_adv_multires,Multiple response,
+menu_adv_maps,Maps,
+menu_adv_install,Install the Modules package,
+menu_adv_code,R code history [beta],
+
 menu_help,Help,Awhina

@@ -419,13 +419,13 @@ iNZMenuBarWidget <- setRefClass(
                 return(
                     list(
                         installmaps =
-                            gaction("Install Maps",
+                            gaction(paste(tr("menu_adv_mapsinstall"), "..."),
                                 icon = "symbol_diamond",
                                 "tooltip" = "Install the Maps module",
                                 handler = function(h, ...) InstallMaps(GUI)
                             ),
                         manage =
-                            gaction("Manage modules ...",
+                            gaction(paste(tr("menu_adv_manage"), "..."),
                                 icon = "execute",
                                 tooltip = "Add, update, and remove add-on modules.",
                                 handler = function(h, ...)
@@ -446,35 +446,35 @@ iNZMenuBarWidget <- setRefClass(
 
             if (modules_installed) {
                 adv <- list(
-                    "Quick Explore" = list(
+                    quick_explore = list(
                         missing =
-                            gaction("Missing values",
+                            gaction(paste(tr("menu_adv_missing"), "..."),
                                 icon = "symbol_diamond",
                                 tooltip = "Explore missing values",
                                 handler = function(h, ...) iNZExploreMissing$new(GUI)),
                         all1varplot =
-                            gaction("All 1-variable plots",
+                            gaction(paste(tr("menu_adv_plot1var"), "..."),
                                 icon = "symbol_diamond",
                                 tooltip = "Click through a plot of each variable",
                                 handler = function(h, ...) iNZallPlots$new(GUI)),
                         all2varsmry =
-                            gaction("All 1-variable summaries",
+                            gaction(paste(tr("menu_adv_smry1var"), "..."),
                                 icon = "symbol_diamond",
                                 tooltip = "Get a summary of all variables",
                                 handler = function(h, ...) iNZallSummaries$new(GUI)),
                         all2var =
-                            gaction("Explore 2-variable plots ...",
+                            gaction(paste(tr("menu_adv_plot2var"), "..."),
                                 icon = "symbol_diamond",
                                 tooltip = "Click through all 2-variable plots",
                                 handler = function(h, ...) iNZall2Plots$new(GUI)),
                         pairs =
-                            gaction("Pairs ...",
+                            gaction(paste(tr("menu_adv_pairs"), "..."),
                                 icon = "symbol_diamond",
                                 tooltip = "See a pairs plot matrix",
                                 handler = function(h, ...) iNZscatterMatrix$new(GUI))
                     ),
                     plot3d =
-                        gaction("3D plot ...",
+                        gaction(paste(tr("menu_adv_plot3d"), "..."),
                             icon = "3dcontour",
                             tooltip = "Start the 3D plotting module",
                             handler = function(h, ...) {
@@ -485,27 +485,27 @@ iNZMenuBarWidget <- setRefClass(
                                 iNZightModules::plot3D(e)
                             }),
                     timeseries =
-                        gaction("Time series ...",
+                        gaction(paste(tr("menu_adv_timeseries"), "..."),
                             icon = "ts",
                             tooltip = "Start the time series module",
                             handler = function(h, ...) iNZightModules::iNZightTSMod$new(GUI)),
                     modelfitting =
-                        gaction("Model fitting ...",
+                        gaction(paste(tr("menu_adv_modfit"), "..."),
                             icon = "lines",
                             tooltip = "Start the model fitting module",
                             handler = function(h, ...) iNZightModules::iNZightRegMod$new(GUI)),
                     multires =
-                        gaction("Multiple response ...",
+                        gaction(paste(tr("menu_adv_multires"), "..."),
                             icon = "hist",
                             tooltip = "Start the multiple response module",
                             handler = function(h, ...) iNZightModules::iNZightMultiRes$new(GUI)),
                     maps =
-                        gaction("Maps ...",
+                        gaction(paste(tr("menu_adv_maps"), "..."),
                             icon = "plot1",
                             handler = function(h, ...) iNZightModules::iNZightMapLanding$new(GUI)),
                     gseparator(),
                     manage =
-                        gaction("Manage modules ...",
+                        gaction(paste(tr("menu_adv_manage"), "..."),
                             icon = "execute",
                             tooltip = "Add, update, and remove add-on modules.",
                             handler = function(h, ...)
@@ -514,7 +514,7 @@ iNZMenuBarWidget <- setRefClass(
             } else {
                 adv <- list(
                     install_modules =
-                        gaction("Install the Modules package ...",
+                        gaction(paste(tr("menu_adv_install"), "..."),
                             icon = "execute",
                             tooltip = "Install the iNZightModules R pacakge to access add-on modules",
                             handler = function(h, ...) {
@@ -562,7 +562,7 @@ iNZMenuBarWidget <- setRefClass(
                 list(
                     gseparator(),
                     rcode =
-                        gaction("R code history [beta] ...",
+                        gaction(paste(tr("menu_adv_code"), "..."),
                             icon = "rlogo",
                             tooltip = "Show the R code history for your session",
                             handler = function(h, ...) GUI$showHistory())
@@ -573,7 +573,8 @@ iNZMenuBarWidget <- setRefClass(
                 if (length(modules)) {
                     instindex <- which(names(adv) == "maps") + 1
                     mods <- lapply(modules, function(mod) {
-                        gaction(mod$display_name,
+                        # at this point, `tr(name, __DICTIONARY__)` where __DICTIONARY__ comes from module
+                        gaction(tr(mod$display_name),
                             handler = function(h, ...) {
                                 x <- sprintf("mod$%s$new(GUI, name = '%s')",
                                     mod$name,
@@ -586,6 +587,7 @@ iNZMenuBarWidget <- setRefClass(
                     adv <- c(adv[1:(instindex-1)], mods, adv[instindex:length(adv)])
                 }
             }
+            names(adv)[names(adv) == "quick_explore"] <- tr("menu_adv_quick")
             adv
         },
         HelpMenu = function() {
