@@ -19,7 +19,7 @@ Main class that builds the iNZight GUI
 \section{Methods}{
 
 \describe{
-\item{\code{get_data_object()}}{return dataset or survey design, if it exists}
+\item{\code{get_data_object(nrow)}}{return dataset or survey design, if it exists}
 
 \item{\code{initializeGui(data = NULL, disposeR = FALSE, addonDir = NULL, show = TRUE)}}{Initiates the GUI}
 

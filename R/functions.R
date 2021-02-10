@@ -26,6 +26,12 @@
 }
 
 
+#' Export not-in operator
+#' @importFrom iNZightTools "%notin%"
+#' @name %notin%
+#' @rdname notin-operator
+#' @export
+NULL
 
 iNZSaveFile <- function(theFile, ext, ...) {
     ###################################
