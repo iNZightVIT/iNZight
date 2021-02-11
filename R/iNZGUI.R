@@ -1070,8 +1070,23 @@ iNZGUI <- setRefClass(
                     title = "Recover old preferences file?",
                     icon = "question"
                 )
-                if (move_prefs)
-                    file.rename(old.prefs.location, prefs.location)
+                if (move_prefs) {
+                    if (!dir.exists(tools::R_user_dir("iNZight", "config"))) {
+                        make_dir <- gconfirm(
+                            sprintf(
+                                paste(sep = "\n",
+                                    "iNZight wants to create the following directory/ies. Is that OK?",
+                                    "", "+ %s"
+                                ),
+                                tools::R_user_dir("iNZight", "config")
+                            )
+                        )
+                        if (make_dir) dir.create(tools::R_user_dir("iNZight", "config"), recursive = TRUE)
+                    }
+                    if (dir.exists(tools::R_user_dir("iNZight", "config")))
+                        file.rename(old.prefs.location, prefs.location)
+                    else gmessage("iNZight was unable to move save preferences in the new location.")
+                }
             }
             tt <- try({
                 preferences <<-
@@ -1086,8 +1101,19 @@ iNZGUI <- setRefClass(
                 preferences <<- defaultPrefs()
         },
         savePreferences = function() {
-            if (getRversion() >= 4 && !dir.exists(dirname(prefs.location)))
-                dir.create(dirname(prefs.location), recursive = TRUE)
+            if (getRversion() >= 4 && !dir.exists(dirname(prefs.location))) {
+                make_dir <- gconfirm(
+                    sprintf(
+                        paste(sep = "\n",
+                            "iNZight wants to create the following directory/ies. Is that OK?",
+                            "", "+ %s"
+                        ),
+                        tools::R_user_dir(dirname(prefs.location))
+                    )
+                )
+                if (make_dir)
+                    dir.create(dirname(prefs.location), recursive = TRUE)
+            }
             ## attempt to save the preferences in the expected location:
             tt <- try(dput(preferences, prefs.location), silent = TRUE)
             if (inherits(tt, "try-error")) {
