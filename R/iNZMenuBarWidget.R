@@ -591,19 +591,21 @@ iNZMenuBarWidget <- setRefClass(
             adv
         },
         HelpMenu = function() {
-            guides <- list(user_guides.basics = "The Basics",
-                           user_guides.interface = "The Interface",
-                           user_guides.plot_options = "Plot Options",
-                           user_guides.variables = "Variables menu",
-                           user_guides.data_options = "Dataset menu",
-                           user_guides.add_ons = "Advanced")
-            list(
+            guides <- list(
+                user_guides.basics = tr("menu_help_guide_basics"),
+                user_guides.interface = tr("menu_help_guide_interface"),
+                user_guides.plot_options = tr("menu_help_guide_plot"),
+                user_guides.variables = tr("menu_help_guide_vars"),
+                user_guides.data_options = tr("menu_help_guide_data"),
+                user_guides.add_ons = tr("menu_help_guide_advanced")
+            )
+            menu <- list(
                 about =
-                    gaction("About",
+                    gaction(tr("menu_help_about"),
                         icon = "about",
                         tooltip = "",
                         handler = function(h, ...) iNZAboutWidget$new(GUI)),
-                "User Guides" = lapply(
+                GUIDES = lapply(
                     names(guides),
                     function(n) {
                         gaction(
@@ -615,24 +617,26 @@ iNZMenuBarWidget <- setRefClass(
                     }
                 ),
                 change =
-                    gaction("Change history",
+                    gaction(tr("menu_help_history"),
                         icon = "file",
                         tooltip = "",
                         handler = function(h, ...)
                             help_page('support/changelog/?pkg=iNZight')),
                 faq =
-                    gaction("FAQ",
+                    gaction(tr("menu_help_faq"),
                         icon = "find",
                         tooltip = "",
                         handler = function(h, ...)
                             help_page("support/faq/")),
                 contact =
-                    gaction("Contact us or Report a Bug",
+                    gaction(tr("menu_help_contact"),
                         icon = "help",
                         tooltip = "",
                         handler = function(h, ...)
                             help_page("support/contact/"))
             )
+            names(menu)[names(menu) == "GUIDES"] <- tr("menu_help_guides")
+            menu
         }
     )
 )

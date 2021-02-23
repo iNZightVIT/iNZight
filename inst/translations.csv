@@ -59,6 +59,15 @@ menu_vars_create,Create new variables,,Créer de nouvelles variables
 menu_vars_miss2cat,Missing to categorical,,Manquant à catégorique
 menu_vars_delete,Delete variables,,Supprimer des variables
 menu_plot,Plot,Kauwhata,Graphique
+menu_plot_add,Add to plot,,Ajouter au graphique
+menu_plot_rmv,Remove additions,,Supprimer les ajouts
+menu_plot_inf,Add inference,,Ajouter des inférences
+menu_plot_newtab,New tab,,Nouvel onglet
+menu_plot_closetab,Close tab,,Fermer l'onglet
+menu_plot_renametab,Rename tab,,Renommer l'onglet
+menu_plot_newwin,New plot window,,Nouvelle fenêtre graphique
+menu_plot_redraw,Redraw plot,,Redessiner le graphique
+menu_plot_save,Save plot,,Enregistrer le graphique
 menu_adv,Advanced,Whatutoto,Avancé
 menu_adv_mapsinstall,Install Maps,,Installer 'Cartes'
 menu_adv_manage,Manage modules,,Gérer les modules
@@ -76,3 +85,14 @@ menu_adv_maps,Maps,,Cartes
 menu_adv_install,Install the Modules package,,Installez les pacakge 'Modules'
 menu_adv_code,R code history [beta],,Historique du code R
 menu_help,Help,Awhina,Aider
+menu_help_about,About,,A propos
+menu_help_guides,User Guides,,Guides de l'utilisateur
+menu_help_guide_basics,The Basics,,Les bases
+menu_help_guide_interface,The Inferface,,L'interface
+menu_help_guide_plot,Plot Options,,Options de graphique
+menu_help_guide_vars,Variables Menu,,Menu des variables
+menu_help_guide_data,Dataset Menu,,Menu de données
+menu_help_guide_advanced,Advanced,,Avancé
+menu_help_history,Change history,,Historiques des changements
+menu_help_faq,FAQ,,FAQ
+menu_help_contact,Contact us or report a bug,,Contactez-nous ou signalez un bug

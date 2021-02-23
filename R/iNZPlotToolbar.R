@@ -200,23 +200,24 @@ iNZPlotToolbar <- setRefClass(
             }
 
             pmenu <- list(
-                gaction("Add to plot ...",
+                gaction(paste(tr("menu_plot_add"), "..."),
                                              handler = function(h, ...) addToPlot()),
-                gaction("Remove additions ...", handler = function(h, ...) iNZPlotRmveModWin$new(GUI)),
-                gaction("Add inference ...", handler = function(h, ...) addInf()),
+                gaction(paste(tr("menu_plot_rmv"), "..."), handler = function(h, ...) iNZPlotRmveModWin$new(GUI)),
+                gaction(paste(tr("menu_plot_inf"), "..."), handler = function(h, ...) addInf()),
                 gseparator(),
-                gaction(label = "New Tab", icon = "new",
+                gaction(label = tr("menu_plot_newtab"), icon = "new",
                         handler = function(h, ...) plotWidget$addPlot()),
-                gaction(label = "Close Tab", icon = "close",
+                gaction(label = tr("menu_plot_closetab"), icon = "close",
                         handler = function(h, ...) plotWidget$closePlot()),
-                gaction(label = "Rename Tab", icon = "editor",
-                        handler = function(h, ...) plotWidget$renamePlot()),
+                gaction(label = paste(tr("menu_plot_renametab"), "..."),
+                    icon = "editor",
+                    handler = function(h, ...) plotWidget$renamePlot()),
                 gseparator(),
-                gaction(label = "New Plot Window", icon = "newplot",
+                gaction(label = tr("menu_plot_newwin"), icon = "newplot",
                         handler = function(h, ...) newPlotWindow()),
-                gaction(label = "Redraw Plot", icon = "refresh",
+                gaction(label = tr("menu_plot_redraw"), icon = "refresh",
                         handler = function(h, ...) refreshFn()),
-                gaction(label = "Save Plot", icon = "save",
+                gaction(label = paste(tr("menu_plot_save"), "..."), icon = "save",
                         handler = function(h, ...) plotWidget$savePlot(refreshFn))
                 )
 
