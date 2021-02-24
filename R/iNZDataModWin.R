@@ -800,6 +800,149 @@ iNZcrteVarWin <- setRefClass(
 )
 
 
+iNZformClassIntervals <- setRefClass(
+    "iNZformClassIntervals",
+    contains = "iNZDataModWin",
+    fields = list(
+        variable = "ANY",
+        discrete = "logical",
+        type = "ANY",
+        ctrl_tbl = "ANY",
+        size_lbl = "ANY",
+        n_interval = "ANY",
+        interval_width = "ANY",
+
+        okBtn = "ANY"
+    ),
+    methods = list(
+        initialize = function(gui) {
+            callSuper(gui)
+
+            svalue(GUI$modWin) <<- "Form Class Intervals"
+            size(GUI$modWin) <<- c(500, 500)
+            visible(GUI$modWin) <<- TRUE
+
+            g <- gvbox(container = GUI$modWin)
+            g$set_borderwidth(10)
+
+            ## ------------------------------ MAIN CONTENT
+            g_main <- gvbox(container = g)
+
+            tbl <- glayout(container = g_main)
+            ii <- 1L
+
+            .dataset <- GUI$getActiveData()
+            numvars <- names(.dataset)[sapply(.dataset, iNZightTools::is_num)]
+            lbl <- glabel("Variable :")
+            variable <<- gcombobox(numvars,
+                selected = 0,
+                handler = function(h, ...) {
+                    x <- .dataset[[svalue(h$obj)]]
+                    discrete <<- all(x == round(x))
+                    # set visibility of enabled/disabled things:
+                }
+            )
+            size(variable) <<- c(250, -1)
+            tbl[ii, 1L, anchor = c(1, 0), expand = TRUE] <- lbl
+            tbl[ii, 2:3] <- variable
+            ii <- ii + 1L
+
+            lbl <- glabel("Interval method :")
+            type <<- gradio(
+                c("Equal width", "Fixed width", "Equal count", "Manual"),
+                selected = 1L,
+                handler = function(h, ...) {
+                    # set visibility of things
+                    k <- h$obj$get_index()
+                    visible(ctrl_tbl) <<- k < 4
+                    visible(n_interval) <<- k != 2
+                    visible(interval_width) <<- k == 2
+                    svalue(size_lbl) <<- ifelse(k == 2,
+                        "Number of intervals :", "Interval width :")
+                }
+            )
+            tbl[ii, 1L, anchor = c(1, 1), expand = TRUE] <- lbl
+            tbl[ii, 2:3, fill = TRUE] <- type
+            ii <- ii + 1L
+
+            add(g_main, gseparator())
+
+            ctrl_tbl <<- glayout(container = g_main)
+            ii <- 1L
+
+            size_lbl <<- glabel("")
+            g_size <- ggroup()
+            n_interval <<- gspinbutton(2L, 100L, by = 1L,
+                value = 4L,
+                container = g_size,
+                handler = function(h, ...) {
+                    create_intervals()
+                }
+            )
+            interval_width <<- gspinbutton(1L, 100L, by = 1L,
+                value = 10L,
+                container = g_size,
+                handler = function(h, ...) {
+                    create_intervals()
+                }
+            )
+            type$invoke_change_handler()
+            size(n_interval) <<- c(250, -1)
+            size(interval_width) <<- c(250, -1)
+            ctrl_tbl[ii, 1L, anchor = c(1, 0), expand = TRUE] <<- size_lbl
+            ctrl_tbl[ii, 2:3] <<- g_size
+            ii <- ii + 1L
+
+
+            ## ------------------------------ FOOTER (buttons)
+            addSpring(g)
+            g_footer <- ggroup(container = g)
+            helpBtn <- gbutton("Help",
+                container = g_footer,
+                handler = function(h, ...) {
+                    help_page("user_guides/variables/#classints")
+                }
+            )
+
+            addSpring(g_footer)
+            cancelBtn <- gbutton("Cancel",
+                container = g_footer,
+                handler = function(h, ...) dispose(GUI$modWin)
+            )
+
+            okBtn <<- gbutton("Create",
+                container = g_footer,
+                handler = function(h, ...) create_intervals(preview = FALSE)
+            )
+
+        },
+        create_intervals = function(preview = TRUE) {
+            .dataset <- GUI$getActiveData()
+            if (preview) {
+                .dataset <- .dataset[svalue(variable)]
+            }
+
+            result <- iNZightTools::form_class_intervals(
+                .dataset,
+                variable = svalue(variable),
+                method = switch(svalue(type),
+                    "Equal width" = "equal",
+                    "Fixed width" = "width",
+                    "Equal count" = "count",
+                    "Manual" = "manual"
+                ),
+                n_intervals = svalue(n_interval),
+                interval_width = svalue(interval_width)
+            )
+
+            if (preview) {
+                print(head(result))
+                # print(levels(result[[2]]))
+            }
+        }
+    )
+)
+
 ## form class intervals for a numeric variable
 iNZfrmIntWin <- setRefClass(
   "iNZfrmIntWin",
