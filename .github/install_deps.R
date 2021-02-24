@@ -1,7 +1,7 @@
 # R script
 github_deps <- c(
     "iNZightVIT/gWidgets2RGtk2@inz",
-    "iNZightVIT/iNZightTools@dev",
+    "iNZightVIT/iNZightTools@feature/form-class-intervals",
     "iNZightVIT/iNZightTS@1.5.4",
     "iNZightVIT/iNZightMR@2.2.5",
     "iNZightVIT/iNZightPlots@2.12",
