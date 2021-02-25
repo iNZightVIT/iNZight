@@ -807,7 +807,9 @@ iNZformClassIntervals <- setRefClass(
         variable = "ANY",
         discrete = "logical",
         type = "ANY",
-        tbl_width = "ANY", tbl_count = "ANY", tbl_manual = "ANY",
+        tbl_width = "ANY", tbl_count = "ANY",
+        tbl_range = "ANY", tbl_manual = "ANY",
+        tbl_format = "ANY",
         size_lbl = "ANY",
         n_interval = "ANY",
         interval_width = "ANY",
@@ -824,7 +826,7 @@ iNZformClassIntervals <- setRefClass(
             callSuper(gui)
 
             svalue(GUI$modWin) <<- "Form Class Intervals"
-            size(GUI$modWin) <<- c(500, 500)
+            size(GUI$modWin) <<- c(500, 600)
             visible(GUI$modWin) <<- TRUE
 
             g <- gvbox(container = GUI$modWin)
@@ -845,22 +847,36 @@ iNZformClassIntervals <- setRefClass(
                     if (h$obj$get_index() == 0L) {
                         visible(tbl_width) <<- FALSE
                         visible(tbl_count) <<- FALSE
+                        visible(tbl_range) <<- FALSE
+                        visible(tbl_format) <<- FALSE
                         return()
                     }
                     x <- .dataset[[svalue(h$obj)]]
-                    discrete <<- all(x == round(x))
                     x <- x[!is.na(x)]
+                    discrete <<- all(x == round(x))
                     # set visibility of enabled/disabled things:
-                    tbl_width$remove_child(start_point)
-                    tbl_width$remove_child(end_point)
-                    start_point <<- gspinbutton(min(x), max(x), by = 0.1,
+                    tbl_range$remove_child(start_point)
+                    tbl_range$remove_child(end_point)
+                    start_point <<- gspinbutton(
+                        min(x) - diff(range(x)),
+                        max(x),
+                        by = 0.1,
                         value = min(x),
                         handler = function(h, ...) create_intervals())
-                    end_point <<- gspinbutton(min(x), max(x), by = 0.1,
+                    end_point <<- gspinbutton(
+                        min(x),
+                        max(x) + diff(range(x)),
+                        by = 0.1,
                         value = max(x),
                         handler = function(h, ...) create_intervals())
-                    tbl_width[2L, 2:3] <<- start_point
-                    tbl_width[3L, 2:3] <<- end_point
+                    size(start_point) <<- c(250, -1)
+                    tbl_range[1L, 2:3] <<- start_point
+                    tbl_range[2L, 2:3] <<- end_point
+
+                    fmts <- if (discrete) c("[a,b]", "a-b")
+                        else c("(a,b]", "[a,b)")
+                    label_format$set_items(fmts)
+
                     type$invoke_change_handler()
                 }
             )
@@ -879,7 +895,9 @@ iNZformClassIntervals <- setRefClass(
                     if (variable$get_index() == 0L) return()
                     visible(tbl_width) <<- k == 1 || k == 3
                     visible(tbl_count) <<- k == 2
+                    visible(tbl_range) <<- k <= 2
                     visible(tbl_manual) <<- k == 4
+                    visible(tbl_format) <<- TRUE
                     create_intervals()
                 }
             )
@@ -905,18 +923,6 @@ iNZformClassIntervals <- setRefClass(
             tbl_width[ii, 2:3] <<- n_interval
             ii <- ii + 1L
 
-            lbl <- glabel("Start point :")
-            start_point <<- glabel("Choose variable")
-            tbl_width[ii, 1L, anchor = c(1, 0), expand = TRUE] <<- lbl
-            tbl_width[ii, 2:3] <<- start_point
-            ii <- ii + 1L
-
-            lbl <- glabel("End point :")
-            end_point <<- glabel("Choose variable")
-            tbl_width[ii, 1L, anchor = c(1, 0), expand = TRUE] <<- lbl
-            tbl_width[ii, 2:3] <<- end_point
-            ii <- ii + 1L
-
             tbl_count <<- glayout(container = g_main)
             visible(tbl_count) <<- FALSE
             ii <- 1L
@@ -931,6 +937,24 @@ iNZformClassIntervals <- setRefClass(
             size(interval_width) <<- c(250, -1)
             tbl_count[ii, 1L, anchor = c(1, 0), expand = TRUE] <<- lbl
             tbl_count[ii, 2:3] <<- interval_width
+            ii <- ii + 1L
+
+            addSpace(g_main, 2)
+            tbl_range <<- glayout(container = g_main)
+            visible(tbl_range) <<- FALSE
+            ii <- 1L
+
+            lbl <- glabel("Start point :")
+            start_point <<- glabel("Choose variable")
+            size(start_point) <<- c(250, -1)
+            tbl_range[ii, 1L, anchor = c(1, 0), expand = TRUE] <<- lbl
+            tbl_range[ii, 2:3] <<- start_point
+            ii <- ii + 1L
+
+            lbl <- glabel("End point :")
+            end_point <<- glabel("Choose variable")
+            tbl_range[ii, 1L, anchor = c(1, 0), expand = TRUE] <<- lbl
+            tbl_range[ii, 2:3] <<- end_point
             ii <- ii + 1L
 
             tbl_manual <<- glayout(container = g_main)
@@ -950,9 +974,19 @@ iNZformClassIntervals <- setRefClass(
             tbl_manual[ii, 2:3, anchor = c(-1, 0), expand = TRUE] <<- lbl
             ii <- ii + 1L
 
-            ## TODO:
-            # start/end should be enabled for fixed width;
-            # and disabled for equal count ...
+            tbl_format <<- glayout(container = g_main)
+            ii <- ii + 1L
+            visible(tbl_format) <<- FALSE
+
+            lbl <- glabel("Label format :")
+            label_format <<- gradio(
+                "",
+                horizontal = TRUE,
+                handler = function(h, ...) create_intervals())
+            size(label_format) <<- c(250, -1)
+            tbl_format[ii, 1L, anchor = c(1, 0), expand = TRUE] <<- lbl
+            tbl_format[ii, 2:3] <<- label_format
+            ii <- ii + 1L
 
             tbl <- glayout(container = g_main)
             ii <- ii + 1L
@@ -965,7 +999,7 @@ iNZformClassIntervals <- setRefClass(
             preview_levels <<- gtext("", height = 100)
             enabled(preview_levels) <<- FALSE
 
-            tbl[ii, 1] <- preview_levels
+            tbl[ii, 1:3] <- preview_levels
             ii <- ii + 1L
 
 
@@ -1015,6 +1049,7 @@ iNZformClassIntervals <- setRefClass(
                 ),
                 n_intervals = svalue(n_interval),
                 interval_width = svalue(interval_width),
+                format = svalue(label_format),
                 range = c(
                     as.numeric(svalue(start_point)),
                     as.numeric(svalue(end_point))
