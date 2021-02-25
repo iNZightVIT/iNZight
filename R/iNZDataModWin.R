@@ -807,11 +807,16 @@ iNZformClassIntervals <- setRefClass(
         variable = "ANY",
         discrete = "logical",
         type = "ANY",
-        ctrl_tbl = "ANY",
+        tbl_width = "ANY", tbl_count = "ANY", tbl_manual = "ANY",
         size_lbl = "ANY",
         n_interval = "ANY",
         interval_width = "ANY",
-
+        start_point = "ANY", end_point = "ANY",
+        label_format = "ANY",
+        label_lower = "ANY", lower_upper = "ANY",
+        breaks = "ANY",
+        varname = "ANY",
+        preview_levels = "ANY",
         okBtn = "ANY"
     ),
     methods = list(
@@ -837,9 +842,26 @@ iNZformClassIntervals <- setRefClass(
             variable <<- gcombobox(numvars,
                 selected = 0,
                 handler = function(h, ...) {
+                    if (h$obj$get_index() == 0L) {
+                        visible(tbl_width) <<- FALSE
+                        visible(tbl_count) <<- FALSE
+                        return()
+                    }
                     x <- .dataset[[svalue(h$obj)]]
                     discrete <<- all(x == round(x))
+                    x <- x[!is.na(x)]
                     # set visibility of enabled/disabled things:
+                    tbl_width$remove_child(start_point)
+                    tbl_width$remove_child(end_point)
+                    start_point <<- gspinbutton(min(x), max(x), by = 0.1,
+                        value = min(x),
+                        handler = function(h, ...) create_intervals())
+                    end_point <<- gspinbutton(min(x), max(x), by = 0.1,
+                        value = max(x),
+                        handler = function(h, ...) create_intervals())
+                    tbl_width[2L, 2:3] <<- start_point
+                    tbl_width[3L, 2:3] <<- end_point
+                    type$invoke_change_handler()
                 }
             )
             size(variable) <<- c(250, -1)
@@ -854,11 +876,11 @@ iNZformClassIntervals <- setRefClass(
                 handler = function(h, ...) {
                     # set visibility of things
                     k <- h$obj$get_index()
-                    visible(ctrl_tbl) <<- k < 4
-                    visible(n_interval) <<- k != 2
-                    visible(interval_width) <<- k == 2
-                    svalue(size_lbl) <<- ifelse(k == 2,
-                        "Number of intervals :", "Interval width :")
+                    if (variable$get_index() == 0L) return()
+                    visible(tbl_width) <<- k == 1 || k == 3
+                    visible(tbl_count) <<- k == 2
+                    visible(tbl_manual) <<- k == 4
+                    create_intervals()
                 }
             )
             tbl[ii, 1L, anchor = c(1, 1), expand = TRUE] <- lbl
@@ -867,30 +889,65 @@ iNZformClassIntervals <- setRefClass(
 
             add(g_main, gseparator())
 
-            ctrl_tbl <<- glayout(container = g_main)
+            tbl_width <<- glayout(container = g_main)
+            visible(tbl_width) <<- FALSE
             ii <- 1L
 
-            size_lbl <<- glabel("")
-            g_size <- ggroup()
+            lbl <- glabel("Number of intervals :")
             n_interval <<- gspinbutton(2L, 100L, by = 1L,
                 value = 4L,
-                container = g_size,
                 handler = function(h, ...) {
                     create_intervals()
                 }
             )
+            size(n_interval) <<- c(250, -1)
+            tbl_width[ii, 1L, anchor = c(1, 0), expand = TRUE] <<- lbl
+            tbl_width[ii, 2:3] <<- n_interval
+            ii <- ii + 1L
+
+            lbl <- glabel("Start point :")
+            start_point <<- glabel("Choose variable")
+            tbl_width[ii, 1L, anchor = c(1, 0), expand = TRUE] <<- lbl
+            tbl_width[ii, 2:3] <<- start_point
+            ii <- ii + 1L
+
+            lbl <- glabel("End point :")
+            end_point <<- glabel("Choose variable")
+            tbl_width[ii, 1L, anchor = c(1, 0), expand = TRUE] <<- lbl
+            tbl_width[ii, 2:3] <<- end_point
+            ii <- ii + 1L
+
+            tbl_count <<- glayout(container = g_main)
+            visible(tbl_count) <<- FALSE
+            ii <- 1L
+
+            lbl <- "Interval width :"
             interval_width <<- gspinbutton(1L, 100L, by = 1L,
                 value = 10L,
-                container = g_size,
                 handler = function(h, ...) {
                     create_intervals()
                 }
             )
-            type$invoke_change_handler()
-            size(n_interval) <<- c(250, -1)
             size(interval_width) <<- c(250, -1)
-            ctrl_tbl[ii, 1L, anchor = c(1, 0), expand = TRUE] <<- size_lbl
-            ctrl_tbl[ii, 2:3] <<- g_size
+            tbl_count[ii, 1L, anchor = c(1, 0), expand = TRUE] <<- lbl
+            tbl_count[ii, 2:3] <<- interval_width
+            ii <- ii + 1L
+
+            tbl_manual <<- glayout(container = g_main)
+            visible(tbl_manual) <<- FALSE
+            ii <- 1L
+
+            lbl <- glabel("Breakpoints :")
+            breaks <<- gedit("",
+                handler = function(h, ...) create_intervals())
+            size(breaks) <<- c(250, -1)
+            tbl_manual[ii, 1L, anchor = c(1, 0), expand = TRUE] <<- lbl
+            tbl_manual[ii, 2:3] <<- breaks
+            ii <- ii + 1L
+
+            lbl <- glabel("Comma separated break points.\ne.g., 5, 10, 20, 30")
+            font(lbl) <- list(size = 9)
+            tbl_manual[ii, 2:3, anchor = c(-1, 0), expand = TRUE] <<- lbl
             ii <- ii + 1L
 
 
@@ -922,6 +979,13 @@ iNZformClassIntervals <- setRefClass(
                 .dataset <- .dataset[svalue(variable)]
             }
 
+            break_points <- NULL
+            if (svalue(type) == "Manual") {
+                if (trimws(svalue(breaks)) == "") return()
+                xr <- range(.dataset[[svalue(variable)]], na.rm = TRUE)
+                break_points <- as.numeric(strsplit(svalue(breaks), ",")[[1]])
+                break_points <- c(xr[1], break_points, xr[2])
+            }
             result <- iNZightTools::form_class_intervals(
                 .dataset,
                 variable = svalue(variable),
@@ -932,12 +996,20 @@ iNZformClassIntervals <- setRefClass(
                     "Manual" = "manual"
                 ),
                 n_intervals = svalue(n_interval),
-                interval_width = svalue(interval_width)
+                interval_width = svalue(interval_width),
+                range = c(
+                    as.numeric(svalue(start_point)),
+                    as.numeric(svalue(end_point))
+                ),
+                break_points = break_points
             )
 
             if (preview) {
-                print(head(result))
-                # print(levels(result[[2]]))
+                # print(head(result))
+                print(levels(result[[2]]))
+            } else {
+                updateData(result)
+                dispose(GUI$modWin)
             }
         }
     )
