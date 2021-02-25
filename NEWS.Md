@@ -9,6 +9,7 @@
 * enable code tidying (which uses the 'styler' package)
 * create new 'Form Class Intervals' window connecting to `iNZightTools::form_class_intervals()` function; includes code and a much smoother intervace, with preview of resulting intervals
 
+
 ## iNZight 4.0.2
 
 * fixes a bug in code widget preventing UI from updating correctly (#334, @tmelliott)
