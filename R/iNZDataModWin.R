@@ -950,6 +950,24 @@ iNZformClassIntervals <- setRefClass(
             tbl_manual[ii, 2:3, anchor = c(-1, 0), expand = TRUE] <<- lbl
             ii <- ii + 1L
 
+            ## TODO:
+            # start/end should be enabled for fixed width;
+            # and disabled for equal count ...
+
+            tbl <- glayout(container = g_main)
+            ii <- ii + 1L
+
+            lbl <- glabel("Class Interval labels :")
+            font(lbl) <- list(size = 9, weight = "bold")
+            tbl[ii, 1L, anchor = c(-1, 0), expand = TRUE] <- lbl
+            ii <- ii + 1L
+
+            preview_levels <<- gtext("", height = 100)
+            enabled(preview_levels) <<- FALSE
+
+            tbl[ii, 1] <- preview_levels
+            ii <- ii + 1L
+
 
             ## ------------------------------ FOOTER (buttons)
             addSpring(g)
@@ -1005,8 +1023,9 @@ iNZformClassIntervals <- setRefClass(
             )
 
             if (preview) {
-                # print(head(result))
-                print(levels(result[[2]]))
+                lvls <- levels(result[[2]])
+                lvls <- paste(lvls, collapse = ", ")
+                svalue(preview_levels) <<- lvls
             } else {
                 updateData(result)
                 dispose(GUI$modWin)
