@@ -809,17 +809,17 @@ iNZformClassIntervals <- setRefClass(
         type = "ANY",
         tbl_width = "ANY", tbl_count = "ANY",
         tbl_range = "ANY", tbl_manual = "ANY",
-        tbl_format = "ANY",
+        tbl_format = "ANY", tbl_format_lower = "ANY", tbl_format_upper = "ANY",
         size_lbl = "ANY",
         n_interval = "ANY",
         interval_width = "ANY",
         start_point = "ANY", end_point = "ANY",
         label_format = "ANY",
-        label_lower = "ANY", lower_upper = "ANY",
+        label_lower = "ANY", label_upper = "ANY",
         breaks = "ANY",
         varname = "ANY",
         preview_levels = "ANY",
-        okBtn = "ANY"
+        okBtn = "ANY", skip_update = "logical"
     ),
     methods = list(
         initialize = function(gui) {
@@ -849,6 +849,8 @@ iNZformClassIntervals <- setRefClass(
                         visible(tbl_count) <<- FALSE
                         visible(tbl_range) <<- FALSE
                         visible(tbl_format) <<- FALSE
+                        visible(tbl_format_lower) <<- FALSE
+                        visible(tbl_format_upper) <<- FALSE
                         return()
                     }
                     x <- .dataset[[svalue(h$obj)]]
@@ -862,13 +864,21 @@ iNZformClassIntervals <- setRefClass(
                         max(x),
                         by = 0.1,
                         value = min(x),
-                        handler = function(h, ...) create_intervals())
+                        handler = function(h, ...) {
+                            visible(tbl_format_lower) <<- svalue(h$obj) > min(x)
+                            create_intervals()
+                        }
+                    )
                     end_point <<- gspinbutton(
                         min(x),
                         max(x) + diff(range(x)),
                         by = 0.1,
                         value = max(x),
-                        handler = function(h, ...) create_intervals())
+                        handler = function(h, ...) {
+                            visible(tbl_format_upper) <<- svalue(h$obj) < max(x)
+                            create_intervals()
+                        }
+                    )
                     size(start_point) <<- c(250, -1)
                     tbl_range[1L, 2:3] <<- start_point
                     tbl_range[2L, 2:3] <<- end_point
@@ -876,6 +886,13 @@ iNZformClassIntervals <- setRefClass(
                     fmts <- if (discrete) c("[a,b]", "a-b")
                         else c("(a,b]", "[a,b)")
                     label_format$set_items(fmts)
+
+                    label_lower$set_items(
+                        if (discrete) c("\U2264 a") else c("< a")
+                    )
+                    label_upper$set_items(
+                        if (discrete) c("\U2265 b", "b+") else c("> b", "b+")
+                    )
 
                     type$invoke_change_handler()
                 }
@@ -898,6 +915,15 @@ iNZformClassIntervals <- setRefClass(
                     visible(tbl_range) <<- k <= 2
                     visible(tbl_manual) <<- k == 4
                     visible(tbl_format) <<- TRUE
+                    if (k == 3L) {
+                        visible(tbl_format_lower) <<- FALSE
+                        visible(tbl_format_upper) <<- FALSE
+                    } else {
+                        skip_update <<- TRUE
+                        start_point$invoke_change_handler()
+                        end_point$invoke_change_handler()
+                        skip_update <<- FALSE
+                    }
                     create_intervals()
                 }
             )
@@ -975,7 +1001,7 @@ iNZformClassIntervals <- setRefClass(
             ii <- ii + 1L
 
             tbl_format <<- glayout(container = g_main)
-            ii <- ii + 1L
+            ii <- 1L
             visible(tbl_format) <<- FALSE
 
             lbl <- glabel("Label format :")
@@ -988,8 +1014,27 @@ iNZformClassIntervals <- setRefClass(
             tbl_format[ii, 2:3] <<- label_format
             ii <- ii + 1L
 
+            tbl_format_lower <<- glayout(container = g_main)
+            visible(tbl_format_lower) <<- FALSE
+            lbl <- glabel("Format lower bound :")
+            label_lower <<- gradio("", horizontal = TRUE,
+                handler = function(h, ...) create_intervals())
+            size(label_lower) <<- c(250, -1)
+            tbl_format_lower[1L, 1L, anchor = c(1, 0), expand = TRUE] <<- lbl
+            tbl_format_lower[1L, 2:3] <<- label_lower
+
+            tbl_format_upper <<- glayout(container = g_main)
+            visible(tbl_format_upper) <<- FALSE
+            lbl <- glabel("Format upper bound :")
+            label_upper <<- gradio("", horizontal = TRUE,
+                handler = function(h, ...) create_intervals())
+            size(label_upper) <<- c(250, -1)
+            tbl_format_upper[1L, 1L, anchor = c(1, 0), expand = TRUE] <<- lbl
+            tbl_format_upper[1L, 2:3] <<- label_upper
+
+
             tbl <- glayout(container = g_main)
-            ii <- ii + 1L
+            ii <- 1L
 
             lbl <- glabel("Class Interval labels :")
             font(lbl) <- list(size = 9, weight = "bold")
@@ -1024,8 +1069,12 @@ iNZformClassIntervals <- setRefClass(
                 handler = function(h, ...) create_intervals(preview = FALSE)
             )
 
+            skip_update <<- FALSE
+
         },
         create_intervals = function(preview = TRUE) {
+            if (skip_update) return()
+
             .dataset <- GUI$getActiveData()
             if (preview) {
                 .dataset <- .dataset[svalue(variable)]
@@ -1054,6 +1103,8 @@ iNZformClassIntervals <- setRefClass(
                     as.numeric(svalue(start_point)),
                     as.numeric(svalue(end_point))
                 ),
+                format.lowest = svalue(label_lower),
+                format.highest = svalue(label_upper),
                 break_points = break_points
             )
 

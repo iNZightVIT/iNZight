@@ -7,6 +7,7 @@ ui$initializeGui(census.at.school.500)
 on.exit(try(ui$close(), TRUE))
 
 test_that("Form Class Intervals", {
+    # source("R/iNZDataModWin.R")
     w <- iNZformClassIntervals$new(ui)
     expect_silent(w$variable$set_value("height"))
     expect_silent(w$n_interval$set_value(5))
