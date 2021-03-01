@@ -1,3 +1,7 @@
+## iNZight 4.0.3
+
+* fix bug preventing `Add to Plot > Axes` from displaying correctly if dot plot variable 1 was the factor (instead of Var2) (#348, @tmelliott)
+
 ## iNZight 4.0.2
 
 * fixes a bug in code widget preventing UI from updating correctly (#334, @tmelliott)
