@@ -1,5 +1,6 @@
 # R script
 github_deps <- c(
+    "tmelliott/gWidgets2@patch-1",
     "iNZightVIT/gWidgets2RGtk2@inz",
     "iNZightVIT/iNZightTools@1.9",
     "iNZightVIT/iNZightTS@1.5.4",
