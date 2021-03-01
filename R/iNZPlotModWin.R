@@ -240,7 +240,7 @@ iNZPlotModWin <- setRefClass(
                     fill = TRUE,
                     cont = btnGrp,
                     handler = function(h, ...) {
-                        browseURL("https://www.stat.auckland.ac.nz/~wild/iNZight/user_guides/plot_options/?topic=add_to_plot")
+                        help_page("user_guides/plot_options/?topic=add_to_plot")
                     }
                 )
 

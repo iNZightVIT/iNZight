@@ -26,6 +26,12 @@
 }
 
 
+#' Export not-in operator
+#' @importFrom iNZightTools "%notin%"
+#' @name %notin%
+#' @rdname notin-operator
+#' @export
+NULL
 
 iNZSaveFile <- function(theFile, ext, ...) {
     ###################################
@@ -215,3 +221,8 @@ mend_call <- function(call, gui) {
         gui$curPlot
     )
 }
+
+
+.base_url <- "https://inzight.nz/"
+help_page <- function(path)
+    browseURL(paste0(.base_url, path))

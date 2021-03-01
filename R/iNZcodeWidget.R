@@ -23,7 +23,7 @@ iNZcodeWidget <- setRefClass(
             ## append any new packages ...?
             if (any(grepl("::", x))) {
                 sapply(x[grepl("::", x)], function(y) {
-                    m <- regexpr("[a-zA-Z0-9]+::", y)
+                    m <- regexpr("[a-zA-Z0-9]+:::?", y)
                     pkg <- substr(y, m, m + attr(m, "match.length") - 2)
                     if (!pkg %in% packages) packages <<- c(packages, pkg)
                 })
@@ -40,15 +40,16 @@ iNZcodeWidget <- setRefClass(
         get = function() {
             code <- do.call(c,
                 lapply(history, function(x) {
-                    return(x)
-                    y <- try({
-                        iNZightTools::tidy_all_code(
+                    # return(x)
+                    # y <- try({
+                        y <- iNZightTools::tidy_all_code(
                             paste(x, collapse = "\n"),
                             width = 80,
                             indent = 4
                         )
-                    }, silent = TRUE)
-                    if (inherits(y, "try-error")) x else c(y, "")
+                        c(y, "")
+                    # }, silent = TRUE)
+                    # if (inherits(y, "try-error")) x else c(y, "")
                 })
             )
             return(c(header(), code))
@@ -59,7 +60,10 @@ iNZcodeWidget <- setRefClass(
             code <- GUI$getActiveDoc()$getCode()
             if (!is.null(code)) {
                 if (length(code) == 1 && code == "") return()
-                dname <- attr(GUI$getActiveData(), "name", exact = TRUE)
+                if (is.null(GUI$getActiveDoc()$getModel()$getDesign()))
+                    dname <- attr(GUI$getActiveData(), "name", exact = TRUE)
+                else
+                    dname <- GUI$getActiveDoc()$getModel()$dataDesignName
                 if (is.null(dname) || dname == "")
                   dname <- sprintf("data%s", ifelse(GUI$activeDoc == 1, "", GUI$activeDoc))
                 dname <- iNZightTools:::create_varname(dname)

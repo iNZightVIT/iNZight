@@ -696,11 +696,49 @@ iNZGUI <- setRefClass(
                 dataViewWidget$updateWidget()
                 getActiveDoc()$updateSettings()
                 ctrlWidget$updateVariables()
-                dataNameWidget$updateWidget()
                 rhistory$update()
             }
+            dataNameWidget$updateWidget()
             is_initialized <<- TRUE
             updatePlot()
+        },
+        new_document = function(data, suffix) {
+            "Create a new document based on the existing one (`getActiveDoc()`)"
+            data_name <- iNZightTools::add_suffix(.self$dataNameWidget$datName, suffix)
+            spec <- .self$getActiveDoc()$getModel()$getDesign()
+            prev_name <- ifelse(
+                !is.null(spec),
+                .self$getActiveDoc()$getModel()$dataDesignName,
+                .self$dataNameWidget$datName
+            )
+            code <- gsub(".dataset", prev_name, attr(data, "code"))
+            attr(data, "code") <- code
+            if (!is.null(spec) && iNZightTools::is_survey(data)) {
+                spec$design <- data
+                spec$data <- data$variables
+                attr(spec$data, "name") <- data_name
+                attr(spec$data, "code") <- attr(data, "code")
+                class(spec) <- "inzsvyspec"
+                data <- spec
+            } else {
+                attr(data, "name") <- data_name
+            }
+            .self$setDocument(iNZDocument$new(data = data))
+        },
+        update_document = function(data) {
+            "Update the existing document with new data or survey design"
+            spec <- .self$getActiveDoc()$getModel()$getDesign()
+            if (!is.null(spec) && iNZightTools::is_survey(data)) {
+                spec$design <- data
+                spec$data <- data$variables
+                attr(spec$data, "name") <- .self$getActiveDoc()$getModel()$name
+                attr(spec$data, "code") <- attr(data, "code")
+                class(spec) <- "inzsvyspec"
+                data <- spec
+            } else {
+                attr(data, "name") <- .self$getActiveDoc()$getModel()$name
+            }
+            .self$getActiveDoc()$getModel()$updateData(data)
         },
         getActiveDoc = function() {
             iNZDocuments[[activeDoc]]
@@ -714,6 +752,17 @@ iNZGUI <- setRefClass(
         ## add observer to the activeDoc class variable
         addActDocObs = function(FUN, ...) {
             .self$activeDocChanged$connect(FUN, ...)
+        },
+        get_data_object = function(nrow) {
+            "return dataset or survey design, if it exists"
+            curMod <- .self$getActiveDoc()$getModel()
+            if (!is.null(curMod$dataDesign)) {
+                res <- curMod$dataDesign$design
+            } else {
+                res <- .self$getActiveData()
+            }
+            if (!missing(nrow)) res <- res[seq_len(min(nrow, nrow(.self$getActiveData()))), ]
+            res
         },
         view_dataset = function() {
             d <- getActiveData()
@@ -762,19 +811,36 @@ iNZGUI <- setRefClass(
                     icon = "question",
                     parent = .self$win
                 )
-                if (conf) {
-                    todelete <- activeDoc
-                    activeDoc <<- activeDoc - 1
-                    rhistory$disabled <<- TRUE
-                    iNZDocuments <<- iNZDocuments[-todelete]
-                    rhistory$disabled <<- FALSE
-                    dataNameWidget$updateWidget()
-                }
             }
         },
+        do_delete_dataset = function() {
+            todelete <- activeDoc
+            activeDoc <<- activeDoc - 1
+            rhistory$disabled <<- TRUE
+            iNZDocuments <<- iNZDocuments[-todelete]
+            rhistory$disabled <<- FALSE
+            dataNameWidget$updateWidget()
+        },
         removeDesign = function() {
-            getActiveDoc()$getModel()$setDesign()
+            if (getActiveDoc()$getModel()$design_only) {
+                conf <- gconfirm(
+                    paste0(
+                        "This design was loaded directly, so removing it will delete",
+                        "the associated data. Are you sure you want to continue?"
+                    ),
+                    title = "Are you sure you want to delete this survey?",
+                    icon = "question",
+                    parent = .self$win
+                )
+                if (!conf) return()
+                # delete the current document
+                do_delete_dataset()
+            } else {
+                getActiveDoc()$getModel()$setDesign()
+            }
+
             updatePlot()
+            dataNameWidget$updateWidget()
             ## ENABLE A WHOLE LOT OF STUFF
             # enabled(menubar$menu_list[["Dataset"]][[3]]) <<- TRUE
             # enabled(menubar$menu_list[["Variables"]][["Numeric Variables"]][[2]]) <<- TRUE
@@ -876,7 +942,8 @@ iNZGUI <- setRefClass(
                 popout = FALSE,
                 font.size = 10,
                 dev.features = FALSE,
-                show.code = FALSE
+                show.code = FALSE,
+                language = "en"
             )
         },
         checkPrefs = function(prefs) {
@@ -886,7 +953,8 @@ iNZGUI <- setRefClass(
                 "popout",
                 "font.size",
                 "dev.features",
-                "show.code"
+                "show.code",
+                "language"
             )
 
             ## Only keep allowed preferences --- anything else is discarded
@@ -925,6 +993,10 @@ iNZGUI <- setRefClass(
                 if (is.null(prefs$show.code) || !is.logical(prefs$show.code)) defs$show.code
                 else prefs$show.code
 
+            prefs$language <-
+                if (is.null(prefs$language) || !is.character(prefs$language)) defs$language
+                else prefs$language[1]
+
             prefs
 
         },
@@ -945,7 +1017,9 @@ iNZGUI <- setRefClass(
 
             ## If Windows or Mac, set the working directory to Documents/iNZightVIT if possible ...
 
-            prefs.location <<-switch(
+            ## Will need to check for old file, and move it into new format (with user permission, of course!)
+
+            old.prefs.location <- switch(
                 OS,
                 "windows" = {
                     if (file.exists(file.path("~", "iNZightVIT"))) {
@@ -977,7 +1051,43 @@ iNZGUI <- setRefClass(
                     path
                 }
             )
+            prefs.location <<-
+                if (getRversion() >= 4)
+                    file.path(tools::R_user_dir("iNZight", "config"), "preferences.R")
+                else old.prefs.location
 
+            if (getRversion() >= 4 && file.exists(old.prefs.location)) {
+                move_prefs <- gconfirm(
+                    sprintf(
+                        paste(sep = "\n",
+                            "iNZight is now saving your preferences in a new location.",
+                            "We found an old preferences file in",
+                            "    %s",
+                            "Would you like to move it to the new location?"
+                        ),
+                        dirname(old.prefs.location)
+                    ),
+                    title = "Recover old preferences file?",
+                    icon = "question"
+                )
+                if (move_prefs) {
+                    if (!dir.exists(tools::R_user_dir("iNZight", "config"))) {
+                        make_dir <- gconfirm(
+                            sprintf(
+                                paste(sep = "\n",
+                                    "iNZight wants to create the following directory/ies. Is that OK?",
+                                    "", "+ %s"
+                                ),
+                                tools::R_user_dir("iNZight", "config")
+                            )
+                        )
+                        if (make_dir) dir.create(tools::R_user_dir("iNZight", "config"), recursive = TRUE)
+                    }
+                    if (dir.exists(tools::R_user_dir("iNZight", "config")))
+                        file.rename(old.prefs.location, prefs.location)
+                    else gmessage("iNZight was unable to move save preferences in the new location.")
+                }
+            }
             tt <- try({
                 preferences <<-
                     if (file.exists(prefs.location)) {
@@ -991,6 +1101,19 @@ iNZGUI <- setRefClass(
                 preferences <<- defaultPrefs()
         },
         savePreferences = function() {
+            if (getRversion() >= 4 && !dir.exists(dirname(prefs.location))) {
+                make_dir <- gconfirm(
+                    sprintf(
+                        paste(sep = "\n",
+                            "iNZight wants to create the following directory/ies. Is that OK?",
+                            "", "+ %s"
+                        ),
+                        tools::R_user_dir(dirname(prefs.location))
+                    )
+                )
+                if (make_dir)
+                    dir.create(dirname(prefs.location), recursive = TRUE)
+            }
             ## attempt to save the preferences in the expected location:
             tt <- try(dput(preferences, prefs.location), silent = TRUE)
             if (inherits(tt, "try-error")) {

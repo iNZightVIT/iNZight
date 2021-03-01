@@ -64,6 +64,9 @@ A data frame with 3577 rows and 55 variables:
   \item{YearlyCO2emission}{}
 }
 }
+\source{
+\url{https://www.gapminder.org/data/}
+}
 \usage{
 gapminder
 }

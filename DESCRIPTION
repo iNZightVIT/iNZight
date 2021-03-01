@@ -1,7 +1,7 @@
 Package: iNZight
 Type: Package
 Title: A GUI for Data Exploration and Visualisation
-Version: 4.0.3
+Version: 4.0.3.9000
 Date: 2021-03-02
 Authors@R: c(person("Tom", "Elliott", role = c("aut", "cre"),
                     email = "tom.elliott@auckland.ac.nz"),
@@ -11,7 +11,7 @@ Authors@R: c(person("Tom", "Elliott", role = c("aut", "cre"),
                     email = "MarcoKuper42@gmail.com"),
              person("David", "Banks", role = "ctb"),
              person("Yiwen", "He", role = "ctb"),
-             person("Daniel", "Barnett", role = "ctb"))
+             person("Daniel", "Barnett", role = "aut"))
 Description: An interactive GUI for easy visual exploration of datasets.
 License: GPL-3
 Depends:
@@ -28,7 +28,7 @@ Imports:
     gdata,
     gWidgets2RGtk2,
     iNZightPlots (>= 2.12),
-    iNZightTools (>= 1.9),
+    iNZightTools (>= 1.9.1.9000),
     reshape2,
     plyr,
     survey,
@@ -50,9 +50,11 @@ Suggests:
     withr,
     jsonlite,
     dataMaid,
-    rmarkdown
+    rmarkdown,
+    knitr
 Additional_repositories: https://r.docker.stat.auckland.ac.nz
 LazyData: true
 Encoding: UTF-8
 Language: en-GB
 RoxygenNote: 7.1.1
+VignetteBuilder: knitr
