@@ -21,6 +21,9 @@ options(
 if (OS == "Windows" && getRversion() < numeric_version("4")) {
     install.packages("RODBC", type = "binary")
 }
+if (OS == "Windows" && !requireNamespace('utf8', quietly = TRUE)) {
+    install.packages("utf8", type = "source")
+}
 
 remotes::install_github(
     github_deps,
