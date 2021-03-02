@@ -8,6 +8,11 @@
 * user preferences are are now stored in `tools::R_user_dir()`; user is prompted to create config directories
 * enable code tidying (which uses the 'styler' package)
 
+
+## iNZight 4.0.3
+
+* fix bug preventing `Add to Plot > Axes` from displaying correctly if dot plot variable 1 was the factor (instead of Var2) (#348, @tmelliott)
+
 ## iNZight 4.0.2
 
 * fixes a bug in code widget preventing UI from updating correctly (#334, @tmelliott)

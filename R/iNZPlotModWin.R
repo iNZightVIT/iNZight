@@ -2851,6 +2851,12 @@ iNZPlotMod <- setRefClass(
             if (PLOTTYPE %in% c("dot", "hist", "bar")) {
                 YAXlbl <- YAX <- PLOTTYPE %in% c("dot", "hist") & !is.null(yvar)
             }
+            if (is_cat(xvar) && is_num(yvar)) {
+                xx <- yvar
+                yvar <- xvar
+                xvar <- xx
+                rm(xx)
+            }
 
             ## AXIS LABELS
             tbl[ii,  1:2, anchor = c(-1,-1), expand = TRUE] <- sectionTitle("Axis Labels")
@@ -3152,8 +3158,9 @@ iNZPlotMod <- setRefClass(
                     }
 
                     # need to explicitely add NULL to the list
-                    newSet$transform
-                    newSet$transform["x"] <- list(
+                    # newSet$transform
+                    whichx <- ifelse(is_num(GUI$getActiveData()[[curSet$x]]), "x", "y")
+                    newSet$transform[whichx] <- list(
                         if (svalue(xLog)) "log10" else NULL
                     )
 
