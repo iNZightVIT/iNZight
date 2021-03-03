@@ -874,7 +874,8 @@ iNZGUI <- setRefClass(
         },
         ## create a gvbox object into the module window (ie, initialize it)
         ## NOTE: should be run every time when a new module is open
-        initializeModuleWindow = function(mod, title, scroll = FALSE, border = 0) {
+        initializeModuleWindow = function(mod, title, scroll = FALSE, border = 0,
+                                          code = FALSE) {
             ## delete any old ones:
             if (length(.self$leftMain$children) > 1) {
                 delete(.self$leftMain, .self$leftMain$children[[2]])
@@ -909,10 +910,21 @@ iNZGUI <- setRefClass(
 
             visible(gp1) <<- FALSE
 
+            if (code) .self$code_panel$show() else .self$code_panel$hide()
+
             if (!missing(mod))
                 activeModule <<- mod
 
             invisible(moduleWindow)
+        },
+        close_module = function() {
+            activeModule <<- NULL
+            ## delete the module window
+            delete(leftMain, leftMain$children[[2]])
+            ## display the default view (data, variable, etc.)
+            visible(gp1) <<- TRUE
+
+            code_panel$show()
         },
         initializeCodeHistory = function() {
             rhistory <<- iNZcodeWidget$new(.self)

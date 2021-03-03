@@ -191,7 +191,7 @@ iNZPlotModWin <- setRefClass(
 
                 plot_history <<- GUI$initializePlotHistory()
 
-                modwin <- GUI$initializeModuleWindow(scroll = FALSE)
+                modwin <- GUI$initializeModuleWindow(scroll = FALSE, code = TRUE)
                 mainGrp <- modwin$body
 
                 topGrp <- modwin$header
@@ -248,12 +248,7 @@ iNZPlotModWin <- setRefClass(
                     expand = TRUE,
                     fill = TRUE,
                     cont = btnGrp,
-                    handler = function(h, ...) {
-                        ## delete the module window
-                        delete(GUI$leftMain, GUI$leftMain$children[[2]])
-                        ## display the default view (data, variable, etc.)
-                        visible(GUI$gp1) <<- TRUE
-                    }
+                    handler = function(h, ...) GUI$close_module()
                 )
             }
         },

@@ -128,10 +128,7 @@ iNZPlotRmveModWin <- setRefClass(
                 container = btnGrp,
                 expand = TRUE,
                 fill = TRUE,
-                handler = function(h, ...) {
-                    delete(GUI$leftMain, GUI$leftMain$children[[2]])
-                    visible(GUI$gp1) <<- TRUE
-                }
+                handler = function(h, ...) GUI$close_module()
             )
 
             return()
@@ -232,10 +229,8 @@ iNZPlotRmveModWin <- setRefClass(
 
                 closeButton <- gbutton(
                     "Home",
-                    handler = function(h, ...) {
-                        delete(GUI$leftMain, GUI$leftMain$children[[2]])
-                        visible(GUI$gp1) <<- TRUE
-                    })
+                    handler = function(h, ...) GUI$close_module()
+                )
 
                 if (sum(curAdditions) <= 1) {
                     if (new) {
@@ -245,8 +240,7 @@ iNZPlotRmveModWin <- setRefClass(
                                  parent = GUI$win)
                     } else {
                         ## User has just removed a bunch of additions, and there are none left
-                        delete(GUI$leftMain, GUI$leftMain$children[[2]])
-                        visible(GUI$gp1) <<- TRUE
+                        GUI$close_module()
                     }
                     return()
                 }
