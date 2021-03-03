@@ -8,6 +8,7 @@
 * user preferences are are now stored in `tools::R_user_dir()`; user is prompted to create config directories
 * enable code tidying (which uses the 'styler' package)
 * fix small bug in code writing where colon (:) remained in list of packages for installation (#352, @tmelliott)
+* add close_module method so modules can close themselves and iNZight's main GUI will be restored correctly
 
 
 ## iNZight 4.0.3

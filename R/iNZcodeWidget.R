@@ -23,7 +23,7 @@ iNZcodeWidget <- setRefClass(
             ## append any new packages ...?
             if (any(grepl("::", x))) {
                 xpkg <- x[grepl("::", x)]
-                m <- stringr::str_match(y, "([a-zA-Z][a-zA-Z0-9]+):{2,3}")
+                m <- stringr::str_match(xpkg, "([a-zA-Z][a-zA-Z0-9]+):{2,3}")
             }
             if (any(grepl("library\\([a-zA-Z0-9]+\\)", x))) {
                 sapply(x[grepl("library\\([a-zA-Z0-9]+\\)", x)], function(y) {
