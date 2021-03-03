@@ -919,6 +919,7 @@ iNZGUI <- setRefClass(
         },
         close_module = function() {
             activeModule <<- NULL
+            if (length(leftMain$children) <= 1) return()
             ## delete the module window
             delete(leftMain, leftMain$children[[2]])
             ## display the default view (data, variable, etc.)
