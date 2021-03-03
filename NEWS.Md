@@ -7,6 +7,7 @@
 * updated preferences window to allow new options to be added in future without getting cluttered
 * user preferences are are now stored in `tools::R_user_dir()`; user is prompted to create config directories
 * enable code tidying (which uses the 'styler' package)
+* fix small bug in code writing where colon (:) remained in list of packages for installation (#352, @tmelliott)
 
 
 ## iNZight 4.0.3

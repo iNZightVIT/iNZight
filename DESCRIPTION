@@ -31,6 +31,7 @@ Imports:
     iNZightTools (>= 1.9.1.9000),
     reshape2,
     plyr,
+    stringr,
     survey,
     colorspace,
     magrittr
