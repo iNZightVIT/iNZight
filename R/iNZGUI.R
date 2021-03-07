@@ -1115,6 +1115,7 @@ iNZGUI <- setRefClass(
         },
         savePreferences = function() {
             if (getRversion() >= 4 && !dir.exists(dirname(prefs.location))) {
+                if (!interactive()) return()
                 make_dir <- gconfirm(
                     sprintf(
                         paste(sep = "\n",
