@@ -9,7 +9,7 @@
 * enable code tidying (which uses the 'styler' package)
 * fix small bug in code writing where colon (:) remained in list of packages for installation (#352, @tmelliott)
 * add close_module method so modules can close themselves and iNZight's main GUI will be restored correctly
-
+* create new 'Form Class Intervals' window connecting to `iNZightTools::form_class_intervals()` function; includes code and a much smoother intervace, with preview of resulting intervals
 
 ## iNZight 4.0.3
 

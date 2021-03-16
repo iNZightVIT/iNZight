@@ -336,7 +336,7 @@ iNZMenuBarWidget <- setRefClass(
                         gaction("Form class intervals ...",
                             icon = "convert",
                             tooltip = "Convert numeric variable into categorical intervals",
-                            handler = function(h, ...) iNZfrmIntWin$new(GUI)),
+                            handler = function(h, ...) iNZformClassIntervals$new(GUI)),
                     rank =
                         gaction("Rank numeric variables ...",
                             icon = "sort-ascending",

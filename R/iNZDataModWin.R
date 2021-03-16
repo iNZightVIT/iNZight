@@ -800,6 +800,326 @@ iNZcrteVarWin <- setRefClass(
 )
 
 
+iNZformClassIntervals <- setRefClass(
+    "iNZformClassIntervals",
+    contains = "iNZDataModWin",
+    fields = list(
+        variable = "ANY",
+        discrete = "logical",
+        type = "ANY",
+        tbl_width = "ANY", tbl_count = "ANY",
+        tbl_range = "ANY", tbl_manual = "ANY",
+        tbl_format = "ANY", tbl_format_lower = "ANY", tbl_format_upper = "ANY",
+        size_lbl = "ANY",
+        n_interval = "ANY",
+        interval_width = "ANY",
+        start_point = "ANY", end_point = "ANY",
+        label_format = "ANY",
+        label_lower = "ANY", label_upper = "ANY",
+        breaks = "ANY",
+        varname = "ANY",
+        preview_levels = "ANY",
+        okBtn = "ANY", skip_update = "logical"
+    ),
+    methods = list(
+        initialize = function(gui) {
+            callSuper(gui)
+
+            svalue(GUI$modWin) <<- "Form Class Intervals"
+            size(GUI$modWin) <<- c(500, 600)
+            visible(GUI$modWin) <<- TRUE
+
+            g <- gvbox(container = GUI$modWin)
+            g$set_borderwidth(10)
+
+            ## ------------------------------ MAIN CONTENT
+            g_main <- gvbox(container = g)
+
+            tbl <- glayout(container = g_main)
+            ii <- 1L
+
+            .dataset <- GUI$getActiveData()
+            numvars <- names(.dataset)[sapply(.dataset, iNZightTools::is_num)]
+            lbl <- glabel("Variable :")
+            variable <<- gcombobox(numvars,
+                selected = 0,
+                handler = function(h, ...) {
+                    if (h$obj$get_index() == 0L) {
+                        visible(tbl_width) <<- FALSE
+                        visible(tbl_count) <<- FALSE
+                        visible(tbl_range) <<- FALSE
+                        visible(tbl_format) <<- FALSE
+                        visible(tbl_format_lower) <<- FALSE
+                        visible(tbl_format_upper) <<- FALSE
+                        return()
+                    }
+                    x <- .dataset[[svalue(h$obj)]]
+                    x <- x[!is.na(x)]
+                    discrete <<- all(x == round(x))
+                    # set visibility of enabled/disabled things:
+                    tbl_range$remove_child(start_point)
+                    tbl_range$remove_child(end_point)
+                    start_point <<- gspinbutton(
+                        min(x) - diff(range(x)),
+                        max(x),
+                        by = 0.1,
+                        value = min(x),
+                        handler = function(h, ...) {
+                            visible(tbl_format_lower) <<- svalue(h$obj) > min(x)
+                            create_intervals()
+                        }
+                    )
+                    end_point <<- gspinbutton(
+                        min(x),
+                        max(x) + diff(range(x)),
+                        by = 0.1,
+                        value = max(x),
+                        handler = function(h, ...) {
+                            visible(tbl_format_upper) <<- svalue(h$obj) < max(x)
+                            create_intervals()
+                        }
+                    )
+                    size(start_point) <<- c(250, -1)
+                    tbl_range[1L, 2:3] <<- start_point
+                    tbl_range[2L, 2:3] <<- end_point
+
+                    fmts <- if (discrete) c("[a,b]", "a-b")
+                        else c("(a,b]", "[a,b)")
+                    label_format$set_items(fmts)
+
+                    label_lower$set_items(
+                        if (discrete) c("\U2264 a") else c("< a")
+                    )
+                    label_upper$set_items(
+                        if (discrete) c("\U2265 b", "b+") else c("> b", "b+")
+                    )
+
+                    type$invoke_change_handler()
+                }
+            )
+            size(variable) <<- c(250, -1)
+            tbl[ii, 1L, anchor = c(1, 0), expand = TRUE] <- lbl
+            tbl[ii, 2:3] <- variable
+            ii <- ii + 1L
+
+            lbl <- glabel("Interval method :")
+            type <<- gradio(
+                c("Equal width", "Fixed width", "Equal count", "Manual"),
+                selected = 1L,
+                handler = function(h, ...) {
+                    # set visibility of things
+                    k <- h$obj$get_index()
+                    if (variable$get_index() == 0L) return()
+                    visible(tbl_width) <<- k == 1 || k == 3
+                    visible(tbl_count) <<- k == 2
+                    visible(tbl_range) <<- k <= 2
+                    visible(tbl_manual) <<- k == 4
+                    visible(tbl_format) <<- TRUE
+                    if (k == 3L) {
+                        visible(tbl_format_lower) <<- FALSE
+                        visible(tbl_format_upper) <<- FALSE
+                    } else {
+                        skip_update <<- TRUE
+                        start_point$invoke_change_handler()
+                        end_point$invoke_change_handler()
+                        skip_update <<- FALSE
+                    }
+                    create_intervals()
+                }
+            )
+            tbl[ii, 1L, anchor = c(1, 1), expand = TRUE] <- lbl
+            tbl[ii, 2:3, fill = TRUE] <- type
+            ii <- ii + 1L
+
+            add(g_main, gseparator())
+
+            tbl_width <<- glayout(container = g_main)
+            visible(tbl_width) <<- FALSE
+            ii <- 1L
+
+            lbl <- glabel("Number of intervals :")
+            n_interval <<- gspinbutton(2L, 100L, by = 1L,
+                value = 4L,
+                handler = function(h, ...) {
+                    create_intervals()
+                }
+            )
+            size(n_interval) <<- c(250, -1)
+            tbl_width[ii, 1L, anchor = c(1, 0), expand = TRUE] <<- lbl
+            tbl_width[ii, 2:3] <<- n_interval
+            ii <- ii + 1L
+
+            tbl_count <<- glayout(container = g_main)
+            visible(tbl_count) <<- FALSE
+            ii <- 1L
+
+            lbl <- "Interval width :"
+            interval_width <<- gspinbutton(1L, 100L, by = 1L,
+                value = 10L,
+                handler = function(h, ...) {
+                    create_intervals()
+                }
+            )
+            size(interval_width) <<- c(250, -1)
+            tbl_count[ii, 1L, anchor = c(1, 0), expand = TRUE] <<- lbl
+            tbl_count[ii, 2:3] <<- interval_width
+            ii <- ii + 1L
+
+            addSpace(g_main, 2)
+            tbl_range <<- glayout(container = g_main)
+            visible(tbl_range) <<- FALSE
+            ii <- 1L
+
+            lbl <- glabel("Start point :")
+            start_point <<- glabel("Choose variable")
+            size(start_point) <<- c(250, -1)
+            tbl_range[ii, 1L, anchor = c(1, 0), expand = TRUE] <<- lbl
+            tbl_range[ii, 2:3] <<- start_point
+            ii <- ii + 1L
+
+            lbl <- glabel("End point :")
+            end_point <<- glabel("Choose variable")
+            tbl_range[ii, 1L, anchor = c(1, 0), expand = TRUE] <<- lbl
+            tbl_range[ii, 2:3] <<- end_point
+            ii <- ii + 1L
+
+            tbl_manual <<- glayout(container = g_main)
+            visible(tbl_manual) <<- FALSE
+            ii <- 1L
+
+            lbl <- glabel("Breakpoints :")
+            breaks <<- gedit("",
+                handler = function(h, ...) create_intervals())
+            size(breaks) <<- c(250, -1)
+            tbl_manual[ii, 1L, anchor = c(1, 0), expand = TRUE] <<- lbl
+            tbl_manual[ii, 2:3] <<- breaks
+            ii <- ii + 1L
+
+            lbl <- glabel("Comma separated break points.\ne.g., 5, 10, 20, 30")
+            font(lbl) <- list(size = 9)
+            tbl_manual[ii, 2:3, anchor = c(-1, 0), expand = TRUE] <<- lbl
+            ii <- ii + 1L
+
+            tbl_format <<- glayout(container = g_main)
+            ii <- 1L
+            visible(tbl_format) <<- FALSE
+
+            lbl <- glabel("Label format :")
+            label_format <<- gradio(
+                "",
+                horizontal = TRUE,
+                handler = function(h, ...) create_intervals())
+            size(label_format) <<- c(250, -1)
+            tbl_format[ii, 1L, anchor = c(1, 0), expand = TRUE] <<- lbl
+            tbl_format[ii, 2:3] <<- label_format
+            ii <- ii + 1L
+
+            tbl_format_lower <<- glayout(container = g_main)
+            visible(tbl_format_lower) <<- FALSE
+            lbl <- glabel("Format lower bound :")
+            label_lower <<- gradio("", horizontal = TRUE,
+                handler = function(h, ...) create_intervals())
+            size(label_lower) <<- c(250, -1)
+            tbl_format_lower[1L, 1L, anchor = c(1, 0), expand = TRUE] <<- lbl
+            tbl_format_lower[1L, 2:3] <<- label_lower
+
+            tbl_format_upper <<- glayout(container = g_main)
+            visible(tbl_format_upper) <<- FALSE
+            lbl <- glabel("Format upper bound :")
+            label_upper <<- gradio("", horizontal = TRUE,
+                handler = function(h, ...) create_intervals())
+            size(label_upper) <<- c(250, -1)
+            tbl_format_upper[1L, 1L, anchor = c(1, 0), expand = TRUE] <<- lbl
+            tbl_format_upper[1L, 2:3] <<- label_upper
+
+
+            tbl <- glayout(container = g_main)
+            ii <- 1L
+
+            lbl <- glabel("Class Interval labels :")
+            font(lbl) <- list(size = 9, weight = "bold")
+            tbl[ii, 1L, anchor = c(-1, 0), expand = TRUE] <- lbl
+            ii <- ii + 1L
+
+            preview_levels <<- gtext("", height = 100)
+            enabled(preview_levels) <<- FALSE
+
+            tbl[ii, 1:3] <- preview_levels
+            ii <- ii + 1L
+
+
+            ## ------------------------------ FOOTER (buttons)
+            addSpring(g)
+            g_footer <- ggroup(container = g)
+            helpBtn <- gbutton("Help",
+                container = g_footer,
+                handler = function(h, ...) {
+                    help_page("user_guides/variables/#classints")
+                }
+            )
+
+            addSpring(g_footer)
+            cancelBtn <- gbutton("Cancel",
+                container = g_footer,
+                handler = function(h, ...) dispose(GUI$modWin)
+            )
+
+            okBtn <<- gbutton("Create",
+                container = g_footer,
+                handler = function(h, ...) create_intervals(preview = FALSE)
+            )
+
+            skip_update <<- FALSE
+
+        },
+        create_intervals = function(preview = TRUE) {
+            if (skip_update) return()
+
+            .dataset <- GUI$getActiveData()
+            if (preview) {
+                .dataset <- .dataset[svalue(variable)]
+            }
+
+            break_points <- NULL
+            if (svalue(type) == "Manual") {
+                if (trimws(svalue(breaks)) == "") return()
+                xr <- range(.dataset[[svalue(variable)]], na.rm = TRUE)
+                break_points <- as.numeric(strsplit(svalue(breaks), ",")[[1]])
+                break_points <- c(xr[1], break_points, xr[2])
+            }
+            result <- iNZightTools::form_class_intervals(
+                .dataset,
+                variable = svalue(variable),
+                method = switch(svalue(type),
+                    "Equal width" = "equal",
+                    "Fixed width" = "width",
+                    "Equal count" = "count",
+                    "Manual" = "manual"
+                ),
+                n_intervals = svalue(n_interval),
+                interval_width = svalue(interval_width),
+                format = svalue(label_format),
+                range = c(
+                    as.numeric(svalue(start_point)),
+                    as.numeric(svalue(end_point))
+                ),
+                format.lowest = svalue(label_lower),
+                format.highest = svalue(label_upper),
+                break_points = break_points
+            )
+
+            if (preview) {
+                lvls <- levels(result[[2]])
+                lvls <- paste(lvls, collapse = ", ")
+                svalue(preview_levels) <<- lvls
+            } else {
+                updateData(result)
+                dispose(GUI$modWin)
+            }
+        }
+    )
+)
+
 ## form class intervals for a numeric variable
 iNZfrmIntWin <- setRefClass(
   "iNZfrmIntWin",
