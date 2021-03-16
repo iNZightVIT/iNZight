@@ -477,6 +477,7 @@ iNZDataNameWidget <- setRefClass(
                 GUI$activeDoc <<- svalue(h$obj, index = TRUE)
                 GUI$rhistory$disabled <<- FALSE
                 GUI$ctrlWidget$setState(pset)
+                # GUI$updatePlot()
             })
             add(widget, nameLabel, expand = TRUE)
             enabled(nameLabel) <<- FALSE

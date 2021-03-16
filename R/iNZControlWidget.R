@@ -609,6 +609,8 @@ iNZControlWidget <- setRefClass(
             )
         },
         setState = function(set) {
+            updateVariables()
+
             data <- GUI$getActiveData()
             vars <- names(data)
 

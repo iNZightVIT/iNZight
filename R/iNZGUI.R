@@ -822,11 +822,10 @@ iNZGUI <- setRefClass(
             iNZDocuments <<- iNZDocuments[-todelete]
             dataNameWidget$updateWidget()
             rhistory$disabled <<- FALSE
-            dataNameWidget$nameLabel$set_index(activeDoc)
-            dataNameWidget$nameLabel$invoke_change_handler()
-
-            # dataViewWidget$updateWidget()
-            # ctrlWidget$updateWidget()
+            dataViewWidget$updateWidget()
+            pset <- getActiveDoc()$getSettings()
+            ctrlWidget$setState(pset)
+            # updatePlot()
         },
         removeDesign = function() {
             if (getActiveDoc()$getModel()$design_only) {
