@@ -77,14 +77,12 @@ iNZPlotInfWin <- setRefClass(
                                          help_page("user_guides/plot_options/?topic=plot_inference")
                                       })
 
-                okButton <- gbutton("Home", expand = TRUE, fill = TRUE,
-                                    cont = btnGrp,
-                                    handler = function(h, ...) {
-                                        ## delete the module window
-                                        delete(GUI$leftMain, GUI$leftMain$children[[2]])
-                                        ## display the default view (data, variable, etc.)
-                                        visible(GUI$gp1) <<- TRUE
-                                    })
+                okButton <- gbutton("Home",
+                    expand = TRUE,
+                    fill = TRUE,
+                    cont = btnGrp,
+                    handler = function(h, ...) GUI$close_module()
+                )
             }
         },
         ## up the curSet class variable

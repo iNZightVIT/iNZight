@@ -7,8 +7,13 @@
 * updated preferences window to allow new options to be added in future without getting cluttered
 * user preferences are are now stored in `tools::R_user_dir()`; user is prompted to create config directories
 * enable code tidying (which uses the 'styler' package)
+* fix small bug in code writing where colon (:) remained in list of packages for installation (#352, @tmelliott)
+* add close_module method so modules can close themselves and iNZight's main GUI will be restored correctly
 * create new 'Form Class Intervals' window connecting to `iNZightTools::form_class_intervals()` function; includes code and a much smoother intervace, with preview of resulting intervals
 
+## iNZight 4.0.3
+
+* fix bug preventing `Add to Plot > Axes` from displaying correctly if dot plot variable 1 was the factor (instead of Var2) (#348, @tmelliott)
 
 ## iNZight 4.0.2
 

@@ -191,7 +191,7 @@ iNZPlotModWin <- setRefClass(
 
                 plot_history <<- GUI$initializePlotHistory()
 
-                modwin <- GUI$initializeModuleWindow(scroll = FALSE)
+                modwin <- GUI$initializeModuleWindow(scroll = FALSE, code = TRUE)
                 mainGrp <- modwin$body
 
                 topGrp <- modwin$header
@@ -248,12 +248,7 @@ iNZPlotModWin <- setRefClass(
                     expand = TRUE,
                     fill = TRUE,
                     cont = btnGrp,
-                    handler = function(h, ...) {
-                        ## delete the module window
-                        delete(GUI$leftMain, GUI$leftMain$children[[2]])
-                        ## display the default view (data, variable, etc.)
-                        visible(GUI$gp1) <<- TRUE
-                    }
+                    handler = function(h, ...) GUI$close_module()
                 )
             }
         },
@@ -2851,6 +2846,12 @@ iNZPlotMod <- setRefClass(
             if (PLOTTYPE %in% c("dot", "hist", "bar")) {
                 YAXlbl <- YAX <- PLOTTYPE %in% c("dot", "hist") & !is.null(yvar)
             }
+            if (is_cat(xvar) && is_num(yvar)) {
+                xx <- yvar
+                yvar <- xvar
+                xvar <- xx
+                rm(xx)
+            }
 
             ## AXIS LABELS
             tbl[ii,  1:2, anchor = c(-1,-1), expand = TRUE] <- sectionTitle("Axis Labels")
@@ -3152,8 +3153,9 @@ iNZPlotMod <- setRefClass(
                     }
 
                     # need to explicitely add NULL to the list
-                    newSet$transform
-                    newSet$transform["x"] <- list(
+                    # newSet$transform
+                    whichx <- ifelse(is_num(GUI$getActiveData()[[curSet$x]]), "x", "y")
+                    newSet$transform[whichx] <- list(
                         if (svalue(xLog)) "log10" else NULL
                     )
 

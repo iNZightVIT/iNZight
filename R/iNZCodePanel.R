@@ -298,6 +298,8 @@ iNZCodePanel <- setRefClass(
         input_handler = function(h, ...) {
             enabled(store_btn) <<- enabled(run_btn) <<- enabled(reset_btn) <<-
                 svalue(input) != ""
-        }
+        },
+        show = function() visible(panel) <<- TRUE,
+        hide = function() visible(panel) <<- FALSE
     )
 )
