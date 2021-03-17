@@ -792,7 +792,7 @@ iNZGUI <- setRefClass(
         },
         ## delete the current dataset
         deleteDataset = function() {
-            if (activeDoc == 1) {
+            if (activeDoc == 0) {
                 gmessage(
                     "Sorry, but you can't delete this dataset (it's the original, afterall!).",
                     title = "Unable to delete original data set",
@@ -804,22 +804,28 @@ iNZGUI <- setRefClass(
                     paste0(
                         "You are about to delete (permanently!) ",
                         "the currently selected dataset:\n\n",
-                        attr(iNZDocuments[[activeDoc]]$getData(), "name", exact = TRUE), "\n\n",
-                        "Are you sure you want to continue?"
+                        attr(iNZDocuments[[activeDoc]]$getData(), "name", exact = TRUE),
+                        "\n\n",
+                        "Are you sure you want to continue? This cannot be undone."
                     ),
                     title = "You sure you want to delete this data?",
                     icon = "question",
                     parent = .self$win
                 )
+                if (conf) do_delete_dataset()
             }
         },
         do_delete_dataset = function() {
             todelete <- activeDoc
-            activeDoc <<- activeDoc - 1
+            activeDoc <<- max(1L, activeDoc - 1L)
             rhistory$disabled <<- TRUE
             iNZDocuments <<- iNZDocuments[-todelete]
-            rhistory$disabled <<- FALSE
             dataNameWidget$updateWidget()
+            rhistory$disabled <<- FALSE
+            dataViewWidget$updateWidget()
+            pset <- getActiveDoc()$getSettings()
+            ctrlWidget$setState(pset)
+            # updatePlot()
         },
         removeDesign = function() {
             if (getActiveDoc()$getModel()$design_only) {
