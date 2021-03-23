@@ -131,7 +131,7 @@ iNZconToCatWin <- setRefClass(
             helpbtn <- gimagebutton(
                 stock.id = "gw-help",
                 anchor = c(1, -1),
-                cont = mainGroup,
+                container = mainGroup,
                 handler = function(h, ...)
                     help_page("user_guides/variables/#convert1")
             )
@@ -441,7 +441,7 @@ iNZrenameWin <- setRefClass(
 
             ## instructions through glabels
             helpbtn <- gimagebutton(stock.id = "gw-help",
-                cont = mainGroup,
+                container = mainGroup,
                 anchor = c(1, -1),
                 handler = function(h, ...)
                     help_page("user_guides/variables/#renamelevs")
@@ -582,7 +582,7 @@ iNZreorderWin <- setRefClass(
       mainGroup <- ggroup(expand = TRUE, horizontal = FALSE)
       mainGroup$set_borderwidth(15)
 
-      helpbtn <- gimagebutton(stock.id = "gw-help", cont = mainGroup, anchor = c(1, -1),
+      helpbtn <- gimagebutton(stock.id = "gw-help", container = mainGroup, anchor = c(1, -1),
         handler = function(h, ...) {
           help_page("user_guides/variables/#reorderlevs")
         }
@@ -1206,7 +1206,7 @@ iNZfrmIntWin <- setRefClass(
       size(GUI$modWin) <<- c(400, 400)
       mainGroup <- ggroup(expand = TRUE, horizontal = FALSE)
       mainGroup$set_borderwidth(15)
-      helpbtn <- gimagebutton(stock.id = "gw-help", cont = mainGroup, anchor = c(1, -1), handler = function(h, ...){
+      helpbtn <- gimagebutton(stock.id = "gw-help", container = mainGroup, anchor = c(1, -1), handler = function(h, ...){
         help_page("user_guides/variables/#classints")
       })
       lbl1 = glabel("Choose variable :")
@@ -1319,7 +1319,7 @@ iNZfrmIntWin <- setRefClass(
       GUI$modWin <<- gwindow("User Intervals",
                              parent = GUI$win, width = 150, height = 200)
       #addhandlerunrealize(levelNamesWin, handler = function(h,...){dispose(levelNamesWin)})
-      breaksMain = ggroup(horizontal = FALSE, cont = GUI$modWin)
+      breaksMain = ggroup(horizontal = FALSE, container = GUI$modWin)
 
 
       lbl1 = glabel(paste("Specified", bins, "intervals.\nNeed", breaksNeeded, "break points"))
@@ -1415,7 +1415,7 @@ iNZrnmVarWin <- setRefClass(
       scrolledWindow$setPolicy("GTK_POLICY_AUTOMATIC","GTK_POLICY_AUTOMATIC")
       mainGroup <- ggroup(expand = TRUE, horizontal = FALSE)
       mainGroup$set_borderwidth(15)
-      helpbtn <- gimagebutton(stock.id = "gw-help", cont = mainGroup, anchor = c(1, -1), handler = function(h, ...){
+      helpbtn <- gimagebutton(stock.id = "gw-help", container = mainGroup, anchor = c(1, -1), handler = function(h, ...){
         help_page("user_guides/variables/#renamevars")
       })
       lbl1 <- glabel("Old Variables")
@@ -1784,7 +1784,7 @@ iNZconTodtWin <- setRefClass(
 
       date_string <- glabel("Select variable to convert from", container = mainGroup, anchor = c(-1, 0))
 
-      var1 = gcombobox(c("", names(GUI$getActiveData())), cont = mainGroup, handler = function(h, ...) {
+      var1 = gcombobox(c("", names(GUI$getActiveData())), container = mainGroup, handler = function(h, ...) {
         varname = svalue(var1)
         if (varname == "") {
           dfview$set_items("")
@@ -1824,8 +1824,8 @@ iNZconTodtWin <- setRefClass(
         }
       })
 
-      factorsbox = gvbox(cont = mainGroup)
-      factors = gtable(names(GUI$getActiveData()),multiple = TRUE, expand = TRUE, cont = factorsbox)
+      factorsbox = gvbox(container = mainGroup)
+      factors = gtable(names(GUI$getActiveData()),multiple = TRUE, expand = TRUE, container = factorsbox)
       names(factors) = "Variables"
       addHandlerSelectionChanged(factors, function(h, ...) {
         factorname = svalue(factors)
@@ -1867,7 +1867,7 @@ iNZconTodtWin <- setRefClass(
       visible(factorsbox) = FALSE
       size(factorsbox) = c(-1, 250)
 
-      checkbox = gcheckbox(text = "Click to use multiple variables", cont = mainGroup, handler = function(h, ...) {
+      checkbox = gcheckbox(text = "Click to use multiple variables", container = mainGroup, handler = function(h, ...) {
         if (svalue(checkbox) == TRUE) {
           visible(factorsbox) = TRUE
           visible(var1) = FALSE
@@ -1882,7 +1882,7 @@ iNZconTodtWin <- setRefClass(
       addSpace(mainGroup, 5)
 
       name_string <- glabel("Name for the new variable", container = mainGroup, anchor = c(-1, 0))
-      newVarname = gedit("", cont = mainGroup)
+      newVarname = gedit("", container = mainGroup)
 
       dt.formats <- c("",
                       "year month date",
@@ -1931,7 +1931,7 @@ iNZconTodtWin <- setRefClass(
       g2 <- gexpandgroup(container = mainGroup, text = "Advanced selection")
       visible(g2) <- FALSE
 
-      tbl = glayout(cont = g2, expand = TRUE)
+      tbl = glayout(container = g2, expand = TRUE)
       tbl[1,1] <- gbutton("year", handler = function(h,...){svalue(var2) = paste(svalue(var2), svalue(h$obj))})
       tbl[1,2] <- gbutton("month", handler = function(h,...){svalue(var2) = paste(svalue(var2), svalue(h$obj))})
       tbl[1,3] <- gbutton("day", handler = function(h,...){svalue(var2) = paste(svalue(var2), svalue(h$obj))})
@@ -1949,10 +1949,10 @@ iNZconTodtWin <- setRefClass(
       })
       tbl[3,4] <- gbutton("clear", handler = function(h,...){svalue(var2) = ""})
 
-      g3 = ggroup(cont = mainGroup)
-      dfview = gtable(data.frame(Original = "", stringsAsFactors = TRUE), cont = g3)
+      g3 = ggroup(container = mainGroup)
+      dfview = gtable(data.frame(Original = "", stringsAsFactors = TRUE), container = g3)
       size(dfview) = c(-1, 250)
-      convertedview = gtable(data.frame(Converted = "", stringsAsFactors = TRUE), cont = g3)
+      convertedview = gtable(data.frame(Converted = "", stringsAsFactors = TRUE), container = g3)
       size(convertedview) = c(-1, 250)
 
       okbtn <- gbutton("Convert", container = mainGroup, handler = function(h,...) {
@@ -2052,7 +2052,7 @@ iNZExtfromdtWin <- setRefClass(
       )
 
 
-      atree <- gtree(offspring=offspring, offspring.data=l, cont = mainGroup)
+      atree <- gtree(offspring=offspring, offspring.data=l, container = mainGroup)
 
       component <<- ""
       addHandlerClicked(atree, function(h, ...) {
@@ -2079,18 +2079,18 @@ iNZExtfromdtWin <- setRefClass(
       })
 
       date_string <- glabel("Name for new variable", container = mainGroup, anchor = c(-1, 0))
-      newVarname = gedit("", cont = mainGroup)
+      newVarname = gedit("", container = mainGroup)
       addHandlerKeystroke(newVarname, function(h, ...) {
         newname <<- ifelse(svalue(newVarname)=="", "Extracted", svalue(newVarname))
         updatePreview()
       })
 
-      preview_string = glabel("Preview", cont = mainGroup, anchor = c(-1, 0))
+      preview_string = glabel("Preview", container = mainGroup, anchor = c(-1, 0))
 
-      g2 = ggroup(cont = mainGroup)
-      dfview = gtable(data.frame(Original = "", stringsAsFactors = TRUE), cont = g2)
+      g2 = ggroup(container = mainGroup)
+      dfview = gtable(data.frame(Original = "", stringsAsFactors = TRUE), container = g2)
       size(dfview) = c(-1, 250)
-      extractedview <<- gtable(data.frame(Extracted = "", stringsAsFactors = TRUE), cont = g2)
+      extractedview <<- gtable(data.frame(Extracted = "", stringsAsFactors = TRUE), container = g2)
       size(extractedview) <<- c(-1, 250)
 
       okbtn <- gbutton("Extract", container = mainGroup, handler = function(h,...) {
@@ -2159,7 +2159,7 @@ iNZAggregatedtWin <- setRefClass(
       var1_string <- glabel("Select a column", container = mainGroup)
 
       col <<- ""
-      var1 <- gcombobox(items = c("", names(GUI$getActiveData())), cont = mainGroup)
+      var1 <- gcombobox(items = c("", names(GUI$getActiveData())), container = mainGroup)
       addHandlerChanged(var1, function(h, ...) {
         col <<- svalue(var1)
         var <<- GUI$getActiveData()[[col]]
@@ -2185,10 +2185,10 @@ iNZAggregatedtWin <- setRefClass(
 
       formatlist <- c("", "Weekly", "Monthly", "Quarterly", "Yearly")
 
-      var2_string <- glabel("Choose format", cont = mainGroup)
+      var2_string <- glabel("Choose format", container = mainGroup)
 
       format <<- ""
-      var2 <- gcombobox(items = formatlist, cont = mainGroup)
+      var2 <- gcombobox(items = formatlist, container = mainGroup)
       addHandlerChanged(var2, function(h, ...) {
         format <<- svalue(var2)
         if (format == "") {
@@ -2199,10 +2199,10 @@ iNZAggregatedtWin <- setRefClass(
         }
       })
 
-      var3_string <- glabel("How to aggregate", cont = mainGroup)
+      var3_string <- glabel("How to aggregate", container = mainGroup)
 
       method <<- ""
-      var3 <- gtable(c("Sum", "Mean", "Median"), cont = mainGroup)
+      var3 <- gtable(c("Sum", "Mean", "Median"), container = mainGroup)
       size(var3) <- c(-1, 150)
       addHandlerSelectionChanged(var3, function(h, ...) {
         method <<- svalue(var3)
@@ -2225,7 +2225,7 @@ iNZAggregatedtWin <- setRefClass(
       prevTbl[2,2, expand = TRUE] <- newview
       size(newview) <<- c(-1, 250)
 
-      aggregatebtn <- gbutton("Aggregate", cont = mainGroup, handler = function(h,...) {
+      aggregatebtn <- gbutton("Aggregate", container = mainGroup, handler = function(h,...) {
         .dataset <- GUI$getActiveData()
         data <- aggregate()
         attr(data, "name") <- paste(attr(.dataset, "name", exact = TRUE), "aggregated", sep = ".")
