@@ -48,9 +48,12 @@ iNZDataModel <- setRefClass(
 
             dataSet <<- data
             origDataSet <<- data
-            rowData <- data.frame(Row.names = 1:nrow(data), data,
-                                  check.names = TRUE,
-                                  stringsAsFactors = TRUE)
+            rowData <- data.frame(
+                Row.names = 1:nrow(data),
+                data,
+                check.names = TRUE,
+                stringsAsFactors = TRUE
+            )
             rowDataSet <<- rowData
             name <<- attr(data, "name", exact = TRUE)
             oldname <<- ""
@@ -89,17 +92,22 @@ iNZDataModel <- setRefClass(
             .self$changed$connect(FUN, ...)
         },
         removeSignals = function() {
-            for (i in seq_along(listeners(dataSetChanged))) dataSetChanged$disconnect(1)
-            for (i in seq_along(listeners(nameChanged))) nameChanged$disconnect(1)
-            for (i in seq_along(listeners(.changed))) .changed$disconnect(1)
+            for (i in seq_along(listeners(dataSetChanged)))
+                dataSetChanged$disconnect(1)
+            for (i in seq_along(listeners(nameChanged)))
+                nameChanged$disconnect(1)
+            for (i in seq_along(listeners(.changed)))
+                .changed$disconnect(1)
         },
         setFrequencies = function(freq, gui) {
             if (is.null(freq) || freq == "") {
                 gui$getActiveDoc()$setSettings(list(freq = NULL))
             }
-            gui$getActiveDoc()$setSettings(list(
-                freq = as.name(freq) # gui$getActiveData()[[freq]]
-            ))
+            gui$getActiveDoc()$setSettings(
+                list(
+                    freq = as.name(freq) # gui$getActiveData()[[freq]]
+                )
+            )
             # remove any non-categorical variables
             newdata <- gui$getActiveData()
             catvars <- c(names(newdata)[sapply(newdata, is_cat)], freq)
@@ -156,135 +164,11 @@ iNZDataModel <- setRefClass(
                 gui$menuBarWidget$defaultMenu()
             }
         },
-        # setDesign2 = function(strata = NULL, clus1 = NULL, clus2 = NULL,
-        #                      wt = NULL, nest = NULL, fpc = NULL,
-        #                      repweights = NULL, reptype = NULL,
-        #                      scale = NULL, rscales = NULL,
-        #                      poststrat = NULL,
-        #                      type = c("survey", "replicate"),
-        #                      gui, ...) {
-        #     if (is.null(strata) & is.null(clus1) & is.null(clus2) &
-        #         is.null(wt) & is.null(nest) & is.null(fpc) &
-        #         is.null(repweights) & is.null(poststrat)) {
-        #         dataDesign <<- NULL
-        #         dataDesignName <<- name
-        #     } else {
-        #         dataDesign <<-
-        #             switch(type,
-        #                 "survey" = list(
-        #                     strata = strata,
-        #                     clus1  = clus1,
-        #                     clus2  = clus2,
-        #                     wt     = wt,
-        #                     fpc    = fpc,
-        #                     nest   = nest,
-        #                     poststrat = poststrat,
-        #                     type = type
-        #                 ),
-        #                 "replicate" = list(
-        #                     wt = wt,
-        #                     repweights = repweights,
-        #                     reptype = reptype,
-        #                     scale = scale,
-        #                     rscales = rscales,
-        #                     poststrat = poststrat,
-        #                     type = type
-        #                 )
-        #             )
-        #         dataDesignName <<-
-        #             sprintf("%s.%s",
-        #                 name,
-        #                 switch(type, "survey" = "svy", "replicate" = "repsvy")
-        #             )
-        #     }
-        # },
         createSurveyObject = function(reload = FALSE) {
             if (!is.null(currentDesign$design) && !reload)
                 return(currentDesign$design)
             currentDesign <<- getDesign()
             currentDesign$design
-
-            # weights <- if (is.null(des$wt)) "NULL" else paste("~", des$wt)
-            # if (des$type == "survey") {
-            #     id <- if (is.null(des$clus1) & is.null(des$clus2)) {
-            #         "~ 1"
-            #     } else if (is.null(des$clus1)) {
-            #         paste("~", des$clus2)
-            #     } else if (is.null(des$clus2)) {
-            #         paste("~", des$clus1)
-            #     } else {
-            #         paste("~", des$clus1, "+", des$clus2)
-            #     }
-
-            #     strata <- if (is.null(des$strata)) "NULL" else paste("~", des$strata)
-            #     fpcs <- if (is.null(des$fpc)) "NULL" else paste("~", des$fpc)
-            #     obj <-
-            #         parse(text =
-            #             paste0(
-            #                 "survey::svydesign(",
-            #                 "id = ", id, ", ",
-            #                 if (!is.null(des$strata)) sprintf("strata = %s, ", strata),
-            #                 if (!is.null(des$wt) || !is.null(des$freq))
-            #                     sprintf("weights = %s, ", weights),
-            #                 if (!is.null(des$fpc)) sprintf("fpc = %s, ", fpcs),
-            #                 if (!is.null(des$nest) && des$nest) "nest = TRUE, ",
-            #                 "data = dataSet)"
-            #             )
-            #         )
-            # } else {
-            #     ## replicate weights specified
-            #     repweights <- if(is.null(des$repweights)) "NULL"
-            #         else if (all(trimws(strsplit(des$repweights, "+", fixed = TRUE)) %in% names(dataSet)))
-            #             paste("~", paste(des$repweights, collapse = " + "))
-            #         else paste0("\"", des$repweights, "\"")
-
-            #     type <- des$reptype
-            #     rscales <- if (is.null(des$rscales)) "NULL"
-            #         else sprintf("c(%s)", paste(des$rscales, collapse = ", "))
-
-            #     call <- paste0("survey::svrepdesign(",
-            #         if (!is.null(des$wt))
-            #             sprintf("weights = %s, ", weights),
-            #         sprintf("repweights = %s, ", repweights),
-            #         sprintf("type = '%s', ", type),
-            #         if (!is.null(des$scale))
-            #             sprintf("scale = %s, ", des$scale),
-            #         if (!is.null(des$rscales))
-            #             sprintf("rscales = %s, ", rscales),
-            #         "data = dataSet)"
-            #     )
-            #     obj <- parse(text = call)
-            # }
-
-            # if (!is.null(des$poststrat)) {
-            #     design_obj <- eval(obj)
-            #     ## Note: if allowing continuous variables in future,
-            #     ##       this needs a better name:
-            #     pop.totals <- structure(
-            #         do.call(c,
-            #             c(
-            #                 list(sum(des$poststrat[[1]]$Freq)),
-            #                 lapply(des$poststrat, function(df) df$Freq[-1])
-            #             )
-            #         ),
-            #         .Names = do.call(c,
-            #             c(
-            #                 list("(Intercept)"),
-            #                 lapply(des$poststrat, function(df)
-            #                     paste0(names(df)[1], as.character(df[-1,1]))
-            #                 )
-            #             )
-            #         )
-            #     )
-            #     obj <- parse(
-            #         text = sprintf(
-            #             "survey::calibrate(design_obj, ~%s, pop.totals)",
-            #             paste(names(des$poststrat), collapse = " + ")
-            #         )
-            #     )
-            # }
-            # currentDesign <<- list(design = suppressWarnings(eval(obj)))
-            # currentDesign$design
         },
         getDesign = function() {
             dataDesign
@@ -325,12 +209,16 @@ iNZDataModel <- setRefClass(
 
 iNZPlotSettings <- setRefClass(
     "iNZPlotSettings",
-    properties(fields = list(
-                   settings = "list",
-                   defaultSettings = "list"),
-               prototype = list(
-                   settings = list(),
-                   defaultSettings = list())),
+    properties(
+        fields = list(
+            settings = "list",
+            defaultSettings = "list"
+        ),
+        prototype = list(
+            settings = list(),
+            defaultSettings = list()
+        )
+    ),
     contains = "PropertySet", ## need this to add observer to object
     methods = list(
         initialize = function(settings = NULL) {
@@ -370,8 +258,6 @@ iNZPlotSettings <- setRefClass(
         ## extract a sub-list of a settings list
         ## than can be used to merge with defaultSettings
         extractDefaults = function(theSettings) {
-            # defaultFields <- c("cex", "bg", "col.pt", "col.pt", "cex.pt", "cex.dotpt",
-            #                    "alpha", "fill.pt", "pch", "internal.labels", "trend")
             defaultFields <- names(defaultSettings)
             forget <- c('plottype', 'xlim', 'ylim')
             defaultFields <- defaultFields[!defaultFields %in% forget]
@@ -384,8 +270,10 @@ iNZPlotSettings <- setRefClass(
             .self$changed$connect(FUN, ...)
         },
         removeSignals = function() {
-            for (i in seq_along(listeners(settingsChanged))) settingsChanged$disconnect(1)
-            for (i in seq_along(listeners(.changed))) .changed$disconnect(1)
+            for (i in seq_along(listeners(settingsChanged)))
+                settingsChanged$disconnect(1)
+            for (i in seq_along(listeners(.changed)))
+                .changed$disconnect(1)
         }
     )
 )
@@ -395,11 +283,13 @@ iNZDocument <- setRefClass(
     fields = list(
         dataModel = "iNZDataModel",
         plotSettings = "iNZPlotSettings"
-        ),
+    ),
     methods = list(
-        initialize = function(data=NULL, settings=NULL) {
-            initFields(dataModel = iNZDataModel$new(data),
-                       plotSettings = iNZPlotSettings$new(settings))
+        initialize = function(data = NULL, settings = NULL) {
+            initFields(
+                dataModel = iNZDataModel$new(data),
+                plotSettings = iNZPlotSettings$new(settings)
+            )
         },
         getModel = function() {
             dataModel
@@ -461,24 +351,27 @@ iNZDataNameWidget <- setRefClass(
         datName = "ANY", ## the string for the data set name
         widget = "ANY",
         nameLabel = "ANY"
-        ),
+    ),
     methods = list(
         initialize = function(gui) {
-            initFields(GUI = gui,
-                       datName = "No data loaded")
+            initFields(
+                GUI = gui,
+                datName = "No data loaded"
+            )
+
             widget <<- ggroup()
             addSpace(widget, 50)
             add(widget, glabel("Data set: "))
-            nameLabel <<- gcombobox(.self$datName, handler = function(h, ...) {
-                ## prevent code writing ...
-                pset <- GUI$getActiveDoc()$getSettings()
-                # GUI$ctrlWidget$resetWidget()
-                GUI$rhistory$disabled <<- TRUE
-                GUI$activeDoc <<- svalue(h$obj, index = TRUE)
-                GUI$rhistory$disabled <<- FALSE
-                GUI$ctrlWidget$setState(pset)
-                # GUI$updatePlot()
-            })
+            nameLabel <<- gcombobox(.self$datName,
+                handler = function(h, ...) {
+                    ## prevent code writing ...
+                    pset <- GUI$getActiveDoc()$getSettings()
+                    GUI$rhistory$disabled <<- TRUE
+                    GUI$activeDoc <<- svalue(h$obj, index = TRUE)
+                    GUI$rhistory$disabled <<- FALSE
+                    GUI$ctrlWidget$setState(pset)
+                }
+            )
             add(widget, nameLabel, expand = TRUE)
             enabled(nameLabel) <<- FALSE
 
@@ -501,7 +394,9 @@ iNZDataNameWidget <- setRefClass(
                 function(d) {
                     n <- d$getModel()$getName()
                     if (!is.null(d$getModel()$getDesign()))
-                        n <- sprintf("%s (survey design)", d$getModel()$dataDesignName)
+                        n <- sprintf("%s (survey design)",
+                            d$getModel()$dataDesignName
+                        )
                     n
                 }
             )
