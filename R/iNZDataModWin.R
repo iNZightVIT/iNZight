@@ -1464,47 +1464,65 @@ iNZdeleteVarWin <- setRefClass(
 
 ## Missing as Cat
 iNZmissCatWin <- setRefClass(
-  "iNZmissCatWin",
-  contains = "iNZDataModWin",
-  methods = list(
-    initialize = function(gui) {
-      callSuper(gui)
-      svalue(GUI$modWin) <<- "Missing as Categorical"
-      mainGroup <- ggroup(expand = TRUE, horizontal = FALSE)
-      mainGroup$set_borderwidth(15)
-      ## instructions through glabels
-      lbl1 = glabel("Select Variables to be transformed\nResulting Variables will be categorical with a level for missing observations")
-      font(lbl1) <- list(weight="bold", family = "sans")
-      helpbtn <- gimagebutton(stock.id = "gw-help", handler = function(h, ...){
-        help_page("user_guides/variables/#missingcat")
-      })
-      titlelyt <- glayout(homegenous = FALSE)
-      titlelyt[1, 1:19, expand = TRUE] <- lbl1
-      titlelyt[1, 20, expand = TRUE, anchor = c(1, -1)] <- helpbtn
-      lbl2 = glabel("(Hold Ctrl to choose many)")
-      font(lbl2) <- list(weight="bold", family = "sans")
-      listOfVars = gtable(names(GUI$getActiveData()),
-                          multiple = TRUE, expand = TRUE)
-      names(listOfVars) = "Variables"
-      convertButton = gbutton(
-        "- Convert -",
-        handler = function(h,...) {
-          if (length(svalue(listOfVars)) > 0) {
-            vars <- svalue(listOfVars)
-            names <- makeNames(paste0(vars, "_miss"))
-            .dataset <- GUI$get_data_object()
-            data <- iNZightTools::missingToCat(.dataset, vars, names)
-            updateData(data)
-            dispose(GUI$modWin)
-          }
-        })
-      add(mainGroup, titlelyt)
-      add(mainGroup, lbl2)
-      add(mainGroup, listOfVars, expand = TRUE)
-      add(mainGroup, convertButton)
-      add(GUI$modWin, mainGroup, expand = TRUE, fill = TRUE)
-      visible(GUI$modWin) <<- TRUE
-    })
+    "iNZmissCatWin",
+    contains = "iNZDataModWin",
+    methods = list(
+        initialize = function(gui) {
+            callSuper(gui)
+            svalue(GUI$modWin) <<- "Missing as Categorical"
+            mainGroup <- ggroup(expand = TRUE, horizontal = FALSE)
+            mainGroup$set_borderwidth(15)
+
+            ## instructions through glabels
+            lbl1 <- glabel(
+                paste(sep = "\n",
+                    "Select Variables to be transformed",
+                    "Resulting Variables will be categorical with a level for missing observations"
+                )
+            )
+            font(lbl1) <- list(weight = "bold", family = "sans")
+
+            helpbtn <- gimagebutton(stock.id = "gw-help",
+                handler = function(h, ...) help_page("user_guides/variables/#missingcat")
+            )
+
+            titlelyt <- glayout(homegenous = FALSE)
+            titlelyt[1L, 1:19, expand = TRUE] <- lbl1
+            titlelyt[1L, 20L, expand = TRUE, anchor = c(1, -1)] <- helpbtn
+
+            lbl2 <- glabel("(Hold Ctrl to choose many)")
+            font(lbl2) <- list(weight = "bold", family = "sans")
+
+            listOfVars <- gtable(names(GUI$getActiveData()),
+                multiple = TRUE,
+                expand = TRUE
+            )
+            names(listOfVars) <- "Variables"
+
+            convertButton <- gbutton(
+                "Convert",
+                handler = function(h,...) {
+                    if (length(svalue(listOfVars)) == 0) return()
+
+                    vars <- svalue(listOfVars)
+                    names <- makeNames(paste0(vars, "_miss"))
+
+                    .dataset <- GUI$get_data_object()
+                    data <- iNZightTools::missingToCat(.dataset, vars, names)
+                    updateData(data)
+                    dispose(GUI$modWin)
+                }
+            )
+
+            add(mainGroup, titlelyt)
+            add(mainGroup, lbl2)
+            add(mainGroup, listOfVars, expand = TRUE)
+            add(mainGroup, convertButton)
+            add(GUI$modWin, mainGroup, expand = TRUE, fill = TRUE)
+
+            visible(GUI$modWin) <<- TRUE
+        }
+    )
 )
 
 
@@ -1512,365 +1530,521 @@ iNZmissCatWin <- setRefClass(
 iNZrankNumWin <- setRefClass(
   "iNZrankNumWin",
   contains = "iNZDataModWin",
-  methods = list(
-    initialize = function(gui) {
-      callSuper(gui)
-      svalue(GUI$modWin) <<- "Ranking Variables"
-      size(GUI$modWin) <<- c(250, 450)
-      mainGroup <- ggroup(expand = TRUE, horizontal = FALSE)
-      mainGroup$set_borderwidth(15)
-      ## instructions through glabels
-      lbl1 <- glabel("Rank the numerical variables X (vector, matrix)")
-      font(lbl1) <- list(weight = "bold",
-                         family = "sans")
-      helpbtn <- gimagebutton(stock.id = "gw-help", handler = function(h, ...){
-        help_page("user_guides/variables/#rank")
-      })
-      titlelyt <- glayout(homegenous = FALSE)
-      titlelyt[1, 4:19, expand = TRUE, anchor = c(0,0)] <- lbl1
-      titlelyt[1, 20, expand = TRUE, anchor = c(1, -1)] <- helpbtn
-      lbl2 <- glabel("(Hold Ctrl to choose many)")
-      font(lbl2) <- list(weight = "bold",
-                         family = "sans")
-      ## display only numeric variables
-      numIndices <- sapply(GUI$getActiveData(), function(x) !is_cat(x))
-      numVar <- gtable(names(GUI$getActiveData())[numIndices],
-                       multiple = TRUE)
-      names(numVar) <- "Variables"
-      rankButton <- gbutton("Rank", handler = function(h, ...) {
-        if (length(svalue(numVar)) > 0) {
-          vars <- svalue(numVar)
-          .dataset <- GUI$get_data_object()
-          data <- iNZightTools::rankVars(.dataset, vars)
-          updateData(data)
+    methods = list(
+        initialize = function(gui) {
+            callSuper(gui)
+            svalue(GUI$modWin) <<- "Ranking Variables"
+            size(GUI$modWin) <<- c(250, 450)
+            mainGroup <- ggroup(expand = TRUE, horizontal = FALSE)
+            mainGroup$set_borderwidth(15)
+
+            ## instructions through glabels
+            lbl1 <- glabel("Rank the numerical variables X (vector, matrix)")
+            font(lbl1) <- list(weight = "bold", family = "sans")
+
+            helpbtn <- gimagebutton(stock.id = "gw-help",
+                handler = function(h, ...) help_page("user_guides/variables/#rank")
+            )
+
+            titlelyt <- glayout(homegenous = FALSE)
+            titlelyt[1L, 4:19, expand = TRUE, anchor = c(0, 0)] <- lbl1
+            titlelyt[1L, 20L, expand = TRUE, anchor = c(1, -1)] <- helpbtn
+
+            lbl2 <- glabel("(Hold Ctrl to choose many)")
+            font(lbl2) <- list(weight = "bold", family = "sans")
+
+            ## display only numeric variables
+            numIndices <- sapply(GUI$getActiveData(), function(x) !is_cat(x))
+            numVar <- gtable(
+                names(GUI$getActiveData())[numIndices],
+                multiple = TRUE
+            )
+            names(numVar) <- "Variables"
+
+            rankButton <- gbutton("Rank",
+                handler = function(h, ...) {
+                    if (length(svalue(numVar)) > 0) {
+                        vars <- svalue(numVar)
+                        .dataset <- GUI$get_data_object()
+                        data <- iNZightTools::rankVars(.dataset, vars)
+                        updateData(data)
+                    } else {
+                        gmessage("Select at leat one variable!",
+                            parent = GUI$win)
+                    }
+                }
+            )
+
+            add(mainGroup, titlelyt)
+            add(mainGroup, lbl2)
+            add(mainGroup, numVar, expand = TRUE)
+            add(mainGroup, rankButton)
+            add(GUI$modWin, mainGroup, expand = TRUE, fill = TRUE)
+
+            visible(GUI$modWin) <<- TRUE
         }
-        else {
-          gmessage("Select at leat one variable!",
-                   parent = GUI$win)
-        }
-      })
-      add(mainGroup, titlelyt)
-      add(mainGroup, lbl2)
-      add(mainGroup, numVar, expand = TRUE)
-      add(mainGroup, rankButton)
-      add(GUI$modWin, mainGroup, expand = TRUE, fill = TRUE)
-      visible(GUI$modWin) <<- TRUE
-    })
+    )
 )
 
 ## Convert multiple variables to categorical type in the same time
 iNZctocatmulWin <- setRefClass(
-  "iNZctocatmulWin",
-  contains = "iNZDataModWin",
-  methods = list(
-    initialize = function(gui) {
-      callSuper(gui)
-      svalue(GUI$modWin) <<- "Convert multiple Variables to categorical type"
-      size(GUI$modWin) <<- c(250, 450)
-      mainGroup <- ggroup(expand = TRUE, horizontal = FALSE)
-      mainGroup$set_borderwidth(15)
-      ## instructions through glabels
-      lbl1 <- glabel("Choose variables you want to convert")
-      font(lbl1) <- list(weight = "bold",
-                         family = "sans")
-      helpbtn <- gimagebutton(stock.id = "gw-help", handler = function(h, ...){
-        help_page("user_guides/variables/#convert2")
-      })
-      titlelyt <- glayout(homegenous = FALSE)
-      titlelyt[1, 4:19, expand = TRUE, anchor = c(0,0)] <- lbl1
-      titlelyt[1, 20, expand = TRUE, anchor = c(1, -1)] <- helpbtn
-      lbl2 <- glabel("(Hold Ctrl to choose many)")
-      font(lbl2) <- list(weight = "bold",
-                         family = "sans")
-      ## display only numeric variables
-      numIndices <- sapply(GUI$getActiveData(), function(x) !is_cat(x))
-      numVar <- gtable(names(GUI$getActiveData())[numIndices],
-                       multiple = TRUE)
-      names(numVar) <- "Variables"
-      ctmcButton <- gbutton("Convert", handler = function(h, ...) {
-        if (length(svalue(numVar)) > 0) {
-          vars <- svalue(numVar)
-          varnames <- makeNames(paste(vars, "cat", sep = "."))
-          .dataset <- GUI$get_data_object()
-          data <- iNZightTools::convertToCat(.dataset, vars, varnames)
-          updateData(data)
-          dispose(GUI$modWin)
+    "iNZctocatmulWin",
+    contains = "iNZDataModWin",
+    methods = list(
+        initialize = function(gui) {
+            callSuper(gui)
+            svalue(GUI$modWin) <<- "Convert multiple Variables to categorical type"
+            size(GUI$modWin) <<- c(250, 450)
+            mainGroup <- ggroup(expand = TRUE, horizontal = FALSE)
+            mainGroup$set_borderwidth(15)
+
+            ## instructions through glabels
+            lbl1 <- glabel("Choose variables you want to convert")
+            font(lbl1) <- list(weight = "bold", family = "sans")
+
+            helpbtn <- gimagebutton(stock.id = "gw-help",
+                handler = function(h, ...) help_page("user_guides/variables/#convert2")
+            )
+            titlelyt <- glayout(homegenous = FALSE)
+            titlelyt[1L, 4:19, expand = TRUE, anchor = c(0, )] <- lbl1
+            titlelyt[1L, 20L, expand = TRUE, anchor = c(1, -1)] <- helpbtn
+
+            lbl2 <- glabel("(Hold Ctrl to choose many)")
+            font(lbl2) <- list(weight = "bold", family = "sans")
+
+            ## display only numeric variables
+            numIndices <- sapply(GUI$getActiveData(), function(x) !is_cat(x))
+            numVar <- gtable(
+                names(GUI$getActiveData())[numIndices],
+                multiple = TRUE
+            )
+            names(numVar) <- "Variables"
+
+            ctmcButton <- gbutton("Convert",
+                handler = function(h, ...) {
+                    if (length(svalue(numVar)) == 0) return()
+
+                    vars <- svalue(numVar)
+                    varnames <- makeNames(paste(vars, "cat", sep = "."))
+
+                    .dataset <- GUI$get_data_object()
+                    data <- iNZightTools::convertToCat(.dataset, vars, varnames)
+                    updateData(data)
+                    dispose(GUI$modWin)
+                }
+            )
+
+            add(mainGroup, titlelyt)
+            add(mainGroup, lbl2)
+            add(mainGroup, numVar, expand = TRUE)
+            add(mainGroup, ctmcButton)
+            add(GUI$modWin, mainGroup, expand = TRUE, fill = TRUE)
+
+            visible(GUI$modWin) <<- TRUE
         }
-      })
-      add(mainGroup, titlelyt)
-      add(mainGroup, lbl2)
-      add(mainGroup, numVar, expand = TRUE)
-      add(mainGroup, ctmcButton)
-      add(GUI$modWin, mainGroup, expand = TRUE, fill = TRUE)
-      visible(GUI$modWin) <<- TRUE
-    })
+    )
 )
 
 iNZrenameDataWin <- setRefClass(
-  "iNZrenameDataWin",
-  contains = "iNZDataModWin",
-  methods = list (
-    initialize = function(gui) {
-      callSuper(gui)
-      svalue(GUI$modWin) <<- "Rename dataset"
-      size(GUI$modWin) <<- c(250, 150)
+    "iNZrenameDataWin",
+    contains = "iNZDataModWin",
+    methods = list (
+        initialize = function(gui) {
+            callSuper(gui)
+            svalue(GUI$modWin) <<- "Rename dataset"
+            size(GUI$modWin) <<- c(250, 150)
 
-      mainGroup <- ggroup(expand = TRUE, horizontal = FALSE)
-      mainGroup$set_borderwidth(15)
+            mainGroup <- ggroup(expand = TRUE, horizontal = FALSE)
+            mainGroup$set_borderwidth(15)
 
-      lbl <- glabel("Enter a new name for the current dataset")
-      font(lbl) <- list(weight = "bold", family = "sans")
+            lbl <- glabel("Enter a new name for the current dataset")
+            font(lbl) <- list(weight = "bold", family = "sans")
 
-      curname <- attr(GUI$getActiveData(), "name", exact = TRUE)
-      if (length(curname) == 0) curname <- ""
-      name <- gedit(curname)
+            curname <- attr(GUI$getActiveData(), "name", exact = TRUE)
+            if (length(curname) == 0) curname <- ""
+            name <- gedit(curname)
 
-      okbtn <- gbutton("OK")
-      addHandlerClicked(okbtn, function(h, ...) {
-        newname <- svalue(name)
-        if (newname == "") {
-          gmessage("Please enter a name", icon = "error", parent = GUI$win)
-        } else if (newname %in% GUI$dataNameWidget$nameLabel$get_items()) {
-          gmessage("Oops... that name is used by another dataset. Try something else!")
-        } else {
-          GUI$getActiveDoc()$dataModel$setName(newname)
-          dispose(GUI$modWin)
+            okbtn <- gbutton("OK")
+            addHandlerClicked(okbtn,
+                function(h, ...) {
+                    newname <- svalue(name)
+                    if (newname == "") {
+                        gmessage("Please enter a name", icon = "error", parent = GUI$win)
+                    } else if (newname %in% GUI$dataNameWidget$nameLabel$get_items()) {
+                        gmessage("Oops... that name is used by another dataset. Try something else!")
+                    } else {
+                        GUI$getActiveDoc()$dataModel$setName(newname)
+                        dispose(GUI$modWin)
+                    }
+                }
+            )
+
+            cancelbtn <- gbutton("Cancel")
+            addHandlerClicked(cancelbtn, function(h, ...) dispose(GUI$modWin))
+
+            add(mainGroup, lbl)
+            add(mainGroup, name)
+            add(mainGroup, okbtn)
+            add(mainGroup, cancelbtn)
+
+            add(GUI$modWin, mainGroup, expand = TRUE, fill = TRUE)
+
+            visible(GUI$modWin) <<- TRUE
         }
-      })
-
-      cancelbtn <- gbutton("Cancel")
-      addHandlerClicked(cancelbtn, function(h, ...) dispose(GUI$modWin))
-
-      add(mainGroup, lbl)
-      add(mainGroup, name)
-      add(mainGroup, okbtn)
-      add(mainGroup, cancelbtn)
-
-      add(GUI$modWin, mainGroup, expand = TRUE, fill = TRUE)
-
-      visible(GUI$modWin) <<- TRUE
-    }
-  )
+    )
 )
 
 
 ## Convert variables to a date time type
 iNZconTodtWin <- setRefClass(
-  "iNZconTodtWin",
-  contains = "iNZDataModWin",
-  methods = list(
-    initialize = function(gui) {
-      callSuper(gui)
-      svalue(GUI$modWin) <<- "Convert to Dates and Times"
+    "iNZconTodtWin",
+    contains = "iNZDataModWin",
+    methods = list(
+        initialize = function(gui) {
+            callSuper(gui)
+            svalue(GUI$modWin) <<- "Convert to Dates and Times"
 
-      scrolledWindow <- gtkScrolledWindow()
-      scrolledWindow$setPolicy("GTK_POLICY_AUTOMATIC","GTK_POLICY_AUTOMATIC")
+            scrolledWindow <- gtkScrolledWindow()
+            scrolledWindow$setPolicy("GTK_POLICY_AUTOMATIC","GTK_POLICY_AUTOMATIC")
 
-      mainGroup <- ggroup(expand = TRUE, horizontal = FALSE)
-      mainGroup$set_borderwidth(15)
+            mainGroup <- ggroup(expand = TRUE, horizontal = FALSE)
+            mainGroup$set_borderwidth(15)
 
-      title <- glabel("Convert to a Date-Time variable")
-      font(title) <- list(size = 14, weight = "bold")
-      helpbtn <- gimagebutton(stock.id = "gw-help", handler = function(h, ...){
-        help_page("user_guides/variables/#dtconvert")
-      })
-      titlelyt <- glayout(homegenous = FALSE)
-      titlelyt[1, 4:19, expand = TRUE, anchor = c(0,0)] <- title
-      titlelyt[1, 20, expand = TRUE, anchor = c(1, -1)] <- helpbtn
-      add(mainGroup, titlelyt)
-      addSpace(mainGroup, 5)
+            title <- glabel("Convert to a Date-Time variable")
+            font(title) <- list(size = 14, weight = "bold")
+            helpbtn <- gimagebutton(stock.id = "gw-help",
+                handler = function(h, ...)help_page("user_guides/variables/#dtconvert")
+            )
+            titlelyt <- glayout(homegenous = FALSE)
+            titlelyt[1L, 4:19, expand = TRUE, anchor = c(0,0)] <- title
+            titlelyt[1L, 20L, expand = TRUE, anchor = c(1, -1)] <- helpbtn
+            add(mainGroup, titlelyt)
+            addSpace(mainGroup, 5)
 
-      date_string <- glabel("Select variable to convert from", container = mainGroup, anchor = c(-1, 0))
+            date_string <- glabel("Select variable to convert from",
+                container = mainGroup,
+                anchor = c(-1, 0)
+            )
 
-      var1 = gcombobox(c("", names(GUI$getActiveData())), container = mainGroup, handler = function(h, ...) {
-        varname = svalue(var1)
-        if (varname == "") {
-          dfview$set_items("")
-          convertedview$set_items("")
-          svalue(newVarname) = ""
-        } else {
-          varx = GUI$getActiveData()[[varname]]
-          svalue(newVarname) = makeNames(paste(varname, ".dt", sep = ""))
-          dfview$set_items(data.frame(Original = varx, stringsAsFactors = TRUE))
-          if (svalue(var2) == "") {
-            return()
-          } else {
-            convname = svalue(var2)
-            .dataset = GUI$getActiveData()
-            name = svalue(newVarname)
-            data = tryCatch(
-              convertedview$set_items(
-                data.frame(
-                  Converted = iNZightTools::convert_to_datetime(.dataset, varname, convname, name)[[svalue(newVarname)]],
-                  stringsAsFactors = TRUE
-                  )
-                ),
-              warning = function(w) {
-                if (w$message == "Failed to parse") {
-                  convertedview$set_items(data.frame(
-                    Converted = "Invalid format",
-                    stringsAsFactors = TRUE
-                  ))
-                } else {
-                  convertedview$set_items(data.frame(
-                    Converted = w$message,
-                    stringsAsFactors = TRUE
-                  ))
+            var1 <- gcombobox(c("", names(GUI$getActiveData())),
+                container = mainGroup,
+                handler = function(h, ...) {
+                    varname = svalue(var1)
+                    if (varname == "") {
+                        dfview$set_items("")
+                        convertedview$set_items("")
+                        svalue(newVarname) = ""
+                        return()
+                    }
+
+                    varx <- GUI$getActiveData()[[varname]]
+                    svalue(newVarname) <-
+                        makeNames(paste(varname, ".dt", sep = ""))
+
+                    dfview$set_items(
+                        data.frame(Original = varx, stringsAsFactors = TRUE)
+                    )
+
+                    if (svalue(var2) == "") return()
+
+                    convname <- svalue(var2)
+                    .dataset <- GUI$getActiveData()
+                    name <- svalue(newVarname)
+
+                    data <- tryCatch(
+                        convertedview$set_items(
+                            data.frame(
+                                Converted =
+                                    iNZightTools::convert_to_datetime(
+                                        .dataset,
+                                        varname,
+                                        convname,
+                                        name
+                                        )[[svalue(newVarname)]],
+                                stringsAsFactors = TRUE
+                            )
+                        ),
+                        warning = function(w) {
+                            if (w$message == "Failed to parse") {
+                                convertedview$set_items(
+                                    data.frame(
+                                        Converted = "Invalid format",
+                                        stringsAsFactors = TRUE
+                                    )
+                                )
+                            } else {
+                                convertedview$set_items(
+                                    data.frame(
+                                        Converted = w$message,
+                                        stringsAsFactors = TRUE
+                                    )
+                                )
+                            }
+                        }
+                    )
                 }
-              })
-          }
+            )
+
+            factorsbox <- gvbox(container = mainGroup)
+            factors <- gtable(names(GUI$getActiveData()),
+                multiple = TRUE,
+                expand = TRUE,
+                container = factorsbox
+            )
+            names(factors) <- "Variables"
+
+            addHandlerSelectionChanged(factors,
+                function(h, ...) {
+                    factorname <- svalue(factors)
+                    varx <- ""
+                    new_name <- ""
+
+                    for (num in 1:length(factorname)) {
+                        name <- factorname[num]
+                        varx <- paste(varx, GUI$getActiveData()[[name]])
+                        new_name <- paste(new_name, name, ".", sep = "")
+                    }
+
+                    dfview$set_items(
+                        data.frame(Original = varx, stringsAsFactors = TRUE)
+                    )
+                    svalue(newVarname) <- makeNames(paste(new_name, "dt", sep = ""))
+
+                    if (svalue(var2) == "") return()
+
+                    convname <- svalue(var2)
+                    .dataset <- GUI$getActiveData()
+                    name <- svalue(newVarname)
+
+                    data <- tryCatch(
+                        convertedview$set_items(
+                            data.frame(
+                                Converted =
+                                    iNZightTools::convert_to_datetime(
+                                        .dataset,
+                                        factorname,
+                                        convname,
+                                        name
+                                        )[[svalue(newVarname)]],
+                                stringsAsFactors = TRUE
+                            )
+                        ),
+                        warning = function(w) {
+                            if (w$message == "Failed to parse") {
+                                convertedview$set_items(
+                                    data.frame(
+                                        Converted = "Invalid format",
+                                        stringsAsFactors = TRUE
+                                    )
+                                )
+                            } else {
+                                convertedview$set_items(
+                                    data.frame(
+                                        Converted = w$message,
+                                        stringsAsFactors = TRUE
+                                    )
+                                )
+                            }
+                        }
+                    )
+                }
+            )
+            visible(factorsbox) <- FALSE
+            size(factorsbox) <- c(-1, 250)
+
+            checkbox <- gcheckbox("Click to use multiple variables",
+                container = mainGroup,
+                handler = function(h, ...) {
+                    if (svalue(checkbox) == TRUE) {
+                        visible(factorsbox) <- TRUE
+                        visible(var1) <- FALSE
+                        date_string$set_value(
+                            "Select variables to convert from \n(Use CNTRL to add/remove)"
+                        )
+                    } else {
+                        visible(factorsbox) <- FALSE
+                        visible(var1) <- TRUE
+                        date_string$set_value("Select variable to convert from")
+                    }
+                }
+            )
+
+            addSpace(mainGroup, 5)
+
+            name_string <- glabel("Name for the new variable",
+                container = mainGroup,
+                anchor = c(-1, 0)
+            )
+            newVarname <- gedit("", container = mainGroup)
+
+            dt.formats <- c(
+                "",
+                "year month date",
+                "year month date Hour Minute Second",
+                "year month date Hour Minute Second pm/am",
+                "day month year",
+                "day month year Hour Minute Second",
+                "day month year Hour Minute Second pm/am",
+                "Unix timestamp (secs from 1970)"
+            )
+
+            for.var <- glabel(
+                "Select the order format of your data",
+                container = mainGroup,
+                anchor = c(-1, 0)
+            )
+
+            var2 <- gcombobox(
+                items = dt.formats,
+                container = mainGroup,
+                editable = TRUE,
+                handler = function(h,...) {
+                    if (svalue(checkbox) == TRUE) {
+                        factorname <- svalue(factors)
+                    } else {
+                        factorname <- svalue(var1)
+                    }
+
+                    convname <- svalue(var2)
+                    if (length(factorname) != 0 & convname == "") {
+                        convertedview$set_items("")
+                    } else {
+                        .dataset <- UI$getActiveData()
+                        name <- svalue(newVarname)
+                        data <- tryCatch(
+                            convertedview$set_items(
+                                data.frame(
+                                    Converted =
+                                        iNZightTools::convert_to_datetime(
+                                            .dataset,
+                                            factorname,
+                                            convname,
+                                            name
+                                            )[[svalue(newVarname)]],
+                                    stringsAsFactors = TRUE
+                                )
+                            ),
+                            warning = function(w) {
+                                if (w$message == "Failed to parse") {
+                                    convertedview$set_items(
+                                        data.frame(
+                                            Converted = "Invalid format",
+                                            stringsAsFactors = TRUE
+                                        )
+                                    )
+                                } else {
+                                    convertedview$set_items(
+                                        data.frame(
+                                            Converted = w$message,
+                                            stringsAsFactors = TRUE
+                                        )
+                                    )
+                                }
+                            }
+                        )
+                    }
+                }
+            )
+
+            g2 <- gexpandgroup(
+                container = mainGroup,
+                text = "Advanced selection"
+            )
+            visible(g2) <- FALSE
+
+            tbl <- glayout(container = g2, expand = TRUE)
+            tbl[1L, 1L] <- gbutton("year",
+                handler = function(h, ...)
+                    svalue(var2) = paste(svalue(var2), svalue(h$obj))
+            )
+            tbl[1L, 2L] <- gbutton("month",
+                handler = function(h, ...)
+                    svalue(var2) = paste(svalue(var2), svalue(h$obj))
+            )
+            tbl[1L, 3L] <- gbutton("day",
+                handler = function(h, ...)
+                    svalue(var2) = paste(svalue(var2), svalue(h$obj))
+            )
+            tbl[1L, 4L] <- gbutton("pm/am",
+                handler = function(h, ...)
+                    svalue(var2) = paste(svalue(var2), svalue(h$obj))
+            )
+            tbl[2L, 1L] <- gbutton("Hour",
+                handler = function(h, ...)
+                    svalue(var2) = paste(svalue(var2), svalue(h$obj))
+            )
+            tbl[2L, 2L] <- gbutton("Minute",
+                handler = function(h, ...)
+                    svalue(var2) = paste(svalue(var2), svalue(h$obj))
+            )
+            tbl[2L, 3L] <- gbutton("Second",
+                handler = function(h, ...)
+                    svalue(var2) = paste(svalue(var2), svalue(h$obj))
+            )
+            tbl[3L, 3L] <- gbutton("delete",
+                handler = function(h, ...) {
+                    number_of_space <-
+                        nchar(svalue(var2)) - nchar(gsub(" ", "", svalue(var2)))
+
+                    if (number_of_space == 1 | svalue(var2) == "") {
+                        svalue(var2) <- ""
+                    } else {
+                        svalue(var2) <-
+                            stringr::str_match(svalue(var2), "(^.+)\\s")[, 2]
+                    }
+                }
+            )
+            tbl[3L, 4L] <- gbutton("clear",
+                handler = function(h, ...) svalue(var2) = ""
+            )
+
+            g3 <- ggroup(container = mainGroup)
+            dfview <- gtable(
+                data.frame(
+                    Original = "",
+                    stringsAsFactors = TRUE
+                ),
+                container = g3
+            )
+            size(dfview) <- c(-1, 250)
+
+            convertedview <- gtable(
+                data.frame(
+                    Converted = "",
+                    stringsAsFactors = TRUE
+                ),
+                container = g3
+            )
+            size(convertedview) <- c(-1, 250)
+
+            okbtn <- gbutton("Convert",
+                container = mainGroup,
+                handler = function(h,...) {
+                    if (svalue(checkbox) == TRUE) {
+                        factorname <- svalue(factors)
+                    } else {
+                        factorname <- svalue(var1)
+                    }
+
+                    convname <- svalue(var2)
+                    name <- svalue(newVarname)
+                    var.dt <- iNZightTools::convert_to_datetime(
+                        GUI$getActiveData(),
+                        factorname,
+                        convname,
+                        name
+                    )
+                    updateData(var.dt)
+                    dispose(GUI$modWin)
+                }
+            )
+
+            scrolledWindow$addWithViewport(mainGroup$widget)
+            add(GUI$modWin, scrolledWindow, expand = TRUE, fill = TRUE)
+            size(GUI$modWin) <<- c(300, 600)
+            visible(GUI$modWin) <<- TRUE
         }
-      })
-
-      factorsbox = gvbox(container = mainGroup)
-      factors = gtable(names(GUI$getActiveData()),multiple = TRUE, expand = TRUE, container = factorsbox)
-      names(factors) = "Variables"
-      addHandlerSelectionChanged(factors, function(h, ...) {
-        factorname = svalue(factors)
-        varx = ""
-        new_name = ""
-        for (num in 1:length(factorname)) {
-          name = factorname[num]
-          varx = paste(varx, GUI$getActiveData()[[name]])
-          new_name = paste(new_name, name, ".", sep = "")
-        }
-        dfview$set_items(data.frame(Original = varx, stringsAsFactors = TRUE))
-        svalue(newVarname) = makeNames(paste(new_name, "dt", sep = ""))
-        if (svalue(var2) == ""){
-          return()
-        } else{
-          convname = svalue(var2)
-          .dataset = GUI$getActiveData()
-          name = svalue(newVarname)
-          data = tryCatch(
-            convertedview$set_items(
-              data.frame(
-                Converted = iNZightTools::convert_to_datetime(.dataset, factorname, convname, name)[[svalue(newVarname)]],
-                stringsAsFactors = TRUE
-              )
-            ),
-            warning = function(w) {
-              if (w$message == "Failed to parse") {
-                convertedview$set_items(
-                  data.frame(Converted = "Invalid format", stringsAsFactors = TRUE)
-                )
-              } else {
-                convertedview$set_items(
-                  data.frame(Converted = w$message, stringsAsFactors = TRUE)
-                )
-              }
-            })
-        }
-      })
-      visible(factorsbox) = FALSE
-      size(factorsbox) = c(-1, 250)
-
-      checkbox = gcheckbox(text = "Click to use multiple variables", container = mainGroup, handler = function(h, ...) {
-        if (svalue(checkbox) == TRUE) {
-          visible(factorsbox) = TRUE
-          visible(var1) = FALSE
-          date_string$set_value("Select variables to convert from \n(Use CNTRL to add/remove)")
-        } else {
-          visible(factorsbox) = FALSE
-          visible(var1) = TRUE
-          date_string$set_value("Select variable to convert from")
-        }
-      })
-
-      addSpace(mainGroup, 5)
-
-      name_string <- glabel("Name for the new variable", container = mainGroup, anchor = c(-1, 0))
-      newVarname = gedit("", container = mainGroup)
-
-      dt.formats <- c("",
-                      "year month date",
-                      "year month date Hour Minute Second",
-                      "year month date Hour Minute Second pm/am",
-                      "day month year",
-                      "day month year Hour Minute Second",
-                      "day month year Hour Minute Second pm/am",
-                      "Unix timestamp (secs from 1970)")
-
-      for.var <- glabel("Select the order format of your data", container = mainGroup, anchor = c(-1, 0))
-
-      var2 <- gcombobox(items = dt.formats, container = mainGroup, editable = TRUE, handler = function(h,...){
-        if (svalue(checkbox) == TRUE) {
-          factorname = svalue(factors)
-        } else {
-          factorname = svalue(var1)
-        }
-        convname = svalue(var2)
-        if (length(factorname) != 0 & convname == "") {
-          convertedview$set_items("")
-        } else {
-          .dataset = GUI$getActiveData()
-          name = svalue(newVarname)
-          data = tryCatch(
-            convertedview$set_items(
-              data.frame(
-                Converted = iNZightTools::convert_to_datetime(.dataset, factorname, convname, name)[[svalue(newVarname)]],
-                stringsAsFactors = TRUE
-              )
-            ),
-            warning = function(w) {
-              if (w$message == "Failed to parse") {
-                convertedview$set_items(
-                  data.frame(Converted = "Invalid format", stringsAsFactors = TRUE)
-                )
-              } else {
-                convertedview$set_items(
-                  data.frame(Converted = w$message, stringsAsFactors = TRUE)
-                )
-              }
-            })
-        }
-      })
-
-      g2 <- gexpandgroup(container = mainGroup, text = "Advanced selection")
-      visible(g2) <- FALSE
-
-      tbl = glayout(container = g2, expand = TRUE)
-      tbl[1,1] <- gbutton("year", handler = function(h,...){svalue(var2) = paste(svalue(var2), svalue(h$obj))})
-      tbl[1,2] <- gbutton("month", handler = function(h,...){svalue(var2) = paste(svalue(var2), svalue(h$obj))})
-      tbl[1,3] <- gbutton("day", handler = function(h,...){svalue(var2) = paste(svalue(var2), svalue(h$obj))})
-      tbl[1,4] <- gbutton("pm/am", handler = function(h,...){svalue(var2) = paste(svalue(var2), svalue(h$obj))})
-      tbl[2,1] <- gbutton("Hour", handler = function(h,...){svalue(var2) = paste(svalue(var2), svalue(h$obj))})
-      tbl[2,2] <- gbutton("Minute", handler = function(h,...){svalue(var2) = paste(svalue(var2), svalue(h$obj))})
-      tbl[2,3] <- gbutton("Second", handler = function(h,...){svalue(var2) = paste(svalue(var2), svalue(h$obj))})
-      tbl[3,3] <- gbutton("delete", handler = function(h, ...){
-        number_of_space = nchar(svalue(var2)) - nchar(gsub(" ", "", svalue(var2)))
-        if (number_of_space == 1 | svalue(var2) == "") {
-          svalue(var2) = ""
-        } else {
-          svalue(var2) = stringr::str_match(svalue(var2), "(^.+)\\s")[,2]
-        }
-      })
-      tbl[3,4] <- gbutton("clear", handler = function(h,...){svalue(var2) = ""})
-
-      g3 = ggroup(container = mainGroup)
-      dfview = gtable(data.frame(Original = "", stringsAsFactors = TRUE), container = g3)
-      size(dfview) = c(-1, 250)
-      convertedview = gtable(data.frame(Converted = "", stringsAsFactors = TRUE), container = g3)
-      size(convertedview) = c(-1, 250)
-
-      okbtn <- gbutton("Convert", container = mainGroup, handler = function(h,...) {
-        if (svalue(checkbox) == TRUE) {
-          factorname = svalue(factors)
-        } else {
-          factorname = svalue(var1)
-        }
-        convname = svalue(var2)
-        name = svalue(newVarname)
-        var.dt = iNZightTools::convert_to_datetime(GUI$getActiveData(), factorname, convname, name)
-        updateData(var.dt)
-        dispose(GUI$modWin)
-      })
-
-      scrolledWindow$addWithViewport(mainGroup$widget)
-      add(GUI$modWin, scrolledWindow, expand = TRUE, fill = TRUE)
-      size(GUI$modWin) <<- c(300, 600)
-      visible(GUI$modWin) <<- TRUE
-    })
+    )
 )
 
 
