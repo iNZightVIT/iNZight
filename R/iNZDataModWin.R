@@ -2050,301 +2050,466 @@ iNZconTodtWin <- setRefClass(
 
 ## Extract parts from a datetime variable
 iNZExtfromdtWin <- setRefClass(
-  "iNZExtfromdtWin",
-  contains = "iNZDataModWin",
-  fields = list(
-    varname = "ANY",
-    component = "ANY",
-    newname = "ANY",
-    extractedview = "ANY"
-  ),
-  methods = list(
-    initialize = function(gui) {
-      callSuper(gui)
-      svalue(GUI$modWin) <<- "Convert to Dates and Times"
+    "iNZExtfromdtWin",
+    contains = "iNZDataModWin",
+    fields = list(
+        varname = "ANY",
+        component = "ANY",
+        newname = "ANY",
+        extractedview = "ANY"
+    ),
+    methods = list(
+        initialize = function(gui) {
+            callSuper(gui)
+            svalue(GUI$modWin) <<- "Convert to Dates and Times"
 
-      scrolledWindow <- gtkScrolledWindow()
-      scrolledWindow$setPolicy("GTK_POLICY_AUTOMATIC","GTK_POLICY_AUTOMATIC")
+            scrolledWindow <- gtkScrolledWindow()
+            scrolledWindow$setPolicy("GTK_POLICY_AUTOMATIC","GTK_POLICY_AUTOMATIC")
 
-      mainGroup <- gvbox()
-      mainGroup$set_borderwidth(15)
+            mainGroup <- gvbox()
+            mainGroup$set_borderwidth(15)
 
-      title <- glabel("Extract parts of the datetime")
-      font(title) <- list(size = 14, weight = "bold")
-      helpbtn <- gimagebutton(stock.id = "gw-help", handler = function(h, ...){
-        help_page("user_guides/variables/#dtextract")
-      })
-      titlelyt <- glayout(homegenous = FALSE)
-      titlelyt[1, 4:19, expand = TRUE, anchor = c(0,0)] <- title
-      titlelyt[1, 20, expand = TRUE, anchor = c(1, -1)] <- helpbtn
-      add(mainGroup, titlelyt)
-      addSpace(mainGroup, 5)
+            title <- glabel("Extract parts of the datetime")
+            font(title) <- list(size = 14, weight = "bold")
+            helpbtn <- gimagebutton(stock.id = "gw-help",
+                handler = function(h, ...)
+                    help_page("user_guides/variables/#dtextract")
+            )
+            titlelyt <- glayout(homegenous = FALSE)
+            titlelyt[1L, 4:19, expand = TRUE, anchor = c(0, 0)] <- title
+            titlelyt[1L, 20L, expand = TRUE, anchor = c(1, -1)] <- helpbtn
 
-      date_string <- glabel("Select variable to extract information from",
-                            container = mainGroup, anchor = c(-1, 0))
+            add(mainGroup, titlelyt)
+            addSpace(mainGroup, 5)
 
-      var1 <- gcombobox(items = c("", c(names(dplyr::select_if(GUI$getActiveData(), lubridate::is.Date)), names(dplyr::select_if(GUI$getActiveData(), lubridate::is.POSIXct)))), container = mainGroup, handler = function(h,...){
-        varname <<- svalue(var1)
-        if (varname == "") {
-          dfview$set_items(data.frame(Original = "", stringsAsFactors = TRUE))
-          extractedview$set_items(data.frame(Extracted = "", stringsAsFactors = TRUE))
-        } else {
-          varx = GUI$getActiveData()[[varname]]
-          dfview$set_items(data.frame(Original = as.character(varx), stringsAsFactors = TRUE))
-          if (component == "") {
-            return()
-          }
-          updatePreview()
+            date_string <- glabel(
+                "Select variable to extract information from",
+                container = mainGroup,
+                anchor = c(-1, 0)
+            )
+
+            var1 <- gcombobox(
+                items = c(
+                    "",
+                    c(
+                        names(dplyr::select_if(GUI$getActiveData(), lubridate::is.Date)),
+                        names(dplyr::select_if(GUI$getActiveData(), lubridate::is.POSIXct))
+                    )
+                ),
+                container = mainGroup,
+                handler = function(h,...) {
+                    varname <<- svalue(var1)
+                    if (varname == "") {
+                        dfview$set_items(data.frame(Original = "", stringsAsFactors = TRUE))
+                        extractedview$set_items(data.frame(Extracted = "", stringsAsFactors = TRUE))
+                    } else {
+                        varx = GUI$getActiveData()[[varname]]
+                        dfview$set_items(data.frame(Original = as.character(varx), stringsAsFactors = TRUE))
+                        if (component == "") return()
+
+                        updatePreview()
+                    }
+                }
+            )
+
+            for.var <- glabel(
+                paste(sep = "\n",
+                    "Select elements to extract",
+                    "(click + of lowest-level information for options)"
+                ),
+                container = mainGroup,
+                anchor = c(-1, 0)
+            )
+
+            offspring <- function(path = character(0), lst, ...) {
+                if (length(path))
+                    obj <- lst[[path]]
+                else
+                    obj <- lst
+
+                nms <- names(obj)
+                hasOffspring <- sapply(nms,
+                    function(i) {
+                        newobj <- obj[[i]]
+                        is.recursive(newobj) && !is.null(names(newobj))
+                    }
+                )
+
+                data.frame(
+                    Name = nms,
+                    hasOffspring = hasOffspring,
+                    stringsAsFactors = FALSE
+                )
+            }
+
+            l <- list(
+                Date = list(
+                    "Date only" = "Date only",
+                    Year = list(
+                        "Year" = "Year",
+                        "Century" = "Century",
+                        "Decimal Year" = "Decimal Year"
+                    ),
+                    Quarter = list(
+                        "Year Quarter" = "Year Quarter",
+                        "Quarter" = "Quarter"
+                    ),
+                    Month = list(
+                        "Year Month" = "Year Month",
+                        "Month (full)" = "Month (full)",
+                        "Month (abbreviated)" = "Month (abbreviated)",
+                        "Month (number)" = "Month (number)"
+                    ),
+                    Week = list(
+                        "Week of the year (Sunday as first day of the week)" =
+                            "Week of the year (Sunday as first day of the week)",
+                        "Week of the year (Monday as first day of the week)" =
+                            "Week of the year (Monday as first day of the week)"
+                    ),
+                    Day = list(
+                        "Day of the year" = "Day of the year",
+                        "Day of the week (name)" = "Day of the week (name)",
+                        "Day of the week (abbreviated)" =
+                            "Day of the week (abbreviated)",
+                        "Day of the week (number, Monday as 1)" =
+                            "Day of the week (number, Monday as 1)",
+                        "Day of the week (number, Sunday as 0)" =
+                            "Day of the week (number, Sunday as 0)",
+                        "Day" = "Day"
+                    )
+                ),
+                Time = list(
+                    "Time only" = "Time only",
+                    "Hours (decimal)" = "Hours (decimal)",
+                    "Hour" = "Hour",
+                    "Minute" = "Minute",
+                    "Second" = "Second"
+                )
+            )
+
+            atree <- gtree(
+                offspring = offspring,
+                offspring.data = l,
+                container = mainGroup
+            )
+
+            component <<- ""
+            addHandlerClicked(atree,
+                function(h, ...) {
+                    component <<- svalue(atree)[length(svalue(atree))]
+                    svalue(newVarname) <- makeNames(
+                        paste(varname, ".",
+                            switch(component,
+                                "Date only" = "Date",
+                                "Decimal Year" = "Decimal.Year",
+                                "Year Quarter" = "Year.Quarter",
+                                "Year Month" = "Year.Month",
+                                "Month (abbreviated)" = "Month.cat",
+                                "Month (full)" = "Month.cat",
+                                "Month (number)" = "Month.number",
+                                "Week of the year (Sunday as first day of the week)" = "Week.year",
+                                "Week of the year (Monday as first day of the week)" = "Week.year",
+                                "Day of the year" = "Day.year",
+                                "Day of the week (name)" = "Day.week",
+                                "Day of the week (abbreviated)" = "Day.week.abbreviated",
+                                "Day of the week (number)" = "Day.week.number",
+                                "Day of the week (number, Monday as 1)" = "Day.week.number",
+                                "Day of the week (number, Sunday as 0)" = "Day.week.number",
+                                "Time only" = "Time",
+                                "Hours (decimal)" = "Hour.decimal",
+                                component
+                            ),
+                            sep = ""
+                        )
+                    )
+                    newname <<- svalue(newVarname)
+                    updatePreview()
+                }
+            )
+
+            date_string <- glabel("Name for new variable",
+                container = mainGroup,
+                anchor = c(-1, 0)
+            )
+            newVarname <- gedit("", container = mainGroup)
+            addHandlerKeystroke(newVarname,
+                function(h, ...) {
+                    newname <<- ifelse(
+                        svalue(newVarname) == "",
+                        "Extracted",
+                        svalue(newVarname)
+                    )
+                    updatePreview()
+                }
+            )
+
+            preview_string <- glabel("Preview",
+                container = mainGroup,
+                anchor = c(-1, 0)
+            )
+
+            g2 <- ggroup(container = mainGroup)
+            dfview <- gtable(
+                data.frame(
+                    Original = "",
+                    stringsAsFactors = TRUE
+                ),
+                container = g2
+            )
+            size(dfview) <- c(-1, 250)
+            extractedview <<- gtable(
+                data.frame(
+                    Extracted = "",
+                    stringsAsFactors = TRUE
+                ),
+                container = g2
+            )
+            size(extractedview) <<- c(-1, 250)
+
+            okbtn <- gbutton("Extract",
+                container = mainGroup,
+                handler = function(h,...) {
+                    .dataset <- GUI$getActiveData()
+                    exp <- iNZightTools::extract_part(.dataset, varname, component, newname)
+                    updateData(exp)
+                    dispose(GUI$modWin)
+                }
+            )
+
+            scrolledWindow$addWithViewport(mainGroup$widget)
+            add(GUI$modWin, scrolledWindow, expand = TRUE, fill = TRUE)
+            size(GUI$modWin) <<- c(300, 700)
+            visible(GUI$modWin) <<- TRUE
+        },
+        updatePreview = function() {
+            .dataset <- GUI$getActiveData()
+            list <- list(
+                "Date only",
+                "Year",
+                "Century",
+                "Decimal Year",
+                "Year Quarter",
+                "Quarter",
+                "Year Month",
+                "Month (full)",
+                "Month (abbreviated)",
+                "Month (number)",
+                "Year Week",
+                "Week of the year (Monday as first day of the week)",
+                "Week of the year (Sunday as first day of the week)",
+                "Day of the year",
+                "Day of the week (name)",
+                "Day of the week (abbreviated)",
+                "Day of the week (number, Monday as 1)",
+                "Day of the week (number, Sunday as 0)",
+                "Day",
+                "Time only",
+                "Hours (decimal)",
+                "Hour",
+                "Minute",
+                "Second"
+            )
+
+            if (component %in% list) {
+                d <- iNZightTools::extract_part(.dataset, varname, component, newname)
+                extractedview$set_items(
+                    data.frame(
+                        Extracted = as.character(d[[newname]]),
+                        stringsAsFactors = TRUE
+                    )
+                )
+            }
         }
-      })
-
-      for.var <- glabel("Select elements to extract \n(click + of lowest-level information for options)", container = mainGroup, anchor = c(-1, 0))
-
-      offspring <- function(path=character(0), lst, ...) {
-        if(length(path))
-          obj <- lst[[path]]
-        else
-          obj <- lst
-        nms <- names(obj)
-        hasOffspring <- sapply(nms, function(i) {
-          newobj <- obj[[i]]
-          is.recursive(newobj) && !is.null(names(newobj))
-        })
-        data.frame(Name=nms, hasOffspring=hasOffspring, ## fred=nms,
-                   stringsAsFactors=FALSE)
-      }
-
-      l <- list(Date = list("Date only" = "Date only",
-                            Year = list("Year" = "Year", "Century" = "Century", "Decimal Year" = "Decimal Year"),
-                            Quarter = list("Year Quarter" = "Year Quarter", "Quarter" = "Quarter"),
-                            Month = list("Year Month" = "Year Month", "Month (full)" = "Month (full)", "Month (abbreviated)" = "Month (abbreviated)", "Month (number)" = "Month (number)"),
-                            Week = list("Week of the year (Sunday as first day of the week)" = "Week of the year (Sunday as first day of the week)", "Week of the year (Monday as first day of the week)" = "Week of the year (Monday as first day of the week)"),
-                            Day = list("Day of the year" = "Day of the year", "Day of the week (name)" = "Day of the week (name)", "Day of the week (abbreviated)" = "Day of the week (abbreviated)", "Day of the week (number, Monday as 1)" = "Day of the week (number, Monday as 1)", "Day of the week (number, Sunday as 0)" = "Day of the week (number, Sunday as 0)","Day" = "Day")),
-                Time = list("Time only" = "Time only", "Hours (decimal)" = "Hours (decimal)", "Hour" = "Hour", "Minute" = "Minute", "Second" = "Second")
-      )
-
-
-      atree <- gtree(offspring=offspring, offspring.data=l, container = mainGroup)
-
-      component <<- ""
-      addHandlerClicked(atree, function(h, ...) {
-        component <<- svalue(atree)[length(svalue(atree))]
-        svalue(newVarname) = makeNames(paste(varname, ".", switch(component, "Date only" = "Date",
-                                                                  "Decimal Year" = "Decimal.Year",
-                                                                  "Year Quarter" = "Year.Quarter",
-                                                                  "Year Month" = "Year.Month",
-                                                                  "Month (abbreviated)" = "Month.cat",
-                                                                  "Month (full)" = "Month.cat",
-                                                                  "Month (number)" = "Month.number",
-                                                                  "Week of the year (Sunday as first day of the week)" = "Week.year",
-                                                                  "Week of the year (Monday as first day of the week)" = "Week.year",
-                                                                  "Day of the year" = "Day.year",
-                                                                  "Day of the week (name)" = "Day.week",
-                                                                  "Day of the week (abbreviated)" = "Day.week.abbreviated",
-                                                                  "Day of the week (number)" = "Day.week.number",
-                                                                  "Day of the week (number, Monday as 1)" = "Day.week.number",
-                                                                  "Day of the week (number, Sunday as 0)" = "Day.week.number",
-                                                                  "Time only" = "Time",
-                                                                  "Hours (decimal)" = "Hour.decimal", component), sep = ""))
-        newname <<- svalue(newVarname)
-        updatePreview()
-      })
-
-      date_string <- glabel("Name for new variable", container = mainGroup, anchor = c(-1, 0))
-      newVarname = gedit("", container = mainGroup)
-      addHandlerKeystroke(newVarname, function(h, ...) {
-        newname <<- ifelse(svalue(newVarname)=="", "Extracted", svalue(newVarname))
-        updatePreview()
-      })
-
-      preview_string = glabel("Preview", container = mainGroup, anchor = c(-1, 0))
-
-      g2 = ggroup(container = mainGroup)
-      dfview = gtable(data.frame(Original = "", stringsAsFactors = TRUE), container = g2)
-      size(dfview) = c(-1, 250)
-      extractedview <<- gtable(data.frame(Extracted = "", stringsAsFactors = TRUE), container = g2)
-      size(extractedview) <<- c(-1, 250)
-
-      okbtn <- gbutton("Extract", container = mainGroup, handler = function(h,...) {
-        .dataset = GUI$getActiveData()
-        exp = iNZightTools::extract_part(.dataset, varname, component, newname)
-        updateData(exp)
-        dispose(GUI$modWin)
-      })
-
-      scrolledWindow$addWithViewport(mainGroup$widget)
-      add(GUI$modWin, scrolledWindow, expand = TRUE, fill = TRUE)
-      size(GUI$modWin) <<- c(300, 700)
-      visible(GUI$modWin) <<- TRUE
-    },
-    updatePreview = function() {
-      .dataset <- GUI$getActiveData()
-      list <- list("Date only", "Year", "Century", "Decimal Year", "Year Quarter", "Quarter",
-                   "Year Month", "Month (full)", "Month (abbreviated)", "Month (number)", "Year Week",
-                   "Week of the year (Monday as first day of the week)", "Week of the year (Sunday as first day of the week)",
-                   "Day of the year", "Day of the week (name)", "Day of the week (abbreviated)",
-                   "Day of the week (number, Monday as 1)", "Day of the week (number, Sunday as 0)",
-                   "Day", "Time only", "Hours (decimal)", "Hour", "Minute", "Second")
-      if (component %in% list) {
-        d <- iNZightTools::extract_part(.dataset, varname, component, newname)
-        extractedview$set_items(
-          data.frame(Extracted = as.character(d[[newname]]), stringsAsFactors = TRUE)
-        )
-      }
-    }
-  ))
+    )
+)
 
 ## Aggregate datetimes
 iNZAggregatedtWin <- setRefClass(
-  "iNZAggregatedtWin",
-  contains = "iNZDataModWin",
-  fields = list(
-    GUI = "ANY",
-    col = "ANY",
-    format = "ANY",
-    method = "ANY",
-    newview = "ANY",
-    var = "ANY",
-    key = "ANY",
-    name = "ANY"
-  ),
-  methods = list(
-    initialize = function(gui) {
-      callSuper(gui)
-      svalue(GUI$modWin) <<- "Aggregate datetimes to monthly or quarterly"
+    "iNZAggregatedtWin",
+    contains = "iNZDataModWin",
+    fields = list(
+        GUI = "ANY",
+        col = "ANY",
+        format = "ANY",
+        method = "ANY",
+        newview = "ANY",
+        var = "ANY",
+        key = "ANY",
+        name = "ANY"
+    ),
+    methods = list(
+        initialize = function(gui) {
+            callSuper(gui)
+            svalue(GUI$modWin) <<- "Aggregate datetimes to monthly or quarterly"
 
-      mainGroup <- gvbox()
-      mainGroup$set_borderwidth(15)
+            mainGroup <- gvbox()
+            mainGroup$set_borderwidth(15)
 
-      title <- glabel("Aggregate datetimes to monthly or quarterly")
-      font(title) <- list(size = 14, weight = "bold")
-      helpbtn <- gimagebutton(stock.id = "gw-help", handler = function(h, ...){
-        help_page("user_guides/variables/#dtaggregate")
-      })
+            title <- glabel("Aggregate datetimes to monthly or quarterly")
+            font(title) <- list(size = 14, weight = "bold")
+            helpbtn <- gimagebutton(stock.id = "gw-help",
+                handler = function(h, ...)
+                    help_page("user_guides/variables/#dtaggregate")
+            )
 
-      titlelyt <- glayout(homegenous = FALSE)
-      titlelyt[1, 4:19, expand = TRUE, anchor = c(0,0)] <- title
-      titlelyt[1, 20, expand = TRUE, anchor = c(1, -1)] <- helpbtn
-      add(mainGroup, titlelyt)
-      addSpace(mainGroup, 5)
+            titlelyt <- glayout(homegenous = FALSE)
+            titlelyt[1L, 4:19, expand = TRUE, anchor = c(0, 0)] <- title
+            titlelyt[1L, 20, expand = TRUE, anchor = c(1, -1)] <- helpbtn
 
-      var1_string <- glabel("Select a column", container = mainGroup)
+            add(mainGroup, titlelyt)
+            addSpace(mainGroup, 5)
 
-      col <<- ""
-      var1 <- gcombobox(items = c("", names(GUI$getActiveData())), container = mainGroup)
-      addHandlerChanged(var1, function(h, ...) {
-        col <<- svalue(var1)
-        var <<- GUI$getActiveData()[[col]]
-        newview$set_items("")
-        if (lubridate::is.POSIXct(var) == TRUE | lubridate::is.Date(var) == TRUE) {
-          key <<- "dt"
-          var2$set_items(formatlist)
-        } else if (all(grepl("W", var)) == TRUE) {
-          key <<- "W"
-          var2$set_items(c("", "Quarterly", "Yearly"))
-        } else if (all(grepl("M", var)) == TRUE) {
-          key <<- "M"
-          var2$set_items(c("", "Quarterly", "Yearly"))
-        } else if (all(grepl("Q", var)) == TRUE) {
-          key <<- "Q"
-          var2$set_items(c("", "Yearly"))
-        } else {
-          key <<- ""
-          var2$set_items("")
-          newview$set_items("Selected variable not supported")
+            var1_string <- glabel("Select a column", container = mainGroup)
+
+            col <<- ""
+            var1 <- gcombobox(
+                items = c("", names(GUI$getActiveData())),
+                container = mainGroup
+            )
+            addHandlerChanged(var1,
+                function(h, ...) {
+                    col <<- svalue(var1)
+                    var <<- GUI$getActiveData()[[col]]
+                    newview$set_items("")
+
+                    if (lubridate::is.POSIXct(var) == TRUE |
+                        lubridate::is.Date(var) == TRUE) {
+                        key <<- "dt"
+                        var2$set_items(formatlist)
+                    } else if (all(grepl("W", var)) == TRUE) {
+                        key <<- "W"
+                        var2$set_items(c("", "Quarterly", "Yearly"))
+                    } else if (all(grepl("M", var)) == TRUE) {
+                        key <<- "M"
+                        var2$set_items(c("", "Quarterly", "Yearly"))
+                    } else if (all(grepl("Q", var)) == TRUE) {
+                        key <<- "Q"
+                        var2$set_items(c("", "Yearly"))
+                    } else {
+                        key <<- ""
+                        var2$set_items("")
+                        newview$set_items("Selected variable not supported")
+                    }
+                }
+            )
+
+            formatlist <- c("", "Weekly", "Monthly", "Quarterly", "Yearly")
+
+            var2_string <- glabel("Choose format", container = mainGroup)
+
+            format <<- ""
+            var2 <- gcombobox(items = formatlist, container = mainGroup)
+            addHandlerChanged(var2,
+                function(h, ...) {
+                    format <<- svalue(var2)
+
+                    if (format == "")
+                        newview$set_items()
+
+                    if (format != "" & method != "" & col != "")
+                        updateView()
+                }
+            )
+
+            var3_string <- glabel("How to aggregate", container = mainGroup)
+
+            method <<- ""
+            var3 <- gtable(c("Sum", "Mean", "Median"), container = mainGroup)
+            size(var3) <- c(-1, 150)
+            addHandlerSelectionChanged(var3,
+                function(h, ...) {
+                    method <<- svalue(var3)
+                    updateView()
+                }
+            )
+
+            name <<- "newcol"
+
+            prevTbl <- glayout(homogeneous = FALSE, container = mainGroup)
+
+            string1 <- glabel("Original dataset")
+            originview <- gtable(
+                data.frame(GUI$getActiveData(), stringsAsFactors = TRUE)
+            )
+            prevTbl[1L, 1L, expand = TRUE] <- string1
+            prevTbl[2L, 1L, expand = TRUE] <- originview
+            size(originview) = c(-1, 250)
+
+            string2 <- glabel("New dataset")
+            newview <<- gtable(data.frame("", stringsAsFactors = TRUE))
+            prevTbl[1L, 2L, expand = TRUE] <- string2
+            prevTbl[2L, 2L, expand = TRUE] <- newview
+            size(newview) <<- c(-1, 250)
+
+            aggregatebtn <- gbutton("Aggregate",
+                container = mainGroup,
+                handler = function(h,...) {
+                    .dataset <- GUI$getActiveData()
+                    data <- aggregate()
+
+                    attr(data, "name") <-
+                        paste(
+                            attr(.dataset, "name", exact = TRUE),
+                            "aggregated",
+                            sep = "."
+                        )
+                    attr(data, "code") <-
+                        gsub(".dataset",
+                            attr(.dataset, "name", exact = TRUE),
+                            attr(data, "code")
+                        )
+
+                    GUI$setDocument(iNZDocument$new(data = data))
+                    dispose(GUI$modWin)
+                }
+            )
+
+            add(GUI$modWin, mainGroup, expand = TRUE)
+            visible(GUI$modWin) <<- TRUE
+        },
+        aggregate = function() {
+            .dataset <- GUI$getActiveData()
+            if (key == "dt" & format != "") {
+                part <- switch(format,
+                    "Weekly" = "Year Week",
+                    "Monthly" = "Year Month",
+                    "Quarterly" = "Year Quarter",
+                    "Yearly" = "Year"
+                )
+
+                df <- iNZightTools::extract_part(.dataset, col, part, format)
+                df <- iNZightTools::aggregateData(df, format, method)
+
+                colname <- subset(colnames(df),
+                    grepl("[:.:]missing$",colnames(df))
+                )
+
+                for (i in 1:length(colname)) {
+                    if (all(df[[colname[i]]] == 0))
+                        df[, colname[i]] <- NULL
+                }
+                return(df)
+            } else if (key != "" & key != "dt" & format != "") {
+                newdata <- iNZightTools::separate(.dataset, col,
+                    "left", "right", key, "Column")
+                df <- iNZightTools::aggregatedt(newdata, format, key, format)
+                df <- iNZightTools::aggregateData(df, format, method)
+
+                colname = subset(colnames(df), grepl("[:.:]missing$",colnames(df)))
+                for (i in 1:length(colname)) {
+                    if (all(df[[colname[i]]] == 0))
+                        df[, colname[i]] <- NULL
+                }
+                return(df)
+            }
+        },
+        updateView = function() {
+            df <- aggregate()
+            if (length(df) != 0)
+                newview$set_items(df)
         }
-      })
-
-      formatlist <- c("", "Weekly", "Monthly", "Quarterly", "Yearly")
-
-      var2_string <- glabel("Choose format", container = mainGroup)
-
-      format <<- ""
-      var2 <- gcombobox(items = formatlist, container = mainGroup)
-      addHandlerChanged(var2, function(h, ...) {
-        format <<- svalue(var2)
-        if (format == "") {
-          newview$set_items()
-        }
-        if (format != "" & method != "" & col != "") {
-          updateView()
-        }
-      })
-
-      var3_string <- glabel("How to aggregate", container = mainGroup)
-
-      method <<- ""
-      var3 <- gtable(c("Sum", "Mean", "Median"), container = mainGroup)
-      size(var3) <- c(-1, 150)
-      addHandlerSelectionChanged(var3, function(h, ...) {
-        method <<- svalue(var3)
-        updateView()
-      })
-
-      name <<- "newcol"
-
-      prevTbl <- glayout(homogeneous = FALSE, container = mainGroup)
-
-      string1 <- glabel("Original dataset")
-      originview <- gtable(data.frame(GUI$getActiveData(), stringsAsFactors = TRUE))
-      prevTbl[1,1, expand = TRUE] <- string1
-      prevTbl[2,1, expand = TRUE] <- originview
-      size(originview) = c(-1, 250)
-
-      string2 <- glabel("New dataset")
-      newview <<- gtable(data.frame("", stringsAsFactors = TRUE))
-      prevTbl[1,2, expand = TRUE] <- string2
-      prevTbl[2,2, expand = TRUE] <- newview
-      size(newview) <<- c(-1, 250)
-
-      aggregatebtn <- gbutton("Aggregate", container = mainGroup, handler = function(h,...) {
-        .dataset <- GUI$getActiveData()
-        data <- aggregate()
-        attr(data, "name") <- paste(attr(.dataset, "name", exact = TRUE), "aggregated", sep = ".")
-        attr(data, "code") <- gsub(".dataset", attr(.dataset, "name", exact = TRUE), attr(data, "code"))
-        GUI$setDocument(iNZDocument$new(data = data))
-        dispose(GUI$modWin)
-      })
-
-      add(GUI$modWin, mainGroup, expand = TRUE)
-      visible(GUI$modWin) <<- TRUE
-    },
-    aggregate = function() {
-      .dataset = GUI$getActiveData()
-      if (key == "dt" & format != "") {
-        part = switch(format, "Weekly" = "Year Week",
-                      "Monthly" = "Year Month",
-                      "Quarterly" = "Year Quarter",
-                      "Yearly" = "Year")
-        df = iNZightTools::extract_part(.dataset, col, part, format)
-        df = iNZightTools::aggregateData(df, format, method)
-        colname = subset(colnames(df), grepl("[:.:]missing$",colnames(df)))
-        for (i in 1:length(colname)) {
-          if (all(df[[colname[i]]] == 0)) {
-            df[, colname[i]] <- NULL
-          }
-        }
-        return(df)
-      } else if (key != "" & key != "dt" & format != "") {
-        newdata <- iNZightTools::separate(.dataset, col, "left", "right", key, "Column")
-        df = iNZightTools::aggregatedt(newdata, format, key, format)
-        df = iNZightTools::aggregateData(df, format, method)
-        colname = subset(colnames(df), grepl("[:.:]missing$",colnames(df)))
-        for (i in 1:length(colname)) {
-          if (all(df[[colname[i]]] == 0)) {
-            df[, colname[i]] <- NULL
-          }
-        }
-        return(df)
-      }
-    },
-    updateView = function() {
-      df = aggregate()
-      if (length(df) != 0) {
-        newview$set_items(df)
-      }
-    }
-  ))
+    )
+)
 
 iNZDataReportWin <- setRefClass(
     "iNZDataReportWin",
@@ -2376,7 +2541,7 @@ iNZDataReportWin <- setRefClass(
             g$set_borderwidth(5)
 
             tbl <- glayout(container = g)
-            ii <- 1
+            ii <- 1L
 
             lbl <- glabel("Report format :")
             font(lbl) <- list(weight = "bold")
@@ -2398,9 +2563,9 @@ iNZDataReportWin <- setRefClass(
                     file_path <<- tempfile(fileext = ".Rmd")
                 }
             )
-            tbl[ii, 1, anchor = c(1, 0), fill = TRUE] <- lbl
+            tbl[ii, 1L, anchor = c(1, 0), fill = TRUE] <- lbl
             tbl[ii, 2:4, expand = TRUE] <- output_format
-            ii <- ii + 1
+            ii <- ii + 1L
 
             # invoke change to set file_ext, file_path (DRY)
             output_format$invoke_change_handler()
