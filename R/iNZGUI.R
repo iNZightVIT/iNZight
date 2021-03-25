@@ -645,7 +645,7 @@ iNZGUI <- setRefClass(
                 i <- 2L
                 newname <- attr(document$getData(), "name", exact = TRUE)
                 while (newname %in% names) {
-                    newname <- sprintf("%s_%s", newname, iL)
+                    newname <- sprintf("%s_%s", newname, i)
                     i <- i + 1L
                 }
                 attr(document$dataModel$dataSet, "name") <- newname

@@ -95,7 +95,7 @@ iNZImportWin <- setRefClass(
             )
             fileGp$set_borderwidth(10)
             fileTbl <<- glayout(container = fileGp)
-            ii <- 1
+            ii <- 1L
 
             lbl <- glabel("File Name :")
             font(lbl) <- list(weight = "bold")
@@ -112,16 +112,16 @@ iNZImportWin <- setRefClass(
                     setfile(h, ...)
                 }
             )
-            fileTbl[ii, 1, anchor = c(1, 0)] <<- lbl
+            fileTbl[ii, 1L, anchor = c(1, 0)] <<- lbl
             font(lbl) <- list(weight = "bold")
             fileTbl[ii, 2:4, expand = TRUE, anchor = c(1, 0)] <<- filename
-            fileTbl[ii, 5] <<- browseBtn
-            ii <- ii + 1
+            fileTbl[ii, 5L] <<- browseBtn
+            ii <- ii + 1L
 
             ## --- URL?
             loadURL <<- gcheckbox("Import from URL", checked = FALSE)
             fileTbl[ii, 2:5, expand = TRUE, anchor = c(-1, 0)] <<- loadURL
-            ii <- ii + 1
+            ii <- ii + 1L
 
             ## --- Extension
             lbl <- glabel("File Type :")
@@ -129,7 +129,7 @@ iNZImportWin <- setRefClass(
             filetype <<- gcombobox(c(names(filetypes)[-1]), selected = 0)
             fileTbl[ii, 1, anchor = c(1, 0)] <<- lbl
             fileTbl[ii, 2:5, expand = TRUE] <<- filetype
-            ii <- ii + 1
+            ii <- ii + 1L
 
 
             ## Change handlers:
@@ -145,14 +145,14 @@ iNZImportWin <- setRefClass(
             addHandlerChanged(loadURL,
                 function(h, ...) {
                     ## Switch to loading a URL
-                    fileTbl[1,1]$set_value(
+                    fileTbl[1L, 1L]$set_value(
                         ifelse(svalue(loadURL), "File URL :", "File Name :")
                     )
                     visible(browseBtn) <<- !svalue(loadURL)
                     if (svalue(loadURL)) {
-                        delete(fileTbl, fileTbl[1, 2])
+                        delete(fileTbl, fileTbl[1L, 2L])
                         fileurl <<- gedit(text = "https://", width = 40)
-                        fileTbl[1, 2:5, expand = TRUE] <<- fileurl
+                        fileTbl[1L, 2:5, expand = TRUE] <<- fileurl
                         addHandlerChanged(fileurl,
                             function(h, ...) {
                                 fname <<- svalue(fileurl)
@@ -161,9 +161,9 @@ iNZImportWin <- setRefClass(
                             }
                         )
                     } else {
-                        delete(fileTbl, fileTbl[1, 2])
+                        delete(fileTbl, fileTbl[1L, 2L])
                         filename <<- glabel("")
-                        fileTbl[1, 2:4, expand = TRUE, anchor = c(1, 0)] <<- filename
+                        fileTbl[1L, 2:4, expand = TRUE, anchor = c(1, 0)] <<- filename
                     }
                 }
             )
@@ -646,15 +646,15 @@ iNZImportWin <- setRefClass(
                 rdaLabel <<- glabel("Dataset :")
                 font(rdaLabel) <<- list(weight = "bold")
                 rdaName <<- gcombobox("(none)")
-                fileTbl[4, 1, anchor = c(1, 0)] <<- rdaLabel
-                fileTbl[4, 2:5, expand = TRUE] <<- rdaName
+                fileTbl[4L, 1L, anchor = c(1, 0)] <<- rdaLabel
+                fileTbl[4L, 2:5, expand = TRUE] <<- rdaName
                 addHandlerChanged(rdaName, generatePreview)
             }
         },
         removeDataName = function() {
             if (!is.null(rdaName)) {
-                delete(fileTbl, fileTbl[4,1])
-                delete(fileTbl, fileTbl[4,2])
+                delete(fileTbl, fileTbl[4L, 1L])
+                delete(fileTbl, fileTbl[4L, 2L])
                 rdaName <<- NULL
                 rdaLabel <<- NULL
             }
@@ -667,7 +667,7 @@ iNZImportWin <- setRefClass(
 
             ## build it up!
             tbl <- glayout(container = advGp)
-            ii <- 1
+            ii <- 1L
 
             switch(fext,
                 "csv" =,
@@ -690,9 +690,9 @@ iNZImportWin <- setRefClass(
                             generatePreview(h, ...)
                         }
                     )
-                    tbl[ii, 1, anchor = c(1, 0), expand = TRUE] <- lbl
+                    tbl[ii, 1L, anchor = c(1, 0), expand = TRUE] <- lbl
                     tbl[ii, 2:3, expand = TRUE] <- delimOpt
-                    ii <- ii + 1
+                    ii <- ii + 1L
 
                     ## --- DECIMAL MARK
                     lbl <- glabel("Decimal Mark :")
@@ -710,9 +710,9 @@ iNZImportWin <- setRefClass(
                                 generatePreview(h, ...)
                         }
                     )
-                    tbl[ii, 1, anchor = c(1, 0), expand = TRUE] <- lbl
+                    tbl[ii, 1L, anchor = c(1, 0), expand = TRUE] <- lbl
                     tbl[ii, 2:3, expand = TRUE] <- decMarkOpt
-                    ii <- ii + 1
+                    ii <- ii + 1L
 
                     ## --- THOUSANDS SEPARATOR
                     lbl <- glabel("Thousands Separator :")
@@ -730,9 +730,9 @@ iNZImportWin <- setRefClass(
                                 generatePreview(h, ...)
                         }
                     )
-                    tbl[ii, 1, anchor = c(1, 0), expand = TRUE] <- lbl
+                    tbl[ii, 1L anchor = c(1, 0), expand = TRUE] <- lbl
                     tbl[ii, 2:3, expand = TRUE] <- bigMarkOpt
-                    ii <- ii + 1
+                    ii <- ii + 1L
 
                     ## --- FILE ENCODING
                     lbl <- glabel("File Encoding :")
@@ -744,12 +744,12 @@ iNZImportWin <- setRefClass(
                             generatePreview(h, ...)
                         }
                     )
-                    tbl[ii, 1, anchor = c(1, 0), expand = TRUE] <- lbl
+                    tbl[ii, 1L, anchor = c(1, 0), expand = TRUE] <- lbl
                     tbl[ii, 2:3, expand = TRUE] <- encOpt
-                    ii <- ii + 1
+                    ii <- ii + 1L
 
                     ## ----------------- RIGHT HAND SIDE
-                    ii <- 1
+                    ii <- 1L
 
                     ## --- DATE FORMAT
                     ## this should be a drop down of some common formats (2016-01-16, 16 Jan 2016, 16/01/16, 01/16/16, ...)
@@ -761,7 +761,7 @@ iNZImportWin <- setRefClass(
                 ## default case
                 {
                     lbl <- glabel("No options available for this file type.")
-                    tbl[ii, 1, anchor = c(-1, 0), expand = TRUE] <- lbl
+                    tbl[ii, 1L, anchor = c(-1, 0), expand = TRUE] <- lbl
                 }
             ) # end switch(fext)
         },
