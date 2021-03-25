@@ -730,7 +730,7 @@ iNZImportWin <- setRefClass(
                                 generatePreview(h, ...)
                         }
                     )
-                    tbl[ii, 1L anchor = c(1, 0), expand = TRUE] <- lbl
+                    tbl[ii, 1L, anchor = c(1, 0), expand = TRUE] <- lbl
                     tbl[ii, 2:3, expand = TRUE] <- bigMarkOpt
                     ii <- ii + 1L
 
