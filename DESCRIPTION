@@ -34,7 +34,8 @@ Imports:
     stringr,
     survey,
     colorspace,
-    magrittr
+    magrittr,
+    png
 Suggests:
     RODBC,
     iNZightMR (>= 2.2.4),

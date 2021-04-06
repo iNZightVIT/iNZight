@@ -633,9 +633,10 @@ iNZAboutWidget <- setRefClass(
         initialize = function(gui) {
             initFields(GUI = gui)
 
+            window_width <- 500
             w <- gwindow("About iNZight",
-                width = 500,
-                height = 400,
+                width = window_width,
+                height = 600,
                 visible = TRUE,
                 parent = GUI$win
             )
@@ -677,10 +678,80 @@ iNZAboutWidget <- setRefClass(
 
             addSpace(g, 10)
 
+            ## sponsors
+            sponsorlbl <- glabel("SPONSORS",
+                container = g)
+            font(sponsorlbl) <- list(
+                weight = "bold",
+                family = "sans",
+                size = 10
+            )
+
+            g_sponsors <- gvbox(container = g)
+            g_sponsors$set_borderwidth(5)
+
+            logo_path <- function(logo)
+                system.file(
+                    file.path("sponsors", sprintf("%s_logo50.png", logo)),
+                    package = "iNZight"
+                )
+            sponsors <- list(
+                uoa = "https://auckland.ac.nz",
+                statsnz = "https://stats.govt.nz",
+                minedu = "https://minedu.govt.nz",
+                abs = "https://abs.gov.au",
+                terourou = "https://terourou.org",
+                inzan = NULL
+            )
+
+            max_width <- window_width - 20
+            row_width <- 0
+            g_row <- ggroup(container = g_sponsors)
+            addSpring(g_row)
+
+            for (sponsor in names(sponsors)) {
+                url <- sponsors[[sponsor]]
+                logo <- logo_path(sponsor)
+                if (!file.exists(logo)) next
+
+                img <- png::readPNG(logo)
+
+                if (row_width > 0 && row_width + dim(img)[2] > max_width) {
+                    # create a new row
+                    addSpring(g_row)
+                    addSpace(g, 5)
+                    g_row <- ggroup(container = g_sponsors)
+                    addSpring(g_row)
+                    row_width <- 0
+                }
+
+                # add image
+                gimagebutton(logo,
+                    container = g_row,
+                    handler = function(h, ...)
+                        if (!is.null(url)) browseURL(url)
+                )
+                addSpring(g_row)
+
+                # add space
+                row_width <- row_width + dim(img)[2] + 10
+            }
+
+            addSpace(g, 10)
+
+            licenselbl <- glabel("LICENSE",
+                container = g)
+            font(licenselbl) <- list(
+                weight = "bold",
+                family = "sans",
+                size = 10
+            )
+            addSpace(g, 5)
+
             gpltxt <- gtext(expand = TRUE, cont = g, wrap = TRUE)
             l1 <- insert(gpltxt,
                 paste(
-                    "\n\nThis program is free software; you can redistribute it and/or",
+                    "\nThis program is free software; you can redistribute it and/or",
                     "modify it under the terms of the GNU General Public License",
                     "as published by the Free Software Foundation; either version 2",
                     "of the License, or (at your option) any later version.\n"
