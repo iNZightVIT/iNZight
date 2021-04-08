@@ -89,7 +89,7 @@ iNZGUI <- setRefClass(
 
             iNZDocuments <<- list(iNZDocument$new(data = data))
 
-            if (!is.null(dispose_fun))
+            if (!is.null(dispose_fun) && is.function(dispose_fun))
                 disposer <<- function() dispose_fun(...)
 
             win.title <- paste(
