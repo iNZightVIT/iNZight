@@ -60,7 +60,7 @@ iNZGUI <- setRefClass(
             ## keep a track of R code history
             rhistory = "ANY",
             plot_history = "ANY",
-            disposer = "logical",
+            disposer = "ANY",
             addonModuleDir = "character",
             ## This will be used to store the dataset, design, etc..
             ## rather than passing around the full object.
@@ -75,22 +75,23 @@ iNZGUI <- setRefClass(
     ),
     methods = list(
         ## Start the iNZight GUI
-        ##   data: data.frame, starts the gui with data already in it
-        ##   disposerR: logical, if true R session is closed upon
-        ##              closing the gui
         ## This is the main method of iNZight and calls all the other
         ## methods of the GUI class.
         initializeGui = function(
             data = NULL,
-            disposeR = FALSE,
+            dispose_fun = NULL,
             addonDir = NULL,
-            show = TRUE
+            show = TRUE,
+            ...
         ) {
             "Initiates the GUI"
-            initFields(is_initialized = FALSE)
+            initFields(is_initialized = FALSE, disposer = function() {})
 
             iNZDocuments <<- list(iNZDocument$new(data = data))
-            disposer <<- disposeR
+
+            if (!is.null(dispose_fun))
+                disposer <<- function() dispose_fun(...)
+
             win.title <- paste(
                 "iNZight (v",
                 packageDescription("iNZight")$Version,
@@ -210,7 +211,7 @@ iNZGUI <- setRefClass(
                 use.scrollwindow = FALSE
             )
             menugrp <- ggroup(container = gtop)
-            initializeMenu(menugrp, disposeR)
+            initializeMenu(menugrp)
 
             g <- gpanedgroup(container = gtop, expand = TRUE)
 
@@ -282,7 +283,7 @@ iNZGUI <- setRefClass(
             plotSplashScreen()
 
             ## add what is done upon closing the gui
-            closerHandler(disposeR)
+            closerHandler(disposer)
 
             ## and start tracking history
             initializeCodeHistory()
@@ -297,8 +298,8 @@ iNZGUI <- setRefClass(
             invisible(0)
         }, ## end initialization
         ## set up the menu bar widget
-        initializeMenu = function(cont, disposeR) {
-            menuBarWidget <<- iNZMenuBarWidget$new(.self, cont, disposeR)
+        initializeMenu = function(cont) {
+            menuBarWidget <<- iNZMenuBarWidget$new(.self, cont)
 
             addActDocObs(
                 function() {
@@ -412,26 +413,23 @@ iNZGUI <- setRefClass(
         ## if set upon gui startup, close the R sessions when
         ## the gui is closed
         ## - this needs to be changed to call a function passed to `iNZight()`
-        closerHandler = function(disposeR) {
-            addHandlerUnrealize(win, handler = function(h, ...) {
-                confirm <- gconfirm(
-                    title = "Are you sure?",
-                    msg = "Do you wish to quit iNZightVIT?",
-                    icon = "question",
-                    parent = win
-                )
-                if (confirm) {
-                    if (disposeR) {
-                        q(save = "no")
-                    } else {
-                        ##dispose(win)
-                        try(dev.off(), silent = TRUE)
-                        return(FALSE)
-                    }
-                }
+        closerHandler = function(disposer) {
+            addHandlerUnrealize(win,
+                handler = function(h, ...) {
+                    confirm <- gconfirm(
+                        title = "Are you sure?",
+                        msg = "Do you wish to quit iNZightVIT?",
+                        icon = "question",
+                        parent = win
+                    )
+                    if (!confirm) return()
 
-                TRUE
-            })
+                    try(dev.off(), silent = TRUE)
+                    disposer()
+
+                    TRUE
+                }
+            )
         },
         ## plot with the current active plot settings
         updatePlot = function(allow.redraw = TRUE) {
@@ -1355,7 +1353,8 @@ iNZGUI <- setRefClass(
             )
         },
         close = function() {
-            if (disposer) q(save = "no") else dispose(win)
+            dispose(win)
+            disposer()
         },
         reload = function() {
             # first, get middle of iNZight window ..
@@ -1392,7 +1391,7 @@ iNZGUI <- setRefClass(
             state <- .self$getState()
             dispose(.self$win)
             if (popOut) try(grDevices::dev.off(), TRUE)
-            .self$initializeGui(disposeR = .self$disposer, show = FALSE)
+            .self$initializeGui(dispose_fun = .self$disposer, show = FALSE)
             Sys.sleep(0.5)
             while (!is_initialized) {
                 Sys.sleep(0.1)

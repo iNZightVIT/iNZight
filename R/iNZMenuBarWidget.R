@@ -1,17 +1,16 @@
 iNZMenuBarWidget <- setRefClass(
     "iNZMenuBarWidget",
     fields = list(
-        GUI = "ANY", container = "ANY", disposeR = "logical",
+        GUI = "ANY", container = "ANY",
         menubar = "ANY",
         plotmenu = "ANY",
         modules_installed = "logical"
     ),
     methods = list(
-        initialize = function(gui, container, disposeR) {
+        initialize = function(gui, container) {
             initFields(
                 GUI = gui,
-                container = container,
-                disposeR = disposeR
+                container = container
             )
 
             ## this is trickier, because it depends on a bunch of things
