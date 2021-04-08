@@ -1,7 +1,8 @@
-#' An image icon that works as a button.
+#' An image-button
 #'
 #' Creates an image that works as a button, and has mouseover icon effects
 #' and a 'tooltip' that appears in the status bar.
+#'
 #' @title iNZight Image Button
 #' @param stock.id the icon to use
 #' @param filename the image location
@@ -11,6 +12,11 @@
 #' @return a gimage with extra effects
 #' @author Tom Elliott
 #' @export
+#' @examples
+#' w <- gwindow()
+#' g <- ggroup(container = w)
+#' gib <- gimagebutton("close", container = g)
+#' dispose(w)
 gimagebutton <- function(stock.id = NULL, filename, old_cursor = NULL, tooltip = NULL,
                          ...) {
     img <- if (is.null(stock.id)) gimage(filename = filename, ...)

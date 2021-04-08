@@ -21,11 +21,17 @@ gimagebutton(stock.id = NULL, filename, old_cursor = NULL, tooltip = NULL, ...)
 a gimage with extra effects
 }
 \description{
-An image icon that works as a button.
+An image-button
 }
 \details{
 Creates an image that works as a button, and has mouseover icon effects
 and a 'tooltip' that appears in the status bar.
+}
+\examples{
+w <- gwindow()
+g <- ggroup(container = w)
+gib <- gimagebutton("close", container = g)
+dispose(w)
 }
 \author{
 Tom Elliott
