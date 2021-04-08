@@ -21,7 +21,13 @@ Main class that builds the iNZight GUI
 \describe{
 \item{\code{get_data_object(nrow)}}{return dataset or survey design, if it exists}
 
-\item{\code{initializeGui(data = NULL, disposeR = FALSE, addonDir = NULL, show = TRUE)}}{Initiates the GUI}
+\item{\code{initializeGui(
+  data = NULL,
+  dispose_fun = NULL,
+  addonDir = NULL,
+  show = TRUE,
+  ...
+)}}{Initiates the GUI}
 
 \item{\code{new_document(data, suffix)}}{Create a new document based on the existing one (`getActiveDoc()`)}
 
