@@ -410,9 +410,6 @@ iNZGUI <- setRefClass(
         initializePlotToolbar = function(cont) {
             plotToolbar <<- iNZPlotToolbar$new(.self, cont)
         },
-        ## if set upon gui startup, close the R sessions when
-        ## the gui is closed
-        ## - this needs to be changed to call a function passed to `iNZight()`
         closerHandler = function(disposer) {
             addHandlerUnrealize(win,
                 handler = function(h, ...) {
@@ -422,12 +419,11 @@ iNZGUI <- setRefClass(
                         icon = "question",
                         parent = win
                     )
-                    if (!confirm) return()
+                    if (!confirm) return(TRUE)
 
                     try(dev.off(), silent = TRUE)
                     disposer()
-
-                    TRUE
+                    FALSE
                 }
             )
         },
