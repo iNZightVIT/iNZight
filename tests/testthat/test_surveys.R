@@ -1,8 +1,11 @@
 context("Survey data")
 
+skip_on_cran()
+skip_if_offline()
+
 data(api, package = "survey")
-chis <- iNZightTools::smart_read("chis.csv")
-ncsr <- iNZightTools::smart_read("ncsr.csv")
+chis <- iNZightTools::smart_read("https://inzight.nz/testdata/chis.csv")
+ncsr <- iNZightTools::smart_read("https://inzight.nz/testdata/ncsr.csv")
 apijk <- iNZightTools::smart_read("apiclus2-jk1.csv")
 
 test_dir <- getwd()
@@ -129,7 +132,6 @@ test_that("Frequencies retained after filtering", {
 ui$close()
 
 # devtools::load_all()
-# chis <- iNZightTools::smart_read("tests/testthat/chis.csv")
 dchis <- suppressWarnings(svrepdesign(data = chis[,c(1:10, 92:96)],
     repweights = chis[, 12:91],
     weights = chis[, 11],
@@ -515,8 +517,6 @@ ui <- iNZGUI$new()
 ui$initializeGui(ncsr)
 
 test_that("New variables show up in calibration list", {
-    # ncsr <- iNZightTools::smart_read("tests/testthat/ncsr.csv")
-
     swin <- iNZSurveyDesign$new(ui)
     expect_silent(svalue(swin$stratVar) <- "SESTRAT")
     expect_silent(svalue(swin$clus1Var) <- "SECLUSTR")

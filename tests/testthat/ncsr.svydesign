@@ -1,4 +1,4 @@
-data = "ncsr.csv"
+data = "https://inzight.nz/testdata/ncsr.csv"
 strata = "SESTRAT"
 clusters = "SECLUSTR"
 weights = "popweight"
