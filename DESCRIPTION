@@ -40,7 +40,6 @@ Suggests:
     RODBC,
     iNZightMR (>= 2.2.4),
     iNZightModules (>= 2.5),
-    png,
     viridis,
     RColorBrewer,
     FutureLearnData,
