@@ -8,7 +8,8 @@
 An object of class \code{data.frame} with 3577 rows and 55 columns.
 }
 \source{
-Based on free material from GAPMINDER.ORG, CC-BY LICENSE \url{https://www.gapminder.org/data/}
+Based on free material from GAPMINDER.ORG, CC-BY LICENSE
+ \url{https://www.gapminder.org/data/}
 }
 \usage{
 gapminder

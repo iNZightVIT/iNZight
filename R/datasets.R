@@ -16,7 +16,10 @@
 #'   \item{armspan}{their armspan measurement, cm}
 #'   \item{cellcost}{money spent on cellphones}
 #' }
-#' @source \url{http://new.censusatschool.org.nz/}
+#' @source This dataset is provided *exclusively for use within iNZight* by express permission
+#' from Chris Wild, the Director of Census at School New Zealand.
+#'  \url{http://new.censusatschool.org.nz/}
+#' @md
 "census.at.school.500"
 
 
@@ -25,7 +28,8 @@
 #' A dataset containing variables for countries over several years.
 #' You can find out more about the dataset from \url{https://www.gapminder.org/data/}.
 #'
-#' @source Based on free material from GAPMINDER.ORG, CC-BY LICENSE \url{https://www.gapminder.org/data/}
+#' @source Based on free material from GAPMINDER.ORG, CC-BY LICENSE
+#'  \url{https://www.gapminder.org/data/}
 "gapminder"
 
 
@@ -51,5 +55,6 @@
 #'   \item{Marital}{marital status}
 #'   \item{Ethnicity}{six categories}
 #' }
-#' @source Licensed under Creative Commons 4.0 by Stats NZ, \url{https://www.stats.govt.nz/services/customised-data-services/statistics-for-university-staff-and-students/new-zealand-income-survey-super-surf/}
+#' @source Licensed under Creative Commons 4.0 by Stats NZ,
+#'  \url{https://www.stats.govt.nz/services/customised-data-services/statistics-for-university-staff-and-students/new-zealand-income-survey-super-surf/}
 "SURFIncomeSurvey_200"

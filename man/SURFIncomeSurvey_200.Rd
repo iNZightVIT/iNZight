@@ -18,7 +18,8 @@ A data frame with 200 rows and 8 variables:
 }
 }
 \source{
-Licensed under Creative Commons 4.0 by Stats NZ, \url{https://www.stats.govt.nz/services/customised-data-services/statistics-for-university-staff-and-students/new-zealand-income-survey-super-surf/}
+Licensed under Creative Commons 4.0 by Stats NZ,
+ \url{https://www.stats.govt.nz/services/customised-data-services/statistics-for-university-staff-and-students/new-zealand-income-survey-super-surf/}
 }
 \usage{
 SURFIncomeSurvey_200
