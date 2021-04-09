@@ -15,7 +15,7 @@ Authors@R: c(person("Tom", "Elliott", role = c("aut", "cre"),
 Description: An interactive GUI for easy visual exploration of datasets.
 License: GPL-3
 Depends:
-    R (>= 3.3),
+    R (>= 4.0),
     objectProperties,
     RGtk2,
     gWidgets2,

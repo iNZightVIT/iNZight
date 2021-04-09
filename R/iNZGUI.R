@@ -136,83 +136,27 @@ iNZGUI <- setRefClass(
                 else if (Sys.info()["sysname"] == "Darwin") "mac"
                 else "linux"
 
-            ## We must set the correct directory correctly ...
-            ### NOTE: rework all of this to
-            ##  1. assume it's either set up correctly, or else
-            ##  2. just save to the tools::R_user_dir() locations
-            ##
-            switch(
-                OS,
-                "windows" = {
-                    done <- FALSE
-                    if (file.exists(file.path("~", "iNZightVIT"))) {
-                        setwd(file.path("~", "iNZightVIT"))
-                    } else if (file.exists(file.path("~", "Documents", "iNZightVIT"))) {
-                        setwd(file.path("~", "Documents", "iNZightVIT"))
-                    } else if (interactive()) {
-                        ## Create it:
-                        conf <- gconfirm(
-                            paste("Do you want to create an iNZightVIT directory",
-                                  "in your My Documents folder to save data and preferences?"),
-                            title = "Create Folder", icon = "question")
 
-                        if (conf) {
-                            done <- dir.create(file.path("~", "iNZightVIT"))
-                            if (!done)
-                                gmessage("iNZight was unable to create the folder.")
-                        }
-                    }
-                },
-                "mac" = {
-                    done <- FALSE
-                    if (file.exists(file.path("~", "Documents", "iNZightVIT"))) {
-                        setwd(file.path("~", "Documents", "iNZightVIT"))
-                    } else {
-                        ## Create it:
-                        conf <- gconfirm(
-                            paste("Do you want to create an iNZightVIT directory",
-                                  "in your Documents folder to save data and preferences?"),
-                            title = "Create Folder", icon = "question")
-
-                        if (conf) {
-                            if ( dir.create(file.path("~", "Documents", "iNZightVIT")) ) {
-                                try(setwd(Sys.getenv("R_DIR")), TRUE)
-
-                                done <- TRUE
-                            }
-
-                            if (!done)
-                                gmessage("iNZight was unable to create the folder.")
-                        }
-
-                        if (!done)
-                            try(setwd(Sys.getenv("R_DIR")), TRUE)
-                    }
-                    try({
-                        dir.create(file.path("~", "Documents", "iNZightVIT", "Saved Plots"))
-                        dir.create(file.path("~", "Documents", "iNZightVIT", "Saved Data"))
-                    }, TRUE)
-
-                },
-                "linux" = {
-                    ## no need to do anything (yet..)
-                }
-            )
-
-            if (!is.null(addonDir) && dir.exists(addonDir)) {
-                addonModuleDir <<- addonDir
-            } else {
-                addonModuleDir <<- switch(OS,
-                    "windows" =
-                        file.path("~", "iNZightVIT", "modules"),
-                    "mac" = ,
-                    "linux" =
-                        file.path("~", "Documents", "iNZightVIT", "modules")
-                )
-            }
+            # if (addonModuleDir == "") {
+            #     addonModuleDir <<- switch(OS,
+            #         "windows" =
+            #             file.path("~", "iNZightVIT", "modules"),
+            #         "mac" = ,
+            #         "linux" =
+            #             file.path("~", "Documents", "iNZightVIT", "modules")
+            #     )
+            # }
 
             ## Grab settings file (or try to!)
             getPreferences()
+
+            if (!is.null(addonDir) && dir.exists(addonDir)) {
+                addonModuleDir <<- addonDir
+            } else if (!is.null(preferences$module_dir)) {
+                addonModuleDir <<- preferences$module_dir
+            } else {
+                addonModuleDir <<- Sys.getenv("INZIGHT_MODULES_DIR")
+            }
 
             ## Check for updates ... need to use try incase it fails (no connection etc)
             if (preferences$check.updates) {
@@ -1014,7 +958,8 @@ iNZGUI <- setRefClass(
                 font.size = 10,
                 dev.features = FALSE,
                 show.code = FALSE,
-                language = "en"
+                language = "en",
+                module_dir = NULL
             )
         },
         checkPrefs = function(prefs) {
@@ -1026,7 +971,8 @@ iNZGUI <- setRefClass(
                 "font.size",
                 "dev.features",
                 "show.code",
-                "language"
+                "language",
+                "module_dir"
             )
 
             ## Only keep allowed preferences --- anything else is discarded
@@ -1069,98 +1015,20 @@ iNZGUI <- setRefClass(
                 if (is.null(prefs$language) || !is.character(prefs$language)) defs$language
                 else prefs$language[1]
 
+            prefs$module_dir <-
+                if (prefs$module_dir == "" || !dir.exists(prefs$module_dir)) defs$module_dir
+                else prefs$module_dir[1]
+
             prefs
 
         },
         getPreferences = function() {
             "Gets the user's preferences from a file"
-            ## --- GET THE PREFERENCES
-            ## Windows: the working directory will be set as $INSTDIR (= C:\Program Files (x86) by default)
-            ##      NOTE: "~" -> C:\Users\<user>\Documents on windows!!!!!
-            ##     1. ~\iNZightVIT\.inzight -> this is where it goes for Most users
-            ##     2. ~\.inzight -> fallback for R users
-            ##
-            ## Mac: the working directory will be set as /Applications/iNZightVIT/
-            ##     1. ~/Documents/iNZightVIT/.inzight -> again, default
-            ##     2. ~/.inzight -> fallback for R users
-            ##
-            ## Linux: user installs manually, at least for now, working directory will be wherever they run R from ...
-            ##     1. ~/.inzight
-            ##     2. $(pwd)/.inzight -> overrides (1) if present
-
-            ## If Windows or Mac, set the working directory to Documents/iNZightVIT if possible ...
-
-            ## Will need to check for old file, and move it into new format (with user permission, of course!)
-
-            old.prefs.location <- switch(
-                OS,
-                "windows" = {
-                    if (file.exists(file.path("~", "iNZightVIT"))) {
-                        path <- file.path("~", "iNZightVIT", ".inzight")
-                        # on new windows installer, nest prefs file one deeper
-                        if (dir.exists(path))
-                            path <- file.path(path, ".inzight")
-                    } else {
-                        path <- file.path("~", ".inzight")
-                    }
-
-                    path
-                },
-                "mac" = {
-                    if (file.exists(file.path("~", "Documents", "iNZightVIT"))) {
-                        path <- file.path("~", "Documents", "iNZightVIT", ".inzight")
-                    } else {
-                        path <- file.path("~", ".inzight")
-                    }
-
-                    path
-                },
-                "linux" = {
-                    path <- file.path("~", ".inzight")
-
-                    if (file.exists(".inzight"))
-                        path <- file.path(".inzight")
-
-                    path
-                }
+            prefs.location <<- file.path(
+                tools::R_user_dir("iNZight", "config"),
+                "preferences.R"
             )
-            prefs.location <<-
-                if (getRversion() >= 4)
-                    file.path(tools::R_user_dir("iNZight", "config"), "preferences.R")
-                else old.prefs.location
 
-            if (getRversion() >= 4 && file.exists(old.prefs.location)) {
-                move_prefs <- gconfirm(
-                    sprintf(
-                        paste(sep = "\n",
-                            "iNZight is now saving your preferences in a new location.",
-                            "We found an old preferences file in",
-                            "    %s",
-                            "Would you like to move it to the new location?"
-                        ),
-                        dirname(old.prefs.location)
-                    ),
-                    title = "Recover old preferences file?",
-                    icon = "question"
-                )
-                if (move_prefs) {
-                    if (!dir.exists(tools::R_user_dir("iNZight", "config"))) {
-                        make_dir <- gconfirm(
-                            sprintf(
-                                paste(sep = "\n",
-                                    "iNZight wants to create the following directory/ies. Is that OK?",
-                                    "", "+ %s"
-                                ),
-                                tools::R_user_dir("iNZight", "config")
-                            )
-                        )
-                        if (make_dir) dir.create(tools::R_user_dir("iNZight", "config"), recursive = TRUE)
-                    }
-                    if (dir.exists(tools::R_user_dir("iNZight", "config")))
-                        file.rename(old.prefs.location, prefs.location)
-                    else gmessage("iNZight was unable to move save preferences in the new location.")
-                }
-            }
             tt <- try(
                 {
                     preferences <<-
@@ -1178,12 +1046,13 @@ iNZGUI <- setRefClass(
         },
         savePreferences = function() {
             "Saves the users preferences in a file"
-            if (getRversion() >= 4 && !dir.exists(dirname(prefs.location))) {
+            if (!dir.exists(dirname(prefs.location))) {
                 if (!interactive()) return()
+                # ask user to create config directory to save GUI preferences:
                 make_dir <- gconfirm(
                     sprintf(
                         paste(sep = "\n",
-                            "iNZight wants to create the following directory/ies. Is that OK?",
+                            "iNZight needs to create the following directory/ies. Is that OK?",
                             "", "+ %s"
                         ),
                         tools::R_user_dir(dirname(prefs.location))
@@ -1192,6 +1061,7 @@ iNZGUI <- setRefClass(
                 if (make_dir)
                     dir.create(dirname(prefs.location), recursive = TRUE)
             }
+
             ## attempt to save the preferences in the expected location:
             tt <- try(dput(preferences, prefs.location), silent = TRUE)
             if (inherits(tt, "try-error")) {
