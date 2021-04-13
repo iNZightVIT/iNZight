@@ -1,6 +1,6 @@
 context("Save and load application state")
 
-# skip_on_ci()
+skip_on_cran()
 
 tmp <- tempfile(fileext = ".inzsave")
 on.exit(unlink(tmp))

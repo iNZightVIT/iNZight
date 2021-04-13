@@ -1,5 +1,7 @@
 context("Variable manipulation menu")
 
+skip_on_cran()
+
 # devtools::load_all("../iNZightTools")
 # devtools::load_all(); try(ui$close(), TRUE)
 ui <- iNZGUI$new()
