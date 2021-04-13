@@ -164,7 +164,7 @@ iNZPlotWidget <- setRefClass(
             glabel(
                 paste(
                     "Developmental - only working for base plots.",
-                    "\nDoesn't check for existing file."
+                    "\nWill overwrite any existing file."
                 ),
                 container = g
             )
@@ -290,15 +290,15 @@ iNZPlotWidget <- setRefClass(
                     } else {
                         switch(svalue(fileType),
                             "PDF (.pdf)" = {
-                                dim <- dev.size("in")
-                                pdf(file = f,
+                                dim <- grDevices::dev.size("in")
+                                grDevices::pdf(file = f,
                                     width = dim[1],
                                     height = dim[2],
                                     useDingbats = FALSE,
                                     onefile = FALSE)
                             },
                             {
-                                dim <- dev.size("px")
+                                dim <- grDevices::dev.size("px")
                                 filetypes[[svalue(fileType)]](
                                     file = f,
                                     width = dim[1],
@@ -307,7 +307,7 @@ iNZPlotWidget <- setRefClass(
                             }
                         )
                         fun()
-                        dev.off()
+                        grDevices::dev.off()
                     }
 
                     dispose(w)
