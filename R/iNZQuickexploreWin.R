@@ -12,13 +12,15 @@ iNZQuickexploreWin <- setRefClass(
     methods = list(
         initialize = function(gui=NULL) {
             initFields(GUI = gui)
-            if (!is.null(GUI)) {
-                GUI$modWin <<- gwindow(visible = FALSE,
-                                   parent = GUI$win)
-                size(GUI$modWin) <<- c(700, 400)
-            }
-        })
+            if (is.null(GUI)) return()
+            GUI$modWin <<- gwindow(
+                visible = FALSE,
+                parent = GUI$win
+            )
+            size(GUI$modWin) <<- c(700, 400)
+        }
     )
+)
 
 iNZExploreMissing <- setRefClass(
     "iNZExploreMissing",
@@ -29,18 +31,26 @@ iNZExploreMissing <- setRefClass(
             svalue(GUI$modWin) <<- "Explore Missing Values"
             oldWd <- options(width = 1000)  # so it doesn't wrap
             dd <- GUI$getActiveData()
-            g <- gtext(text = paste(iNZightMR::calcmissing(dd,
-                           print = FALSE,
-                           final = FALSE),
-                           collapse = "\n"),
-                       expand = TRUE, cont = GUI$modWin, wrap = FALSE,
-                       font.attr = list(family = "monospace"))
+            g <- gtext(
+                text = paste(
+                    iNZightMR::calcmissing(dd,
+                        print = FALSE,
+                        final = FALSE
+                    ),
+                    collapse = "\n"
+                ),
+                expand = TRUE,
+                cont = GUI$modWin,
+                wrap = FALSE,
+                font.attr = list(family = "monospace")
+            )
             visible(GUI$modWin) <<- TRUE
             dev.new()
             iNZightMR::plotcombn(dd)
             options(width = oldWd$width)
-        })
+        }
     )
+)
 
 iNZallSummaries <- setRefClass(
     "iNZallSummaries",
@@ -50,13 +60,18 @@ iNZallSummaries <- setRefClass(
             callSuper(gui)
             svalue(GUI$modWin) <<- "Explore all 1-way Summaries"
             oldWd <- options(width = 1000)  # so it doesn't wrap
-            g <- gtext(text = iNZightPlots::exploreAllSummaries(GUI$getActiveData()),
-                       expand = TRUE, cont = GUI$modWin, wrap = FALSE,
-                       font.attr = list(family = "monospace"))
+            g <- gtext(
+                text = iNZightPlots::exploreAllSummaries(GUI$getActiveData()),
+                expand = TRUE,
+                cont = GUI$modWin,
+                wrap = FALSE,
+                font.attr = list(family = "monospace")
+            )
             visible(GUI$modWin) <<- TRUE
             options(width = oldWd$width)
-        })
+        }
     )
+)
 
 iNZallPlots <- setRefClass(
     "iNZallPlots",
@@ -69,8 +84,9 @@ iNZallPlots <- setRefClass(
             e <- list(obj = ign)
             e$win <- gui$win
             iNZightModules::allUniPlots(e)
-        })
+        }
     )
+)
 
 iNZall2Plots <- setRefClass(
     "iNZall2Plots",
@@ -83,8 +99,9 @@ iNZall2Plots <- setRefClass(
             e <- list(obj = ign)
             e$win <- gui$win
             iNZightModules::allBivarPlots(e)
-        })
+        }
     )
+)
 
 iNZscatterMatrix <- setRefClass(
     "iNZscatterMatrix",
@@ -96,5 +113,6 @@ iNZscatterMatrix <- setRefClass(
             e <- list(obj = ign)
             e$win <- gui$win
             iNZightModules::scatterPlotMatrix(e)
-        })
+        }
     )
+)

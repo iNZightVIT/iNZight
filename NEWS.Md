@@ -11,6 +11,7 @@
 * fix small bug in code writing where colon (:) remained in list of packages for installation (#352, @tmelliott)
 * add close_module method so modules can close themselves and iNZight's main GUI will be restored correctly
 * create new 'Form Class Intervals' window connecting to `iNZightTools::form_class_intervals()` function; includes code and a much smoother intervace, with preview of resulting intervals
+* the `disposeR` argument in `iNZight()` has been replaced with `dispose_fun`, allowing users to pass a function to be called when iNZight closes (rather then only allowing `q()`)
 
 ## iNZight 4.0.3
 

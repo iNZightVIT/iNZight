@@ -1,5 +1,7 @@
 context("Data manipulation and information")
 
+skip_on_cran()
+
 # try(ui$close(), TRUE); devtools::load_all()
 ui <- iNZGUI$new()
 ui$initializeGui(census.at.school.500)

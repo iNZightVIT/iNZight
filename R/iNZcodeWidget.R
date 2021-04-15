@@ -15,8 +15,7 @@ iNZcodeWidget <- setRefClass(
         },
         add = function(x, keep = TRUE, tidy = FALSE) {
             x <- gsub("^SEP$", sep(), x)
-            #if (tidy && requireNamespace("formatR", quietly = TRUE))
-            #    x <- capture.output(formatR::tidy_source(text = x, width.cutoff = 60))
+
             if (!keep.last) history <<- history[-length(history)]
             history <<- c(history, list(c("", x)))
             keep.last <<- keep
@@ -26,28 +25,29 @@ iNZcodeWidget <- setRefClass(
                 m <- stringr::str_match(xpkg, "([a-zA-Z][a-zA-Z0-9]+):{2,3}")
             }
             if (any(grepl("library\\([a-zA-Z0-9]+\\)", x))) {
-                sapply(x[grepl("library\\([a-zA-Z0-9]+\\)", x)], function(y) {
-                    m <- regexpr("library\\([a-zA-Z0-9]+\\)", y)
-                    pkg <- gsub(".*library\\(|\\).*", "", substr(y, m, m + attr(m, "match.length")))
-                    if (!pkg %in% packages) packages <<- c(packages, pkg)
-                })
+                sapply(x[grepl("library\\([a-zA-Z0-9]+\\)", x)],
+                    function(y) {
+                        m <- regexpr("library\\([a-zA-Z0-9]+\\)", y)
+                        pkg <- gsub(".*library\\(|\\).*", "",
+                            substr(y, m, m + attr(m, "match.length")))
+                        if (!pkg %in% packages) packages <<- c(packages, pkg)
+                    }
+                )
             }
             invisible(NULL)
         },
         get = function() {
             code <- do.call(c,
-                lapply(history, function(x) {
-                    # return(x)
-                    # y <- try({
+                lapply(history,
+                    function(x) {
                         y <- iNZightTools::tidy_all_code(
                             paste(x, collapse = "\n"),
                             width = 80,
                             indent = 4
                         )
                         c(y, "")
-                    # }, silent = TRUE)
-                    # if (inherits(y, "try-error")) x else c(y, "")
-                })
+                    }
+                )
             )
             return(c(header(), code))
         },
@@ -55,64 +55,71 @@ iNZcodeWidget <- setRefClass(
             if (disabled) return()
             ## look at the data - has it got code? update the history with the code!
             code <- GUI$getActiveDoc()$getCode()
-            if (!is.null(code)) {
-                if (length(code) == 1 && code == "") return()
-                if (is.null(GUI$getActiveDoc()$getModel()$getDesign()))
-                    dname <- attr(GUI$getActiveData(), "name", exact = TRUE)
-                else
-                    dname <- GUI$getActiveDoc()$getModel()$dataDesignName
-                if (is.null(dname) || dname == "")
-                  dname <- sprintf("data%s", ifelse(GUI$activeDoc == 1, "", GUI$activeDoc))
-                dname <- iNZightTools:::create_varname(dname)
-                if (!any(grepl(".dataset", code))) {
-                  code <- c(sprintf("%s <- ", dname), code)
-                  add(code, keep = TRUE, tidy = TRUE)
-                } else {
-                  code <- gsub("\ +", " ", # one or more spaces with just one space!
-                    paste(gsub(".dataset", dname, code, fixed = TRUE), collapse = ""))
-                  code <- gsub(" %>% ", " %>% \n    ", code)
-                  ## replace data %>% foo() with data %<>% foo()
-                  ## before the first one, add a comment explaining what %<>% does
-                  asgnpipe <- paste(dname, "%<>% ")
-                  # if (!any(sapply(history, function(x) any(grepl('%<>%', x)))))
-                  #   asgnpipe <- paste(collapse = "\n",
-                  #     c("## The `%<>%` operator pipes and assigns, and is the equivalent of",
-                  #       "## data <- data %>% function(...), which is the equivalent of",
-                  #       "## data <- function(data, ...)", "", asgnpipe))
-                  code <- gsub(paste0(dname, " %>% \n    "), asgnpipe, code)
-                  add(code, keep = TRUE)
-                }
-            } else {
+            if (is.null(code)) {
                 add("## NOTE:  missing code")
+                return()
+            }
+
+            if (length(code) == 1 && code == "") return()
+            if (is.null(GUI$getActiveDoc()$getModel()$getDesign()))
+                dname <- attr(GUI$getActiveData(), "name", exact = TRUE)
+            else
+                dname <- GUI$getActiveDoc()$getModel()$dataDesignName
+            if (is.null(dname) || dname == "")
+                dname <- sprintf("data%s", ifelse(GUI$activeDoc == 1, "", GUI$activeDoc))
+            dname <- iNZightTools:::create_varname(dname)
+
+            if (!any(grepl(".dataset", code))) {
+                code <- c(sprintf("%s <- ", dname), code)
+                add(code, keep = TRUE, tidy = TRUE)
+            } else {
+                code <- gsub("\ +", " ", # one or more spaces with just one space!
+                paste(gsub(".dataset", dname, code, fixed = TRUE), collapse = ""))
+                code <- gsub(" %>% ", " %>% \n    ", code)
+                ## replace data %>% foo() with data %<>% foo()
+                ## before the first one, add a comment explaining what %<>% does
+                asgnpipe <- paste(dname, "%<>% ")
+                # if (!any(sapply(history, function(x) any(grepl('%<>%', x)))))
+                #   asgnpipe <- paste(collapse = "\n",
+                #     c("## The `%<>%` operator pipes and assigns, and is the equivalent of",
+                #       "## data <- data %>% function(...), which is the equivalent of",
+                #       "## data <- function(data, ...)", "", asgnpipe))
+                code <- gsub(paste0(dname, " %>% \n    "), asgnpipe, code)
+                add(code, keep = TRUE)
             }
         },
         header = function() {
-            c("# iNZight Code History",
-              "",
-              sprintf("## This script was automatically generated by iNZight v%s", packageVersion("iNZight")),
-              "",
-              "## BETA WARNING: we're still working on making this as accurate",
-              "##               as possible, so please ... ",
-              "##  - expect 'gaps' in the generated code (i.e., missing actions), and",
-              "##  - LET US KNOW if you think something's missing",
-              "##    (if you can give a minimal step-by-step to reproduce the problem, ",
-              "##     that would be incredibly useful!)",
-              "##    email: inzight_support@stat.auckland.ac.nz",
-              "",
-              sep(),
-              "",
-              "## This script assumes you have various iNZight packages installed.",
-              "## Uncomment the following lines if you don't:",
-              "",
-              sprintf("# install.packages(c('%s'), ", paste(packages, collapse = "',\n#                    '")),
-              "#     repos = c('https://r.docker.stat.auckland.ac.nz',",
-              "#               'https://cran.rstudio.com'))",
-              "",
-              sep(),
-              "",
-              "library(magrittr)  # enables the pipe (%>%) operator",
-              "library(iNZightPlots)",
-              "")
+            c(
+                "# iNZight Code History",
+                "",
+                sprintf("## This script was automatically generated by iNZight v%s", packageVersion("iNZight")),
+                "",
+                #   "## BETA WARNING: we're still working on making this as accurate",
+                #   "##               as possible, so please ... ",
+                #   "##  - expect 'gaps' in the generated code (i.e., missing actions), and",
+                #   "##  - LET US KNOW if you think something's missing",
+                #   "##    (if you can give a minimal step-by-step to reproduce the problem, ",
+                #   "##     that would be incredibly useful!)",
+                #   "##    email: inzight_support@stat.auckland.ac.nz",
+                #   "",
+                sep(),
+                "",
+                "## This script assumes you have the following packages installed.",
+                "## Uncomment the following lines if you don't:",
+                "",
+                sprintf(
+                    "# install.packages(c('%s'), ",
+                    paste(packages, collapse = "',\n#                    '")
+                ),
+                "#     repos = c('https://r.docker.stat.auckland.ac.nz',",
+                "#               'https://cran.rstudio.com'))",
+                "",
+                sep(),
+                "",
+                "library(magrittr)  # enables the pipe (%>%) operator",
+                "library(iNZightPlots)",
+                ""
+            )
         },
         sep = function(width = 80) {
             paste("##", paste(rep("-", width - 6), collapse = ""), "##")
