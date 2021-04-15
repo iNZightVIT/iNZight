@@ -15,11 +15,11 @@ Authors@R: c(person("Tom", "Elliott", role = c("aut", "cre"),
 Description: An interactive GUI for easy visual exploration of datasets.
 License: GPL-3
 Depends:
+    R (>= 4.0),
+    RGtk2,
     cairoDevice,
     gWidgets2,
-    objectProperties,
-    R (>= 4.0),
-    RGtk2
+    objectProperties   
 Imports:
     colorspace,
     gdata,
