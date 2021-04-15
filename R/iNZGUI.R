@@ -1055,7 +1055,7 @@ iNZGUI <- setRefClass(
                             "iNZight needs to create the following directory/ies. Is that OK?",
                             "", "+ %s"
                         ),
-                        tools::R_user_dir(dirname(prefs.location))
+                        dirname(prefs.location)
                     )
                 )
                 if (make_dir)
