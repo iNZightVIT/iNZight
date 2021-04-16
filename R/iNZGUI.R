@@ -1016,7 +1016,7 @@ iNZGUI <- setRefClass(
                 else prefs$language[1]
 
             prefs$module_dir <-
-                if (prefs$module_dir == "" || !dir.exists(prefs$module_dir)) defs$module_dir
+                if (is.null(prefs$module_dir) || prefs$module_dir == "" || !dir.exists(prefs$module_dir)) defs$module_dir
                 else prefs$module_dir[1]
 
             prefs
@@ -1028,21 +1028,14 @@ iNZGUI <- setRefClass(
                 tools::R_user_dir("iNZight", "config"),
                 "preferences.R"
             )
+            preferences <<- defaultPrefs()
+            
+            if (file.exists(prefs.location)) {
+                prefs <- try(checkPrefs(dget(prefs.location)), silent = TRUE)
 
-            tt <- try(
-                {
-                    preferences <<-
-                        if (file.exists(prefs.location)) {
-                            checkPrefs(dget(prefs.location))
-                        } else {
-                            defaultPrefs()
-                        }
-                },
-                TRUE
-            )
-
-            if (inherits(tt, "try-error"))
-                preferences <<- defaultPrefs()
+                if (!inherits(prefs, "try-error"))
+                    preferences <<- prefs
+            }
         },
         savePreferences = function() {
             "Saves the users preferences in a file"
