@@ -1,17 +1,16 @@
 iNZMenuBarWidget <- setRefClass(
     "iNZMenuBarWidget",
     fields = list(
-        GUI = "ANY", container = "ANY", disposeR = "logical",
+        GUI = "ANY", container = "ANY",
         menubar = "ANY",
         plotmenu = "ANY",
         modules_installed = "logical"
     ),
     methods = list(
-        initialize = function(gui, container, disposeR) {
+        initialize = function(gui, container) {
             initFields(
                 GUI = gui,
-                container = container,
-                disposeR = disposeR
+                container = container
             )
 
             ## this is trickier, because it depends on a bunch of things
@@ -130,14 +129,7 @@ iNZMenuBarWidget <- setRefClass(
                                         "All files" = list(patterns = "*")
                                     )
                                 )
-                                # ga <- galert("Please wait while session loads",
-                                #     title = "Loading session",
-                                #     delay = -1,
-                                #     parent = GUI$win
-                                # )
-                                # Sys.sleep(0.1)
                                 GUI$loadState(f)
-                                # ga$FUN()
                                 invisible(NULL)
                             }
                         ),
@@ -424,15 +416,6 @@ iNZMenuBarWidget <- setRefClass(
                 )
             }
 
-            # ---- this should all be unnecessary now --- #
-            ## As of R 3.6.?, overwriting s3 methods is a verbose message
-            ## when loading a package namespace. This prevents those messages
-            ## from showing up.
-            ## Info: it's because iNZightRegression and iNZightMR both define
-            ## moecalc methods - not sure why/which is more up to date, either ...
-            # suppressMessages(requireNamespace("iNZightModules", quietly = TRUE))
-            # ---- to here --- #
-
             if (modules_installed) {
                 adv <- list(
                     "Quick Explore" = list(
@@ -472,7 +455,8 @@ iNZMenuBarWidget <- setRefClass(
                                 e <- list(obj = ign)
                                 e$win <- GUI$win
                                 iNZightModules::plot3D(e)
-                            }),
+                            }
+                        ),
                     timeseries =
                         gaction("Time series ...",
                             icon = "ts",
@@ -511,7 +495,11 @@ iNZMenuBarWidget <- setRefClass(
                                     parent = GUI$win)
                                 if (!c) return()
                                 e <- "utils::install.packages('iNZightModules',
-                                    repos = c('https://r.docker.stat.auckland.ac.nz', 'https://cran.rstudio.com'))"
+                                    repos = c(
+                                        'https://r.docker.stat.auckland.ac.nz',
+                                        'https://cran.rstudio.com'
+                                    )
+                                )"
 
                                 w <- gwindow("Installing packages",
                                     width = 300, height = 100,
@@ -523,8 +511,10 @@ iNZMenuBarWidget <- setRefClass(
                                 ggg <- ggroup(spacing = 15, container = gg)
                                 addSpace(ggg, 0)
                                 gimage(stock.id = "gtk-info", size="dialog", cont=ggg)
-                                glabel("Please wait while the package and its dependencies are installed...", container = ggg,
-                                    anchor = c(-1, 1))
+                                glabel("Please wait while the package and its dependencies are installed...",
+                                    container = ggg,
+                                    anchor = c(-1, 1)
+                                )
                                 addSpace(ggg, 10)
                                 addSpace(gg, 10)
                                 visible(w) <- TRUE
@@ -561,35 +551,40 @@ iNZMenuBarWidget <- setRefClass(
                 modules <- iNZightModules:::getModules(GUI$addonModuleDir)
                 if (length(modules)) {
                     instindex <- which(names(adv) == "maps") + 1
-                    mods <- lapply(modules, function(mod) {
-                        gaction(mod$display_name,
-                            handler = function(h, ...) {
-                                x <- sprintf("mod$%s$new(GUI, name = '%s')",
-                                    mod$name,
-                                    mod$display_name
-                                )
-                                eval(parse(text = x))
-                            }
-                        )
-                    })
+                    mods <- lapply(modules,
+                        function(mod) {
+                            gaction(mod$display_name,
+                                handler = function(h, ...) {
+                                    x <- sprintf("mod$%s$new(GUI, name = '%s')",
+                                        mod$name,
+                                        mod$display_name
+                                    )
+                                    eval(parse(text = x))
+                                }
+                            )
+                        }
+                    )
                     adv <- c(adv[1:(instindex-1)], mods, adv[instindex:length(adv)])
                 }
             }
             adv
         },
         HelpMenu = function() {
-            guides <- list(user_guides.basics = "The Basics",
-                           user_guides.interface = "The Interface",
-                           user_guides.plot_options = "Plot Options",
-                           user_guides.variables = "Variables menu",
-                           user_guides.data_options = "Dataset menu",
-                           user_guides.add_ons = "Advanced")
+            guides <- list(
+                user_guides.basics = "The Basics",
+                user_guides.interface = "The Interface",
+                user_guides.plot_options = "Plot Options",
+                user_guides.variables = "Variables menu",
+                user_guides.data_options = "Dataset menu",
+                user_guides.add_ons = "Advanced"
+            )
             list(
                 about =
                     gaction("About",
                         icon = "about",
                         tooltip = "",
-                        handler = function(h, ...) iNZAboutWidget$new(GUI)),
+                        handler = function(h, ...) iNZAboutWidget$new(GUI)
+                    ),
                 "User Guides" = lapply(
                     names(guides),
                     function(n) {
@@ -597,7 +592,8 @@ iNZMenuBarWidget <- setRefClass(
                             guides[[n]],
                             icon = "help_topic",
                             tooltip = "",
-                            handler = function(h, ...) help_page(gsub(".", "/", n, fixed = TRUE))
+                            handler = function(h, ...)
+                                help_page(gsub(".", "/", n, fixed = TRUE))
                         )
                     }
                 ),
@@ -606,7 +602,8 @@ iNZMenuBarWidget <- setRefClass(
                         icon = "file",
                         tooltip = "",
                         handler = function(h, ...)
-                            help_page('support/changelog/?pkg=iNZight')),
+                            help_page('support/changelog/?pkg=iNZight')
+                    ),
                 faq =
                     gaction("FAQ",
                         icon = "find",
@@ -618,7 +615,8 @@ iNZMenuBarWidget <- setRefClass(
                         icon = "help",
                         tooltip = "",
                         handler = function(h, ...)
-                            help_page("support/contact/"))
+                            help_page("support/contact/")
+                    )
             )
         }
     )
@@ -634,39 +632,164 @@ iNZAboutWidget <- setRefClass(
         initialize = function(gui) {
             initFields(GUI = gui)
 
-            w <- gwindow("About iNZight", width = 500, height = 400, visible = TRUE, parent = GUI$win)
+            window_width <- 500
+            w <- gwindow("About iNZight",
+                width = window_width,
+                height = 600,
+                visible = TRUE,
+                parent = GUI$win
+            )
             g <- gvbox(expand = FALSE, cont = w, spacing = 5)
             g$set_borderwidth(10)
+
             mainlbl <- glabel("iNZight", container = g)
-            font(mainlbl) <- list(weight = "bold", family = "sans", size = 20)
-            verlbl <- glabel(sprintf("Version %s - Released %s",
-                                     packageDescription("iNZight")$Version,
-                                     format(as.POSIXct(packageDescription("iNZight")$Date),
-                                            "%d %B, %Y")), container = g)
-            font(verlbl) <- list(weight = "normal", family = "sans", size = 10)
-            rverlbl <- glabel(sprintf("Running on R version %s", getRversion()), container = g)
-            font(rverlbl) <- list(weight = "normal", family = "sans", size = 10)
+            font(mainlbl) <- list(
+                weight = "bold",
+                family = "sans",
+                size = 20
+            )
+            verlbl <- glabel(
+                sprintf("Version %s - Released %s",
+                    packageDescription("iNZight")$Version,
+                    format(
+                        as.POSIXct(
+                            packageDescription("iNZight")$Date
+                        ),
+                        "%d %B, %Y"
+                    )
+                ),
+                container = g
+            )
+            font(verlbl) <- list(
+                weight = "normal",
+                family = "sans",
+                size = 10
+            )
+            rverlbl <- glabel(
+                sprintf("Running on R version %s", getRversion()),
+                container = g
+            )
+            font(rverlbl) <- list(
+                weight = "normal",
+                family = "sans",
+                size = 10
+            )
+
             addSpace(g, 10)
-            gpltxt <- gtext(expand = TRUE, cont = g, wrap = TRUE)
-            insert(gpltxt, paste("\n\nThis program is free software; you can redistribute it and/or",
-                                 "modify it under the terms of the GNU General Public License",
-                                 "as published by the Free Software Foundation; either version 2",
-                                 "of the License, or (at your option) any later version.\n"),
-                   font.attr = list(size = 9)) -> l1
-            insert(gpltxt, paste("This program is distributed in the hope that it will be useful,",
-                                 "but WITHOUT ANY WARRANTY; without even the implied warranty of",
-                                 "MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the",
-                                 "GNU General Public License for more details.\n"),
-                   font.attr = list(size = 9)) -> l2
-            insert(gpltxt, paste("You should have received a copy of the GNU General Public License",
-                                 "along with this program; if not, write to the Free Software",
-                                 "Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.\n"),
-                   font.attr = list(size = 9)) -> l3
-            insert(gpltxt, paste("You can view the full licence here:\nhttp://www.gnu.org/licenses/gpl-2.0-standalone.html"),
-                   font.attr = list(size = 9)) -> l4
+
+            ## sponsors
+            sponsorlbl <- glabel("SPONSORS",
+                container = g)
+            font(sponsorlbl) <- list(
+                weight = "bold",
+                family = "sans",
+                size = 10
+            )
+
+            g_sponsors <- gvbox(container = g)
+            g_sponsors$set_borderwidth(5)
+
+            logo_path <- function(logo)
+                system.file(
+                    file.path("sponsors", sprintf("%s_logo50.png", logo)),
+                    package = "iNZight"
+                )
+            sponsors <- list(
+                uoa = "https://auckland.ac.nz",
+                statsnz = "https://stats.govt.nz",
+                minedu = "https://minedu.govt.nz",
+                abs = "https://abs.gov.au",
+                terourou = "https://terourou.org",
+                inzan = NULL
+            )
+
+            max_width <- window_width - 20
+            row_width <- 0
+            g_row <- ggroup(container = g_sponsors)
+            addSpring(g_row)
+
+            for (sponsor in names(sponsors)) {
+                url <- sponsors[[sponsor]]
+                logo <- logo_path(sponsor)
+                if (!file.exists(logo)) next
+
+                img <- png::readPNG(logo)
+
+                if (row_width > 0 && row_width + dim(img)[2] > max_width) {
+                    # create a new row
+                    addSpring(g_row)
+                    addSpace(g, 5)
+                    g_row <- ggroup(container = g_sponsors)
+                    addSpring(g_row)
+                    row_width <- 0
+                }
+
+                # add image
+                gimagebutton(logo,
+                    container = g_row,
+                    handler = function(h, ...)
+                        if (!is.null(url)) browseURL(url)
+                )
+                addSpring(g_row)
+
+                # add space
+                row_width <- row_width + dim(img)[2] + 10
+            }
+
+            addSpace(g, 10)
+
+            licenselbl <- glabel("LICENSE",
+                container = g)
+            font(licenselbl) <- list(
+                weight = "bold",
+                family = "sans",
+                size = 10
+            )
             addSpace(g, 5)
-            contactlbl <- glabel("For help, contact inzight_support@stat.auckland.ac.nz", container = g)
-            font(contactlbl) <- list(weight = "normal", family = "sans", size = 8)
+
+            gpltxt <- gtext(expand = TRUE, cont = g, wrap = TRUE)
+            l1 <- insert(gpltxt,
+                paste(
+                    "\nThis program is free software; you can redistribute it and/or",
+                    "modify it under the terms of the GNU General Public License",
+                    "as published by the Free Software Foundation; either version 2",
+                    "of the License, or (at your option) any later version.\n"
+                ),
+                font.attr = list(size = 9)
+            )
+            l2 <- insert(gpltxt,
+                paste(
+                    "This program is distributed in the hope that it will be useful,",
+                    "but WITHOUT ANY WARRANTY; without even the implied warranty of",
+                    "MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the",
+                    "GNU General Public License for more details.\n"
+                ),
+                font.attr = list(size = 9)
+            )
+            l3 <- insert(gpltxt,
+                paste(
+                    "You should have received a copy of the GNU General Public License",
+                    "along with this program; if not, write to the Free Software",
+                    "Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.\n"
+                ),
+                font.attr = list(size = 9)
+            )
+            l4 <- insert(gpltxt,
+                paste(
+                    "You can view the full licence here:\nhttp://www.gnu.org/licenses/gpl-2.0-standalone.html"
+                ),
+                font.attr = list(size = 9)
+            )
+            addSpace(g, 5)
+            contactlbl <- glabel(
+                "For help, contact inzight_support@stat.auckland.ac.nz",
+                container = g
+            )
+            font(contactlbl) <- list(
+                weight = "normal",
+                family = "sans",
+                size = 8
+            )
             visible(w) <- TRUE
         }
     )
@@ -675,25 +798,33 @@ iNZAboutWidget <- setRefClass(
 InstallMaps <- function(gui) {
     check.maps <- 'requireNamespace("iNZightMaps", quietly = TRUE)'
     if (eval(parse(text = check.maps))) {
-        gmessage("The maps package is already installed!", parent = gui$win)
+        gmessage("The maps package is already installed!",
+            parent = gui$win)
         return()
     }
 
     svalue(gui$statusbar) <- "Installing maps module ..."
     utils::install.packages(
         "iNZightMaps",
-        repos = c("https://r.docker.stat.auckland.ac.nz", "https://cran.stat.auckland.ac.nz"),
+        repos = c(
+            "https://r.docker.stat.auckland.ac.nz",
+            "https://cran.stat.auckland.ac.nz"
+        ),
         dependencies = TRUE
     )
 
     if (!eval(parse(text = check.maps))) {
         svalue(gui$statusbar) <- "Error installing the maps module"
-        gmessage("Unable to install package. Please check the website.", parent = gui$win)
+        gmessage(
+            "Unable to install package. Please check the website.",
+            parent = gui$win
+        )
         return()
     }
 
     ## reload the menu ...?
     svalue(gui$statusbar) <- "Maps module installed successfully"
     gui$menuBarWidget$defaultMenu()
-    gmessage("The Maps package has been installed.", parent = gui$win)
+    gmessage("The Maps package has been installed.",
+        parent = gui$win)
 }

@@ -7,19 +7,21 @@
 \format{
 A data frame with 500 rows and 10 variables:
 \describe{
-  \item{cellsource}{the source of cellphone money}
-  \item{rightfoot}{length of the right foot, mm}
-  \item{travel}{travel method used to get to school}
-  \item{getlunch}{how they get their lunch}
-  \item{height}{height measurement, cm}
-  \item{gender}{their biological gender}
-  \item{age}{their age, years}
-  \item{year}{their school year}
-  \item{armspan}{their armspan measurement, cm}
-  \item{cellcost}{money spent on cellphones}
+\item{cellsource}{the source of cellphone money}
+\item{rightfoot}{length of the right foot, mm}
+\item{travel}{travel method used to get to school}
+\item{getlunch}{how they get their lunch}
+\item{height}{height measurement, cm}
+\item{gender}{their biological gender}
+\item{age}{their age, years}
+\item{year}{their school year}
+\item{armspan}{their armspan measurement, cm}
+\item{cellcost}{money spent on cellphones}
 }
 }
 \source{
+This dataset is provided \emph{exclusively for use within iNZight} by express permission
+from Chris Wild, the Director of Census at School New Zealand.
 \url{http://new.censusatschool.org.nz/}
 }
 \usage{

@@ -1,4 +1,4 @@
-data = "chis.csv"
+data = "https://inzight.nz/testdata/chis.csv"
 weights = "rakedw0"
 repweights = "rakedw[1-9]"
 reptype = "other"

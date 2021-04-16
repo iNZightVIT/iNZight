@@ -58,6 +58,8 @@ test_that("UI correctly displays the data", {
 })
 
 test_that("Example data menus work correctly", {
+    skip_if_not_installed("iNZightModules")
+
     exwin <- iNZImportExampleWin$new(ui)
     mod <- exwin$importFileWin$children[[1]]$children[[1]]$children[[2]]
     expect_equal(svalue(mod), "Default")

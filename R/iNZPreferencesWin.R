@@ -10,7 +10,11 @@ iNZPrefsWin <- setRefClass(
     methods = list(
         initialize = function(gui = NULL) {
             if (is.null(gui)) return()
-            initFields(GUI = gui, prefs = gui$preferences, curprefs = gui$preferences)
+            initFields(
+                GUI = gui,
+                prefs = gui$preferences,
+                curprefs = gui$preferences
+            )
 
             try(dispose(GUI$modWin), silent = TRUE)
             GUI$modWin <<- gwindow("iNZight Preferences",
@@ -38,13 +42,18 @@ iNZPrefsWin <- setRefClass(
                 "Check for updates when iNZight launched",
                 checked = prefs$check.updates,
                 container = sec_general,
-                handler = function(h, ...) set_pref("check.updates", svalue(h$obj))
+                handler = function(h, ...)
+                    set_pref("check.updates", svalue(h$obj))
             )
-            lbl <- glabel(paste(sep = "\n",
-                "If updates are available, this will be displayed in the title bar of iNZight.",
-                "Updates will not automatically be applied."),
+            lbl <- glabel(
+                paste(
+                    sep = "\n",
+                    "If updates are available, this will be displayed in the title bar of iNZight.",
+                    "Updates will not automatically be applied."
+                ),
                 container = sec_general,
-                anchor = c(-1, 0))
+                anchor = c(-1, 0)
+            )
             font(lbl) <- list(size = 9)
 
             ### ---------------- Language
@@ -54,11 +63,13 @@ iNZPrefsWin <- setRefClass(
                 selected = which(names(languages) == prefs$language),
                 label = "Language :",
                 container = g_lang,
-                handler = function(h, ...) set_pref("language", names(languages)[h$obj$get_index()])
+                handler = function(h, ...)
+                    set_pref("language", names(languages)[h$obj$get_index()])
             )
             enabled(p_lang) <- length(languages) > 1L
-            visible(g_lang) <- file.exists(system.file("translations.csv", package = "iNZight"))
-
+            visible(g_lang) <- file.exists(
+                system.file("translations.csv", package = "iNZight")
+            )
 
             ## --------------------------- APPEARANCE
             sec_appearance <- gvbox(label = "Appearance", container = sections)
@@ -71,14 +82,16 @@ iNZPrefsWin <- setRefClass(
             lbl <- glabel("Window mode :")
             p_windowmode <- gcombobox(c("Single", "Dual"),
                 selected = prefs$popout + 1L,
-                handler = function(h, ...) set_pref("popout", h$obj$get_index() == 2L)
+                handler = function(h, ...)
+                    set_pref("popout", h$obj$get_index() == 2L)
             )
             tbl_appearance[ii, 1L, anchor = c(1, 0), expand = TRUE] <- lbl
             tbl_appearance[ii, 2L, expand = TRUE] <- p_windowmode
             ii <- ii + 1L
 
             lbl <- glabel(
-                paste(sep = "\n",
+                paste(
+                    sep = "\n",
                     "In single window mode (the default), iNZight uses one single window containing",
                     "both the control panel and plot window.",
                     "In dual window mode, the control panel and plot window are separate. Dual window",
@@ -100,14 +113,16 @@ iNZPrefsWin <- setRefClass(
             p_window.width <- gspinbutton(300, 2000, 50,
                 value = prefs$window.size[1],
                 container = g_windowsize,
-                handler = function(h, ...) set_pref("window.size", c(svalue(h$obj), prefs$window.size[2]))
+                handler = function(h, ...)
+                    set_pref("window.size", c(svalue(h$obj), prefs$window.size[2]))
             )
             addSpace(g_windowsize, 10)
             lbl <- glabel("Height :", container = g_windowsize)
             p_window.height <- gspinbutton(200, 1800, 50,
                 value = prefs$window.size[2],
                 container = g_windowsize,
-                handler = function(h, ...) set_pref("window.size", c(prefs$window.size[1], svalue(h$obj)))
+                handler = function(h, ...)
+                    set_pref("window.size", c(prefs$window.size[1], svalue(h$obj)))
             )
 
             addSpring(g_windowsize)
@@ -143,32 +158,28 @@ iNZPrefsWin <- setRefClass(
                 container = g_fontsize,
                 handler = function(h, ...) {
                     font(font_preview) <- list(size = svalue(h$obj))
-                    # insert(font_preview, "Preview text",
-                    #     font.attr = list(size = svalue(h$obj)),
-                    #     do.newline = FALSE)
                     set_pref("font.size", svalue(h$obj))
                 }
             )
-            font_preview <- glabel("This is the font size used in summary and inference output.",
+            font_preview <- glabel(
+                "This is the font size used in summary and inference output.",
                 container = g_fontsize
             )
             font(font_preview) <- list(size = prefs$font.size)
-
-            # lbl <- glabel("")
-            # font(lbl) <- list(size = 9)
-            # tbl_appearance[ii, 2L, anchor = c(-1, 0), expand = TRUE] <- lbl
-            # ii <- ii + 1L
 
 
             ## --------------------------- DEV FEATURES
             sec_dev <- gvbox(label = "Developmental Features", container = sections)
             sec_dev$set_borderwidth(5L)
             lbl <- glabel(
-                paste(sep = "\n",
-                    "We may occasionally include developmental features in our official release version. This allows users to experience",
-                    "and give feedback on them as they are being developed, but please be aware that they may not be stable and may change",
-                    "significantly before their final version.",
-                    "If you do choose to enable these, we will happily take feedback sent to inzight_support@stat.auckland.ac.nz"
+                paste(
+                    "We may occasionally include developmental features in our",
+                    "official release version. This allows users to experience",
+                    "\nand give feedback on them as they are being developed,",
+                    "but please be aware that they may not be stable and may change",
+                    "\nsignificantly before their final version.",
+                    "\nIf you do choose to enable these, we will happily take feedback",
+                    "sent to inzight_support@stat.auckland.ac.nz"
                 ),
                 container = sec_dev,
                 anchor = c(-1, 0)
@@ -196,18 +207,19 @@ iNZPrefsWin <- setRefClass(
                 container = g_dev,
                 handler = function(h, ...) set_pref("show.code", svalue(h$obj)))
             lbl <- glabel(
-                paste(sep = "\n",
-                    "This feature shows editable code boxes for the main plot, as well as inference and summary information windows,",
-                    "and some other components of iNZight. The code shown can be modified by the user and run, allowing users",
-                    "to get a basic feel for interfacing with code. In most cases, changes to the code will be reflected in the",
-                    "interface (where it is possible to do so)."
+                paste(
+                    "This feature shows editable code boxes for the main plot,",
+                    "as well as inference and summary information windows,",
+                    "\nand some other components of iNZight. The code shown can",
+                    "be modified by the user and run, allowing users",
+                    "\nto get a basic feel for interfacing with code. In most cases,",
+                    "changes to the code will be reflected in the",
+                    "\ninterface (where it is possible to do so)."
                 ),
                 container = g_dev,
                 anchor = c(-1, 0)
             )
             font(lbl) <- list(size = 9)
-
-
 
             ################ BUTTONS
             g_buttons <- ggroup(container = g_main)
@@ -215,7 +227,8 @@ iNZPrefsWin <- setRefClass(
 
             cancelBtn <<- gbutton("Exit without saving",
                 container = g_buttons,
-                handler = function(h, ...) dispose(GUI$modWin))
+                handler = function(h, ...) dispose(GUI$modWin)
+            )
 
             saveBtn <<- gbutton("Save changes",
                 container = g_buttons,

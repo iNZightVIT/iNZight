@@ -1,5 +1,7 @@
 context("Data wrangling with survey designs")
 
+skip_on_cran()
+
 # devtools::load_all("../iNZightTools")
 ncsr_svy <- iNZightTools::import_survey('ncsr.svydesign')
 # ncsr_svy <- iNZightTools::import_survey('tests/testthat/ncsr.svydesign')

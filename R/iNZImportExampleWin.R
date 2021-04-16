@@ -36,25 +36,25 @@ iNZImportExampleWin <- setRefClass("iNZImportExampleWin",
             mainGrp$set_borderwidth(15)
 
             tbl <- glayout(container = mainGrp, homogeneous = TRUE)
-            ii <- 1
+            ii <- 1L
 
             ## select box populated with packages (defined above)
             lbl <- glabel("Module (package) :")
             dsPkg <- gcombobox(pkgs, selected = 1)
-            tbl[ii, 1, anchor = c(1, 0), expand = TRUE] <- lbl
+            tbl[ii, 1L, anchor = c(1, 0), expand = TRUE] <- lbl
             tbl[ii, 2:4, anchor = c(-1, 0), expand = TRUE] <- dsPkg
-            ii <- ii + 1
+            ii <- ii + 1L
 
 
             ## select box populated with datasets in chosen package
             lbl <- glabel("Dataset :")
             dsData <- gcombobox("", selected = 0)
-            tbl[ii, 1, anchor = c(1, 0), expand = TRUE] <- lbl
+            tbl[ii, 1L, anchor = c(1, 0), expand = TRUE] <- lbl
             tbl[ii, 2:4, anchor = c(-1, 0), expand = TRUE] <- dsData
-            ii <- ii + 1
+            ii <- ii + 1L
 
 
-            tbl[ii, 1, anchor = c(1, 0), expand = TRUE] <- glabel("Title :")
+            tbl[ii, 1L, anchor = c(1, 0), expand = TRUE] <- glabel("Title :")
             dsTitle <- glabel("")
             tbl[ii, 2:4, anchor = c(-1, 0), expand = TRUE] <- dsTitle
 
@@ -65,17 +65,19 @@ iNZImportExampleWin <- setRefClass("iNZImportExampleWin",
                 pkgname <- names(pkgs)[svalue(dsPkg, index = TRUE)]
                 ds <- data(package = pkgname)$results
                 # filter out non-data.frame ones
-                dfs <- sapply(ds[, "Item"], function(x) {
-                    d <- x
-                    if (pkgname == "survey" && grepl('\\(.+\\)', x)) {
-                        d <- gsub(" \\(.+\\)", "", x)
-                        x <- gsub("\\)", "", gsub(".+\\(", "", x))
-                        x <- gsub(" \\(.+", "", x)
+                dfs <- sapply(ds[, "Item"],
+                    function(x) {
+                        d <- x
+                        if (pkgname == "survey" && grepl('\\(.+\\)', x)) {
+                            d <- gsub(" \\(.+\\)", "", x)
+                            x <- gsub("\\)", "", gsub(".+\\(", "", x))
+                            x <- gsub(" \\(.+", "", x)
+                        }
+                        check <- sprintf("data(%s, package = '%s')", x, pkgname)
+                        eval(parse(text = check))
+                        eval(parse(text = sprintf("is.data.frame(%s)", d)))
                     }
-                    check <- sprintf("data(%s, package = '%s')", x, pkgname)
-                    eval(parse(text = check))
-                    eval(parse(text = sprintf("is.data.frame(%s)", d)))
-                })
+                )
                 datasets <<- ds[dfs, , drop = FALSE]
                 dsData$set_items(datasets[, "Item"])
             }

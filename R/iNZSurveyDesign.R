@@ -30,11 +30,16 @@ iNZSurveyDesign <- setRefClass(
 
             if (is.null(GUI$getActiveData())) {
                 gerror("Please import a data set first.",
-                    title = "No data set", icon = "error")
+                    title = "No data set",
+                    icon = "error"
+                )
                 return()
-            } else if ((names(GUI$getActiveData())[1] == "empty")) {
+            }
+            if (names(GUI$getActiveData())[1] == "empty") {
                 gmessage("Please import a data set first.",
-                    title = "No data set", icon = "error")
+                    title = "No data set",
+                    icon = "error"
+                )
                 return()
             }
 
@@ -64,7 +69,6 @@ iNZSurveyDesign <- setRefClass(
             addSpring(gmain)
             btnGrp <- ggroup(cont = gmain)
             addSpace(btnGrp, 10)
-            #advancedBtn <- gbutton("Advanced", cont = btnGrp)
             readFileBtn <<- gbutton("Read from file", cont = btnGrp)
             addSpring(btnGrp)
             cancelBtn <<- gbutton("Cancel", cont = btnGrp)
@@ -78,160 +82,167 @@ iNZSurveyDesign <- setRefClass(
                 handler = function(h, ...) read_file()
             )
 
-            addHandlerClicked(cancelBtn, handler = function(h, ...) {
-                dispose(designWin)
-            })
+            addHandlerClicked(cancelBtn,
+                handler = function(h, ...) {
+                    dispose(designWin)
+                }
+            )
 
             ## Move this to method ...
-            addHandlerClicked(createBtn, handler = function(h, ...) {
-                svalue_or_null <- function(x) {
-                    if (svalue(x) == "") return(NULL)
-                    svalue(x)
-                }
-
-                switch(svytype,
-                    "survey" = {
-                        strat <- svalue_or_null(stratVar)
-                        clus1 <- svalue_or_null(clus1Var)
-                        clus2 <- svalue_or_null(clus2Var)
-                        if (!is.null(clus1) && !is.null(clus2)) {
-                            clus <- paste(clus1, clus2, sep = " + ")
-                        } else {
-                            clus <- ifelse(is.null(clus1), clus2, clus1)
-                        }
-                        wts <- svalue_or_null(wtVar)
-                        fpc <- svalue_or_null(fpcVar)
-                        nest <- as.logical(svalue(nestChk))
-                        clear <- is.null(strat) && is.null(clus1) &&
-                            is.null(clus2) && is.null(wts) && is.null(fpc)
-                        GUI$getActiveDoc()$getModel()$setDesign(
-                            list(
-                                strata = strat,
-                                ids = clus,
-                                weights = wts,
-                                nest = nest,
-                                fpc = fpc,
-                                type = "survey"
-                            ),
-                            gui = GUI
-                        )
-                    },
-                    "replicate" = {
-                        wts <- svalue_or_null(wtVar)
-                        repWts <- svalue(repVars, index = FALSE)
-                        reptype <- svalue(repType)
-                        if (reptype %in% c("bootstrap", "other")) {
-                            scale <- as.numeric(svalue(repScale))
-                            rscales <- as.numeric(repRscales$rscales)
-                            if (length(rscales) == 0)
-                                rscales <- rep(scale, length(repWts))
-                            else if(any(is.na(rscales)))
-                                rscales <- NULL
-                        } else {
-                            scale <- NULL
-                            rscales <- NULL
-                        }
-                        clear <- is.null(wts) && length(repWts) == 0
-                        GUI$getActiveDoc()$getModel()$setDesign(
-                            list(
-                                weights = wts,
-                                repweights = repWts,
-                                reptype = reptype,
-                                scale = scale,
-                                rscales = rscales,
-                                type = "replicate"
-                            ),
-                            gui = GUI
-                        )
-                    },
-                    "frequency" = {
-                        freqv <- svalue_or_null(freqVar)
-                        GUI$getActiveDoc()$getModel()$setFrequencies(
-                            freq = freqv,
-                            gui = GUI
-                        )
-                        dispose(designWin)
-                        return()
+            addHandlerClicked(createBtn,
+                handler = function(h, ...) {
+                    svalue_or_null <- function(x) {
+                        if (svalue(x) == "") return(NULL)
+                        svalue(x)
                     }
-                )
 
-                setOK <- try(
-                    GUI$getActiveDoc()$getModel()$createSurveyObject(),
-                    TRUE
-                )
+                    switch(svytype,
+                        "survey" = {
+                            strat <- svalue_or_null(stratVar)
+                            clus1 <- svalue_or_null(clus1Var)
+                            clus2 <- svalue_or_null(clus2Var)
+                            if (!is.null(clus1) && !is.null(clus2)) {
+                                clus <- paste(clus1, clus2, sep = " + ")
+                            } else {
+                                clus <- ifelse(is.null(clus1), clus2, clus1)
+                            }
+                            wts <- svalue_or_null(wtVar)
+                            fpc <- svalue_or_null(fpcVar)
+                            nest <- as.logical(svalue(nestChk))
+                            clear <- is.null(strat) && is.null(clus1) &&
+                                is.null(clus2) && is.null(wts) && is.null(fpc)
+                            GUI$getActiveDoc()$getModel()$setDesign(
+                                list(
+                                    strata = strat,
+                                    ids = clus,
+                                    weights = wts,
+                                    nest = nest,
+                                    fpc = fpc,
+                                    type = "survey"
+                                ),
+                                gui = GUI
+                            )
+                        },
+                        "replicate" = {
+                            wts <- svalue_or_null(wtVar)
+                            repWts <- svalue(repVars, index = FALSE)
+                            reptype <- svalue(repType)
+                            if (reptype %in% c("bootstrap", "other")) {
+                                scale <- as.numeric(svalue(repScale))
+                                rscales <- as.numeric(repRscales$rscales)
+                                if (length(rscales) == 0)
+                                    rscales <- rep(scale, length(repWts))
+                                else if(any(is.na(rscales)))
+                                    rscales <- NULL
+                            } else {
+                                scale <- NULL
+                                rscales <- NULL
+                            }
+                            clear <- is.null(wts) && length(repWts) == 0
+                            GUI$getActiveDoc()$getModel()$setDesign(
+                                list(
+                                    weights = wts,
+                                    repweights = repWts,
+                                    reptype = reptype,
+                                    scale = scale,
+                                    rscales = rscales,
+                                    type = "replicate"
+                                ),
+                                gui = GUI
+                            )
+                        },
+                        "frequency" = {
+                            freqv <- svalue_or_null(freqVar)
+                            GUI$getActiveDoc()$getModel()$setFrequencies(
+                                freq = freqv,
+                                gui = GUI
+                            )
+                            dispose(designWin)
+                            return()
+                        }
+                    )
 
-                if (!inherits(setOK, "try-error")) {
-                    # enabled(GUI$infBtn) <<- clear
-                    dispose(designWin)
+                    setOK <- try(
+                        GUI$getActiveDoc()$getModel()$createSurveyObject(),
+                        TRUE
+                    )
 
-                    ## write design call
-                    call <- paste(deparse(setOK$call), collapse = "\n")
+                    if (!inherits(setOK, "try-error")) {
+                        dispose(designWin)
 
-                    call <- sprintf("%s <- %s",
-                        GUI$getActiveDoc()$getModel()$dataDesignName,
-                        gsub("dataSet", GUI$getActiveDoc()$getModel()$name, call))
-                    GUI$rhistory$add(c("## create survey design object", call),
-                        tidy = TRUE)
+                        ## write design call
+                        call <- paste(deparse(setOK$call), collapse = "\n")
 
-                    ## update plot
-                    GUI$updatePlot()
-                } else {
-                    gmessage(paste0(
-                        "There is a problem with the specification of the survey design:\n\n",
-                        setOK),
-                        icon = "error")
+                        call <- sprintf("%s <- %s",
+                            GUI$getActiveDoc()$getModel()$dataDesignName,
+                            gsub("dataSet", GUI$getActiveDoc()$getModel()$name, call)
+                        )
+                        GUI$rhistory$add(
+                            c("## create survey design object", call),
+                            tidy = TRUE
+                        )
+
+                        ## update plot
+                        GUI$updatePlot()
+                    } else {
+                        gmessage(
+                            paste0(
+                                "There is a problem with the specification of the survey design:\n\n",
+                                setOK
+                            ),
+                            icon = "error")
+                    }
                 }
-            })
-
+            )
 
             ## Populate the lists:
             curDes <- GUI$getActiveDoc()$getModel()$getDesign()
-            if (!is.null(curDes)) {
-                spec <- curDes$spec
-                switch(svytype,
-                    "survey" = {
-                        if (!is.null(spec$strata))
-                            svalue(stratVar) <<- spec$strata
-                        if (!is.null(spec$ids) && spec$ids != 1) {
-                            clus <- trimws(strsplit(spec$ids, "+", fixed = TRUE)[[1]])
-                            svalue(clus1Var) <<- clus[1]
-                            if (length(clus) == 2L)
-                                svalue(clus2Var) <<- clus[2]
-                        }
-                        if (!is.null(spec$nest))
-                            svalue(nestChk) <<- spec$nest
-                        if (!is.null(spec$weights))
-                            svalue(wtVar) <<- spec$weights
-                        if (!is.null(spec$fpc))
-                            svalue(fpcVar) <<- spec$fpc
-                    },
-                    "replicate" = {
-                        if (!is.null(spec$weights))
-                            svalue(wtVar) <<- spec$weights
-                        if (!is.null(spec$repweights)) {
-                            svalue(repVars) <<- spec$repweights
-                            if (!is.null(spec$rscales)) {
-                                repRscales <<- data.frame(
-                                    rep.weight = spec$repweights,
-                                    rscales = spec$rscales,
-                                    stringsAsFactors = TRUE
-                                )
-                                display_scales()
-                            }
-                        }
-                        if (!is.null(spec$reptype)) {
-                            svalue(repType) <<- spec$reptype
-                        }
-                        if (!is.null(spec$scale)) {
-                            svalue(repScale) <<- spec$scale
-                        }
-                    },
-                    "freq" = {
-                        if (!is.null(spec$freq))
-                            svalue(freqVar) <<- spec$freq
+            if (is.null(curDes)) return()
+
+            spec <- curDes$spec
+            switch(svytype,
+                "survey" = {
+                    if (!is.null(spec$strata))
+                        svalue(stratVar) <<- spec$strata
+                    if (!is.null(spec$ids) && spec$ids != 1) {
+                        clus <- trimws(strsplit(spec$ids, "+", fixed = TRUE)[[1]])
+                        svalue(clus1Var) <<- clus[1]
+                        if (length(clus) == 2L)
+                            svalue(clus2Var) <<- clus[2]
                     }
-                )
-            }
+                    if (!is.null(spec$nest))
+                        svalue(nestChk) <<- spec$nest
+                    if (!is.null(spec$weights))
+                        svalue(wtVar) <<- spec$weights
+                    if (!is.null(spec$fpc))
+                        svalue(fpcVar) <<- spec$fpc
+                },
+                "replicate" = {
+                    if (!is.null(spec$weights))
+                        svalue(wtVar) <<- spec$weights
+                    if (!is.null(spec$repweights)) {
+                        svalue(repVars) <<- spec$repweights
+                        if (!is.null(spec$rscales)) {
+                            repRscales <<- data.frame(
+                                rep.weight = spec$repweights,
+                                rscales = spec$rscales,
+                                stringsAsFactors = TRUE
+                            )
+                            display_scales()
+                        }
+                    }
+                    if (!is.null(spec$reptype)) {
+                        svalue(repType) <<- spec$reptype
+                    }
+                    if (!is.null(spec$scale)) {
+                        svalue(repScale) <<- spec$scale
+                    }
+                },
+                "freq" = {
+                    if (!is.null(spec$freq))
+                        svalue(freqVar) <<- spec$freq
+                }
+            )
 
            visible(designWin) <<- TRUE
         },
@@ -358,7 +369,9 @@ iNZSurveyDesign <- setRefClass(
             tbl3 <- glayout(container = scalesG)
             ii <- 1
 
-            scalesLbl <- glabel("Specify at least one of overall scale and individual replicate scales")
+            scalesLbl <- glabel(
+                "Specify at least one of overall scale and individual replicate scales"
+            )
             font(scalesLbl) <- list(size = 9, weight = "bold")
             tbl3[ii, 1:2, expand = TRUE, anchor = c(0, 0)] <- scalesLbl
             ii <- ii + 1
@@ -411,17 +424,22 @@ iNZSurveyDesign <- setRefClass(
             tbl3[ii, 2:3, expand = TRUE] <- rscalesTbl
             size(rscalesTbl) <<- c(-1, 200)
 
-            addHandlerSelectionChanged(repVars, function(h, ...) {
-                # repRscales <<- data.frame(
-                #     rep.weight = svalue(repVars),
-                #     rscales = rep("", length(svalue(h$obj)))
-                # )
-                # display_scales()
-            })
+            # addHandlerSelectionChanged(repVars,
+            #     function(h, ...) {
+            #         repRscales <<- data.frame(
+            #             rep.weight = svalue(repVars),
+            #             rscales = rep("", length(svalue(h$obj)))
+            #         )
+            #         display_scales()
+            #     }
+            # )
 
-            addHandlerChanged(repType, function(h, ...) {
-                visible(scalesG) <- !svalue(h$obj) %in% c("BRR", "Fay", "JK1", "JKn")
-            })
+            addHandlerChanged(repType,
+                function(h, ...) {
+                    visible(scalesG) <-
+                        !svalue(h$obj) %in% c("BRR", "Fay", "JK1", "JKn")
+                }
+            )
 
 
             ## Return the content container thing
@@ -481,30 +499,6 @@ iNZSurveyDesign <- setRefClass(
             svyspec <- iNZightTools::import_survey(file)
             GUI$getActiveDoc()$getModel()$setDesign(svyspec)
 
-            # spec <- svyspec$spec
-            # clus1 <- NULL
-            # clus2 <- NULL
-            # if (spec$ids != 1) {
-            #     if (grepl("\\+", spec$ids)) {
-            #         clus <- strsplit(spec$ids, "\\+")[[1]]
-            #         clus <- gsub("^\\s|\\s$", "", clus)
-            #         clus1 <- clus[1]
-            #         clus2 <- clus[2]
-            #     } else {
-            #         clus1 <- svyspec$ids
-            #     }
-            # }
-            # GUI$getActiveDoc()$getModel()$setDesign(
-            #     strata = spec$strata,
-            #     clus1 = clus1,
-            #     clus2 = clus2,
-            #     wt = spec$weights,
-            #     fpc = spec$fpc,
-            #     nest = if (is.null(spec$nest)) FALSE else as.logical(spec$nest),
-            #     type = "survey",
-            #     gui = GUI
-            # )
-
             setOK <- try(
                 GUI$getActiveDoc()$getModel()$createSurveyObject(),
                 silent = TRUE
@@ -519,7 +513,8 @@ iNZSurveyDesign <- setRefClass(
 
                 call <- sprintf("%s <- %s",
                     GUI$getActiveDoc()$getModel()$dataDesignName,
-                    gsub("dataSet", GUI$getActiveDoc()$getModel()$name, call))
+                    gsub("dataSet", GUI$getActiveDoc()$getModel()$name, call)
+                )
                 GUI$rhistory$add(
                     c("## create survey design object", call),
                     tidy = TRUE
@@ -528,10 +523,13 @@ iNZSurveyDesign <- setRefClass(
                 ## update plot
                 GUI$updatePlot()
             } else {
-                gmessage(paste0(
-                    "There is a problem with the survey specification file:\n\n",
-                    setOK),
-                    icon = "error")
+                gmessage(
+                    paste0(
+                        "There is a problem with the survey specification file:\n\n",
+                        setOK
+                    ),
+                    icon = "error"
+                )
             }
         }
     )
@@ -587,25 +585,18 @@ iNZSurveyPostStrat <- setRefClass(
             g1 <- gvbox(container = g)
 
             ## only those with no missing values ...
-            # lbl <- glabel("Choose variables",
-            #     container = g1,
-            #     anchor = c(-1, 0),
-            #     expand = TRUE
-            # )
-            factorvars <- names(GUI$getActiveData())[sapply(
-                GUI$getActiveData(),
-                function(v)
-                    length(levels(v)) > 0 && sum(is.na(v)) == 0
-            )]
+            fvars <- sapply(GUI$getActiveData(),
+                function(v) length(levels(v)) > 0 && sum(is.na(v)) == 0)
+            factorvars <- names(GUI$getActiveData())[fvars]
             PSvar <<- gtable(factorvars,
                 multiple = TRUE,
                 container = g1,
                 expand = TRUE
-                # fill = TRUE
             )
             PSvar$set_names("Choose variables")
             size(PSvar) <<- c(200, 380)
-            addHandlerSelectionChanged(PSvar, function(h, ...) update_levels())
+            addHandlerSelectionChanged(PSvar,
+                function(h, ...) update_levels())
 
             lbl <- glabel("Hold CTRL or SHIFT to select multiple",
                 container = g1,
@@ -622,11 +613,11 @@ iNZSurveyPostStrat <- setRefClass(
             g2$set_borderwidth(5)
             ## table to populate with levels of variable
             gl <- ggroup(container = g2)
-            # addSpring(gl)
             PSlvls <<- glayout(container = gl)
             addSpace(gl, 20)
 
-            addHandlerChanged(PSvar, function(h, ...) update_levels())
+            addHandlerChanged(PSvar,
+                function(h, ...) update_levels())
 
             # save/cancel buttons
             addSpring(gmain)
@@ -666,18 +657,17 @@ iNZSurveyPostStrat <- setRefClass(
             }
 
             ## when the window closes, store the lvldf in survey
-            addHandlerDestroy(win, function(h, ...) {
-                GUI$getActiveDoc()$getModel()$storeFreqTables(lvldf)
-            })
+            addHandlerDestroy(win,
+                function(h, ...) {
+                    GUI$getActiveDoc()$getModel()$storeFreqTables(lvldf)
+                }
+            )
 
             visible(win) <<- TRUE
 
             invisible(NULL)
         },
         update_levels = function(h, ...) {
-            # read svalue(PSvar) -> lvldf
-            # if (length(svalue(PSvar)) == 0) return()
-
             for (v in svalue(PSvar)) {
                 if (is.null(lvldf[[v]])) {
                     d <- data.frame(
@@ -740,8 +730,11 @@ iNZSurveyPostStrat <- setRefClass(
 
                 for (i in seq_along(1:nrow(lvldf[[v]]))) {
                     ii <- ii + 1
-                    PSlvls[ii, 1, expand = TRUE, fill = TRUE, anchor = c(1, 0)] <<-
-                        glabel(lvldf[[v]][i, 1])
+                    PSlvls[ii, 1,
+                        expand = TRUE,
+                        fill = TRUE,
+                        anchor = c(1, 0)
+                    ] <<- glabel(lvldf[[v]][i, 1])
                     PSlvls[ii, 2] <<- gedit(
                         ifelse(is.na(lvldf[[v]][i, 2]), "", lvldf[[v]][i, 2]),
                         width = 20,
@@ -763,12 +756,18 @@ iNZSurveyPostStrat <- setRefClass(
                         if (length(f) == 0) return()
 
                         df <- read.csv(f, stringsAsFactors = TRUE)
-                        rowj <- which(sapply(PSlvls[, 3],
-                            function(z) identical(z, h$obj)
-                        ))
+                        rowj <- which(
+                            sapply(PSlvls[, 3],
+                                function(z) identical(z, h$obj))
+                        )
                         var <- svalue(PSlvls[rowj, 4])
                         if (ncol(df) != 2) {
-                            gmessage("File needs to have 2 columns: one for variable names, and one for frequencies.")
+                            gmessage(
+                                paste(
+                                    "File needs to have 2 columns: one for variable",
+                                    "names, and one for frequencies."
+                                )
+                            )
                             return()
                         }
                         if (nrow(df) != nrow(lvldf[[var]])) {
@@ -782,9 +781,6 @@ iNZSurveyPostStrat <- setRefClass(
                 PSlvls[ii-1, 3, anchor = c(1, 0)] <<- btn
 
                 btn <- gbutton("Paste from clipboard ...")
-                # PSlvls[ii, 3, anchor = c(1, 0)] <<- btn
-
-
 
                 ii <- ii + 2
                 PSlvls[ii, 1:3] <<- gseparator()
@@ -804,7 +800,11 @@ iNZSurveyPostStrat <- setRefClass(
             names(cal_list) <- names(lvldf)
             GUI$getActiveDoc()$getModel()$setDesign(
                 modifyList(curDes,
-                    list(calibrate = if (length(svalue(PSvar))) cal_list[svalue(PSvar)] else NULL)
+                    list(
+                        calibrate =
+                            if (length(svalue(PSvar))) cal_list[svalue(PSvar)]
+                            else NULL
+                    )
                 ),
                 gui = GUI
             )
@@ -813,7 +813,8 @@ iNZSurveyPostStrat <- setRefClass(
                 TRUE
             )
             if (inherits(setOK, "try-error")) {
-                gmessage("Something went wrong during post stratification ...",
+                gmessage(
+                    "Something went wrong during post stratification ...",
                     type = "error"
                 )
             }

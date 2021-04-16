@@ -1,5 +1,7 @@
 context("Add-on Modules")
 
+skip_on_cran()
+
 skip_if_not_installed("iNZightModules")
 moduledir <- file.path(getwd(), "modules")
 

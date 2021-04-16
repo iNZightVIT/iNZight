@@ -15,44 +15,44 @@ Authors@R: c(person("Tom", "Elliott", role = c("aut", "cre"),
 Description: An interactive GUI for easy visual exploration of datasets.
 License: GPL-3
 Depends:
-    R (>= 3.3),
-    objectProperties,
+    R (>= 4.0),
     RGtk2,
+    cairoDevice,
     gWidgets2,
-    cairoDevice
+    objectProperties   
 Imports:
-    utils,
-    grDevices,
-    methods,
-    grid,
+    colorspace,
     gdata,
+    grDevices,
+    grid,
     gWidgets2RGtk2,
     iNZightPlots (>= 2.12),
     iNZightTools (>= 1.9.1.9000),
-    reshape2,
+    magrittr,
+    methods,
     plyr,
+    png,
+    reshape2,
     stringr,
     survey,
-    colorspace,
-    magrittr
+    utils
 Suggests:
-    RODBC,
-    iNZightMR (>= 2.2.4),
-    iNZightModules (>= 2.5),
-    png,
-    viridis,
-    RColorBrewer,
-    FutureLearnData,
-    testthat,
     covr,
+    dataMaid,
     dplyr,
     forcats,
-    rlang,
-    withr,
+    FutureLearnData,
+    iNZightMR (>= 2.2.4),
+    iNZightModules (>= 2.5),
     jsonlite,
-    dataMaid,
+    knitr,
+    RColorBrewer,
+    rlang,
     rmarkdown,
-    knitr
+    RODBC,
+    testthat,
+    viridis,
+    withr
 Additional_repositories: https://r.docker.stat.auckland.ac.nz
 LazyData: true
 Encoding: UTF-8
