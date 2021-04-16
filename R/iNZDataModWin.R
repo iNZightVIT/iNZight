@@ -1024,10 +1024,16 @@ iNZformClassIntervals <- setRefClass(
                     label_format$set_items(fmts)
 
                     label_lower$set_items(
-                        if (discrete) c("\U2264 a") else c("< a")
+                        if (discrete)
+                            c(paste(spec_char("lte"), "a"))
+                        else
+                            c("< a")
                     )
                     label_upper$set_items(
-                        if (discrete) c("\U2265 b", "b+") else c("> b", "b+")
+                        if (discrete)
+                            c(paste(spec_char("gte"), "b"), "b+")
+                        else
+                            c("> b", "b+")
                     )
 
                     type$invoke_change_handler()

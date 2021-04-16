@@ -185,3 +185,13 @@ mend_call <- function(call, gui) {
 .base_url <- "https://inzight.nz/"
 help_page <- function(path)
     browseURL(paste0(.base_url, path))
+
+
+spec_char <- function(code) {
+    win <- grepl("Windows", R.Version()$os)
+    switch(code,
+        "lte" = if (win) "<=" else "\U2264",
+        "gte" = if (win) ">=" else "\U2265",
+        ""
+    )
+}
