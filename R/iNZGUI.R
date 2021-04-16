@@ -136,17 +136,6 @@ iNZGUI <- setRefClass(
                 else if (Sys.info()["sysname"] == "Darwin") "mac"
                 else "linux"
 
-
-            # if (addonModuleDir == "") {
-            #     addonModuleDir <<- switch(OS,
-            #         "windows" =
-            #             file.path("~", "iNZightVIT", "modules"),
-            #         "mac" = ,
-            #         "linux" =
-            #             file.path("~", "Documents", "iNZightVIT", "modules")
-            #     )
-            # }
-
             ## Grab settings file (or try to!)
             getPreferences()
 
@@ -1029,7 +1018,7 @@ iNZGUI <- setRefClass(
                 "preferences.R"
             )
             preferences <<- defaultPrefs()
-            
+
             if (file.exists(prefs.location)) {
                 prefs <- try(checkPrefs(dget(prefs.location)), silent = TRUE)
 
