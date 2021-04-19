@@ -1,8 +1,8 @@
 Package: iNZight
 Type: Package
 Title: A GUI for Data Exploration and Visualisation
-Version: 4.0.3
-Date: 2021-03-02
+Version: 4.1
+Date: 2021-04-19
 Authors@R: c(person("Tom", "Elliott", role = c("aut", "cre"),
                     email = "tom.elliott@auckland.ac.nz"),
              person("Dineika", "Chandrananda", role = "ctb"),
@@ -11,48 +11,51 @@ Authors@R: c(person("Tom", "Elliott", role = c("aut", "cre"),
                     email = "MarcoKuper42@gmail.com"),
              person("David", "Banks", role = "ctb"),
              person("Yiwen", "He", role = "ctb"),
-             person("Daniel", "Barnett", role = "ctb"))
+             person("Daniel", "Barnett", role = "aut"))
 Description: An interactive GUI for easy visual exploration of datasets.
 License: GPL-3
 Depends:
-    R (>= 3.3),
-    objectProperties,
+    R (>= 4.0),
     RGtk2,
+    cairoDevice,
     gWidgets2,
-    cairoDevice
+    objectProperties
 Imports:
-    utils,
-    grDevices,
-    methods,
-    grid,
+    colorspace,
     gdata,
+    grDevices,
+    grid,
     gWidgets2RGtk2,
     iNZightPlots (>= 2.12),
-    iNZightTools (>= 1.9),
-    reshape2,
+    iNZightTools (>= 1.9.1.9000),
+    magrittr,
+    methods,
     plyr,
-    survey,
-    colorspace,
-    magrittr
-Suggests:
-    RODBC,
-    iNZightMR (>= 2.2.4),
-    iNZightModules (>= 2.5),
     png,
-    viridis,
-    RColorBrewer,
-    FutureLearnData,
-    testthat,
+    reshape2,
+    stringr,
+    survey,
+    utils
+Suggests:
     covr,
+    dataMaid,
     dplyr,
     forcats,
-    rlang,
-    withr,
+    FutureLearnData,
+    iNZightMR (>= 2.2.4),
+    iNZightModules (>= 2.5),
     jsonlite,
-    dataMaid,
-    rmarkdown
+    knitr,
+    RColorBrewer,
+    rlang,
+    rmarkdown,
+    RODBC,
+    testthat,
+    viridis,
+    withr
 Additional_repositories: https://r.docker.stat.auckland.ac.nz
 LazyData: true
 Encoding: UTF-8
 Language: en-GB
 RoxygenNote: 7.1.1
+VignetteBuilder: knitr

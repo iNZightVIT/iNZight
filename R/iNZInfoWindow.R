@@ -31,11 +31,6 @@ iNZInfoWindow <- setRefClass(
             # Check that the data exists
             env <<- new.env()
             curSet <<- GUI$getActiveDoc()$getSettings()
-            # if (is.null(curSet$x)) {
-            #     gmessage("No variable selected.")
-            #     dispose(win)
-            #     return()
-            # }
             gen_set_list()
 
             win <<- gwindow(title = name,
@@ -85,7 +80,6 @@ iNZInfoWindow <- setRefClass(
             font(run_btn) <<- list(size = 9)
             font(reset_btn) <<- list(size = 9)
 
-
             info_font <<- list(
                 family = "monospace",
                 size = font_size
@@ -98,7 +92,6 @@ iNZInfoWindow <- setRefClass(
 
             ctrl_panel <<- ggroup()
             ctrl_panel$set_borderwidth(5)
-
 
             # Main container will consist of three components:
             #  1. code panel (can be toggled; controls info)
@@ -129,9 +122,6 @@ iNZInfoWindow <- setRefClass(
                 curSet$data <<- NULL
                 curSet$design <<- as.name(".design")
                 env$.design <<- curMod$createSurveyObject()
-                # designname <<- curMod$dataDesignName
-                # curSet$design <<- as.name(designname)
-                # assign(designname, curMod$createSurveyObject(), envir = env)
             }
         },
         set_input = function(code) {
@@ -270,7 +260,7 @@ iNZGetSummary <- setRefClass(
             # OR
             # dot plot: num ~ cat
 
-            cat("xnum:", xnum, "\nynum: ", ynum, "\n")
+            # cat("xnum:", xnum, "\nynum: ", ynum, "\n")
             if ((xnum && ynum) || xnum) {
                 xvar <- ds[[curSet$y]]
                 yvar <- ds[[curSet$x]]
@@ -303,7 +293,6 @@ iNZGetSummary <- setRefClass(
 
             addSpace(g2, 20)
 
-
             tbl <- glayout(container = g2)
             ii <- 1
 
@@ -326,7 +315,7 @@ iNZGetSummary <- setRefClass(
             )
             fittedName.lin <- gedit(
                 sprintf("%s.%s%s", yname, varType,
-                        ifelse(length(curSet$trend) > 1, ".linear", "")),
+                    ifelse(length(curSet$trend) > 1, ".linear", "")),
                 width = 25
             )
             if (scatter && length(curSet$trend) >= 1 && "linear" %in% curSet$trend) {
@@ -341,7 +330,7 @@ iNZGetSummary <- setRefClass(
             )
             fittedName.quad <- gedit(
                 sprintf("%s.%s%s", yname, varType,
-                        ifelse(length(curSet$trend) > 1, ".quadratic", "")),
+                    ifelse(length(curSet$trend) > 1, ".quadratic", "")),
                 width = 25
             )
             if (scatter && length(curSet$trend) >= 1 && "quadratic" %in% curSet$trend) {
@@ -356,7 +345,7 @@ iNZGetSummary <- setRefClass(
             )
             fittedName.cub <- gedit(
                 sprintf("%s.%s%s", yname, varType,
-                        ifelse(length(curSet$trend) > 1, ".cubic", "")),
+                    ifelse(length(curSet$trend) > 1, ".cubic", "")),
                 width = 25
             )
             if (scatter && length(curSet$trend) >= 1 && "cubic" %in% curSet$trend) {
@@ -439,7 +428,6 @@ iNZGetSummary <- setRefClass(
                         colnames(pred) <- svalue(fittedName.smth)
                         newdata <- data.frame(newdata, pred, stringsAsFactors = TRUE)
                     }
-
 
                     GUI$getActiveDoc()$getModel()$updateData(newdata)
 

@@ -1,5 +1,7 @@
 context("Get Summary window")
 
+skip_on_cran()
+
 # try(ui$close(), TRUE); devtools::load_all()
 ui <- iNZGUI$new()
 ui$initializeGui()
@@ -68,8 +70,11 @@ data(api, package = "survey")
 ui$setDocument(iNZDocument$new(data = apiclus1), reset = TRUE)
 if (!interactive()) Sys.sleep(2)
 ui$getActiveDoc()$getModel()$setDesign(
-    clus1 = "dnum", clus2 = "snum", wt = "pw", nest = FALSE,
-    fpc = NULL, type = "survey", gui = ui
+    list(
+        clus1 = "dnum", clus2 = "snum", weights = "pw", nest = FALSE,
+        fpc = NULL, type = "survey"
+    ),
+    gui = ui
 )
 
 test_that("Get summary works for survey design", {

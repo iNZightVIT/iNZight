@@ -1,11 +1,14 @@
 context("Add-on Modules")
 
+skip_on_cran()
+
+skip_if_not_installed("iNZightModules")
 moduledir <- file.path(getwd(), "modules")
 
 # load_all("../../../iNZightModules")
 # load_all()
 
-# try(ui$close())
+# devtools::load_all(); try(ui$close())
 ui <- iNZGUI$new()
 ui$initializeGui(iris, addonDir = moduledir)
 on.exit(gWidgets2::dispose(ui$win))

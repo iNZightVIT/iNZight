@@ -22,11 +22,9 @@ iNZPlotInfWin <- setRefClass(
         initialize = function(gui = NULL) {
             initFields(GUI = gui)
             if (!is.null(GUI)) {
-                ## close modification window if one is open
-                # if (length(GUI$leftMain$children) > 1) {
-                #     delete(GUI$leftMain, GUI$leftMain$children[[2]])
-                # }
-                modwin <- GUI$initializeModuleWindow(title = "Add Inference Information")
+                modwin <- GUI$initializeModuleWindow(
+                    title = "Add Inference Information"
+                )
                 mainGrp <- modwin$body
 
                 updateSettings()
@@ -39,26 +37,45 @@ iNZPlotInfWin <- setRefClass(
 
                 ## Labels for each option
                 parLab <- glabel("Parameter")
-                font(parLab) <- list(weight = "bold", family = "sans", size = 9)
+                font(parLab) <- list(
+                    weight = "bold",
+                    family = "sans",
+                    size = 9
+                )
 
                 metLab <- glabel("Type of Inference")
-                font(metLab) <- list(weight = "bold", family = "sans", size = 9)
+                font(metLab) <- list(
+                    weight = "bold",
+                    family = "sans",
+                    size = 9
+                )
 
                 typLab <- glabel("Type of Interval")
-                font(typLab) <- list(weight = "bold", family = "sans", size = 9)
+                font(typLab) <- list(
+                    weight = "bold",
+                    family = "sans",
+                    size = 9
+                )
 
                 parTab[2, 1, expand = TRUE, anchor = c(-1, 0)] <<- parLab
                 metTab[2, 1, expand = TRUE, anchor = c(-1, 0)] <<- metLab
                 typTab[2, 1, expand = TRUE, anchor = c(-1, 0)] <<- typLab
 
                 ## Show interval values button
-                intBtn <<- gbutton("Get values", expand = FALSE,
-                                  handler = function(h, ...) {
-                                      displayValues()
-                                  })
+                intBtn <<- gbutton("Get values",
+                    expand = FALSE,
+                    handler = function(h, ...) {
+                        displayValues()
+                    }
+                )
                 btnTab[2, 1, expand = TRUE] <<- intBtn
                 visible(intBtn) <<- FALSE
-                inflabl <- glabel("* iNZight may appear upresponsive while the bootstraps are performed.\nPlease be patient.")
+                inflabl <- glabel(
+                    paste(
+                        "* iNZight may appear upresponsive while",
+                        "the bootstraps are performed.\nPlease be patient."
+                    )
+                )
                 font(inflabl) <- list(size = 8)
                 btnTab[3, 1, expand = TRUE] <<- inflabl
 
@@ -71,20 +88,20 @@ iNZPlotInfWin <- setRefClass(
 
                 btnGrp <- modwin$footer
 
-                helpButton <- gbutton("Help", expand = TRUE, fill = TRUE,
-                                      cont = btnGrp,
-                                      handler = function(h, ...) {
-                                         browseURL("https://www.stat.auckland.ac.nz/~wild/iNZight/user_guides/plot_options/?topic=plot_inference")
-                                      })
+                helpButton <- gbutton("Help",
+                    expand = TRUE,
+                    fill = TRUE,
+                    cont = btnGrp,
+                    handler = function(h, ...)
+                        help_page("user_guides/plot_options/?topic=plot_inference")
+                )
 
-                okButton <- gbutton("Home", expand = TRUE, fill = TRUE,
-                                    cont = btnGrp,
-                                    handler = function(h, ...) {
-                                        ## delete the module window
-                                        delete(GUI$leftMain, GUI$leftMain$children[[2]])
-                                        ## display the default view (data, variable, etc.)
-                                        visible(GUI$gp1) <<- TRUE
-                                    })
+                okButton <- gbutton("Home",
+                    expand = TRUE,
+                    fill = TRUE,
+                    cont = btnGrp,
+                    handler = function(h, ...) GUI$close_module()
+                )
             }
         },
         ## up the curSet class variable
@@ -93,8 +110,9 @@ iNZPlotInfWin <- setRefClass(
         },
         displayValues = function() {
             return(NULL)
-        })
+        }
     )
+)
 
 iNZBarchartInf <- setRefClass(
     "iNZBarchartInf",
@@ -107,9 +125,7 @@ iNZBarchartInf <- setRefClass(
 
             ## Parameters
             parm <- glabel("Proportions")
-
             parTab[3, 1, expand = TRUE, anchor = c(-1, 0)] <<- parm
-
 
             ## Methods
             if (is.survey)
@@ -121,20 +137,21 @@ iNZBarchartInf <- setRefClass(
 
 
             ## Interval types
-            compInt <- gcheckbox("Comparison Intervals",
-                                 checked = TRUE)  # "comp" %in% curSet$inference.type)
-            confInt <- gcheckbox("Confidence Intervals",
-                                 checked = TRUE)  #"conf" %in% curSet$inference.type)
-
+            compInt <- gcheckbox("Comparison Intervals", checked = TRUE)
+            confInt <- gcheckbox("Confidence Intervals", checked = TRUE)
             typTab[3, 1] <<- confInt
             typTab[4, 1] <<- compInt
-
 
             ## Add function
             addIntervals <- function() {
                 ## Inference type depends on method (normal = both; bootstrap = only confidence [for now]..)
                 if (svalue(compInt) | svalue(confInt))
-                    inf.type <- c("comp", "conf")[c(svalue(compInt) & svalue(mthd, index = TRUE) == 1, svalue(confInt))]
+                    inf.type <- c("comp", "conf")[
+                        c(
+                            svalue(compInt) & svalue(mthd, index = TRUE) == 1,
+                            svalue(confInt)
+                        )
+                    ]
                 else
                     inf.type <- NULL
 
@@ -144,8 +161,8 @@ iNZBarchartInf <- setRefClass(
                     list(
                         inference.type = inf.type,
                         bs.inference = bs.inf
-                        )
                     )
+                )
                 updateSettings()
             }
 
@@ -161,9 +178,15 @@ iNZBarchartInf <- setRefClass(
                 addIntervals()
             }
 
-            addHandlerChanged(mthd, handler = function(h, ...) enabler())
-            addHandlerChanged(compInt, handler = function(h, ...) enabler())
-            addHandlerChanged(confInt, handler = function(h, ...) enabler())
+            addHandlerChanged(mthd,
+                handler = function(h, ...) enabler()
+            )
+            addHandlerChanged(compInt,
+                handler = function(h, ...) enabler()
+            )
+            addHandlerChanged(confInt,
+                handler = function(h, ...) enabler()
+            )
 
             enabler()
         }
@@ -198,14 +221,10 @@ iNZDotchartInf <- setRefClass(
 
 
             ## Interval types
-            compInt <- gcheckbox("Comparison Intervals",
-                                 checked = TRUE)  # "comp" %in% curSet$inference.type)
-            confInt <- gcheckbox("Confidence Intervals",
-                                 checked = TRUE)  # "conf" %in% curSet$inference.type)
-
+            compInt <- gcheckbox("Comparison Intervals", checked = TRUE)
+            confInt <- gcheckbox("Confidence Intervals", checked = TRUE)
             typTab[3, 1] <<- confInt
             typTab[4, 1] <<- compInt
-
 
             ## Add function
             addIntervals <- function() {
@@ -214,8 +233,15 @@ iNZDotchartInf <- setRefClass(
                     inf.type <- "conf"
                     inf.par <- "median"
                 } else if (svalue(compInt) | svalue(confInt)) {
-                    inf.type <- c("comp", "conf")[c(svalue(compInt) & !is.null(curSet$y), svalue(confInt))]
-                    inf.par <- c("mean", "median")[svalue(parm, index = TRUE)]
+                    inf.type <- c("comp", "conf")[
+                        c(
+                            svalue(compInt) & !is.null(curSet$y),
+                            svalue(confInt)
+                        )
+                    ]
+                    inf.par <- c("mean", "median")[
+                        svalue(parm, index = TRUE)
+                    ]
                 } else {
                     inf.type <- inf.par <- NULL
                 }
@@ -250,15 +276,25 @@ iNZDotchartInf <- setRefClass(
                     }
                 }
 
-                visible(typTab) <<- svalue(parm, index = TRUE) == 1 | svalue(mthd, index = TRUE) == 2
+                visible(typTab) <<-
+                    svalue(parm, index = TRUE) == 1 |
+                    svalue(mthd, index = TRUE) == 2
 
                 addIntervals()
             }
 
-            addHandlerChanged(parm, handler = function(h, ...) enabler(TRUE))
-            addHandlerChanged(mthd, handler = function(h, ...) enabler())
-            addHandlerChanged(compInt, handler = function(h, ...) enabler())
-            addHandlerChanged(confInt, handler = function(h, ...) enabler())
+            addHandlerChanged(parm,
+                handler = function(h, ...) enabler(TRUE)
+            )
+            addHandlerChanged(mthd,
+                handler = function(h, ...) enabler()
+            )
+            addHandlerChanged(compInt,
+                handler = function(h, ...) enabler()
+            )
+            addHandlerChanged(confInt,
+                handler = function(h, ...) enabler()
+            )
 
             enabler()
 
@@ -310,42 +346,56 @@ iNZDotchartInf <- setRefClass(
                     if (length(inf) == 0) {
                         out <- c(out, "No values", "")
                     } else {
-                        do.call(cbind, lapply(names(inf), function(i) {
-                                                       m <- inf[[i]][, 1:2, drop = FALSE]
-                                                       if (!y12)
-                                                           colnames(m) <- paste(i, colnames(m), sep = ".")
-                                                       m
-                                                   })
-                                ) -> oo
+                        oo <- do.call(cbind,
+                            lapply(names(inf),
+                                function(i) {
+                                    m <- inf[[i]][, 1:2, drop = FALSE]
+                                    if (!y12)
+                                        colnames(m) <- paste(i, colnames(m),
+                                            sep = ".")
+                                    m
+                                }
+                            )
+                        )
 
-                        mat <- matrix(apply(oo, 2, function(col) {
-                                                    format(col, digits = 4)
-                                                }), nrow = nrow(oo))
+                        mat <- matrix(
+                            apply(oo, 2, format, digits = 4),
+                            nrow = nrow(oo)
+                        )
                         mat[grep("NA", mat)] <- ""
 
                         mat <- rbind(colnames(oo), mat)
                         if (nrow(oo) > 1)
                             mat <- cbind(c("", rownames(oo)), mat)
 
-                        mat <- matrix(apply(mat, 2, function(col) {
-                                                     format(col, justify = "right")
-                                                 }), nrow = nrow(mat))
+                        mat <- matrix(
+                            apply(mat, 2, format, justify = "right"),
+                            nrow = nrow(mat)
+                        )
 
-                        mat <- apply(mat, 1, function(x) paste0("   ", paste(x, collapse = "   ")))
+                        mat <- apply(mat, 1,
+                            function(x) paste0("   ", paste(x, collapse = "   "))
+                        )
 
                         out <- c(out, mat, "")
                     }
                 }
 
-
                 out <- c(out, "", "")
             }
 
-            ww <- gwindow(title = "Inference values", parent = GUI$win,
-                          width = 700, height = 400, visible = FALSE)
+            ww <- gwindow(title = "Inference values",
+                parent = GUI$win,
+                width = 700,
+                height = 400,
+                visible = FALSE
+            )
             g <- gtext(text = paste(out, collapse = "\n"),
-                       expand = TRUE, cont = ww, wrap = FALSE,
-                       font.attr = list(family = "monospace"))
+                expand = TRUE,
+                cont = ww,
+                wrap = FALSE,
+                font.attr = list(family = "monospace")
+            )
             visible(ww) <- TRUE
         }
     )
@@ -363,7 +413,6 @@ iNZScatterInf <- setRefClass(
 
             ## Parameters
             parm <- glabel("Trend lines and smoothers")
-
             parTab[3, 1, expand = TRUE, anchor = c(-1, 0)] <<- parm
 
             ## Methods
@@ -375,7 +424,10 @@ iNZScatterInf <- setRefClass(
             enabled(mthd) <- FALSE
             if (!is.null(curSet$trend) && length(curSet$trend))
                 enabled(mthd) <- TRUE
-            if (curSet$smooth > 0 && !curSet$trend.by && is.null(curSet$quant.smooth))
+            if (curSet$smooth > 0 &&
+                !curSet$trend.by &&
+                is.null(curSet$quant.smooth)
+            )
                 enabled(mthd) <- TRUE
 
             metTab[3, 1] <<- mthd
@@ -392,7 +444,9 @@ iNZScatterInf <- setRefClass(
                 updateSettings()
             }
 
-            addHandlerChanged(mthd, handler = function(h, ...) addIntervals())
+            addHandlerChanged(mthd,
+                handler = function(h, ...) addIntervals()
+            )
             addIntervals()
         }
     )

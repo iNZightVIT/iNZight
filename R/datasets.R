@@ -16,72 +16,20 @@
 #'   \item{armspan}{their armspan measurement, cm}
 #'   \item{cellcost}{money spent on cellphones}
 #' }
-#' @source \url{http://new.censusatschool.org.nz/}
+#' @source This dataset is provided *exclusively for use within iNZight* by express permission
+#' from Chris Wild, the Director of Census at School New Zealand.
+#'  \url{http://new.censusatschool.org.nz/}
+#' @md
 "census.at.school.500"
 
 
 #' Gap Minder
 #'
 #' A dataset containing variables for countries over several years.
+#' You can find out more about the dataset from \url{https://www.gapminder.org/data/}.
 #'
-#' @format A data frame with 3577 rows and 55 variables:
-#' \describe{
-#'   \item{Country}{the country name}
-#'   \item{Region.Geo}{geographical region}
-#'   \item{Continent}{continent name}
-#'   \item{Region}{region name}
-#'   \item{Year}{year of observation}
-#'   \item{Year_cat}{year of observation, as a factor}
-#'   \item{AgriculturalLand}{amount of agricultural land}
-#'   \item{BodyMassIndex_M}{average BMI for males}
-#'   \item{BodyMassIndex_F}{average BMI for females}
-#'   \item{Cellphones}{}
-#'   \item{ChildrenPerWoman}{}
-#'   \item{CO2Emissions}{}
-#'   \item{DemocracyScore}{}
-#'   \item{EnergyUsePerPerson}{}
-#'   \item{Exports}{}
-#'   \item{Femalesaged25to54labourforceparticipationrate}{}
-#'   \item{Forestarea}{}
-#'   \item{GDPpercapita}{}
-#'   \item{Governmenthealthspendingperpersontotal}{}
-#'   \item{Hightotechnologyexports}{}
-#'   \item{Hourlycompensation}{}
-#'   \item{Imports}{}
-#'   \item{IncomePerPerson}{}
-#'   \item{Incomeshareofpoorest10pct}{}
-#'   \item{Incomeshareofrichest10pct}{}
-#'   \item{Infantmortality}{}
-#'   \item{Inflation}{}
-#'   \item{Internetusers}{}
-#'   \item{LifeExpectancy}{}
-#'   \item{Literacyrateadulttotal}{}
-#'   \item{Literacyrateyouthtotal}{}
-#'   \item{Longtermunemploymentrate}{}
-#'   \item{Medianage}{}
-#'   \item{MedicalDoctors}{}
-#'   \item{Murder}{}
-#'   \item{Murderedmen}{}
-#'   \item{Murderedwomen}{}
-#'   \item{Oilconsumptionperperson}{}
-#'   \item{Populationgrowth}{}
-#'   \item{Populationtotal}{}
-#'   \item{Populationdensity}{}
-#'   \item{Poverty}{}
-#'   \item{Ratioofgirlstoboysinprimaryandsecondaryeducation}{}
-#'   \item{Renewablewater}{}
-#'   \item{Residentialelectricityuseperperson}{}
-#'   \item{Suicideage15to29}{}
-#'   \item{Taxrevenue}{}
-#'   \item{Teenfertilityrate}{}
-#'   \item{TotalGDPUS}{}
-#'   \item{TotalhealthspendingperpersonUS}{}
-#'   \item{Tradebalance}{}
-#'   \item{Trafficdeaths}{}
-#'   \item{UrbanpopulationTotal}{}
-#'   \item{Urbanpopulationgrowth}{}
-#'   \item{YearlyCO2emission}{}
-#' }
+#' @source Based on free material from GAPMINDER.ORG, CC-BY LICENSE
+#'  \url{https://www.gapminder.org/data/}
 "gapminder"
 
 
@@ -107,5 +55,6 @@
 #'   \item{Marital}{marital status}
 #'   \item{Ethnicity}{six categories}
 #' }
-#' @source \url{http://www.stats.govt.nz/tools_and_services/university-students/NZIS-Super-SURF.aspx}
+#' @source Licensed under Creative Commons 4.0 by Stats NZ,
+#'  \url{https://www.stats.govt.nz/services/customised-data-services/statistics-for-university-staff-and-students/new-zealand-income-survey-super-surf/}
 "SURFIncomeSurvey_200"

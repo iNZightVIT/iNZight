@@ -95,7 +95,7 @@ iNZImportWin <- setRefClass(
             )
             fileGp$set_borderwidth(10)
             fileTbl <<- glayout(container = fileGp)
-            ii <- 1
+            ii <- 1L
 
             lbl <- glabel("File Name :")
             font(lbl) <- list(weight = "bold")
@@ -112,16 +112,16 @@ iNZImportWin <- setRefClass(
                     setfile(h, ...)
                 }
             )
-            fileTbl[ii, 1, anchor = c(1, 0)] <<- lbl
+            fileTbl[ii, 1L, anchor = c(1, 0)] <<- lbl
             font(lbl) <- list(weight = "bold")
             fileTbl[ii, 2:4, expand = TRUE, anchor = c(1, 0)] <<- filename
-            fileTbl[ii, 5] <<- browseBtn
-            ii <- ii + 1
+            fileTbl[ii, 5L] <<- browseBtn
+            ii <- ii + 1L
 
             ## --- URL?
             loadURL <<- gcheckbox("Import from URL", checked = FALSE)
             fileTbl[ii, 2:5, expand = TRUE, anchor = c(-1, 0)] <<- loadURL
-            ii <- ii + 1
+            ii <- ii + 1L
 
             ## --- Extension
             lbl <- glabel("File Type :")
@@ -129,7 +129,7 @@ iNZImportWin <- setRefClass(
             filetype <<- gcombobox(c(names(filetypes)[-1]), selected = 0)
             fileTbl[ii, 1, anchor = c(1, 0)] <<- lbl
             fileTbl[ii, 2:5, expand = TRUE] <<- filetype
-            ii <- ii + 1
+            ii <- ii + 1L
 
 
             ## Change handlers:
@@ -145,14 +145,14 @@ iNZImportWin <- setRefClass(
             addHandlerChanged(loadURL,
                 function(h, ...) {
                     ## Switch to loading a URL
-                    fileTbl[1,1]$set_value(
+                    fileTbl[1L, 1L]$set_value(
                         ifelse(svalue(loadURL), "File URL :", "File Name :")
                     )
                     visible(browseBtn) <<- !svalue(loadURL)
                     if (svalue(loadURL)) {
-                        delete(fileTbl, fileTbl[1, 2])
+                        delete(fileTbl, fileTbl[1L, 2L])
                         fileurl <<- gedit(text = "https://", width = 40)
-                        fileTbl[1, 2:5, expand = TRUE] <<- fileurl
+                        fileTbl[1L, 2:5, expand = TRUE] <<- fileurl
                         addHandlerChanged(fileurl,
                             function(h, ...) {
                                 fname <<- svalue(fileurl)
@@ -161,9 +161,9 @@ iNZImportWin <- setRefClass(
                             }
                         )
                     } else {
-                        delete(fileTbl, fileTbl[1, 2])
+                        delete(fileTbl, fileTbl[1L, 2L])
                         filename <<- glabel("")
-                        fileTbl[1, 2:4, expand = TRUE, anchor = c(1, 0)] <<- filename
+                        fileTbl[1L, 2:4, expand = TRUE, anchor = c(1, 0)] <<- filename
                     }
                 }
             )
@@ -250,7 +250,7 @@ iNZImportWin <- setRefClass(
                                 stringsAsFactors = TRUE
                             )
                         ),
-                        reset = TRUE
+                        reset = FALSE
                     )
                     if (fext == "svydesign") {
                         ## This needs to be updated to simply pass the spec object ...
@@ -268,20 +268,7 @@ iNZImportWin <- setRefClass(
                             }
                         }
 
-                        GUI$getActiveDoc()$getModel()$setDesign(
-                            strata = spec$strata,
-                            clus1 = clus1,
-                            clus2 = clus2,
-                            wt = spec$weights,
-                            fpc = spec$fpc,
-                            nest = if (is.null(spec$nest)) FALSE else as.logical(spec$nest),
-                            reptype = spec$type,
-                            repweights = spec$repweights,
-                            scale = spec$scale,
-                            rscales = spec$rscales,
-                            type = spec$svy_type,
-                            gui = GUI
-                        )
+                        GUI$getActiveDoc()$getModel()$setDesign(spec, gui = GUI)
 
                         setOK <- try(
                             GUI$getActiveDoc()$getModel()$createSurveyObject(),
@@ -289,15 +276,13 @@ iNZImportWin <- setRefClass(
                         )
 
                         if (!inherits(setOK, "try-error")) {
-                            # enabled(GUI$infBtn) <<- clear
-                            # dispose(designWin)
-
                             ## write design call
                             call <- paste(deparse(setOK$call), collapse = "\n")
 
                             call <- sprintf("%s <- %s",
                                 GUI$getActiveDoc()$getModel()$dataDesignName,
-                                gsub("dataSet", GUI$getActiveDoc()$getModel()$name, call))
+                                gsub("dataSet", GUI$getActiveDoc()$getModel()$name, call)
+                            )
                             GUI$rhistory$add(
                                 c("## create survey design object", call),
                                 tidy = TRUE
@@ -306,25 +291,23 @@ iNZImportWin <- setRefClass(
                             ## update plot
                             GUI$updatePlot()
                         } else {
-                            gmessage(paste0(
-                                "There is a problem with the survey specification file:\n\n",
-                                setOK),
-                                icon = "error")
+                            gmessage(
+                                paste0(
+                                    "There is a problem with the survey specification file:\n\n",
+                                    setOK
+                                ),
+                                icon = "error"
+                            )
                         }
                     }
 
                     dispose(infw)
 
-                    ## and activate menu
-                    # GUI$menuBarWidget$defaultMenu()
-
                     ## dunno why but need to delete gdf ...
-                    #if (!is.null(prev)) delete(prevGp, prev)
                     dispose(importFileWin)
                 },
                 container = btnGp
             )
-
 
             addHandlerDestroy(importFileWin,
                 handler = function(h, ...) {
@@ -341,13 +324,15 @@ iNZImportWin <- setRefClass(
             fext <<- tools::file_ext(fname)
 
             blockHandlers(filetype)
-            match <- which(sapply(filetypes[-1],
-                function(ft)
-                    grepl(
-                        paste0(ft$patterns, "$", collapse = "|"),
-                        paste0(".", fext)
-                    )
-            ))
+            match <- which(
+                sapply(filetypes[-1],
+                    function(ft)
+                        grepl(
+                            paste0(ft$patterns, "$", collapse = "|"),
+                            paste0(".", fext)
+                        )
+                )
+            )
             svalue(filetype, index = TRUE) <<-
                 if (length(match) > 0) match else 0
             unblockHandlers(filetype)
@@ -383,21 +368,23 @@ iNZImportWin <- setRefClass(
             switch(fext,
                 "csv" = ,
                 "txt" = {
-                    tmpData <<- suppressWarnings(suppressMessages({
-                        iNZightTools::smart_read(fname,
-                            fext,
-                            preview = preview,
-                            column_types = col_types(),
-                            encoding = encoding,
-                            delimiter = switch(fext,
-                                "csv" = csvdelim,
-                                "txt" = txtdelim,
-                                NULL
-                            ),
-                            decimal_mark = decMark,
-                            grouping_mark = bigMark
-                        )
-                    }))
+                    tmpData <<- suppressWarnings(
+                        suppressMessages({
+                            iNZightTools::smart_read(fname,
+                                fext,
+                                preview = preview,
+                                column_types = col_types(),
+                                encoding = encoding,
+                                delimiter = switch(fext,
+                                    "csv" = csvdelim,
+                                    "txt" = txtdelim,
+                                    NULL
+                                ),
+                                decimal_mark = decMark,
+                                grouping_mark = bigMark
+                            )
+                        })
+                    )
                 },
                 "RData" = ,
                 "rda" = {
@@ -426,7 +413,12 @@ iNZImportWin <- setRefClass(
                 "svydesign" = {
                     svyspec <<- iNZightTools::import_survey(fname)
                     if (is.null(svyspec$data)) {
-                        gmessage("No data file included. Please load the data first, then import the survey from Data > Survey design > Specify survey design.",
+                        gmessage(
+                            paste(
+                                "No data file included. Please load the data first,",
+                                "then import the survey from",
+                                "Data > Survey design > Specify survey design."
+                            ),
                             title = "No data included",
                             parent = importFileWin
                         )
@@ -463,7 +455,11 @@ iNZImportWin <- setRefClass(
                 unblockHandlers(rdaName)
             }
             if (!is.null(rdaName)) {
-                svalue(rdaLabel) <<- ifelse(fext %in% c("xls", "xlsx"), "Sheet :", "Dataset :")
+                svalue(rdaLabel) <<- ifelse(
+                    fext %in% c("xls", "xlsx"),
+                    "Sheet :",
+                    "Dataset :"
+                )
             }
         },
         ## Generate a preview
@@ -546,7 +542,11 @@ iNZImportWin <- setRefClass(
                                 }
                             )
                             invisible(prev$remove_popup_menu())
-                            svalue(prevLbl) <<- "Select values in the 'Type' column, then click and use the drop-down to change the type."
+                            svalue(prevLbl) <<-
+                                paste(
+                                    "Select values in the 'Type' column, then click",
+                                    "and use the drop-down to change the type."
+                                )
                             # add handler to changing values in RHS column
                         } else {
 
@@ -564,29 +564,33 @@ iNZImportWin <- setRefClass(
 
                             invisible(prev$remove_popup_menu())
                             if (can_edit_types) {
-                                invisible(prev$add_popup(function(col_index) {
-                                    j <- prev$get_column_index(col_index)
-                                    types <- c(
-                                        "auto",
-                                        "numeric",
-                                        "categorical",
-                                        "date",
-                                        "time",
-                                        "datetime"
+                                invisible(
+                                    prev$add_popup(
+                                        function(col_index) {
+                                            j <- prev$get_column_index(col_index)
+                                            types <- c(
+                                                "auto",
+                                                "numeric",
+                                                "categorical",
+                                                "date",
+                                                "time",
+                                                "datetime"
+                                            )
+                                            if (!fext %in% c("csv", "txt"))
+                                                types <- types[1:3]
+                                            list(
+                                                gradio(types,
+                                                    selected = match(fColTypes[j], types),
+                                                    handler = function(h, ...) {
+                                                        fColTypes[j] <<-
+                                                            types[svalue(h$obj, index = TRUE)]
+                                                        generatePreview(h, ..., reload = TRUE)
+                                                    }
+                                                )
+                                            )
+                                        }
                                     )
-                                    if (!fext %in% c("csv", "txt"))
-                                        types <- types[1:3]
-                                    list(
-                                        gradio(types,
-                                            selected = match(fColTypes[j], types),
-                                            handler = function(h, ...) {
-                                                fColTypes[j] <<-
-                                                    types[svalue(h$obj, index = TRUE)]
-                                                generatePreview(h, ..., reload = TRUE)
-                                            }
-                                        )
-                                    )
-                                }))
+                                )
                             }
                             names(prev) <<- paste0(
                                 names(prev),
@@ -642,15 +646,15 @@ iNZImportWin <- setRefClass(
                 rdaLabel <<- glabel("Dataset :")
                 font(rdaLabel) <<- list(weight = "bold")
                 rdaName <<- gcombobox("(none)")
-                fileTbl[4, 1, anchor = c(1, 0)] <<- rdaLabel
-                fileTbl[4, 2:5, expand = TRUE] <<- rdaName
+                fileTbl[4L, 1L, anchor = c(1, 0)] <<- rdaLabel
+                fileTbl[4L, 2:5, expand = TRUE] <<- rdaName
                 addHandlerChanged(rdaName, generatePreview)
             }
         },
         removeDataName = function() {
             if (!is.null(rdaName)) {
-                delete(fileTbl, fileTbl[4,1])
-                delete(fileTbl, fileTbl[4,2])
+                delete(fileTbl, fileTbl[4L, 1L])
+                delete(fileTbl, fileTbl[4L, 2L])
                 rdaName <<- NULL
                 rdaLabel <<- NULL
             }
@@ -663,7 +667,7 @@ iNZImportWin <- setRefClass(
 
             ## build it up!
             tbl <- glayout(container = advGp)
-            ii <- 1
+            ii <- 1L
 
             switch(fext,
                 "csv" =,
@@ -686,9 +690,9 @@ iNZImportWin <- setRefClass(
                             generatePreview(h, ...)
                         }
                     )
-                    tbl[ii, 1, anchor = c(1, 0), expand = TRUE] <- lbl
+                    tbl[ii, 1L, anchor = c(1, 0), expand = TRUE] <- lbl
                     tbl[ii, 2:3, expand = TRUE] <- delimOpt
-                    ii <- ii + 1
+                    ii <- ii + 1L
 
                     ## --- DECIMAL MARK
                     lbl <- glabel("Decimal Mark :")
@@ -706,9 +710,9 @@ iNZImportWin <- setRefClass(
                                 generatePreview(h, ...)
                         }
                     )
-                    tbl[ii, 1, anchor = c(1, 0), expand = TRUE] <- lbl
+                    tbl[ii, 1L, anchor = c(1, 0), expand = TRUE] <- lbl
                     tbl[ii, 2:3, expand = TRUE] <- decMarkOpt
-                    ii <- ii + 1
+                    ii <- ii + 1L
 
                     ## --- THOUSANDS SEPARATOR
                     lbl <- glabel("Thousands Separator :")
@@ -726,9 +730,9 @@ iNZImportWin <- setRefClass(
                                 generatePreview(h, ...)
                         }
                     )
-                    tbl[ii, 1, anchor = c(1, 0), expand = TRUE] <- lbl
+                    tbl[ii, 1L, anchor = c(1, 0), expand = TRUE] <- lbl
                     tbl[ii, 2:3, expand = TRUE] <- bigMarkOpt
-                    ii <- ii + 1
+                    ii <- ii + 1L
 
                     ## --- FILE ENCODING
                     lbl <- glabel("File Encoding :")
@@ -740,12 +744,12 @@ iNZImportWin <- setRefClass(
                             generatePreview(h, ...)
                         }
                     )
-                    tbl[ii, 1, anchor = c(1, 0), expand = TRUE] <- lbl
+                    tbl[ii, 1L, anchor = c(1, 0), expand = TRUE] <- lbl
                     tbl[ii, 2:3, expand = TRUE] <- encOpt
-                    ii <- ii + 1
+                    ii <- ii + 1L
 
                     ## ----------------- RIGHT HAND SIDE
-                    ii <- 1
+                    ii <- 1L
 
                     ## --- DATE FORMAT
                     ## this should be a drop down of some common formats (2016-01-16, 16 Jan 2016, 16/01/16, 01/16/16, ...)
@@ -757,16 +761,13 @@ iNZImportWin <- setRefClass(
                 ## default case
                 {
                     lbl <- glabel("No options available for this file type.")
-                    tbl[ii, 1, anchor = c(-1, 0), expand = TRUE] <- lbl
+                    tbl[ii, 1L, anchor = c(-1, 0), expand = TRUE] <- lbl
                 }
             ) # end switch(fext)
         },
         closeHandler = function(h, ...) {
-            #addHandlerUnrealize(importFileWin, handler = function(h, ...) {
-            print("closing now")
             if (!is.null(prev)) delete(prevGp, prev)
             return(TRUE)
-            #})
         }
     )
 )

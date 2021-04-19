@@ -1,5 +1,6 @@
-data: ncsr.csv
-strata: SESTRAT
-clusters: SECLUSTR
-weights: popweight
-nest: TRUE
+data = "https://inzight.nz/testdata/ncsr.csv"
+strata = "SESTRAT"
+clusters = "SECLUSTR"
+weights = "popweight"
+nest = true
+type = "survey"

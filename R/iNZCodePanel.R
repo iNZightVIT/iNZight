@@ -15,7 +15,7 @@ iNZCodePanel <- setRefClass(
         initialize = function(gui) {
             initFields(
                 GUI = gui,
-                button_width = 80, button_height = 25,
+                button_width = 80, button_height = -1,
                 code_font = list(family = "monospace", size = 10),
                 original_code = ""
             )
@@ -33,9 +33,19 @@ iNZCodePanel <- setRefClass(
             RGtk2::gtkTextViewSetLeftMargin(input$widget, 0)
             RGtk2::gtkTextViewSetRightMargin(input$widget, 0)
 
-            ctrl_pnl <- ggroup(container = panel, expand = TRUE, fill = TRUE)
+            ctrl_pnl <- ggroup(container = panel,
+                expand = TRUE,
+                fill = TRUE,
+                horizontal = !GUI$popOut
+            )
+            # size(ctrl_pnl) <- c(-1, 25)
 
-            lbl <- glabel("R code for the current plot is shown above, which can be edited and run.")
+            lbltxt <- paste(
+                "R code for the current plot is shown above",
+                "which can be edited and run.",
+                sep = ifelse(GUI$popOut, "\n", ", ")
+            )
+            lbl <- glabel(lbltxt)
             font(lbl) <- list(size = 9, weight = "bold")
             add(ctrl_pnl, lbl, anchor = c(-1, 0))
 
@@ -54,9 +64,10 @@ iNZCodePanel <- setRefClass(
                 container = btn_pnl,
                 handler = function(h, ...) reset_code()
             )
-            store_btn$set_icon("rlogo")
-            run_btn$set_icon("go")
-            reset_btn$set_icon("reset")
+            store_btn$set_icon("")
+            run_btn$set_icon("")
+            reset_btn$set_icon("")
+
             size(store_btn) <<- c(button_width, button_height)
             size(run_btn) <<- c(button_width, button_height)
             size(reset_btn) <<- c(button_width, button_height)
@@ -69,7 +80,7 @@ iNZCodePanel <- setRefClass(
             enabled(store_btn) <<- enabled(run_btn) <<- enabled(reset_btn) <<-
                 svalue(input) != ""
 
-            size(panel) <<- c(-1, 90)
+            size(input) <<- c(-1, 60)
         },
         set_input = function(code) {
             original_code <<- code
@@ -121,7 +132,6 @@ iNZCodePanel <- setRefClass(
             }
 
             if (!grepl("^inzplot", svalue(input))) break
-            # if (!inherits(rawpl, "inzplotoutput")) break
 
             curpl <- unclass(rawpl)
             if (!is.null(attr(curpl, "dotplot.redraw")))
@@ -281,6 +291,8 @@ iNZCodePanel <- setRefClass(
         input_handler = function(h, ...) {
             enabled(store_btn) <<- enabled(run_btn) <<- enabled(reset_btn) <<-
                 svalue(input) != ""
-        }
+        },
+        show = function() visible(panel) <<- TRUE,
+        hide = function() visible(panel) <<- FALSE
     )
 )

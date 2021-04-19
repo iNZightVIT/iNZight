@@ -1,5 +1,7 @@
 context("Code Panel")
 
+skip_on_cran()
+
 # load_all("../iNZightPlots")
 
 # try(ui$close()); load_all()

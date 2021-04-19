@@ -58,6 +58,8 @@ test_that("UI correctly displays the data", {
 })
 
 test_that("Example data menus work correctly", {
+    skip_if_not_installed("iNZightModules")
+
     exwin <- iNZImportExampleWin$new(ui)
     mod <- exwin$importFileWin$children[[1]]$children[[1]]$children[[2]]
     expect_equal(svalue(mod), "Default")
@@ -279,7 +281,7 @@ on.exit(unlink(tf), add = TRUE)
 write.csv(many_cols, tf, quote = FALSE, row.names = FALSE)
 
 if (interactive()) {
-    try(ui$close()); load_all()
+    try(ui$close()); test:load_all()
     ui <- iNZGUI$new()
     ui$initializeGui()
 }
@@ -334,8 +336,9 @@ test_that("JSON files load", {
     expect_silent(imp$okBtn$invoke_change_handler())
     expect_equivalent(ui$getActiveData(), iris)
     expect_match(
-        tail(ui$rhistory$get(), 1),
+        ui$rhistory$get(),
         "jsonlite::fromJSON(",
-        fixed = TRUE
+        fixed = TRUE,
+        all = FALSE
     )
 })

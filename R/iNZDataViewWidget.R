@@ -12,8 +12,11 @@ iNZDataViewWidget <- setRefClass(
         ),
     methods = list(
         initialize = function(gui, dataThreshold) {
-            initFields(GUI = gui,
-                       dataThreshold = dataThreshold)
+            initFields(
+                GUI = gui,
+                dataThreshold = dataThreshold
+            )
+
             dataGp <<- ggroup(horizontal = TRUE, expand = TRUE)
             dataSet <- GUI$getActiveData()
             ## create the data.frame view
@@ -30,9 +33,14 @@ iNZDataViewWidget <- setRefClass(
         updateWidget = function() {
             view <- visible(dfView)
             ## delete the currently displayed views
-            try(invisible(sapply(dataGp$children,
-                                 function(x) delete(dataGp, x))),
-                silent = TRUE)
+            try(
+                invisible(
+                    sapply(dataGp$children,
+                        function(x) delete(dataGp, x)
+                    )
+                ),
+                silent = TRUE
+            )
             ## create the data.frame view
             createDfView()
             ## create the variable view
@@ -75,7 +83,9 @@ iNZDataViewWidget <- setRefClass(
                         X1 <- dfWidget[]
                         if(class(X1) != "data.frame")
                             newData <- data.frame(X1)
-                        GUI$getActiveDoc()$getModel()$updateData(X1)})
+                        GUI$getActiveDoc()$getModel()$updateData(X1)
+                    }
+                )
             } else {
                 visible(dfView) <<- FALSE
             }
@@ -92,39 +102,27 @@ iNZDataViewWidget <- setRefClass(
             ## prefix variable type to variable names
             vnames <- names(dataSet)
             ## These are explicitely removes by `gsub` in the addDropSource handler below
-            vtypes <- sapply(dataSet, function(x) 
-                switch(iNZightTools::vartype(x), 
-                    'num' = '(n)', 
-                    'cat' = '(c)', 
-                    'dt' = '(t)'
-                ))
+            vtypes <- sapply(dataSet,
+                function(x)
+                    switch(iNZightTools::vartype(x),
+                        'num' = '(n)',
+                        'cat' = '(c)',
+                        'dt' = '(t)'
+                    )
+            )
 
             vnames <- paste(vtypes, vnames)
 
-            #  if(FALSE){#length(names(dataSet)) > N && length(names(dataSet)) < 80) {
-            # # if(length(dataSet) < 100000 && length(names(dataSet)) > 80) {
-            #     varWidget <- list(
-            #         gtable(vnames[1:floor(length(names(dataSet))/2)], expand = TRUE),
-            #         gtable(vnames[(floor(length(names(dataSet))/2)+1):ncol(dataSet)],
-            #                expand = TRUE))
-            #     names(varWidget[[1]]) <- "VARIABLES"
-            #     names(varWidget[[2]]) <- "...CONTINUED"
-            # } else {
-            #     varWidget <- list(gtable(vnames, expand = TRUE))
-            #     names(varWidget[[1]]) <- "VARIABLES (n = numeric, c = categorical, dt = date/time)"
-            # }
-            ## use the variable view as dropsource and add to data group
-            
             ## display a search box to filter displayed variables
             searchBox <<- NULL
             searchtimer <- NULL
             if (length(names(dataSet)) > N) {
-                searchBox <<- gedit(width = 50, 
+                searchBox <<- gedit(width = 50,
                     initial.msg = "Search filter",
                     handler = function(h, ...) {
-                        matches <- grep(svalue(h$obj), names(dataSet), 
+                        matches <- grep(svalue(h$obj), names(dataSet),
                             ignore.case = TRUE)
-                        if (length(matches) == 0) 
+                        if (length(matches) == 0)
                             matches <- "No matching variable names"
                         else
                             matches <- names(dataSet)[matches]
@@ -136,10 +134,10 @@ iNZDataViewWidget <- setRefClass(
                 addHandlerKeystroke(searchBox,
                     function(h, ...) {
                         if (!is.null(searchtimer))
-                            if (searchtimer$started) 
+                            if (searchtimer$started)
                                 searchtimer$stop_timer()
 
-                        searchtimer <- gtimer(300, 
+                        searchtimer <- gtimer(300,
                             searchBox$invoke_change_handler,
                             one.shot = TRUE
                         )
@@ -149,11 +147,11 @@ iNZDataViewWidget <- setRefClass(
             }
 
             varWidget <<- gtable(vnames, expand = TRUE)
-            names(varWidget) <<- 
+            names(varWidget) <<-
                 "VARIABLES (n = numeric, c = categorical, dt = date/time)"
 
             varWidget$remove_popup_menu()
-            addDropSource(varWidget, 
+            addDropSource(varWidget,
                 handler = function(h, ...) {
                     ## Remove the variable type from the tag (otherwise `variable doesn't exist`)
                     gsub("\\([a-z]\\) ", "", svalue(h$obj))
@@ -162,18 +160,10 @@ iNZDataViewWidget <- setRefClass(
             add(varView, varWidget, expand = TRUE)
 
             invisible(NULL)
-
-            # invisible(lapply(varWidget, function(x) {
-            #     add(varView, x, expand = TRUE)
-            #     x$remove_popup_menu()
-            #     addDropSource(x, handler = function(h, ...) {
-            #         ## Remove the variable type from the tag (otherwise `variable doesn't exist`)
-            #         gsub("\\([a-z]\\) ", "", svalue(h$obj))
-            #     })}))
         },
         ## change the currently active View
         changeView = function() {
-            if(visible(dfView)) {
+            if (visible(dfView)) {
                 visible(dfView) <<- FALSE
                 visible(varView) <<- TRUE
             } else {
@@ -190,5 +180,6 @@ iNZDataViewWidget <- setRefClass(
         listView = function() {
             visible(dfView) <<- FALSE
             visible(varView) <<- TRUE
-        })
+        }
     )
+)
