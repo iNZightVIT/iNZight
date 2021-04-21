@@ -1,3 +1,5 @@
+* Sets fallback addon directory using `tools::R_user_dir('iNZight', 'cache')`
+
 # iNZight 4.1
 
 ## Major changes
