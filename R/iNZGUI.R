@@ -145,7 +145,9 @@ iNZGUI <- setRefClass(
                 addonModuleDir <<- preferences$module_dir
             } else {
                 addonModuleDir <<- Sys.getenv("INZIGHT_MODULES_DIR")
-            } else {
+            }
+
+            if (addonModuleDir == "") {
                 addonModuleDir <<- file.path(
                     tools::R_user_dir("iNZight", "cache"),
                     "modules"
