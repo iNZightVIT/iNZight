@@ -1,3 +1,6 @@
+## iNZight 4.1.1
+
+* fix bug preventing survey design specification window from being visible
 
 
 
@@ -32,11 +35,6 @@
 * add close_module method so modules can close themselves and iNZight's main GUI will be restored correctly
 
 **Plus many other fixes and changes from other iNZight packages**
-
-## Patches
-
-### 4.1.1
-* fix bug preventing survey design specification window from being visible
 
 ***
 
