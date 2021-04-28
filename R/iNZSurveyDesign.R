@@ -54,6 +54,7 @@ iNZSurveyDesign <- setRefClass(
                 height = 150,
                 parent = GUI$win
             )
+            on.exit(visible(designWin) <<- TRUE)
 
             gmain <- gvbox(container = designWin, expand = TRUE)
             gmain$set_borderwidth(5)
@@ -243,8 +244,6 @@ iNZSurveyDesign <- setRefClass(
                         svalue(freqVar) <<- spec$freq
                 }
             )
-
-           visible(designWin) <<- TRUE
         },
         set_design = function() {
             g <- gvbox()
