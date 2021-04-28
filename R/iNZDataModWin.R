@@ -263,7 +263,7 @@ iNZtrnsWin <- setRefClass(
 
             trLbls <- sapply(seq_along(transforms),
                 function(i) {
-                    lbl <- glabel(names(transforms)[iL])
+                    lbl <- glabel(names(transforms)[i])
                     font(lbl) <- list(
                         weight = "bold",
                         family = "sans",
@@ -1612,7 +1612,7 @@ iNZctocatmulWin <- setRefClass(
                 handler = function(h, ...) help_page("user_guides/variables/#convert2")
             )
             titlelyt <- glayout(homegenous = FALSE)
-            titlelyt[1L, 4:19, expand = TRUE, anchor = c(0, )] <- lbl1
+            titlelyt[1L, 4:19, expand = TRUE, anchor = c(0, -1)] <- lbl1
             titlelyt[1L, 20L, expand = TRUE, anchor = c(1, -1)] <- helpbtn
 
             lbl2 <- glabel("(Hold Ctrl to choose many)")
