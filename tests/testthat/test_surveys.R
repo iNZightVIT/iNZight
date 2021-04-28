@@ -17,6 +17,7 @@ on.exit(try(gWidgets2::dispose(ui$win), TRUE))
 
 test_that("Survey design window defaults are empty", {
     expect_silent(swin <- iNZSurveyDesign$new(ui))
+    expect_true(visible(swin$designWin))
 
     expect_equal(svalue(swin$stratVar), "")
     expect_equal(svalue(swin$clus1Var), "")

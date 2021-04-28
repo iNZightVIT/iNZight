@@ -1,4 +1,7 @@
+## iNZight 4.1.1
 
+* fix bug preventing 'survey design specification' window from being visible
+* fix typos in 'transform variables' window and 'convert (multiple) to categorical'
 
 
 # iNZight 4.1
@@ -30,7 +33,6 @@
 * fix bug when setting new data object causing code history and data's new name to be lost
 * fix small bug in code writing where colon (:) remained in list of packages for installation (#352, @tmelliott)
 * add close_module method so modules can close themselves and iNZight's main GUI will be restored correctly
-
 
 **Plus many other fixes and changes from other iNZight packages**
 
