@@ -32,7 +32,7 @@
 
 ## Patches
 
-### 4.1.0-1
+### 4.1.1
 * fix bug preventing survey design specification window from being visible
 
 ***
