@@ -3,7 +3,6 @@
 * fix bug preventing 'survey design specification' window from being visible
 * fix typos in 'transform variables' window and 'convert (multiple) to categorical'
 
-
 # iNZight 4.1
 
 ## Major changes
@@ -18,11 +17,11 @@
 * refactor of the Aggregate Data functionality, allowing users to select more than three variables and to perform aggregation over a subset of variables
 * Join data now allows users to select an existing dataset, in addition to importing a new one (#340, @tmelliott)
 * updated preferences window to allow new options to be added in future without getting cluttered
-* create new 'Form Class Intervals' window connecting to `iNZightTools::form_class_intervals()` function; includes code and a much smoother intervace, with preview of resulting intervals
+* create new 'Form Class Intervals' window connecting to `iNZightTools::form_class_intervals()` function; includes code and a much smoother interface, with preview of resulting intervals
 
 ## Minor changes
 
-* when loading a new data set, exisiting datasets are kept (previously they were all removed; at this point I don't know why that design decision was made ...)
+* when loading a new data set, existing datasets are kept (previously they were all removed; at this point I don't know why that design decision was made ...)
 * allow user to delete any dataset (including the original); the previous dataset is loaded in it's place
 * user preferences are are now stored in `tools::R_user_dir()`; user is prompted to create config directories
 * enable code tidying (which uses the 'styler' package)
@@ -67,7 +66,7 @@ This release is a complete overhaul of the way in which variables are passed aro
 * Add option to save interactive plots locally (including assets)
 * Add support for JSON files
 * Add data report (pdf/html/word) (using 'dataMaid' package)
-* Add column selection and reordering dialog (File > Select and reorder variables)
+* Add column selection and reordering dialogue (File > Select and reorder variables)
 * Adds ability to quickly reload iNZight from the File menu, preserving all changes
 * Added better icons to the menus
 
@@ -114,7 +113,7 @@ __Release date__: 11 November 2019
 - the plot history window now has a textbox for users to modify code and run in an temporary environment
 - sortable plots now have ascending/descending option
 - enable inference for survey designs
-- addon modules now available (as a developmental feature)
+- add-on modules now available (as a developmental feature)
 - add option to export as rda
 - allow user to select which Excel sheet to import
 - enable transparency for ridgeline plots
@@ -259,7 +258,7 @@ __Release date:__ 15 August 2018
 - import data now uses updated functions which return the file-specified code,
   available from Advanced > R Code history
 - maps module completely renovated
-- interactive plots have recieved more updates and fixes
+- interactive plots have received more updates and fixes
 
 
 ## iNZight 3.2.2
@@ -267,11 +266,11 @@ __Release date:__ 25 May 2018
 
 - fix bug in import window where some character encodings were being distorted
 - fix typo in import window info box
-- catch import errors, so the "please wait" dialog hopefully doesn't stay open forever
+- catch import errors, so the "please wait" dialogue hopefully doesn't stay open forever
 
 
 ## iNZight 3.2.1
-__Release date:__ 21 Febuary 2018
+__Release date:__ 21 February 2018
 
 - fix small issue in import module that prevented reading of non-UTF-8 csv files
 
@@ -363,7 +362,7 @@ t-tests performed on request.
 
 ### Bug Fixes
 
-- Fix a bug in inference output where reorded factors' confidence intervals and p-values were _not_ reordered!
+- Fix a bug in inference output where reordered factors' confidence intervals and p-values were _not_ reordered!
 - Fix issue where confidence intervals for two-way table row proportions were ordered incorrectly
 
 
@@ -395,7 +394,7 @@ __Release date:__ 23 September 2016
 
 
 # iNZight 3.0
-__Release date:__ 5 Septemer, 2016
+__Release date:__ 5 September, 2016
 
 This is a major new release of iNZight, so many things have changed.
 We hope you like them!
@@ -426,7 +425,7 @@ We can't list everything here, but some of the important ones are listed below.
 - Resize points has been adjusted to resize the _area_ proportional to the value.
   Also added an "emphasize" option, which scales sizes linearly.
 - __COLOUR__: new, better palettes have been introduced, including [viridis](https://cran.r-project.org/web/packages/viridis/vignettes/intro-to-viridis.html),
-  which are colourblind friendly.
+  which are colour-blind friendly.
 - Multiple Response has been overhauled to be more intuitive and fit in with the rest of iNZight.
 - (temporary) Just a quick workaround for analysing tables in iNZight: Dataset > Expand Table
 
@@ -483,7 +482,7 @@ __Release date__: 12 October, 2015
 
 ### Major Changes
 
-- Replace the drag-drop boxes for variabes with drop-down
+- Replace the drag-drop boxes for variables with drop-down
   boxes for an alternative method of variable
   selection. Drag-and-drop functionality has been retained.
 
@@ -496,7 +495,7 @@ __Release date__: 12 October, 2015
 - Fix bug in the Multiple Response module that gave an
   "inverse" error message.
 - Various other small fixes throughout iNZight and other
-  dependency pacakges. See their change logs for details.
+  dependency packages. See their change logs for details.
 
 
 # iNZight 2.3
@@ -522,7 +521,7 @@ __Release date__: 4 August, 2015
 
 ## Bug Fixes
 
-- fixes to a few issues occuring in dotplots
+- fixes to a few issues occurring in dotplots
 - display an error if Add to Plot is called without any
   variables having been selected
 
@@ -585,7 +584,7 @@ __Release date__: 25 May, 2015
   navigate.
 - When colouring points by a numeric variable, a continuous colour
   range is used rather than a discrete one.
-- The plotting package has been rewritten to accomodate survey
+- The plotting package has been rewritten to accommodate survey
   designs (this will be integrated with iNZight itself at a later
   date). However, the plots have been modified to be cleaner and far
   more efficient. Additionally, the algorithms used for the
@@ -600,7 +599,7 @@ __Release date__: 25 May, 2015
   applied to medians.
 - LOCATOR: functionality for scatterplots vastly improved,
   allowing selection of related points, retaining points over
-  multiple graphcs, and selecting points by a variable.
+  multiple graphics, and selecting points by a variable.
   (similar upgrades for dot plots coming in v2.2)
 
 ### Minor Changes
