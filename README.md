@@ -11,6 +11,6 @@ The `R` package that can be found here represents the graphical user interace (G
 Installation
 =======
 
-The easiest way to install `iNZight` is through the standalone version that can be found on the official website https:/inzight.nz.
+The easiest way to install `iNZight` is through the standalone version that can be found on the official website https://inzight.nz.
 
 The more experienced `R` user may want to install `iNZight` as an `R` package. This way `iNZight` can readily be updated through github without having to wait for an official release. Additional features and bugfixes will appear in this github repository first before they are incorporated into the standalone version.
