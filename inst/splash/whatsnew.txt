@@ -11,5 +11,7 @@ We've gone ahead and made a few improvements ...
   remove inference information, adjust your hypothesis, and see the
   results instantly.
 
-- And many behind-the-scenes fixes, particularly to better support
-  survey designs.
+- Survey designs are now completely supported: plots, summaries,
+  and data wrangling! 
+
+- Plus other bug fixes and improvements.
