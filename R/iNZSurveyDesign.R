@@ -104,6 +104,8 @@ iNZSurveyDesign <- setRefClass(
                             clus2 <- svalue_or_null(clus2Var)
                             if (!is.null(clus1) && !is.null(clus2)) {
                                 clus <- paste(clus1, clus2, sep = " + ")
+                            } else if (is.null(clus1) && is.null(clus2)) {
+                                clus <- "1"
                             } else {
                                 clus <- ifelse(is.null(clus1), clus2, clus1)
                             }

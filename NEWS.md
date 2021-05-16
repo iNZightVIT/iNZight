@@ -1,3 +1,7 @@
+## iNZight 4.1.2
+
+* add missing conditional for SRS designs
+
 ## iNZight 4.1.1
 
 * fix bug preventing 'survey design specification' window from being visible
