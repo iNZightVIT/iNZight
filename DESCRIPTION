@@ -22,7 +22,6 @@ Depends:
     objectProperties
 Imports:
     colorspace,
-    gdata,
     grDevices,
     grid,
     gWidgets2RGtk2,
