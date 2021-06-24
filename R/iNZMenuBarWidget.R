@@ -15,7 +15,7 @@ iNZMenuBarWidget <- setRefClass(
 
             ## this is trickier, because it depends on a bunch of things
             plotmenu <<- placeholder("Plot")
-            menubar <<- gmenu(list(), container = container)
+            menubar <<- gmenu(list(), container = container, expand = TRUE)
 
             hasModules()
 

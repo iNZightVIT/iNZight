@@ -1,4 +1,5 @@
 * use promises package to check for updates
+* menubar fills window width for aesthetics
 
 ## iNZight 4.1.1
 

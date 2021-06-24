@@ -183,7 +183,7 @@ iNZGUI <- setRefClass(
                 container = win,
                 use.scrollwindow = FALSE
             )
-            menugrp <- ggroup(container = gtop)
+            menugrp <- ggroup(container = gtop, fill = TRUE)
             initializeMenu(menugrp)
 
             g <- gpanedgroup(container = gtop, expand = TRUE)
