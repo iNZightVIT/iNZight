@@ -945,7 +945,7 @@ iNZGUI <- setRefClass(
                 check.updates = ifelse(
                     Sys.getenv('LOCK_PACKAGES') == "",
                     TRUE,
-                    Sys.getenv('LOCK_PACKAGES')
+                    !as.logical(Sys.getenv('LOCK_PACKAGES'))
                 ),
                 window.size = c(1250, 850),
                 popout = FALSE,
