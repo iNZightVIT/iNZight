@@ -159,12 +159,11 @@ iNZGUI <- setRefClass(
             ## Check for updates ... need to use try incase it fails (no connection etc)
             if (preferences$check.updates) {
                 oldpkg <- try(
-                        old.packages(
-                            # repos = "https://r.docker.stat.auckland.ac.nz"
-                            repos = "https://cran.rstudio.com"
-                        ),
-                        silent = TRUE
-                    )
+                    old.packages(
+                        repos = "https://r.docker.stat.auckland.ac.nz"
+                        # repos = "https://cran.rstudio.com"
+                    ),
+                    silent = TRUE
                 )
                 if (!inherits(oldpkg, "try-error") && !is.null(oldpkg) && nrow(oldpkg) > 0) {
                     win.title <- paste(win.title, " [updates available]")
