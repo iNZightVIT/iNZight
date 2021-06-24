@@ -1,3 +1,5 @@
+* use promises package to check for updates
+
 ## iNZight 4.1.1
 
 * fix bug preventing 'survey design specification' window from being visible
