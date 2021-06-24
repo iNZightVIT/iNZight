@@ -147,20 +147,6 @@ iNZGUI <- setRefClass(
                 addonModuleDir <<- Sys.getenv("INZIGHT_MODULES_DIR")
             }
 
-            ## Check for updates ... need to use try incase it fails (no connection etc)
-            if (preferences$check.updates) {
-                try(
-                    {
-                        oldpkg <- old.packages(
-                            repos = "https://r.docker.stat.auckland.ac.nz"
-                        )
-                        if (nrow(oldpkg) > 0)
-                            win.title <- paste(win.title, " [updates available]")
-                    },
-                    silent = TRUE
-                )
-            }
-
             popOut <<- preferences$popout
 
             win <<- gwindow(
@@ -169,6 +155,28 @@ iNZGUI <- setRefClass(
                 width = if (popOut) NULL else preferences$window.size[1],
                 height = preferences$window.size[2]
             )
+
+            ## Check for updates ... need to use try incase it fails (no connection etc)
+            if (preferences$check.updates) {
+                oldpkg_pr <- promises::future_promise(
+                    try(
+                        old.packages(
+                            # repos = "https://r.docker.stat.auckland.ac.nz"
+                            repos = "https://cran.rstudio.com"
+                        ),
+                        silent = TRUE
+                    )
+                )
+                promises::then(
+                    oldpkg_pr,
+                    function(x) {
+                        if (is.null(x) || nrow(x) == 0) return()
+                        win.title <- paste(win.title, " [updates available]")
+                        win$set_value(win.title)
+                    }
+                )
+                cat('Checking for updates ... \n')
+            }
 
             gtop <- ggroup(
                 horizontal = FALSE,
@@ -941,7 +949,11 @@ iNZGUI <- setRefClass(
             "Returns the default preferences"
             ## The default iNZight settings:
             list(
-                check.updates = TRUE,
+                check.updates = ifelse(
+                    Sys.getenv('LOCK_PACKAGES') == "",
+                    TRUE,
+                    Sys.getenv('LOCK_PACKAGES')
+                ),
                 window.size = c(1250, 850),
                 popout = FALSE,
                 font.size = 10,
