@@ -27,7 +27,6 @@ Imports:
     grid,
     gWidgets2RGtk2,
     iNZightPlots (>= 2.12),
-    promises,
     iNZightTools (>= 1.11),
     magrittr,
     methods,

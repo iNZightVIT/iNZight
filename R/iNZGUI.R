@@ -158,8 +158,7 @@ iNZGUI <- setRefClass(
 
             ## Check for updates ... need to use try incase it fails (no connection etc)
             if (preferences$check.updates) {
-                oldpkg_pr <- promises::future_promise(
-                    try(
+                oldpkg <- try(
                         old.packages(
                             # repos = "https://r.docker.stat.auckland.ac.nz"
                             repos = "https://cran.rstudio.com"
@@ -167,15 +166,10 @@ iNZGUI <- setRefClass(
                         silent = TRUE
                     )
                 )
-                promises::then(
-                    oldpkg_pr,
-                    function(x) {
-                        if (is.null(x) || nrow(x) == 0) return()
-                        win.title <- paste(win.title, " [updates available]")
-                        win$set_value(win.title)
-                    }
-                )
-                cat('Checking for updates ... \n')
+                if (!inherits(oldpkg, "try-error") && !is.null(oldpkg) && nrow(oldpkg) > 0) {
+                    win.title <- paste(win.title, " [updates available]")
+                    win$set_value(win.title)
+                }
             }
 
             gtop <- ggroup(
