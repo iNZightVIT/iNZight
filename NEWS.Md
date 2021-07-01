@@ -1,3 +1,7 @@
+* show code box when opening Add Inference panel
+* only pass 'conf' to `inference.type` for survey bar charts (comparison intervals not yet implemented)
+
+
 ## iNZight 4.1.1
 
 * fix bug preventing 'survey design specification' window from being visible
