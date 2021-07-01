@@ -147,20 +147,6 @@ iNZGUI <- setRefClass(
                 addonModuleDir <<- Sys.getenv("INZIGHT_MODULES_DIR")
             }
 
-            ## Check for updates ... need to use try incase it fails (no connection etc)
-            if (preferences$check.updates) {
-                try(
-                    {
-                        oldpkg <- old.packages(
-                            repos = "https://r.docker.stat.auckland.ac.nz"
-                        )
-                        if (nrow(oldpkg) > 0)
-                            win.title <- paste(win.title, " [updates available]")
-                    },
-                    silent = TRUE
-                )
-            }
-
             popOut <<- preferences$popout
 
             win <<- gwindow(
@@ -170,12 +156,27 @@ iNZGUI <- setRefClass(
                 height = preferences$window.size[2]
             )
 
+            ## Check for updates ... need to use try incase it fails (no connection etc)
+            if (preferences$check.updates) {
+                oldpkg <- try(
+                    old.packages(
+                        repos = "https://r.docker.stat.auckland.ac.nz"
+                        # repos = "https://cran.rstudio.com"
+                    ),
+                    silent = TRUE
+                )
+                if (!inherits(oldpkg, "try-error") && !is.null(oldpkg) && nrow(oldpkg) > 0) {
+                    win.title <- paste(win.title, " [updates available]")
+                    win$set_value(win.title)
+                }
+            }
+
             gtop <- ggroup(
                 horizontal = FALSE,
                 container = win,
                 use.scrollwindow = FALSE
             )
-            menugrp <- ggroup(container = gtop)
+            menugrp <- ggroup(container = gtop, fill = TRUE)
             initializeMenu(menugrp)
 
             g <- gpanedgroup(container = gtop, expand = TRUE)
@@ -941,7 +942,11 @@ iNZGUI <- setRefClass(
             "Returns the default preferences"
             ## The default iNZight settings:
             list(
-                check.updates = TRUE,
+                check.updates = ifelse(
+                    Sys.getenv('LOCK_PACKAGES') == "",
+                    TRUE,
+                    !as.logical(Sys.getenv('LOCK_PACKAGES'))
+                ),
                 window.size = c(1250, 850),
                 popout = FALSE,
                 font.size = 10,

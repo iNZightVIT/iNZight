@@ -4,18 +4,23 @@ iNZMenuBarWidget <- setRefClass(
         GUI = "ANY", container = "ANY",
         menubar = "ANY",
         plotmenu = "ANY",
-        modules_installed = "logical"
+        modules_installed = "logical",
+        can_install = "logical"
     ),
     methods = list(
         initialize = function(gui, container) {
             initFields(
                 GUI = gui,
-                container = container
+                container = container,
+                can_install = TRUE
             )
+
+            if (Sys.getenv("LOCK_PACKAGES") != "")
+                can_install <<- !as.logical(Sys.getenv("LOCK_PACKAGES"))
 
             ## this is trickier, because it depends on a bunch of things
             plotmenu <<- placeholder("Plot")
-            menubar <<- gmenu(list(), container = container)
+            menubar <<- gmenu(list(), container = container, expand = TRUE)
 
             hasModules()
 
@@ -397,7 +402,7 @@ iNZMenuBarWidget <- setRefClass(
         AdvancedMenu = function() {
             if (!hasData() && modules_installed) {
                 ## just provide the ability to install modules
-                return(
+                adv <-
                     list(
                         installmaps =
                             gaction("Install Maps",
@@ -413,7 +418,10 @@ iNZMenuBarWidget <- setRefClass(
                                     iNZightModules::ModuleManager$new(GUI)
                             )
                     )
-                )
+
+                if (!can_install) adv <- adv["manage"]
+
+                return(adv)
             }
 
             if (modules_installed) {
@@ -484,7 +492,7 @@ iNZMenuBarWidget <- setRefClass(
                             handler = function(h, ...)
                                 iNZightModules::ModuleManager$new(GUI))
                 )
-            } else {
+            } else if (can_install) {
                 adv <- list(
                     install_modules =
                         gaction("Install the Modules package ...",
@@ -535,6 +543,8 @@ iNZMenuBarWidget <- setRefClass(
                             }
                         )
                 )
+            } else {
+                adv <- list()
             }
 
             adv <- c(adv,
