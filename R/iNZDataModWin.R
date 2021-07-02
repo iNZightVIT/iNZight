@@ -1229,6 +1229,7 @@ iNZformClassIntervals <- setRefClass(
                 break_points <- as.numeric(strsplit(svalue(breaks), ",")[[1]])
                 break_points <- c(xr[1], break_points, xr[2])
             }
+            .dataset <- GUI$get_data_object()
             result <- iNZightTools::form_class_intervals(
                 .dataset,
                 variable = svalue(variable),
@@ -1251,7 +1252,11 @@ iNZformClassIntervals <- setRefClass(
             )
 
             if (preview) {
-                lvls <- levels(result[[2]])
+                if (iNZightTools::is_survey(result)) {
+                    lvls <- levels(result$variables[[ncol(result$variables)]])
+                } else {
+                    lvls <- levels(result[[2]])
+                }
                 lvls <- paste(lvls, collapse = ", ")
                 svalue(preview_levels) <<- lvls
             } else {

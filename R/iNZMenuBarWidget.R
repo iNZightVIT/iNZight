@@ -385,7 +385,7 @@ iNZMenuBarWidget <- setRefClass(
             )
             if (!is.null(GUI$getActiveDoc()$getModel()$getDesign())) {
                 # disable some items for surveys
-                enabled(menu[["Numeric Variables"]]$class) <- FALSE
+                # enabled(menu[["Numeric Variables"]]$class) <- FALSE
                 menu[["Dates and Times"]] <- gaction("Dates and Times", enabled = FALSE)
                 enabled(menu[["Dates and Times"]]) <- FALSE
             }
