@@ -407,6 +407,12 @@ iNZGUI <- setRefClass(
             "Updates the plot using the user's chosen variables and other settings"
             if (!is_initialized || !visible(win)) return()
 
+            # if plot is NOT `inzplotoutput`, AND code widget is turned on, run the code instead
+            if (plotType == "custom" && preferences$dev.features && preferences$show.code) {
+                code_panel$run_code()
+                return()
+            }
+
             curPlSet <- getActiveDoc()$getSettings()
 
             .dataset <- getActiveData()

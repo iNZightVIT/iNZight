@@ -18,6 +18,12 @@ iNZPlotRmveModWin <- setRefClass(
         initialize = function(gui = NULL, new = TRUE) {
             initFields(GUI = gui)
 
+            if (GUI$plotType == "custom") {
+                gmessage("Remove Additions only works with `inzplot` functions.",
+                    title = "Plot type not supported")
+                return()
+            }
+
             curSet <<- GUI$getActiveDoc()$getSettings()
             defSet <<- c(iNZightPlots:::inzpar(), iNZightPlots:::gg_defaults)
             ptypes <- iNZightPlots:::plot_types

@@ -21,88 +21,88 @@ iNZPlotInfWin <- setRefClass(
     methods = list(
         initialize = function(gui = NULL) {
             initFields(GUI = gui)
-            if (!is.null(GUI)) {
-                modwin <- GUI$initializeModuleWindow(
-                    title = "Add Inference Information"
+            if (is.null(GUI)) return()
+
+            modwin <- GUI$initializeModuleWindow(
+                title = "Add Inference Information"
+            )
+            mainGrp <- modwin$body
+
+            updateSettings()
+
+            ## Three layouts, one for parameter/method/type
+            parTab <<- glayout()
+            metTab <<- glayout()
+            typTab <<- glayout()
+            btnTab <<- glayout()
+
+            ## Labels for each option
+            parLab <- glabel("Parameter")
+            font(parLab) <- list(
+                weight = "bold",
+                family = "sans",
+                size = 9
+            )
+
+            metLab <- glabel("Type of Inference")
+            font(metLab) <- list(
+                weight = "bold",
+                family = "sans",
+                size = 9
+            )
+
+            typLab <- glabel("Type of Interval")
+            font(typLab) <- list(
+                weight = "bold",
+                family = "sans",
+                size = 9
+            )
+
+            parTab[2, 1, expand = TRUE, anchor = c(-1, 0)] <<- parLab
+            metTab[2, 1, expand = TRUE, anchor = c(-1, 0)] <<- metLab
+            typTab[2, 1, expand = TRUE, anchor = c(-1, 0)] <<- typLab
+
+            ## Show interval values button
+            intBtn <<- gbutton("Get values",
+                expand = FALSE,
+                handler = function(h, ...) {
+                    displayValues()
+                }
+            )
+            btnTab[2, 1, expand = TRUE] <<- intBtn
+            visible(intBtn) <<- FALSE
+            inflabl <- glabel(
+                paste(
+                    "* iNZight may appear upresponsive while",
+                    "the bootstraps are performed.\nPlease be patient."
                 )
-                mainGrp <- modwin$body
+            )
+            font(inflabl) <- list(size = 8)
+            btnTab[3, 1, expand = TRUE] <<- inflabl
 
-                updateSettings()
+            add(mainGrp, parTab)
+            add(mainGrp, metTab)
+            add(mainGrp, typTab)
+            add(mainGrp, btnTab)
 
-                ## Three layouts, one for parameter/method/type
-                parTab <<- glayout()
-                metTab <<- glayout()
-                typTab <<- glayout()
-                btnTab <<- glayout()
+            addSpring(mainGrp)
 
-                ## Labels for each option
-                parLab <- glabel("Parameter")
-                font(parLab) <- list(
-                    weight = "bold",
-                    family = "sans",
-                    size = 9
-                )
+            btnGrp <- modwin$footer
 
-                metLab <- glabel("Type of Inference")
-                font(metLab) <- list(
-                    weight = "bold",
-                    family = "sans",
-                    size = 9
-                )
+            helpButton <- gbutton("Help",
+                expand = TRUE,
+                fill = TRUE,
+                cont = btnGrp,
+                handler = function(h, ...)
+                    help_page("user_guides/plot_options/?topic=plot_inference")
+            )
 
-                typLab <- glabel("Type of Interval")
-                font(typLab) <- list(
-                    weight = "bold",
-                    family = "sans",
-                    size = 9
-                )
-
-                parTab[2, 1, expand = TRUE, anchor = c(-1, 0)] <<- parLab
-                metTab[2, 1, expand = TRUE, anchor = c(-1, 0)] <<- metLab
-                typTab[2, 1, expand = TRUE, anchor = c(-1, 0)] <<- typLab
-
-                ## Show interval values button
-                intBtn <<- gbutton("Get values",
-                    expand = FALSE,
-                    handler = function(h, ...) {
-                        displayValues()
-                    }
-                )
-                btnTab[2, 1, expand = TRUE] <<- intBtn
-                visible(intBtn) <<- FALSE
-                inflabl <- glabel(
-                    paste(
-                        "* iNZight may appear upresponsive while",
-                        "the bootstraps are performed.\nPlease be patient."
-                    )
-                )
-                font(inflabl) <- list(size = 8)
-                btnTab[3, 1, expand = TRUE] <<- inflabl
-
-                add(mainGrp, parTab)
-                add(mainGrp, metTab)
-                add(mainGrp, typTab)
-                add(mainGrp, btnTab)
-
-                addSpring(mainGrp)
-
-                btnGrp <- modwin$footer
-
-                helpButton <- gbutton("Help",
-                    expand = TRUE,
-                    fill = TRUE,
-                    cont = btnGrp,
-                    handler = function(h, ...)
-                        help_page("user_guides/plot_options/?topic=plot_inference")
-                )
-
-                okButton <- gbutton("Home",
-                    expand = TRUE,
-                    fill = TRUE,
-                    cont = btnGrp,
-                    handler = function(h, ...) GUI$close_module()
-                )
-            }
+            okButton <- gbutton("Home",
+                expand = TRUE,
+                fill = TRUE,
+                cont = btnGrp,
+                handler = function(h, ...) GUI$close_module()
+            )
         },
         ## up the curSet class variable
         updateSettings = function() {
