@@ -1217,19 +1217,20 @@ iNZformClassIntervals <- setRefClass(
         create_intervals = function(preview = TRUE) {
             if (skip_update) return()
 
-            .dataset <- GUI$getActiveData()
-            if (preview) {
-                .dataset <- .dataset[svalue(variable)]
-            }
+            data <- GUI$getActiveData()
 
             break_points <- NULL
             if (svalue(type) == "Manual") {
                 if (trimws(svalue(breaks)) == "") return()
-                xr <- range(.dataset[[svalue(variable)]], na.rm = TRUE)
+                xr <- range(data[[svalue(variable)]], na.rm = TRUE)
                 break_points <- as.numeric(strsplit(svalue(breaks), ",")[[1]])
                 break_points <- c(xr[1], break_points, xr[2])
             }
+
             .dataset <- GUI$get_data_object()
+            if (preview && !iNZightTools::is_survey(.dataset)) {
+                .dataset <- .dataset[svalue(variable)]
+            }
             result <- iNZightTools::form_class_intervals(
                 .dataset,
                 variable = svalue(variable),
@@ -1252,11 +1253,9 @@ iNZformClassIntervals <- setRefClass(
             )
 
             if (preview) {
-                if (iNZightTools::is_survey(result)) {
-                    lvls <- levels(result$variables[[ncol(result$variables)]])
-                } else {
-                    lvls <- levels(result[[2]])
-                }
+                lvls <- if (iNZightTools::is_survey(result))
+                    levels(result$variables[[ncol(result$variables)]])
+                    else levels(result[[2]])
                 lvls <- paste(lvls, collapse = ", ")
                 svalue(preview_levels) <<- lvls
             } else {
