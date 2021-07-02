@@ -24,7 +24,8 @@ iNZPlotInfWin <- setRefClass(
             if (is.null(GUI)) return()
 
             modwin <- GUI$initializeModuleWindow(
-                title = "Add Inference Information"
+                title = "Add Inference Information",
+                code = TRUE
             )
             mainGrp <- modwin$body
 
@@ -148,7 +149,7 @@ iNZBarchartInf <- setRefClass(
                 if (svalue(compInt) | svalue(confInt))
                     inf.type <- c("comp", "conf")[
                         c(
-                            svalue(compInt) & svalue(mthd, index = TRUE) == 1,
+                            svalue(compInt) & svalue(mthd, index = TRUE) == 1 & !is.survey,
                             svalue(confInt)
                         )
                     ]
