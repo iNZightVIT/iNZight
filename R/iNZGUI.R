@@ -473,6 +473,24 @@ iNZGUI <- setRefClass(
                 if (inherits(dop, "try-error")) {
                     ## Oops!
 
+                    # specific issues we can handle:
+                    msg <- attr(dop, "condition")$message
+                    if (grepl("following variables in the survey design", msg)) {
+                        vars <- strsplit(msg, "\n[ ]+")[[1]][3]
+                        plotMessage(
+                            heading = "Unable to plot chosen variables",
+                            message = paste(sep = "\n",
+                                "iNZight cannot plot factor variables in a survey design",
+                                "with only one level.",
+                                "",
+                                "Please remove the following variables: ",
+                                paste("   ", vars)
+                            ),
+                            type = ""
+                        )
+                        return(invisible(NULL))
+                    }
+
                     message("Call: ")
                     message(attr(dop, "condition")$call)
                     message("\nMessage: ")
@@ -1068,7 +1086,7 @@ iNZGUI <- setRefClass(
                 )
             }
         },
-        plotMessage = function(heading, message, footer) {
+        plotMessage = function(heading, message, footer, type = "error") {
             "Displays a message to the user using the plot panel"
             curPlot <<- NULL
             plotType <<- "none"
@@ -1120,14 +1138,19 @@ iNZGUI <- setRefClass(
                 gp = gpar(fontsize = 12, fontface = 'bold')
             )
 
-            grid::grid.text(
-                paste0(
-                    "The following error message was reported:"
-                ),
-                y = unit(1, "npc") - unit(3, "lines"),
-                x = 0, just = c("left", "top"),
-                gp = gpar(fontsize = 11)
+            switch(type,
+                "error" = {
+                    grid::grid.text(
+                        paste0(
+                            "The following error message was reported:"
+                        ),
+                        y = unit(1, "npc") - unit(3, "lines"),
+                        x = 0, just = c("left", "top"),
+                        gp = gpar(fontsize = 11)
+                    )
+                }
             )
+
             grid::grid.text(
                 message,
                 y = unit(1, "npc") - unit(6, "lines"),
