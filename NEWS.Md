@@ -5,6 +5,7 @@
 * fixes to save/new plot buttons to work with custom plots (using code panel)
 * retain trend selection when opening Get Inference window (#367, @tmelliott)
 * display nicer message when user tries plotting survey variable with 1 level
+* Add to Plot: log axes disabled if any values non-positive
 
 ## iNZight 4.1.1
 

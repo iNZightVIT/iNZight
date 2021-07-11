@@ -3590,11 +3590,37 @@ iNZPlotMod <- setRefClass(
                             checked = !is.null(ctrans$y) && ctrans$x == "log10"
                         )
                 }
+                
+                # disable log-x if x has any non-positive values
+                anyNeg <- FALSE
+                if (any(xvar <= 0)) {
+                    enabled(xLog) <- FALSE
+                    svalue(xLog) <- FALSE
+                    anyNeg <- TRUE
+                }
+
                 tbl[ii, 1:2, anchor = c(1, 0), expand = TRUE] <- lbl
                 tbl[ii, 3:4, anchor = c(-1, 0), expand = TRUE] <- xLog
-                if (PLOTTYPE %in% c("scatter", "hex", "grid"))
+                if (PLOTTYPE %in% c("scatter", "hex", "grid")) {
+                    if (any(yvar <= 0)) {
+                        enabled(yLog) <- FALSE
+                        svalue(yLog) <- FALSE
+                        anyNeg <- TRUE
+                    }
                     tbl[ii, 5:6, anchor = c(-1, 0), expand = TRUE] <- yLog
+                }
                 ii <- ii + 1
+
+                if (anyNeg) {
+                    tbl[ii, 1:6, expand = TRUE, anchor = c(0, 0)] <- glabel(
+                        paste(sep = "\n", 
+                            "NOTE: One or more variables contain negative values",
+                            "which cannot be logged. Remove these values using",
+                            "'Dataset > Filter' to log-transform the axes."
+                        )
+                    )
+                    ii <- ii + 1L
+                }
 
             }
 
