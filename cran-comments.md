@@ -1,7 +1,7 @@
 ## Test environments
 
-* local ubuntu 18.04, R 4.0.3
-* ubuntu 16.04 (on travis-ci) R release and devel
+* local ubuntu 21.04, R 4.0.5
+* ubuntu 16.04 (github actions) R release and devel
 * win-builder (devel and release)
 
 ## Notes
@@ -14,8 +14,8 @@
 0 errors | 0 warnings | 2 notes
 
 * This is a new submission
-* Suggested packages: these are available at https://r.docker.stat.auckland.ac.nz
-*
+* Suggested packages iNZightModules and FutureLearnData: these are available at https://r.docker.stat.auckland.ac.nz (added under additional repositories)
+* Windows R-devel warning: this is coming from the 'gWidgets2' package - I have alerted the maintainer.
 
 ## Downstream dependencies
 

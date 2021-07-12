@@ -190,7 +190,8 @@ iNZPlotWidget <- setRefClass(
                         return()
                     }
 
-                    f <- file.path(svalue(fLoc), paste0(svalue(fName), svalue(fExt)))
+                    dir <- svalue(fLoc)
+                    f <- file.path(dir, paste0(svalue(fName), svalue(fExt)))
 
                     if (grepl("html|svg", svalue(fileType))) {
                         ## exportXXX will produce a warning if the required packages aren't installed.
@@ -221,7 +222,10 @@ iNZPlotWidget <- setRefClass(
                                     }
                                 }
                                 args <- list(fun, f, data = dat, extra.vars = vars)
-                                if (visible(gHTML)) args$local <- svalue(localChk)
+                                if (visible(gHTML)) {
+                                    args$dir <- dir
+                                    args$local <- svalue(localChk)
+                                }
 
                                 fp <- do.call(filetypes[[svalue(fileType)]], args)
                             },

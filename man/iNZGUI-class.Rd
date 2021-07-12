@@ -41,7 +41,7 @@ Main class that builds the iNZight GUI
 
 \item{\code{plotToolbar}}{the widget in the bottom-right containing plot control buttons}
 
-\item{\code{ctrlWidget}}{the dropdown boxes allowing users to choose variables}
+\item{\code{ctrlWidget}}{the drop-down boxes allowing users to choose variables}
 
 \item{\code{sumBtn}}{the Get Summary button}
 
@@ -73,7 +73,7 @@ Main class that builds the iNZight GUI
 
 \item{\code{code_env}}{the environment in which R code is executed}
 
-\item{\code{code_panel}}{the interactable code widget at the bottom of the iNZight window}
+\item{\code{code_panel}}{the interactive code widget at the bottom of the iNZight window}
 
 \item{\code{is_initialized}}{logical, indicates if iNZight is initialised or not}
 }}
@@ -151,7 +151,7 @@ Main class that builds the iNZight GUI
 
 \item{\code{plotSplashScreen()}}{The default splash screen}
 
-\item{\code{reload()}}{Reloads iNZiht}
+\item{\code{reload()}}{Reloads iNZight}
 
 \item{\code{removeDesign()}}{Removes the survey design associated with a dataset}
 

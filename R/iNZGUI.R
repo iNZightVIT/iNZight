@@ -17,7 +17,7 @@
 #' @field dataNameWidget displays the name of the current dataset, and allows users to switch between datasets
 #' @field plotWidget the widget containing the main plot window
 #' @field plotToolbar the widget in the bottom-right containing plot control buttons
-#' @field ctrlWidget the dropdown boxes allowing users to choose variables
+#' @field ctrlWidget the drop-down boxes allowing users to choose variables
 #' @field sumBtn the Get Summary button
 #' @field infBtn the Get Inference button
 #' @field modWin a container for the current module window
@@ -33,7 +33,7 @@
 #' @field disposer the function called when iNZight closes
 #' @field addonModuleDir the path where modules are installed
 #' @field code_env the environment in which R code is executed
-#' @field code_panel the interactable code widget at the bottom of the iNZight window
+#' @field code_panel the interactive code widget at the bottom of the iNZight window
 #' @field is_initialized logical, indicates if iNZight is initialised or not
 #'
 #' @import methods utils grDevices colorspace
@@ -1310,7 +1310,7 @@ iNZGUI <- setRefClass(
             disposer()
         },
         reload = function() {
-            "Reloads iNZiht"
+            "Reloads iNZight"
             # first, get middle of iNZight window ..
             ipos <- RGtk2::gtkWindowGetPosition(.self$win$widget)
 
