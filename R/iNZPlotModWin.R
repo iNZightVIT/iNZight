@@ -3593,7 +3593,7 @@ iNZPlotMod <- setRefClass(
                 
                 # disable log-x if x has any non-positive values
                 anyNeg <- FALSE
-                if (any(xvar <= 0)) {
+                if (any(xvar <= 0, na.rm = TRUE)) {
                     enabled(xLog) <- FALSE
                     svalue(xLog) <- FALSE
                     anyNeg <- TRUE
@@ -3602,7 +3602,7 @@ iNZPlotMod <- setRefClass(
                 tbl[ii, 1:2, anchor = c(1, 0), expand = TRUE] <- lbl
                 tbl[ii, 3:4, anchor = c(-1, 0), expand = TRUE] <- xLog
                 if (PLOTTYPE %in% c("scatter", "hex", "grid")) {
-                    if (any(yvar <= 0)) {
+                    if (any(yvar <= 0, na.rm = TRUE)) {
                         enabled(yLog) <- FALSE
                         svalue(yLog) <- FALSE
                         anyNeg <- TRUE
