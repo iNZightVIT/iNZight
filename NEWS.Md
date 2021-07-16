@@ -1,3 +1,5 @@
+## iNZight 4.1.3
+
 * show code box when opening Add Inference panel
 * only pass 'conf' to `inference.type` for survey bar charts (comparison intervals not yet implemented)
 * menubar fills window width for aesthetics
