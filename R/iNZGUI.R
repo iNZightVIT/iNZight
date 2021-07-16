@@ -147,20 +147,6 @@ iNZGUI <- setRefClass(
                 addonModuleDir <<- Sys.getenv("INZIGHT_MODULES_DIR")
             }
 
-            ## Check for updates ... need to use try incase it fails (no connection etc)
-            if (preferences$check.updates) {
-                try(
-                    {
-                        oldpkg <- old.packages(
-                            repos = "https://r.docker.stat.auckland.ac.nz"
-                        )
-                        if (nrow(oldpkg) > 0)
-                            win.title <- paste(win.title, " [updates available]")
-                    },
-                    silent = TRUE
-                )
-            }
-
             popOut <<- preferences$popout
 
             win <<- gwindow(
@@ -170,12 +156,27 @@ iNZGUI <- setRefClass(
                 height = preferences$window.size[2]
             )
 
+            ## Check for updates ... need to use try incase it fails (no connection etc)
+            if (preferences$check.updates) {
+                oldpkg <- try(
+                    old.packages(
+                        repos = "https://r.docker.stat.auckland.ac.nz"
+                        # repos = "https://cran.rstudio.com"
+                    ),
+                    silent = TRUE
+                )
+                if (!inherits(oldpkg, "try-error") && !is.null(oldpkg) && nrow(oldpkg) > 0) {
+                    win.title <- paste(win.title, " [updates available]")
+                    win$set_value(win.title)
+                }
+            }
+
             gtop <- ggroup(
                 horizontal = FALSE,
                 container = win,
                 use.scrollwindow = FALSE
             )
-            menugrp <- ggroup(container = gtop)
+            menugrp <- ggroup(container = gtop, fill = TRUE)
             initializeMenu(menugrp)
 
             g <- gpanedgroup(container = gtop, expand = TRUE)
@@ -406,6 +407,12 @@ iNZGUI <- setRefClass(
             "Updates the plot using the user's chosen variables and other settings"
             if (!is_initialized || !visible(win)) return()
 
+            # if plot is NOT `inzplotoutput`, AND code widget is turned on, run the code instead
+            if (plotType == "custom" && preferences$dev.features && preferences$show.code) {
+                code_panel$run_code()
+                return()
+            }
+
             curPlSet <- getActiveDoc()$getSettings()
 
             .dataset <- getActiveData()
@@ -465,6 +472,24 @@ iNZGUI <- setRefClass(
 
                 if (inherits(dop, "try-error")) {
                     ## Oops!
+
+                    # specific issues we can handle:
+                    msg <- attr(dop, "condition")$message
+                    if (grepl("following variables in the survey design", msg)) {
+                        vars <- strsplit(msg, "\n[ ]+")[[1]][3]
+                        plotMessage(
+                            heading = "Unable to plot chosen variables",
+                            message = paste(sep = "\n",
+                                "iNZight cannot plot factor variables in a survey design",
+                                "with only one level.",
+                                "",
+                                "Please remove the following variables: ",
+                                paste("   ", vars)
+                            ),
+                            type = ""
+                        )
+                        return(invisible(NULL))
+                    }
 
                     message("Call: ")
                     message(attr(dop, "condition")$call)
@@ -941,7 +966,11 @@ iNZGUI <- setRefClass(
             "Returns the default preferences"
             ## The default iNZight settings:
             list(
-                check.updates = TRUE,
+                check.updates = ifelse(
+                    Sys.getenv('LOCK_PACKAGES') == "",
+                    TRUE,
+                    !as.logical(Sys.getenv('LOCK_PACKAGES'))
+                ),
                 window.size = c(1250, 850),
                 popout = FALSE,
                 font.size = 10,
@@ -1057,7 +1086,7 @@ iNZGUI <- setRefClass(
                 )
             }
         },
-        plotMessage = function(heading, message, footer) {
+        plotMessage = function(heading, message, footer, type = "error") {
             "Displays a message to the user using the plot panel"
             curPlot <<- NULL
             plotType <<- "none"
@@ -1109,14 +1138,19 @@ iNZGUI <- setRefClass(
                 gp = gpar(fontsize = 12, fontface = 'bold')
             )
 
-            grid::grid.text(
-                paste0(
-                    "The following error message was reported:"
-                ),
-                y = unit(1, "npc") - unit(3, "lines"),
-                x = 0, just = c("left", "top"),
-                gp = gpar(fontsize = 11)
+            switch(type,
+                "error" = {
+                    grid::grid.text(
+                        paste0(
+                            "The following error message was reported:"
+                        ),
+                        y = unit(1, "npc") - unit(3, "lines"),
+                        x = 0, just = c("left", "top"),
+                        gp = gpar(fontsize = 11)
+                    )
+                }
             )
+
             grid::grid.text(
                 message,
                 y = unit(1, "npc") - unit(6, "lines"),

@@ -131,7 +131,10 @@ iNZCodePanel <- setRefClass(
                 print(rawpl)
             }
 
-            if (!grepl("^inzplot", svalue(input))) break
+            if (!grepl("^inzplot", svalue(input))) {
+                GUI$plotType <<- "custom"
+                return()
+            }
 
             curpl <- unclass(rawpl)
             if (!is.null(attr(curpl, "dotplot.redraw")))
@@ -286,7 +289,7 @@ iNZCodePanel <- setRefClass(
         },
         reset_code = function() {
             set_input(original_code)
-            run_code()
+            GUI$updatePlot()
         },
         input_handler = function(h, ...) {
             enabled(store_btn) <<- enabled(run_btn) <<- enabled(reset_btn) <<-

@@ -325,24 +325,31 @@ iNZPlotToolbar <- setRefClass(
                         "Hmm... you'll have to create a plot before you can add to it!",
                         title = "No plot!"
                     )
+            } else if (GUI$plotType == "custom") {
+                if (message) {
+                    gmessage("Add to Plot only works with `inzplot` functions.",
+                        title = "Plot type not supported")
+                }
             } else {
                 iNZPlotMod$new(GUI)
             }
 
             invisible(!err)
         },
-        addInf = function() {
+        addInf = function(message = TRUE) {
             if (!is.null(GUI$getActiveDoc()$getModel()$getDesign())) {
-                gmessage(
-                    paste(
-                        "Inferential markup of plots for survey data is still in development.",
-                        "If nothing shows up, it's because we haven't got to it yet.",
-                        "If you notice errors (wrong values for data you know) let us know."
-                    ),
-                    icon = "warning",
-                    parent = GUI$win,
-                    title = "Developmental Feature"
-                )
+                if (message) {
+                    gmessage(
+                        paste(
+                            "Inferential markup of plots for survey data is still in development.",
+                            "If nothing shows up, it's because we haven't got to it yet.",
+                            "If you notice errors (wrong values for data you know) let us know."
+                        ),
+                        icon = "warning",
+                        parent = GUI$win,
+                        title = "Developmental Feature"
+                    )
+                }
             }
 
             curSet <- GUI$getActiveDoc()$getSettings()
@@ -353,14 +360,21 @@ iNZPlotToolbar <- setRefClass(
                 err <- TRUE
 
             if (err) {
-                gmessage(
-                    paste(
-                        "It looks like you haven't created a plot yet!",
-                        "Do that, then you can add inference to it!"
-                    ),
-                    title = "No variable selected",
-                    parent = GUI$win
-                )
+                if (message) {
+                    gmessage(
+                        paste(
+                            "It looks like you haven't created a plot yet!",
+                            "Do that, then you can add inference to it!"
+                        ),
+                        title = "No variable selected",
+                        parent = GUI$win
+                    )
+                }
+            } else if (GUI$plotType == "custom") {
+                if (message) {
+                    gmessage("Add Inference only works with `inzplot` functions.",
+                        title = "Plot type not supported")
+                }
             } else {
                 switch(GUI$plotType,
                     "bar" = iNZBarchartInf$new(GUI),

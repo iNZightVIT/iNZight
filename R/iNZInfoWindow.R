@@ -818,18 +818,21 @@ iNZGetInference <- setRefClass(
                 trend_choice <<- list(
                     linear = gcheckbox("Linear",
                         container = g_trendopt,
+                        checked = "linear" %in% curSet$trend,
                         handler = function(h, ...) {
                             handle_trend()
                         }
                     ),
                     quadratic = gcheckbox("Quadratic",
                         container = g_trendopt,
+                        checked = "quadratic" %in% curSet$trend,
                         handler = function(h, ...) {
                             handle_trend()
                         }
                     ),
                     cubic = gcheckbox("Cubic",
                         container = g_trendopt,
+                        checked = "cubic" %in% curSet$trend,
                         handler = function(h, ...) {
                             handle_trend()
                         }

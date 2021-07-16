@@ -217,6 +217,29 @@ test_that("Get inference window - scatter plots", {
     expect_match(svalue(iwin$info_text), "Please specify a trend line")
 })
 
+# try(ui$close(), TRUE); devtools::load_all()
+ui <- iNZGUI$new()
+ui$initializeGui(census.at.school.500)
+on.exit(gWidgets2::dispose(ui$win))
+
+
+test_that("Existing trend lines are kept when opening inference panel", {
+    svalue(ui$ctrlWidget$V1box) <- "height"
+    svalue(ui$ctrlWidget$V2box) <- "armspan"
+    
+    expect_null(ui$getActiveDoc()$getSettings()$trend)
+    expect_silent(
+        ui$getActiveDoc()$setSettings(list(trend = "linear"))
+    )
+    on.exit(ui$getActiveDoc()$setSettings(list(trend = NULL)))
+    expect_equal(ui$getActiveDoc()$getSettings()$trend, "linear")
+
+    iwin <- iNZGetInference$new(ui)
+    on.exit(gWidgets2::dispose(iwin$win), add = TRUE)
+    expect_is(iwin, "iNZGetInference")
+    expect_equal(ui$getActiveDoc()$getSettings()$trend, "linear")
+})
+
 cas <- census.at.school.500
 library(dplyr)
 library(magrittr)
