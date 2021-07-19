@@ -98,7 +98,8 @@ iNZGUI <- setRefClass(
             ## rather than passing around the full object.
             code_env = "ANY",
             code_panel = "ANY",
-            is_initialized = "logical"
+            is_initialized = "logical",
+            stop_loading = "logical"
         ),
         prototype = list(
             activeDoc = 1,
@@ -114,6 +115,7 @@ iNZGUI <- setRefClass(
             dispose_fun = NULL,
             addonDir = NULL,
             show = TRUE,
+            stop_loading = FALSE,
             ...
         ) {
             "Initiates the GUI"
@@ -242,8 +244,29 @@ iNZGUI <- setRefClass(
             ## to ensure the correct device nr
             if (popOut)
                 iNZightTools::newdevice()
-            else
-                plotWidget$addPlot()
+            else {
+                tryCatch(plotWidget$addPlot(),
+                    error = function(e) {
+                        gmessage(
+                            "Unable to load built-in graphics device. iNZight will try reloading in dual-window mode.\n\nClick 'close' to continue.",
+                            title = "Unable to load graphics device",
+                            icon = "error"
+                        )
+
+                        # change mode
+                        preferences$popout <<- TRUE
+                        savePreferences()
+
+                        # reload (and return from initisalize())
+                        reload()
+                        stop_loading <<- TRUE
+                    }
+                )
+                if (stop_loading) {
+                    stop_loading <<- FALSE
+                    return()
+                }
+            }
 
             ## draw the iNZight splash screen
             plotSplashScreen()
