@@ -9,7 +9,6 @@ context("iNZight User Preferences")
 
 test_that("Preferences load", {
     p <- iNZPrefsWin$new(ui <- NULL)
-    on.exit(p$close())
     expect_is(p, "iNZPrefsWin")
 })
 
