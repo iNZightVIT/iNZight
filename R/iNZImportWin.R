@@ -57,11 +57,10 @@ iNZImportWin <- setRefClass(
                 decimalmarks = list("Period (.)" = ".", "Comma (,)" = ","),
                 decMark = ".",
                 bigmarks = list(
-                    "None" = "",
                     "Comma (,)" = ",",
                     "Period (.)" = "."
                 ),
-                bigMark = "",
+                bigMark = ",",
                 encodings = c("UTF-8", "ISO-8859-1"),
                 encoding = "UTF-8",
                 dateformats = c("%Y-%m-%d", "%d/%m/%Y"),
@@ -321,7 +320,7 @@ iNZImportWin <- setRefClass(
         }, # initialize()
         setfile = function(...) {
             svalue(filename) <<- basename(fname)
-            fext <<- tools::file_ext(fname)
+            fext <<- tolower(tools::file_ext(fname))
 
             blockHandlers(filetype)
             match <- which(

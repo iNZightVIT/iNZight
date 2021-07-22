@@ -1,5 +1,6 @@
 ## iNZight 4.1.4
 
+* fix bug introduced by readr 2.0 causing hang when grouping_mark is empty string
 * fix Export Data window
 
 ## iNZight 4.1.3
