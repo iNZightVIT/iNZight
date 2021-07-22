@@ -1,5 +1,6 @@
 context("Data is loaded into the UI")
 
+# setwd('tests/testthat'); devtools::load_all()
 wd <- getwd()
 ui <- iNZGUI$new()
 ui$initializeGui()
