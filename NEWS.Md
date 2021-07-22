@@ -1,4 +1,5 @@
 * catches loading failure caused by missing/inaccessible Cairo installation, reloading iNZight in dual-window mode (#309, @tmelliott)
+* fix bug in Get Summary/Inference windows preventing font size preferences from being respected
 
 
 ## iNZight 4.1.3
