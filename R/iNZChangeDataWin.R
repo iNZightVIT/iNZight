@@ -242,7 +242,7 @@ iNZFilterWin <- setRefClass(
             ### footer (with buttons)
             gfoot <- ggroup(container = mainGrp)
 
-            cnclBtn <<- gbutton("Cancel", container = gfoot)
+            cnclBtn <<- gbutton("Cancel", container = gfoot, handler = function(h, ...) dispose(GUI$modWin))
             addSpring(gfoot)
             okBtn <<- gbutton("Filter", handler = update_data, container = gfoot)
             enabled(okBtn) <<- FALSE

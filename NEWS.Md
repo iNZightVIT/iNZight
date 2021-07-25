@@ -1,6 +1,7 @@
 * catches loading failure caused by missing/inaccessible Cairo installation, reloading iNZight in dual-window mode (#309, @tmelliott)
 * fix bug in Get Summary/Inference windows preventing font size preferences from being respected
 * fix bug introduced by readr 2.0 causing hang when grouping_mark is empty string
+* fix bug in Filter data window where cancel button did not work
 
 
 ## iNZight 4.1.3
