@@ -2,20 +2,21 @@
 iNZAboutWidget <- setRefClass(
     "iNZAboutWidget",
     fields = list(
-        GUI = "ANY"
+        GUI = "ANY",
+	win = "ANY"
     ),
     methods = list(
         initialize = function(gui = list(win = NULL), title = "About iNZight", heading = "iNZight") {
             initFields(GUI = gui)
 
             window_width <- 500
-            w <- gwindow(title,
+            win <<- gwindow(title,
                 width = window_width,
                 height = 600,
                 visible = FALSE,
                 parent = GUI$win
             )
-            g <- gvbox(expand = FALSE, cont = w, spacing = 5)
+            g <- gvbox(expand = FALSE, cont = win, spacing = 5)
             g$set_borderwidth(10)
 
             mainlbl <- glabel(heading, container = g)
@@ -167,11 +168,13 @@ iNZAboutWidget <- setRefClass(
                 size = 8
             )
 
-            if (is.null(GUI$win))
-                visible(w) <- TRUE
+            visible(win) <<- TRUE
 
             # Move to center
-            center_window(w)
+            if (is.null(GUI$win))
+                center_window(win)
+
+            invisible(NULL)
         }
     )
 )
