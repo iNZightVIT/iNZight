@@ -195,3 +195,16 @@ spec_char <- function(code) {
         ""
     )
 }
+
+center_window <- function(w) {
+    window <- w$widget$window
+    window_size <- size(w)
+    window_screen <- gtkWindowGetScreen(w$widget)
+    monitor <- gdkScreenGetMonitorAtWindow(window_screen, window)
+    monitor_dim <- unlist(
+        gdkScreenGetMonitorGeometry(window_screen, monitor)$dest[c("width", "height")]
+    )
+
+    win_pos <- monitor_dim / 2 - window_size / 2L
+    gtkWindowMove(w$widget, win_pos[1], win_pos[2])
+}
