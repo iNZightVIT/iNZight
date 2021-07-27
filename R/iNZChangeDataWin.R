@@ -1704,9 +1704,9 @@ iNZexpandTblWin <- setRefClass(
 
             conf <- gconfirm(
                 paste(
-                    "This will expand the table to individial rows.",
+                    "This will expand the table to individual rows.",
                     "Use Dataset > Restore dataset to go back to revert this change.",
-                    "Note: this is a temporary workaround for small tables until we integrate frequency tables.",
+                    "Note: you can get the same effect by specifying a frequency column.",
                     sep = "\n\n"
                 ),
                 title = "Expand table?",
