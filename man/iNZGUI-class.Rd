@@ -126,6 +126,7 @@ Main class that builds the iNZight GUI
   dispose_fun = NULL,
   addonDir = NULL,
   show = TRUE,
+  stop_loading = FALSE,
   ...
 )}}{Initiates the GUI}
 
@@ -147,7 +148,7 @@ Main class that builds the iNZight GUI
 
 \item{\code{new_document(data, suffix)}}{Create a new document based on the existing one (`getActiveDoc()`)}
 
-\item{\code{plotMessage(heading, message, footer)}}{Displays a message to the user using the plot panel}
+\item{\code{plotMessage(heading, message, footer, type = "error")}}{Displays a message to the user using the plot panel}
 
 \item{\code{plotSplashScreen()}}{The default splash screen}
 
@@ -163,7 +164,7 @@ Main class that builds the iNZight GUI
 
 \item{\code{saveState(file)}}{Saves the state of the GUI in `file`}
 
-\item{\code{set_visible()}}{Makes the iNZight window visible, and updates the plot}
+\item{\code{set_visible(visible = TRUE)}}{Makes the iNZight window visible, and updates the plot}
 
 \item{\code{setDocument(document, reset = FALSE)}}{Sets the current document}
 

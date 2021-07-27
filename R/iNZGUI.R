@@ -121,8 +121,6 @@ iNZGUI <- setRefClass(
             "Initiates the GUI"
             initFields(is_initialized = FALSE, disposer = function() {})
 
-            iNZDocuments <<- list(iNZDocument$new(data = data))
-
             if (!is.null(dispose_fun) && is.function(dispose_fun))
                 disposer <<- function() dispose_fun(...)
 
@@ -157,6 +155,8 @@ iNZGUI <- setRefClass(
                 width = if (popOut) NULL else preferences$window.size[1],
                 height = preferences$window.size[2]
             )
+
+            iNZDocuments <<- list(iNZDocument$new(data = data))
 
             ## Check for updates ... need to use try incase it fails (no connection etc)
             if (preferences$check.updates) {
@@ -236,7 +236,7 @@ iNZGUI <- setRefClass(
             if (preferences$dev.features && preferences$show.code)
                 add(gtop, code_panel$panel, fill = TRUE)
 
-            visible(win) <<- show
+            set_visible(show)
 
             ## ensures that all plot control btns are visible on startup
             #svalue(g) <- 0.375
@@ -1379,9 +1379,9 @@ iNZGUI <- setRefClass(
             gtkWindowMove(.self$win$widget, ipos$root.x, ipos$root.y)
             .self$set_visible()
         },
-        set_visible = function() {
+        set_visible = function(visible = TRUE) {
             "Makes the iNZight window visible, and updates the plot"
-            visible(win) <<- TRUE
+            visible(win) <<- visible
             updatePlot()
         }
     )

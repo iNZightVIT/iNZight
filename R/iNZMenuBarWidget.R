@@ -639,11 +639,11 @@ iNZAboutWidget <- setRefClass(
         GUI = "ANY"
     ),
     methods = list(
-        initialize = function(gui) {
+        initialize = function(gui, title = "About iNZight", heading = "iNZight") {
             initFields(GUI = gui)
 
             window_width <- 500
-            w <- gwindow("About iNZight",
+            w <- gwindow(title,
                 width = window_width,
                 height = 600,
                 visible = TRUE,
@@ -652,7 +652,7 @@ iNZAboutWidget <- setRefClass(
             g <- gvbox(expand = FALSE, cont = w, spacing = 5)
             g$set_borderwidth(10)
 
-            mainlbl <- glabel("iNZight", container = g)
+            mainlbl <- glabel(heading, container = g)
             font(mainlbl) <- list(
                 weight = "bold",
                 family = "sans",
