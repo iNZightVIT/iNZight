@@ -167,7 +167,9 @@ iNZAboutWidget <- setRefClass(
                 size = 8
             )
 
-            visible(w) <- TRUE
+            if (is.null(GUI$win))
+                visible(w) <- TRUE
+
             # Move to center
             center_window(w)
         }
