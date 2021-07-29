@@ -108,6 +108,8 @@ iNZWindow <- setRefClass("iNZWindow",
                     add(footer, ok_button)
                 }
             )
+
+            invisible(NULL)
         },
         add_heading = function(
             text,
