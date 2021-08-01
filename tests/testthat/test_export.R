@@ -32,7 +32,10 @@ test_that("Export TXT", {
     expect_equal(w$ftype$get_index(), 2L)
     expect_silent(w$ok_button$invoke_change_handler())
 
-    expect_equal(readr::read_delim(fp), census.at.school.500)
+    expect_equal(
+        dim(readr::read_delim(fp, show_col_types = FALSE)),
+        dim(census.at.school.500)
+    )
 })
 
 if (FALSE) {
