@@ -33,7 +33,7 @@ test_that("Export TXT", {
     expect_silent(w$ok_button$invoke_change_handler())
 
     expect_equal(
-        dim(readr::read_delim(fp, show_col_types = FALSE)),
+        dim(iNZightTools::smart_read(fp)),
         dim(census.at.school.500)
     )
 })
