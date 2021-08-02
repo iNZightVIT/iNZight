@@ -126,7 +126,7 @@ test_that("Frequencies retained after filtering", {
     svalue(fwin$filter_var) <- "gender"
     svalue(fwin$cat_levels, index = TRUE) <- 1
     expect_silent(
-        fwin$okBtn$invoke_change_handler()
+        fwin$ok_button$invoke_change_handler()
     )
 })
 

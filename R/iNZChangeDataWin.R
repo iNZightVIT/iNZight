@@ -23,43 +23,37 @@ iNZFilterWin <- setRefClass(
         code_panel = "ANY", code_font = "list",
         newdata = "ANY"
     ),
+    contains = "iNZWindow",
     methods = list(
         initialize = function(gui = NULL) {
+
             if (is.null(gui)) return()
+            is_survey <- !is.null(gui$getActiveDoc()$getModel()$getDesign())
+            win_title <- sprintf(
+                "Filter %s",
+                ifelse(is_survey, "survey design", "data")
+            )
+
+            ok <- callSuper(gui,
+                title = win_title,
+                width = 500L,
+                height = 500L,
+                ok = "Filter",
+                action = .self$update_data,
+                help = "user_guides/data_options/#filter",
+                show_code = TRUE
+            )
+            if (!ok) return()
+            on.exit(.self$show())
+
             initFields(
-                GUI = gui,
                 newdata = NULL,
                 code_font = list(size = 8, family = "monospace")
             )
             usingMethods("handle_filter", "update_data")
 
-            try(dispose(GUI$modWin), silent = TRUE)
-            GUI$modWin <<- gwindow("Filter Data ...",
-                parent = GUI$win,
-                width = 500L,
-                height = 400L,
-                visible = FALSE
-            )
-            mainGrp <- gvbox(container = GUI$modWin, expand = TRUE)
-            mainGrp$set_borderwidth(10L)
-
-            ## --- title and help icon
-            helplyt <- glayout(homegenous = FALSE, container = mainGrp)
-
-            is_survey <- !is.null(GUI$getActiveDoc()$getModel()$getDesign())
-            lbl1 <- glabel(sprintf("Filter %s", ifelse(is_survey, "survey design", "data")))
-            font(lbl1) <- list(weight = "bold", style = "normal")
-
-            helpbtn <- gimagebutton(
-                stock.id = "gw-help",
-                handler = function(h, ...) help_page("user_guides/data_options/#filter")
-            )
-
-            helplyt[1, 4:19, expand = TRUE, anchor = c(0,0)] <- lbl1
-            helplyt[1, 20, expand = TRUE, anchor = c(1, -1)] <- helpbtn
-
             ## top group
-            gtop <- ggroup(container = mainGrp)
+            gtop <- ggroup(container = body)
             opts <- c(
                 "by value",
                 "by row number",
@@ -80,9 +74,9 @@ iNZFilterWin <- setRefClass(
                 }
             )
 
-            addSpace(mainGrp, 10)
+            addSpace(body, 10)
             ### container for content
-            gmain <- ggroup(container = mainGrp, expand = TRUE, fill = TRUE)
+            gmain <- ggroup(container = body, expand = TRUE, fill = TRUE)
 
             #### --- filter by value
             g_value <<- ggroup(container = gmain, expand = TRUE)
@@ -226,39 +220,19 @@ iNZFilterWin <- setRefClass(
             font(rand_msg) <<- list(size = 9, weight = "bold", color = "orangered")
 
 
-            addSpring(mainGrp)
+            addSpring(body)
 
             ### dataset info:
-            ginfo <- gvbox(container = mainGrp)
+            ginfo <- gvbox(container = body)
             cur_row <- glabel(sprintf("Current data has %d rows", nrow(GUI$getActiveData())),
-                container = mainGrp,
+                container = body,
                 anchor = c(1, 0))
-            new_row <<- glabel("", container = mainGrp,
+            new_row <<- glabel("", container = body,
             anchor = c(1, 0))
             font(cur_row) <- list(size = 9)
             font(new_row) <<- list(size = 9)
 
-
-            ### footer (with buttons)
-            gfoot <- ggroup(container = mainGrp)
-
-            cnclBtn <<- gbutton("Cancel", container = gfoot, handler = function(h, ...) dispose(GUI$modWin))
-            addSpring(gfoot)
-            okBtn <<- gbutton("Filter", handler = update_data, container = gfoot)
-            enabled(okBtn) <<- FALSE
-
-            ## code panel:
-            gcode <- ggroup(container = mainGrp)
-            code_panel <<- gtext("# R code will show here",
-                container = gcode,
-                font.attr = code_font,
-                fill = TRUE,
-                expand = TRUE
-            )
-            enabled(code_panel) <<- FALSE
-
             filter_type$invoke_change_handler()
-            visible(GUI$modWin) <<- TRUE
         },
         handle_filter = function(h, ...) {
             newdata <<- NULL
@@ -280,9 +254,7 @@ iNZFilterWin <- setRefClass(
                 attr(newdata, "code")
             )
             # clear panel first...
-            svalue(code_panel) <<- ""
-            font(code_panel) <<- code_font
-            insert(code_panel, paste(iNZightTools::code(newdata), collapse = "\n"), do.newline = FALSE)
+            set_code(paste(iNZightTools::code(newdata), collapse = "\n"))
 
             # set row info
             data <- newdata
@@ -296,9 +268,7 @@ iNZFilterWin <- setRefClass(
         },
         clear_result = function() {
             newdata <<- NULL
-            svalue(code_panel) <<- ""
-            font(code_panel) <<- code_font
-            insert(code_panel, "# R code will show here", do.newline = FALSE)
+            set_code("# R code will show here")
             svalue(new_row) <<- ""
             enabled(okBtn) <<- FALSE
         },
@@ -378,11 +348,6 @@ iNZSortbyDataWin <- setRefClass(
             GUI$modWin <<- gwindow("Sort data by variables",
                 parent = GUI$win,
                 visible = FALSE)
-
-            mainGrp <- ggroup(container = GUI$modWin,
-                horizontal = FALSE,
-                expand = TRUE)
-            mainGrp$set_borderwidth(15)
 
             btnGrp <- ggroup(horizontal = TRUE)
             helpbtn <- gimagebutton(stock.id = "gw-help",

@@ -38,14 +38,14 @@ test_that("Filtering data leaves code OK", {
     o <- options(browser = cat)
     on.exit(options(o))
     expect_output(
-        ui$modWin$children[[1]]$children[[1]]$children[[2]]$invoke_change_handler(),
+        w$help_button$invoke_change_handler(),
         paste0(.base_url, "user_guides/data_options/#filter")
     )
 
     expect_silent(w$filter_var$set_value("gender"))
     expect_silent(svalue(w$cat_levels) <- "male")
     expect_silent(w$cat_levels$invoke_change_handler())
-    expect_silent(w$okBtn$invoke_change_handler())
+    expect_silent(w$ok_button$invoke_change_handler())
     expect_match(
         svalue(ui$code_panel$input),
         "inzplot(height ~ armspan, colby = gender, data = data.filtered)",
