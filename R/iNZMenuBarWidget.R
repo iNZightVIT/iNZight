@@ -65,7 +65,7 @@ iNZMenuBarWidget <- setRefClass(
                 export =
                     gaction("Export data ...",
                         icon = "save-as",
-                        handler = function(h, ...) iNZSaveWin$new(GUI, type = "data", data = GUI$getActiveData())),
+                        handler = function(h, ...) iNZExportWin$new(GUI)),
                 gseparator(),
                 paste =
                     gaction("Paste from ...",
