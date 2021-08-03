@@ -336,85 +336,101 @@ iNZFilterWin <- setRefClass(
 iNZSortbyDataWin <- setRefClass(
     "iNZSortbyDataWin",
     fields = list(
-        GUI = "ANY"
+        var_names = "character",
+        var_tbl = "ANY",
+        sort_vars = "logical"
     ),
+    contains = "iNZWindow",
     methods = list(
         initialize = function(gui = NULL) {
-            initFields(GUI = gui)
-            if (is.null(GUI)) return()
-            ## close any current mod windows
-            try(dispose(GUI$modWin), silent = TRUE)
 
-            GUI$modWin <<- gwindow("Sort data by variables",
-                parent = GUI$win,
-                visible = FALSE)
+            ok <- callSuper(gui,
+                title = "Sort data by variables",
+                width = "small",
+                height = "med",
+                ok = "Sort",
+                action = .self$sort_data,
+                help = "user_guides/data_options/#sort",
+                show_code = FALSE,
+                scroll = TRUE
+            )
+            if (!ok) return()
+            on.exit(.self$show())
+            usingMethods("handle_sort", "sort_data")
 
-            btnGrp <- ggroup(horizontal = TRUE)
-            helpbtn <- gimagebutton(stock.id = "gw-help",
-                handler = function(h, ...){
-                    help_page("user_guides/data_options/#sort")
+            add_heading(
+                "Data will be sorted by each of the chosen variables",
+                "in the order specified. By default, small values",
+                "are first; check the 'decreasing' box to sort large",
+                "values first instead.",
+                size = 9L
+            )
+            add_heading(
+                "New rows will appear as you choose variables. Click 'Sort' once you have enough variables.",
+                size = 9L
+            )
+            body_space(10L)
+
+            var_names <<- names(GUI$getActiveData())
+            var_tbl <<- glayout()
+            add_body(var_tbl)
+
+            add_var()
+
+            show()
+        },
+        add_var = function() {
+            ii <- length(sort_vars) + 1L
+            var_tbl[ii, 1L, expand = TRUE] <<-
+                gcombobox(
+                    c("", var_names[!var_names %in% names(sort_vars)]),
+                    selected = 1L,
+                    handler = handle_sort
+                )
+            var_tbl[ii, 2L, expand = TRUE, fill = TRUE] <<-
+                gcheckbox("Decreasing", handler = handle_sort)
+        },
+        handle_sort = function(h, ...) {
+            n <- nrow(var_tbl)
+            v <- sapply(seq_len(n),
+                function(i) {
+                    svalue(var_tbl[i, 1L])
                 }
             )
-
-            lbl1 <- glabel("Sort by")
-            font(lbl1) <- list(weight = "bold", style = "normal")
-            helplyt <- glayout(homegenous = FALSE)
-            helplyt[1, 1:19, expand = TRUE] <- lbl1
-            helplyt[1, 20, expand = TRUE, anchor = c(1, -1)] <- helpbtn
-
-            lbl2 <- glabel("Variable")
-            nameList <- names(GUI$getActiveData())
-            SortByButton <- gbutton(
-                "Sort Now",
-                handler = function(h, ...) {
-                    vars <- sapply(tbl[, 2], svalue)
-                    asc <- sapply(tbl[, 3], svalue, index = TRUE) == 1
-                    wi <- vars != ""
-
-                    .dataset <- GUI$get_data_object()
-                    newdata <- iNZightTools::sortVars(.dataset, vars[wi], asc[wi])
-                    GUI$new_document(newdata, "sorted")
-                    dispose(GUI$modWin)
+            d <- sapply(seq_len(n),
+                function(i) {
+                    svalue(var_tbl[i, 2L])
                 }
             )
+            if (v[n] == "") {
+                v <- v[-n]
+                d <- d[-n]
+            }
+            sort_vars <<- structure(!d, .Names = v)
 
-            label_var1 <- glabel("1st")
-            label_var2 <- glabel("2nd")
-            label_var3 <- glabel("3rd")
-            label_var4 <- glabel("4th")
+            # change options
+            for (i in seq_along(sort_vars)) {
+                opts <- var_names[!var_names %in% names(sort_vars)[-i]]
+                blockHandlers(var_tbl[i, 1L])
+                var_tbl[i, 1L]$set_items(c("", opts))
+                var_tbl[i, 1L]$set_value(names(sort_vars[i]))
+                unblockHandlers(var_tbl[i, 1L])
+            }
 
-            droplist_var1 <- gcombobox(c("",nameList), selected = 1)
-            droplist_var2 <- gcombobox(c("",nameList), selected = 1)
-            droplist_var3 <- gcombobox(c("",nameList), selected = 1)
-            droplist_var4 <- gcombobox(c("",nameList), selected = 1)
-
-            radio_var1 <- gradio(c("increasing","decreasing"), horizontal = TRUE)
-            radio_var2 <- gradio(c("increasing","decreasing"), horizontal = TRUE)
-            radio_var3 <- gradio(c("increasing","decreasing"), horizontal = TRUE)
-            radio_var4 <- gradio(c("increasing","decreasing"), horizontal = TRUE)
-
-            tbl <- glayout()
-            tbl[1, 1, expand = TRUE, anchor = c(-1, -1)] <- label_var1
-            tbl[1, 2, expand = TRUE, anchor = c(-1, -1)] <- droplist_var1
-            tbl[1, 3, expand = TRUE, anchor = c(-1, -1)] <- radio_var1
-            tbl[2, 1, expand = TRUE, anchor = c(-1, -1)] <- label_var2
-            tbl[2, 2, expand = TRUE, anchor = c(-1, -1)] <- droplist_var2
-            tbl[2, 3, expand = TRUE, anchor = c(-1, -1)] <- radio_var2
-            tbl[3, 1, expand = TRUE, anchor = c(-1, -1)] <- label_var3
-            tbl[3, 2, expand = TRUE, anchor = c(-1, -1)] <- droplist_var3
-            tbl[3, 3, expand = TRUE, anchor = c(-1, -1)] <- radio_var3
-            tbl[4, 1, expand = TRUE, anchor = c(-1, -1)] <- label_var4
-            tbl[4, 2, expand = TRUE, anchor = c(-1, -1)] <- droplist_var4
-            tbl[4, 3, expand = TRUE, anchor = c(-1, -1)] <- radio_var4
-
-            add(mainGrp, helplyt)
-            addSpring(mainGrp)
-            add(mainGrp, lbl2, anchor = c(-1, -1))
-            add(mainGrp, tbl)
-            add(mainGrp, btnGrp)
-            addSpring(btnGrp)
-            add(btnGrp, SortByButton)
-            visible(GUI$modWin) <<- TRUE
+            # only add new row if all values are filled
+            if (length(sort_vars) == n)
+                add_var()
+        },
+        sort_data = function() {
+            .dataset <- GUI$get_data_object()
+            i <- names(sort_vars) != ""
+            newdata <- iNZightTools::sortVars(
+                .dataset,
+                names(sort_vars[i]),
+                as.logical(sort_vars[i])
+            )
+            GUI$new_document(newdata, "sorted")
+            dispose(GUI$modWin)
         }
     )
 )

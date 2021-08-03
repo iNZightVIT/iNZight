@@ -2,6 +2,8 @@ iNZWindow <- setRefClass("iNZWindow",
     fields = list(
         GUI = "ANY",
         # window = "ANY",
+        window_width = "numeric",
+        window_height = "numeric",
         header = "ANY",
         body = "ANY",
         footer = "ANY",
@@ -40,7 +42,7 @@ iNZWindow <- setRefClass("iNZWindow",
 
             if (is.character(width)) {
                 width <- match.arg(width)
-                width <- switch(width,
+                window_width <<- switch(width,
                     "small" = 380L,
                     "med" = 680L,
                     "large" = 1000L
@@ -48,7 +50,7 @@ iNZWindow <- setRefClass("iNZWindow",
             }
             if (is.character(height)) {
                 height <- match.arg(height)
-                height <- switch(height,
+                window_height <<- switch(height,
                     "small" = 200L,
                     "med" = 360L,
                     "large" = 650L
@@ -59,16 +61,12 @@ iNZWindow <- setRefClass("iNZWindow",
             GUI$modWin <<- gwindow(
                 title = title,
                 visible = FALSE,
-                width = width,
-                height = height + show_code * 80L,
+                width = window_width,
+                height = window_height + show_code * 80L,
                 parent = GUI$win
             )
 
-            if (scroll) {
-                # add scrollbars
-            }
-
-            g <- gvbox(container = GUI$modWin)
+            g <- gvbox()
             g$set_borderwidth(10L)
 
             header <<- gvbox(container = g)
@@ -125,15 +123,39 @@ iNZWindow <- setRefClass("iNZWindow",
                 enabled(code_panel) <<- FALSE
             }
 
+            if (scroll) {
+                # add scrollbars
+                scrolledWindow <- gtkScrolledWindow()
+                scrolledWindow$setPolicy(
+                    "GTK_POLICY_NEVER",
+                    "GTK_POLICY_AUTOMATIC"
+                )
+                scrolledWindow$addWithViewport(
+                    g$widget
+                )
+                add(GUI$modWin, scrolledWindow,
+                    expand = TRUE, fill = TRUE
+                )
+            } else {
+                add(GUI$modWin, g)
+            }
+
             invisible(TRUE)
         },
         add_heading = function(
-            text,
+            ...,
             size = 10L,
             weight = "normal",
             align = c("left", "center", "right")
         ) {
-            lbl <- glabel(text)
+            # calculate line width
+            nc <- floor(10L / size * window_width / 6L)
+            lbl <- glabel(
+                add_lines(
+                    paste(list(...), collapse = " "),
+                    nchar = nc
+                )
+            )
             font(lbl) <- list(size = size, weight = weight)
             anchor <- switch(
                 match.arg(align),
@@ -145,7 +167,12 @@ iNZWindow <- setRefClass("iNZWindow",
 
             invisible(NULL)
         },
+        add_lines = function(x, nchar = 100L) {
+            stringr::str_wrap(x, nchar)
+        },
         add_body = function(x, ...) add(body, x, ...),
+        body_spring = function() addSpring(body),
+        body_space = function(x) addSpace(body, x),
         set_code = function(code) {
             if (is.null(code_panel)) return()
             svalue(code_panel) <<- ""
