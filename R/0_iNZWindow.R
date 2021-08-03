@@ -7,6 +7,7 @@ iNZWindow <- setRefClass("iNZWindow",
         header = "ANY",
         body = "ANY",
         footer = "ANY",
+        toolbar = "ANY",
         ok_handler = "function", # should return TRUE, or FALSE if action failed
         help_url = "ANY",
         help_button = "ANY",
@@ -21,6 +22,7 @@ iNZWindow <- setRefClass("iNZWindow",
             title = "Window title",
             width = c("small", "med", "large"),
             height = c("small", "med", "large"),
+            body_direction = c("vertical", "horizontal"),
             ok = "OK",
             cancel = "Cancel",
             action,
@@ -47,7 +49,10 @@ iNZWindow <- setRefClass("iNZWindow",
                     "med" = 680L,
                     "large" = 1000L
                 )
+            } else {
+                window_width <<- width
             }
+
             if (is.character(height)) {
                 height <- match.arg(height)
                 window_height <<- switch(height,
@@ -55,6 +60,8 @@ iNZWindow <- setRefClass("iNZWindow",
                     "med" = 360L,
                     "large" = 650L
                 )
+            } else {
+                window_height <<- height
             }
 
             try(dispose(GUI$modWin), silent = TRUE)
@@ -66,11 +73,15 @@ iNZWindow <- setRefClass("iNZWindow",
                 parent = GUI$win
             )
 
-            g <- gvbox()
+            body_direction <- match.arg(body_direction)
+            g <- gvbox(expand = TRUE)
             g$set_borderwidth(10L)
 
             header <<- gvbox(container = g)
-            body <<- gvbox(container = g)
+            body <<- switch(body_direction,
+                "vertical" = gvbox(container = g),
+                "horizontal" = ggroup(container = g, expand = TRUE)
+            )
             addSpace(g, 10L)
             addSpring(g)
             footer <<- ggroup(container = g)
@@ -83,6 +94,8 @@ iNZWindow <- setRefClass("iNZWindow",
                 )
                 size(help_button) <<- c(120, -1)
             }
+
+            toolbar <<- ggroup(container = footer)
 
             addSpring(footer)
             cancel_button <<- gbutton(cancel,
@@ -171,6 +184,7 @@ iNZWindow <- setRefClass("iNZWindow",
             stringr::str_wrap(x, nchar)
         },
         add_body = function(x, ...) add(body, x, ...),
+        add_toolbar = function(x, ...) add(toolbar, x, ...),
         body_spring = function() addSpring(body),
         body_space = function(x) addSpace(body, x),
         set_code = function(code) {

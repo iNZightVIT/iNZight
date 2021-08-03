@@ -155,7 +155,7 @@ iNZMenuBarWidget <- setRefClass(
                 sort =
                     gaction("Sort by variable(s) ...",
                         icon = "sort-ascending",
-                        handler = function(h, ...) iNZSortbyDataWin$new(GUI)),
+                        handler = function(h, ...) iNZSortWin$new(GUI)),
                 aggregate =
                     gaction("Aggregate ...",
                         icon = "dnd-multiple",

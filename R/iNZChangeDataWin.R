@@ -53,7 +53,7 @@ iNZFilterWin <- setRefClass(
             usingMethods("handle_filter", "update_data")
 
             ## top group
-            gtop <- ggroup(container = body)
+            gtop <- ggroup()
             opts <- c(
                 "by value",
                 "by row number",
@@ -74,9 +74,11 @@ iNZFilterWin <- setRefClass(
                 }
             )
 
-            addSpace(body, 10)
+            add_body(gtop)
+            body_space(10L)
+
             ### container for content
-            gmain <- ggroup(container = body, expand = TRUE, fill = TRUE)
+            gmain <- ggroup(expand = TRUE, fill = TRUE)
 
             #### --- filter by value
             g_value <<- ggroup(container = gmain, expand = TRUE)
@@ -219,11 +221,11 @@ iNZFilterWin <- setRefClass(
             rand_msg <<- glabel("", container = g_random)
             font(rand_msg) <<- list(size = 9, weight = "bold", color = "orangered")
 
-
-            addSpring(body)
+            add_body(gmain)
+            body_spring()
 
             ### dataset info:
-            ginfo <- gvbox(container = body)
+            ginfo <- gvbox()
             cur_row <- glabel(sprintf("Current data has %d rows", nrow(GUI$getActiveData())),
                 container = body,
                 anchor = c(1, 0))
@@ -232,7 +234,11 @@ iNZFilterWin <- setRefClass(
             font(cur_row) <- list(size = 9)
             font(new_row) <<- list(size = 9)
 
+            add_body(ginfo)
+
             filter_type$invoke_change_handler()
+
+
         },
         handle_filter = function(h, ...) {
             newdata <<- NULL
@@ -333,8 +339,8 @@ iNZFilterWin <- setRefClass(
 ## --------------------------------------------
 ## Class that handles the sortby of a dataset
 ## --------------------------------------------
-iNZSortbyDataWin <- setRefClass(
-    "iNZSortbyDataWin",
+iNZSortWin <- setRefClass(
+    "iNZSortWin",
     fields = list(
         var_names = "character",
         var_tbl = "ANY",
@@ -456,10 +462,26 @@ iNZAggregateWin <- setRefClass(
         close_btn = "ANY", ok_btn = "ANY",
         adv_chk = "ANY"
     ),
+    contains = "iNZWindow",
     methods = list(
         initialize = function(gui) {
+
+            ok <- callSuper(gui,
+                title = "Aggregate data",
+                width = "med",
+                height = "med",
+                ok = "Aggregate",
+                action = .self$do_aggregation,
+                help = "user_guides/data_options/#aggregate",
+                show_code = FALSE,
+                scroll = FALSE,
+                body_direction = "horizontal"
+            )
+            if (!ok) return()
+            on.exit(.self$show())
+            usingMethods("do_aggregation")
+
             initFields(
-                GUI = gui,
                 data = gui$getActiveData(),
                 reordering = FALSE
             )
@@ -468,29 +490,12 @@ iNZAggregateWin <- setRefClass(
             catvars <<- allvars[vt == "cat"]
             numvars <<- allvars[vt != "cat"] # includes datetimes
 
-            try(dispose(GUI$modWin), silent = TRUE)
-
             design <<- GUI$getActiveDoc()$getModel()$getDesign()
             is_survey <<- !is.null(design)
 
-            GUI$modWin <<- gwindow("Aggregate data",
-                parent = GUI$win,
-                visible = FALSE,
-                width = 800,
-                height = 500
-            )
-            g <- gvbox(container = GUI$modWin, expand = TRUE)
-            g$set_borderwidth(5)
-
-            ########################## Main body
-            mainGrp <- ggroup(
-                container = g,
-                expand = TRUE
-            )
-            mainGrp$set_borderwidth(10)
 
             ### +++++++ Variable selection
-            g_var <- gvbox(container = mainGrp, expand = TRUE)
+            g_var <- gvbox(expand = TRUE)
 
             ### +++ Aggregation variables
             g_aggvars <- gframe("1. Choose aggregation variables",
@@ -594,41 +599,36 @@ iNZAggregateWin <- setRefClass(
                 container = g_var)
             font(lbl) <- list(weight = "bold", size = 8)
 
+            add_body(g_var)
 
             ### +++++++ Summary selection
-            gsmry <<- gframe("3. Summaries to calculate",
-                container = mainGrp)
+            gsmry <<- gframe("3. Summaries to calculate")
             gsmry$set_borderwidth(5)
             smry_tbl <<- NULL
 
+            add_body(gsmry)
+
             ### +++++++ Preview
-            gprev <- gframe("Preview", container = mainGrp, expand = TRUE)
+            gprev <- gframe("Preview", expand = TRUE)
             gprev$set_borderwidth(5)
 
             df_preview <<- gtable(list(Variables = character()),
                 container = gprev
             )
-            size(df_preview) <<- c(-1, 150)
+            size(df_preview) <<- c(140, 250)
 
+            add_body(gprev)
 
-            addSpring(g)
 
             ########################## Window buttons
-            btnGrp <- ggroup(container = g)
-            close_btn <<- gbutton("Close",
-                container = btnGrp,
-                handler = function(h, ...) dispose(GUI$modWin))
             adv_chk <<- gcheckbox("Advanced mode",
-                # container = btnGrp,
                 handler = function(h, ...) set_advanced())
-            addSpring(btnGrp)
-            ok_btn <<- gbutton("Aggregate",
-                container = btnGrp,
-                handler = function(h, ...) do_aggregation())
+            # add_toolbar(adv_chk)
+
 
             set_advanced()
 
-            visible(GUI$modWin) <<- TRUE
+            show()
         },
         add_aggvars = function(index) {
             available <- as.character(available_aggvars$get_items())
@@ -783,7 +783,7 @@ iNZAggregateWin <- setRefClass(
             }
             quantiles
         },
-        do_aggregation = function(preview = TRUE) {
+        do_aggregation = function() {
             adv <- svalue(adv_chk)
             # figure out what summaries the user wants
             summaries <- get_summaries()

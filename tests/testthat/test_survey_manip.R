@@ -52,7 +52,7 @@ test_that("Aggregating survey data is valid", {
     svalue(w$smryvars) <- c("HHincome", "height")
     w$smryvars$invoke_change_handler()
     svalue(w$gsmry$children[[1]][3,1]) <- TRUE
-    w$ok_btn$invoke_change_handler()
+    w$ok_button$invoke_change_handler()
     expect_null(ui$getActiveDoc()$getModel()$getDesign())
 })
 
