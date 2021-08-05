@@ -79,11 +79,11 @@ iNZWindow <- setRefClass("iNZWindow",
 
             header <<- gvbox(container = g)
             body <<- switch(body_direction,
-                "vertical" = gvbox(container = g),
+                "vertical" = gvbox(container = g, expand = TRUE, fill = TRUE),
                 "horizontal" = ggroup(container = g, expand = TRUE)
             )
             addSpace(g, 10L)
-            addSpring(g)
+            # addSpring(g)
             footer <<- ggroup(container = g)
 
             if (!is.null(help_url)) {

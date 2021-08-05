@@ -16,7 +16,7 @@ test_that("Data Maid report", {
 
 test_that("Subsetting and reordering columns", {
     # try(gWidgets2::dispose(ui$modWin), TRUE); load_all()
-    w <- iNZReorderVarsWin$new(ui)
+    w <- iNZReorderWin$new(ui)
     on.exit(try(gWidgets2::dispose(ui$modWin), TRUE))
 })
 

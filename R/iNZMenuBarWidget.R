@@ -163,13 +163,13 @@ iNZMenuBarWidget <- setRefClass(
                 stack =
                     gaction("Stack ...",
                         icon = "dnd-multiple",
-                        handler = function(h, ...) iNZstackVarWin$new(GUI)),
+                        handler = function(h, ...) iNZStackWin$new(GUI)),
                 "Dataset operation" = list(
                     reshape =
                         gaction("Reshape dataset ...",
                             icon = "dataframe",
                             tooltip = "Transform from wide- to long-form data",
-                            handler = function(h, ...) iNZReshapeDataWin$new(GUI)),
+                            handler = function(h, ...) iNZReshapeWin$new(GUI)),
                     separate =
                         gaction("Separate column ...",
                             icon = "dataframe",
@@ -200,7 +200,7 @@ iNZMenuBarWidget <- setRefClass(
                 reorder =
                     gaction("Reorder and select variables ...",
                         icon = "sort-ascending",
-                        handler = function(h, ...) iNZReorderVarsWin$new(GUI)
+                        handler = function(h, ...) iNZReorderWin$new(GUI)
                     ),
                 gseparator(),
                 view =
