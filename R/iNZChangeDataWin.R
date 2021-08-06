@@ -1997,7 +1997,7 @@ iNZJoinWin <- setRefClass(
             if (length(data) == 0 | nrow(data) == 0)
                 data <- GUI$getActiveData()
 
-            GUI$update_document(data, "joined")
+            GUI$new_document(data, "joined")
             close()
         },
         show_join_help = function() {
@@ -2128,7 +2128,7 @@ iNZAppendRowsWin <- setRefClass(
         do_append = function() {
             .dataset <- GUI$getActiveData()
             data <- appendrow()
-            GUI$update_document(data, "appended")
+            GUI$new_document(data, "appended")
             close()
         }
     )
