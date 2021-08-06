@@ -1634,7 +1634,7 @@ iNZexpandTblWin <- setRefClass(
             conf <- gconfirm(
                 paste(
                     "This will expand the table to individual rows.",
-                    "Use Dataset > Restore dataset to go back to revert this change.",
+                    "You can revert to the original data using the 'Data set' select box.",
                     "Note: you can get the same effect by specifying a frequency column.",
                     sep = "\n\n"
                 ),
@@ -1643,36 +1643,37 @@ iNZexpandTblWin <- setRefClass(
                 parent = GUI$win
             )
 
-            if (conf) {
-                dat <- GUI$getActiveData()
-                dat <- tryCatch(
-                    {
-                        as.numeric(rownames(dat))
-                        dat
-                    },
-                    warning = function(w) {
-                        ## cannot convert rownames to numeric - create column
-                        dat$Row <- rownames(dat)
-                        dat
-                    }
-                )
-                numIndices <- sapply(dat, function(x) is_num(x))
+            if (!conf) return()
 
-                long <- reshape2:::melt.data.frame(dat,
-                    measure.vars = colnames(dat)[numIndices],
-                    variable.name = "Column",
-                    value.name = "Count",
-                    na.rm = TRUE
-                )
-                out <- long[rep(rownames(long), long$Count), ]
-                rownames(out) <- 1:nrow(out)
+            dat <- GUI$getActiveData()
+            dat <- tryCatch(
+                {
+                    as.numeric(rownames(dat))
+                    dat
+                },
+                warning = function(w) {
+                    ## cannot convert rownames to numeric - create column
+                    dat$Row <- rownames(dat)
+                    dat
+                }
+            )
+            numIndices <- sapply(dat, function(x) is_num(x))
 
-                ## for 1-way tables, don't need the "Count" column!
-                if (length(unique(out$Column)) == 1)
-                    out$Column <- NULL
-                out$Count <- NULL
-                GUI$getActiveDoc()$getModel()$updateData(out)
-            }
+            long <- reshape2:::melt.data.frame(dat,
+                measure.vars = colnames(dat)[numIndices],
+                variable.name = "Column",
+                value.name = "Count",
+                na.rm = TRUE
+            )
+            out <- long[rep(rownames(long), long$Count), ]
+            rownames(out) <- 1:nrow(out)
+
+            ## for 1-way tables, don't need the "Count" column!
+            if (length(unique(out$Column)) == 1)
+                out$Column <- NULL
+            out$Count <- NULL
+
+            GUI$new_document(out, "expanded")
         }
     )
 )
@@ -1681,10 +1682,9 @@ iNZexpandTblWin <- setRefClass(
 ## --------------------------------------------
 ## Class that handles the joining of the original dataset with a new dataset
 ## --------------------------------------------
-iNZjoinDataWin <- setRefClass(
-    "iNZjoinDataWin",
+iNZJoinWin <- setRefClass(
+    "iNZJoinWin",
     fields = list(
-        GUI = "ANY",
         newdata = "ANY",
         prevTbl = "ANY",
         left_col = "ANY",
@@ -1699,35 +1699,24 @@ iNZjoinDataWin <- setRefClass(
         middle = "ANY",
         joinbtn = "ANY"
     ),
+    contains = "iNZWindow",
     methods = list(
         initialize = function(gui = NULL) {
-            initFields(GUI = gui)
-            if (is.null(GUI)) return()
-            ## close any current mod windows
-            try(dispose(GUI$modWin), silent = TRUE)
-
-            ## start my window
-            GUI$modWin <<- gwindow(
-                "Join with another dataset by column values",
-                parent = GUI$win,
-                width = 550,
-                visible = FALSE
+            ok <- callSuper(gui,
+                title = "Join datasets by columns",
+                width = "med",
+                height = "large",
+                ok = "Join",
+                action = .self$do_join,
+                help = "user_guides/data_options/#join",
+                show_code = FALSE,
+                scroll = FALSE
             )
-            mainGroup <- ggroup(container = GUI$modWin,
-                expand = TRUE, horizontal = FALSE)
-            mainGroup$set_borderwidth(15)
+            if (!ok) return()
+            on.exit(.self$show())
+            usingMethods("do_join")
 
-            helpbtn <- gimagebutton(stock.id = "gw-help",
-                handler = function(h, ...) help_page("user_guides/data_options/#join"))
-
-            title_string <- glabel("Join Datasets")
-            font(title_string) <- list(size = 14, weight = "bold")
-            helplyt <- glayout(homegenous = FALSE)
-            helplyt[1, 4:19, expand = TRUE, anchor = c(0,0)] <- title_string
-            helplyt[1, 20, expand = TRUE, anchor = c(1, -1)] <- helpbtn
-            add(mainGroup, helplyt)
-
-            prevTbl <<- glayout(homogeneous = FALSE, container = mainGroup)
+            prevTbl <<- glayout(homogeneous = FALSE)
 
             string1 <- glabel("Preview of the original dataset")
             originview <- gtable(data.frame(head(GUI$getActiveData(), 10), stringsAsFactors = TRUE))
@@ -1849,88 +1838,28 @@ iNZjoinDataWin <- setRefClass(
             )
             data2from$invoke_change_handler()
 
+            add_body(prevTbl)
+
             ## Middle box
-            middle <<- ggroup(container = mainGroup, horizontal = FALSE)
+            middle <<- gvbox()
             coltbl <<- glayout(container = middle)
             coltbl[1, 1:4] <<- glabel("Please specify columns to match on from two datasets")
 
+            add_body(middle)
+
             ## Bottom box
-            bottom = ggroup(container = mainGroup, horizontal = FALSE)
+            bottom <- gvbox()
             preview_string2 = glabel("Preview", container = bottom, anchor = c(-1, 0))
             joinview <<- gtable(data.frame("", stringsAsFactors = TRUE), container = bottom)
             size(joinview) <<- c(-1, 150)
 
-            joinbtn <<- gbutton("Join", container = bottom)
-            addHandlerChanged(joinbtn,
-                function(h, ...) {
-                    .dataset <- GUI$getActiveData()
-                    data <- joinData()
-                    if (length(data) == 0 | nrow(data) == 0)
-                        data <- GUI$getActiveData()
+            add_body(bottom)
 
-                    attr(data, "name") <-
-                        paste(attr(.dataset, "name", exact = TRUE),
-                            "joined", sep = ".")
-                    attr(data, "code") <-
-                        gsub(".dataset",
-                            attr(.dataset, "name", exact = TRUE),
-                            attr(data, "code")
-                        )
-
-                    GUI$setDocument(iNZDocument$new(data = data))
-                    dispose(GUI$modWin)
-                }
+            join_types_button <- gbutton("Join Methods",
+                handler = function(h, ...) show_join_help()
             )
+            add_toolbar(join_types_button)
 
-            helpbtn <- gbutton("Help", container = bottom,
-                handler = function(h, ...) {
-                    helpwin <- gwindow(title = "Help")
-                    win <- gvbox(container = helpwin)
-
-                    inner_join <- glabel("Inner Join", container = win)
-                    font(inner_join) <- list(size = 12, weight = "bold")
-                    inner_join_help <- glabel(
-                        "Keep all the matched rows within both datasets",
-                        container = win)
-                    addSpace(win, 5)
-
-                    left_join <- glabel("Left Join", container = win)
-                    font(left_join) <- list(size = 12, weight = "bold")
-                    left_join_help <- glabel(
-                        paste(
-                            "Keep every row in the original dataset and",
-                            "match them to the imported dataset"
-                        ),
-                        container = win
-                    )
-                    addSpace(win, 5)
-
-                    full_join <- glabel("Full Join", container = win)
-                    font(full_join) <- list(size = 12, weight = "bold")
-                    full_join_help <- glabel("Keep all the rows in both datasets", container = win)
-                    addSpace(win, 5)
-
-                    semi_join <- glabel("Semi Join", container = win)
-                    font(semi_join) <- list(size = 12, weight = "bold")
-                    semi_join_help <- glabel(
-                        "Keep matched rows in the original dataset ONLY",
-                        container = win
-                    )
-                    addSpace(win, 5)
-
-                    anti_join <- glabel("Anti Join", container = win)
-                    font(anti_join) <- list(size = 12, weight = "bold")
-                    anti_join_help <- glabel(
-                        paste(
-                            "Return all rows in the original dataset which",
-                            "do not have a match in the imported dataset"
-                        ),
-                        container = win
-                    )
-                    addSpace(win, 5)
-                }
-            )
-            visible(GUI$modWin) <<- TRUE
         },
         set_second_data = function() {
             impview$set_items(head(newdata, 10))
@@ -2061,6 +1990,72 @@ iNZjoinDataWin <- setRefClass(
                 right_col <<- right_col[-pos]
             }
             create_join_table()
+        },
+        do_join = function() {
+            .dataset <- GUI$getActiveData()
+            data <- joinData()
+            if (length(data) == 0 | nrow(data) == 0)
+                data <- GUI$getActiveData()
+
+            GUI$update_document(data, "joined")
+            close()
+        },
+        show_join_help = function() {
+            helpwin <- gwindow(title = "Join Methods", parent = GUI$modWin)
+            win <- gvbox(container = helpwin)
+            win$set_borderwidth(10)
+
+            inner_join <- glabel("Inner Join", container = win, anchor = c(-1, 0))
+            font(inner_join) <- list(size = 12, weight = "bold")
+            inner_join_help <- glabel(
+                add_lines("Keep all the matched rows within both datasets", 80),
+                container = win, anchor = c(-1, 0))
+            addSpace(win, 5)
+
+            left_join <- glabel("Left Join", container = win, anchor = c(-1, 0))
+            font(left_join) <- list(size = 12, weight = "bold")
+            left_join_help <- glabel(
+                add_lines(
+                    paste(
+                        "Keep every row in the original dataset and",
+                        "match them to the imported dataset"
+                    ),
+                    50
+                ),
+                container = win, anchor = c(-1, 0)
+            )
+            addSpace(win, 5)
+
+            full_join <- glabel("Full Join", container = win, anchor = c(-1, 0))
+            font(full_join) <- list(size = 12, weight = "bold")
+            full_join_help <- glabel(
+                add_lines("Keep all the rows in both datasets", 50),
+                container = win, anchor = c(-1, 0)
+            )
+            addSpace(win, 5)
+
+            semi_join <- glabel("Semi Join", container = win, anchor = c(-1, 0))
+            font(semi_join) <- list(size = 12, weight = "bold")
+            semi_join_help <- glabel(
+                add_lines("Keep matched rows in the original dataset ONLY", 50),
+                container = win, anchor = c(-1, 0)
+            )
+            addSpace(win, 5)
+
+            anti_join <- glabel("Anti Join", container = win, anchor = c(-1, 0))
+            font(anti_join) <- list(size = 12, weight = "bold")
+            anti_join_help <- glabel(
+                add_lines(
+                    paste(
+                        "Return all rows in the original dataset which",
+                        "do not have a match in the imported dataset"
+                    ),
+                    50
+                ),
+                container = win, anchor = c(-1, 0)
+            )
+            addSpace(win, 5)
+
         }
     )
 )
@@ -2069,76 +2064,48 @@ iNZjoinDataWin <- setRefClass(
 ## --------------------------------------------
 ## Class that handles appending new row to the dataset
 ## --------------------------------------------
-iNZappendrowWin <- setRefClass(
-    "iNZappendrowWin",
+iNZAppendRowsWin <- setRefClass(
+    "iNZAppendRowsWin",
     fields = list(
-        GUI = "ANY",
         newdata = "ANY",
         date = "ANY"
     ),
+    contains = "iNZWindow",
     methods = list(
         initialize = function(gui = NULL) {
-            initFields(GUI = gui)
-            if (is.null(GUI)) return()
+            ok <- callSuper(gui,
+                title = "Append new rows",
+                width = "small",
+                height = "small",
+                ok = "Append",
+                action = .self$do_append,
+                help = "user_guides/data_options/#append",
+                show_code = FALSE,
+                scroll = FALSE
+            )
+            if (!ok) return()
+            on.exit(.self$show())
+            usingMethods("do_append")
 
-            ## close any current mod windows
-            try(dispose(GUI$modWin), silent = TRUE)
-            ## start my window
-            GUI$modWin <<- gwindow("Append rows",
-                parent = GUI$win, visible = FALSE)
-            mainGroup <- ggroup(container = GUI$modWin,
-                expand = TRUE,
-                horizontal = FALSE)
-            mainGroup$set_borderwidth(15)
+            file_string <- glabel("Import data")
+            add_body(file_string, anchor = c(-1,0))
 
-            helpbtn <- gimagebutton(stock.id = "gw-help",
-                handler = function(h, ...) help_page("user_guides/data_options/#append"))
-
-            title_string <- glabel("Append rows")
-            font(title_string) <- list(size = 14, weight = "bold")
-            helplyt <- glayout(homegenous = FALSE)
-            helplyt[1, 4:19, expand = TRUE, anchor = c(0,0)] <- title_string
-            helplyt[1, 20, expand = TRUE, anchor = c(1, -1)] <- helpbtn
-            add(mainGroup, helplyt)
-
-            file_string <- glabel("Import data",
-                container = mainGroup, anchor = c(-1,0))
             data_name <- gfilebrowse(text = "Specify a file",
                 initial.dir = file.path(".", "data"),
-                container = mainGroup,
                 handler = function(h, ...) {
                     newdata <<- iNZightTools::smart_read(svalue(data_name))
                 }
             )
+            add_body(data_name)
 
             date <<- FALSE
             check_box <- gcheckbox(
                 "Tick if you want to attach a timestamp to the appended rows",
-                container = mainGroup,
                 handler = function(h, ...) {
                     date <<- svalue(check_box)
                 }
             )
-
-            appendbtn <- gbutton("Append", container = mainGroup)
-            addHandlerChanged(appendbtn,
-                function(h, ...) {
-                    .dataset <- GUI$getActiveData()
-                    data <- appendrow()
-                    attr(data, "name") <-
-                        paste(attr(.dataset, "name", exact = TRUE),
-                            "appended", sep = ".")
-                    attr(data, "code") <-
-                        gsub(".dataset",
-                            attr(.dataset, "name", exact = TRUE),
-                            attr(data, "code")
-                        )
-
-                    GUI$setDocument(iNZDocument$new(data = data))
-                    dispose(GUI$modWin)
-                }
-            )
-            visible(GUI$modWin) <<- TRUE
+            add_body(check_box)
         },
         appendrow = function() {
             data <- GUI$getActiveData()
@@ -2157,6 +2124,12 @@ iNZappendrowWin <- setRefClass(
                 }
             }
             iNZightTools::appendrows(data, newdata, date)
+        },
+        do_append = function() {
+            .dataset <- GUI$getActiveData()
+            data <- appendrow()
+            GUI$update_document(data, "appended")
+            close()
         }
     )
 )

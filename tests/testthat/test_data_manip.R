@@ -97,9 +97,9 @@ test_that("Existing datasets can be joined", {
 
     # merge data1 to data2
     # source('R/iNZChangeDataWin.R'); try(dispose(jw), TRUE)
-    jw <- iNZjoinDataWin$new(ui)
+    jw <- iNZJoinWin$new(ui)
     expect_silent(jw$data_name$set_value("data1"))
-    expect_silent(jw$joinbtn$invoke_change_handler())
+    expect_silent(jw$ok_button$invoke_change_handler())
     expect_equivalent(
         ui$getActiveData()[,c("x", "y", "z")],
         dplyr::inner_join(d1, d2, by = "x")

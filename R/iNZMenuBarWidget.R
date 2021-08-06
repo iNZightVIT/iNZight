@@ -224,11 +224,11 @@ iNZMenuBarWidget <- setRefClass(
                     joinbycol =
                         gaction("Join by column values",
                             icon = "copy",
-                            handler = function(h, ...) iNZjoinDataWin$new(GUI)),
+                            handler = function(h, ...) iNZJoinWin$new(GUI)),
                     appendrows =
                         gaction("Append new rows",
                             icon = "edit",
-                            handler = function(h, ...) iNZappendrowWin$new(GUI))
+                            handler = function(h, ...) iNZAppendRowsWin$new(GUI))
                 ),
                 gseparator(),
                 "Survey design" = list(
