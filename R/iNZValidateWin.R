@@ -2,50 +2,36 @@
 iNZValidateWin <- setRefClass(
     "iNZValidateWin",
     fields = list(
-      GUI    = "ANY",
-      window = "ANY",
       vali   = "ANY",
       cf     = "ANY"
     ),
+    contains = "iNZWindow",
     methods = list(
-        initialize = function(GUI) {
-            initFields(GUI = GUI)
-            open.window()
-        },
-        open.file = function(file, rules.box) {
-            print(rules.box)
-            file.vali <- validate::validator(.file = file)
-            svalue(rules.box) <- sub("^ V[0-9]+: ", "",
-                capture.output(print(file.vali))[-1]
+        initialize = function(gui) {
+            ok <- callSuper(gui,
+                title = "Validate Data",
+                width = "large",
+                height = "large",
+                ok = "Close",
+                cancel = NULL,
+                action = close,
+                show_code = FALSE,
+                scroll = FALSE,
+                body_direction = "horizontal"
             )
-        },
-        save.file = function(file, rules) {
-            write(rules, file = file)
-        },
-        open.window = function() {
-            window <<- gwindow("Validate Data",
-                width = 800,
-                height = 500,
-                parent = GUI$win,
-                visible = FALSE
-            )
+            if (!ok) return()
+            on.exit(.self$show())
 
-            gv <- ggroup()
-            gv$set_borderwidth(15)
-
-            add(window, gv,
-                expand = TRUE,
-                fill = TRUE
-            )
+            # add_body(gv, expand = TRUE, fill = TRUE)
 
             group.left <- gvbox()
             group.right <- gvbox()
 
-            add(gv, group.left,
+            add_body(group.left,
                 expand = TRUE,
                 fill = TRUE
             )
-            add(gv, group.right,
+            add_body(group.right,
                 expand = TRUE,
                 fill = TRUE
             )
@@ -177,7 +163,7 @@ iNZValidateWin <- setRefClass(
                             gmessage(error.message,
                                 title = "Validation Rules Error",
                                 icon = "error",
-                                parent = window
+                                parent = GUI$modWin
                             )
                         }
                     )
@@ -187,10 +173,6 @@ iNZValidateWin <- setRefClass(
             open.button$set_icon("open")
             save.button$set_icon("save")
             validate.button$set_icon("apply")
-
-            ok.button <- gbutton("OK",
-                handler = function(h, ...) dispose(window)
-            )
 
             update.details <- function(h, ...) {
                 vrule <- validate::as.data.frame(vali, stringsAsFactors = TRUE)[["rule"]]
@@ -252,9 +234,18 @@ iNZValidateWin <- setRefClass(
                 expand = TRUE,
                 fill = TRUE
             )
-            add(group.left, ok.button, anchor = c(1, 0))
 
-            visible(window) <<- TRUE
+            show()
+        },
+        open.file = function(file, rules.box) {
+            print(rules.box)
+            file.vali <- validate::validator(.file = file)
+            svalue(rules.box) <- sub("^ V[0-9]+: ", "",
+                capture.output(print(file.vali))[-1]
+            )
+        },
+        save.file = function(file, rules) {
+            write(rules, file = file)
         }
     )
 )

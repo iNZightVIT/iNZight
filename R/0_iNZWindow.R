@@ -98,10 +98,14 @@ iNZWindow <- setRefClass("iNZWindow",
             toolbar <<- ggroup(container = footer)
 
             addSpring(footer)
-            cancel_button <<- gbutton(cancel,
-                handler = function(h, ...) close()
-            )
-            size(cancel_button) <<- c(120, -1)
+            if (!is.null(cancel)) {
+                cancel_button <<- gbutton(cancel,
+                    handler = function(h, ...) close()
+                )
+                size(cancel_button) <<- c(120, -1)
+            } else {
+                cancel_button <<- NULL
+            }
 
             ok_button <<- gbutton(ok,
                 handler = function(h, ...) {
@@ -114,10 +118,10 @@ iNZWindow <- setRefClass("iNZWindow",
             switch(GUI$OS,
                 "windows" = {
                     add(footer, ok_button)
-                    add(footer, cancel_button)
+                    if (!is.null(cancel_button)) add(footer, cancel_button)
                 },
                 {
-                    add(footer, cancel_button)
+                    if (!is.null(cancel_button)) add(footer, cancel_button)
                     add(footer, ok_button)
                 }
             )
