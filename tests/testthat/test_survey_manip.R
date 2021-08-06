@@ -64,12 +64,12 @@ Sys.sleep(5)
 ui$getActiveDoc()$getModel()$setDesign(ncsr_svy$spec, ui)
 
 test_that("Uniting columns works", {
-    w <- iNZUniteDataWin$new(ui)
+    w <- iNZUniteWin$new(ui)
     svalue(w$var1) <- c("race", "marital")
     w$var1$invoke_change_handler()
     expect_equal(svalue(w$var2), "race_marital")
     expect_true("race_marital" %in% w$newview$get_names())
-    expect_silent(w$unitebtn$invoke_change_handler())
+    expect_silent(w$ok_button$invoke_change_handler())
     expect_equal(
         ui$getActiveData()$race_marital,
         with(ncsr_svy$data, as.factor(paste(race, marital, sep = "_")))
@@ -78,7 +78,7 @@ test_that("Uniting columns works", {
 })
 
 test_that("Separating columns works", {
-    w <- iNZSeparateDataWin$new(ui)
+    w <- iNZSeparateWin$new(ui)
     svalue(w$var1) <- "race_marital"
     expect_silent(w$var1$invoke_change_handler())
     expect_true(w$var2$set_value("_"))
@@ -90,7 +90,7 @@ test_that("Separating columns works", {
     expect_true(w$rightCol$set_value("new_marital"))
     expect_silent(w$updateView())
     expect_true(all(c("new_race", "new_marital") %in% w$newview$get_names()))
-    expect_silent(w$separatebtn$invoke_change_handler())
+    expect_silent(w$ok_button$invoke_change_handler())
     expect_true(iNZightTools::is_survey(ui$get_data_object()))
     expect_equal(
         ui$get_data_object()$variables$new_race,

@@ -382,8 +382,6 @@ iNZSortWin <- setRefClass(
             add_body(var_tbl)
 
             add_var()
-
-            show()
         },
         add_var = function() {
             ii <- length(sort_vars) + 1L
@@ -627,8 +625,6 @@ iNZAggregateWin <- setRefClass(
 
 
             set_advanced()
-
-            show()
         },
         add_aggvars = function(index) {
             available <- as.character(available_aggvars$get_items())
@@ -1032,8 +1028,6 @@ iNZReorderWin <- setRefClass(
                 }
             )
             add_body(g_ctrls)
-
-            show()
         },
         add_vars = function(index) {
             remove <- as.character(dataVars$get_items())
@@ -1300,8 +1294,6 @@ iNZReshapeWin <- setRefClass(
 
             visible(previewbox) <- FALSE
             enabled(ok_button) <<- FALSE
-
-            show()
         },
         updatePreview = function() {
             d <- reshape()
@@ -1329,10 +1321,9 @@ iNZReshapeWin <- setRefClass(
 ## --------------------------------------------
 ## Class that handles the separating of a dataset
 ## --------------------------------------------
-iNZSeparateDataWin <- setRefClass(
-    "iNZSeparateDataWin",
+iNZSeparateWin <- setRefClass(
+    "iNZSeparateWin",
     fields = list(
-        GUI = "ANY",
         format = "ANY",
         var1 = "ANY", var2 = "ANY",
         col = "ANY",
@@ -1346,59 +1337,53 @@ iNZSeparateDataWin <- setRefClass(
         dtpreview = "ANY",
         separatebtn = "ANY"
     ),
+    contains = "iNZWindow",
     methods = list(
         initialize = function(gui = NULL) {
-            initFields(GUI = gui)
-            if (is.null(GUI)) return()
-            ## close any current mod windows
-            try(dispose(GUI$modWin), silent = TRUE)
-
-            ## start my window
-            GUI$modWin <<- gwindow("Separate columns",
-                parent = GUI$win,
-                visible = FALSE,
-                width = 700,
-                height = 700
+            ok <- callSuper(gui,
+                title = "Separate columns",
+                width = "med",
+                height = "large",
+                ok = "Separate",
+                action = .self$do_separate,
+                help = "user_guides/data_options/#separate",
+                show_code = FALSE,
+                scroll = FALSE
             )
-            mainGroup <- ggroup(container = GUI$modWin,
-                expand = TRUE,
-                horizontal = FALSE)
-            mainGroup$set_borderwidth(15)
+            if (!ok) return()
+            on.exit(.self$show())
+            usingMethods("do_separate")
 
-            helpbtn <- gimagebutton(stock.id = "gw-help",
-                handler = function(h, ...) help_page("user_guides/data_options/#separate"))
-            title_string <- glabel("Separate columns")
-            font(title_string) <- list(size = 14, weight = "bold")
-            helplyt <- glayout(homegenous = FALSE)
-            helplyt[1, 4:19, expand = TRUE, anchor = c(0,0)] <- title_string
-            helplyt[1, 20, expand = TRUE, anchor = c(1, -1)] <- helpbtn
-            add(mainGroup, helplyt)
+            initFields(
+                sep = "_",
+                check = "Column"
+            )
 
-            addSpace(mainGroup, 15)
-            input_tbl <- glayout(container = mainGroup)
+            input_tbl <- glayout()
             ii <- 1L
 
-            format.list <- c("", "Separate into several columns", "Separate into several rows")
+            format.list <- c("Columns", "Rows")
+            format_string <- glabel("Separate variable into :")
+            input_tbl[ii, 1L, anchor = c(1, 0), expand = TRUE] <- format_string
+
             if (iNZightTools::is_survey(GUI$get_data_object())) {
-                format <<- glabel(format.list[[2]])
+                format <<- glabel(format.list[[1]])
                 input_tbl[ii, 2:3, anchor = c(-1, 0), fill = TRUE] <- format
                 check <<- "Column"
                 col <<- ""
                 sep <<- ""
             } else {
-                format_string <- glabel("Select separate mode :")
-                format <<- gcombobox(items = format.list,
+                format <<- gradio(items = format.list,
+                    horizontal = TRUE,
                     handler = function(h, ...) {
                         col <<- ""
                         sep <<- ""
                         var1$set_value(" ")
                         var2$set_value("")
                         newview$set_items("")
-                        type <- svalue(format)
-                        check <<- switch(svalue(h$obj, index = TRUE), "", "Column", "Row")
+                        check <<- gsub("s", "", svalue(format))
                     }
                 )
-                input_tbl[ii, 1L, anchor = c(1, 0), expand = TRUE] <- format_string
                 size(format) <<- c(350, -1)
                 input_tbl[ii, 2:3] <- format
             }
@@ -1417,7 +1402,7 @@ iNZSeparateDataWin <- setRefClass(
             ii <- ii + 1L
 
             sep_string <- glabel("Value separator :")
-            var2 <<- gedit("")
+            var2 <<- gedit(sep)
             addHandlerKeystroke(var2,
                 function(h ,...) {
                     sep <<- svalue(var2)
@@ -1456,40 +1441,24 @@ iNZSeparateDataWin <- setRefClass(
                 }
             )
 
-            addSpace(mainGroup, 15)
-            prevTbl <- glayout(homogeneous = FALSE, container = mainGroup)
+            add_body(input_tbl)
+            body_space(15)
+
+            prevTbl <- glayout(homogeneous = FALSE)
 
             string1 <- glabel("Original dataset")
             originview <- gtable(data.frame(head(GUI$getActiveData(), 10L), stringsAsFactors = TRUE))
             prevTbl[1,1, expand = TRUE] <- string1
             prevTbl[2,1, expand = TRUE] <- originview
-            size(originview) = c(-1, 250)
+            size(originview) = c(-1, 350)
 
             string2 <- glabel("New dataset")
             newview <<- gtable(data.frame("", stringsAsFactors = TRUE))
             prevTbl[1,2, expand = TRUE] <- string2
             prevTbl[2,2, expand = TRUE] <- newview
-            size(newview) <<- c(-1, 250)
+            size(newview) <<- c(-1, 350)
 
-            g_btn <- ggroup(container = mainGroup)
-            cancelbtn <- gbutton("Cancel",
-                handler = function(h, ...) dispose(GUI$modWin),
-                container = g_btn
-            )
-
-            addSpring(g_btn)
-
-            separatebtn <<- gbutton("Separate",
-                container = g_btn,
-                handler = function(h, ...) {
-                    .dataset <- GUI$get_data_object()
-                    newdata <- separatedt(preview = FALSE)
-                    GUI$new_document(newdata, "separated")
-                    dispose(GUI$modWin)
-                }
-            )
-
-            visible(GUI$modWin) <<- TRUE
+            add_body(prevTbl)
         },
         separatedt = function(preview = TRUE) {
             if (sep == "") return()
@@ -1530,6 +1499,12 @@ iNZSeparateDataWin <- setRefClass(
             } else {
                 newview$set_items("")
             }
+        },
+        do_separate = function() {
+            .dataset <- GUI$get_data_object()
+            newdata <- separatedt(preview = FALSE)
+            GUI$new_document(newdata, "separated")
+            close()
         }
     )
 )
@@ -1539,10 +1514,9 @@ iNZSeparateDataWin <- setRefClass(
 ## --------------------------------------------
 ## Class that handles the uniting of a dataset
 ## --------------------------------------------
-iNZUniteDataWin <- setRefClass(
-    "iNZUniteDataWin",
+iNZUniteWin <- setRefClass(
+    "iNZUniteWin",
     fields = list(
-        GUI = "ANY",
         var1 = "ANY", var2 = "ANY", var3 = "ANY",
         sep = "ANY",
         col = "ANY",
@@ -1550,39 +1524,31 @@ iNZUniteDataWin <- setRefClass(
         newview = "ANY",
         unitebtn = "ANY"
     ),
+    contains = "iNZWindow",
     methods = list(
         initialize = function(gui = NULL) {
-            initFields(GUI = gui)
-            if (is.null(GUI)) return()
-            ## close any current mod windows
-            try(dispose(GUI$modWin), silent = TRUE)
-
-            ## start my window
-            GUI$modWin <<- gwindow("Unite columns",
-                parent = GUI$win,
-                visible = FALSE,
-                width = 800
+            ok <- callSuper(gui,
+                title = "Unite columns",
+                width = "med",
+                height = "large",
+                ok = "Unite",
+                action = .self$do_unite,
+                help = "user_guides/data_options/#unite",
+                show_code = FALSE,
+                scroll = FALSE
             )
-            mainGroup <- ggroup(container = GUI$modWin,
-                expand = TRUE,
-                horizontal = FALSE)
-            mainGroup$set_borderwidth(15)
-            helpbtn <- gimagebutton(stock.id = "gw-help",
-                handler = function(h, ...) help_page("user_guides/data_options/#unite"))
-            title_string <- glabel("Unite columns")
-            font(title_string) <- list(size = 14, weight = "bold")
-            helplyt <- glayout(homegenous = FALSE)
-            helplyt[1, 4:19, expand = TRUE, anchor = c(0,0)] <- title_string
-            helplyt[1, 20, expand = TRUE, anchor = c(1, -1)] <- helpbtn
-            add(mainGroup, helplyt)
+            if (!ok) return()
+            on.exit(.self$show())
+            usingMethods("do_unite")
 
-            addSpace(mainGroup, 10)
-            g_top <- ggroup(container = mainGroup)
+            g_top <- ggroup()
             g_cols <- gvbox(container = g_top)
             addSpace(g_top, 20)
             g_info <- gvbox(container = g_top)
 
-            col_string <- glabel("Select columns to unite", container = g_cols)
+            col_string <- glabel("Select columns to unite")
+            font(col_string) <- list(weight = "bold")
+            add(g_cols, col_string, anchor = c(-1, 0))
 
             var1 <<- gtable(names(GUI$getActiveData()),
                 multiple = TRUE,
@@ -1599,7 +1565,7 @@ iNZUniteDataWin <- setRefClass(
             )
             size(var1) <<- c(300, 150)
 
-            lbl <- glabel("New variable name :")
+            lbl <- glabel("New variable name")
             font(lbl) <- list(weight = "bold")
             add(g_info, lbl, anchor = c(-1, 0), fill = TRUE)
             var2 <<- gedit("", container = g_info)
@@ -1611,7 +1577,7 @@ iNZUniteDataWin <- setRefClass(
             )
 
             sep <<- "_"
-            lbl <- glabel("Value separator :")
+            lbl <- glabel("Value separator")
             font(lbl) <- list(weight = "bold")
             add(g_info, lbl, anchor = c(-1, 0), fill = TRUE)
             var3 <<- gedit("_", container = g_info)
@@ -1622,46 +1588,35 @@ iNZUniteDataWin <- setRefClass(
                 }
             )
 
-            prevTbl <- glayout(homogeneous = FALSE, container = mainGroup)
+            add_body(g_top)
+
+            prevTbl <- glayout(homogeneous = FALSE)
 
             string1 <- glabel("Original dataset")
             originview = gtable(data.frame(head(GUI$getActiveData(), 10L), stringsAsFactors = TRUE))
             prevTbl[1,1, expand = TRUE] <- string1
             prevTbl[2,1, expand = TRUE] <- originview
-            size(originview) = c(-1, 250)
+            size(originview) = c(-1, 350)
 
             string2 <- glabel("New dataset")
             newview <<- gtable(data.frame("", stringsAsFactors = TRUE))
             prevTbl[1,2, expand = TRUE] <- string2
             prevTbl[2,2, expand = TRUE] <- newview
-            size(newview) <<- c(-1, 250)
+            size(newview) <<- c(-1, 350)
 
-            g_btn <- ggroup(container = mainGroup)
-
-            cancelbtn <- gbutton("Cancel",
-                container = g_btn,
-                handler = function(h, ...) dispose(GUI$modWin)
-            )
-
-            addSpring(g_btn)
-
-            unitebtn <<- gbutton("Unite",
-                container = g_btn,
-                handler = function(h, ...) {
-                    .dataset <- GUI$get_data_object()
-                    newdata <- iNZightTools::unite(.dataset, name, col, sep)
-                    GUI$new_document(newdata, "united")
-                    dispose(GUI$modWin)
-                }
-            )
-
-            visible(GUI$modWin) <<- TRUE
+            add_body(prevTbl)
         },
         updateView = function() {
             data <- GUI$get_data_object(nrow = 10L)
             df <- iNZightTools::unite(data, name, col, sep)
             if (iNZightTools::is_survey(df)) df <- df$variables
             newview$set_items(df)
+        },
+        do_unite = function() {
+            .dataset <- GUI$get_data_object()
+            newdata <- iNZightTools::unite(.dataset, name, col, sep)
+            GUI$new_document(newdata, "united")
+            close()
         }
     )
 )

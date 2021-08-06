@@ -117,12 +117,12 @@ ui <- iNZGUI$new()
 ui$initializeGui(census.at.school.500)
 
 test_that("Uniting columns works", {
-    w <- iNZUniteDataWin$new(ui)
+    w <- iNZUniteWin$new(ui)
     svalue(w$var1) <- c("travel", "gender")
     w$var1$invoke_change_handler()
     expect_equal(svalue(w$var2), "travel_gender")
     expect_true("travel_gender" %in% w$newview$get_names())
-    expect_silent(w$unitebtn$invoke_change_handler())
+    expect_silent(w$ok_button$invoke_change_handler())
     expect_equal(
         ui$getActiveData()$travel_gender,
         with(census.at.school.500, as.factor(paste(travel, gender, sep = "_")))
@@ -131,8 +131,8 @@ test_that("Uniting columns works", {
 
 test_that("Separating columns works", {
     # source("R/iNZChangeDataWin.R")
-    w <- iNZSeparateDataWin$new(ui)
-    w$format$set_index(2L)
+    w <- iNZSeparateWin$new(ui)
+    w$format$set_index(1L)
     svalue(w$var1) <- "travel_gender"
     expect_silent(w$var1$invoke_change_handler())
     expect_true(w$var2$set_value("_"))
@@ -144,5 +144,5 @@ test_that("Separating columns works", {
     expect_true(w$rightCol$set_value("sex"))
     expect_silent(w$updateView())
     expect_true(all(c("mode_of_travel", "sex") %in% w$newview$get_names()))
-    expect_silent(w$separatebtn$invoke_change_handler())
+    expect_silent(w$ok_button$invoke_change_handler())
 })

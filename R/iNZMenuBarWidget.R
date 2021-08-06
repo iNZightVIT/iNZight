@@ -174,7 +174,7 @@ iNZMenuBarWidget <- setRefClass(
                         gaction("Separate column ...",
                             icon = "dataframe",
                             tooltip = "Separate columns",
-                            handler = function(h, ...) iNZSeparateDataWin$new(GUI)),
+                            handler = function(h, ...) iNZSeparateWin$new(GUI)),
                     unite =
                         gaction("Unite columns ...",
                             icon = "dataframe",

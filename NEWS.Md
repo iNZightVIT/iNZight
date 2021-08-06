@@ -3,12 +3,14 @@
 * fix bug introduced by readr 2.0 causing hang when grouping_mark is empty string
 * fix bug in Filter data window where cancel button did not work
 * fix typo in 'Expand Table' information prompt
-* create new `iNZWindow` 'superclass' to make it easier to create consistent pop-up windows (#375, @tmelliott). The following windows now inherit from `iNZWindow`: `iNZFilterWin`, `iNZSortWin`, `iNZAggregateWin`, `iNZStackWin`, `iNZReorderWin`, `iNZReshapeWin`
+* create new `iNZWindow` 'superclass' to make it easier to create consistent pop-up windows (#375, @tmelliott). The following windows now inherit from `iNZWindow`: `iNZFilterWin`, `iNZSortWin`, `iNZAggregateWin`, `iNZStackWin`, `iNZReorderWin`, `iNZReshapeWin`, `iNZSeparateWin`, `iNZUniteWin`
   * code only displayed when user preference specified (`iNZFilterWin`)
   * renamed `iNZSortbyDataWin` to `iNZSortWin`
   * renamed `iNZstackVarWin` to `iNZStackWin`
   * renamed `iNZReorderVarsWin` to `iNZReorderWin`
   * renamed `iNZReshapeDataWin` to `iNZReshapeWin`
+  * renamed `iNZSeparateDataWin` to `iNZSeparateWin`
+  * renamed `iNZUniteDataWin` to `iNZUniteWin`
 * create new `iNZExportWin` to replace broken `iNZSaveWin` (#374, @tmelliott)
 
 ## iNZight 4.1.3
