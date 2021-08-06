@@ -118,7 +118,7 @@ iNZDataViewWidget <- setRefClass(
             searchtimer <- NULL
             if (length(names(dataSet)) > N) {
                 searchBox <<- gedit(width = 50,
-                    initial.msg = "Search filter",
+                    initial.msg = "Filter variables ...",
                     handler = function(h, ...) {
                         matches <- grep(svalue(h$obj), names(dataSet),
                             ignore.case = TRUE)
@@ -131,6 +131,7 @@ iNZDataViewWidget <- setRefClass(
                         varWidget$set_names(cn)
                     }
                 )
+                searchBox$set_init_txt()
                 addHandlerKeystroke(searchBox,
                     function(h, ...) {
                         if (!is.null(searchtimer))
