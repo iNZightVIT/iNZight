@@ -1,3 +1,7 @@
+## iNZight 4.1.4
+
+* fix Export Data window
+
 ## iNZight 4.1.3
 
 * show code box when opening Add Inference panel
