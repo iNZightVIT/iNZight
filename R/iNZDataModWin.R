@@ -3,8 +3,8 @@
 ## When a new data modification window is opened,
 ## a current one is closed if it exists
 ## List:
-## iNZconToCatWin: Convert variables to a categorical type
-## iNZtrnsWin: transform variables using various functions
+## iNZConToCatWin: Convert variables to a categorical type
+## iNZTransformWin: transform variables using various functions
 ## iNZcllpsWin: collapse multiple factor levels into one
 ## iNZrenameWin: rename factor levels
 ## iNZreorderWi: reorder factor levels
@@ -17,60 +17,17 @@
 ## iNZmissCatWin: Missing as Cat
 ## iNZrankNumWin: Rank the numerical variables X (vector, matrix)
 ## iNZctocatmulWin: Convert multiple variables to categorical type in the same time
-## iNZrenameDataWin: Rename the dataset
+## iNZRenameDataWin: Rename the dataset
 ## -------------------------------------------
 iNZDataModWin <- setRefClass(
     "iNZDataModWin",
-    fields = list(
-        GUI = "ANY"
-    ),
+    fields = list(),
+    contains = "iNZWindow",
     methods = list(
-        initialize = function(gui = NULL) {
-            initFields(GUI = gui)
-            usingMethods(insertData)
-
-            if (is.null(GUI)) return()
-            try(dispose(GUI$modWin), silent = TRUE) ## close any current mod windows
-
-            GUI$modWin <<- gwindow(
-                parent = GUI$win,
-                visible = FALSE
-            )
-        },
-        ## insert a column with a certain name at specified index
-        ## success msg is optional
-        insertData = function(data, name, index, msg = NULL, closeAfter = TRUE, code = NULL) {
-            ## insert the new variable in the column after the old variable
-            ## or at the end if the old variable is the last column in the
-            ## data
-            if (index != length(names(GUI$getActiveData()))) {
-                newData <- data.frame(
-                    GUI$getActiveData()[, 1:index],
-                    data,
-                    GUI$getActiveData()[, (index + 1L):ncol(GUI$getActiveData())],
-                    stringsAsFactors = TRUE
-                )
-                newNames <- c(
-                    names(GUI$getActiveData())[1:index],
-                    name,
-                    names(GUI$getActiveData())[(index + 1L):ncol(GUI$getActiveData())]
-                )
-                newNames <- make.names(newNames, unique = TRUE)
-                names(newData) <- newNames
-            } else {
-                newData <- data.frame(GUI$getActiveData(), data, stringsAsFactors = TRUE)
-                names(newData) <- make.names(
-                    c(names(GUI$getActiveData()), name),
-                    unique = TRUE
-                )
-            }
-
-            if (!is.null(msg))
-                do.call(gmessage, msg)
-
-            GUI$getActiveDoc()$getModel()$updateData(newData)
-            if (closeAfter)
-                dispose(GUI$modWin)
+        initialize = function(...) {
+            ok <- callSuper(...)
+            usingMethods(makeNames, checkNames, updateData)
+            invisible(ok)
         },
         ## this is used to autogenerate names for variables
         makeNames = function(vars) {
@@ -109,52 +66,43 @@ iNZDataModWin <- setRefClass(
 )
 
 ## Convert variables to a categorical type
-iNZconToCatWin <- setRefClass(
-    "iNZconToCatWin",
+iNZConToCatWin <- setRefClass(
+    "iNZConToCatWin",
     contains = "iNZDataModWin",
     fields = list(
-        data = "ANY",
         varData = "ANY", ## data that is dragged into droptarget
         varLbl = "ANY",
-        varname = "ANY",
-        okButton = "ANY"
+        varname = "ANY"
     ),
     methods = list(
         initialize = function(gui) {
-            callSuper(gui)
+            ok <- callSuper(gui,
+                title = "Convert to categorical",
+                width = "small",
+                height = "small",
+                ok = "Convert",
+                action = .self$convert,
+                help = "user_guides/variables/#convert1",
+                show_code = FALSE,
+                scroll = FALSE
+            )
+            if (!ok) return()
+            on.exit(.self$show())
+            usingMethods("convert")
 
-            svalue(GUI$modWin) <<- "Convert to Categorical"
-            size(GUI$modWin) <<- c(200, 250)
-            mainGroup <- gvbox()
-            mainGroup$set_borderwidth(15)
-
-            helpbtn <- gimagebutton(
-                stock.id = "gw-help",
-                anchor = c(1, -1),
-                container = mainGroup,
-                handler = function(h, ...)
-                    help_page("user_guides/variables/#convert1")
+            add_heading(
+                "Choose a variable from the dropdown box below,",
+                "or drag and drop a variable onto it, to create a",
+                "categorical version of the chosen variable."
             )
 
-            tbl <- glayout(container = mainGroup)
+            tbl <- glayout()
             ii <- 1L
 
-            lbl <- glabel(
-                paste(sep = "\n",
-                    "Choose a variable from the dropdown box below,",
-                    "or drag and drop a variable onto it, to create a",
-                    "categorical version of the chosen variable."
-                )
-            )
-            font(lbl) <- list(size = 10, weight = "bold")
-            tbl[ii, 1:2, anchor = c(-1, 0), expand = TRUE] <- lbl
-            ii <- ii + 1L
-
-
-            lbl <- glabel("Variable to convert :")
+            lbl <- glabel("Select numeric variable :")
             tbl[ii, 1L, anchor = c(1, 0), expand = TRUE] <- lbl
 
-            data <<- GUI$getActiveData()
+            data <- GUI$getActiveData()
             numvars <- names(data)[sapply(data, iNZightTools::is_num)]
             varLbl <<- gcombobox(numvars,
                 selected = 0L,
@@ -166,36 +114,11 @@ iNZconToCatWin <- setRefClass(
             tbl[ii, 2L, expand = TRUE] <- varLbl
             ii <- ii + 1L
 
-            lbl <- glabel("New variable name :")
+            lbl <- glabel("Specify name for new variable :")
             tbl[ii, 1L, anchor = c(1, 0), expand = TRUE] <- lbl
 
             varname <<- gedit("", width = 20)
             tbl[ii, 2L, expand = TRUE] <- varname
-            ii <- ii + 1L
-
-            okButton <<- gbutton("Update Data",
-                handler = function(h, ...) {
-                    orgVar <- svalue(varLbl)
-                    name <- gsub('\\n+', "", svalue(varname), perl = TRUE)
-                    if (name == "" || !is.character(name))
-                        gmessage("Please choose a non-empty name for the new variable",
-                        title = "Invalid variable choice",
-                        parent = GUI$modWin)
-                    else if (length(orgVar) == 0L)
-                        gmessage("Please choose a variable to convert",
-                        title = "Invalid variable choice",
-                        parent = GUI$modWin)
-                    else if (checkNames(name)) {
-                        .dataset <- GUI$get_data_object()
-                        newdata <- iNZightTools::convertToCat(.dataset, orgVar, name)
-                        updateData(newdata)
-                        varLbl$set_index(0L)
-                        svalue(varname) <<- ""
-                    }
-                }
-            )
-            font(okButton) <<- list(weight = "bold", family = "sans")
-            tbl[ii, 2L] <- okButton
             ii <- ii + 1L
 
             addDropTarget(varLbl,
@@ -209,46 +132,60 @@ iNZconToCatWin <- setRefClass(
                     }
                 }
             )
-            add(GUI$modWin, mainGroup, expand = TRUE)
-            visible(GUI$modWin) <<- TRUE
+
+            add_body(tbl)
+        },
+        convert = function() {
+            orgVar <- svalue(varLbl)
+            name <- gsub('\\n+', "", svalue(varname), perl = TRUE)
+            if (name == "" || !is.character(name))
+                gmessage("Please choose a non-empty name for the new variable",
+                title = "Invalid variable choice",
+                parent = GUI$modWin)
+            else if (length(orgVar) == 0L)
+                gmessage("Please choose a variable to convert",
+                title = "Invalid variable choice",
+                parent = GUI$modWin)
+            else if (checkNames(name)) {
+                .dataset <- GUI$get_data_object()
+                newdata <- iNZightTools::convertToCat(.dataset, orgVar, name)
+                updateData(newdata)
+                close()
+            }
         }
     )
 )
 
 ## transform variables using various functions
-iNZtrnsWin <- setRefClass(
-    "iNZtrnsWin",
+iNZTransformWin <- setRefClass(
+    "iNZTransformWin",
     contains = "iNZDataModWin",
     methods = list(
         initialize = function(gui) {
-            callSuper(gui)
+            ok <- callSuper(gui,
+                title = "Transform variables",
+                width = "small",
+                height = "med",
+                help = "user_guides/variables/#transform",
+                ok = "Close",
+                cancel = NULL,
+                action = close,
+                show_code = FALSE,
+                scroll = FALSE
+            )
+            if (!ok) return()
+            on.exit(.self$show())
+
             ## need to specify the methods that we want to use in
             ## do.call later on
-            svalue(GUI$modWin) <<- "Transform Variables"
-            mainGroup <- ggroup(horizontal = FALSE)
-            mainGroup$set_borderwidth(15)
-            helpbtn <- gimagebutton(stock.id = "gw-help",
-                container = mainGroup,
-                anchor = c(1, -1),
-                handler = function(h, ...)
-                    help_page("user_guides/variables/#transform")
-            )
-            lbl1 <- glabel(
-                paste(sep = "\n",
-                    "Drag and drop variable names onto the labels below",
-                    "to create new transformed variables."
-                )
-            )
-            font(lbl1) <- list(weight = "bold", family = "sans", size = 11)
 
-            tbl <- glayout(container = mainGroup)
+            add_heading(
+                "Drag and drop variable names onto the labels below",
+                "to create new transformed variables."
+            )
+
+            tbl <- glayout()
             ii <- 1L
-
-            tbl[ii, 1L, expand = TRUE, anchor = c(-1, 0)] <- lbl1
-            ii <- ii + 1L
-
-            tbl[ii, 1L] <- gseparator()
-            ii <- ii + 1L
 
             ## function names: the X will be converted to the variable name (e.g., log.height, height.squared, etc)
             ##  Display name           new name     function
@@ -291,8 +228,7 @@ iNZtrnsWin <- setRefClass(
                 }
             )
 
-            add(GUI$modWin, mainGroup, expand = TRUE)
-            visible(GUI$modWin) <<- TRUE
+            add_body(tbl)
         },
         ## check whether the data is illegible for transformation
         checkData = function(varData) {
@@ -1655,51 +1591,47 @@ iNZctocatmulWin <- setRefClass(
     )
 )
 
-iNZrenameDataWin <- setRefClass(
-    "iNZrenameDataWin",
+iNZRenameDataWin <- setRefClass(
+    "iNZRenameDataWin",
+    fields = list(
+        name = "ANY"
+    ),
     contains = "iNZDataModWin",
     methods = list (
         initialize = function(gui) {
-            callSuper(gui)
-            svalue(GUI$modWin) <<- "Rename dataset"
-            size(GUI$modWin) <<- c(250, 150)
-
-            mainGroup <- ggroup(expand = TRUE, horizontal = FALSE)
-            mainGroup$set_borderwidth(15)
+            ok <- callSuper(gui,
+                title = "Rename dataset",
+                width = "small",
+                height = "small",
+                ok = "Rename",
+                action = .self$rename_data,
+                show_code = FALSE,
+                scroll = FALSE
+            )
+            if (!ok) return()
+            on.exit(.self$show())
+            usingMethods("rename_data")
 
             lbl <- glabel("Enter a new name for the current dataset")
             font(lbl) <- list(weight = "bold", family = "sans")
 
             curname <- attr(GUI$getActiveData(), "name", exact = TRUE)
             if (length(curname) == 0) curname <- ""
-            name <- gedit(curname)
+            name <<- gedit(curname)
 
-            okbtn <- gbutton("OK")
-            addHandlerClicked(okbtn,
-                function(h, ...) {
-                    newname <- svalue(name)
-                    if (newname == "") {
-                        gmessage("Please enter a name", icon = "error", parent = GUI$win)
-                    } else if (newname %in% GUI$dataNameWidget$nameLabel$get_items()) {
-                        gmessage("Oops... that name is used by another dataset. Try something else!")
-                    } else {
-                        GUI$getActiveDoc()$dataModel$setName(newname)
-                        dispose(GUI$modWin)
-                    }
-                }
-            )
-
-            cancelbtn <- gbutton("Cancel")
-            addHandlerClicked(cancelbtn, function(h, ...) dispose(GUI$modWin))
-
-            add(mainGroup, lbl)
-            add(mainGroup, name)
-            add(mainGroup, okbtn)
-            add(mainGroup, cancelbtn)
-
-            add(GUI$modWin, mainGroup, expand = TRUE, fill = TRUE)
-
-            visible(GUI$modWin) <<- TRUE
+            add_body(lbl)
+            add_body(name)
+        },
+        rename_data = function() {
+            newname <- svalue(name)
+            if (newname == "") {
+                gmessage("Please enter a name", icon = "error", parent = GUI$win)
+            } else if (newname %in% GUI$dataNameWidget$nameLabel$get_items()) {
+                gmessage("Oops... that name is used by another dataset. Try something else!")
+            } else {
+                GUI$getActiveDoc()$dataModel$setName(newname)
+                close()
+            }
         }
     )
 )

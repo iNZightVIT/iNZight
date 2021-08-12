@@ -179,7 +179,7 @@ iNZMenuBarWidget <- setRefClass(
                         gaction("Unite columns ...",
                             icon = "dataframe",
                             tooltip = "Unite columns",
-                            handler = function(h, ...) iNZUniteDataWin$new(GUI))
+                            handler = function(h, ...) iNZUniteWin$new(GUI))
                 ),
                 report =
                     if (requireNamespace("dataMaid", quietly = TRUE) &&
@@ -211,7 +211,7 @@ iNZMenuBarWidget <- setRefClass(
                 rename =
                     gaction("Rename ...",
                         icon = "editor",
-                        handler = function(h, ...) iNZrenameDataWin$new(GUI)),
+                        handler = function(h, ...) iNZRenameDataWin$new(GUI)),
                 restore =
                     gaction("Restore original dataset",
                         icon = "revert-to-saved",
@@ -295,7 +295,7 @@ iNZMenuBarWidget <- setRefClass(
                     gaction("Convert to categorical ...",
                         icon = "convert",
                         tooltip = "Convert a variable to a categorical type",
-                        handler = function(h, ...) iNZconToCatWin$new(GUI)),
+                        handler = function(h, ...) iNZConToCatWin$new(GUI)),
                 "Categorical Variables" = list(
                     reorder =
                         gaction("Reorder levels ...",
@@ -323,7 +323,7 @@ iNZMenuBarWidget <- setRefClass(
                         gaction("Transform ...",
                             icon = "convert",
                             tooltip = "Transform a variable using a function",
-                            handler = function(h, ...) iNZtrnsWin$new(GUI)),
+                            handler = function(h, ...) iNZTransformWin$new(GUI)),
                     standardise =
                         gaction("Standardise ...",
                             icon = "convert",
