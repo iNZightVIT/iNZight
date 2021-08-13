@@ -126,6 +126,7 @@ Main class that builds the iNZight GUI
   dispose_fun = NULL,
   addonDir = NULL,
   show = TRUE,
+  stop_loading = FALSE,
   ...
 )}}{Initiates the GUI}
 
@@ -163,7 +164,7 @@ Main class that builds the iNZight GUI
 
 \item{\code{saveState(file)}}{Saves the state of the GUI in `file`}
 
-\item{\code{set_visible()}}{Makes the iNZight window visible, and updates the plot}
+\item{\code{set_visible(visible = TRUE)}}{Makes the iNZight window visible, and updates the plot}
 
 \item{\code{setDocument(document, reset = FALSE)}}{Sets the current document}
 

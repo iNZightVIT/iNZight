@@ -98,7 +98,8 @@ iNZGUI <- setRefClass(
             ## rather than passing around the full object.
             code_env = "ANY",
             code_panel = "ANY",
-            is_initialized = "logical"
+            is_initialized = "logical",
+            stop_loading = "logical"
         ),
         prototype = list(
             activeDoc = 1,
@@ -114,12 +115,11 @@ iNZGUI <- setRefClass(
             dispose_fun = NULL,
             addonDir = NULL,
             show = TRUE,
+            stop_loading = FALSE,
             ...
         ) {
             "Initiates the GUI"
             initFields(is_initialized = FALSE, disposer = function() {})
-
-            iNZDocuments <<- list(iNZDocument$new(data = data))
 
             if (!is.null(dispose_fun) && is.function(dispose_fun))
                 disposer <<- function() dispose_fun(...)
@@ -155,6 +155,8 @@ iNZGUI <- setRefClass(
                 width = if (popOut) NULL else preferences$window.size[1],
                 height = preferences$window.size[2]
             )
+
+            iNZDocuments <<- list(iNZDocument$new(data = data))
 
             ## Check for updates ... need to use try incase it fails (no connection etc)
             if (preferences$check.updates) {
@@ -234,7 +236,7 @@ iNZGUI <- setRefClass(
             if (preferences$dev.features && preferences$show.code)
                 add(gtop, code_panel$panel, fill = TRUE)
 
-            visible(win) <<- show
+            set_visible(show)
 
             ## ensures that all plot control btns are visible on startup
             #svalue(g) <- 0.375
@@ -242,8 +244,29 @@ iNZGUI <- setRefClass(
             ## to ensure the correct device nr
             if (popOut)
                 iNZightTools::newdevice()
-            else
-                plotWidget$addPlot()
+            else {
+                tryCatch(plotWidget$addPlot(),
+                    error = function(e) {
+                        gmessage(
+                            "Unable to load built-in graphics device. iNZight will try reloading in dual-window mode.\n\nClick 'close' to continue.",
+                            title = "Unable to load graphics device",
+                            icon = "error"
+                        )
+
+                        # change mode
+                        preferences$popout <<- TRUE
+                        savePreferences()
+
+                        # reload (and return from initisalize())
+                        reload()
+                        stop_loading <<- TRUE
+                    }
+                )
+                if (stop_loading) {
+                    stop_loading <<- FALSE
+                    return()
+                }
+            }
 
             ## draw the iNZight splash screen
             plotSplashScreen()
@@ -1356,9 +1379,9 @@ iNZGUI <- setRefClass(
             gtkWindowMove(.self$win$widget, ipos$root.x, ipos$root.y)
             .self$set_visible()
         },
-        set_visible = function() {
+        set_visible = function(visible = TRUE) {
             "Makes the iNZight window visible, and updates the plot"
-            visible(win) <<- TRUE
+            visible(win) <<- visible
             updatePlot()
         }
     )

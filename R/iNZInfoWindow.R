@@ -132,8 +132,9 @@ iNZInfoWindow <- setRefClass(
                 svalue(code_box) != ""
         },
         set_output = function(out) {
-            svalue(info_text) <<- paste(out, collapse = "\n")
-            font(info_text) <<- info_font
+            svalue(info_text) <<- ""
+            gWidgets2::insert(info_text, paste(out, collapse = "\n"), font.attr = info_font)
+            # font(info_text) <<- info_font
         },
         store_code = function() {
             GUI$rhistory$add(svalue(code_box))

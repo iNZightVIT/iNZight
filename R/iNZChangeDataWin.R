@@ -23,43 +23,37 @@ iNZFilterWin <- setRefClass(
         code_panel = "ANY", code_font = "list",
         newdata = "ANY"
     ),
+    contains = "iNZWindow",
     methods = list(
         initialize = function(gui = NULL) {
+
             if (is.null(gui)) return()
+            is_survey <- !is.null(gui$getActiveDoc()$getModel()$getDesign())
+            win_title <- sprintf(
+                "Filter %s",
+                ifelse(is_survey, "survey design", "data")
+            )
+
+            ok <- callSuper(gui,
+                title = win_title,
+                width = 500L,
+                height = 500L,
+                ok = "Filter",
+                action = .self$update_data,
+                help = "user_guides/data_options/#filter",
+                show_code = TRUE
+            )
+            if (!ok) return()
+            on.exit(.self$show())
+
             initFields(
-                GUI = gui,
                 newdata = NULL,
                 code_font = list(size = 8, family = "monospace")
             )
             usingMethods("handle_filter", "update_data")
 
-            try(dispose(GUI$modWin), silent = TRUE)
-            GUI$modWin <<- gwindow("Filter Data ...",
-                parent = GUI$win,
-                width = 500L,
-                height = 400L,
-                visible = FALSE
-            )
-            mainGrp <- gvbox(container = GUI$modWin, expand = TRUE)
-            mainGrp$set_borderwidth(10L)
-
-            ## --- title and help icon
-            helplyt <- glayout(homegenous = FALSE, container = mainGrp)
-
-            is_survey <- !is.null(GUI$getActiveDoc()$getModel()$getDesign())
-            lbl1 <- glabel(sprintf("Filter %s", ifelse(is_survey, "survey design", "data")))
-            font(lbl1) <- list(weight = "bold", style = "normal")
-
-            helpbtn <- gimagebutton(
-                stock.id = "gw-help",
-                handler = function(h, ...) help_page("user_guides/data_options/#filter")
-            )
-
-            helplyt[1, 4:19, expand = TRUE, anchor = c(0,0)] <- lbl1
-            helplyt[1, 20, expand = TRUE, anchor = c(1, -1)] <- helpbtn
-
             ## top group
-            gtop <- ggroup(container = mainGrp)
+            gtop <- ggroup()
             opts <- c(
                 "by value",
                 "by row number",
@@ -80,9 +74,11 @@ iNZFilterWin <- setRefClass(
                 }
             )
 
-            addSpace(mainGrp, 10)
+            add_body(gtop)
+            body_space(10L)
+
             ### container for content
-            gmain <- ggroup(container = mainGrp, expand = TRUE, fill = TRUE)
+            gmain <- ggroup(expand = TRUE, fill = TRUE)
 
             #### --- filter by value
             g_value <<- ggroup(container = gmain, expand = TRUE)
@@ -225,40 +221,24 @@ iNZFilterWin <- setRefClass(
             rand_msg <<- glabel("", container = g_random)
             font(rand_msg) <<- list(size = 9, weight = "bold", color = "orangered")
 
-
-            addSpring(mainGrp)
+            add_body(gmain)
+            body_spring()
 
             ### dataset info:
-            ginfo <- gvbox(container = mainGrp)
+            ginfo <- gvbox()
             cur_row <- glabel(sprintf("Current data has %d rows", nrow(GUI$getActiveData())),
-                container = mainGrp,
+                container = body,
                 anchor = c(1, 0))
-            new_row <<- glabel("", container = mainGrp,
+            new_row <<- glabel("", container = body,
             anchor = c(1, 0))
             font(cur_row) <- list(size = 9)
             font(new_row) <<- list(size = 9)
 
-
-            ### footer (with buttons)
-            gfoot <- ggroup(container = mainGrp)
-
-            cnclBtn <<- gbutton("Cancel", container = gfoot)
-            addSpring(gfoot)
-            okBtn <<- gbutton("Filter", handler = update_data, container = gfoot)
-            enabled(okBtn) <<- FALSE
-
-            ## code panel:
-            gcode <- ggroup(container = mainGrp)
-            code_panel <<- gtext("# R code will show here",
-                container = gcode,
-                font.attr = code_font,
-                fill = TRUE,
-                expand = TRUE
-            )
-            enabled(code_panel) <<- FALSE
+            add_body(ginfo)
 
             filter_type$invoke_change_handler()
-            visible(GUI$modWin) <<- TRUE
+
+
         },
         handle_filter = function(h, ...) {
             newdata <<- NULL
@@ -280,9 +260,7 @@ iNZFilterWin <- setRefClass(
                 attr(newdata, "code")
             )
             # clear panel first...
-            svalue(code_panel) <<- ""
-            font(code_panel) <<- code_font
-            insert(code_panel, paste(iNZightTools::code(newdata), collapse = "\n"), do.newline = FALSE)
+            set_code(paste(iNZightTools::code(newdata), collapse = "\n"))
 
             # set row info
             data <- newdata
@@ -296,9 +274,7 @@ iNZFilterWin <- setRefClass(
         },
         clear_result = function() {
             newdata <<- NULL
-            svalue(code_panel) <<- ""
-            font(code_panel) <<- code_font
-            insert(code_panel, "# R code will show here", do.newline = FALSE)
+            set_code("# R code will show here")
             svalue(new_row) <<- ""
             enabled(okBtn) <<- FALSE
         },
@@ -363,93 +339,102 @@ iNZFilterWin <- setRefClass(
 ## --------------------------------------------
 ## Class that handles the sortby of a dataset
 ## --------------------------------------------
-iNZSortbyDataWin <- setRefClass(
-    "iNZSortbyDataWin",
+iNZSortWin <- setRefClass(
+    "iNZSortWin",
     fields = list(
-        GUI = "ANY"
+        var_names = "character",
+        var_tbl = "ANY",
+        sort_vars = "logical"
     ),
+    contains = "iNZWindow",
     methods = list(
         initialize = function(gui = NULL) {
-            initFields(GUI = gui)
-            if (is.null(GUI)) return()
-            ## close any current mod windows
-            try(dispose(GUI$modWin), silent = TRUE)
 
-            GUI$modWin <<- gwindow("Sort data by variables",
-                parent = GUI$win,
-                visible = FALSE)
+            ok <- callSuper(gui,
+                title = "Sort data by variables",
+                width = "small",
+                height = "med",
+                ok = "Sort",
+                action = .self$sort_data,
+                help = "user_guides/data_options/#sort",
+                show_code = FALSE,
+                scroll = TRUE
+            )
+            if (!ok) return()
+            on.exit(.self$show())
+            usingMethods("handle_sort", "sort_data")
 
-            mainGrp <- ggroup(container = GUI$modWin,
-                horizontal = FALSE,
-                expand = TRUE)
-            mainGrp$set_borderwidth(15)
+            add_heading(
+                "Data will be sorted by each of the chosen variables",
+                "in the order specified. By default, small values",
+                "are first; check the 'decreasing' box to sort large",
+                "values first instead.",
+                size = 9L
+            )
+            add_heading(
+                "New rows will appear as you choose variables. Click 'Sort' once you have enough variables.",
+                size = 9L
+            )
+            body_space(10L)
 
-            btnGrp <- ggroup(horizontal = TRUE)
-            helpbtn <- gimagebutton(stock.id = "gw-help",
-                handler = function(h, ...){
-                    help_page("user_guides/data_options/#sort")
+            var_names <<- names(GUI$getActiveData())
+            var_tbl <<- glayout()
+            add_body(var_tbl)
+
+            add_var()
+        },
+        add_var = function() {
+            ii <- length(sort_vars) + 1L
+            var_tbl[ii, 1L, expand = TRUE] <<-
+                gcombobox(
+                    c("", var_names[!var_names %in% names(sort_vars)]),
+                    selected = 1L,
+                    handler = handle_sort
+                )
+            var_tbl[ii, 2L, expand = TRUE, fill = TRUE] <<-
+                gcheckbox("Decreasing", handler = handle_sort)
+        },
+        handle_sort = function(h, ...) {
+            n <- nrow(var_tbl)
+            v <- sapply(seq_len(n),
+                function(i) {
+                    svalue(var_tbl[i, 1L])
                 }
             )
-
-            lbl1 <- glabel("Sort by")
-            font(lbl1) <- list(weight = "bold", style = "normal")
-            helplyt <- glayout(homegenous = FALSE)
-            helplyt[1, 1:19, expand = TRUE] <- lbl1
-            helplyt[1, 20, expand = TRUE, anchor = c(1, -1)] <- helpbtn
-
-            lbl2 <- glabel("Variable")
-            nameList <- names(GUI$getActiveData())
-            SortByButton <- gbutton(
-                "Sort Now",
-                handler = function(h, ...) {
-                    vars <- sapply(tbl[, 2], svalue)
-                    asc <- sapply(tbl[, 3], svalue, index = TRUE) == 1
-                    wi <- vars != ""
-
-                    .dataset <- GUI$get_data_object()
-                    newdata <- iNZightTools::sortVars(.dataset, vars[wi], asc[wi])
-                    GUI$new_document(newdata, "sorted")
-                    dispose(GUI$modWin)
+            d <- sapply(seq_len(n),
+                function(i) {
+                    svalue(var_tbl[i, 2L])
                 }
             )
+            if (v[n] == "") {
+                v <- v[-n]
+                d <- d[-n]
+            }
+            sort_vars <<- structure(!d, .Names = v)
 
-            label_var1 <- glabel("1st")
-            label_var2 <- glabel("2nd")
-            label_var3 <- glabel("3rd")
-            label_var4 <- glabel("4th")
+            # change options
+            for (i in seq_along(sort_vars)) {
+                opts <- var_names[!var_names %in% names(sort_vars)[-i]]
+                blockHandlers(var_tbl[i, 1L])
+                var_tbl[i, 1L]$set_items(c("", opts))
+                var_tbl[i, 1L]$set_value(names(sort_vars[i]))
+                unblockHandlers(var_tbl[i, 1L])
+            }
 
-            droplist_var1 <- gcombobox(c("",nameList), selected = 1)
-            droplist_var2 <- gcombobox(c("",nameList), selected = 1)
-            droplist_var3 <- gcombobox(c("",nameList), selected = 1)
-            droplist_var4 <- gcombobox(c("",nameList), selected = 1)
-
-            radio_var1 <- gradio(c("increasing","decreasing"), horizontal = TRUE)
-            radio_var2 <- gradio(c("increasing","decreasing"), horizontal = TRUE)
-            radio_var3 <- gradio(c("increasing","decreasing"), horizontal = TRUE)
-            radio_var4 <- gradio(c("increasing","decreasing"), horizontal = TRUE)
-
-            tbl <- glayout()
-            tbl[1, 1, expand = TRUE, anchor = c(-1, -1)] <- label_var1
-            tbl[1, 2, expand = TRUE, anchor = c(-1, -1)] <- droplist_var1
-            tbl[1, 3, expand = TRUE, anchor = c(-1, -1)] <- radio_var1
-            tbl[2, 1, expand = TRUE, anchor = c(-1, -1)] <- label_var2
-            tbl[2, 2, expand = TRUE, anchor = c(-1, -1)] <- droplist_var2
-            tbl[2, 3, expand = TRUE, anchor = c(-1, -1)] <- radio_var2
-            tbl[3, 1, expand = TRUE, anchor = c(-1, -1)] <- label_var3
-            tbl[3, 2, expand = TRUE, anchor = c(-1, -1)] <- droplist_var3
-            tbl[3, 3, expand = TRUE, anchor = c(-1, -1)] <- radio_var3
-            tbl[4, 1, expand = TRUE, anchor = c(-1, -1)] <- label_var4
-            tbl[4, 2, expand = TRUE, anchor = c(-1, -1)] <- droplist_var4
-            tbl[4, 3, expand = TRUE, anchor = c(-1, -1)] <- radio_var4
-
-            add(mainGrp, helplyt)
-            addSpring(mainGrp)
-            add(mainGrp, lbl2, anchor = c(-1, -1))
-            add(mainGrp, tbl)
-            add(mainGrp, btnGrp)
-            addSpring(btnGrp)
-            add(btnGrp, SortByButton)
-            visible(GUI$modWin) <<- TRUE
+            # only add new row if all values are filled
+            if (length(sort_vars) == n)
+                add_var()
+        },
+        sort_data = function() {
+            .dataset <- GUI$get_data_object()
+            i <- names(sort_vars) != ""
+            newdata <- iNZightTools::sortVars(
+                .dataset,
+                names(sort_vars[i]),
+                as.logical(sort_vars[i])
+            )
+            GUI$new_document(newdata, "sorted")
+            dispose(GUI$modWin)
         }
     )
 )
@@ -475,10 +460,26 @@ iNZAggregateWin <- setRefClass(
         close_btn = "ANY", ok_btn = "ANY",
         adv_chk = "ANY"
     ),
+    contains = "iNZWindow",
     methods = list(
         initialize = function(gui) {
+
+            ok <- callSuper(gui,
+                title = "Aggregate data",
+                width = "med",
+                height = "med",
+                ok = "Aggregate",
+                action = .self$do_aggregation,
+                help = "user_guides/data_options/#aggregate",
+                show_code = FALSE,
+                scroll = FALSE,
+                body_direction = "horizontal"
+            )
+            if (!ok) return()
+            on.exit(.self$show())
+            usingMethods("do_aggregation")
+
             initFields(
-                GUI = gui,
                 data = gui$getActiveData(),
                 reordering = FALSE
             )
@@ -487,29 +488,12 @@ iNZAggregateWin <- setRefClass(
             catvars <<- allvars[vt == "cat"]
             numvars <<- allvars[vt != "cat"] # includes datetimes
 
-            try(dispose(GUI$modWin), silent = TRUE)
-
             design <<- GUI$getActiveDoc()$getModel()$getDesign()
             is_survey <<- !is.null(design)
 
-            GUI$modWin <<- gwindow("Aggregate data",
-                parent = GUI$win,
-                visible = FALSE,
-                width = 800,
-                height = 500
-            )
-            g <- gvbox(container = GUI$modWin, expand = TRUE)
-            g$set_borderwidth(5)
-
-            ########################## Main body
-            mainGrp <- ggroup(
-                container = g,
-                expand = TRUE
-            )
-            mainGrp$set_borderwidth(10)
 
             ### +++++++ Variable selection
-            g_var <- gvbox(container = mainGrp, expand = TRUE)
+            g_var <- gvbox(expand = TRUE)
 
             ### +++ Aggregation variables
             g_aggvars <- gframe("1. Choose aggregation variables",
@@ -613,41 +597,34 @@ iNZAggregateWin <- setRefClass(
                 container = g_var)
             font(lbl) <- list(weight = "bold", size = 8)
 
+            add_body(g_var)
 
             ### +++++++ Summary selection
-            gsmry <<- gframe("3. Summaries to calculate",
-                container = mainGrp)
+            gsmry <<- gframe("3. Summaries to calculate")
             gsmry$set_borderwidth(5)
             smry_tbl <<- NULL
 
+            add_body(gsmry)
+
             ### +++++++ Preview
-            gprev <- gframe("Preview", container = mainGrp, expand = TRUE)
+            gprev <- gframe("Preview", expand = TRUE)
             gprev$set_borderwidth(5)
 
             df_preview <<- gtable(list(Variables = character()),
                 container = gprev
             )
-            size(df_preview) <<- c(-1, 150)
+            size(df_preview) <<- c(140, 250)
 
+            add_body(gprev)
 
-            addSpring(g)
 
             ########################## Window buttons
-            btnGrp <- ggroup(container = g)
-            close_btn <<- gbutton("Close",
-                container = btnGrp,
-                handler = function(h, ...) dispose(GUI$modWin))
             adv_chk <<- gcheckbox("Advanced mode",
-                # container = btnGrp,
                 handler = function(h, ...) set_advanced())
-            addSpring(btnGrp)
-            ok_btn <<- gbutton("Aggregate",
-                container = btnGrp,
-                handler = function(h, ...) do_aggregation())
+            # add_toolbar(adv_chk)
+
 
             set_advanced()
-
-            visible(GUI$modWin) <<- TRUE
         },
         add_aggvars = function(index) {
             available <- as.character(available_aggvars$get_items())
@@ -802,7 +779,7 @@ iNZAggregateWin <- setRefClass(
             }
             quantiles
         },
-        do_aggregation = function(preview = TRUE) {
+        do_aggregation = function() {
             adv <- svalue(adv_chk)
             # figure out what summaries the user wants
             summaries <- get_summaries()
@@ -831,116 +808,112 @@ iNZAggregateWin <- setRefClass(
     )
 )
 
-iNZstackVarWin <- setRefClass(
-    "iNZstackVarWin",
+iNZStackWin <- setRefClass(
+    "iNZStackWin",
     fields = list(
-        GUI = "ANY"
+        stack_vars = "ANY"
     ),
+    contains = "iNZWindow",
     methods = list(
         initialize = function(gui = NULL) {
-            initFields(GUI = gui)
-            if (is.null(GUI)) return()
-            ## close any current mod windows
-            try(dispose(GUI$modWin), silent = TRUE)
 
-            GUI$modWin <<- gwindow("Stack data by Variables",
-                parent = GUI$win, visible = FALSE)
-
-            mainGroup <- ggroup(expand = TRUE, horizontal = FALSE)
-            mainGroup$set_borderwidth(15)
-
-            helpbtn <- gimagebutton(stock.id = "gw-help",
-                handler = function(h, ...){
-                    help_page("user_guides/data_options/#stack")
-                }
-
+            ok <- callSuper(gui,
+                title = "Stack variables",
+                width = "small",
+                height = "med",
+                ok = "Stack",
+                action = .self$stack_data,
+                help = "user_guides/data_options/#stack",
+                show_code = FALSE,
+                scroll = FALSE
             )
-            ## instructions through glabels
-            lbl1 <- glabel("Choose variables to stack")
-            font(lbl1) <- list(weight = "bold", family = "sans")
+            if (!ok) return()
+            on.exit(.self$show())
+            usingMethods("stack_data")
 
-            helplyt <- glayout(homegenous = FALSE)
-            helplyt[1, 4:19, expand = TRUE, anchor = c(0,0)] <- lbl1
-            helplyt[1, 20, expand = TRUE, anchor = c(1, -1)] <- helpbtn
-
-            lbl2 <- glabel("(Hold Ctrl to choose many)")
-            font(lbl2) <- list(weight = "bold", family = "sans")
+            add_heading(
+                "Choose variables to stack (or gather) into a single column."
+            )
+            add_heading("Hold CTRL to choose many.", size = 8L, weight = "bold")
 
             ## display only numeric variables
             numIndices <- sapply(GUI$getActiveData(), function(x) !is_cat(x))
-            numVar <- gtable(names(GUI$getActiveData())[numIndices],
-                multiple = TRUE)
-            names(numVar) <- "Variables"
-
-            StackButton <- gbutton("Stack",
-                handler = function(h, ...) {
-                    if (length(svalue(numVar)) > 0) {
-                        vars <- svalue(numVar)
-
-                        .dataset <- GUI$getActiveData()
-                        data <- iNZightTools::stackVars(.dataset, vars)
-                        attr(data, "name") <-
-                            paste(
-                                attr(.dataset, "name", exact = TRUE),
-                                "stacked",
-                                sep = "."
-                            )
-                        attr(data, "code") <-
-                            gsub(".dataset",
-                                attr(.dataset, "name", exact = TRUE),
-                                attr(data, "code")
-                            )
-                        GUI$setDocument(iNZDocument$new(data = data))
-                        dispose(GUI$modWin)
-                    }
-                }
+            stack_vars <<- gtable(
+                names(GUI$getActiveData())[numIndices],
+                multiple = TRUE
             )
+            names(stack_vars) <<- "Variables"
 
-            add(mainGroup, helplyt)
-            add(mainGroup, lbl2)
-            add(mainGroup, numVar, expand = TRUE)
-            add(mainGroup, StackButton)
-            add(GUI$modWin, mainGroup, expand = TRUE, fill = TRUE)
-            visible(GUI$modWin) <<- TRUE
+            add_body(stack_vars, expand = TRUE)
+
+            show()
+        },
+        stack_data = function() {
+            if (length(svalue(stack_vars)) == 0L) {
+                gmessage("No variables selected", type = "warning",
+                    parent = GUI$modWin)
+                return()
+            }
+
+            vars <- svalue(stack_vars)
+
+            .dataset <- GUI$getActiveData()
+            data <- iNZightTools::stackVars(.dataset, vars)
+            attr(data, "name") <-
+                paste(
+                    attr(.dataset, "name", exact = TRUE),
+                    "stacked",
+                    sep = "."
+                )
+            attr(data, "code") <-
+                gsub(".dataset",
+                    attr(.dataset, "name", exact = TRUE),
+                    attr(data, "code")
+                )
+            GUI$setDocument(iNZDocument$new(data = data))
+
+            close()
         }
     )
 )
 
-iNZReorderVarsWin <- setRefClass(
-    "iNZReorderVarsWin",
+iNZReorderWin <- setRefClass(
+    "iNZReorderWin",
     fields = list(
-        GUI = "ANY",
         dataVars = "ANY", chosenVars = "ANY",
         btn_add = "ANY", btn_rmv = "ANY",
         btn_up = "ANY", btn_down = "ANY",
         reordering = "logical"
     ),
+    contains = "iNZWindow",
     methods = list(
         initialize = function(gui) {
-            initFields(GUI = gui, reordering = FALSE)
 
-            try(dispose(GUI$modWin), silent = TRUE)
-            GUI$modWin <<- gwindow("Reorder and Select Variables",
-                parent = GUI$win,
-                visible = FALSE,
-                width = 600, height = 400
+            ok <- callSuper(gui,
+                title = "Reorder and Select Variables",
+                width = "med",
+                height = "large",
+                ok = "Done",
+                action = .self$reorder_select_vars,
+                # help = "user_guides/data_options/#reorder-and-select-variables",
+                show_code = FALSE,
+                scroll = FALSE
             )
+            if (!ok) return()
+            on.exit(.self$show())
+            usingMethods("reorder_select_vars")
 
-            g <- gvbox(container = GUI$modWin, fill = TRUE, expand = TRUE)
-            g$set_borderwidth(10)
-
-            lbl <- glabel(
-                paste(sep = "\n",
-                    "Select variables from the left to retain in the data set (CTRL to select many)",
-                    "then use the arrows to add/remove."
-                ),
-                container = g,
-                anchor = c(-1, 0)
+            add_heading(
+                "Select variables from the left to retain",
+                "in the data set (hold CTRL to select many).",
+                "Use the horizontal arrows to move variables from",
+                "'Remove' to 'Keep'.",
+                "Use the vertical arrows on the right to move",
+                "the chosen variable in 'Keep' up/down."
             )
-            font(lbl) <- list(weight = "bold")
 
             # boxes with variables
-            g_vars <- ggroup(container = g, fill = TRUE, expand = TRUE)
+            g_vars <- ggroup()
             dataVars <<- gtable(data.frame(Remove = names(GUI$getActiveData())),
                 multiple = TRUE,
                 container = g_vars,
@@ -1019,9 +992,10 @@ iNZReorderVarsWin <- setRefClass(
                 }
             )
 
+            add_body(g_vars, fill = TRUE, expand = TRUE)
 
             # controls
-            g_ctrls <- ggroup(container = g)
+            g_ctrls <- ggroup()
             add_all_btn <- gbutton("Add all",
                 container = g_ctrls,
                 handler = function(h, ...) {
@@ -1053,42 +1027,7 @@ iNZReorderVarsWin <- setRefClass(
                     )
                 }
             )
-
-            btn_grp <- ggroup(container = g)
-            addSpring(btn_grp)
-            ok_btn <- gbutton("Done",
-                container = g,
-                handler = function(h, ...) {
-                    vars <- as.character(chosenVars$get_items())
-                    if (length(vars) == 1 && vars == "") {
-                        gmessage("Add variables to the 'Keep' column on the right first.",
-                            title = "No variables selected",
-                            icon = "warning",
-                            parent = GUI$modWin
-                        )
-                        return()
-                    }
-
-                    .dataset <- GUI$get_data_object()
-                    .d <- if (iNZightTools::is_survey(.dataset)) .dataset$variables else .dataset
-                    if (identical(vars, colnames(.d))) {
-                        gmessage("It looks like you have selected all of the variables in the same order.",
-                            title = "No change to variables",
-                            icon = "warning",
-                            parent = GUI$modWin
-                        )
-                        return()
-                    }
-
-                    newdata <- iNZightTools::selectVars(.dataset, vars)
-                    GUI$new_document(data = newdata,
-                      suffix = ifelse(length(vars) == ncol(.dataset), "reorder", "subset")
-                    )
-                    dispose(GUI$modWin)
-                }
-            )
-
-            visible(GUI$modWin) <<- TRUE
+            add_body(g_ctrls)
         },
         add_vars = function(index) {
             remove <- as.character(dataVars$get_items())
@@ -1123,6 +1062,35 @@ iNZReorderVarsWin <- setRefClass(
 
             dataVars$set_items(data.frame(Remove = remove))
             chosenVars$set_items(data.frame(Keep = keep))
+        },
+        reorder_select_vars = function() {
+            vars <- as.character(chosenVars$get_items())
+            if (length(vars) == 1 && vars == "") {
+                gmessage("Add variables to the 'Keep' column on the right first.",
+                    title = "No variables selected",
+                    icon = "warning",
+                    parent = GUI$modWin
+                )
+                return()
+            }
+
+            .dataset <- GUI$get_data_object()
+            .d <- if (iNZightTools::is_survey(.dataset)) .dataset$variables else .dataset
+            if (identical(vars, colnames(.d))) {
+                gmessage("It looks like you have selected all of the variables in the same order.",
+                    title = "No change to variables",
+                    icon = "warning",
+                    parent = GUI$modWin
+                )
+                return()
+            }
+
+            newdata <- iNZightTools::selectVars(.dataset, vars)
+            GUI$new_document(data = newdata,
+                suffix = ifelse(length(vars) == ncol(.dataset), "reorder", "subset")
+            )
+
+            close()
         }
     )
 )
@@ -1133,10 +1101,9 @@ iNZReorderVarsWin <- setRefClass(
 ## Class that handles the reshaping of a dataset
 ## --------------------------------------------
 
-iNZReshapeDataWin <- setRefClass(
-    "iNZReshapeDataWin",
+iNZReshapeWin <- setRefClass(
+    "iNZReshapeWin",
     fields = list(
-        GUI = "ANY",
         colname = "ANY",
         key = "ANY",
         value = "ANY",
@@ -1146,37 +1113,35 @@ iNZReshapeDataWin <- setRefClass(
         type = "ANY",
         check = "ANY"
     ),
+    contains = "iNZWindow",
     methods = list(
         initialize = function(gui = NULL) {
-            initFields(GUI = gui)
-            if (is.null(GUI)) return()
-            ## close any current mod windows
-            try(dispose(GUI$modWin), silent = TRUE)
 
-            ## start my window
-            GUI$modWin <<- gwindow("Reshape dataset", parent = GUI$win, visible = FALSE)
-            mainGroup <- ggroup(container = GUI$modWin, expand = TRUE, horizontal = FALSE)
-            mainGroup$set_borderwidth(15)
-
-            helpbtn <- gimagebutton(stock.id = "gw-help",
-                handler = function(h, ...) help_page("user_guides/data_options/#reshape")
+            ok <- callSuper(gui,
+                title = "Reshape dataset",
+                width = "med",
+                height = "large",
+                ok = "Reshape",
+                action = .self$do_reshape,
+                help = "user_guides/data_options/#reshape",
+                show_code = FALSE,
+                scroll = FALSE
             )
-            title_string <- glabel("Reshape Dateset")
-            font(title_string) <- list(size = 14, weight = "bold")
-            helplyt <- glayout(homegenous = FALSE)
-            helplyt[1, 4:19, expand = TRUE, anchor = c(0,0)] <- title_string
-            helplyt[1, 20, expand = TRUE, anchor = c(1, -1)] <- helpbtn
-            add(mainGroup, helplyt)
+            if (!ok) return()
+            on.exit(.self$show())
+            usingMethods("do_reshape")
 
-            format_string <- glabel("Select reshape mode", container = mainGroup)
+
+            format_string <- glabel("Select reshape mode")
+            add_body(format_string)
+
             format <- gcombobox(
                 items = c("", "Wide to long", "Long to wide"),
-                container = mainGroup,
                 handler = function(h, ...) {
                     type <<- svalue(format)
                     newview$set_items("")
                     visible(previewbox) <- TRUE
-                    visible(reshapebtn) <- TRUE
+                    enabled(ok_button) <<- TRUE
                     if (type == "Wide to long") {
                         visible(group1) <- TRUE
                         visible(group2) <- FALSE
@@ -1189,13 +1154,14 @@ iNZReshapeDataWin <- setRefClass(
                         visible(group1) <- FALSE
                         visible(group2) <- FALSE
                         visible(previewbox) <- FALSE
-                        visible(reshapebtn) <- FALSE
+                        enabled(ok_button) <<- FALSE
                     }
                 }
             )
+            add_body(format)
 
             ## Wide to long
-            group1 <- ggroup(container = mainGroup, horizontal = FALSE)
+            group1 <- gvbox()
 
             col_string <- glabel("Select column(s) to gather together", container = group1)
 
@@ -1269,9 +1235,10 @@ iNZReshapeDataWin <- setRefClass(
                 }
             )
             visible(group1) <- FALSE
+            add_body(group1)
 
             ## Long to wide
-            group2 <- ggroup(container = mainGroup, horizontal = FALSE)
+            group2 <- gvbox()
 
             col1 <<- ""
             label1 <- glabel(
@@ -1305,9 +1272,10 @@ iNZReshapeDataWin <- setRefClass(
                 }
             )
             visible(group2) <- FALSE
+            add_body(group2)
 
             ## Preview window
-            previewbox <- gvbox(container = mainGroup)
+            previewbox <- gvbox()
             prevTbl <- glayout(homogeneous = FALSE, container = previewbox)
 
             string1 <- glabel("Original dataset")
@@ -1322,23 +1290,10 @@ iNZReshapeDataWin <- setRefClass(
             prevTbl[2,2, expand = TRUE] <- newview
             size(newview) <<- c(-1, 250)
 
-            reshapebtn <- gbutton("Reshape",
-                container = mainGroup,
-                handler = function(h, ...) {
-                    .dataset <- GUI$getActiveData()
-                    data <- reshape()
-                    attr(data, "name") <-
-                        paste(attr(.dataset, "name", exact = TRUE), "reshaped", sep = ".")
-                    attr(data, "code") <-
-                        gsub(".dataset", attr(.dataset, "name", exact = TRUE), attr(data, "code"))
-                    GUI$setDocument(iNZDocument$new(data = data))
-                    dispose(GUI$modWin)
-                }
-            )
+            add_body(previewbox, expand = TRUE, fill = TRUE)
 
             visible(previewbox) <- FALSE
-            visible(reshapebtn) <- FALSE
-            visible(GUI$modWin) <<- TRUE
+            enabled(ok_button) <<- FALSE
         },
         updatePreview = function() {
             d <- reshape()
@@ -1347,6 +1302,17 @@ iNZReshapeDataWin <- setRefClass(
         reshape = function() {
             .dataset <- GUI$getActiveData()
             df <- iNZightTools::reshape_data(.dataset, col1, col2, colname, key, value, check)
+        },
+        do_reshape = function() {
+            .dataset <- GUI$getActiveData()
+            data <- reshape()
+            attr(data, "name") <-
+                paste(attr(.dataset, "name", exact = TRUE), "reshaped", sep = ".")
+            attr(data, "code") <-
+                gsub(".dataset", attr(.dataset, "name", exact = TRUE), attr(data, "code"))
+            GUI$setDocument(iNZDocument$new(data = data))
+
+            close()
         }
     )
 )
@@ -1355,10 +1321,9 @@ iNZReshapeDataWin <- setRefClass(
 ## --------------------------------------------
 ## Class that handles the separating of a dataset
 ## --------------------------------------------
-iNZSeparateDataWin <- setRefClass(
-    "iNZSeparateDataWin",
+iNZSeparateWin <- setRefClass(
+    "iNZSeparateWin",
     fields = list(
-        GUI = "ANY",
         format = "ANY",
         var1 = "ANY", var2 = "ANY",
         col = "ANY",
@@ -1372,59 +1337,53 @@ iNZSeparateDataWin <- setRefClass(
         dtpreview = "ANY",
         separatebtn = "ANY"
     ),
+    contains = "iNZWindow",
     methods = list(
         initialize = function(gui = NULL) {
-            initFields(GUI = gui)
-            if (is.null(GUI)) return()
-            ## close any current mod windows
-            try(dispose(GUI$modWin), silent = TRUE)
-
-            ## start my window
-            GUI$modWin <<- gwindow("Separate columns",
-                parent = GUI$win,
-                visible = FALSE,
-                width = 700,
-                height = 700
+            ok <- callSuper(gui,
+                title = "Separate columns",
+                width = "med",
+                height = "large",
+                ok = "Separate",
+                action = .self$do_separate,
+                help = "user_guides/data_options/#separate",
+                show_code = FALSE,
+                scroll = FALSE
             )
-            mainGroup <- ggroup(container = GUI$modWin,
-                expand = TRUE,
-                horizontal = FALSE)
-            mainGroup$set_borderwidth(15)
+            if (!ok) return()
+            on.exit(.self$show())
+            usingMethods("do_separate")
 
-            helpbtn <- gimagebutton(stock.id = "gw-help",
-                handler = function(h, ...) help_page("user_guides/data_options/#separate"))
-            title_string <- glabel("Separate columns")
-            font(title_string) <- list(size = 14, weight = "bold")
-            helplyt <- glayout(homegenous = FALSE)
-            helplyt[1, 4:19, expand = TRUE, anchor = c(0,0)] <- title_string
-            helplyt[1, 20, expand = TRUE, anchor = c(1, -1)] <- helpbtn
-            add(mainGroup, helplyt)
+            initFields(
+                sep = "_",
+                check = "Column"
+            )
 
-            addSpace(mainGroup, 15)
-            input_tbl <- glayout(container = mainGroup)
+            input_tbl <- glayout()
             ii <- 1L
 
-            format.list <- c("", "Separate into several columns", "Separate into several rows")
+            format.list <- c("Columns", "Rows")
+            format_string <- glabel("Separate variable into :")
+            input_tbl[ii, 1L, anchor = c(1, 0), expand = TRUE] <- format_string
+
             if (iNZightTools::is_survey(GUI$get_data_object())) {
-                format <<- glabel(format.list[[2]])
+                format <<- glabel(format.list[[1]])
                 input_tbl[ii, 2:3, anchor = c(-1, 0), fill = TRUE] <- format
                 check <<- "Column"
                 col <<- ""
                 sep <<- ""
             } else {
-                format_string <- glabel("Select separate mode :")
-                format <<- gcombobox(items = format.list,
+                format <<- gradio(items = format.list,
+                    horizontal = TRUE,
                     handler = function(h, ...) {
                         col <<- ""
                         sep <<- ""
                         var1$set_value(" ")
                         var2$set_value("")
                         newview$set_items("")
-                        type <- svalue(format)
-                        check <<- switch(svalue(h$obj, index = TRUE), "", "Column", "Row")
+                        check <<- gsub("s", "", svalue(format))
                     }
                 )
-                input_tbl[ii, 1L, anchor = c(1, 0), expand = TRUE] <- format_string
                 size(format) <<- c(350, -1)
                 input_tbl[ii, 2:3] <- format
             }
@@ -1443,7 +1402,7 @@ iNZSeparateDataWin <- setRefClass(
             ii <- ii + 1L
 
             sep_string <- glabel("Value separator :")
-            var2 <<- gedit("")
+            var2 <<- gedit(sep)
             addHandlerKeystroke(var2,
                 function(h ,...) {
                     sep <<- svalue(var2)
@@ -1482,40 +1441,24 @@ iNZSeparateDataWin <- setRefClass(
                 }
             )
 
-            addSpace(mainGroup, 15)
-            prevTbl <- glayout(homogeneous = FALSE, container = mainGroup)
+            add_body(input_tbl)
+            body_space(15)
+
+            prevTbl <- glayout(homogeneous = FALSE)
 
             string1 <- glabel("Original dataset")
             originview <- gtable(data.frame(head(GUI$getActiveData(), 10L), stringsAsFactors = TRUE))
             prevTbl[1,1, expand = TRUE] <- string1
             prevTbl[2,1, expand = TRUE] <- originview
-            size(originview) = c(-1, 250)
+            size(originview) = c(-1, 350)
 
             string2 <- glabel("New dataset")
             newview <<- gtable(data.frame("", stringsAsFactors = TRUE))
             prevTbl[1,2, expand = TRUE] <- string2
             prevTbl[2,2, expand = TRUE] <- newview
-            size(newview) <<- c(-1, 250)
+            size(newview) <<- c(-1, 350)
 
-            g_btn <- ggroup(container = mainGroup)
-            cancelbtn <- gbutton("Cancel",
-                handler = function(h, ...) dispose(GUI$modWin),
-                container = g_btn
-            )
-
-            addSpring(g_btn)
-
-            separatebtn <<- gbutton("Separate",
-                container = g_btn,
-                handler = function(h, ...) {
-                    .dataset <- GUI$get_data_object()
-                    newdata <- separatedt(preview = FALSE)
-                    GUI$new_document(newdata, "separated")
-                    dispose(GUI$modWin)
-                }
-            )
-
-            visible(GUI$modWin) <<- TRUE
+            add_body(prevTbl)
         },
         separatedt = function(preview = TRUE) {
             if (sep == "") return()
@@ -1556,6 +1499,12 @@ iNZSeparateDataWin <- setRefClass(
             } else {
                 newview$set_items("")
             }
+        },
+        do_separate = function() {
+            .dataset <- GUI$get_data_object()
+            newdata <- separatedt(preview = FALSE)
+            GUI$new_document(newdata, "separated")
+            close()
         }
     )
 )
@@ -1565,10 +1514,9 @@ iNZSeparateDataWin <- setRefClass(
 ## --------------------------------------------
 ## Class that handles the uniting of a dataset
 ## --------------------------------------------
-iNZUniteDataWin <- setRefClass(
-    "iNZUniteDataWin",
+iNZUniteWin <- setRefClass(
+    "iNZUniteWin",
     fields = list(
-        GUI = "ANY",
         var1 = "ANY", var2 = "ANY", var3 = "ANY",
         sep = "ANY",
         col = "ANY",
@@ -1576,39 +1524,31 @@ iNZUniteDataWin <- setRefClass(
         newview = "ANY",
         unitebtn = "ANY"
     ),
+    contains = "iNZWindow",
     methods = list(
         initialize = function(gui = NULL) {
-            initFields(GUI = gui)
-            if (is.null(GUI)) return()
-            ## close any current mod windows
-            try(dispose(GUI$modWin), silent = TRUE)
-
-            ## start my window
-            GUI$modWin <<- gwindow("Unite columns",
-                parent = GUI$win,
-                visible = FALSE,
-                width = 800
+            ok <- callSuper(gui,
+                title = "Unite columns",
+                width = "med",
+                height = "large",
+                ok = "Unite",
+                action = .self$do_unite,
+                help = "user_guides/data_options/#unite",
+                show_code = FALSE,
+                scroll = FALSE
             )
-            mainGroup <- ggroup(container = GUI$modWin,
-                expand = TRUE,
-                horizontal = FALSE)
-            mainGroup$set_borderwidth(15)
-            helpbtn <- gimagebutton(stock.id = "gw-help",
-                handler = function(h, ...) help_page("user_guides/data_options/#unite"))
-            title_string <- glabel("Unite columns")
-            font(title_string) <- list(size = 14, weight = "bold")
-            helplyt <- glayout(homegenous = FALSE)
-            helplyt[1, 4:19, expand = TRUE, anchor = c(0,0)] <- title_string
-            helplyt[1, 20, expand = TRUE, anchor = c(1, -1)] <- helpbtn
-            add(mainGroup, helplyt)
+            if (!ok) return()
+            on.exit(.self$show())
+            usingMethods("do_unite")
 
-            addSpace(mainGroup, 10)
-            g_top <- ggroup(container = mainGroup)
+            g_top <- ggroup()
             g_cols <- gvbox(container = g_top)
             addSpace(g_top, 20)
             g_info <- gvbox(container = g_top)
 
-            col_string <- glabel("Select columns to unite", container = g_cols)
+            col_string <- glabel("Select columns to unite")
+            font(col_string) <- list(weight = "bold")
+            add(g_cols, col_string, anchor = c(-1, 0))
 
             var1 <<- gtable(names(GUI$getActiveData()),
                 multiple = TRUE,
@@ -1625,7 +1565,7 @@ iNZUniteDataWin <- setRefClass(
             )
             size(var1) <<- c(300, 150)
 
-            lbl <- glabel("New variable name :")
+            lbl <- glabel("New variable name")
             font(lbl) <- list(weight = "bold")
             add(g_info, lbl, anchor = c(-1, 0), fill = TRUE)
             var2 <<- gedit("", container = g_info)
@@ -1637,7 +1577,7 @@ iNZUniteDataWin <- setRefClass(
             )
 
             sep <<- "_"
-            lbl <- glabel("Value separator :")
+            lbl <- glabel("Value separator")
             font(lbl) <- list(weight = "bold")
             add(g_info, lbl, anchor = c(-1, 0), fill = TRUE)
             var3 <<- gedit("_", container = g_info)
@@ -1648,46 +1588,35 @@ iNZUniteDataWin <- setRefClass(
                 }
             )
 
-            prevTbl <- glayout(homogeneous = FALSE, container = mainGroup)
+            add_body(g_top)
+
+            prevTbl <- glayout(homogeneous = FALSE)
 
             string1 <- glabel("Original dataset")
             originview = gtable(data.frame(head(GUI$getActiveData(), 10L), stringsAsFactors = TRUE))
             prevTbl[1,1, expand = TRUE] <- string1
             prevTbl[2,1, expand = TRUE] <- originview
-            size(originview) = c(-1, 250)
+            size(originview) = c(-1, 350)
 
             string2 <- glabel("New dataset")
             newview <<- gtable(data.frame("", stringsAsFactors = TRUE))
             prevTbl[1,2, expand = TRUE] <- string2
             prevTbl[2,2, expand = TRUE] <- newview
-            size(newview) <<- c(-1, 250)
+            size(newview) <<- c(-1, 350)
 
-            g_btn <- ggroup(container = mainGroup)
-
-            cancelbtn <- gbutton("Cancel",
-                container = g_btn,
-                handler = function(h, ...) dispose(GUI$modWin)
-            )
-
-            addSpring(g_btn)
-
-            unitebtn <<- gbutton("Unite",
-                container = g_btn,
-                handler = function(h, ...) {
-                    .dataset <- GUI$get_data_object()
-                    newdata <- iNZightTools::unite(.dataset, name, col, sep)
-                    GUI$new_document(newdata, "united")
-                    dispose(GUI$modWin)
-                }
-            )
-
-            visible(GUI$modWin) <<- TRUE
+            add_body(prevTbl)
         },
         updateView = function() {
             data <- GUI$get_data_object(nrow = 10L)
             df <- iNZightTools::unite(data, name, col, sep)
             if (iNZightTools::is_survey(df)) df <- df$variables
             newview$set_items(df)
+        },
+        do_unite = function() {
+            .dataset <- GUI$get_data_object()
+            newdata <- iNZightTools::unite(.dataset, name, col, sep)
+            GUI$new_document(newdata, "united")
+            close()
         }
     )
 )
@@ -1704,9 +1633,9 @@ iNZexpandTblWin <- setRefClass(
 
             conf <- gconfirm(
                 paste(
-                    "This will expand the table to individial rows.",
-                    "Use Dataset > Restore dataset to go back to revert this change.",
-                    "Note: this is a temporary workaround for small tables until we integrate frequency tables.",
+                    "This will expand the table to individual rows.",
+                    "You can revert to the original data using the 'Data set' select box.",
+                    "Note: you can get the same effect by specifying a frequency column.",
                     sep = "\n\n"
                 ),
                 title = "Expand table?",
@@ -1714,36 +1643,37 @@ iNZexpandTblWin <- setRefClass(
                 parent = GUI$win
             )
 
-            if (conf) {
-                dat <- GUI$getActiveData()
-                dat <- tryCatch(
-                    {
-                        as.numeric(rownames(dat))
-                        dat
-                    },
-                    warning = function(w) {
-                        ## cannot convert rownames to numeric - create column
-                        dat$Row <- rownames(dat)
-                        dat
-                    }
-                )
-                numIndices <- sapply(dat, function(x) is_num(x))
+            if (!conf) return()
 
-                long <- reshape2:::melt.data.frame(dat,
-                    measure.vars = colnames(dat)[numIndices],
-                    variable.name = "Column",
-                    value.name = "Count",
-                    na.rm = TRUE
-                )
-                out <- long[rep(rownames(long), long$Count), ]
-                rownames(out) <- 1:nrow(out)
+            dat <- GUI$getActiveData()
+            dat <- tryCatch(
+                {
+                    as.numeric(rownames(dat))
+                    dat
+                },
+                warning = function(w) {
+                    ## cannot convert rownames to numeric - create column
+                    dat$Row <- rownames(dat)
+                    dat
+                }
+            )
+            numIndices <- sapply(dat, function(x) is_num(x))
 
-                ## for 1-way tables, don't need the "Count" column!
-                if (length(unique(out$Column)) == 1)
-                    out$Column <- NULL
-                out$Count <- NULL
-                GUI$getActiveDoc()$getModel()$updateData(out)
-            }
+            long <- reshape2:::melt.data.frame(dat,
+                measure.vars = colnames(dat)[numIndices],
+                variable.name = "Column",
+                value.name = "Count",
+                na.rm = TRUE
+            )
+            out <- long[rep(rownames(long), long$Count), ]
+            rownames(out) <- 1:nrow(out)
+
+            ## for 1-way tables, don't need the "Count" column!
+            if (length(unique(out$Column)) == 1)
+                out$Column <- NULL
+            out$Count <- NULL
+
+            GUI$new_document(out, "expanded")
         }
     )
 )
@@ -1752,10 +1682,9 @@ iNZexpandTblWin <- setRefClass(
 ## --------------------------------------------
 ## Class that handles the joining of the original dataset with a new dataset
 ## --------------------------------------------
-iNZjoinDataWin <- setRefClass(
-    "iNZjoinDataWin",
+iNZJoinWin <- setRefClass(
+    "iNZJoinWin",
     fields = list(
-        GUI = "ANY",
         newdata = "ANY",
         prevTbl = "ANY",
         left_col = "ANY",
@@ -1770,35 +1699,24 @@ iNZjoinDataWin <- setRefClass(
         middle = "ANY",
         joinbtn = "ANY"
     ),
+    contains = "iNZWindow",
     methods = list(
         initialize = function(gui = NULL) {
-            initFields(GUI = gui)
-            if (is.null(GUI)) return()
-            ## close any current mod windows
-            try(dispose(GUI$modWin), silent = TRUE)
-
-            ## start my window
-            GUI$modWin <<- gwindow(
-                "Join with another dataset by column values",
-                parent = GUI$win,
-                width = 550,
-                visible = FALSE
+            ok <- callSuper(gui,
+                title = "Join datasets by columns",
+                width = "med",
+                height = "large",
+                ok = "Join",
+                action = .self$do_join,
+                help = "user_guides/data_options/#join",
+                show_code = FALSE,
+                scroll = FALSE
             )
-            mainGroup <- ggroup(container = GUI$modWin,
-                expand = TRUE, horizontal = FALSE)
-            mainGroup$set_borderwidth(15)
+            if (!ok) return()
+            on.exit(.self$show())
+            usingMethods("do_join")
 
-            helpbtn <- gimagebutton(stock.id = "gw-help",
-                handler = function(h, ...) help_page("user_guides/data_options/#join"))
-
-            title_string <- glabel("Join Datasets")
-            font(title_string) <- list(size = 14, weight = "bold")
-            helplyt <- glayout(homegenous = FALSE)
-            helplyt[1, 4:19, expand = TRUE, anchor = c(0,0)] <- title_string
-            helplyt[1, 20, expand = TRUE, anchor = c(1, -1)] <- helpbtn
-            add(mainGroup, helplyt)
-
-            prevTbl <<- glayout(homogeneous = FALSE, container = mainGroup)
+            prevTbl <<- glayout(homogeneous = FALSE)
 
             string1 <- glabel("Preview of the original dataset")
             originview <- gtable(data.frame(head(GUI$getActiveData(), 10), stringsAsFactors = TRUE))
@@ -1920,88 +1838,28 @@ iNZjoinDataWin <- setRefClass(
             )
             data2from$invoke_change_handler()
 
+            add_body(prevTbl)
+
             ## Middle box
-            middle <<- ggroup(container = mainGroup, horizontal = FALSE)
+            middle <<- gvbox()
             coltbl <<- glayout(container = middle)
             coltbl[1, 1:4] <<- glabel("Please specify columns to match on from two datasets")
 
+            add_body(middle)
+
             ## Bottom box
-            bottom = ggroup(container = mainGroup, horizontal = FALSE)
+            bottom <- gvbox()
             preview_string2 = glabel("Preview", container = bottom, anchor = c(-1, 0))
             joinview <<- gtable(data.frame("", stringsAsFactors = TRUE), container = bottom)
             size(joinview) <<- c(-1, 150)
 
-            joinbtn <<- gbutton("Join", container = bottom)
-            addHandlerChanged(joinbtn,
-                function(h, ...) {
-                    .dataset <- GUI$getActiveData()
-                    data <- joinData()
-                    if (length(data) == 0 | nrow(data) == 0)
-                        data <- GUI$getActiveData()
+            add_body(bottom)
 
-                    attr(data, "name") <-
-                        paste(attr(.dataset, "name", exact = TRUE),
-                            "joined", sep = ".")
-                    attr(data, "code") <-
-                        gsub(".dataset",
-                            attr(.dataset, "name", exact = TRUE),
-                            attr(data, "code")
-                        )
-
-                    GUI$setDocument(iNZDocument$new(data = data))
-                    dispose(GUI$modWin)
-                }
+            join_types_button <- gbutton("Join Methods",
+                handler = function(h, ...) show_join_help()
             )
+            add_toolbar(join_types_button)
 
-            helpbtn <- gbutton("Help", container = bottom,
-                handler = function(h, ...) {
-                    helpwin <- gwindow(title = "Help")
-                    win <- gvbox(container = helpwin)
-
-                    inner_join <- glabel("Inner Join", container = win)
-                    font(inner_join) <- list(size = 12, weight = "bold")
-                    inner_join_help <- glabel(
-                        "Keep all the matched rows within both datasets",
-                        container = win)
-                    addSpace(win, 5)
-
-                    left_join <- glabel("Left Join", container = win)
-                    font(left_join) <- list(size = 12, weight = "bold")
-                    left_join_help <- glabel(
-                        paste(
-                            "Keep every row in the original dataset and",
-                            "match them to the imported dataset"
-                        ),
-                        container = win
-                    )
-                    addSpace(win, 5)
-
-                    full_join <- glabel("Full Join", container = win)
-                    font(full_join) <- list(size = 12, weight = "bold")
-                    full_join_help <- glabel("Keep all the rows in both datasets", container = win)
-                    addSpace(win, 5)
-
-                    semi_join <- glabel("Semi Join", container = win)
-                    font(semi_join) <- list(size = 12, weight = "bold")
-                    semi_join_help <- glabel(
-                        "Keep matched rows in the original dataset ONLY",
-                        container = win
-                    )
-                    addSpace(win, 5)
-
-                    anti_join <- glabel("Anti Join", container = win)
-                    font(anti_join) <- list(size = 12, weight = "bold")
-                    anti_join_help <- glabel(
-                        paste(
-                            "Return all rows in the original dataset which",
-                            "do not have a match in the imported dataset"
-                        ),
-                        container = win
-                    )
-                    addSpace(win, 5)
-                }
-            )
-            visible(GUI$modWin) <<- TRUE
         },
         set_second_data = function() {
             impview$set_items(head(newdata, 10))
@@ -2132,6 +1990,72 @@ iNZjoinDataWin <- setRefClass(
                 right_col <<- right_col[-pos]
             }
             create_join_table()
+        },
+        do_join = function() {
+            .dataset <- GUI$getActiveData()
+            data <- joinData()
+            if (length(data) == 0 | nrow(data) == 0)
+                data <- GUI$getActiveData()
+
+            GUI$new_document(data, "joined")
+            close()
+        },
+        show_join_help = function() {
+            helpwin <- gwindow(title = "Join Methods", parent = GUI$modWin)
+            win <- gvbox(container = helpwin)
+            win$set_borderwidth(10)
+
+            inner_join <- glabel("Inner Join", container = win, anchor = c(-1, 0))
+            font(inner_join) <- list(size = 12, weight = "bold")
+            inner_join_help <- glabel(
+                add_lines("Keep all the matched rows within both datasets", 80),
+                container = win, anchor = c(-1, 0))
+            addSpace(win, 5)
+
+            left_join <- glabel("Left Join", container = win, anchor = c(-1, 0))
+            font(left_join) <- list(size = 12, weight = "bold")
+            left_join_help <- glabel(
+                add_lines(
+                    paste(
+                        "Keep every row in the original dataset and",
+                        "match them to the imported dataset"
+                    ),
+                    50
+                ),
+                container = win, anchor = c(-1, 0)
+            )
+            addSpace(win, 5)
+
+            full_join <- glabel("Full Join", container = win, anchor = c(-1, 0))
+            font(full_join) <- list(size = 12, weight = "bold")
+            full_join_help <- glabel(
+                add_lines("Keep all the rows in both datasets", 50),
+                container = win, anchor = c(-1, 0)
+            )
+            addSpace(win, 5)
+
+            semi_join <- glabel("Semi Join", container = win, anchor = c(-1, 0))
+            font(semi_join) <- list(size = 12, weight = "bold")
+            semi_join_help <- glabel(
+                add_lines("Keep matched rows in the original dataset ONLY", 50),
+                container = win, anchor = c(-1, 0)
+            )
+            addSpace(win, 5)
+
+            anti_join <- glabel("Anti Join", container = win, anchor = c(-1, 0))
+            font(anti_join) <- list(size = 12, weight = "bold")
+            anti_join_help <- glabel(
+                add_lines(
+                    paste(
+                        "Return all rows in the original dataset which",
+                        "do not have a match in the imported dataset"
+                    ),
+                    50
+                ),
+                container = win, anchor = c(-1, 0)
+            )
+            addSpace(win, 5)
+
         }
     )
 )
@@ -2140,76 +2064,48 @@ iNZjoinDataWin <- setRefClass(
 ## --------------------------------------------
 ## Class that handles appending new row to the dataset
 ## --------------------------------------------
-iNZappendrowWin <- setRefClass(
-    "iNZappendrowWin",
+iNZAppendRowsWin <- setRefClass(
+    "iNZAppendRowsWin",
     fields = list(
-        GUI = "ANY",
         newdata = "ANY",
         date = "ANY"
     ),
+    contains = "iNZWindow",
     methods = list(
         initialize = function(gui = NULL) {
-            initFields(GUI = gui)
-            if (is.null(GUI)) return()
+            ok <- callSuper(gui,
+                title = "Append new rows",
+                width = "small",
+                height = "small",
+                ok = "Append",
+                action = .self$do_append,
+                help = "user_guides/data_options/#append",
+                show_code = FALSE,
+                scroll = FALSE
+            )
+            if (!ok) return()
+            on.exit(.self$show())
+            usingMethods("do_append")
 
-            ## close any current mod windows
-            try(dispose(GUI$modWin), silent = TRUE)
-            ## start my window
-            GUI$modWin <<- gwindow("Append rows",
-                parent = GUI$win, visible = FALSE)
-            mainGroup <- ggroup(container = GUI$modWin,
-                expand = TRUE,
-                horizontal = FALSE)
-            mainGroup$set_borderwidth(15)
+            file_string <- glabel("Import data")
+            add_body(file_string, anchor = c(-1,0))
 
-            helpbtn <- gimagebutton(stock.id = "gw-help",
-                handler = function(h, ...) help_page("user_guides/data_options/#append"))
-
-            title_string <- glabel("Append rows")
-            font(title_string) <- list(size = 14, weight = "bold")
-            helplyt <- glayout(homegenous = FALSE)
-            helplyt[1, 4:19, expand = TRUE, anchor = c(0,0)] <- title_string
-            helplyt[1, 20, expand = TRUE, anchor = c(1, -1)] <- helpbtn
-            add(mainGroup, helplyt)
-
-            file_string <- glabel("Import data",
-                container = mainGroup, anchor = c(-1,0))
             data_name <- gfilebrowse(text = "Specify a file",
                 initial.dir = file.path(".", "data"),
-                container = mainGroup,
                 handler = function(h, ...) {
                     newdata <<- iNZightTools::smart_read(svalue(data_name))
                 }
             )
+            add_body(data_name)
 
             date <<- FALSE
             check_box <- gcheckbox(
                 "Tick if you want to attach a timestamp to the appended rows",
-                container = mainGroup,
                 handler = function(h, ...) {
                     date <<- svalue(check_box)
                 }
             )
-
-            appendbtn <- gbutton("Append", container = mainGroup)
-            addHandlerChanged(appendbtn,
-                function(h, ...) {
-                    .dataset <- GUI$getActiveData()
-                    data <- appendrow()
-                    attr(data, "name") <-
-                        paste(attr(.dataset, "name", exact = TRUE),
-                            "appended", sep = ".")
-                    attr(data, "code") <-
-                        gsub(".dataset",
-                            attr(.dataset, "name", exact = TRUE),
-                            attr(data, "code")
-                        )
-
-                    GUI$setDocument(iNZDocument$new(data = data))
-                    dispose(GUI$modWin)
-                }
-            )
-            visible(GUI$modWin) <<- TRUE
+            add_body(check_box)
         },
         appendrow = function() {
             data <- GUI$getActiveData()
@@ -2228,6 +2124,12 @@ iNZappendrowWin <- setRefClass(
                 }
             }
             iNZightTools::appendrows(data, newdata, date)
+        },
+        do_append = function() {
+            .dataset <- GUI$getActiveData()
+            data <- appendrow()
+            GUI$new_document(data, "appended")
+            close()
         }
     )
 )

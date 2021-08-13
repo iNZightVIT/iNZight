@@ -2524,13 +2524,11 @@ iNZAggregatedtWin <- setRefClass(
 iNZDataReportWin <- setRefClass(
     "iNZDataReportWin",
     fields = list(
-        GUI = "ANY",
-        win = "ANY",
         output_format = "ANY",
         file_path = "ANY",
-        file_ext = "ANY",
-        generateBtn = "ANY"
+        file_ext = "ANY"
     ),
+    contains = "iNZWindow",
     methods = list(
         initialize = function(gui) {
             if (!requireNamespace("dataMaid", quietly = TRUE)) {
@@ -2538,19 +2536,21 @@ iNZDataReportWin <- setRefClass(
                 return()
             }
 
-            initFields(GUI = gui)
-
-            win <<- gwindow("Generate Data Report",
-                parent = GUI$win,
-                width = 300,
-                height = 200,
-                visible = FALSE
+            ok <- callSuper(gui,
+                title = "Generate Data Report",
+                width = "small",
+                height = "small",
+                ok = "Generate",
+                action = .self$generate_report,
+                show_code = FALSE,
+                scroll = FALSE
             )
+            if (!ok) return()
+            on.exit(.self$show())
+            usingMethods("generate_report")
 
-            g <- gvbox(container = win)
-            g$set_borderwidth(5)
-
-            tbl <- glayout(container = g)
+            tbl <- glayout()
+            add_body(tbl)
             ii <- 1L
 
             lbl <- glabel("Report format :")
@@ -2594,38 +2594,32 @@ iNZDataReportWin <- setRefClass(
             # tbl[ii, 2:4, expand = TRUE] <- file_path
             # ii <- ii + 1
 
-            generateBtn <<- gbutton(
-                "Generate report",
-                handler = function(h, ...) {
-                    success <- FALSE
-                    tryCatch(
-                        {
-                            dataMaid::makeDataReport(
-                                GUI$getActiveData(),
-                                output = switch(svalue(output_format),
-                                    "PDF" = "pdf",
-                                    "Word Document" = "word",
-                                    "HTML" = "html"
-                                ),
-                                file = file_path,
-                                reportTitle = GUI$dataNameWidget$datName,
-                                replace = TRUE
-                            )
-                            success <- TRUE
-                        },
-                        error = function(e) {
-                            gmessage("Unable to generate report :(", type = "error")
-                            print(e)
-                        }
+            show()
+        },
+        generate_report = function() {
+            success <- FALSE
+            tryCatch(
+                {
+                    dataMaid::makeDataReport(
+                        GUI$getActiveData(),
+                        output = switch(svalue(output_format),
+                            "PDF" = "pdf",
+                            "Word Document" = "word",
+                            "HTML" = "html"
+                        ),
+                        file = file_path,
+                        reportTitle = GUI$dataNameWidget$datName,
+                        replace = TRUE
                     )
-
-                    if (success) dispose(win)
+                    success <- TRUE
+                },
+                error = function(e) {
+                    gmessage("Unable to generate report :(", type = "error")
+                    print(e)
                 }
             )
 
-            tbl[ii, 2:4, expand = TRUE] <- generateBtn
-
-            visible(win) <<- TRUE
+            if (success) close()
         }
     )
 )
