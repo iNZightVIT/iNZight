@@ -49,7 +49,6 @@ iNZSaveWin <- setRefClass(
             ll <- list()
             ll[["All files"]] <- list(patterns = "*")
             filterList <- c(ll, filterList)
-            print(filterList)
             filebrowse <- gfilebrowse(
                 text = "Specify a file",
                 action = invisible,
