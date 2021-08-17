@@ -159,6 +159,10 @@ iNZConToCatWin <- setRefClass(
 ## transform variables using various functions
 iNZTransformWin <- setRefClass(
     "iNZTransformWin",
+    fields = list(
+        data = "data.frame",
+        varbox = "ANY"
+    ),
     contains = "iNZDataModWin",
     methods = list(
         initialize = function(gui) {
@@ -175,69 +179,97 @@ iNZTransformWin <- setRefClass(
             )
             if (!ok) return()
             on.exit(.self$show())
+            initFields(data = GUI$getActiveData())
 
             ## need to specify the methods that we want to use in
             ## do.call later on
 
             add_heading(
-                "Drag and drop variable names onto the labels below",
-                "to create new transformed variables."
+                "Choose variables from the dropdown",
+                "and click a button to apply the transformation.",
+                "Repeat for as many variables as needed, then close the window."
             )
 
-            tbl <- glayout()
-            ii <- 1L
+            add_heading(
+                "Alternatively, drag-and-drop variable names from the data viewer",
+                "directly onto a button to apply the transformation."
+            )
+
+            add_heading(
+                "Note: only numeric variables can be transformed.",
+                size = 8, weight = "bold"
+            )
+
+            body_space(5L)
+
+            numvars <- names(data)[sapply(data, iNZightTools::is_num)]
+            varbox <<- gcombobox(numvars, selected = 0L)
+            add_body(varbox)
+
+            body_space(5L)
+
 
             ## function names: the X will be converted to the variable name (e.g., log.height, height.squared, etc)
             ##  Display name           new name     function
             transforms <- list(
-                "LOG (e)"          = c("log.e.X",   "log"),
-                "LOG (10)"         = c("log.10.X",  "log10"),
-                "EXPONENTIAL"      = c("exp.X",     "exp"),
-                "SQUARE (X^2)"     = c("X.squared", "square"),
-                "SQUARE ROOT"      = c("root.X",    "sqrt"),
-                "RECIPROCAL (1/X)" = c("recip.X",   "reciprocal")
+                "Natural Log (base e)" = c("log.e.X",   "log"),
+                "Log (base 10)" = c("log.10.X",  "log10"),
+                "Exponential (e^x)" = c("exp.X",     "exp"),
+                "Square (X^2)" = c("X.squared", "square"),
+                "Square root" = c("root.X",    "sqrt"),
+                "Reciprocal (1/X)" = c("recip.X",   "reciprocal")
             )
 
-            trLbls <- sapply(seq_along(transforms),
+            tbl <- glayout()
+            NCOL <- 2L
+            trans_btns <- sapply(
+                seq_along(transforms),
                 function(i) {
-                    lbl <- glabel(names(transforms)[i])
-                    font(lbl) <- list(
-                        weight = "bold",
-                        family = "sans",
-                        size = 14,
-                        color = "navy"
+                    row_i <- (i - 1L) %/% NCOL + 1L
+                    col_i <- (i - 1L) %% NCOL + 1L
+                    btn_i <- gbutton(names(transforms)[i],
+                        handler = function(h, ...) transform(transforms[[i]], svalue(varbox))
                     )
-                    tbl[ii + i - 1L, 1L, expand = TRUE, anchor = c(0, 0)] <- lbl
+                    tbl[row_i, col_i] <- btn_i
 
-                    addDropTarget(lbl,
-                        handler = function(h, ...) {
-                            var <- h$dropdata
-                            dropData <- GUI$getActiveDoc()$getData()[var][[1L]]
-                            ## check whether we can transform this variable
-                            if (checkData(dropData)) {
-                                name <- makeNames(gsub("X", var, transforms[[i]][1L]))
-                                if (checkNames(name)) {
-                                    fn <- transforms[[i]][2L]
-                                    .dataset <- GUI$get_data_object()
-                                    data <- iNZightTools::transformVar(.dataset, var, fn, name)
-                                    updateData(data)
-                                }
-                            }
-                        }
+                    addDropTarget(btn_i,
+                        handler = function(h, ...) transform(transforms[[i]], h$dropdata)
                     )
                 }
             )
 
-            add_body(tbl)
+            add_body(tbl, anchor = c(0, 0))
         },
         ## check whether the data is illegible for transformation
         checkData = function(varData) {
-            if (!all(is_cat(varData))) return(TRUE)
+            !any(is_cat(varData))
+        },
+        transform = function(trans, var) {
+            if (!checkData(data[[var]])) {
+                gmessage("Not a numeric variable",
+                    title = "Error: non-numeric variable",
+                    icon = "error",
+                    parent = GUI$modWin)
+                return()
+            }
 
-            gmessage(title = "ERROR",
-                msg = "Categorical variables cannot be transformed",
-                parent = GUI$modWin)
-            FALSE
+            vname <- makeNames(gsub("X", var, trans[1L]))
+            if (!checkNames(vname)) {
+                gmessage("Unable to create new variable",
+                    title = "Error creating variable",
+                    icon = "error",
+                    parent = GUI$modWin)
+                return()
+            }
+
+            fn <- trans[2L]
+            .dataset <- GUI$get_data_object()
+            newdata <- iNZightTools::transformVar(.dataset, var, fn, vname)
+            updateData(newdata)
+
+            data <<- GUI$getActiveData()
+            numvars <- names(data)[sapply(data, iNZightTools::is_num)]
+            varbox$set_items(numvars)
         }
     )
 )
@@ -872,8 +904,8 @@ iNZcrteVarWin <- setRefClass(
 )
 
 
-iNZformClassIntervals <- setRefClass(
-    "iNZformClassIntervals",
+iNZFormClassIntervalsWin <- setRefClass(
+    "iNZFormClassIntervalsWin",
     contains = "iNZDataModWin",
     fields = list(
         variable = "ANY",
@@ -895,19 +927,22 @@ iNZformClassIntervals <- setRefClass(
     ),
     methods = list(
         initialize = function(gui) {
-            callSuper(gui)
-
-            svalue(GUI$modWin) <<- "Form Class Intervals"
-            size(GUI$modWin) <<- c(500, 600)
-            visible(GUI$modWin) <<- TRUE
-
-            g <- gvbox(container = GUI$modWin)
-            g$set_borderwidth(10)
+            ok <- callSuper(gui,
+                title = "Form class intervals",
+                width = "med",
+                height = "large",
+                help = "user_guides/variables/#classints",
+                ok = "Create",
+                action = .self$create,
+                show_code = FALSE,
+                scroll = FALSE
+            )
+            if (!ok) return()
+            on.exit(.self$show())
+            usingMethods("create")
 
             ## ------------------------------ MAIN CONTENT
-            g_main <- gvbox(container = g)
-
-            tbl <- glayout(container = g_main)
+            tbl <- glayout()
             ii <- 1L
 
             .dataset <- GUI$getActiveData()
@@ -1009,9 +1044,10 @@ iNZformClassIntervals <- setRefClass(
             tbl[ii, 2:3, fill = TRUE] <- type
             ii <- ii + 1L
 
-            add(g_main, gseparator())
+            add_body(tbl)
+            add_body(gseparator())
 
-            tbl_width <<- glayout(container = g_main)
+            tbl_width <<- glayout()
             visible(tbl_width) <<- FALSE
             ii <- 1L
 
@@ -1027,7 +1063,9 @@ iNZformClassIntervals <- setRefClass(
             tbl_width[ii, 2:3] <<- n_interval
             ii <- ii + 1L
 
-            tbl_count <<- glayout(container = g_main)
+            add_body(tbl_width)
+
+            tbl_count <<- glayout()
             visible(tbl_count) <<- FALSE
             ii <- 1L
 
@@ -1043,8 +1081,11 @@ iNZformClassIntervals <- setRefClass(
             tbl_count[ii, 2:3] <<- interval_width
             ii <- ii + 1L
 
-            addSpace(g_main, 2)
-            tbl_range <<- glayout(container = g_main)
+            add_body(tbl_count)
+
+            body_space(2L)
+
+            tbl_range <<- glayout()
             visible(tbl_range) <<- FALSE
             ii <- 1L
 
@@ -1061,7 +1102,9 @@ iNZformClassIntervals <- setRefClass(
             tbl_range[ii, 2:3] <<- end_point
             ii <- ii + 1L
 
-            tbl_manual <<- glayout(container = g_main)
+            add_body(tbl_range)
+
+            tbl_manual <<- glayout()
             visible(tbl_manual) <<- FALSE
             ii <- 1L
 
@@ -1078,7 +1121,9 @@ iNZformClassIntervals <- setRefClass(
             tbl_manual[ii, 2:3, anchor = c(-1, 0), expand = TRUE] <<- lbl
             ii <- ii + 1L
 
-            tbl_format <<- glayout(container = g_main)
+            add_body(tbl_manual)
+
+            tbl_format <<- glayout()
             ii <- 1L
             visible(tbl_format) <<- FALSE
 
@@ -1092,7 +1137,9 @@ iNZformClassIntervals <- setRefClass(
             tbl_format[ii, 2:3] <<- label_format
             ii <- ii + 1L
 
-            tbl_format_lower <<- glayout(container = g_main)
+            add_body(tbl_format)
+
+            tbl_format_lower <<- glayout()
             visible(tbl_format_lower) <<- FALSE
             lbl <- glabel("Format lower bound :")
             label_lower <<- gradio("", horizontal = TRUE,
@@ -1100,8 +1147,9 @@ iNZformClassIntervals <- setRefClass(
             size(label_lower) <<- c(250, -1)
             tbl_format_lower[1L, 1L, anchor = c(1, 0), expand = TRUE] <<- lbl
             tbl_format_lower[1L, 2:3] <<- label_lower
+            add_body(tbl_format_lower)
 
-            tbl_format_upper <<- glayout(container = g_main)
+            tbl_format_upper <<- glayout()
             visible(tbl_format_upper) <<- FALSE
             lbl <- glabel("Format upper bound :")
             label_upper <<- gradio("", horizontal = TRUE,
@@ -1109,9 +1157,9 @@ iNZformClassIntervals <- setRefClass(
             size(label_upper) <<- c(250, -1)
             tbl_format_upper[1L, 1L, anchor = c(1, 0), expand = TRUE] <<- lbl
             tbl_format_upper[1L, 2:3] <<- label_upper
+            add_body(tbl_format_upper)
 
-
-            tbl <- glayout(container = g_main)
+            tbl <- glayout()
             ii <- 1L
 
             lbl <- glabel("Class Interval labels :")
@@ -1124,28 +1172,7 @@ iNZformClassIntervals <- setRefClass(
 
             tbl[ii, 1:3] <- preview_levels
             ii <- ii + 1L
-
-
-            ## ------------------------------ FOOTER (buttons)
-            addSpring(g)
-            g_footer <- ggroup(container = g)
-            helpBtn <- gbutton("Help",
-                container = g_footer,
-                handler = function(h, ...) {
-                    help_page("user_guides/variables/#classints")
-                }
-            )
-
-            addSpring(g_footer)
-            cancelBtn <- gbutton("Cancel",
-                container = g_footer,
-                handler = function(h, ...) dispose(GUI$modWin)
-            )
-
-            okBtn <<- gbutton("Create",
-                container = g_footer,
-                handler = function(h, ...) create_intervals(preview = FALSE)
-            )
+            add_body(tbl)
 
             skip_update <<- FALSE
 
@@ -1198,7 +1225,8 @@ iNZformClassIntervals <- setRefClass(
                 updateData(result)
                 dispose(GUI$modWin)
             }
-        }
+        },
+        create = function() create_intervals(preview = FALSE)
     )
 )
 
@@ -1278,57 +1306,58 @@ iNZrnmVarWin <- setRefClass(
 )
 
 ## standardise variables
-iNZstdVarWin <- setRefClass(
-    "iNZstdVarWin",
+iNZStandardiseWin <- setRefClass(
+    "iNZStandardiseWin",
+    fields = list(
+        numVar = "ANY"
+    ),
     contains = "iNZDataModWin",
     methods = list(
         initialize = function(gui) {
-            callSuper(gui)
-            svalue(GUI$modWin) <<- "Standardise Variables"
-            size(GUI$modWin) <<- c(250, 450)
+            ok <- callSuper(gui,
+                title = "Standardise variables",
+                width = "small",
+                height = "med",
+                help = "user_guides/variables/#standardize",
+                ok = "Standardise",
+                cancel = NULL,
+                action = .self$standardise,
+                show_code = FALSE,
+                scroll = FALSE
+            )
+            if (!ok) return()
+            on.exit(.self$show())
+            usingMethods("standardise")
 
-            mainGroup <- ggroup(expand = TRUE, horizontal = FALSE)
-            mainGroup$set_borderwidth(15)
-
-            ## instructions through glabels
-            lbl1 <- glabel("Choose a variables you want to standardise")
-            font(lbl1) <- list(weight = "bold", family = "sans")
-            helpbtn <- gimagebutton(stock.id = "gw-help",
-                handler = function(h, ...) help_page("user_guides/variables/#standardize")
+            add_heading(
+                "Select variables to standardise.",
+                "Standardised variable will have mean 0 and standard deviation 1."
+            )
+            add_heading(
+                "Hold CTRL to choose many",
+                weight = "bold", size = 8
             )
 
-            titlelyt <- glayout(homegenous = FALSE)
-            titlelyt[1L, 4:19, expand = TRUE, anchor = c(0, 0)] <- lbl1
-            titlelyt[1L, 20L, expand = TRUE, anchor = c(1, -1)] <- helpbtn
-
-            lbl2 <- glabel("(Hold Ctrl to choose many)")
-            font(lbl2) <- list(weight = "bold", family = "sans")
+            body_space(5L)
 
             ## display only numeric variables
             numIndices <- sapply(GUI$getActiveData(), function(x) !is_cat(x))
-            numVar <- gtable(names(GUI$getActiveData())[numIndices],
+            numVar <<- gtable(
+                list("Variables" = names(GUI$getActiveData())[numIndices]),
                 multiple = TRUE
             )
-            names(numVar) <- "Variables"
-            stdButton <- gbutton("Standardise",
-                handler = function(h, ...) {
-                    if (length(svalue(numVar)) == 0) return()
 
-                    varnames <- svalue(numVar)
-                    names <- makeNames(paste0(varnames, ".std"))
-                    .dataset <- GUI$get_data_object()
-                    data <- iNZightTools::standardizeVars(.dataset, varnames, names)
-                    updateData(data)
-                }
-            )
+            add_body(numVar, expand = TRUE)
+        },
+        standardise = function() {
+            if (length(svalue(numVar)) == 0) return()
 
-            add(mainGroup, titlelyt)
-            add(mainGroup, lbl2)
-            add(mainGroup, numVar, expand = TRUE)
-            add(mainGroup, stdButton)
-            add(GUI$modWin, mainGroup, expand = TRUE, fill = TRUE)
-
-            visible(GUI$modWin) <<- TRUE
+            varnames <- svalue(numVar)
+            names <- makeNames(paste0(varnames, ".std"))
+            .dataset <- GUI$get_data_object()
+            data <- iNZightTools::standardizeVars(.dataset, varnames, names)
+            updateData(data)
+            close()
         }
     )
 )

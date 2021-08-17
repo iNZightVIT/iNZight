@@ -3,7 +3,7 @@
 * fix bug introduced by readr 2.0 causing hang when grouping_mark is empty string
 * fix bug in Filter data window where cancel button did not work
 * fix typo in 'Expand Table' information prompt
-* create new `iNZWindow` 'superclass' to make it easier to create consistent pop-up windows (#375, @tmelliott). The following windows now inherit from `iNZWindow`: `iNZFilterWin`, `iNZSortWin`, `iNZAggregateWin`, `iNZStackWin`, `iNZReorderWin`, `iNZReshapeWin`, `iNZSeparateWin`, `iNZUniteWin`, `iNZJoinWin`, `iNZAppendRowsWin`, `iNZDataReportWin`, `iNZValidateWin`, `iNZRenameDataWin`, `iNZConToCatWin`, `iNZTransformWin`
+* create new `iNZWindow` 'superclass' to make it easier to create consistent pop-up windows (#375, @tmelliott). The following windows now inherit from `iNZWindow`: `iNZFilterWin`, `iNZSortWin`, `iNZAggregateWin`, `iNZStackWin`, `iNZReorderWin`, `iNZReshapeWin`, `iNZSeparateWin`, `iNZUniteWin`, `iNZJoinWin`, `iNZAppendRowsWin`, `iNZDataReportWin`, `iNZValidateWin`, `iNZRenameDataWin`, `iNZConToCatWin`, `iNZTransformWin`, `iNZStandardiseWin`, `iNZFormClassIntervalsWin`
   * code only displayed when user preference specified (`iNZFilterWin`)
   * renamed `iNZSortbyDataWin` to `iNZSortWin`
   * renamed `iNZstackVarWin` to `iNZStackWin`
@@ -15,9 +15,12 @@
   * renamed `iNZappendrowWin` to `iNZAppendRowsWin`
   * renamed `iNZrenameDataWin` to `iNZRenameDataWin`
   * renamed `iNZconToCatWin` to `iNZConToCatWin`
-  * renamed`iNZtrnsWin` to `iNZTransformWin`
+  * renamed `iNZtrnsWin` to `iNZTransformWin`
+  * renamed `iNZstdVarWin` to `iNZStandardiseWin`
+  * renamed `iNZformClassIntervals` to `iNZFormClassIntervalsWin`
 * create new `iNZExportWin` to replace broken `iNZSaveWin` (#374, @tmelliott)
 * `iNZexpandTblWin` uses new `update_document()` method
+* `iNZTransformWin` redesigned with dropdown to select boxes and buttons to apply transforms - drag-and-drop still works
 
 ## iNZight 4.1.3
 
