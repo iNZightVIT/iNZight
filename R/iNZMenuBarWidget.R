@@ -338,12 +338,12 @@ iNZMenuBarWidget <- setRefClass(
                         gaction("Rank numeric variables ...",
                             icon = "sort-ascending",
                             tooltip = "Create an ordering variable",
-                            handler = function(h, ...) iNZrankNumWin$new(GUI)),
+                            handler = function(h, ...) iNZRankWin$new(GUI)),
                     cat =
                         gaction("Convert to categorical (multiple) ...",
                             icon = "convert",
                             tooltip = "Convert multiple numeric variables to categorical",
-                            handler = function(h, ...) iNZctocatmulWin$new(GUI))
+                            handler = function(h, ...) iNZConToCatMultiWin$new(GUI))
                 ),
                 "Dates and Times" = list(
                   convert =

@@ -1320,7 +1320,6 @@ iNZStandardiseWin <- setRefClass(
                 height = "med",
                 help = "user_guides/variables/#standardize",
                 ok = "Standardise",
-                cancel = NULL,
                 action = .self$standardise,
                 show_code = FALSE,
                 scroll = FALSE
@@ -1502,120 +1501,109 @@ iNZmissCatWin <- setRefClass(
 
 
 # iNZrankNumWin: Rank the numerical variables X (vector, matrix)
-iNZrankNumWin <- setRefClass(
-  "iNZrankNumWin",
+iNZRankWin <- setRefClass(
+  "iNZRankWin",
+  fields = list(
+      rank_vars = "ANY"
+  ),
   contains = "iNZDataModWin",
     methods = list(
         initialize = function(gui) {
-            callSuper(gui)
-            svalue(GUI$modWin) <<- "Ranking Variables"
-            size(GUI$modWin) <<- c(250, 450)
-            mainGroup <- ggroup(expand = TRUE, horizontal = FALSE)
-            mainGroup$set_borderwidth(15)
-
-            ## instructions through glabels
-            lbl1 <- glabel("Rank the numerical variables X (vector, matrix)")
-            font(lbl1) <- list(weight = "bold", family = "sans")
-
-            helpbtn <- gimagebutton(stock.id = "gw-help",
-                handler = function(h, ...) help_page("user_guides/variables/#rank")
+            ok <- callSuper(gui,
+                title = "Rank variables",
+                width = "small",
+                height = "med",
+                help = "user_guides/variables/#rank",
+                ok = "Rank",
+                action = .self$rank,
+                show_code = FALSE,
+                scroll = FALSE
             )
+            if (!ok) return()
+            on.exit(.self$show())
+            usingMethods("rank")
 
-            titlelyt <- glayout(homegenous = FALSE)
-            titlelyt[1L, 4:19, expand = TRUE, anchor = c(0, 0)] <- lbl1
-            titlelyt[1L, 20L, expand = TRUE, anchor = c(1, -1)] <- helpbtn
-
-            lbl2 <- glabel("(Hold Ctrl to choose many)")
-            font(lbl2) <- list(weight = "bold", family = "sans")
+            add_heading(
+                "Choose variables to rank.",
+                "A new variable will be created with the rank order",
+                "of the chosen variable(s)."
+            )
+            add_heading(
+                "Hold CTRL to choose many.",
+                weight = "bold",
+                size = 8L
+            )
 
             ## display only numeric variables
             numIndices <- sapply(GUI$getActiveData(), function(x) !is_cat(x))
-            numVar <- gtable(
-                names(GUI$getActiveData())[numIndices],
+            rank_vars <<- gtable(
+                list(Variables = names(GUI$getActiveData())[numIndices]),
                 multiple = TRUE
             )
-            names(numVar) <- "Variables"
 
-            rankButton <- gbutton("Rank",
-                handler = function(h, ...) {
-                    if (length(svalue(numVar)) > 0) {
-                        vars <- svalue(numVar)
-                        .dataset <- GUI$get_data_object()
-                        data <- iNZightTools::rankVars(.dataset, vars)
-                        updateData(data)
-                    } else {
-                        gmessage("Select at leat one variable!",
-                            parent = GUI$win)
-                    }
-                }
-            )
-
-            add(mainGroup, titlelyt)
-            add(mainGroup, lbl2)
-            add(mainGroup, numVar, expand = TRUE)
-            add(mainGroup, rankButton)
-            add(GUI$modWin, mainGroup, expand = TRUE, fill = TRUE)
+            add_body(rank_vars, expand = TRUE, fill = TRUE)
 
             visible(GUI$modWin) <<- TRUE
+        },
+        rank = function() {
+            if (length(svalue(rank_vars)) == 0L) return()
+            vars <- svalue(rank_vars)
+            .dataset <- GUI$get_data_object()
+            data <- iNZightTools::rankVars(.dataset, vars)
+            updateData(data)
+            close()
         }
     )
 )
 
 ## Convert multiple variables to categorical type in the same time
-iNZctocatmulWin <- setRefClass(
-    "iNZctocatmulWin",
+iNZConToCatMultiWin <- setRefClass(
+    "iNZConToCatMultiWin",
+    fields = list(
+        num_vars = "ANY"
+    ),
     contains = "iNZDataModWin",
     methods = list(
         initialize = function(gui) {
-            callSuper(gui)
-            svalue(GUI$modWin) <<- "Convert multiple Variables to categorical type"
-            size(GUI$modWin) <<- c(250, 450)
-            mainGroup <- ggroup(expand = TRUE, horizontal = FALSE)
-            mainGroup$set_borderwidth(15)
-
-            ## instructions through glabels
-            lbl1 <- glabel("Choose variables you want to convert")
-            font(lbl1) <- list(weight = "bold", family = "sans")
-
-            helpbtn <- gimagebutton(stock.id = "gw-help",
-                handler = function(h, ...) help_page("user_guides/variables/#convert2")
+            ok <- callSuper(gui,
+                title = "Convert to Categorical",
+                width = "small",
+                height = "med",
+                help = "user_guides/variables/#convert2",
+                ok = "Convert",
+                action = .self$convert,
+                show_code = FALSE,
+                scroll = FALSE
             )
-            titlelyt <- glayout(homegenous = FALSE)
-            titlelyt[1L, 4:19, expand = TRUE, anchor = c(0, -1)] <- lbl1
-            titlelyt[1L, 20L, expand = TRUE, anchor = c(1, -1)] <- helpbtn
+            if (!ok) return()
+            on.exit(.self$show())
+            usingMethods("convert")
 
-            lbl2 <- glabel("(Hold Ctrl to choose many)")
-            font(lbl2) <- list(weight = "bold", family = "sans")
+            add_heading("Select variables to convert to categorical.")
+            add_heading(
+                "Hold CTRL to choose many.",
+                weight = "bold",
+                size = 8L
+            )
 
             ## display only numeric variables
             numIndices <- sapply(GUI$getActiveData(), function(x) !is_cat(x))
-            numVar <- gtable(
-                names(GUI$getActiveData())[numIndices],
+            num_vars <<- gtable(
+                list(Variables = names(GUI$getActiveData())[numIndices]),
                 multiple = TRUE
             )
-            names(numVar) <- "Variables"
+            add_body(num_vars, expand = TRUE, fill = TRUE)
+        },
+        convert = function() {
+            if (length(svalue(num_vars)) == 0) return()
 
-            ctmcButton <- gbutton("Convert",
-                handler = function(h, ...) {
-                    if (length(svalue(numVar)) == 0) return()
+            vars <- svalue(num_vars)
+            varnames <- makeNames(paste(vars, "cat", sep = "."))
 
-                    vars <- svalue(numVar)
-                    varnames <- makeNames(paste(vars, "cat", sep = "."))
-
-                    .dataset <- GUI$get_data_object()
-                    data <- iNZightTools::convertToCat(.dataset, vars, varnames)
-                    updateData(data)
-                    dispose(GUI$modWin)
-                }
-            )
-
-            add(mainGroup, titlelyt)
-            add(mainGroup, lbl2)
-            add(mainGroup, numVar, expand = TRUE)
-            add(mainGroup, ctmcButton)
-            add(GUI$modWin, mainGroup, expand = TRUE, fill = TRUE)
-
-            visible(GUI$modWin) <<- TRUE
+            .dataset <- GUI$get_data_object()
+            data <- iNZightTools::convertToCat(.dataset, vars, varnames)
+            updateData(data)
+            dispose(GUI$modWin)
         }
     )
 )
