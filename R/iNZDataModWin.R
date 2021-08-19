@@ -533,32 +533,37 @@ iNZrenameWin <- setRefClass(
 )
 
 ## reorder factor levels
-iNZreorderWin <- setRefClass(
-    "iNZreorderWin",
+iNZReorderWin <- setRefClass(
+    "iNZReorderWin",
+    fields = list(
+        factorMenu = "ANY",
+        factorName = "ANY",
+        sortMenu = "ANY",
+        levelOrder = "ANY"
+    ),
     contains = "iNZDataModWin",
     methods = list(
         initialize = function(gui) {
-            callSuper(gui)
-            svalue(GUI$modWin) <<- "Reorder Factor Levels"
-
-            scrolledWindow <- gtkScrolledWindow()
-            scrolledWindow$setPolicy("GTK_POLICY_AUTOMATIC","GTK_POLICY_AUTOMATIC")
-
-            mainGroup <- ggroup(expand = TRUE, horizontal = FALSE)
-            mainGroup$set_borderwidth(15)
-
-            helpbtn <- gimagebutton(stock.id = "gw-help",
-                container = mainGroup,
-                anchor = c(1, -1),
-                handler = function(h, ...) help_page("user_guides/variables/#reorderlevs")
+            ok <- callSuper(gui,
+                title = "Standardise variables",
+                width = "small",
+                height = "med",
+                help = "user_guides/variables/#reorderLvls",
+                ok = "Reorder",
+                action = .self$reorder,
+                show_code = FALSE,
+                scroll = TRUE
             )
+            if (!ok) return()
+            on.exit(.self$show())
+            usingMethods("reorder")
 
             tbl <- glayout()
 
             ## Choose variable to reorder:
             tbl[1, 1, expand = TRUE, anchor = c(1, 0)] <- glabel("Variable to reorder:")
             factorIndices <- sapply(GUI$getActiveData(), is_cat)
-            factorMenu <- gcombobox(
+            factorMenu <<- gcombobox(
                 names(GUI$getActiveData())[factorIndices],
                 selected = 0
             )
@@ -566,18 +571,18 @@ iNZreorderWin <- setRefClass(
 
             ## Name for the new variable
             tbl[2, 1, expand = TRUE, anchor = c(1, 0)] <- glabel("New variable name:")
-            factorName <- gedit("")
+            factorName <<- gedit("")
             tbl[2, 2] <- factorName
 
             ## Sort method: frequency (default), or manual
             tbl[3, 1, expand = TRUE, anchor = c(1, 0)] <- glabel("Sort levels ")
-            sortMenu <- gcombobox(c("by frequency", "manually"), selected = 1)
+            sortMenu <<- gcombobox(c("by frequency", "manually"), selected = 1)
             tbl[3, 2, expand = TRUE] <- sortMenu
 
             ## For manual ordering, gdf or gtable with up/down arrows ...
             levelGrp <- ggroup()
-            levelOrder <- gtable(data.frame(stringsAsFactors = TRUE), container = levelGrp)
-            size(levelOrder) <- c(-1, 280)
+            levelOrder <<- gtable(data.frame(stringsAsFactors = TRUE), container = levelGrp)
+            size(levelOrder) <<- c(-1, 280)
             tbl[4:5, 2, expand = TRUE] <- levelGrp
 
             levelBtnGrp <- gvbox()
@@ -600,18 +605,13 @@ iNZreorderWin <- setRefClass(
 
             visible(levelBtnGrp) <- visible(levelGrp) <- FALSE
 
-
-            ## Done button
-            reorderButton <- gbutton("-REORDER-")
-            tbl[6, 2, expand = TRUE] <- reorderButton
-
             ## Add everything to main window
-            add(mainGroup, tbl)
+            add_body(tbl)
 
             ## HANDLERS
             addHandlerChanged(factorMenu,
                 handler = function(h, ...) {
-                    svalue(factorName) <- makeNames(sprintf("%s.reord", svalue(factorMenu)))
+                    svalue(factorName) <<- makeNames(sprintf("%s.reord", svalue(factorMenu)))
                     levelOrder$set_items(
                         data.frame(
                             Levels = levels(GUI$getActiveData()[, svalue(factorMenu)]),
@@ -646,7 +646,7 @@ iNZreorderWin <- setRefClass(
                     levelOrder$set_items(
                         data.frame(Levels = lvls, stringsAsFactors = TRUE)
                     )
-                    svalue(levelOrder) <- li
+                    svalue(levelOrder) <<- li
                     # unblockHandlers(levelUp)
                     # unblockHandlers(levelDown)
                 }
@@ -668,39 +668,28 @@ iNZreorderWin <- setRefClass(
                     levelOrder$set_items(
                         data.frame(Levels = lvls, stringsAsFactors = TRUE)
                     )
-                    svalue(levelOrder) <- li
+                    svalue(levelOrder) <<- li
                     # unblockHandlers(levelUp)
                     # unblockHandlers(levelDown)
                 }
             )
+        },
+        reorder = function() {
+            var <- svalue(factorMenu)
+            varname <- svalue(factorName)
+            .dataset <- GUI$get_data_object()
 
-            addHandlerClicked(reorderButton,
-                function(h, ...) {
-                    var <- svalue(factorMenu)
-                    varname <- svalue(factorName)
-                    .dataset <- GUI$get_data_object()
-
-                    if (checkNames(varname)) {
-                        if (svalue(sortMenu, TRUE) == 1)
-                            data <- iNZightTools::reorderLevels(.dataset, var,
-                                freq = TRUE, name = varname)
-                        else {
-                            levels <- as.character(levelOrder$get_items())
-                            data <- iNZightTools::reorderLevels(.dataset, var,
-                                levels, name = varname)
-                        }
-                        updateData(data)
-                        dispose(GUI$modWin)
-                    }
-                }
-            )
-
-
-            ## final few details
-            scrolledWindow$addWithViewport(mainGroup$widget)
-            add(GUI$modWin, scrolledWindow, expand = TRUE, fill = TRUE)
-            size(GUI$modWin) <<- c(300, 500)
-            visible(GUI$modWin) <<- TRUE
+            if (!checkNames(varname)) return()
+            if (svalue(sortMenu, TRUE) == 1) {
+                data <- iNZightTools::reorderLevels(.dataset, var,
+                    freq = TRUE, name = varname)
+            } else {
+                levels <- as.character(levelOrder$get_items())
+                data <- iNZightTools::reorderLevels(.dataset, var,
+                    levels, name = varname)
+            }
+            updateData(data)
+            close()
         }
     )
 )

@@ -301,7 +301,7 @@ iNZMenuBarWidget <- setRefClass(
                         gaction("Reorder levels ...",
                             icon = "sort-ascending",
                             tooltip = "Reorder the levels of a categorical variable",
-                            handler = function(h, ...) iNZreorderWin$new(GUI)),
+                            handler = function(h, ...) iNZReorderWin$new(GUI)),
                     collapse =
                         gaction("Collapse levels ...",
                             icon = "dnd-multiple",
