@@ -306,7 +306,7 @@ iNZMenuBarWidget <- setRefClass(
                         gaction("Collapse levels ...",
                             icon = "dnd-multiple",
                             tooltip = "Collapse two or more levels into one",
-                            handler = function(h, ...) iNZcllpsWin$new(GUI)),
+                            handler = function(h, ...) iNZCollapseWin$new(GUI)),
                     rename =
                         gaction("Rename levels ...",
                             icon = "edit",

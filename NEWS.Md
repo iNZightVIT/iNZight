@@ -21,9 +21,11 @@
   * renamed `iNZrankNumWin` to `iNZRankWin`
   * renamed `iNZctocatmulWin` to `iNZConToCatMultiWin`
   * renamed `iNZreorderWin` to `iNZReorderWin`
+  * renamed `iNZcllpsWin` to `iNZCollapseWin`
 * create new `iNZExportWin` to replace broken `iNZSaveWin` (#374, @tmelliott)
 * `iNZexpandTblWin` uses new `update_document()` method
 * `iNZTransformWin` redesigned with dropdown to select boxes and buttons to apply transforms - drag-and-drop still works
+* `iNZCollapseWin` uses `_` instead of `.` in new variable name
 
 ## iNZight 4.1.3
 

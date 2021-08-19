@@ -275,35 +275,35 @@ iNZTransformWin <- setRefClass(
 )
 
 ## collapse multiple factor levels into one
-iNZcllpsWin <- setRefClass(
-    "iNZcllpsWin",
+iNZCollapseWin <- setRefClass(
+    "iNZCollapseWin",
+    fields = list(
+        factor_menu = "ANY",
+        factor_levels = "ANY",
+        new_varname = "ANY",
+        new_level = "ANY"
+    ),
     contains = "iNZDataModWin",
     methods = list(
         initialize = function(gui) {
-            callSuper(gui)
-            svalue(GUI$modWin) <<- "Collapse Levels"
-            size(GUI$modWin) <<- c(400, 350)
-
-            mainGroup <- ggroup(expand = TRUE, horizontal = FALSE)
-            mainGroup$set_borderwidth(15)
-
-            ## instructions through glabels
-            lbl1 <- glabel("Choose a variable")
-            font(lbl1) <- list(weight = "bold", family = "sans")
-            helpbtn <- gimagebutton(stock.id = "gw-help",
-                handler = function(h, ...)
-                    help_page("user_guides/variables/#collapse")
+            ok <- callSuper(gui,
+                title = "Collapse Levels",
+                width = "small",
+                height = "med",
+                help = "user_guides/variables/#collapse",
+                ok = "Collapse",
+                action = .self$collapse,
+                show_code = FALSE,
+                scroll = FALSE
             )
+            if (!ok) return()
+            on.exit(.self$show())
+            usingMethods("collapse")
 
-            titlelyt <- glayout(homegenous = FALSE)
-            titlelyt[1L, 4:19, expand = TRUE, anchor = c(0, 0)] <- lbl1
-            titlelyt[1L, 20, expand = TRUE, anchor = c(1, -1)] <- helpbtn
-
-            lbl2 <- glabel("Choose two or more levels")
-            font(lbl2) <- list(weight = "bold", family = "sans")
-
-            lbl3 <- glabel("(Hold Ctrl to choose many)")
-            font(lbl3) <- list(weight = "bold", family = "sans")
+            add_heading(
+                "Choose a variable,",
+                "then choose two or more levels to collapse into one."
+            )
 
             lbl4 <- glabel("New variable name: ")
             lbl5 <- glabel("Collapsed level name: ")
@@ -311,71 +311,47 @@ iNZcllpsWin <- setRefClass(
             ## choose a factor column from the dataset and display
             ## its level in a gtable
             factorIndices <- sapply(GUI$getActiveData(), is_cat)
-            factorMenu <- gcombobox(names(GUI$getActiveData())[factorIndices],
-                selected = 0)
-            addHandlerChanged(factorMenu,
+            factor_menu <<- gcombobox(
+                names(GUI$getActiveData())[factorIndices],
+                selected = 0
+            )
+            addHandlerChanged(factor_menu,
                 handler = function(h, ...) {
-                    factorLvls[] <-
-                        levels(GUI$getActiveData()[svalue(factorMenu)][[1L]])
-                    svalue(newVarname) <-
-                        makeNames(sprintf("%s.coll", svalue(h$obj)))
+                    factor_levels[] <<-
+                        levels(GUI$getActiveData()[svalue(factor_menu)][[1L]])
+                    svalue(new_varname) <<-
+                        makeNames(sprintf("%s_coll", svalue(h$obj)))
                 }
             )
+            add_body(factor_menu)
 
-            factorLvls <- gtable("", multiple = TRUE, expand = TRUE)
-            names(factorLvls) <- "Levels"
-            addHandlerSelectionChanged(factorLvls,
+            lbl <- glabel("Hold CTRL to choose many")
+            font(lbl) <- list(size = 8, weight = "bold")
+            add_body(lbl, anchor = c(-1, 0))
+
+            factor_levels <<- gtable(
+                list(Levels = ""),
+                multiple = TRUE,
+                expand = TRUE
+            )
+            addHandlerSelectionChanged(factor_levels,
                 handler = function(h, ...) {
-                    svalue(newLvlname) <- paste(svalue(h$obj), collapse = "_")
+                    svalue(new_level) <<- paste(svalue(h$obj), collapse = "_")
                 }
             )
+            add_body(factor_levels, expand = TRUE)
 
             ## name boxes
-            newVarname <- gedit("")
-            newLvlname <- gedit("")
-            cllpsButton <- gbutton(
-                "Collapse levels",
-                handler = function(h, ...) {
-                    if (checkLevels(svalue(factorLvls))) {
-                        var <- svalue(factorMenu)
-                        lvls <- svalue(factorLvls)
-                        name <- svalue(newVarname)
-                        lvlname <- svalue(newLvlname)
-
-                        if (lvlname %in% levels(GUI$getActiveData()[[var]]) &&
-                            !lvlname %in% lvls) {
-                            ## checking that the new level name isn't one of the other
-                            ## level names (excluding those being collapsed)
-                            gmessage("That level name already exists. Please choose another.",
-                                title = "Invalid level name",
-                                parent = GUI$modWin,
-                                icon = "warning")
-                        } else if (checkNames(name)) {
-                            .dataset <- GUI$get_data_object()
-                            data <- iNZightTools::collapseLevels(.dataset, var, lvls, lvlname, name)
-                            updateData(data)
-                            dispose(GUI$modWin)
-                        }
-                    }
-                }
-            )
-
-            add(mainGroup, titlelyt)
-            add(mainGroup, factorMenu)
-            add(mainGroup, lbl2)
-            add(mainGroup, lbl3)
-            add(mainGroup, factorLvls, expand = TRUE)
+            new_varname <<- gedit("")
+            new_level <<- gedit("")
 
             tbl <- glayout()
             tbl[1L, 1L, expand = TRUE, anchor = c(1, 0)] <- lbl4
-            tbl[1L, 2L, expand = TRUE] <- newVarname
+            tbl[1L, 2L, expand = TRUE] <- new_varname
             tbl[2L, 1L, expand = TRUE, anchor = c(1, 0)] <- lbl5
-            tbl[2L, 2L, expand = TRUE] <- newLvlname
+            tbl[2L, 2L, expand = TRUE] <- new_level
 
-            add(mainGroup, tbl)
-            add(mainGroup, cllpsButton)
-            add(GUI$modWin, mainGroup, expand = TRUE, fill = TRUE)
-            visible(GUI$modWin) <<- TRUE
+            add_body(tbl)
         },
         ## check whether the specified levels are ellegible
         ## for collapsing
@@ -387,6 +363,29 @@ iNZcllpsWin <- setRefClass(
                     msg = "Need to select at least two levels to collapse",
                     parent = GUI$modWin)
             FALSE
+        },
+        collapse = function() {
+            if (!checkLevels(svalue(factor_levels))) return()
+
+            var <- svalue(factor_menu)
+            lvls <- svalue(factor_levels)
+            name <- svalue(new_varname)
+            lvlname <- svalue(new_level)
+
+            if (lvlname %in% levels(GUI$getActiveData()[[var]]) &&
+                !lvlname %in% lvls) {
+                ## checking that the new level name isn't one of the other
+                ## level names (excluding those being collapsed)
+                gmessage("That level name already exists. Please choose another.",
+                    title = "Invalid level name",
+                    parent = GUI$modWin,
+                    icon = "warning")
+            } else if (checkNames(name)) {
+                .dataset <- GUI$get_data_object()
+                data <- iNZightTools::collapseLevels(.dataset, var, lvls, lvlname, name)
+                updateData(data)
+                dispose(GUI$modWin)
+            }
         }
     )
 )
