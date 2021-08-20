@@ -311,12 +311,12 @@ iNZMenuBarWidget <- setRefClass(
                         gaction("Rename levels ...",
                             icon = "edit",
                             tooltip = "Rename a categorical variable's levels",
-                            handler = function(h, ...) iNZrenameWin$new(GUI)),
+                            handler = function(h, ...) iNZRenameFactorLevelsWin$new(GUI)),
                     combine =
                         gaction("Combine categorical variables ...",
                             icon = "dnd-multiple",
                             tooltip = "Combine two or more categorical variables",
-                            handler = function(h, ...) iNZcmbCatWin$new(GUI))
+                            handler = function(h, ...) iNZCombineWin$new(GUI))
                 ),
                 "Numeric Variables" = list(
                     transform =
