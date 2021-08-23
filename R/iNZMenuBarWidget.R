@@ -350,17 +350,17 @@ iNZMenuBarWidget <- setRefClass(
                     gaction("Convert to ...",
                             icon = "date",
                             tooltip = "Convert a variable to a dates and times type",
-                            handler = function(h, ...) iNZconTodtWin$new(GUI)),
+                            handler = function(h, ...) iNZConToDtWin$new(GUI)),
                   extract =
                     gaction("Extract from ...",
                             icon = "date",
                             tooltip = "Extract parts from a dates and times variable",
-                            handler = function(h, ...) iNZExtfromdtWin$new(GUI)),
+                            handler = function(h, ...) iNZExtFromDtWin$new(GUI)),
                   aggregation =
                     gaction("Aggregate to ...",
                             icon = "date",
                             tooltip = "Aggregate date-time into monthly or quarterly",
-                            handler = function(h, ...) iNZAggregatedtWin$new(GUI))
+                            handler = function(h, ...) iNZAggDtWin$new(GUI))
                 ),
                 rename =
                     gaction("Rename variables ...",
