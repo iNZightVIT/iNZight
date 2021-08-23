@@ -2253,29 +2253,6 @@ iNZAggDtWin <- setRefClass(
             df_prev <<- gtable(
                 data.frame(Preview = "Preview will show here"),
                 container = right_panel)
-
-            # aggregatebtn <- gbutton("Aggregate",
-            #     container = mainGroup,
-            #     handler = function(h,...) {
-            #         .dataset <- GUI$getActiveData()
-            #         data <- aggregate()
-
-            #         attr(data, "name") <-
-            #             paste(
-            #                 attr(.dataset, "name", exact = TRUE),
-            #                 "aggregated",
-            #                 sep = "."
-            #             )
-            #         attr(data, "code") <-
-            #             gsub(".dataset",
-            #                 attr(.dataset, "name", exact = TRUE),
-            #                 attr(data, "code")
-            #             )
-
-            #         GUI$setDocument(iNZDocument$new(data = data))
-            #         dispose(GUI$modWin)
-            #     }
-            # )
         },
         select_variable = function() {
             var <- svalue(dt_var)
