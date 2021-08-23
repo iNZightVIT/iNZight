@@ -2318,8 +2318,7 @@ iNZAggDtWin <- setRefClass(
             if (length(svalue(method)) == 0L) return()
 
             .dataset <- GUI$getActiveData()
-            if (preview)
-                .dataset <- head(.dataset, 20L)
+            cname <- gsub("ly$", "", svalue(format))
 
             if (type == "dt" && length(svalue(format))) {
                 part <- switch(svalue(format),
@@ -2333,14 +2332,14 @@ iNZAggDtWin <- setRefClass(
                     .dataset,
                     svalue(dt_var),
                     part,
-                    "temp_var"
+                    cname
                 )
-                v <- colnames(df)[!sapply(df, iNZightTools::is_dt)]
+                v <- colnames(df)[sapply(df, iNZightTools::is_num) & !sapply(df, iNZightTools::is_dt)]
                 res <- iNZightTools::aggregateData(
                     df,
-                    vars = c("temp_var", v),
-                    "temp_var",
-                    tolower(svalue(method))
+                    cname,
+                    tolower(svalue(method)),
+                    v
                 )
 
             } else {
@@ -2356,15 +2355,15 @@ iNZAggDtWin <- setRefClass(
                     df1,
                     svalue(format),
                     type,
-                    svalue(format)
+                    cname
                 )
                 res <- iNZightTools::aggregateData(
                     df2,
-                    svalue(format),
+                    cname,
                     tolower(svalue(method))
                 )
             }
-            for (i in seq_along(colnames(df2))) {
+            for (i in seq_along(colnames(res))) {
                 if (all(res[[i]] == 0))
                     res[i] <- NULL
             }
@@ -2372,7 +2371,8 @@ iNZAggDtWin <- setRefClass(
             if (preview) {
                 df_prev$set_items(res)
             } else {
-
+                GUI$new_document(data = res, suffix = "aggregated")
+                close()
             }
         },
         updateView = function() {
