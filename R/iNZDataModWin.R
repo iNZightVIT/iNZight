@@ -2153,183 +2153,226 @@ iNZExtFromDtWin <- setRefClass(
 )
 
 ## Aggregate datetimes
-iNZAggregatedtWin <- setRefClass(
-    "iNZAggregatedtWin",
+iNZAggDtWin <- setRefClass(
+    "iNZAggDtWin",
     contains = "iNZDataModWin",
     fields = list(
-        GUI = "ANY",
-        col = "ANY",
+        dt_var = "ANY",
+        type = "character",
         format = "ANY",
         method = "ANY",
-        newview = "ANY",
-        var = "ANY",
-        key = "ANY",
-        name = "ANY"
+        df_prev = "ANY"
     ),
     methods = list(
         initialize = function(gui) {
-            callSuper(gui)
-            svalue(GUI$modWin) <<- "Aggregate datetimes to monthly or quarterly"
+            if (iNZightTools::is_survey(gui$get_data_object())) {
+                gmessage(
+                    "Survey designs are not handled by this action yet.",
+                    title = "Surveys not handled",
+                    icon = "error"
+                )
+                close()
+            }
 
-            mainGroup <- gvbox()
-            mainGroup$set_borderwidth(15)
+            ok <- callSuper(gui,
+                title = "Aggregate date/time",
+                width = "large",
+                height = "large",
+                help = "user_guides/variables/#dtaggregate",
+                ok = "Aggregate",
+                action = .self$aggregate,
+                show_code = FALSE,
+                scroll = FALSE,
+                body_direction = "horizontal"
+            )
+            if (!ok) return()
+            on.exit(.self$show())
+            usingMethods("aggregate")
 
-            title <- glabel("Aggregate datetimes to monthly or quarterly")
-            font(title) <- list(size = 14, weight = "bold")
-            helpbtn <- gimagebutton(stock.id = "gw-help",
-                handler = function(h, ...)
-                    help_page("user_guides/variables/#dtaggregate")
+            add_heading(
+                "Choose a date/time variable,",
+                "then choose the time period to aggregate over.",
+                "This will calculate the chosen values for all other",
+                "variables in the dataset within each period."
             )
 
-            titlelyt <- glayout(homegenous = FALSE)
-            titlelyt[1L, 4:19, expand = TRUE, anchor = c(0, 0)] <- title
-            titlelyt[1L, 20, expand = TRUE, anchor = c(1, -1)] <- helpbtn
+            left_panel <- gvbox()
+            add_body(left_panel, expand = TRUE)
 
-            add(mainGroup, titlelyt)
-            addSpace(mainGroup, 5)
+            glabel("Date/time variable",
+                container = left_panel,
+                anchor = c(-1, 0))
 
-            var1_string <- glabel("Select a column", container = mainGroup)
-
-            col <<- ""
-            var1 <- gcombobox(
-                items = c("", names(GUI$getActiveData())),
-                container = mainGroup
-            )
-            addHandlerChanged(var1,
-                function(h, ...) {
-                    col <<- svalue(var1)
-                    var <<- GUI$getActiveData()[[col]]
-                    newview$set_items("")
-
-                    if (lubridate::is.POSIXct(var) == TRUE |
-                        lubridate::is.Date(var) == TRUE) {
-                        key <<- "dt"
-                        var2$set_items(formatlist)
-                    } else if (all(grepl("W", var)) == TRUE) {
-                        key <<- "W"
-                        var2$set_items(c("", "Quarterly", "Yearly"))
-                    } else if (all(grepl("M", var)) == TRUE) {
-                        key <<- "M"
-                        var2$set_items(c("", "Quarterly", "Yearly"))
-                    } else if (all(grepl("Q", var)) == TRUE) {
-                        key <<- "Q"
-                        var2$set_items(c("", "Yearly"))
-                    } else {
-                        key <<- ""
-                        var2$set_items("")
-                        newview$set_items("Selected variable not supported")
-                    }
-                }
+            d <- GUI$getActiveData()
+            cols <- names(d)#[sapply(d, iNZightTools::is_dt)]
+            dt_var <<- gcombobox(cols,
+                selected = 0L,
+                container = left_panel,
+                handler = function(h, ...) select_variable()
             )
 
-            formatlist <- c("", "Weekly", "Monthly", "Quarterly", "Yearly")
+            glabel("Aggregation interval :",
+                container = left_panel,
+                anchor = c(-1, 0))
 
-            var2_string <- glabel("Choose format", container = mainGroup)
+            format <<- gcombobox("",
+                container = left_panel,
+                handler = function(h, ...) aggregate(preview = TRUE))
 
-            format <<- ""
-            var2 <- gcombobox(items = formatlist, container = mainGroup)
-            addHandlerChanged(var2,
-                function(h, ...) {
-                    format <<- svalue(var2)
+            glabel("Aggregation summary :",
+                container = left_panel,
+                anchor = c(-1, 0))
 
-                    if (format == "")
-                        newview$set_items()
-
-                    if (format != "" & method != "" & col != "")
-                        updateView()
-                }
+            method <<- gtable(
+                list(Summary = c("Sum", "Mean", "Median")),
+                container = left_panel
+            )
+            addHandlerSelectionChanged(method,
+                handler = function(h, ...) aggregate(preview = TRUE)
             )
 
-            var3_string <- glabel("How to aggregate", container = mainGroup)
+            body_space(10L)
 
-            method <<- ""
-            var3 <- gtable(c("Sum", "Mean", "Median"), container = mainGroup)
-            size(var3) <- c(-1, 150)
-            addHandlerSelectionChanged(var3,
-                function(h, ...) {
-                    method <<- svalue(var3)
-                    updateView()
-                }
-            )
+            right_panel <- gvbox()
+            add_body(right_panel, expand = TRUE)
 
-            name <<- "newcol"
+            lbl <- glabel("Original dataset",
+                container = right_panel,
+                anchor = c(-1, 0))
+            font(lbl) <- list(weight = "bold")
 
-            prevTbl <- glayout(homogeneous = FALSE, container = mainGroup)
+            df_orig <- gtable(GUI$getActiveData(),
+                container = right_panel)
+            size(df_orig) <- c(450, -1)
 
-            string1 <- glabel("Original dataset")
-            originview <- gtable(
-                data.frame(GUI$getActiveData(), stringsAsFactors = TRUE)
-            )
-            prevTbl[1L, 1L, expand = TRUE] <- string1
-            prevTbl[2L, 1L, expand = TRUE] <- originview
-            size(originview) = c(-1, 250)
+            lbl <- glabel("Aggregated dataset",
+                container = right_panel,
+                anchor = c(-1, 0))
+            font(lbl) <- list(weight = "bold")
 
-            string2 <- glabel("New dataset")
-            newview <<- gtable(data.frame("", stringsAsFactors = TRUE))
-            prevTbl[1L, 2L, expand = TRUE] <- string2
-            prevTbl[2L, 2L, expand = TRUE] <- newview
-            size(newview) <<- c(-1, 250)
+            df_prev <<- gtable(
+                data.frame(Preview = "Preview will show here"),
+                container = right_panel)
 
-            aggregatebtn <- gbutton("Aggregate",
-                container = mainGroup,
-                handler = function(h,...) {
-                    .dataset <- GUI$getActiveData()
-                    data <- aggregate()
+            # aggregatebtn <- gbutton("Aggregate",
+            #     container = mainGroup,
+            #     handler = function(h,...) {
+            #         .dataset <- GUI$getActiveData()
+            #         data <- aggregate()
 
-                    attr(data, "name") <-
-                        paste(
-                            attr(.dataset, "name", exact = TRUE),
-                            "aggregated",
-                            sep = "."
-                        )
-                    attr(data, "code") <-
-                        gsub(".dataset",
-                            attr(.dataset, "name", exact = TRUE),
-                            attr(data, "code")
-                        )
+            #         attr(data, "name") <-
+            #             paste(
+            #                 attr(.dataset, "name", exact = TRUE),
+            #                 "aggregated",
+            #                 sep = "."
+            #             )
+            #         attr(data, "code") <-
+            #             gsub(".dataset",
+            #                 attr(.dataset, "name", exact = TRUE),
+            #                 attr(data, "code")
+            #             )
 
-                    GUI$setDocument(iNZDocument$new(data = data))
-                    dispose(GUI$modWin)
-                }
-            )
-
-            add(GUI$modWin, mainGroup, expand = TRUE)
-            visible(GUI$modWin) <<- TRUE
+            #         GUI$setDocument(iNZDocument$new(data = data))
+            #         dispose(GUI$modWin)
+            #     }
+            # )
         },
-        aggregate = function() {
+        select_variable = function() {
+            var <- svalue(dt_var)
+            df_prev$set_items(
+                data.frame(Preview = "Preview will show here")
+            )
+            if (length(var) == 0L) return()
+
+            x <- GUI$getActiveData()[[var]]
+            type <<- ""
+            values <- character()
+
+            if (lubridate::is.POSIXct(x) || lubridate::is.Date(var)) {
+                type <<- "dt"
+                values <- c("Weekly", "Monthly", "Quarterly", "Yearly")
+            } else if (all(grepl("W", x))) {
+                type <<- "W"
+                values <- c("Quarterly", "Yearly")
+            } else if (all(grepl("M", x))) {
+                type <<- "M"
+                values <- c("Quarterly", "Yearly")
+            } else if (all(grepl("Q", x))) {
+                type <<- "Q"
+                values <- c("Yearly")
+            } else {
+                gmessage("That variable does not contain date/time information.",
+                    title = "Unsupported variable",
+                    icon = "warning",
+                    parent = GUI$modWin
+                )
+                return()
+            }
+
+            format$set_items(values)
+            aggregate(preview = TRUE)
+        },
+        aggregate = function(preview = FALSE) {
+            if (length(svalue(dt_var)) == 0L) return()
+            if (length(svalue(format)) == 0L) return()
+            if (length(svalue(method)) == 0L) return()
+
             .dataset <- GUI$getActiveData()
-            if (key == "dt" & format != "") {
-                part <- switch(format,
+            if (preview)
+                .dataset <- head(.dataset, 20L)
+
+            if (type == "dt" && length(svalue(format))) {
+                part <- switch(svalue(format),
                     "Weekly" = "Year Week",
                     "Monthly" = "Year Month",
                     "Quarterly" = "Year Quarter",
                     "Yearly" = "Year"
                 )
 
-                df <- iNZightTools::extract_part(.dataset, col, part, format)
-                df <- iNZightTools::aggregateData(df, format, method)
-
-                colname <- subset(colnames(df),
-                    grepl("[:.:]missing$",colnames(df))
+                df <- iNZightTools::extract_part(
+                    .dataset,
+                    svalue(dt_var),
+                    part,
+                    "temp_var"
+                )
+                v <- colnames(df)[!sapply(df, iNZightTools::is_dt)]
+                res <- iNZightTools::aggregateData(
+                    df,
+                    vars = c("temp_var", v),
+                    "temp_var",
+                    tolower(svalue(method))
                 )
 
-                for (i in 1:length(colname)) {
-                    if (all(df[[colname[i]]] == 0))
-                        df[, colname[i]] <- NULL
-                }
-                return(df)
-            } else if (key != "" & key != "dt" & format != "") {
-                newdata <- iNZightTools::separate(.dataset, col,
-                    "left", "right", key, "Column")
-                df <- iNZightTools::aggregatedt(newdata, format, key, format)
-                df <- iNZightTools::aggregateData(df, format, method)
+            } else {
+                df1 <- iNZightTools::separate(
+                    .dataset,
+                    svalue(dt_var),
+                    "left",
+                    "right",
+                    type,
+                    "Column"
+                )
+                df2 <- iNZightTools::aggregatedt(
+                    df1,
+                    svalue(format),
+                    type,
+                    svalue(format)
+                )
+                res <- iNZightTools::aggregateData(
+                    df2,
+                    svalue(format),
+                    tolower(svalue(method))
+                )
+            }
+            for (i in seq_along(colnames(df2))) {
+                if (all(res[[i]] == 0))
+                    res[i] <- NULL
+            }
 
-                colname = subset(colnames(df), grepl("[:.:]missing$",colnames(df)))
-                for (i in 1:length(colname)) {
-                    if (all(df[[colname[i]]] == 0))
-                        df[, colname[i]] <- NULL
-                }
-                return(df)
+            if (preview) {
+                df_prev$set_items(res)
+            } else {
+
             }
         },
         updateView = function() {
