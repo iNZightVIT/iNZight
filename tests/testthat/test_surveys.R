@@ -526,10 +526,10 @@ test_that("New variables show up in calibration list", {
     expect_silent(swin$createBtn$invoke_change_handler())
 
     # add interaction between REGION and race
-    comb <- iNZcmbCatWin$new(ui)
-    svalue(ui$modWin$children[[1]]$children[[3]]) <- c("REGION", "race")
-    ui$modWin$children[[1]]$children[[3]]$invoke_change_handler()
-    ui$modWin$children[[1]]$children[[5]]$invoke_change_handler()
+    comb <- iNZCombineWin$new(ui)
+    svalue(comb$factorNames) <- c("REGION", "race")
+    comb$factorNames$invoke_change_handler()
+    comb$ok_button$invoke_change_handler()
     expect_is(ui$getActiveData()$REGION_race, "factor")
 
     expect_silent(swin <- iNZSurveyPostStrat$new(ui, .use_ui = FALSE))
