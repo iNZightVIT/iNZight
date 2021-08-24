@@ -179,7 +179,7 @@ iNZMenuBarWidget <- setRefClass(
                         gaction("Unite columns ...",
                             icon = "dataframe",
                             tooltip = "Unite columns",
-                            handler = function(h, ...) iNZUniteDataWin$new(GUI))
+                            handler = function(h, ...) iNZUniteWin$new(GUI))
                 ),
                 report =
                     if (requireNamespace("dataMaid", quietly = TRUE) &&
@@ -211,7 +211,7 @@ iNZMenuBarWidget <- setRefClass(
                 rename =
                     gaction("Rename ...",
                         icon = "editor",
-                        handler = function(h, ...) iNZrenameDataWin$new(GUI)),
+                        handler = function(h, ...) iNZRenameDataWin$new(GUI)),
                 restore =
                     gaction("Restore original dataset",
                         icon = "revert-to-saved",
@@ -295,93 +295,93 @@ iNZMenuBarWidget <- setRefClass(
                     gaction("Convert to categorical ...",
                         icon = "convert",
                         tooltip = "Convert a variable to a categorical type",
-                        handler = function(h, ...) iNZconToCatWin$new(GUI)),
+                        handler = function(h, ...) iNZConToCatWin$new(GUI)),
                 "Categorical Variables" = list(
                     reorder =
                         gaction("Reorder levels ...",
                             icon = "sort-ascending",
                             tooltip = "Reorder the levels of a categorical variable",
-                            handler = function(h, ...) iNZreorderWin$new(GUI)),
+                            handler = function(h, ...) iNZReorderWin$new(GUI)),
                     collapse =
                         gaction("Collapse levels ...",
                             icon = "dnd-multiple",
                             tooltip = "Collapse two or more levels into one",
-                            handler = function(h, ...) iNZcllpsWin$new(GUI)),
+                            handler = function(h, ...) iNZCollapseWin$new(GUI)),
                     rename =
                         gaction("Rename levels ...",
                             icon = "edit",
                             tooltip = "Rename a categorical variable's levels",
-                            handler = function(h, ...) iNZrenameWin$new(GUI)),
+                            handler = function(h, ...) iNZRenameFactorLevelsWin$new(GUI)),
                     combine =
                         gaction("Combine categorical variables ...",
                             icon = "dnd-multiple",
                             tooltip = "Combine two or more categorical variables",
-                            handler = function(h, ...) iNZcmbCatWin$new(GUI))
+                            handler = function(h, ...) iNZCombineWin$new(GUI))
                 ),
                 "Numeric Variables" = list(
                     transform =
                         gaction("Transform ...",
                             icon = "convert",
                             tooltip = "Transform a variable using a function",
-                            handler = function(h, ...) iNZtrnsWin$new(GUI)),
+                            handler = function(h, ...) iNZTransformWin$new(GUI)),
                     standardise =
                         gaction("Standardise ...",
                             icon = "convert",
                             tooltip = "Standardise a numeric variable",
-                            handler = function(h, ...) iNZstdVarWin$new(GUI)),
+                            handler = function(h, ...) iNZStandardiseWin$new(GUI)),
                     class =
                         gaction("Form class intervals ...",
                             icon = "convert",
                             tooltip = "Convert numeric variable into categorical intervals",
-                            handler = function(h, ...) iNZformClassIntervals$new(GUI)),
+                            handler = function(h, ...) iNZFormClassIntervalsWin$new(GUI)),
                     rank =
                         gaction("Rank numeric variables ...",
                             icon = "sort-ascending",
                             tooltip = "Create an ordering variable",
-                            handler = function(h, ...) iNZrankNumWin$new(GUI)),
+                            handler = function(h, ...) iNZRankWin$new(GUI)),
                     cat =
                         gaction("Convert to categorical (multiple) ...",
                             icon = "convert",
                             tooltip = "Convert multiple numeric variables to categorical",
-                            handler = function(h, ...) iNZctocatmulWin$new(GUI))
+                            handler = function(h, ...) iNZConToCatMultiWin$new(GUI))
                 ),
                 "Dates and Times" = list(
                   convert =
                     gaction("Convert to ...",
                             icon = "date",
                             tooltip = "Convert a variable to a dates and times type",
-                            handler = function(h, ...) iNZconTodtWin$new(GUI)),
+                            handler = function(h, ...) iNZConToDtWin$new(GUI)),
                   extract =
                     gaction("Extract from ...",
                             icon = "date",
                             tooltip = "Extract parts from a dates and times variable",
-                            handler = function(h, ...) iNZExtfromdtWin$new(GUI)),
+                            handler = function(h, ...) iNZExtFromDtWin$new(GUI)),
                   aggregation =
                     gaction("Aggregate to ...",
                             icon = "date",
                             tooltip = "Aggregate date-time into monthly or quarterly",
-                            handler = function(h, ...) iNZAggregatedtWin$new(GUI))
+                            handler = function(h, ...) iNZAggDtWin$new(GUI))
                 ),
                 rename =
                     gaction("Rename variables ...",
                         icon = "edit",
                         tooltip = "Rename a variable",
-                        handler = function(h, ...) iNZrnmVarWin$new(GUI)),
+                        handler = function(h, ...) iNZRenameVarWin$new(GUI)),
                 create =
-                    gaction("Create new variables ...",
+                    gaction("Create new variable ...",
                         icon = "new",
                         tooltip = "Create a new variable using a formula",
-                        handler = function(h, ...) iNZcrteVarWin$new(GUI)),
+                        handler = function(h, ...) iNZCreateVarWin$new(GUI)),
                 miss2cat =
                     gaction("Missing to categorical ...",
                         icon = "index",
                         tooltip = "Create a variable to include missingness information",
-                        handler = function(h, ...) iNZmissCatWin$new(GUI)),
+                        handler = function(h, ...) iNZMissToCatWin$new(GUI)),
                 delete =
                     gaction("Delete variables ...",
                         icon = "delete",
                         tooltip = "Permanently delete a variable",
-                        handler = function(h, ...) iNZdeleteVarWin$new(GUI))
+                        handler = function(h, ...) iNZDeleteVarWin$new(GUI))
             )
             if (!is.null(GUI$getActiveDoc()$getModel()$getDesign())) {
                 # disable some items for surveys

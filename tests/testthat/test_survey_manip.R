@@ -16,9 +16,9 @@ ui$getActiveDoc()$getModel()$setDesign(ncsr_svy$spec, ui)
 
 test_that("Convert to cat", {
     # source("R/iNZDataModWin.R")
-    w <- iNZconToCatWin$new(ui)
+    w <- iNZConToCatWin$new(ui)
     svalue(w$varLbl) <- "weight"
-    w$okButton$invoke_change_handler()
+    w$ok_button$invoke_change_handler()
 })
 
 
