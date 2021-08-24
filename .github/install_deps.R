@@ -2,7 +2,7 @@
 github_deps <- c(
     "tmelliott/gWidgets2@patch-1",
     "iNZightVIT/gWidgets2RGtk2@inz",
-    "iNZightVIT/iNZightTools@1.11.4",
+    "iNZightVIT/iNZightTools@dev",
     "iNZightVIT/iNZightTS@1.5.4",
     "iNZightVIT/iNZightMR@2.2.5",
     "iNZightVIT/iNZightPlots@2.13.4",
