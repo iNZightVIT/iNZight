@@ -366,22 +366,22 @@ iNZMenuBarWidget <- setRefClass(
                     gaction("Rename variables ...",
                         icon = "edit",
                         tooltip = "Rename a variable",
-                        handler = function(h, ...) iNZrnmVarWin$new(GUI)),
+                        handler = function(h, ...) iNZRenameVarWin$new(GUI)),
                 create =
-                    gaction("Create new variables ...",
+                    gaction("Create new variable ...",
                         icon = "new",
                         tooltip = "Create a new variable using a formula",
-                        handler = function(h, ...) iNZcrteVarWin$new(GUI)),
+                        handler = function(h, ...) iNZCreateVarWin$new(GUI)),
                 miss2cat =
                     gaction("Missing to categorical ...",
                         icon = "index",
                         tooltip = "Create a variable to include missingness information",
-                        handler = function(h, ...) iNZmissCatWin$new(GUI)),
+                        handler = function(h, ...) iNZMissToCatWin$new(GUI)),
                 delete =
                     gaction("Delete variables ...",
                         icon = "delete",
                         tooltip = "Permanently delete a variable",
-                        handler = function(h, ...) iNZdeleteVarWin$new(GUI))
+                        handler = function(h, ...) iNZDeleteVarWin$new(GUI))
             )
             if (!is.null(GUI$getActiveDoc()$getModel()$getDesign())) {
                 # disable some items for surveys
