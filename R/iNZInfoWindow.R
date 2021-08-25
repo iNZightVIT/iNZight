@@ -858,7 +858,7 @@ iNZGetInference <- setRefClass(
             }
 
             adv_opts <- list(
-                ci_level = xnum && !ynum
+                ci_level = !xnum || !ynum
             )
 
             if (any(unlist(adv_opts))) {
