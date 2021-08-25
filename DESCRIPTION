@@ -25,7 +25,7 @@ Imports:
     grDevices,
     grid,
     gWidgets2RGtk2,
-    iNZightPlots (>= 2.13.3),
+    iNZightPlots (>= 2.13.4.9000),
     iNZightTools (>= 1.11.4.9000),
     magrittr,
     methods,

@@ -546,7 +546,8 @@ iNZGetInference <- setRefClass(
         g_hypctrls = "ANY",
         g_hyptbl = "ANY",
         trend_choice = "list",
-        epi_chk = "ANY"
+        epi_chk = "ANY",
+        ci_slider = "ANY"
     ),
     methods = list(
         initialize = function(gui) {
@@ -854,6 +855,51 @@ iNZGetInference <- setRefClass(
                         update_inference()
                     }
                 )
+            }
+
+            adv_opts <- list(
+                ci_level = xnum && !ynum
+            )
+
+            if (any(unlist(adv_opts))) {
+                ## CI width and other controls:
+                addSpring(ctrl_panel)
+                add(ctrl_panel, gseparator())
+
+                g_advanced <- gvbox(container = ctrl_panel)
+                lbl <- glabel("Additional options",
+                    container = g_advanced,
+                    anchor = c(-1, 0),
+                    fill = TRUE
+                )
+                font(lbl) <- list(weight = "bold")
+
+                adv_tbl <- glayout(container = g_advanced)
+                ii <- 1L
+
+                if (adv_opts$ci_level) {
+                    ci_slider <<- gspinbutton(
+                        10, 99, 1,
+                        value = curSet$ci.width * 100,
+                        handler = function(h, ...) {
+                            curSet$ci.width <<- svalue(ci_slider) / 100
+                            update_inference()
+                        }
+                    )
+                    size(ci_slider) <<- c(100, -1)
+                    adv_tbl[ii, 1L, anchor = c(1, 0), fill = TRUE] <- "Confidence level (%):"
+                    adv_tbl[ii, 2:3, expand = TRUE] <- ci_slider
+                    ii <- ii + 1L
+
+                    addSpring(g_advanced)
+                    lbl <- glabel(
+                        "You may have to press Enter if you type values in manually.",
+                        container = g_advanced,
+                        anchor = c(-1, 0),
+                        fill = TRUE
+                    )
+                    font(lbl) <- list(size = 8)
+                }
             }
 
             update_inference()
