@@ -461,13 +461,25 @@ iNZScatterInf <- setRefClass(
 
             metTab[3, 1] <<- mthd
 
+            ## Interval types:
+            typTab[3, 1, anchor = c(-1, 0), expand = TRUE] <<- "Confidence Region"
+
+            ## CI %
+            ci_level <- gspinbutton(
+                10, 99, 1,
+                value = curSet$ci.width * 100
+            )
+            typTab[3, 2] <<- ci_level
+            typTab[3, 3] <<- "%"
+
             ## Add function
             addIntervals <- function() {
                 bs.inf <- svalue(mthd, index = TRUE) == 2
                 GUI$getActiveDoc()$setSettings(
                     list(
                         inference.type = "conf",
-                        bs.inference = bs.inf
+                        bs.inference = bs.inf,
+                        ci.width = svalue(ci_level) / 100
                     )
                 )
                 updateSettings()
@@ -476,6 +488,10 @@ iNZScatterInf <- setRefClass(
             addHandlerChanged(mthd,
                 handler = function(h, ...) addIntervals()
             )
+            addHandlerChanged(ci_level,
+                handler = function(h, ...) addIntervals()
+            )
+
             addIntervals()
         }
     )
