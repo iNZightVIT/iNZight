@@ -38,6 +38,7 @@
 * `iNZRenameFactorLevelsWin` window modified slightly to be a little more intuitive
 * `iNZConToDtWin`, `iNZExtFromDtWin`, `iNZAggregatedtWin` redesigned to have previews on the right-hand-side (rather than below)
 * add CI level control to Get Inference window (#74, @tmelliott)
+* Get Summary and Get Inference now scroll output window to the top (rather than the bottom)
 
 ## iNZight 4.1.4
 

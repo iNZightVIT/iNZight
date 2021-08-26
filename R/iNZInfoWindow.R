@@ -133,7 +133,12 @@ iNZInfoWindow <- setRefClass(
         },
         set_output = function(out) {
             svalue(info_text) <<- ""
-            gWidgets2::insert(info_text, paste(out, collapse = "\n"), font.attr = info_font)
+            gWidgets2::insert(
+                info_text,
+                paste(out, collapse = "\n"),
+                where = "beginning",
+                font.attr = info_font
+            )
             # font(info_text) <<- info_font
         },
         store_code = function() {
