@@ -498,7 +498,7 @@ iNZSurveyDesign <- setRefClass(
                 if (length(file) == 0) return()
             }
             svyspec <- iNZightTools::import_survey(file)
-            GUI$getActiveDoc()$getModel()$setDesign(svyspec)
+            GUI$getActiveDoc()$getModel()$setDesign(svyspec, gui = GUI)
 
             setOK <- try(
                 GUI$getActiveDoc()$getModel()$createSurveyObject(),
