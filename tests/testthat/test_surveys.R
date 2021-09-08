@@ -601,6 +601,26 @@ test_that("Survey data can be imported from svydesign file", {
 
 ui$close()
 
+# require(survey); data(api)
+# devtools::load_all()
+ui <- iNZGUI$new()
+
+test_that("Survey calibration imported read from svydesign file", {
+    ui$initializeGui(apistrat)
+    on.exit(ui$close())
+    svyfile <- tempfile("apistrat", fileext = ".svydesign")
+    writeLines('strata = "stype"\nweights = "pw"\nfpc = "fpc"\n\n[calibrate.stype]\nE = 4421\nH=755\nM=1018\n\n[calibrate."sch.wide"]\n"No" = 1072\n"Yes" = 5122\n', svyfile)
+    on.exit(unlink(svyfile), add = TRUE)
+
+    swin <- iNZSurveyDesign$new(ui)
+    expect_silent(swin$read_file(svyfile))
+    ui$iNZDocuments[[ui$activeDoc]]$getModel()$getDesign()$spec
+
+
+})
+
+
+
 # devtools::load_all("../iNZightTools")
 ncsr_svy <- iNZightTools::import_survey(file.path(test_dir, "ncsr.svydesign"))
 # ncsr_svy <- iNZightTools::import_survey('tests/testthat/ncsr.svydesign')
