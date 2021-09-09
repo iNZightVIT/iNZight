@@ -38,6 +38,7 @@
 - `iNZConToDtWin`, `iNZExtFromDtWin`, `iNZAggregatedtWin` redesigned to have previews on the right-hand-side (rather than below)
 - Reading a survey specification file imports calibration information correctly (so it can be adjusted by the user)
 - Ensure reading survey spec file addes 'survey design' label to data name (#365)
+- Menu items disabled/hidden when specifying/removing survey design
 
 ## iNZight 4.1.4
 

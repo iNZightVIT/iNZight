@@ -122,6 +122,10 @@ iNZDataModel <- setRefClass(
             if (missing(x)) {
                 dataDesign <<- NULL
                 dataDesignName <<- name
+                if (!missing(gui)) {
+                    gui$dataNameWidget$updateWidget()
+                    gui$menuBarWidget$defaultMenu()
+                }
                 return()
             }
             if (inherits(x, "inzsvyspec")) {
