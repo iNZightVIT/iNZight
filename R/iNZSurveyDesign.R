@@ -101,8 +101,12 @@ iNZSurveyDesign <- setRefClass(
                     if (!is.null(spec$weights))
                         svalue(wtVar) <<- spec$weights
                     # TO DO: special handling here
-                    if (!is.null(spec$fpc))
-                        svalue(fpcVar) <<- spec$fpc
+                    if (!is.null(spec$fpc)) {
+                        fpc <- trimws(strsplit(spec$fpc, "+", fixed = TRUE)[[1]])
+                        svalue(fpcVar) <<- fpc[1]
+                        if (length(fpc) == 2L)
+                            svalue(fpcVar2) <<- fpc[2]
+                    }
                 },
                 "replicate" = {
                     if (!is.null(spec$weights))
@@ -140,7 +144,6 @@ iNZSurveyDesign <- setRefClass(
 
             svy <- try(create(preview = TRUE), silent = TRUE)
             if (inherits(svy, "try-error")) {
-                print(svy)
                 return()
             }
 

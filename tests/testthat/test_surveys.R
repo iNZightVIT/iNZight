@@ -17,7 +17,7 @@ on.exit(try(gWidgets2::dispose(ui$win), TRUE))
 
 test_that("Survey design window defaults are empty", {
     expect_silent(swin <- iNZSurveyDesign$new(ui))
-    expect_true(visible(swin$designWin))
+    expect_true(visible(ui$modWin))
 
     expect_equal(svalue(swin$stratVar), "")
     expect_equal(svalue(swin$clus1Var), "")
@@ -25,8 +25,9 @@ test_that("Survey design window defaults are empty", {
     expect_false(svalue(swin$nestChk))
     expect_equal(svalue(swin$wtVar), "")
     expect_equal(svalue(swin$fpcVar), "")
+    expect_equal(svalue(swin$fpcVar2), "")
 
-    expect_silent(swin$cancelBtn$invoke_change_handler())
+    expect_silent(swin$cancel_button$invoke_change_handler())
 })
 
 # svydesign(id = ~dnum + snum, fpc = ~fpc1 + fpc2, data = apiclus2)
@@ -34,13 +35,15 @@ test_that("Survey design can be specified using window", {
     expect_silent(swin <- iNZSurveyDesign$new(ui))
     expect_silent(svalue(swin$clus1Var) <- "dnum")
     expect_silent(svalue(swin$clus2Var) <- "snum")
-    expect_silent(svalue(swin$fpcVar) <- "fpc1 + fpc2")
+    expect_silent(svalue(swin$fpcVar) <- "fpc1")
+    expect_silent(svalue(swin$fpcVar2) <- "fpc2")
 
     expect_equal(svalue(swin$clus1Var), "dnum")
     expect_equal(svalue(swin$clus2Var), "snum")
-    expect_equal(svalue(swin$fpcVar), "fpc1 + fpc2")
+    expect_equal(svalue(swin$fpcVar), "fpc1")
+    expect_equal(svalue(swin$fpcVar2), "fpc2")
 
-    expect_silent(swin$createBtn$invoke_change_handler())
+    expect_silent(swin$ok_button$invoke_change_handler())
     s <- ui$iNZDocuments[[ui$activeDoc]]$getModel()$getDesign()$spec
     expect_equal(
         s[!sapply(s, is.null)],
@@ -61,9 +64,10 @@ test_that("Survey design window remembers the design", {
     expect_equal(svalue(swin$clus2Var), "snum")
     expect_false(svalue(swin$nestChk))
     expect_equal(svalue(swin$wtVar), "")
-    expect_equal(svalue(swin$fpcVar), "fpc1 + fpc2")
+    expect_equal(svalue(swin$fpcVar), "fpc1")
+    expect_equal(svalue(swin$fpcVar2), "fpc2")
 
-    expect_silent(swin$cancelBtn$invoke_change_handler())
+    expect_silent(swin$cancel_button$invoke_change_handler())
 })
 
 test_that("Removing design works", {
@@ -100,7 +104,7 @@ test_that("Frequency column specification is passed to settings", {
     expect_silent(svalue(swin$freqVar) <- "frequency")
     expect_equal(svalue(swin$freqVar), "frequency")
 
-    expect_silent(swin$createBtn$invoke_change_handler())
+    expect_silent(swin$ok_button$invoke_change_handler())
     expect_equal(
         as.character(ui$iNZDocuments[[ui$activeDoc]]$getSettings()$freq),
         "frequency"
@@ -153,7 +157,7 @@ test_that("Replicate weights can be specified", {
     svalue(swin$repType) <- "other"
     svalue(swin$repScale) <- 1
 
-    expect_silent(swin$createBtn$invoke_change_handler())
+    expect_silent(swin$ok_button$invoke_change_handler())
     s <- ui$iNZDocuments[[ui$activeDoc]]$getModel()$getDesign()$spec
     expect_equal(
         s[!sapply(s, is.null)],
@@ -196,7 +200,7 @@ test_that("Replicate weight window repopulated correctly", {
             stringsAsFactors = TRUE
         )
     )
-    swin$cancelBtn$invoke_change_handler()
+    swin$cancel_button$invoke_change_handler()
 })
 
 f1 <- file.path(test_dir, "chis_wts.csv")
@@ -265,7 +269,7 @@ test_that("JK1 works", {
     svalue(swin$repType) <- "JK1"
     #### producing error about scale (n-1)/n not provided
     # expect_silent(swin$createBtn$invoke_change_handler())
-    swin$createBtn$invoke_change_handler()
+    swin$ok_button$invoke_change_handler()
     s <- ui$iNZDocuments[[ui$activeDoc]]$getModel()$getDesign()$spec
     expect_equal(
         s[!sapply(s, is.null)],
@@ -316,7 +320,7 @@ test_that("Post stratification set by importing additional dataset", {
     expect_silent(svalue(swin$clus1Var) <- "dnum")
     expect_silent(svalue(swin$fpcVar) <- "fpc")
     expect_silent(svalue(swin$wtVar) <- "pw")
-    expect_silent(swin$createBtn$invoke_change_handler())
+    expect_silent(swin$ok_button$invoke_change_handler())
 
     expect_silent(swin <- iNZSurveyPostStrat$new(ui, .use_ui = FALSE))
     expect_equal(swin$lvldf, list())
@@ -523,7 +527,7 @@ test_that("New variables show up in calibration list", {
     expect_silent(svalue(swin$clus1Var) <- "SECLUSTR")
     expect_silent(svalue(swin$wtVar) <- "popweight")
     expect_silent(svalue(swin$nestChk) <- TRUE)
-    expect_silent(swin$createBtn$invoke_change_handler())
+    expect_silent(swin$ok_button$invoke_change_handler())
 
     # add interaction between REGION and race
     comb <- iNZCombineWin$new(ui)
