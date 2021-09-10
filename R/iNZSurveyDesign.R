@@ -603,9 +603,8 @@ iNZSurveyDesign <- setRefClass(
 
 iNZSurveyPostStrat <- setRefClass(
     "iNZSurveyPostStrat",
+    contains = "iNZWindow",
     fields = list(
-        GUI = "ANY",
-        win = "ANY",
         PSvar = "ANY",
         PSlvls = "ANY",
         lvldf = "list",
@@ -615,9 +614,9 @@ iNZSurveyPostStrat <- setRefClass(
     ),
     methods = list(
         initialize = function(gui, .use_ui = TRUE) {
-            initFields(GUI = gui, lvldf = list())
+            initFields(lvldf = list())
 
-            curDes <- GUI$getActiveDoc()$getModel()$getDesign()
+            curDes <- gui$getActiveDoc()$getModel()$getDesign()
             if (is.null(curDes)) {
                 if (.use_ui) {
                     gmessage("Please specify a survey design first",
@@ -631,24 +630,23 @@ iNZSurveyPostStrat <- setRefClass(
             }
             curDes <- curDes$spec
 
-            win <<- gwindow("Post Stratification",
-                parent = GUI$win,
-                width = 730,
-                height = 500,
-                visible = FALSE
+            ok <- callSuper(gui,
+                title = "Survey Calibration / Post-stratification",
+                width = "med",
+                height = "med",
+                help = "user_guides/data_options/#post-stratify",
+                ok = "Calibrate",
+                action = .self$calibrate,
+                show_code = FALSE,
+                scroll = FALSE,
+                body_direction = "horizontal"
             )
-            gmain <- gvbox(container = win)
-            gmain$set_borderwidth(5)
-
-            title <- glabel("Specify post stratification",
-                container = gmain)
-            font(title) <- list(size = 11, weight = "bold")
-
-            ## central panel
-            g <- ggroup(container = gmain)
+            if (!ok) return()
+            on.exit(.self$show())
+            usingMethods("calibrate")
 
             ## left size panel (choose variables)
-            g1 <- gvbox(container = g)
+            g1 <- gvbox()
 
             ## only those with no missing values ...
             fvars <- sapply(GUI$getActiveData(),
@@ -671,49 +669,28 @@ iNZSurveyPostStrat <- setRefClass(
             )
             font(lbl) <- list(size = 8)
 
-            addSpace(g, 10)
-            g2 <- gvbox(container = g,
-                use.scrollwindow = "y",
-                expand = TRUE
-            )
-            g2$set_borderwidth(5)
+            add_body(g1)
+
+            body_space(10)
+
+            g2 <- gvbox(use.scrollwindow = "y")
             ## table to populate with levels of variable
             gl <- ggroup(container = g2)
             PSlvls <<- glayout(container = gl)
             addSpace(gl, 20)
 
+            add_body(g2, expand = TRUE)
+
             addHandlerChanged(PSvar,
                 function(h, ...) update_levels())
 
-            # save/cancel buttons
-            addSpring(gmain)
-            btnGrp <- ggroup(container = gmain)
-
-            rmvBtn <<- gbutton("Remove",
-                # icon = "delete",
+            rmvBtn <<- gbutton("Remove calibration",
                 handler = function(h, ...) {
                     svalue(PSvar, index = TRUE) <<- 0
-                    set_poststrat_design()
-                    dispose(win)
-                },
-                container = btnGrp
+                    calibrate()
+                }
             )
-
-            addSpring(btnGrp)
-            okBtn <<- gbutton("OK",
-                handler = function(h, ...) {
-                    # call postStratify
-                    set_poststrat_design()
-                    dispose(win)
-                },
-                container = btnGrp
-            )
-            cancelBtn <<- gbutton("Cancel",
-                handler = function(h, ...) {
-                    dispose(win)
-                },
-                container = btnGrp
-            )
+            add_toolbar(rmvBtn)
 
             ## populate on load
             lvldf <<- GUI$getActiveDoc()$getModel()$getFreqTables()
@@ -723,15 +700,11 @@ iNZSurveyPostStrat <- setRefClass(
             }
 
             ## when the window closes, store the lvldf in survey
-            addHandlerDestroy(win,
+            addHandlerDestroy(GUI$modWin,
                 function(h, ...) {
                     GUI$getActiveDoc()$getModel()$storeFreqTables(lvldf)
                 }
             )
-
-            visible(win) <<- TRUE
-
-            invisible(NULL)
         },
         update_levels = function(h, ...) {
             for (v in svalue(PSvar)) {
@@ -854,7 +827,7 @@ iNZSurveyPostStrat <- setRefClass(
             }
 
         },
-        set_poststrat_design = function() {
+        calibrate = function() {
             curDes <- GUI$getActiveDoc()$getModel()$getDesign()$spec
             cal_list <- lapply(names(lvldf),
                 function(var) {
@@ -883,7 +856,26 @@ iNZSurveyPostStrat <- setRefClass(
                     "Something went wrong during post stratification ...",
                     type = "error"
                 )
+                return()
+            } else {
+                call <- paste(deparse(setOK$call), collapse = "\n")
+
+                call <- sprintf("%s <- %s",
+                    GUI$getActiveDoc()$getModel()$dataDesignName,
+                    gsub("design_obj", GUI$getActiveDoc()$getModel()$name, call)
+                )
+                GUI$rhistory$add(
+                    c(
+                        ifelse(length(svalue(PSvar)),
+                            "## calibrate survey design",
+                            "## remove survey calibration"
+                        ),
+                        call
+                    ),
+                    tidy = TRUE
+                )
             }
+            close()
         }
     )
 )

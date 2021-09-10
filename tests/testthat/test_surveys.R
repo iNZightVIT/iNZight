@@ -350,7 +350,7 @@ test_that("Post stratification set by importing additional dataset", {
     )
 
     # and trigger the save
-    expect_silent(swin$okBtn$invoke_change_handler())
+    expect_silent(swin$ok_button$invoke_change_handler())
     pt <- pop.types$Freq
     names(pt) <- paste(pop.types$stype)
     s <- ui$iNZDocuments[[ui$activeDoc]]$getModel()$getDesign()$spec
@@ -371,14 +371,14 @@ test_that("Post stratification is remembered", {
     expect_silent(swin <- iNZSurveyPostStrat$new(ui, .use_ui = FALSE))
     expect_equal(svalue(swin$PSvar), "stype")
     expect_equal(swin$lvldf, list(stype = pop.types))
-    expect_silent(swin$cancelBtn$invoke_change_handler())
+    expect_silent(swin$cancel_button$invoke_change_handler())
 })
 
 test_that("Post stratification can be removed", {
     expect_silent(swin <- iNZSurveyPostStrat$new(ui, .use_ui = FALSE))
     expect_silent(svalue(swin$PSvar, index = TRUE) <- 0)
     expect_equal(swin$lvldf, list(stype = pop.types))
-    expect_silent(swin$okBtn$invoke_change_handler())
+    expect_silent(swin$ok_button$invoke_change_handler())
     s <- ui$iNZDocuments[[ui$activeDoc]]$getModel()$getDesign()$spec
     expect_equal(
         s[!sapply(s, is.null)],
@@ -435,7 +435,7 @@ test_that("Post stratification set by manually entering values", {
     expect_equal(swin$lvldf, list(stype = pop.types))
 
     # and trigger the save
-    expect_silent(swin$okBtn$invoke_change_handler())
+    expect_silent(swin$ok_button$invoke_change_handler())
     s <- ui$iNZDocuments[[ui$activeDoc]]$getModel()$getDesign()$spec
     expect_equal(
         s[!sapply(s, is.null)],
@@ -481,7 +481,7 @@ test_that("Multiple variables can be specified (raking calibration)", {
     # )
 
     # and trigger the save
-    expect_silent(swin$okBtn$invoke_change_handler())
+    expect_silent(swin$ok_button$invoke_change_handler())
     s <- ui$iNZDocuments[[ui$activeDoc]]$getModel()$getDesign()$spec
     expect_equal(
         s[!sapply(s, is.null)],
@@ -538,7 +538,7 @@ test_that("New variables show up in calibration list", {
 
     expect_silent(swin <- iNZSurveyPostStrat$new(ui, .use_ui = FALSE))
     expect_true("REGION_race" %in% swin$PSvar$get_items())
-    swin$cancelBtn$invoke_change_handler()
+    swin$cancel_button$invoke_change_handler()
 
 })
 
