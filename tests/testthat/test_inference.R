@@ -226,7 +226,7 @@ on.exit(gWidgets2::dispose(ui$win))
 test_that("Existing trend lines are kept when opening inference panel", {
     svalue(ui$ctrlWidget$V1box) <- "height"
     svalue(ui$ctrlWidget$V2box) <- "armspan"
-    
+
     expect_null(ui$getActiveDoc()$getSettings()$trend)
     expect_silent(
         ui$getActiveDoc()$setSettings(list(trend = "linear"))
@@ -313,7 +313,7 @@ test_that("Get inference for surveys", {
     svalue(swin$clus1Var) <- "dnum"
     svalue(swin$clus2Var) <- "snum"
     svalue(swin$fpcVar) <- "fpc1 + fpc2"
-    swin$createBtn$invoke_change_handler()
+    swin$ok_button$invoke_change_handler()
     expect_true(enabled(ui$infBtn))
 
     svalue(ui$ctrlWidget$V1box) <- "api00"
