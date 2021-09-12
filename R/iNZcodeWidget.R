@@ -36,14 +36,14 @@ iNZcodeWidget <- setRefClass(
             }
             invisible(NULL)
         },
-        get = function() {
+        get = function(width = 80, indent = 4) {
             code <- do.call(c,
                 lapply(history,
                     function(x) {
                         y <- iNZightTools::tidy_all_code(
-                            paste(x, collapse = "\n"),
-                            width = 80,
-                            indent = 4
+                            x,
+                            width = width,
+                            indent = indent
                         )
                         c(y, "")
                     }

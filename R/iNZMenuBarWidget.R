@@ -234,6 +234,7 @@ iNZMenuBarWidget <- setRefClass(
                 "Survey design" = list(
                     surveydesign =
                         gaction("Specify design ...",
+                            tooltip = "Specify survey design information for the data",
                             icon = "new",
                             handler = function(h, ...)
                                 iNZSurveyDesign$new(GUI, type = "survey")
@@ -251,6 +252,7 @@ iNZMenuBarWidget <- setRefClass(
                         ),
                     removedesign =
                         gaction("Remove design",
+                            tooltip = "Remove survey design from data",
                             icon = "delete",
                             handler = function(h, ...) GUI$removeDesign()
                         )
@@ -285,6 +287,20 @@ iNZMenuBarWidget <- setRefClass(
 
                 menu[["Frequency tables"]] <- gaction("Frequency tables", enabled = FALSE)
                 enabled(menu[["Frequency tables"]]) <- FALSE
+
+                survey_type <- GUI$getActiveDoc()$getModel()$getDesign()$spec$type
+                if (survey_type == "survey") {
+                    svalue(menu[["Survey design"]]$surveydesign) <- "Modify design ..."
+                    menu[["Survey design"]]$repdesign <- NULL
+                }
+                if (survey_type == "replicate") {
+                    svalue(menu[["Survey design"]]$repdesign) <- "Modify replicate design ..."
+                    menu[["Survey design"]]$surveydesign <- NULL
+                }
+            } else {
+                # disable some items for non-surveys
+                menu[["Survey design"]]$poststrat <- NULL
+                menu[["Survey design"]]$removedesign <- NULL
             }
             menu
         },

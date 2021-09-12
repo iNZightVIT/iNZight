@@ -122,9 +122,14 @@ iNZDataModel <- setRefClass(
             if (missing(x)) {
                 dataDesign <<- NULL
                 dataDesignName <<- name
+                if (!missing(gui)) {
+                    gui$dataNameWidget$updateWidget()
+                    gui$menuBarWidget$defaultMenu()
+                }
                 return()
             }
             if (inherits(x, "inzsvyspec")) {
+                spec <- x
                 if (is.null(x$design))
                     x <- iNZightTools::make_survey(dataSet, x)
             } else {
@@ -148,6 +153,18 @@ iNZDataModel <- setRefClass(
                     class = "inzsvyspec"
                 )
                 x <- iNZightTools::make_survey(dataSet, spec)
+            }
+            if (!is.null(spec$spec$calibrate)) {
+                cal <- lapply(names(spec$spec$calibrate),
+                    function(v) {
+                        c <- spec$spec$calibrate[[v]]
+                        d <- data.frame(x = names(c), Freq = as.numeric(c))
+                        names(d) <- c(v, "Freq")
+                        d
+                    }
+                )
+                names(cal) <- names(spec$spec$calibrate)
+                storeFreqTables(cal)
             }
             dataDesign <<- unclass(x)
             dataDesignName <<- sprintf("%s.%s",

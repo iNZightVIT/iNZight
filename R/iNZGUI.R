@@ -875,7 +875,7 @@ iNZGUI <- setRefClass(
                 # delete the current document
                 do_delete_dataset()
             } else {
-                getActiveDoc()$getModel()$setDesign()
+                getActiveDoc()$getModel()$setDesign(gui = .self)
             }
 
             updatePlot()
