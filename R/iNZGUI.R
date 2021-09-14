@@ -13,7 +13,7 @@
 #' @field gp2 container within middle group
 #' @field popOut logical, indicates if the graphics window will be embedded or separate (TRUE)
 #' @field dataViewWidget a widget that displays the data to the user
-#' @field viewSwitcherWidget the widget which lets user switch between data and variable view
+#' @field dataToolbarWidget the widget which lets user switch between data and variable view
 #' @field dataNameWidget displays the name of the current dataset, and allows users to switch between datasets
 #' @field plotWidget the widget containing the main plot window
 #' @field plotToolbar the widget in the bottom-right containing plot control buttons
@@ -65,7 +65,7 @@ iNZGUI <- setRefClass(
             dataViewWidget = "ANY",
             ## the widget handling the switching between the
             ## 2 data views
-            viewSwitcherWidget = "ANY",
+            dataToolbarWidget = "ANY",
             dataNameWidget = "ANY",
             ## widget that handles the plot notebook
             plotWidget = "ANY",
@@ -199,8 +199,14 @@ iNZGUI <- setRefClass(
             dataThreshold <- 200000
             initializeDataView(dataThreshold)
 
+            ## What I want this to do is essentially ...
+            # 1. layout all the things
+            # 2. display "load data" and other options if no data is loaded
+            # 3. display the dataset + controls if it is
+            # -- so, one single 'DATA' widgets?
+
             ## set up buttons to switch between data/var view
-            add(gp1, .self$initializeViewSwitcher(dataThreshold)$viewGroup)
+            add(gp1, .self$initializeDataToolbar(dataThreshold)$viewGroup)
 
             ## display the name of the data set
             add(gp1, .self$initializeDataNameWidget()$widget)
@@ -298,10 +304,10 @@ iNZGUI <- setRefClass(
             )
         },
         ## set up buttons to switch between data and variable view
-        initializeViewSwitcher = function(dataThreshold) {
-            "Initializes the view switcher widget"
-            viewSwitcherWidget <<- iNZViewSwitcher$new(.self, dataThreshold)
-            .self$viewSwitcherWidget
+        initializeDataToolbar = function(dataThreshold) {
+            "Initializes the data toolbar widget"
+            dataToolbarWidget <<- iNZDataToolbar$new(.self, dataThreshold)
+            .self$dataToolbarWidget
         },
         ## set up the display to show the name of the data set
         initializeDataNameWidget = function() {
@@ -339,14 +345,14 @@ iNZGUI <- setRefClass(
             addActDocObs(
                 function() {
                     dataViewWidget$updateWidget()
-                    viewSwitcherWidget$updateWidget()
+                    dataToolbarWidget$updateWidget()
                 }
             )
             ## if the dataSet changes, update the variable View
             getActiveDoc()$addDataObserver(
                 function() {
                     dataViewWidget$updateWidget()
-                    viewSwitcherWidget$updateWidget()
+                    dataToolbarWidget$updateWidget()
                     getActiveDoc()$updateSettings()
                 }
             )

@@ -43,6 +43,9 @@
 - Fix bug in R code history formatting
 - add CI level control to Get Inference window (#74, @tmelliott) and Plot Inference panel
 - Get Summary and Get Inference now scroll output window to the top (rather than the bottom)
+- Data view/switch widget updated/refactored
+  - `iNZViewSwitcherWidget` -> `iNZDataToolbar`
+  - "View dataset" and "View variables" buttons replaced by icons
 
 ## iNZight 4.1.4
 

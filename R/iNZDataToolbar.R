@@ -1,5 +1,5 @@
-iNZViewSwitcher <- setRefClass(
-    "iNZViewSwitcher",
+iNZDataToolbar <- setRefClass(
+    "iNZDataToolbar",
     fields = list(
         GUI = "ANY",
         viewGroup = "ANY",
@@ -16,22 +16,21 @@ iNZViewSwitcher <- setRefClass(
             )
             viewGroup <<- ggroup()
             addSpring(viewGroup)
-            dataBtn <<- gbutton("View Data Set",
+
+            dataBtn <<- gbutton(
+                "",
                 handler = function(h,...) .self$viewData(h,...)
             )
-            listBtn <<- gbutton("View Variables",
+            tooltip(dataBtn) <<- "View dataset"
+            dataBtn$set_icon("dataframe")
+
+            listBtn <<- gbutton(
+                "",
                 handler = function(h,...) .self$viewList(h,...)
             )
-            font(dataBtn) <<- list(
-                weight = "bold",
-                family = "sans",
-                color = "navy"
-            )
-            font(listBtn) <<- list(
-                weight = "bold",
-                family = "sans",
-                color = "navy"
-            )
+            tooltip(listBtn) <<- "View variables"
+            listBtn$set_icon("file")
+
             dataSet <- GUI$getActiveData()
             ## if the data size is below threshold, start in data view,
             ## otherwise start don't allow view switching

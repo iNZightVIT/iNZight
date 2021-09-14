@@ -31,14 +31,14 @@ test_that("UI correctly displays the data", {
 
 
     ## data view disabled; list view enabled
-    expect_false(enabled(ui$viewSwitcherWidget$dataBtn))
-    expect_true(enabled(ui$viewSwitcherWidget$listBtn))
+    expect_false(enabled(ui$dataToolbarWidget$dataBtn))
+    expect_true(enabled(ui$dataToolbarWidget$listBtn))
 
     ## clicking list view chanes the data view
     expect_true(visible(ui$dataViewWidget$dataGp$children[[1]]))
     expect_false(visible(ui$dataViewWidget$dataGp$children[[2]]))
 
-    expect_silent(ui$viewSwitcherWidget$listBtn$invoke_change_handler())
+    expect_silent(ui$dataToolbarWidget$listBtn$invoke_change_handler())
     expect_false(visible(ui$dataViewWidget$dataGp$children[[1]]))
     expect_true(visible(ui$dataViewWidget$dataGp$children[[2]]))
 

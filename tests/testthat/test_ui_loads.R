@@ -22,8 +22,11 @@ test_that("GUI is loaded and initialized without problems", {
 
 test_that("Primary UI widgets are loaded and displaying correctly", {
     ## "Load Data" button displayed instead of dataset selection
-    expect_false(visible(ui$dataNameWidget$nameLabel))
-    expect_true(visible(ui$dataNameWidget$import_button))
+    expect_equal(
+        ui$dataNameWidget$widget$children[[2]]$get_value(),
+        "Import data ..."
+    )
+    expect_equal(length(ui$dataNameWidget$widget$children), 2L)
 
     ## data name is displayed as not loaded
     expect_equal(ui$dataNameWidget$datName, "No data loaded")
@@ -39,6 +42,11 @@ test_that("Primary UI widgets are loaded and displaying correctly", {
 # ui <<- iNZGUI$new(); ui$initializeGui()
 test_that("Data view loads", {
     expect_silent(ui$setDocument(iNZDocument$new(data = iris)))
+    expect_equal(
+        ui$dataNameWidget$widget$children[[2]]$get_value(),
+        "data"
+    )
+    expect_equal(length(ui$dataNameWidget$widget$children), 2L)
     expect_equal(ui$dataNameWidget$datName, "data")
     df <- ui$dataViewWidget$dfView$children[[1]]
     expect_is(df, "GDf")
