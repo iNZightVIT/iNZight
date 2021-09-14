@@ -41,6 +41,8 @@
 - Menu items disabled/hidden when specifying/removing survey design
 - `iNZSurveyDesign` and `iNZSurveyPostStrat` specification windows using new `iNZWindow` class, and improved accuracy of estimated population size display
 - Fix bug in R code history formatting
+- add CI level control to Get Inference window (#74, @tmelliott) and Plot Inference panel
+- Get Summary and Get Inference now scroll output window to the top (rather than the bottom)
 
 ## iNZight 4.1.4
 

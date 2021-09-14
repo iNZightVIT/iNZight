@@ -17,7 +17,7 @@ iNZPlotInfWin <- setRefClass(
         btnTab = "ANY",
         curSet = "list",
         intBtn = "ANY"
-        ),
+    ),
     methods = list(
         initialize = function(gui = NULL) {
             initFields(GUI = gui)
@@ -143,6 +143,14 @@ iNZBarchartInf <- setRefClass(
             typTab[3, 1] <<- confInt
             typTab[4, 1] <<- compInt
 
+            ## CI %
+            ci_level <- gspinbutton(
+                10, 99, 1,
+                value = curSet$ci.width * 100
+            )
+            typTab[3, 2] <<- ci_level
+            typTab[3, 3] <<- "%"
+
             ## Add function
             addIntervals <- function() {
                 ## Inference type depends on method (normal = both; bootstrap = only confidence [for now]..)
@@ -161,7 +169,8 @@ iNZBarchartInf <- setRefClass(
                 GUI$getActiveDoc()$setSettings(
                     list(
                         inference.type = inf.type,
-                        bs.inference = bs.inf
+                        bs.inference = bs.inf,
+                        ci.width = svalue(ci_level) / 100
                     )
                 )
                 updateSettings()
@@ -176,6 +185,8 @@ iNZBarchartInf <- setRefClass(
                 }
                 #if (svalue(mthd, index = TRUE) == 2) svalue(compInt) <- FALSE
 
+                enabled(ci_level) <- svalue(confInt)
+
                 addIntervals()
             }
 
@@ -186,6 +197,9 @@ iNZBarchartInf <- setRefClass(
                 handler = function(h, ...) enabler()
             )
             addHandlerChanged(confInt,
+                handler = function(h, ...) enabler()
+            )
+            addHandlerChanged(ci_level,
                 handler = function(h, ...) enabler()
             )
 
@@ -227,6 +241,14 @@ iNZDotchartInf <- setRefClass(
             typTab[3, 1] <<- confInt
             typTab[4, 1] <<- compInt
 
+            ## CI %
+            ci_level <- gspinbutton(
+                10, 99, 1,
+                value = curSet$ci.width * 100
+            )
+            typTab[3, 2] <<- ci_level
+            typTab[3, 3] <<- "%"
+
             ## Add function
             addIntervals <- function() {
                 if (svalue(parm, index = TRUE) == 2 & svalue(mthd, index = TRUE) == 1) {
@@ -255,7 +277,8 @@ iNZDotchartInf <- setRefClass(
                         mean_indicator = FALSE,
                         inference.type = inf.type,
                         inference.par = inf.par,
-                        bs.inference = bs.inf
+                        bs.inference = bs.inf,
+                        ci.width = svalue(ci_level) / 100
                     )
                 )
                 updateSettings()
@@ -281,6 +304,8 @@ iNZDotchartInf <- setRefClass(
                     svalue(parm, index = TRUE) == 1 |
                     svalue(mthd, index = TRUE) == 2
 
+                enabled(ci_level) <- svalue(confInt)
+
                 addIntervals()
             }
 
@@ -294,6 +319,9 @@ iNZDotchartInf <- setRefClass(
                 handler = function(h, ...) enabler()
             )
             addHandlerChanged(confInt,
+                handler = function(h, ...) enabler()
+            )
+            addHandlerChanged(ci_level,
                 handler = function(h, ...) enabler()
             )
 
@@ -433,13 +461,25 @@ iNZScatterInf <- setRefClass(
 
             metTab[3, 1] <<- mthd
 
+            ## Interval types:
+            typTab[3, 1, anchor = c(-1, 0), expand = TRUE] <<- "Confidence Region"
+
+            ## CI %
+            ci_level <- gspinbutton(
+                10, 99, 1,
+                value = curSet$ci.width * 100
+            )
+            typTab[3, 2] <<- ci_level
+            typTab[3, 3] <<- "%"
+
             ## Add function
             addIntervals <- function() {
                 bs.inf <- svalue(mthd, index = TRUE) == 2
                 GUI$getActiveDoc()$setSettings(
                     list(
                         inference.type = "conf",
-                        bs.inference = bs.inf
+                        bs.inference = bs.inf,
+                        ci.width = svalue(ci_level) / 100
                     )
                 )
                 updateSettings()
@@ -448,6 +488,10 @@ iNZScatterInf <- setRefClass(
             addHandlerChanged(mthd,
                 handler = function(h, ...) addIntervals()
             )
+            addHandlerChanged(ci_level,
+                handler = function(h, ...) addIntervals()
+            )
+
             addIntervals()
         }
     )
