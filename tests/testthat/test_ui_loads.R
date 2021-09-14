@@ -21,6 +21,10 @@ test_that("GUI is loaded and initialized without problems", {
 })
 
 test_that("Primary UI widgets are loaded and displaying correctly", {
+    ## "Load Data" button displayed instead of dataset selection
+    expect_false(visible(ui$dataNameWidget$nameLabel))
+    expect_true(visible(ui$dataNameWidget$import_button))
+
     ## data name is displayed as not loaded
     expect_equal(ui$dataNameWidget$datName, "No data loaded")
 

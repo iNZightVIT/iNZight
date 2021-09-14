@@ -365,6 +365,7 @@ iNZDataNameWidget <- setRefClass(
     "iNZDataNameWidget",
     fields = list(
         GUI = "ANY",  ## the iNZight GUI object
+        import_button = "ANY",
         datName = "ANY", ## the string for the data set name
         widget = "ANY",
         nameLabel = "ANY"
@@ -379,6 +380,7 @@ iNZDataNameWidget <- setRefClass(
             widget <<- ggroup()
             addSpace(widget, 50)
             add(widget, glabel("Data set: "))
+
             nameLabel <<- gcombobox(.self$datName,
                 handler = function(h, ...) {
                     ## prevent code writing ...
@@ -389,23 +391,30 @@ iNZDataNameWidget <- setRefClass(
                     GUI$ctrlWidget$setState(pset)
                 }
             )
-            add(widget, nameLabel, expand = TRUE)
-            enabled(nameLabel) <<- FALSE
+            # add(widget, nameLabel, expand = TRUE)
+
+            import_button <<- gbutton("Import data ...",
+                handler = function(h, ...) iNZImportWin$new(gui)
+            )
+            import_button$set_icon("gw-file")
+            add(widget, import_button, expand = TRUE)
 
             updateWidget()
         },
         updateWidget = function() {
             dataSet <- GUI$getActiveData()
-            if(is.null(dataSet)){
+            if (is.null(dataSet) || names(dataSet)[1] == "empty"){
                 datName <<- "No data loaded"
-                enabled(nameLabel) <<- FALSE
-            } else {
-                if((names(dataSet)[1] == "empty"))
-                    datName <<- "No data loaded"
-                else {
-                    datName <<- attr(dataSet, "name", exact = TRUE)
+                if (identical(widget$children[[2]], nameLabel)) {
+                    widget$remove_child(nameLabel)
+                    add(widget, import_button, expand = TRUE)
                 }
-                enabled(nameLabel) <<- TRUE
+            } else {
+                datName <<- attr(dataSet, "name", exact = TRUE)
+                if (identical(widget$children[[2]], import_button)) {
+                    widget$remove_child(import_button)
+                    add(widget, nameLabel, expand = TRUE)
+                }
             }
             names <- sapply(GUI$iNZDocuments,
                 function(d) {
