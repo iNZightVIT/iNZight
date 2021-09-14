@@ -5,7 +5,7 @@ github_deps <- c(
     "iNZightVIT/iNZightTools@dev",
     "iNZightVIT/iNZightTS@1.5.4",
     "iNZightVIT/iNZightMR@2.2.5",
-    "iNZightVIT/iNZightPlots@feature/ci-width",
+    "iNZightVIT/iNZightPlots@dev",
     "iNZightVIT/iNZightRegression@1.2.8",
     "iNZightVIT/iNZightModules@2.5.3"
 )
