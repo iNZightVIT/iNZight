@@ -588,6 +588,13 @@ iNZGetInference <- setRefClass(
                 font(info_text) <<- info_font
                 Sys.sleep(0.1)
             }
+            GUI$getActiveDoc()$setSettings(
+                list(
+                    bs.inference = curSet$bs.inference,
+                    trend = curSet$trend,
+                    ci.width = curSet$ci.width
+                )
+            )
             smry_call <- gen_call()
             set_input(mend_call(smry_call, GUI))
 
@@ -863,7 +870,7 @@ iNZGetInference <- setRefClass(
             }
 
             adv_opts <- list(
-                ci_level = !is_survey
+                ci_level = TRUE
             )
 
             if (any(unlist(adv_opts))) {
@@ -964,8 +971,6 @@ iNZGetInference <- setRefClass(
         handle_trend = function() {
             chosen <- sapply(trend_choice, function(x) svalue(x))
             curSet$trend <<- if (any(chosen)) names(trend_choice)[chosen] else NULL
-            # update the plot, too...
-            GUI$getActiveDoc()$setSettings(list(trend = curSet$trend))
             update_inference()
         }
     )
