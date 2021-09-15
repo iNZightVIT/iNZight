@@ -33,22 +33,23 @@ test_that("UI correctly displays the data", {
     ## data view disabled; list view enabled
     expect_false(enabled(ui$dataToolbarWidget$dataBtn))
     expect_true(enabled(ui$dataToolbarWidget$listBtn))
+    expect_equal(ui$dataViewWidget$current, "data")
 
     ## clicking list view chanes the data view
-    expect_true(visible(ui$dataViewWidget$dataGp$children[[1]]))
-    expect_false(visible(ui$dataViewWidget$dataGp$children[[2]]))
-
     expect_silent(ui$dataToolbarWidget$listBtn$invoke_change_handler())
-    expect_false(visible(ui$dataViewWidget$dataGp$children[[1]]))
-    expect_true(visible(ui$dataViewWidget$dataGp$children[[2]]))
+    expect_equal(ui$dataViewWidget$current, "variables")
 
-    expect_equal(ui$dataViewWidget$dataGp$children[[2]]$children[[1]]$get_names(),
-        c("VARIABLES (n = numeric, c = categorical, dt = date/time)"))
-    expect_equal(ui$dataViewWidget$dataGp$children[[2]]$children[[1]]$get_items(),
-        c("(n) A", "(c) B"))
-
-
-
+    expect_equal(
+        ui$dataViewWidget$varView$children[[1]]$get_names(),
+        c("Variable", "Type")
+    )
+    expect_equivalent(
+        ui$dataViewWidget$varView$children[[1]]$get_items(),
+        data.frame(
+            Variable = c("A", "B"),
+            Type = c("numeric", "categorical")
+        )
+    )
 
     ## variable options are correct
     expect_equal(ui$ctrlWidget$V1box$get_items()[-1], c("A", "B"))

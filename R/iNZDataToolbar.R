@@ -5,6 +5,8 @@ iNZDataToolbar <- setRefClass(
         viewGroup = "ANY",
         dataBtn = "ANY",
         listBtn = "ANY",
+        infoBtn = "ANY",
+        searchBtn = "ANY",
         ## max size before dataview gets deactived
         dataThreshold = "numeric"
     ),
@@ -31,15 +33,28 @@ iNZDataToolbar <- setRefClass(
             tooltip(listBtn) <<- "View variables"
             listBtn$set_icon("file")
 
-            dataSet <- GUI$getActiveData()
-            ## if the data size is below threshold, start in data view,
-            ## otherwise start don't allow view switching
-            enabled(dataBtn) <<- FALSE
-            if (nrow(dataSet) * ncol(dataSet) >= dataThreshold)
-                enabled(listBtn) <<- FALSE
+            infoBtn <<- gbutton(
+                "",
+                handler = function(h, ...) gmessage("Dataset info")
+            )
+            tooltip(infoBtn) <<- "Dataset information"
+            infoBtn$set_icon("info")
+
+            searchBtn <<- gbutton(
+                "",
+                handler = function(h, ...) {
+                    GUI$dataViewWidget$toggle_search()
+                }
+            )
+            tooltip(searchBtn) <<- "Search for / Filter variables"
+            searchBtn$set_icon("ed-search")
 
             add(viewGroup, dataBtn)
             add(viewGroup, listBtn)
+            add(viewGroup, infoBtn)
+            add(viewGroup, searchBtn)
+
+            updateWidget()
         },
         viewData = function(h, ...) {
             dataSet <- GUI$getActiveData() ## get the active dataSet
@@ -77,6 +92,14 @@ iNZDataToolbar <- setRefClass(
         ## and enable the buttongs accordingly
         updateWidget = function() {
             dataSet <- GUI$getActiveData()
+            if (is.null(dataSet) || names(dataSet)[1] == "empty") {
+                enabled(listBtn) <<-
+                    enabled(dataBtn) <<-
+                    enabled(infoBtn) <<-
+                    enabled(searchBtn) <<- FALSE
+                return()
+            }
+            enabled(infoBtn) <<- enabled(searchBtn) <<- TRUE
             if (nrow(dataSet) * ncol(dataSet) >= dataThreshold) {
                 enabled(listBtn) <<- FALSE
                 enabled(dataBtn) <<- FALSE

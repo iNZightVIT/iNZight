@@ -378,8 +378,7 @@ iNZDataNameWidget <- setRefClass(
             )
 
             widget <<- ggroup()
-            addSpace(widget, 50)
-            add(widget, glabel("Data set: "))
+            add(widget, glabel("Dataset: "))
 
             nameLabel <<- gcombobox(.self$datName,
                 handler = function(h, ...) {

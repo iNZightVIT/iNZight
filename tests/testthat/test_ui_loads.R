@@ -50,7 +50,10 @@ test_that("Data view loads", {
     expect_equal(ui$dataNameWidget$datName, "data")
     df <- ui$dataViewWidget$dfView$children[[1]]
     expect_is(df, "GDf")
-    expect_equal(df$get_dim(), c(rows = 150, cols = 5))
+    expect_equal(
+        df$get_dim(),
+        c(rows = length(ui$dataViewWidget$paginate$rows), cols = 5)
+    )
 })
 
 test_that("UI closes quietly", {
@@ -62,11 +65,11 @@ test_that("UI closes quietly", {
 test_that("Variable list can be searched", {
     ui$initializeGui(gapminder)
     ui$dataViewWidget$listView()
-    expect_true(visible(ui$dataViewWidget$varView))
+    expect_equal(ui$dataViewWidget$current, "variables")
 
     svalue(ui$dataViewWidget$searchBox) <- "pop"
     expect_equal(
-        ui$dataViewWidget$varWidget$get_items(),
+        ui$dataViewWidget$varWidget$get_items()$Variable,
         names(gapminder)[grepl("pop", names(gapminder), ignore.case = TRUE)]
     )
 })
