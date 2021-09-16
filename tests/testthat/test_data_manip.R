@@ -29,7 +29,7 @@ test_that("Filtering data leaves code OK", {
     ui$getActiveDoc()$setSettings(list(colby = as.name("gender")))
     expect_match(
         svalue(ui$code_panel$input),
-        "inzplot(height ~ armspan, colby = gender, data = data)",
+        "inzplot(height ~ armspan, colby = gender, data = census.at.school.500)",
         fixed = TRUE
     )
 
@@ -48,7 +48,7 @@ test_that("Filtering data leaves code OK", {
     expect_silent(w$ok_button$invoke_change_handler())
     expect_match(
         svalue(ui$code_panel$input),
-        "inzplot(height ~ armspan, colby = gender, data = data.filtered)",
+        "inzplot(height ~ armspan, colby = gender, data = census.at.school.500.filtered)",
         fixed = TRUE
     )
 

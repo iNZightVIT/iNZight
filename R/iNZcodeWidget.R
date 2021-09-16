@@ -40,6 +40,9 @@ iNZcodeWidget <- setRefClass(
             code <- do.call(c,
                 lapply(history,
                     function(x) {
+                        x <- gsub("^#", "\n#", x)
+                        x <- paste(x, collapse = " ")
+
                         y <- iNZightTools::tidy_all_code(
                             x,
                             width = width,
