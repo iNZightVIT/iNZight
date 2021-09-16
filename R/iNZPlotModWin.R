@@ -292,6 +292,7 @@ iNZPlotModWin <- setRefClass(
                 handler = function(h, ...)
                     help_page("user_guides/plot_options/?topic=add_to_plot")
             )
+            helpButton$set_icon("gw-help_topic")
 
             okButton <<- gbutton("Home",
                 expand = TRUE,
@@ -3590,7 +3591,7 @@ iNZPlotMod <- setRefClass(
                             checked = !is.null(ctrans$y) && ctrans$x == "log10"
                         )
                 }
-                
+
                 # disable log-x if x has any non-positive values
                 anyNeg <- FALSE
                 if (any(xvar <= 0, na.rm = TRUE)) {
@@ -3613,7 +3614,7 @@ iNZPlotMod <- setRefClass(
 
                 if (anyNeg) {
                     tbl[ii, 1:6, expand = TRUE, anchor = c(0, 0)] <- glabel(
-                        paste(sep = "\n", 
+                        paste(sep = "\n",
                             "NOTE: One or more variables contain negative values",
                             "which cannot be logged. Remove these values using",
                             "'Dataset > Filter' to log-transform the axes."

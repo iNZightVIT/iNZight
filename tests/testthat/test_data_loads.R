@@ -63,42 +63,36 @@ test_that("Example data menus work correctly", {
     skip_if_not_installed("iNZightModules")
 
     exwin <- iNZImportExampleWin$new(ui)
-    mod <- exwin$importFileWin$children[[1]]$children[[1]]$children[[2]]
-    expect_equal(svalue(mod), "Default")
-    # expect_equal(mod$get_items(),
-    #     c("Default", "Multiple Response", "Time Series",
-    #       "Maps", "Survey", "FutureLearn")
-    # )
-    ds <- exwin$importFileWin$children[[1]]$children[[1]]$children[[4]]
-    expect_equal(svalue(ds), character())
-    expect_equal(length(ds$get_items()), 3)
+    expect_equal(svalue(exwin$dsPkg), "Default")
+    expect_equal(exwin$dsPkg$get_items(),
+        c("Default", "Multiple Response", "Time Series",
+          "Maps", "Survey", "FutureLearn")
+    )
+    expect_equal(svalue(exwin$dsData), character())
+    expect_equal(length(exwin$dsData$get_items()), 3L)
 
     # set a package
-    expect_silent(svalue(mod) <- "Time Series")
-    expect_equal(ds$get_items(),
+    expect_silent(svalue(exwin$dsPkg) <- "Time Series")
+    expect_equal(exwin$dsData$get_items(),
         c("seaice", "visitorsA2", "visitorsM2", "visitorsQ")
     )
-    dn <- exwin$importFileWin$children[[1]]$children[[1]]$children[[6]]
-    expect_equal(svalue(dn), "")
+    expect_equal(svalue(exwin$dsTitle), "")
 
     # choose data
-    expect_silent(svalue(ds) <- "seaice")
-    expect_equal(svalue(dn), "Sea Ice")
+    expect_silent(svalue(exwin$dsData) <- "seaice")
+    expect_equal(svalue(exwin$dsTitle), "Sea Ice")
 
     # choose another package resets fields
-    expect_silent(svalue(mod) <- "Default")
-    expect_equal(svalue(ds, TRUE), 0)
-    expect_equal(svalue(dn), "")
+    expect_silent(svalue(exwin$dsPkg) <- "Default")
+    expect_equal(svalue(exwin$dsData, TRUE), 0)
+    expect_equal(svalue(exwin$dsTitle), "")
 
-    expect_silent(svalue(ds) <- "census.at.school.500")
-    # expect_equal(svalue(dn), "Census at School 500")
+    expect_silent(svalue(exwin$dsData) <- "census.at.school.500")
+    expect_equal(svalue(exwin$dsTitle), "census.at.school.500")
 
     # load it
-    expect_silent(
-        exwin$importFileWin$children[[1]]$children[[2]]$children[[2]]$invoke_change_handler()
-    )
+    expect_silent(exwin$ok_button$invoke_change_handler())
     expect_equal(ui$dataNameWidget$datName, "census.at.school.500_ex")
-
 })
 
 test_that("CSV files load", {
@@ -110,7 +104,7 @@ test_that("CSV files load", {
     )
     expect_is(imp$prevGp$children[[2]], "GDf")
     expect_equal(imp$prevGp$children[[2]]$get_dim(), c(rows = 5, cols = 10))
-    expect_silent(imp$okBtn$invoke_change_handler())
+    expect_silent(imp$ok_button$invoke_change_handler())
     expect_equal(
         names(ui$getActiveData()),
         c("cellsource", "rightfoot", "travel", "getlunch", "height",
@@ -131,7 +125,7 @@ test_that("SAS (.sas7bdat) files load", {
     )
     expect_is(imp$prevGp$children[[2]], "GDf")
     expect_equal(imp$prevGp$children[[2]]$get_dim(), c(rows = 5, cols = 7))
-    imp$okBtn$invoke_change_handler()
+    imp$ok_button$invoke_change_handler()
     # expect_silent(imp$okBtn$invoke_change_handler())
     expect_equal(
         names(ui$getActiveData()),
@@ -152,7 +146,7 @@ test_that("SAS Xport (.xpt) files load", {
     )
     expect_is(imp$prevGp$children[[2]], "GDf")
     expect_equal(imp$prevGp$children[[2]]$get_dim(), c(rows = 5, cols = 5))
-    imp$okBtn$invoke_change_handler()
+    imp$ok_button$invoke_change_handler()
     # expect_silent(imp$okBtn$invoke_change_handler())
     expect_equal(
         names(ui$getActiveData()),
@@ -192,7 +186,7 @@ test_that("Switching variable types works (csv)", {
         )
     )
 
-    imp$okBtn$invoke_change_handler()
+    imp$ok_button$invoke_change_handler()
     expect_is(ui$getActiveData()$year, "factor")
 })
 
@@ -208,7 +202,7 @@ test_that("Date times are supported (csv)", {
         imp$prev$get_names(),
         c("x (d)", "y (t)", "z (dt)")
     )
-    imp$okBtn$invoke_change_handler()
+    imp$ok_button$invoke_change_handler()
     expect_is(ui$getActiveData()$x, "Date")
     expect_is(ui$getActiveData()$y, "hms")
     expect_is(ui$getActiveData()$z, "POSIXct")
@@ -231,7 +225,7 @@ test_that("RData files display list of objects", {
     expect_equal(svalue(imp$rdaName), "iris")
     expect_equal(imp$rdaName$get_items(), c("iris", "census.at.school.500"))
     expect_silent(svalue(imp$rdaName, index = TRUE) <- 2)
-    imp$okBtn$invoke_change_handler()
+    imp$ok_button$invoke_change_handler()
 })
 
 
@@ -247,7 +241,7 @@ test_that("Excel files load and display available sheets", {
     expect_equal(imp$rdaName$get_items(), c("Africa", "Americas", "Asia", "Europe", "Oceania"))
     expect_equal(svalue(imp$rdaName), "Africa")
     expect_silent(svalue(imp$rdaName, index = TRUE) <- 3)
-    expect_silent(imp$okBtn$invoke_change_handler())
+    expect_silent(imp$ok_button$invoke_change_handler())
     expect_true(all(as.character(ui$getActiveData()$continent) == "Asia"))
 })
 
@@ -261,7 +255,7 @@ test_that("User can choose to load a URL", {
     svalue(imp$loadURL) <- TRUE
     svalue(imp$fileurl) <- "https://raw.githubusercontent.com/iNZightVIT/iNZight/dev/tests/testthat/cas5.csv"
     expect_equal(imp$fext, "csv")
-    expect_silent(imp$okBtn$invoke_change_handler())
+    expect_silent(imp$ok_button$invoke_change_handler())
     expect_equivalent(
         ui$getActiveData(),
         iNZightTools::smart_read("cas5.csv")
@@ -315,7 +309,7 @@ test_that("Data sets with many columns can change var types", {
         all = FALSE
     )
 })
-imp$cancelBtn$invoke_change_handler()
+imp$cancel_button$invoke_change_handler()
 
 
 if (interactive()) {
@@ -335,7 +329,7 @@ test_that("JSON files load", {
     imp$setfile()
     expect_equal(imp$fext, "json")
     expect_equal(dim(imp$prev), c(rows = 5L, cols = 5L))
-    expect_silent(imp$okBtn$invoke_change_handler())
+    expect_silent(imp$ok_button$invoke_change_handler())
     expect_equivalent(ui$getActiveData(), iris)
     expect_match(
         ui$rhistory$get(),

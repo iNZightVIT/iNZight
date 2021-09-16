@@ -97,6 +97,7 @@ iNZPlotInfWin <- setRefClass(
                 handler = function(h, ...)
                     help_page("user_guides/plot_options/?topic=plot_inference")
             )
+            helpButton$set_icon("gw-help_topic")
 
             okButton <- gbutton("Home",
                 expand = TRUE,

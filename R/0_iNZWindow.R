@@ -93,6 +93,7 @@ iNZWindow <- setRefClass("iNZWindow",
                         help_page(help_url)
                 )
                 size(help_button) <<- c(120, -1)
+                help_button$set_icon("gw-help_topic")
             }
 
             toolbar <<- ggroup(container = footer)

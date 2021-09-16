@@ -598,7 +598,7 @@ test_that("Survey data can be imported from svydesign file", {
     )
     expect_is(imp$prevGp$children[[2]], "GDf")
     expect_equal(imp$prevGp$children[[2]]$get_dim(), c(rows = 30L, cols = 3L))
-    expect_silent(imp$okBtn$invoke_change_handler())
+    expect_silent(imp$ok_button$invoke_change_handler())
     expect_equivalent(ui$getActiveData(), ncsr)
     expect_is(ui$getActiveDoc()$getModel()$getDesign()$design, "survey.design")
 })

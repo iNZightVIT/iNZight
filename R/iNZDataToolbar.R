@@ -24,7 +24,7 @@ iNZDataToolbar <- setRefClass(
                 handler = function(h,...) .self$viewData(h,...)
             )
             tooltip(dataBtn) <<- "View dataset"
-            dataBtn$set_icon("dataframe")
+            dataBtn$set_icon("gw-datasheet")
 
             listBtn <<- gbutton(
                 "",

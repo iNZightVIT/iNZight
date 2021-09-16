@@ -79,6 +79,7 @@ iNZSurveyDesign <- setRefClass(
 
             readFileBtn <<- gbutton("Read from file",
                 handler = function(h, ...) read_file())
+            readFileBtn$set_icon("gw-file")
             add_toolbar(readFileBtn)
 
             ## Populate the lists:

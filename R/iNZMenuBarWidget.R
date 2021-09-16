@@ -99,6 +99,22 @@ iNZMenuBarWidget <- setRefClass(
             if (GUI$preferences$dev.features) {
                 m <- c(
                     list(
+                        load = gaction("Load [beta]",
+                            icon = "open",
+                            tooltip = "Load a saved iNZight session",
+                            handler = function(h, ...) {
+                                f <- gfile(
+                                    text = "Load [beta]",
+                                    type = "open",
+                                    filter = list(
+                                        "iNZight save files (*.inzsave)" = list(patterns = c("*.inzsave")),
+                                        "All files" = list(patterns = "*")
+                                    )
+                                )
+                                GUI$loadState(f)
+                                invisible(NULL)
+                            }
+                        ),
                         save = gaction("Save [beta]",
                             icon = "save",
                             tooltip = "Save the current iNZight session",
@@ -122,26 +138,14 @@ iNZMenuBarWidget <- setRefClass(
                                 )
                             }
                         ),
-                        load = gaction("Load [beta]",
-                            icon = "open",
-                            tooltip = "Load a saved iNZight session",
-                            handler = function(h, ...) {
-                                f <- gfile(
-                                    text = "Load [beta]",
-                                    type = "open",
-                                    filter = list(
-                                        "iNZight save files (*.inzsave)" = list(patterns = c("*.inzsave")),
-                                        "All files" = list(patterns = "*")
-                                    )
-                                )
-                                GUI$loadState(f)
-                                invisible(NULL)
-                            }
-                        ),
                         gseparator()
                     ),
                     m
                 )
+            }
+            if (!hasData()) {
+                enabled(m$export) <- FALSE
+                if (!is.null(m$save)) enabled(m$save) <- FALSE
             }
             m
         },

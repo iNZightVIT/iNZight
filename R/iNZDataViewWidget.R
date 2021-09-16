@@ -87,6 +87,8 @@ iNZDataViewWidget <- setRefClass(
             searchGp <<- ggroup()
             addSpace(searchGp, 5)
 
+            lbl <- glabel("Filter/search variables :", container = searchGp)
+
             searchtimer <- NULL
             searchBox <<- gedit(
                 handler = function(h, ...) {

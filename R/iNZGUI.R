@@ -226,7 +226,15 @@ iNZGUI <- setRefClass(
             add(gp1, initializeControlWidget()$ctrlGp, expand = FALSE)
 
             ## set up the summary buttongs
-            add(gp1, initializeSummaryBtns())
+            lowerBtnGroup <- ggroup(container = gp1)
+            lowerBtnGroup$set_borderwidth(4)
+
+            # ctrlHelp <- gbutton("Help", container = lowerBtnGroup,
+            #     handler = function(h, ...) {
+            #         help_page("user_guides/interface")
+            #     }
+            # )
+            add(lowerBtnGroup, initializeSummaryBtns(), expand = TRUE)
 
             ## set up widgets in the right group
             grpRight <- ggroup(horizontal = popOut,
@@ -948,6 +956,7 @@ iNZGUI <- setRefClass(
                     footer =
                         ggroup(container = modContainer)
                 )
+            moduleWindow$footer$set_borderwidth(4)
 
             if (!missing(title)) {
                 title <- glabel(title)

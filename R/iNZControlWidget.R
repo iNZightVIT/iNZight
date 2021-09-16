@@ -17,6 +17,8 @@ iNZControlWidget <- setRefClass(
             ## set up glayout
             tbl <- glayout(expand = TRUE, homogeneous = FALSE, cont = ctrlGp, spacing = 5)
 
+            clear_icon <- "clear"
+
             ### DRAG/DROP MENUS
             V1box <<- gcombobox(
                 c("Select/Drag-drop Variable 1", colnames(GUI$getActiveData()))
@@ -41,7 +43,7 @@ iNZControlWidget <- setRefClass(
 
             ## -- Variable 1
             V1clearbtn <- gimagebutton(
-                stock.id = "cancel",
+                stock.id = "clear",
                 tooltip = "Clear Variable",
                 handler = function(h,...) {
                     svalue(V1box, index = TRUE) <<- 1L
@@ -53,7 +55,7 @@ iNZControlWidget <- setRefClass(
 
             ## -- Variable 2
             V2clearbtn <- gimagebutton(
-                stock.id = "cancel",
+                stock.id = "clear",
                 tooltip = "Clear Variable",
                 handler = function(h,...) {
                     svalue(V2box, index = TRUE) <<- 1L
@@ -71,7 +73,7 @@ iNZControlWidget <- setRefClass(
 
             ## -- Grouping Variable 1
             G1clearbtn <- gimagebutton(
-                stock.id = "cancel",
+                stock.id = "clear",
                 tooltip = "Clear Variable",
                 handler = function(h,...) {
                     svalue(G1box, index = TRUE) <<- 1L
@@ -82,7 +84,7 @@ iNZControlWidget <- setRefClass(
 
             ## -- Grouping Variable 2
             G2clearbtn <- gimagebutton(
-                stock.id = "cancel",
+                stock.id = "clear",
                 tooltip = "Clear Variable",
                 handler = function(h,...) {
                     svalue(G2box, index = TRUE) <<- 1L
