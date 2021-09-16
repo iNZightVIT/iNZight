@@ -209,7 +209,7 @@ iNZMenuBarWidget <- setRefClass(
                         handler = function(h, ...) GUI$view_dataset()
                     ),
                 rename =
-                    gaction("Rename ...",
+                    gaction("Rename dataset ...",
                         icon = "editor",
                         handler = function(h, ...) iNZRenameDataWin$new(GUI)),
                 restore =

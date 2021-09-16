@@ -156,6 +156,8 @@ iNZGUI <- setRefClass(
                 height = preferences$window.size[2]
             )
 
+            if (!is.null(data) && is.null(attr(data, "name", exact = TRUE)))
+                attr(data, "name") <- deparse(substitute(data))
             iNZDocuments <<- list(iNZDocument$new(data = data))
 
             ## Check for updates ... need to use try incase it fails (no connection etc)

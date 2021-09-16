@@ -44,10 +44,10 @@ test_that("Data view loads", {
     expect_silent(ui$setDocument(iNZDocument$new(data = iris)))
     expect_equal(
         ui$dataNameWidget$widget$children[[2]]$get_value(),
-        "data"
+        "iris"
     )
     expect_equal(length(ui$dataNameWidget$widget$children), 2L)
-    expect_equal(ui$dataNameWidget$datName, "data")
+    expect_equal(ui$dataNameWidget$datName, "iris")
     df <- ui$dataViewWidget$dfView$children[[1]]
     expect_is(df, "GDf")
     expect_equal(

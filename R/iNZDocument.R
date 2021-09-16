@@ -303,6 +303,9 @@ iNZDocument <- setRefClass(
     ),
     methods = list(
         initialize = function(data = NULL, settings = NULL) {
+            ## set data name (default = "data")
+            if (!is.null(data) && is.null(attr(data, "name", exact = TRUE)))
+                attr(data, "name") <- deparse(substitute(data))
             initFields(
                 dataModel = iNZDataModel$new(data),
                 plotSettings = iNZPlotSettings$new(settings)

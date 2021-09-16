@@ -103,6 +103,7 @@ iNZWindow <- setRefClass("iNZWindow",
                     handler = function(h, ...) close()
                 )
                 size(cancel_button) <<- c(120, -1)
+                cancel_button$set_icon("close")
             } else {
                 cancel_button <<- NULL
             }
@@ -114,6 +115,7 @@ iNZWindow <- setRefClass("iNZWindow",
                 }
             )
             size(ok_button) <<- c(120, -1)
+            ok_button$set_icon("ok")
 
             switch(GUI$OS,
                 "windows" = {
