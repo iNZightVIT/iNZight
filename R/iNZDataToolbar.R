@@ -100,17 +100,13 @@ iNZDataToolbar <- setRefClass(
                 return()
             }
             enabled(infoBtn) <<- enabled(searchBtn) <<- TRUE
-            if (nrow(dataSet) * ncol(dataSet) >= dataThreshold) {
-                enabled(listBtn) <<- FALSE
+
+            if (visible(GUI$dataViewWidget$dfView)) {
+                enabled(listBtn) <<- TRUE
                 enabled(dataBtn) <<- FALSE
             } else {
-                if (visible(GUI$dataViewWidget$dfView)) {
-                    enabled(listBtn) <<- TRUE
-                    enabled(dataBtn) <<- FALSE
-                } else {
-                    enabled(listBtn) <<- FALSE
-                    enabled(dataBtn) <<- TRUE
-                }
+                enabled(listBtn) <<- FALSE
+                enabled(dataBtn) <<- TRUE
             }
         }
     )

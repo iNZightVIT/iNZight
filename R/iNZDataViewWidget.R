@@ -3,12 +3,16 @@ iNZDataViewWidget <- setRefClass(
     fields = list(
         GUI = "ANY", ## the iNZight GUI object
         widget = "ANY",
+        landingView = "ANY",
         dataGp = "ANY", ## group containing the 2 different view groups
         current = "character",
         dfView = "ANY", ## group that contains data view
         varView = "ANY", ## group that contains variable view
         data = "ANY",
         paginate = "list",
+        btnPrev = "ANY",
+        btnNext = "ANY",
+        pageLbl = "ANY",
         columns = "character",
         ## max size before dataview gets deactived
         dataThreshold = "numeric",
@@ -34,12 +38,13 @@ iNZDataViewWidget <- setRefClass(
             dataGp <<- gvbox(expand = TRUE, container = widget)
             set_data()
 
+            createLandingView()
             createDfView()
             createVarView()
 
             show("data")
         },
-        show = function(what = c("data", "variables")) {
+        show = function(what = c("data", "variables", "landing")) {
             what <- match.arg(what)
             if (current != "" && what == current) return()
 
@@ -53,17 +58,30 @@ iNZDataViewWidget <- setRefClass(
                 silent = TRUE
             )
 
+            if (nrow(GUI$getActiveData()) == 1L &&
+                colnames(GUI$getActiveData())[1] == "empty")
+            {
+                show_landing()
+                return()
+            }
+
             switch(what,
+                "landing" = ,
                 "data" = show_data(),
                 "variables" = show_variables()
             )
-            current <<- what
+        },
+        show_landing = function() {
+            add(dataGp, landingView, expand = TRUE)
+            current <<- "landing"
         },
         show_data = function() {
             add(dataGp, dfView, expand = TRUE)
+            current <<- "data"
         },
         show_variables = function() {
             add(dataGp, varView, expand = TRUE)
+            current <<- "variables"
         },
         init_search = function () {
             searchGp <<- ggroup()
@@ -79,13 +97,9 @@ iNZDataViewWidget <- setRefClass(
                     else
                         matches <- names(GUI$getActiveData())[matches]
 
-                    paginate <<- list(cols = 1:50, rows = 1:20)
+                    paginate$cols <<- 1:50
                     columns <<- matches
                     set_data()
-
-                    # cn <- varWidget$get_names()
-                    # varWidget$set_items(matches)
-                    # varWidget$set_names(cn)
                 },
                 container = searchGp,
                 expand = TRUE
@@ -155,15 +169,24 @@ iNZDataViewWidget <- setRefClass(
         updateDfView = function() {
             createDfView()
         },
+        createLandingView = function() {
+            # only needs to run once
+            landingView <<- gvbox()
+            landingView$set_borderwidth(10)
+            lbl <- glabel("To get started, Import a dataset")
+            font(lbl) <- list(size = 12)
+            add(landingView, lbl, anchor = c(-1, 0))
+        },
         ## create the data.frame view (invisible)
         createDfView = function() {
-            dfView <<- ggroup(container = dataGp, expand = TRUE)
+            dfView <<- gvbox(expand = TRUE)
 
             ## This will be paginated, at some stage:
             dfWidget <- gdf(data, expand = TRUE)
             ## dfWidget$remove_popup_menu() ## - called by $add_dnd_columns()
             dfWidget$add_dnd_columns()
             add(dfView, dfWidget, expand = TRUE)
+
             ## if the data.frame gets edited, update the iNZDocument
             addHandlerChanged(
                 dfWidget,
@@ -175,10 +198,43 @@ iNZDataViewWidget <- setRefClass(
                     # GUI$getActiveDoc()$getModel()$updateData(X1)
                 }
             )
+
+            # pagination
+            pageGp <- ggroup(container = dfView)
+            addSpring(pageGp)
+
+            btnPrev <<- gbutton("", container = pageGp,
+                handler = function(h, ...) {
+                    if (min(paginate$rows) == 1L) return()
+                    paginate$rows <<- paginate$rows - length(paginate$rows)
+                    updateWidget()
+                }
+            )
+            btnPrev$set_icon("go-up")
+            enabled(btnPrev) <<- min(paginate$rows) > 1L
+
+            pageLbl <<- glabel(
+                sprintf("Rows %s of %s",
+                    paste(range(paginate$rows), collapse = "-"),
+                    nrow(GUI$getActiveData())
+                ),
+                container = pageGp
+            )
+            font(pageLbl) <<- list(size = 8)
+
+            btnNext <<- gbutton("", container = pageGp,
+                handler = function(h, ...) {
+                    if (max(paginate$rows) >= nrow(GUI$getActiveData())) return()
+                    paginate$rows <<- paginate$rows + length(paginate$rows)
+                    updateWidget()
+                }
+            )
+            btnNext$set_icon("go-down")
+            enabled(btnNext) <<- max(paginate$rows) < nrow(GUI$getActiveData())
         },
         ## create variable view (invisible)
         createVarView = function() {
-            varView <<- gvbox(container = dataGp, expand = TRUE)
+            varView <<- gvbox(expand = TRUE)
 
             ## prefix variable type to variable names
             vnames <- if (length(columns)) columns else colnames(GUI$getActiveData())
@@ -216,14 +272,10 @@ iNZDataViewWidget <- setRefClass(
         ## set view to data.frame view
         dataView = function() {
             show("data")
-            # visible(varView) <<- FALSE
-            # visible(dfView) <<- TRUE
         },
         ## set view to list of columns
         listView = function() {
             show("variables")
-            # visible(dfView) <<- FALSE
-            # visible(varView) <<- TRUE
         }
     )
 )

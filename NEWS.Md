@@ -46,6 +46,7 @@
 - Data view/switch widget updated/refactored
   - `iNZViewSwitcherWidget` -> `iNZDataToolbar`
   - "View dataset" and "View variables" buttons replaced by icons
+  - Spreadsheet view is paginated, so even large datasets can now be viewed
 
 ## iNZight 4.1.4
 
