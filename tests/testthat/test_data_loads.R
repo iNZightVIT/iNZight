@@ -64,10 +64,10 @@ test_that("Example data menus work correctly", {
 
     exwin <- iNZImportExampleWin$new(ui)
     expect_equal(svalue(exwin$dsPkg), "Default")
-    expect_equal(exwin$dsPkg$get_items(),
-        c("Default", "Multiple Response", "Time Series",
-          "Maps", "Survey", "FutureLearn")
-    )
+    # expect_equal(exwin$dsPkg$get_items(),
+    #     c("Default", "Multiple Response", "Time Series",
+    #       "Maps", "Survey", "FutureLearn")
+    # )
     expect_equal(svalue(exwin$dsData), character())
     expect_equal(length(exwin$dsData$get_items()), 3L)
 
@@ -88,7 +88,7 @@ test_that("Example data menus work correctly", {
     expect_equal(svalue(exwin$dsTitle), "")
 
     expect_silent(svalue(exwin$dsData) <- "census.at.school.500")
-    expect_equal(svalue(exwin$dsTitle), "census.at.school.500")
+    expect_equal(svalue(exwin$dsTitle), "Census at School 500")
 
     # load it
     expect_silent(exwin$ok_button$invoke_change_handler())
