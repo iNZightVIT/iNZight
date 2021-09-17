@@ -265,7 +265,11 @@ test_that("JK1 works", {
     expect_silent(swin <- iNZSurveyDesign$new(ui, type = "replicate"))
     svalue(swin$wtVar) <- "pw"
     svalue(swin$repVars) <-
-        paste("repw", formatC(1:40, width = 2, flag = "0"), sep = "")
+        paste(
+            "repw",
+            formatC(1:40, width = 2, flag = "0"),
+            sep = ""
+        )
     svalue(swin$repType) <- "JK1"
     #### producing error about scale (n-1)/n not provided
     # expect_silent(swin$createBtn$invoke_change_handler())
@@ -280,6 +284,7 @@ test_that("JK1 works", {
             type = "replicate",
             repweights =
                 paste("repw", formatC(1:40, width = 2, flag = "0"), sep = ""),
+            scale = 0.975,
             reptype = "JK1"
         )
     )

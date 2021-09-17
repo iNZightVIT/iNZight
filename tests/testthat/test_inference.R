@@ -7,7 +7,10 @@ ui <- iNZGUI$new()
 ui$initializeGui()
 on.exit(gWidgets2::dispose(ui$win))
 
-ui$setDocument(iNZDocument$new(data = census.at.school.500), reset = TRUE)
+ui$setDocument(
+    iNZDocument$new(data = census.at.school.500),
+    reset = TRUE
+)
 Sys.sleep(5)
 
 test_that("Get inference window - dot plots", {
@@ -217,10 +220,10 @@ test_that("Get inference window - scatter plots", {
     expect_match(svalue(iwin$info_text), "Please specify a trend line")
 })
 
-# try(ui$close(), TRUE); devtools::load_all()
-ui <- iNZGUI$new()
-ui$initializeGui(census.at.school.500)
-on.exit(gWidgets2::dispose(ui$win))
+# # try(ui$close(), TRUE); devtools::load_all()
+# ui <- iNZGUI$new()
+# ui$initializeGui(census.at.school.500)
+# on.exit(gWidgets2::dispose(ui$win))
 
 
 test_that("Existing trend lines are kept when opening inference panel", {
@@ -312,7 +315,8 @@ test_that("Get inference for surveys", {
     swin <- iNZSurveyDesign$new(ui)
     svalue(swin$clus1Var) <- "dnum"
     svalue(swin$clus2Var) <- "snum"
-    svalue(swin$fpcVar) <- "fpc1 + fpc2"
+    svalue(swin$fpcVar) <- "fpc1"
+    svalue(swin$fpcVar2) <- "fpc2"
     swin$ok_button$invoke_change_handler()
     expect_true(enabled(ui$infBtn))
 

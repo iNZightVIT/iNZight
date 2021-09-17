@@ -218,6 +218,10 @@ iNZSurveyDesign <- setRefClass(
                             rscales <- rep(scale, length(repWts))
                         else if(any(is.na(rscales)))
                             rscales <- NULL
+                    } else if (reptype %in% c("JK1")) {
+                        n <- length(repWts)
+                        scale <- (n - 1) / n
+                        rscales <- NULL
                     } else {
                         scale <- NULL
                         rscales <- NULL
@@ -235,7 +239,10 @@ iNZSurveyDesign <- setRefClass(
                     if (preview) {
                         spec <- iNZightTools::make_survey(
                             GUI$getActiveData(),
-                            structure(list(spec = spec), class = "inzsvyspec")
+                            structure(
+                                list(spec = spec),
+                                class = "inzsvyspec"
+                            )
                         )
                         return(spec$design)
                     }

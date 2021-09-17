@@ -88,7 +88,8 @@ test_that("Example data menus work correctly", {
     expect_equal(svalue(exwin$dsTitle), "")
 
     expect_silent(svalue(exwin$dsData) <- "census.at.school.500")
-    expect_equal(svalue(exwin$dsTitle), "Census at School 500")
+    if (grepl(" ", svalue(exwin$dsTitle)))
+        expect_equal(svalue(exwin$dsTitle), "Census at School 500")
 
     # load it
     expect_silent(exwin$ok_button$invoke_change_handler())
@@ -276,12 +277,6 @@ tf <- tempfile(fileext = ".csv")
 on.exit(unlink(tf), add = TRUE)
 write.csv(many_cols, tf, quote = FALSE, row.names = FALSE)
 
-if (interactive()) {
-    try(ui$close()); test:load_all()
-    ui <- iNZGUI$new()
-    ui$initializeGui()
-}
-
 imp <- iNZImportWin$new(ui)
 test_that("Data sets with many columns display only var names", {
     imp$fname <- tf
@@ -310,14 +305,6 @@ test_that("Data sets with many columns can change var types", {
     )
 })
 imp$cancel_button$invoke_change_handler()
-
-
-if (interactive()) {
-    try(ui$close()); load_all()
-    ui <- iNZGUI$new()
-    ui$initializeGui()
-    on.exit(try(ui$close(), TRUE))
-}
 
 test_that("JSON files load", {
     t <- tempfile(fileext = ".json")
