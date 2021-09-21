@@ -700,13 +700,14 @@ iNZGUI <- setRefClass(
                 ctrlWidget$resetWidget()
                 ## add a iNZDocument to the end of the doc list
                 iNZDocuments <<- c(iNZDocuments, list(document))
+
+                ## clean up any 'empty' datasets ..
+                nonempty_docs <- sapply(iNZDocuments,
+                    function(d)
+                        !all(dim(d$dataModel$dataSet) == 1)
+                )
+                iNZDocuments <<- iNZDocuments[nonempty_docs]
             }
-            ## clean up any 'empty' datasets ..
-            nonempty_docs <- sapply(iNZDocuments,
-                function(d)
-                    !all(dim(d$dataModel$dataSet) == 1)
-            )
-            iNZDocuments <<- iNZDocuments[nonempty_docs]
 
             ## set the active document to the one we added
             activeDoc <<- length(iNZDocuments)
@@ -716,6 +717,7 @@ iNZGUI <- setRefClass(
             getActiveDoc()$addDataObserver(
                 function() {
                     dataViewWidget$updateWidget()
+                    dataToolbarWidget$updateWidget()
                     getActiveDoc()$updateSettings()
                     ctrlWidget$updateVariables()
                     dataNameWidget$updateWidget()
@@ -736,11 +738,14 @@ iNZGUI <- setRefClass(
                 ctrlWidget$setState(pset)
             else {
                 dataViewWidget$updateWidget()
+                dataToolbarWidget$updateWidget()
                 getActiveDoc()$updateSettings()
                 ctrlWidget$updateVariables()
                 rhistory$update()
             }
             dataNameWidget$updateWidget()
+            dataToolbarWidget$updateWidget()
+            dataViewWidget$updateWidget()
             is_initialized <<- TRUE
             updatePlot()
         },
@@ -784,15 +789,15 @@ iNZGUI <- setRefClass(
         },
         getActiveDoc = function() {
             "Returns the currently active document"
-            iNZDocuments[[activeDoc]]
+            if (activeDoc) iNZDocuments[[activeDoc]] else NULL
         },
         getActiveData = function() {
             "Returns the current dataset"
-            iNZDocuments[[activeDoc]]$getData()
+            if (activeDoc) iNZDocuments[[activeDoc]]$getData() else NULL
         },
         getActiveRowData = function() {
             "Returns the row data of the current dataset"
-            iNZDocuments[[activeDoc]]$getRowData()
+            if (activeDoc) iNZDocuments[[activeDoc]]$getRowData() else NULL
         },
         ## add observer to the activeDoc class variable
         addActDocObs = function(FUN, ...) {
@@ -871,15 +876,20 @@ iNZGUI <- setRefClass(
         do_delete_dataset = function() {
             "Does the dataset deletion"
             todelete <- activeDoc
-            activeDoc <<- max(1L, activeDoc - 1L)
             rhistory$disabled <<- TRUE
+            if (length(iNZDocuments) == 1L) {
+                .self$setDocument(iNZDocument$new(), reset = TRUE)
+                return()
+            }
+
             iNZDocuments <<- iNZDocuments[-todelete]
+            activeDoc <<- max(1L, activeDoc - 1L)
             dataNameWidget$updateWidget()
             rhistory$disabled <<- FALSE
             dataViewWidget$updateWidget()
+            dataToolbarWidget$updateWidget()
             pset <- getActiveDoc()$getSettings()
             ctrlWidget$setState(pset)
-            # updatePlot()
         },
         removeDesign = function() {
             "Removes the survey design associated with a dataset"

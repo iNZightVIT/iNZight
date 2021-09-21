@@ -4,7 +4,7 @@ context("Data is loaded into the UI")
 wd <- getwd()
 ui <- iNZGUI$new()
 ui$initializeGui()
-on.exit(gWidgets2::dispose(ui$win))
+on.exit(try(gWidgets2::dispose(ui$win), silent = TRUE))
 setwd(wd)
 
 doc <- NULL
@@ -324,4 +324,21 @@ test_that("JSON files load", {
         fixed = TRUE,
         all = FALSE
     )
+})
+try(ui$close(), silent = TRUE)
+
+test_that("All documents can be deleted, returning to landing screen", {
+    # devtools::load_all(); try(ui$close(), TRUE)
+    ui <- iNZGUI$new()
+    on.exit(ui$close())
+    ui$initializeGui()
+
+    ui$setDocument(iNZDocument$new(data = iris))
+    expect_equal(length(ui$iNZDocuments), 1L)
+
+    expect_silent(
+        ui$do_delete_dataset()
+    )
+    expect_equal(length(ui$iNZDocuments), 1L)
+    expect_equal(ui$dataViewWidget$current, "landing")
 })
