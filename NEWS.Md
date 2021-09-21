@@ -52,6 +52,7 @@
   - Enable/disable buttons and dropdowns based on what application state
   - Refactor layout of Get Summary / Get Inference buttons (added to `iNZCtrlWidget`)
   - Add Subset-filter button to quickly subset the dataset based on slider values
+- Change in wording of "Delete dataset" dialog to clarify what's happening
 
 ## iNZight 4.1.4
 
