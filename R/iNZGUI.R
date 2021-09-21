@@ -18,8 +18,6 @@
 #' @field plotWidget the widget containing the main plot window
 #' @field plotToolbar the widget in the bottom-right containing plot control buttons
 #' @field ctrlWidget the drop-down boxes allowing users to choose variables
-#' @field sumBtn the Get Summary button
-#' @field infBtn the Get Inference button
 #' @field modWin a container for the current module window
 #' @field curPlot the current plot object is returned and stored in this field
 #' @field plotType the type of the current plot
@@ -73,9 +71,7 @@ iNZGUI <- setRefClass(
             ## widget that handles the drag/drop buttons
             ## under the dataViewWidget
             ctrlWidget = "ANY",
-            ## Save the summary and inference buttons to allow disabling
-            sumBtn = "ANY",
-            infBtn = "ANY",
+            subsetFilter = "ANY",
             ## every window that modifies plot/data
             ## this way we can ensure to only have one
             ## open at the time
@@ -224,17 +220,6 @@ iNZGUI <- setRefClass(
 
             ## set up the drag and drop fields
             add(gp1, initializeControlWidget()$ctrlGp, expand = FALSE)
-
-            ## set up the summary buttongs
-            lowerBtnGroup <- ggroup(container = gp1)
-            lowerBtnGroup$set_borderwidth(4)
-
-            # ctrlHelp <- gbutton("Help", container = lowerBtnGroup,
-            #     handler = function(h, ...) {
-            #         help_page("user_guides/interface")
-            #     }
-            # )
-            add(lowerBtnGroup, initializeSummaryBtns(), expand = TRUE)
 
             ## set up widgets in the right group
             grpRight <- ggroup(horizontal = popOut,
@@ -397,27 +382,6 @@ iNZGUI <- setRefClass(
             )
 
             .self$ctrlWidget
-        },
-        ## set up the summary and inference buttons under the
-        ## drag and drop fields
-        initializeSummaryBtns = function() {
-            "Initializes the Get Summary and Get Inference buttons"
-            sumGrp <- ggroup()
-            sumBtn <<- gbutton(
-                "Get Summary",
-                handler = function(h, ...) iNZGetSummary$new(.self)
-            )
-            infBtn <<- gbutton(
-                "Get Inference",
-                handler = function(h, ...) iNZGetInference$new(.self)
-            )
-            font(sumBtn) <<-
-                list(weight = "bold", family = "sans", color = "navy")
-            font(infBtn) <<-
-                list(weight = "bold", family = "sans", color = "navy")
-            add(sumGrp, sumBtn, expand = TRUE)
-            add(sumGrp, infBtn, expand = TRUE)
-            sumGrp
         },
         ## set up the widget with the plot notebook
         initializePlotWidget = function() {
@@ -1424,6 +1388,9 @@ iNZGUI <- setRefClass(
             "Makes the iNZight window visible, and updates the plot"
             visible(win) <<- visible
             updatePlot()
+        },
+        show = function() {
+            cat("An iNZGUI object\n")
         }
     )
 )

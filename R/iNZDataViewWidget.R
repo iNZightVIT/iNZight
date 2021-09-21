@@ -185,7 +185,7 @@ iNZDataViewWidget <- setRefClass(
             )
 
             varsDf <- data.frame(
-                Variable = vnames,
+                Name = vnames,
                 Type = vtypes
             )
             varWidget$set_items(varsDf)
@@ -200,6 +200,7 @@ iNZDataViewWidget <- setRefClass(
             blockHandlers(dfWidget)
             on.exit(unblockHandlers(dfWidget))
             dfWidget$set_frame(data)
+            dfWidget$add_dnd_columns()
 
             Nr <- nrow(GUI$getActiveData())
             pageLbl$set_value(

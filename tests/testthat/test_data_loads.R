@@ -41,12 +41,12 @@ test_that("UI correctly displays the data", {
 
     expect_equal(
         ui$dataViewWidget$varView$children[[1]]$get_names(),
-        c("Variable", "Type")
+        c("Name", "Type")
     )
     expect_equivalent(
         ui$dataViewWidget$varView$children[[1]]$get_items(),
         data.frame(
-            Variable = c("A", "B"),
+            Name = c("A", "B"),
             Type = c("numeric", "categorical")
         )
     )

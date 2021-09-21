@@ -69,7 +69,7 @@ test_that("Variable list can be searched", {
 
     svalue(ui$dataViewWidget$searchBox) <- "pop"
     expect_equal(
-        ui$dataViewWidget$varWidget$get_items()$Variable,
+        ui$dataViewWidget$varWidget$get_items()$Name,
         names(gapminder)[grepl("pop", names(gapminder), ignore.case = TRUE)]
     )
 })

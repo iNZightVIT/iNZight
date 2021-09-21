@@ -122,7 +122,7 @@ test_that("Non-categorical variables removed after specifying frequencies", {
 test_that("Plotting and summary of frequencies works", {
     expect_silent(svalue(ui$ctrlWidget$V1box) <- "travel")
     expect_equal(ui$plotType, "bar")
-    expect_silent(ui$sumBtn$invoke_change_handler())
+    expect_silent(ui$ctrlWidget$summary_button$invoke_change_handler())
 })
 
 test_that("Frequencies retained after filtering", {

@@ -214,6 +214,7 @@ iNZGetSummary <- setRefClass(
     ),
     methods = list(
         initialize = function(gui) {
+            if (is.null(gui$getActiveDoc()$getSettings()$x)) return()
             callSuper(gui, controls = "bottom", name = "Summary")
 
             ## Control panel
@@ -556,6 +557,7 @@ iNZGetInference <- setRefClass(
     ),
     methods = list(
         initialize = function(gui) {
+            if (is.null(gui$getActiveDoc()$getSettings()$x)) return()
             callSuper(gui, controls = "top", name = "Inference")
 
             # update_inference()

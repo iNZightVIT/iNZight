@@ -266,7 +266,7 @@ ui$getActiveDoc()$getModel()$setFrequencies("frequency", ui)
 
 test_that("Get inference works for frequencies", {
     svalue(ui$ctrlWidget$V1box) <- "gender"
-    expect_true(enabled(ui$infBtn))
+    expect_true(enabled(ui$ctrlWidget$inference_button))
 
     iwin <- iNZGetInference$new(ui)
     on.exit(gWidgets2::dispose(iwin$win))
@@ -278,7 +278,7 @@ test_that("Get inference works for frequencies", {
     gWidgets2::dispose(iwin$win)
 
     svalue(ui$ctrlWidget$V1box) <- "travel"
-    expect_true(enabled(ui$infBtn))
+    expect_true(enabled(ui$ctrlWidget$inference_button))
 
     iwin <- iNZGetInference$new(ui)
     on.exit(gWidgets2::dispose(iwin$win))
@@ -290,7 +290,7 @@ test_that("Get inference works for frequencies", {
     gWidgets2::dispose(iwin$win)
 
     svalue(ui$ctrlWidget$V2box) <- "gender"
-    expect_true(enabled(ui$infBtn))
+    expect_true(enabled(ui$ctrlWidget$inference_button))
 
     iwin <- iNZGetInference$new(ui)
     on.exit(gWidgets2::dispose(iwin$win))
@@ -311,16 +311,16 @@ ui$initializeGui(apiclus2)
 Sys.sleep(2)
 
 test_that("Get inference for surveys", {
-    expect_true(enabled(ui$infBtn))
     swin <- iNZSurveyDesign$new(ui)
     svalue(swin$clus1Var) <- "dnum"
     svalue(swin$clus2Var) <- "snum"
     svalue(swin$fpcVar) <- "fpc1"
     svalue(swin$fpcVar2) <- "fpc2"
     swin$ok_button$invoke_change_handler()
-    expect_true(enabled(ui$infBtn))
+    expect_false(enabled(ui$ctrlWidget$inference_button))
 
     svalue(ui$ctrlWidget$V1box) <- "api00"
+    expect_true(enabled(ui$ctrlWidget$inference_button))
 
     iwin <- iNZGetInference$new(ui)
     on.exit(gWidgets2::dispose(iwin$win))
@@ -341,5 +341,5 @@ test_that("Get inference for surveys", {
 
 test_that("Get inference still enabled for non-surveys", {
     ui$removeDesign()
-    expect_true(enabled(ui$infBtn))
+    expect_true(enabled(ui$ctrlWidget$inference_button))
 })
