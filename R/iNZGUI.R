@@ -832,11 +832,11 @@ iNZGUI <- setRefClass(
             } else {
                 conf <- gconfirm(
                     paste0(
-                        "You are about to delete (permanently!) ",
-                        "the currently selected dataset:\n\n",
-                        attr(iNZDocuments[[activeDoc]]$getData(), "name", exact = TRUE),
+                        "This will remove the following dataset from iNZight,\n",
+                        "and any unsaved changes to the data will be lost:\n\n",
+                        attr(getActiveData(), "name", exact = TRUE),
                         "\n\n",
-                        "Are you sure you want to continue? This cannot be undone."
+                        "Are you sure you want to continue?"
                     ),
                     title = "You sure you want to delete this data?",
                     icon = "question",
