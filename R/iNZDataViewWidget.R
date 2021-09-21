@@ -9,6 +9,7 @@ iNZDataViewWidget <- setRefClass(
         dfView = "ANY", ## group that contains data view
         varView = "ANY", ## group that contains variable view
         data = "ANY",
+        dfWidget = "ANY",
         paginate = "list",
         btnPrev = "ANY",
         btnNext = "ANY",
@@ -26,6 +27,7 @@ iNZDataViewWidget <- setRefClass(
                 GUI = gui,
                 dfView = NULL,
                 varView = NULL,
+                dfWidget = NULL,
                 current = "",
                 dataThreshold = dataThreshold,
                 paginate = list(cols = 1:50, rows = 1:20)
@@ -156,8 +158,8 @@ iNZDataViewWidget <- setRefClass(
             set_data(update = FALSE)
 
             ## (re)create the views, with any changes to data
-            createDfView()
-            createVarView()
+            updateDfView()
+            updateVarView()
             if (current == "") return()
             showing <- current
             current <<- ""
@@ -165,11 +167,49 @@ iNZDataViewWidget <- setRefClass(
         },
         ## only update the variable view
         updateVarView = function() {
-            createVarView()
+            if (is.null(varView)) {
+                createVarView()
+                return()
+            }
+
+            ## prefix variable type to variable names
+            vnames <- if (length(columns)) columns else colnames(GUI$getActiveData())
+
+            vtypes <- sapply(GUI$getActiveData()[vnames],
+                function(x)
+                    switch(iNZightTools::vartype(x),
+                        'num' = 'numeric',
+                        'cat' = 'categorical',
+                        'dt' = 'datetime'
+                    )
+            )
+
+            varsDf <- data.frame(
+                Variable = vnames,
+                Type = vtypes
+            )
+            varWidget$set_items(varsDf)
         },
         ## only update the data.frame view
         updateDfView = function() {
-            createDfView()
+            if (is.null(dfView)) {
+                createDfView()
+                return()
+            }
+
+            blockHandlers(dfWidget)
+            on.exit(unblockHandlers(dfWidget))
+            dfWidget$set_frame(data)
+
+            Nr <- nrow(GUI$getActiveData())
+            pageLbl$set_value(
+                sprintf("Rows %s of %s",
+                    paste(pmin(Nr, range(paginate$rows)), collapse = "-"),
+                    Nr
+                )
+            )
+            enabled(btnPrev) <<- min(paginate$rows) > 1L
+            enabled(btnNext) <<- max(paginate$rows) < Nr
         },
         createLandingView = function() {
             # only needs to run once
@@ -184,7 +224,7 @@ iNZDataViewWidget <- setRefClass(
             dfView <<- gvbox(expand = TRUE)
 
             ## This will be paginated, at some stage:
-            dfWidget <- gdf(data, expand = TRUE)
+            dfWidget <<- gdf(data, expand = TRUE)
             ## dfWidget$remove_popup_menu() ## - called by $add_dnd_columns()
             dfWidget$add_dnd_columns()
             add(dfView, dfWidget, expand = TRUE)
@@ -213,15 +253,8 @@ iNZDataViewWidget <- setRefClass(
                 }
             )
             btnPrev$set_icon("go-up")
-            enabled(btnPrev) <<- min(paginate$rows) > 1L
 
-            pageLbl <<- glabel(
-                sprintf("Rows %s of %s",
-                    paste(range(paginate$rows), collapse = "-"),
-                    nrow(GUI$getActiveData())
-                ),
-                container = pageGp
-            )
+            pageLbl <<- glabel("", container = pageGp)
             font(pageLbl) <<- list(size = 8)
 
             btnNext <<- gbutton("", container = pageGp,
@@ -232,31 +265,11 @@ iNZDataViewWidget <- setRefClass(
                 }
             )
             btnNext$set_icon("go-down")
-            enabled(btnNext) <<- max(paginate$rows) < nrow(GUI$getActiveData())
         },
         ## create variable view (invisible)
         createVarView = function() {
             varView <<- gvbox(expand = TRUE)
-
-            ## prefix variable type to variable names
-            vnames <- if (length(columns)) columns else colnames(GUI$getActiveData())
-
-            vtypes <- sapply(GUI$getActiveData()[vnames],
-                function(x)
-                    switch(iNZightTools::vartype(x),
-                        'num' = 'numeric',
-                        'cat' = 'categorical',
-                        'dt' = 'datetime'
-                    )
-            )
-
-            varsDf <- data.frame(
-                Variable = vnames,
-                Type = vtypes
-            )
-
-            varWidget <<- gtable(varsDf, expand = TRUE)
-
+            varWidget <<- gtable(data.frame(), expand = TRUE)
             varWidget$remove_popup_menu()
             addDropSource(varWidget,
                 handler = function(h, ...) {
@@ -264,6 +277,8 @@ iNZDataViewWidget <- setRefClass(
                 }
             )
             add(varView, varWidget, expand = TRUE)
+
+            updateVarView()
         },
         ## change the currently active View
         changeView = function() {
