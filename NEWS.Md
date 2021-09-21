@@ -47,6 +47,7 @@
   - `iNZViewSwitcherWidget` -> `iNZDataToolbar`
   - "View dataset" and "View variables" buttons replaced by icons
   - Spreadsheet view is paginated, so even large datasets can now be viewed
+- Fix Gtk-critcal error (#141)
 
 ## iNZight 4.1.4
 

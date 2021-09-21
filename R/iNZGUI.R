@@ -446,6 +446,14 @@ iNZGUI <- setRefClass(
                     FALSE
                 }
             )
+            addHandlerDestroy(win,
+                function(h, ...) {
+                    # clean up GDF in dataViewWidget
+                    .self$dataViewWidget$dfView$remove_child(
+                        .self$dataViewWidget$dfWidget
+                    )
+                }
+            )
         },
         ## plot with the current active plot settings
         updatePlot = function(allow.redraw = TRUE) {
