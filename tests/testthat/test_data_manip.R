@@ -8,17 +8,17 @@ ui$initializeGui(census.at.school.500)
 on.exit(try(ui$close(), TRUE))
 Sys.sleep(5)
 
-test_that("Data Maid report", {
-    skip_if_not(rmarkdown::pandoc_available())
-    w <- iNZDataReportWin$new(ui)
-    on.exit(try(gWidgets2::dispose(w$win), TRUE))
-})
+# test_that("Data Maid report", {
+#     skip_if_not(rmarkdown::pandoc_available())
+#     w <- iNZDataReportWin$new(ui)
+#     on.exit(try(gWidgets2::dispose(w$win), TRUE))
+# })
 
-test_that("Subsetting and reordering columns", {
-    # try(gWidgets2::dispose(ui$modWin), TRUE); load_all()
-    w <- iNZReorderWin$new(ui)
-    on.exit(try(gWidgets2::dispose(ui$modWin), TRUE))
-})
+# test_that("Subsetting and reordering columns", {
+#     # try(gWidgets2::dispose(ui$modWin), TRUE); load_all()
+#     w <- iNZReorderWin$new(ui)
+#     on.exit(try(gWidgets2::dispose(ui$modWin), TRUE))
+# })
 
 test_that("Filtering data leaves code OK", {
     expect_silent(w <- iNZFilterWin$new())
@@ -62,16 +62,16 @@ test_that("Filtering data leaves code OK", {
 # source("R/iNZChangeDataWin.R")
 # w <- iNZAggregateWin$new(ui)
 
-test_that("Aggregating data adds correct code", {
-    w <- iNZAggregateWin$new(ui)
-    # w <- ui$modWin
-    # w$children[[1]]$children[[3]]$children[[2]]$set_value("gender")
-    # w$children[[1]]$children[[3]]$children[[4]]$set_value("travel")
-    # w$children[[1]]$children[[3]]$children[[7]]$set_value("Mean")
-    # expect_silent(
-    #     w$children[[1]]$children[[4]]$children[[1]]$invoke_change_handler()
-    # )
-})
+# test_that("Aggregating data adds correct code", {
+#     w <- iNZAggregateWin$new(ui)
+#     # w <- ui$modWin
+#     # w$children[[1]]$children[[3]]$children[[2]]$set_value("gender")
+#     # w$children[[1]]$children[[3]]$children[[4]]$set_value("travel")
+#     # w$children[[1]]$children[[3]]$children[[7]]$set_value("Mean")
+#     # expect_silent(
+#     #     w$children[[1]]$children[[4]]$children[[1]]$invoke_change_handler()
+#     # )
+# })
 
 ui$close()
 

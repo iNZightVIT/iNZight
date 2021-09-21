@@ -18,7 +18,7 @@ test_that("Convert to cat", {
     # source("R/iNZDataModWin.R")
     w <- iNZConToCatWin$new(ui)
     svalue(w$varLbl) <- "weight"
-    w$ok_button$invoke_change_handler()
+    expect_silent(w$ok_button$invoke_change_handler())
 })
 
 
@@ -51,7 +51,7 @@ test_that("Aggregating survey data is valid", {
     w$aggvars$set_items(data.frame(Selected = c("race", "education")))
     svalue(w$smryvars) <- c("HHincome", "height")
     w$smryvars$invoke_change_handler()
-    svalue(w$gsmry$children[[1]][3,1]) <- TRUE
+    w$gsmry$children[[1]][3,1]$set_value(TRUE)
     w$ok_button$invoke_change_handler()
     expect_null(ui$getActiveDoc()$getModel()$getDesign())
 })

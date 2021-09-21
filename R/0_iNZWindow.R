@@ -38,7 +38,7 @@ iNZWindow <- setRefClass("iNZWindow",
                 ok_handler = action,
                 help_url = help,
                 code_panel = NULL,
-                code_font = list(size = 8, family = "monospace")
+                code_font = list(size = 8L, family = "monospace")
             )
             show_code <- show_code && GUI$preferences$show.code
 
@@ -197,8 +197,12 @@ iNZWindow <- setRefClass("iNZWindow",
         set_code = function(code) {
             if (is.null(code_panel)) return()
             svalue(code_panel) <<- ""
-            font(code_panel) <<- code_font
-            insert(code_panel, code, do.newline = FALSE)
+            code_panel$insert_text(
+                code,
+                where = "beginning",
+                font.attr = code_font,
+                do.newline = FALSE
+            )
         },
         show = function() {
             visible(GUI$modWin) <<- TRUE

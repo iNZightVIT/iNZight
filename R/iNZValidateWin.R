@@ -238,7 +238,6 @@ iNZValidateWin <- setRefClass(
             show()
         },
         open.file = function(file, rules.box) {
-            print(rules.box)
             file.vali <- validate::validator(.file = file)
             svalue(rules.box) <- sub("^ V[0-9]+: ", "",
                 capture.output(print(file.vali))[-1]

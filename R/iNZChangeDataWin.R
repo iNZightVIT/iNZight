@@ -1804,17 +1804,17 @@ iNZJoinWin <- setRefClass(
                             data_set_names <- data_set_names[data_set_names != GUI$dataNameWidget$datName]
                             if (length(data_set_names)) {
                                 data_name <<- gcombobox(data_set_names,
-                                    selected = -1,
+                                    selected = 0,
                                     handler = function(h, ...) {
-                                    if (svalue(h$obj) == "") {
-                                        newdata <<- NULL
+                                        if (svalue(h$obj) == "") {
+                                            newdata <<- NULL
+                                            set_second_data()
+                                            return()
+                                        }
+                                        i <- sapply(GUI$dataNameWidget$nameLabel$get_items(),
+                                            function(x) x == svalue(h$obj))
+                                        newdata <<- GUI$iNZDocuments[[which(i)[1]]]$getData()
                                         set_second_data()
-                                        return()
-                                    }
-                                    i <- sapply(GUI$dataNameWidget$nameLabel$get_items(),
-                                        function(x) x == svalue(h$obj))
-                                    newdata <<- GUI$iNZDocuments[[which(i)[1]]]$getData()
-                                    set_second_data()
                                     }
                                 )
                             } else {
@@ -1948,9 +1948,9 @@ iNZJoinWin <- setRefClass(
                     add_joinby_row(coltbl, i)
                     number <- i + 1L
                     coltbl[number, 1L]$set_items(left_col[i])
-                    svalue(coltbl[number, 1L]) <<- left_col[i]
+                    coltbl[number, 1L]$set_value(left_col[i])
                     coltbl[number, 2L]$set_items(right_col[i])
-                    svalue(coltbl[number, 2L]) <<- right_col[i]
+                    coltbl[number, 2L]$set_value(right_col[i])
                 }
             }
         },
