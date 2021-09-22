@@ -201,6 +201,39 @@ iNZInfoWindow <- setRefClass(
     )
 )
 
+## Dataset info
+iNZDataSummary <- setRefClass(
+    "iNZDataSummary",
+    contains = "iNZInfoWindow",
+    fields = list(),
+    methods = list(
+        initialize = function(gui) {
+            if (is.null(gui$getActiveData()) || all(dim(gui$getActiveData()) == 1L)) return()
+            callSuper(gui, controls = "top", name = "Dataset Summary")
+            setup_panel()
+            visible(win) <<- TRUE
+        },
+        gen_call = function() {
+            "Generate summary call"
+            sprintf("skimr::skim(%s)", dataname)
+        },
+        update_summary = function() {
+            smry_call <- gen_call()
+            set_input(smry_call)
+
+            smry <- try(
+                capture.output(eval(parse(text = smry_call), env)),
+                silent = TRUE
+            )
+            if (inherits(smry, "try-error")) smry <- "Unable to generate summary."
+            set_output(smry)
+        },
+        setup_panel = function() {
+            update_summary()
+        }
+    )
+)
+
 
 ## A summary window
 iNZGetSummary <- setRefClass(

@@ -35,7 +35,7 @@ iNZDataToolbar <- setRefClass(
 
             infoBtn <<- gbutton(
                 "",
-                handler = function(h, ...) gmessage("Dataset info")
+                handler = function(h, ...) iNZDataSummary$new(GUI)
             )
             tooltip(infoBtn) <<- "Dataset information"
             infoBtn$set_icon("info")

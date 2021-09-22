@@ -46,6 +46,7 @@
 - Data view/switch widget updated/refactored
   - `iNZViewSwitcherWidget` -> `iNZDataToolbar`
   - "View dataset" and "View variables" buttons replaced by icons
+  - Add 'Dataset info' button to view data summary (using `skimr::skim()`)
   - Spreadsheet view is paginated, so even large datasets can now be viewed
 - Fix Gtk-critcal error (#141)
 - Control Widget:
