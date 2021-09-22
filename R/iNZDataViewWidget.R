@@ -266,6 +266,8 @@ iNZDataViewWidget <- setRefClass(
                 }
             )
             btnNext$set_icon("go-down")
+
+            updateDfView()
         },
         ## create variable view (invisible)
         createVarView = function() {
