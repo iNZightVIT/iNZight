@@ -19,7 +19,8 @@ iNZDataViewWidget <- setRefClass(
         dataThreshold = "numeric",
         varWidget = "ANY",
         searchBox = "ANY",
-        searchGp = "ANY"
+        searchGp = "ANY",
+        block_update = "logical"
     ),
     methods = list(
         initialize = function(gui, dataThreshold) {
@@ -30,7 +31,8 @@ iNZDataViewWidget <- setRefClass(
                 dfWidget = NULL,
                 current = "",
                 dataThreshold = dataThreshold,
-                paginate = list(cols = 1:50, rows = 1:20)
+                paginate = list(cols = 1:50, rows = 1:20),
+                block_update = FALSE
             )
 
             widget <<- gvbox(expand = TRUE)
@@ -167,6 +169,7 @@ iNZDataViewWidget <- setRefClass(
         },
         ## only update the variable view
         updateVarView = function() {
+            if (block_update) return()
             if (is.null(varView)) {
                 createVarView()
                 return()
@@ -234,11 +237,30 @@ iNZDataViewWidget <- setRefClass(
             addHandlerChanged(
                 dfWidget,
                 handler = function(h, ...) {
-                    print("DATA EDITED - NEED TO UPDATE CORRECT PART OF DATA")
-                    # X1 <- dfWidget[]
-                    # if(class(X1) != "data.frame")
-                    #     newData <- data.frame(X1)
-                    # GUI$getActiveDoc()$getModel()$updateData(X1)
+                    di <- as.integer(rownames(dfWidget$get_frame()))
+                    dj <- colnames(dfWidget$get_frame())
+                    diff <- dfWidget$get_frame() != GUI$getActiveData()[di, dj, drop = FALSE]
+                    if (!any(diff)) return()
+                    if (sum(diff) > 1L) {
+                        gmessage("Multiple values changed somehow ... ")
+                        updateDfView()
+                        return()
+                    }
+
+                    changed <- as.integer(which(diff, arr.ind = TRUE))
+                    new <- dfWidget$get_frame()[changed[1], changed[2]]
+
+                    .dataset <- GUI$getActiveData()
+                    code <- sprintf(".dataset[%i, \"%s\"] <- %s",
+                        di[changed[1]],
+                        dj[changed[2]],
+                        ifelse(is.numeric(new), new, paste0("\"", new, "\""))
+                    )
+                    eval(parse(text = code))
+                    attr(.dataset, "code") <- code
+                    block_update <<- TRUE
+                    on.exit(block_update <<- TRUE)
+                    GUI$update_document(.dataset)
                 }
             )
 
