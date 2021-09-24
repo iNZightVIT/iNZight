@@ -52,7 +52,7 @@ test_that("Data view loads", {
     expect_is(df, "GDf")
     expect_equal(
         df$get_dim(),
-        c(rows = length(ui$dataViewWidget$paginate$nrow), cols = 5)
+        c(rows = ui$dataViewWidget$paginate$nrow, cols = 5)
     )
 })
 
