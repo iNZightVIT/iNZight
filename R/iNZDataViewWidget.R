@@ -31,7 +31,7 @@ iNZDataViewWidget <- setRefClass(
                 dfWidget = NULL,
                 current = "",
                 dataThreshold = dataThreshold,
-                paginate = list(cols = 1:50, rows = 1:20),
+                paginate = list(col = 1L, row = 1L, ncol = 50L, nrow = 20L),
                 block_update = FALSE
             )
 
@@ -103,7 +103,7 @@ iNZDataViewWidget <- setRefClass(
                     else
                         matches <- names(GUI$getActiveData())[matches]
 
-                    paginate$cols <<- 1:50
+                    paginate$col <<- 1L
                     columns <<- matches
                     set_data()
                 },
@@ -140,9 +140,11 @@ iNZDataViewWidget <- setRefClass(
             nr <- nrow(data)
             nc <- ncol(data)
             page <- list(
-                rows = paginate$rows[paginate$rows <= nr],
-                cols = paginate$cols[paginate$cols <= nc]
+                rows = paginate$row + seq_len(paginate$nrow) - 1L,
+                cols = paginate$col + seq_len(paginate$ncol) - 1L
             )
+            page$rows <- page$rows[page$rows <= nr]
+            page$cols <- page$cols[page$cols <= nc]
             data <<- data[page$rows, page$cols, drop = FALSE]
             if (update) updateWidget()
         },
@@ -207,13 +209,14 @@ iNZDataViewWidget <- setRefClass(
 
             Nr <- nrow(GUI$getActiveData())
             pageLbl$set_value(
-                sprintf("Rows %s of %s",
-                    paste(pmin(Nr, range(paginate$rows)), collapse = "-"),
+                sprintf("Rows %s-%s of %s",
+                    paginate$row,
+                    paste(min(Nr, paginate$row + paginate$nrow - 1L), collapse = "-"),
                     Nr
                 )
             )
-            enabled(btnPrev) <<- min(paginate$rows) > 1L
-            enabled(btnNext) <<- max(paginate$rows) < Nr
+            enabled(btnPrev) <<- paginate$row > 1L
+            enabled(btnNext) <<- paginate$row + paginate$nrow - 1L < Nr
         },
         createLandingView = function() {
             # only needs to run once
@@ -268,10 +271,24 @@ iNZDataViewWidget <- setRefClass(
             pageGp <- ggroup(container = dfView)
             addSpring(pageGp)
 
+            lbl <- glabel("Rows per page:")
+            font(lbl) <- list(size = 8)
+            add(pageGp, lbl)
+
+            pageSize <- gspinbutton(10L, 100L, by = 10L,
+                value = paginate$nrow,
+                container = pageGp,
+                handler = function(h, ...) {
+                    paginate$nrow <<- svalue(h$obj)
+                    updateWidget()
+                }
+            )
+            addSpace(pageGp, 10L)
+
             btnPrev <<- gbutton("", container = pageGp,
                 handler = function(h, ...) {
-                    if (min(paginate$rows) == 1L) return()
-                    paginate$rows <<- paginate$rows - length(paginate$rows)
+                    if (paginate$row == 1L) return()
+                    paginate$row <<- paginate$row - paginate$nrow
                     updateWidget()
                 }
             )
@@ -282,8 +299,8 @@ iNZDataViewWidget <- setRefClass(
 
             btnNext <<- gbutton("", container = pageGp,
                 handler = function(h, ...) {
-                    if (max(paginate$rows) >= nrow(GUI$getActiveData())) return()
-                    paginate$rows <<- paginate$rows + length(paginate$rows)
+                    if (paginate$row + paginate$nrow - 1L >= nrow(GUI$getActiveData())) return()
+                    paginate$row <<- paginate$row + paginate$nrow
                     updateWidget()
                 }
             )
