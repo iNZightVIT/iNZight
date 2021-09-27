@@ -47,7 +47,7 @@
   - `iNZViewSwitcherWidget` -> `iNZDataToolbar`
   - "View dataset" and "View variables" buttons replaced by icons
   - Add 'Dataset info' button to view data summary (using `skimr::skim()`)
-  - Spreadsheet view is paginated, so even large datasets can now be viewed
+  - Spreadsheet view is paginated, so even large datasets can now be viewed (rows and columns)
 - Fix Gtk-critcal error (#141)
 - Control Widget:
   - Enable/disable buttons and dropdowns based on what application state
@@ -55,6 +55,7 @@
   - Add Subset-filter button to quickly subset the dataset based on slider values
 - Change in wording of "Delete dataset" dialog to clarify what's happening
 - Changing values in the data view updates R Code History
+- Change icon for 'variable switch' buttons (to differentiate from pagination arrows)
 
 ## iNZight 4.1.4
 

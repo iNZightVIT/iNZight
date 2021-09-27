@@ -103,7 +103,8 @@ iNZControlWidget <- setRefClass(
 
 
             ## "SWITCH" buttons:
-            switchV12 <- gimagebutton("go-down",
+            switchV12 <- gimagebutton(
+                filename = system.file("images/icon-double-arrow.png", package = "iNZight"),
                 tooltip = "Switch with Variable 2")
             addHandlerClicked(switchV12,
                 function(h, ...) {
@@ -143,7 +144,8 @@ iNZControlWidget <- setRefClass(
                     unblockHandlers(V2box)
                 }
             )
-            switchV23 <- gimagebutton("go-down",
+            switchV23 <- gimagebutton(
+                filename = system.file("images/icon-double-arrow.png", package = "iNZight"),
                 tooltip = "Switch with Variable 3")
             addHandlerClicked(switchV23,
                 function(h, ...) {
@@ -211,7 +213,9 @@ iNZControlWidget <- setRefClass(
                     unblockHandlers(G1box)
                 }
             )
-            switchV34 <- gimagebutton("go-down", tooltip = "Switch with Variable 4")
+            switchV34 <- gimagebutton(
+                filename = system.file("images/icon-double-arrow.png", package = "iNZight"),
+                tooltip = "Switch with Variable 4")
             addHandlerClicked(switchV34,
                 function(h, ...) {
                     if (svalue(G1box, TRUE) == 1L && svalue(G2box, TRUE) == 1L)

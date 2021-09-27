@@ -11,6 +11,10 @@ iNZDataViewWidget <- setRefClass(
         data = "ANY",
         dfWidget = "ANY",
         paginate = "list",
+        colPageGp = "ANY",
+        btnColPrev = "ANY",
+        btnColNext = "ANY",
+        colPageLbl = "ANY",
         btnPrev = "ANY",
         btnNext = "ANY",
         pageLbl = "ANY",
@@ -31,7 +35,7 @@ iNZDataViewWidget <- setRefClass(
                 dfWidget = NULL,
                 current = "",
                 dataThreshold = dataThreshold,
-                paginate = list(col = 1L, row = 1L, ncol = 50L, nrow = 20L),
+                paginate = list(col = 1L, row = 1L, ncol = 5L, nrow = 20L),
                 block_update = FALSE
             )
 
@@ -207,11 +211,23 @@ iNZDataViewWidget <- setRefClass(
             dfWidget$set_frame(data)
             dfWidget$add_dnd_columns()
 
+            Nc <- ncol(GUI$getActiveData())
+            colPageLbl$set_value(
+                sprintf("Variables %s-%s of %s",
+                    paginate$col,
+                    min(Nc, paginate$col + paginate$ncol - 1L),
+                    Nc
+                )
+            )
+            enabled(btnColPrev) <<- paginate$col > 1L
+            enabled(btnColNext) <<- paginate$col + paginate$ncol - 1L < Nc
+            visible(colPageGp) <<- Nc > paginate$ncol
+
             Nr <- nrow(GUI$getActiveData())
             pageLbl$set_value(
                 sprintf("Rows %s-%s of %s",
                     paginate$row,
-                    paste(min(Nr, paginate$row + paginate$nrow - 1L), collapse = "-"),
+                    min(Nr, paginate$row + paginate$nrow - 1L),
                     Nr
                 )
             )
@@ -229,6 +245,35 @@ iNZDataViewWidget <- setRefClass(
         ## create the data.frame view (invisible)
         createDfView = function() {
             dfView <<- gvbox(expand = TRUE)
+
+            ## Column pager
+            colPageGp <<- ggroup(container = dfView)
+            visible(colPageGp) <<- FALSE
+            addSpring(colPageGp)
+
+            colPageLbl <<- glabel("", container = colPageGp)
+            font(colPageLbl) <<- list(size = 8)
+
+            btnColPrev <<- gbutton("",
+                container = colPageGp,
+                handler = function(h, ...) {
+                    if (paginate$col == 1L) return()
+                    paginate$col <<- paginate$col - paginate$ncol
+                    updateWidget()
+                }
+            )
+            btnColPrev$set_icon("go-back")
+
+            btnColNext <<- gbutton("",
+                container = colPageGp,
+                handler = function(h, ...) {
+                    if (paginate$col + paginate$ncol - 1L >= ncol(GUI$getActiveData())) return()
+                    paginate$col <<- paginate$col + paginate$ncol
+                    updateWidget()
+                }
+            )
+            btnColNext$set_icon("go-forward")
+
 
             ## This will be paginated, at some stage:
             dfWidget <<- gdf(data, expand = TRUE)
@@ -285,6 +330,9 @@ iNZDataViewWidget <- setRefClass(
             )
             addSpace(pageGp, 10L)
 
+            pageLbl <<- glabel("", container = pageGp)
+            font(pageLbl) <<- list(size = 8)
+
             btnPrev <<- gbutton("", container = pageGp,
                 handler = function(h, ...) {
                     if (paginate$row == 1L) return()
@@ -293,9 +341,6 @@ iNZDataViewWidget <- setRefClass(
                 }
             )
             btnPrev$set_icon("go-up")
-
-            pageLbl <<- glabel("", container = pageGp)
-            font(pageLbl) <<- list(size = 8)
 
             btnNext <<- gbutton("", container = pageGp,
                 handler = function(h, ...) {
