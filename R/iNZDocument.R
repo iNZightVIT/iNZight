@@ -381,7 +381,11 @@ iNZDataNameWidget <- setRefClass(
             )
 
             widget <<- ggroup()
+            addSpace(widget, 5)
             add(widget, glabel("Dataset: "))
+
+            # nameLabel <<- glabel(.self$datName, expand = TRUE, anchor = c(-1, 0))
+            # font(nameLabel) <<- list(weight = "bold")
 
             nameLabel <<- gcombobox(.self$datName,
                 handler = function(h, ...) {
@@ -429,6 +433,7 @@ iNZDataNameWidget <- setRefClass(
                 }
             )
             blockHandlers(nameLabel)
+            # svalue(nameLabel) <<- datName
             nameLabel$set_items(names)
             svalue(nameLabel, index = TRUE) <<- GUI$activeDoc
             unblockHandlers(nameLabel)

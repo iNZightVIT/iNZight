@@ -203,17 +203,16 @@ iNZGUI <- setRefClass(
             # 3. display the dataset + controls if it is
             # -- so, one single 'DATA' widgets?
 
-            gtb <- ggroup(container = gp1)
-            addSpace(gtb, 5)
-
             ## display the name of the data set
-            add(gtb,
-                .self$initializeDataNameWidget()$widget,
-                expand = TRUE,
-                fill = TRUE
-            )
+            add(gp1, .self$initializeDataNameWidget()$widget)
+
+            gtb <- ggroup(container = gp1)
+            # addSpace(gtb, 5)
             ## set up buttons to switch between data/var view
             add(gtb, .self$initializeDataToolbar(dataThreshold)$viewGroup)
+            addSpring(gtb)
+            ## column switcher
+            add(gtb,.self$dataViewWidget$colPageGp)
 
             ## display the data
             add(gp1, dataViewWidget$widget, expand = TRUE)

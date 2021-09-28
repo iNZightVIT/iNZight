@@ -247,7 +247,7 @@ iNZDataViewWidget <- setRefClass(
             dfView <<- gvbox(expand = TRUE)
 
             ## Column pager
-            colPageGp <<- ggroup(container = dfView)
+            colPageGp <<- ggroup()
             visible(colPageGp) <<- FALSE
             addSpring(colPageGp)
 

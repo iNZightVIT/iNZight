@@ -7,19 +7,24 @@ iNZControlWidget <- setRefClass(
         V2box = "ANY",
         G1box = "ANY",
         G2box = "ANY",
+        V1clearbtn = "ANY",
+        V2clearbtn = "ANY",
+        G1clearbtn = "ANY",
+        G2clearbtn = "ANY",
         playButton = "list",
         playdelay = "numeric",
         help_button = "ANY",
         summary_button = "ANY",
         inference_button = "ANY",
-        filter_button = "ANY"
+        filter_button = "ANY",
+        newname = "character"
     ),
     methods = list(
         initialize = function(gui) {
             ctrlGp <<- gvbox()
             ctrlGp$set_borderwidth(5L)
 
-            initFields(GUI = gui, playdelay = 0.6)
+            initFields(GUI = gui, playdelay = 0.6, newname = "")
             ## set up glayout
             tbl <- glayout(expand = TRUE, homogeneous = FALSE, cont = ctrlGp, spacing = 5)
 
@@ -51,7 +56,7 @@ iNZControlWidget <- setRefClass(
             ### CLEAR BUTTONS
 
             ## -- Variable 1
-            V1clearbtn <- gimagebutton(
+            V1clearbtn <<- gimagebutton(
                 stock.id = "clear",
                 tooltip = "Clear Variable",
                 handler = function(h,...) {
@@ -63,7 +68,7 @@ iNZControlWidget <- setRefClass(
             tbl[1L, 8L, anchor = c(0, 0)] <- V1clearbtn
 
             ## -- Variable 2
-            V2clearbtn <- gimagebutton(
+            V2clearbtn <<- gimagebutton(
                 stock.id = "clear",
                 tooltip = "Clear Variable",
                 handler = function(h,...) {
@@ -81,7 +86,7 @@ iNZControlWidget <- setRefClass(
             tbl[3L, 8L, anchor = c(0, 0)] <- V2clearbtn
 
             ## -- Grouping Variable 1
-            G1clearbtn <- gimagebutton(
+            G1clearbtn <<- gimagebutton(
                 stock.id = "clear",
                 tooltip = "Clear Variable",
                 handler = function(h,...) {
@@ -92,7 +97,7 @@ iNZControlWidget <- setRefClass(
             tbl[5L, 8L, anchor = c(0, 0)] <- G1clearbtn
 
             ## -- Grouping Variable 2
-            G2clearbtn <- gimagebutton(
+            G2clearbtn <<- gimagebutton(
                 stock.id = "clear",
                 tooltip = "Clear Variable",
                 handler = function(h,...) {
@@ -313,23 +318,31 @@ iNZControlWidget <- setRefClass(
             # filter button
             filter_button <<- gbutton("",
                 handler = function(h, ...) {
-                    .dataset <- GUI$getActiveData()
+                    cw <- iNZWindow$new(
+                        GUI,
+                        title = "Subset dataset",
+                        ok = "Subset",
+                        action = function() {
+                            quick_filter()
+                            cw$close()
+                        }
+                    )
+                    cw$add_heading("You are about to create the following subset of the data:")
+
                     set <- GUI$getActiveDoc()$getSettings()
 
-                    code <- ""
+                    newname <<- "subset"
+
                     if (!is.null(set$g1) &&
                         iNZightTools::is_cat(GUI$getActiveData()[[set$g1]]) &&
                         !is.null(set$g1.level) &&
                         set$g1.level != "_MULTI")
                     {
-                        .dataset <- iNZightTools::filterLevels(
-                            .dataset,
-                            set$g1,
-                            set$g1.level
+                        cw$add_body(
+                            glabel(sprintf("%s = %s", as.character(set$g1), set$g1.level))
                         )
-                        code <- attr(.dataset, "code")
+                        newname <<- sprintf("%s_%s.%s", newname, as.character(set$g1), set$g1.level)
                     }
-
 
                     if (!is.null(set$g2) &&
                         iNZightTools::is_cat(GUI$getActiveData()[[set$g2]]) &&
@@ -337,18 +350,13 @@ iNZControlWidget <- setRefClass(
                         set$g2.level != "_ALL" &&
                         set$g2.level != "_MULTI")
                     {
-                        .dataset <- iNZightTools::filterLevels(
-                            .dataset,
-                            set$g2,
-                            set$g2.level
+                        cw$add_body(
+                            glabel(sprintf("%s = %s", as.character(set$g2), set$g2.level))
                         )
-                        code <- gsub(".dataset", code, attr(.dataset, "code"), fixed = TRUE)
-                        attr(.dataset, "code") <- code
+                        newname <<- sprintf("%s_%s.%s", newname, as.character(set$g2), set$g2.level)
                     }
 
-                    GUI$new_document(.dataset, "subset")
-                    G1clearbtn$invoke_change_handler()
-                    G2clearbtn$invoke_change_handler()
+                    cw$show()
                 }
             )
             filter_button$set_icon("gw-subset")
@@ -798,6 +806,47 @@ iNZControlWidget <- setRefClass(
 
             GUI$getActiveDoc()$setSettings(set)
             GUI$updatePlot()
+        },
+        quick_filter = function() {
+            if (newname == "") return()
+
+            .dataset <- GUI$getActiveData()
+            set <- GUI$getActiveDoc()$getSettings()
+
+            code <- ""
+            if (!is.null(set$g1) &&
+                iNZightTools::is_cat(GUI$getActiveData()[[set$g1]]) &&
+                !is.null(set$g1.level) &&
+                set$g1.level != "_MULTI")
+            {
+                .dataset <- iNZightTools::filterLevels(
+                    .dataset,
+                    set$g1,
+                    set$g1.level
+                )
+                code <- attr(.dataset, "code")
+            }
+
+
+            if (!is.null(set$g2) &&
+                iNZightTools::is_cat(GUI$getActiveData()[[set$g2]]) &&
+                !is.null(set$g2.level) &&
+                set$g2.level != "_ALL" &&
+                set$g2.level != "_MULTI")
+            {
+                .dataset <- iNZightTools::filterLevels(
+                    .dataset,
+                    set$g2,
+                    set$g2.level
+                )
+                code <- gsub(".dataset", code, attr(.dataset, "code"), fixed = TRUE)
+                attr(.dataset, "code") <- code
+            }
+            attr
+
+            GUI$new_document(.dataset, newname)
+            G1clearbtn$invoke_change_handler()
+            G2clearbtn$invoke_change_handler()
         }
     ) ## methods
 ) ## setRefClass
