@@ -218,6 +218,18 @@ iNZDataSummary <- setRefClass(
             sprintf("skimr::skim(%s)", dataname)
         },
         update_summary = function() {
+            # the following is required to ensure the output graphs look OK,
+            # and that the rows are all on one line
+            olocale <- Sys.getlocale("LC_CTYPE")
+            owidth <- getOption("width")
+            if (GUI$OS == "windows") {
+                Sys.setlocale("LC_CTYPE", "Chinese")
+            }
+            options(width = 110)
+            on.exit({
+                Sys.setlocale("LC_CTYPE", olocale)
+                options(width = owidth)
+            })
             smry_call <- gen_call()
             set_input(smry_call)
 

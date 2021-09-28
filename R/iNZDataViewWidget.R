@@ -35,7 +35,7 @@ iNZDataViewWidget <- setRefClass(
                 dfWidget = NULL,
                 current = "",
                 dataThreshold = dataThreshold,
-                paginate = list(col = 1L, row = 1L, ncol = 5L, nrow = 20L),
+                paginate = list(col = 1L, row = 1L, ncol = 30L, nrow = 20L),
                 block_update = FALSE
             )
 

@@ -291,10 +291,11 @@ iNZControlWidget <- setRefClass(
             tbl[9L, 1:6, expand = TRUE] <- g_btns
 
             # help button
-            help_button <<- gbutton("",
+            help_button <<- gbutton("Help",
                 container = g_btns,
                 handler = function(h, ...) help_page("user_guides/interface")
             )
+            font(help_button) <<- list(size = 8L)
             help_button$set_icon("gw-help_topic")
             tooltip(help_button) <<- "Control panel help"
 
