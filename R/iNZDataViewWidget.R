@@ -287,15 +287,19 @@ iNZDataViewWidget <- setRefClass(
                 handler = function(h, ...) {
                     di <- as.integer(rownames(dfWidget$get_frame()))
                     dj <- colnames(dfWidget$get_frame())
-                    diff <- dfWidget$get_frame() != GUI$getActiveData()[di, dj, drop = FALSE]
-                    if (!any(diff)) return()
-                    if (sum(diff) > 1L) {
+                    same <-
+                        dfWidget$get_frame() == GUI$getActiveData()[di, dj, drop = FALSE] |
+                        # only one is NA
+                        (is.na(dfWidget$get_frame()) + is.na(GUI$getActiveData()[di, dj, drop = FALSE])) == 2L
+                    same <- ifelse(is.na(same), FALSE, same)
+                    if (all(same)) return()
+                    if (sum(!same) > 1L) {
                         gmessage("Multiple values changed somehow ... ")
                         updateDfView()
                         return()
                     }
 
-                    changed <- as.integer(which(diff, arr.ind = TRUE))
+                    changed <- as.integer(which(!same, arr.ind = TRUE))
                     new <- dfWidget$get_frame()[changed[1], changed[2]]
 
                     .dataset <- GUI$getActiveData()
@@ -350,6 +354,48 @@ iNZDataViewWidget <- setRefClass(
                 }
             )
             btnNext$set_icon("go-down")
+
+            findRowBtn <- gbutton("", container = pageGp,
+                handler = function(h, ...) {
+                    row_n <- ginput("Find a specific row in the dataset",
+                        title = "Find row",
+                        icon = "question",
+                        parent = GUI$win
+                    )
+                    if (is.null(row_n) || length(row_n) == 0) return()
+                    n <- as.integer(row_n)
+                    if (is.na(n)) {
+                        gmessage(sprintf("Invalid row number, `%s`", row_n),
+                            title = "Invalid row number",
+                            icon = "error",
+                            parent = GUI$win
+                        )
+                        return()
+                    }
+                    if (n < 1L || n > nrow(GUI$getActiveData())) {
+                        gmessage(
+                            sprintf("Row number should be between %i and %i",
+                                1L, nrow(GUI$getActiveData())
+                            ),
+                            title = "Invalid row number",
+                            icon = "error",
+                            parent = GUI$win
+                        )
+                        return()
+                    }
+                    paginate$row <<- (n %/% paginate$nrow) * paginate$nrow
+                    updateWidget()
+                    svalue(dfWidget, index = TRUE) <<- n %% paginate$nrow + 1L
+                }
+            )
+            icon <- RGtk2::gtkImage(
+                file = system.file("images/icon-search-number.png",
+                    package = "iNZight"
+                )
+            )
+            findRowBtn$widget$setImage(icon)
+            findRowBtn$widget$image$show()
+            tooltip(findRowBtn) <- "Jump to row number"
 
             updateDfView()
         },
