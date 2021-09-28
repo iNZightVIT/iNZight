@@ -331,7 +331,7 @@ iNZControlWidget <- setRefClass(
 
                     set <- GUI$getActiveDoc()$getSettings()
 
-                    newname <<- "subset"
+                    newname <<- paste(GUI$dataNameWidget$datName, "subset", sep = ".")
 
                     if (!is.null(set$g1) &&
                         iNZightTools::is_cat(GUI$getActiveData()[[set$g1]]) &&
@@ -355,6 +355,21 @@ iNZControlWidget <- setRefClass(
                         )
                         newname <<- sprintf("%s_%s.%s", newname, as.character(set$g2), set$g2.level)
                     }
+
+                    nameBox <- gedit(newname, width = 40)
+                    addHandlerKeystroke(nameBox,
+                        handler = function(h, ...)
+                            newname <<- svalue(h$obj)
+                    )
+
+                    cw$body_space(10)
+                    cw$add_body(
+                        glabel("Name for data subset: "),
+                        anchor = c(-1, 0)
+                    )
+                    cw$add_body(
+                        nameBox
+                    )
 
                     cw$show()
                 }
@@ -842,9 +857,8 @@ iNZControlWidget <- setRefClass(
                 code <- gsub(".dataset", code, attr(.dataset, "code"), fixed = TRUE)
                 attr(.dataset, "code") <- code
             }
-            attr
 
-            GUI$new_document(.dataset, newname)
+            GUI$new_document(.dataset, name = newname)
             G1clearbtn$invoke_change_handler()
             G2clearbtn$invoke_change_handler()
         }

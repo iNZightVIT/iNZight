@@ -720,9 +720,13 @@ iNZGUI <- setRefClass(
             is_initialized <<- TRUE
             updatePlot()
         },
-        new_document = function(data, suffix) {
+        new_document = function(data, suffix, name) {
             "Create a new document based on the existing one (`getActiveDoc()`)"
-            data_name <- iNZightTools::add_suffix(.self$dataNameWidget$datName, suffix)
+            data_name <- ifelse(
+                missing(name),
+                iNZightTools::add_suffix(.self$dataNameWidget$datName, suffix),
+                name
+            )
             spec <- .self$getActiveDoc()$getModel()$getDesign()
             prev_name <- ifelse(
                 !is.null(spec),
