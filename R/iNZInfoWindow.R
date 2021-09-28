@@ -119,8 +119,10 @@ iNZInfoWindow <- setRefClass(
             assign(dataname, GUI$getActiveData(), envir = env)
 
             if (!is.null(curMod$dataDesign)) {
+                designname <<- curMod$dataDesignName
                 curSet$data <<- NULL
-                curSet$design <<- as.name(".design")
+                curSet$design <<- as.name(designname)
+                assign(designname, curMod$createSurveyObject(), envir = env)
                 env$.design <<- curMod$createSurveyObject()
             }
         },
@@ -215,7 +217,15 @@ iNZDataSummary <- setRefClass(
         },
         gen_call = function() {
             "Generate summary call"
-            sprintf("skimr::skim(%s)", dataname)
+            d <- GUI$get_data_object()
+            if (iNZightTools::is_survey(d))
+            sprintf("%sskimr::skim(%s)",
+                ifelse(iNZightTools::is_survey(d),
+                    sprintf("print(%s, design.summaries = TRUE)\n", designname),
+                    ""
+                ),
+                dataname
+            )
         },
         update_summary = function() {
             # the following is required to ensure the output graphs look OK,
@@ -233,10 +243,22 @@ iNZDataSummary <- setRefClass(
             smry_call <- gen_call()
             set_input(smry_call)
 
+            smry_call <- strsplit(smry_call, "\n", fixed = TRUE)[[1]]
+
             smry <- try(
-                capture.output(eval(parse(text = smry_call), env)),
+                lapply(smry_call,
+                    function(c) capture.output(eval(parse(text = c), env))
+                ),
                 silent = TRUE
             )
+            if (length(smry) > 1L) {
+                smry[-length(smry)] <- lapply(smry[-length(smry)],
+                    function(s) {
+                        c(s, "", paste(rep("-", 100), collapse = ""), "", "")
+                    }
+                )
+            }
+            smry <- do.call(c, smry)
             if (inherits(smry, "try-error")) smry <- "Unable to generate summary."
             set_output(smry)
         },
