@@ -277,7 +277,8 @@ iNZGetSummary <- setRefClass(
         predBtn = "ANY",
         residBtn = "ANY",
         trend = "list",
-        trend_menu = "ANY"
+        trend_menu = "ANY",
+        tableDir = "ANY"
     ),
     methods = list(
         initialize = function(gui) {
@@ -547,6 +548,23 @@ iNZGetSummary <- setRefClass(
 
             xnum <- is_num(xvar)
             ynum <- is_num(yvar)
+
+            if (GUI$plotType == "bar") {
+                lbl <- glabel("Table direction", container = ctrl_panel)
+                tableDir <<- gradio(c("Horizontal", "Vertical"),
+                    container = ctrl_panel,
+                    selected = switch(curSet$table.direction,
+                        horizontal = 1L, vertical = 2L),
+                    horizontal = TRUE,
+                    handler = function(h, ...) {
+                        curSet$table.direction <<- tolower(svalue(h$obj))
+                        GUI$getActiveDoc()$setSettings(
+                            list(table.direction = tolower(svalue(h$obj)))
+                        )
+                        update_summary()
+                    }
+                )
+            }
 
             # show predicted/residual buttons?
             if (!is.null(yvar) && (xnum || ynum)) {

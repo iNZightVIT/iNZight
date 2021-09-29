@@ -56,6 +56,7 @@
 - Change in wording of "Delete dataset" dialog to clarify what's happening
 - Changing values in the data view updates R Code History
 - Change icon for 'variable switch' buttons (to differentiate from pagination arrows)
+- Add horizonta/vertical toggle in table summaries
 
 ## iNZight 4.1.4
 
