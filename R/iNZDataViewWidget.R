@@ -235,12 +235,58 @@ iNZDataViewWidget <- setRefClass(
             enabled(btnNext) <<- paginate$row + paginate$nrow - 1L < Nr
         },
         createLandingView = function() {
+            addCentered <- function(g, widget) {
+                c <- ggroup(container = g)
+                addSpring(c)
+                add(c, widget)
+                addSpring(c)
+                invisible(NULL)
+            }
+
             # only needs to run once
             landingView <<- gvbox()
             landingView$set_borderwidth(10)
-            lbl <- glabel("To get started, Import a dataset")
+            lbl <- glabel("To get started, Import a dataset",
+                container = landingView,
+                anchor = c(-1, 0)
+            )
             font(lbl) <- list(size = 12)
-            add(landingView, lbl, anchor = c(-1, 0))
+
+            addSpace(landingView, 5)
+
+            lbl <- glabel(
+                paste(sep = "\n",
+                    "If you have a dataset, click the 'Import Data' button",
+                    "above, or find it in the 'File' menu.",
+                    "",
+                    "If you're just getting started, why not load one of",
+                    "the 'Example Datasets'?"
+                ),
+                container = landingView,
+                anchor = c(-1, 0)
+            )
+
+            exBtn <- gbutton("Load Example Data",
+                handler = function(h, ...) iNZImportExampleWin$new(GUI)
+            )
+            exBtn$set_icon("gw-datasheet")
+            addCentered(landingView, exBtn)
+
+            addSpace(landingView, 10)
+
+            lbl <- glabel(
+                paste(sep = "\n",
+                    "Not sure what to do? Check out the getting started guide!"
+                ),
+                container = landingView,
+                anchor = c(-1, 0)
+            )
+            guideBtn <- gbutton("Getting Started with iNZight",
+                handler = function(h, ...) iNZImportExampleWin$new(GUI)
+            )
+            guideBtn$set_icon("gw-help_topic")
+            addCentered(landingView, guideBtn)
+
         },
         ## create the data.frame view (invisible)
         createDfView = function() {
