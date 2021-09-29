@@ -568,6 +568,7 @@ iNZGetSummary <- setRefClass(
                 )
             }
 
+
             # show predicted/residual buttons?
             if (!is.null(yvar) && (xnum || ynum)) {
                 predBtn <<- gbutton("Store fitted values",
