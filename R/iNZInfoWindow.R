@@ -553,8 +553,10 @@ iNZGetSummary <- setRefClass(
                 lbl <- glabel("Table direction", container = ctrl_panel)
                 tableDir <<- gradio(c("Horizontal", "Vertical"),
                     container = ctrl_panel,
-                    selected = switch(curSet$table.direction,
-                        horizontal = 1L, vertical = 2L),
+                    selected =
+                        if (is.null(curSet$table.direction)) 1L
+                        else switch(curSet$table.direction,
+                            horizontal = 1L, vertical = 2L),
                     horizontal = TRUE,
                     handler = function(h, ...) {
                         curSet$table.direction <<- tolower(svalue(h$obj))
