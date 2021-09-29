@@ -218,7 +218,6 @@ iNZDataSummary <- setRefClass(
         gen_call = function() {
             "Generate summary call"
             d <- GUI$get_data_object()
-            if (iNZightTools::is_survey(d))
             sprintf("%sskimr::skim(%s)",
                 ifelse(iNZightTools::is_survey(d),
                     sprintf("print(%s, design.summaries = TRUE)\n", designname),
@@ -240,6 +239,7 @@ iNZDataSummary <- setRefClass(
                 Sys.setlocale("LC_CTYPE", olocale)
                 options(width = owidth)
             })
+
             smry_call <- gen_call()
             set_input(smry_call)
 
