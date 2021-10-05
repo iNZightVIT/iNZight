@@ -82,7 +82,7 @@ test_that("Pop-out mode works OK", {
         ui$savePreferences()
     })
     ui$reload()
-    Sys.sleep(5)
+    Sys.sleep(10)
 
     expect_true(ui$popOut)
 })
