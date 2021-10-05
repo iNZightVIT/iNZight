@@ -57,6 +57,7 @@
 - Changing values in the data view updates R Code History
 - Change icon for 'variable switch' buttons (to differentiate from pagination arrows)
 - Add horizontal/vertical toggle in table summaries
+- Add some extra space around plot toolbar in pop-out mode
 
 ## iNZight 4.1.4
 

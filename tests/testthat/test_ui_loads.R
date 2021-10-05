@@ -73,3 +73,16 @@ test_that("Variable list can be searched", {
         names(gapminder)[grepl("pop", names(gapminder), ignore.case = TRUE)]
     )
 })
+
+test_that("Pop-out mode works OK", {
+    ui$preferences$popout <- TRUE
+    expect_silent(ui$savePreferences())
+    on.exit({
+        ui$preferences$popout <- FALSE
+        ui$savePreferences()
+    })
+    ui$reload()
+    Sys.sleep(5)
+
+    expect_true(ui$popOut)
+})
