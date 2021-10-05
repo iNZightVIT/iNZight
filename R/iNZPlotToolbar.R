@@ -142,7 +142,7 @@ iNZPlotToolbar <- setRefClass(
             refreshplotBtn <- gimagebutton(
                 stock.id = "refresh",
                 size = "button",
-                tooiconltip = "Redraw Plot"
+                tooltip = "Redraw Plot"
             )
             addHandlerClicked(refreshplotBtn,
                 function(h, ...) refreshFn())
