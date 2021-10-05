@@ -58,6 +58,7 @@
 - Change icon for 'variable switch' buttons (to differentiate from pagination arrows)
 - Add horizontal/vertical toggle in table summaries
 - Add some extra space around plot toolbar in pop-out mode
+- Fix tooltip for 'Refresh Plot' icon
 
 ## iNZight 4.1.4
 
