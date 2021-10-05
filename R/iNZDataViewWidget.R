@@ -193,9 +193,33 @@ iNZDataViewWidget <- setRefClass(
                     )
             )
 
+            vsmry <- sapply(GUI$getActiveData()[vnames],
+                function(x) {
+                    switch(iNZightTools::vartype(x),
+                        'dt' = ,
+                        'num' = {
+                            paste(
+                                c("min", "max"),
+                                range(x, na.rm = TRUE),
+                                collapse = ", "
+                            )
+                        },
+                        'cat' = {
+                            paste(length(levels(x)), "levels")
+                        }
+                    )
+                }
+            )
+
+            vmiss <- sapply(GUI$getActiveData()[vnames],
+                function(x) sum(is.na(x))
+            )
+
             varsDf <- data.frame(
                 Name = vnames,
-                Type = vtypes
+                Type = vtypes,
+                Info = vsmry,
+                Missing = vmiss
             )
             varWidget$set_items(varsDf)
         },
@@ -256,8 +280,8 @@ iNZDataViewWidget <- setRefClass(
 
             lbl <- glabel(
                 paste(sep = "\n",
-                    "If you have a dataset, click the 'Import Data' button",
-                    "above, or find it in the 'File' menu.",
+                    "If you have a dataset, click the 'Import data' button",
+                    "above, or find it and other options in the 'File' menu.",
                     "",
                     "If you're just getting started, why not load one of",
                     "the 'Example Datasets'?"
@@ -282,7 +306,7 @@ iNZDataViewWidget <- setRefClass(
                 anchor = c(-1, 0)
             )
             guideBtn <- gbutton("Getting Started with iNZight",
-                handler = function(h, ...) iNZImportExampleWin$new(GUI)
+                handler = function(h, ...) help_page('user_guides/basics')
             )
             guideBtn$set_icon("gw-help_topic")
             addCentered(landingView, guideBtn)

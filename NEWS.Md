@@ -48,6 +48,7 @@
   - "View dataset" and "View variables" buttons replaced by icons
   - Add 'Dataset info' button to view data summary (using `skimr::skim()`)
   - Spreadsheet view is paginated, so even large datasets can now be viewed (rows and columns)
+  - Variable view shows additional information, including range (for numeric) or number of levels (for factors), and number of missing values
 - Fix Gtk-critcal error (#141)
 - Control Widget:
   - Enable/disable buttons and dropdowns based on what application state
