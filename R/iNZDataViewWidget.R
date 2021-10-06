@@ -78,6 +78,9 @@ iNZDataViewWidget <- setRefClass(
                 "data" = show_data(),
                 "variables" = show_variables()
             )
+
+            if (inherits(GUI$dataToolbarWidget, "iNZDataToolbar"))
+                GUI$dataToolbarWidget$updateWidget()
         },
         show_landing = function() {
             add(dataGp, landingView, expand = TRUE)

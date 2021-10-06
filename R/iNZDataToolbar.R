@@ -69,7 +69,6 @@ iNZDataToolbar <- setRefClass(
                 } else {
                     enabled(h$obj) = FALSE
                     GUI$dataViewWidget$dataView() ## change to data.frame view
-                    enabled(listBtn) <<- TRUE
                 }
             }
         },
@@ -84,7 +83,6 @@ iNZDataToolbar <- setRefClass(
                 } else {
                     enabled(h$obj) = FALSE
                     GUI$dataViewWidget$listView() ## change to list of col view
-                    enabled(dataBtn) <<- TRUE
                 }
             }
         },
@@ -101,10 +99,11 @@ iNZDataToolbar <- setRefClass(
             }
             enabled(infoBtn) <<- enabled(searchBtn) <<- TRUE
 
-            if (visible(GUI$dataViewWidget$dfView)) {
+            if (GUI$dataViewWidget$current == "data") {
                 enabled(listBtn) <<- TRUE
                 enabled(dataBtn) <<- FALSE
-            } else {
+            }
+            if (GUI$dataViewWidget$current == "variables") {
                 enabled(listBtn) <<- FALSE
                 enabled(dataBtn) <<- TRUE
             }

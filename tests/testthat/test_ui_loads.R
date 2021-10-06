@@ -54,6 +54,8 @@ test_that("Data view loads", {
         df$get_dim(),
         c(rows = ui$dataViewWidget$paginate$nrow, cols = 5)
     )
+    expect_false(enabled(ui$dataToolbarWidget$dataBtn))
+    expect_true(enabled(ui$dataToolbarWidget$listBtn))
 })
 
 test_that("UI closes quietly", {
@@ -63,8 +65,13 @@ test_that("UI closes quietly", {
 # load_all(); ui$close(); ui <- iNZGUI$new()
 
 test_that("Variable list can be searched", {
+    ui <<- iNZGUI$new()
     ui$initializeGui(gapminder)
+    on.exit(ui$close())
+    expect_true(enabled(ui$dataToolbarWidget$listBtn))
     ui$dataViewWidget$listView()
+    expect_true(enabled(ui$dataToolbarWidget$dataBtn))
+    expect_false(enabled(ui$dataToolbarWidget$listBtn))
     expect_equal(ui$dataViewWidget$current, "variables")
 
     svalue(ui$dataViewWidget$searchBox) <- "pop"
@@ -87,3 +94,14 @@ test_that("Variable list can be searched", {
 
 #     expect_true(ui$popOut)
 # })
+
+test_that("Data view is enabled after changing data", {
+    ui <<- iNZGUI$new()
+    ui$initializeGui(census.at.school.500)
+    ui$dataViewWidget$listView()
+    expect_true(enabled(ui$dataToolbarWidget$dataBtn))
+    expect_false(enabled(ui$dataToolbarWidget$listBtn))
+    ui$new_document(census.at.school.500[1:100, ], "subset")
+    expect_true(enabled(ui$dataToolbarWidget$dataBtn))
+    expect_false(enabled(ui$dataToolbarWidget$listBtn))
+})
