@@ -130,7 +130,7 @@ iNZBarchartInf <- setRefClass(
             parTab[3, 1, expand = TRUE, anchor = c(-1, 0)] <<- parm
 
             ## Methods
-            if (is.survey)
+            if (is.survey || getOption("inzight.disable.bootstraps", FALSE))
                 mthd <- gradio(c("Normal"), selected = 1)
             else
                 mthd <- gradio(c("Normal", "Bootstrap *"), selected = 1)
@@ -212,11 +212,14 @@ iNZBarchartInf <- setRefClass(
 iNZDotchartInf <- setRefClass(
     "iNZDotchartInf",
     contains = "iNZPlotInfWin",
+    fields = list(
+        is.survey = "logical"
+    ),
     methods = list(
         initialize = function(GUI) {
             callSuper(GUI)
 
-            is.survey <- !is.null(GUI$getActiveDoc()$getModel()$getDesign())
+            is.survey <<- !is.null(GUI$getActiveDoc()$getModel()$getDesign())
 
             ## Parameters
             if (is.survey)
@@ -228,7 +231,7 @@ iNZDotchartInf <- setRefClass(
 
 
             ## Methods
-            if (is.survey)
+            if (is.survey || getOption("inzight.disable.bootstraps", FALSE))
                 mthd <- gradio(c("Normal"), selected = 1)
             else
                 mthd <- gradio(c("Normal", "Bootstrap *"), selected = 1)
@@ -295,10 +298,16 @@ iNZDotchartInf <- setRefClass(
                 ## But only do this if user changes the parameter:
                 if (p) {
                     if (svalue(parm, index = TRUE) == 2) {
+                        items <- c("Year 12")
                         mthd$set_items(c("Year 12", "Bootstrap *"))
                     } else {
+                        items <- c("Normal")
                         mthd$set_items(c("Normal", "Bootstrap *"))
                     }
+                    if (!is.survey && !getOption("inzight.disable.bootstraps", FALSE))
+                        items <- c(items, "Bootstrap *")
+
+                    mthd$set_items(items)
                 }
 
                 visible(typTab) <<-
@@ -446,7 +455,7 @@ iNZScatterInf <- setRefClass(
             parTab[3, 1, expand = TRUE, anchor = c(-1, 0)] <<- parm
 
             ## Methods
-            if (is.survey)
+            if (is.survey || getOption("inzight.disable.bootstraps", FALSE))
                 mthd <- gradio(c("Normal"), selected = 1)
             else
                 mthd <- gradio(c("Normal", "Bootstrap *"), selected = 1)

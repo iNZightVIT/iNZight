@@ -748,14 +748,18 @@ iNZGetInference <- setRefClass(
                 )
                 font(lbl) <- list(weight = "bold")
 
-                inf_method <<- gradio(c("Normal theory", "Bootstrap"),
-                    horizontal = FALSE,
-                    container = g_method,
-                    handler = function(h, ...) {
-                        curSet$bs.inference <<- svalue(h$obj, index = TRUE) == 2L
-                        update_inference()
-                    }
-                )
+                if (getOption("inzight.disable.bootstraps", FALSE)) {
+                    inf_method <<- glabel("Normal theory", container = g_method, anchor = c(-1, 0))
+                } else {
+                    inf_method <<- gradio(c("Normal theory", "Bootstrap"),
+                        horizontal = FALSE,
+                        container = g_method,
+                        handler = function(h, ...) {
+                            curSet$bs.inference <<- svalue(h$obj, index = TRUE) == 2L
+                            update_inference()
+                        }
+                    )
+                }
             }
 
             # hypothesis testing (all except regression, for now)
