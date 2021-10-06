@@ -195,10 +195,9 @@ iNZDataViewWidget <- setRefClass(
 
             vsmry <- sapply(GUI$getActiveData()[vnames],
                 function(x) {
+                    if (all(is.na(x))) return("All missing")
                     switch(iNZightTools::vartype(x),
-                        'dt' = ,
                         'num' = {
-                            if (all(is.na(x))) return("All missing")
                             paste(
                                 c("min", "max"),
                                 signif(range(x, na.rm = TRUE), 4),
@@ -207,6 +206,12 @@ iNZDataViewWidget <- setRefClass(
                         },
                         'cat' = {
                             paste(length(levels(x)), "levels")
+                        },
+                        'dt' = {
+                            paste(
+                                as.character(range(x, na.rm = TRUE)),
+                                collapse = " to "
+                            )
                         }
                     )
                 }
@@ -372,6 +377,12 @@ iNZDataViewWidget <- setRefClass(
 
                     changed <- as.integer(which(!same, arr.ind = TRUE))
                     new <- dfWidget$get_frame()[changed[1], changed[2]]
+
+                    if (iNZightTools::is_dt(new)) {
+                        gmessage("Editing datetimes not supported.")
+                        updateDfView()
+                        return()
+                    }
 
                     .dataset <- GUI$getActiveData()
                     code <- sprintf(".dataset[%i, \"%s\"] <- %s",
