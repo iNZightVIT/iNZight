@@ -198,9 +198,10 @@ iNZDataViewWidget <- setRefClass(
                     switch(iNZightTools::vartype(x),
                         'dt' = ,
                         'num' = {
+                            if (all(is.na(x))) return("All missing")
                             paste(
                                 c("min", "max"),
-                                range(x, na.rm = TRUE),
+                                signif(range(x, na.rm = TRUE), 4),
                                 collapse = ", "
                             )
                         },
