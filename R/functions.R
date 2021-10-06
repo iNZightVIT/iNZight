@@ -1,3 +1,13 @@
+.onLoad <- function(libname, pkgname) {
+    opts <- options()
+    inzight_opts <- list(
+        inzight.disable.bootstraps = FALSE,
+        inzight.lock.packages = FALSE
+    )
+    toset <- !(names(inzight_opts) %in% names(opts))
+    if (any(toset)) options(inzight_opts[toset])
+}
+
 .onAttach <- function(libname, pkgname) {
     lwd <- getOption("width")
     ind <- paste(rep(" ", floor(0.05 * lwd)), collapse = "")

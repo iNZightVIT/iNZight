@@ -1000,11 +1000,7 @@ iNZGUI <- setRefClass(
             "Returns the default preferences"
             ## The default iNZight settings:
             list(
-                check.updates = ifelse(
-                    Sys.getenv('LOCK_PACKAGES') == "",
-                    TRUE,
-                    !as.logical(Sys.getenv('LOCK_PACKAGES'))
-                ),
+                check.updates = !getOption("inzight.lock.packages", FALSE),
                 window.size = c(1250, 850),
                 popout = FALSE,
                 font.size = 10,

@@ -12,11 +12,8 @@ iNZMenuBarWidget <- setRefClass(
             initFields(
                 GUI = gui,
                 container = container,
-                can_install = TRUE
+                can_install = !getOption("inzight.lock.packages", FALSE)
             )
-
-            if (Sys.getenv("LOCK_PACKAGES") != "")
-                can_install <<- !as.logical(Sys.getenv("LOCK_PACKAGES"))
 
             ## this is trickier, because it depends on a bunch of things
             plotmenu <<- placeholder("Plot")
