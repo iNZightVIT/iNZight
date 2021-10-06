@@ -234,7 +234,7 @@ iNZGUI <- setRefClass(
                 container = grpRight,
                 spacing = 10
             )
-            size(plotToolbar) <<- if (popOut) c(-1, -1) else c(-1, -1)
+            size(plotToolbar) <<- if (popOut) c(-1, -1) else c(-1, 45)
             initializePlotToolbar(plotToolbar)
             if (popOut) {
                 addSpace(grpRight, 10)
