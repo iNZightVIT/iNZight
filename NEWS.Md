@@ -60,6 +60,7 @@
 - Add horizontal/vertical toggle in table summaries
 - Add some extra space around plot toolbar in pop-out mode
 - Fix tooltip for 'Refresh Plot' icon
+- Simulate P-value checkbox removed for survey chi-square test
 
 ## iNZight 4.1.4
 
