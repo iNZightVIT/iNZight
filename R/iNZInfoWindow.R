@@ -164,12 +164,27 @@ iNZInfoWindow <- setRefClass(
 
             tryCatch(
                 {
-                    output <- eval(
-                        parse(text = svalue(code_box)),
-                        envir = GUI$code_env
+                    if (grepl("skimr", svalue(code_box))) {
+                        olocale <- Sys.getlocale("LC_CTYPE")
+                        owidth <- getOption("width")
+                        if (GUI$OS == "windows") {
+                            Sys.setlocale("LC_CTYPE", "Chinese")
+                        }
+                        options(width = 200)
+                        on.exit({
+                            Sys.setlocale("LC_CTYPE", olocale)
+                            options(width = owidth)
+                        })
+                    }
+                    output <- capture.output(
+                        eval(
+                            parse(text = svalue(code_box)),
+                            envir = GUI$code_env
+                        )
                     )
                 },
                 error = function(e) {
+                    print(e)
                     gmessage(
                         sprintf("There was an error in your code:\n\n%s", e$message),
                         title = "Error",
@@ -181,7 +196,7 @@ iNZInfoWindow <- setRefClass(
 
             if (!exists("output")) return()
 
-            if (!inherits(output, "inzight.plotsummary")) {
+            if (!inherits(output, "inzight.plotsummary") && !grepl("skimr", svalue(code_box))) {
                 gmessage(
                     "The code you entered did not produce the appropriate output",
                     title = "Invalid output",
@@ -234,7 +249,7 @@ iNZDataSummary <- setRefClass(
             if (GUI$OS == "windows") {
                 Sys.setlocale("LC_CTYPE", "Chinese")
             }
-            options(width = 110)
+            options(width = 200)
             on.exit({
                 Sys.setlocale("LC_CTYPE", olocale)
                 options(width = owidth)
@@ -898,7 +913,7 @@ iNZGetInference <- setRefClass(
                     size(ctrl_panel) <<- c(-1, 140)
                 }
 
-                if ("chi2" %in% hyp_tests) {
+                if ("chi2" %in% hyp_tests && !is_survey) {
                     hyp_simulatep <<- gcheckbox("Simulate p-value",
                         checked = FALSE,
                         container = g_hypctrls,
