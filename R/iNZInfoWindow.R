@@ -176,15 +176,22 @@ iNZInfoWindow <- setRefClass(
                             options(width = owidth)
                         })
                     }
-                    output <- capture.output(
-                        eval(
-                            parse(text = svalue(code_box)),
-                            envir = GUI$code_env
-                        )
-                    )
+                    output <-
+                        if (grepl("skimr", svalue(code_box))) {
+                            capture.output(
+                                eval(
+                                    parse(text = svalue(code_box)),
+                                    envir = GUI$code_env
+                                )
+                            )
+                        } else {
+                            eval(
+                                parse(text = svalue(code_box)),
+                                envir = GUI$code_env
+                            )
+                        }
                 },
                 error = function(e) {
-                    print(e)
                     gmessage(
                         sprintf("There was an error in your code:\n\n%s", e$message),
                         title = "Error",
@@ -195,6 +202,7 @@ iNZInfoWindow <- setRefClass(
             )
 
             if (!exists("output")) return()
+
 
             if (!inherits(output, "inzight.plotsummary") && !grepl("skimr", svalue(code_box))) {
                 gmessage(
