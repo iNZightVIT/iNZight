@@ -239,6 +239,8 @@ iNZDataViewWidget <- setRefClass(
                 return()
             }
 
+            set_data(update = FALSE)
+
             blockHandlers(dfWidget)
             on.exit(unblockHandlers(dfWidget))
             dfWidget$set_frame(data)
@@ -338,7 +340,7 @@ iNZDataViewWidget <- setRefClass(
                 handler = function(h, ...) {
                     if (paginate$col == 1L) return()
                     paginate$col <<- paginate$col - paginate$ncol
-                    updateWidget()
+                    updateDfView()
                 }
             )
             btnColPrev$set_icon("go-back")
@@ -348,7 +350,7 @@ iNZDataViewWidget <- setRefClass(
                 handler = function(h, ...) {
                     if (paginate$col + paginate$ncol - 1L >= ncol(GUI$getActiveData())) return()
                     paginate$col <<- paginate$col + paginate$ncol
-                    updateWidget()
+                    updateDfView()
                 }
             )
             btnColNext$set_icon("go-forward")
@@ -414,7 +416,7 @@ iNZDataViewWidget <- setRefClass(
                 container = pageGp,
                 handler = function(h, ...) {
                     paginate$nrow <<- svalue(h$obj)
-                    updateWidget()
+                    updateDfView()
                 }
             )
             addSpace(pageGp, 10L)
@@ -426,7 +428,7 @@ iNZDataViewWidget <- setRefClass(
                 handler = function(h, ...) {
                     if (paginate$row == 1L) return()
                     paginate$row <<- paginate$row - paginate$nrow
-                    updateWidget()
+                    updateDfView()
                 }
             )
             btnPrev$set_icon("go-up")
@@ -435,7 +437,7 @@ iNZDataViewWidget <- setRefClass(
                 handler = function(h, ...) {
                     if (paginate$row + paginate$nrow - 1L >= nrow(GUI$getActiveData())) return()
                     paginate$row <<- paginate$row + paginate$nrow
-                    updateWidget()
+                    updateDfView()
                 }
             )
             btnNext$set_icon("go-down")
@@ -469,7 +471,7 @@ iNZDataViewWidget <- setRefClass(
                         return()
                     }
                     paginate$row <<- (n %/% paginate$nrow) * paginate$nrow
-                    updateWidget()
+                    updateDfView()
                     svalue(dfWidget, index = TRUE) <<- n %% paginate$nrow + 1L
                 }
             )
