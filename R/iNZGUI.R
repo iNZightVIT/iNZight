@@ -157,7 +157,7 @@ iNZGUI <- setRefClass(
             iNZDocuments <<- list(iNZDocument$new(data = data))
 
             ## Check for updates ... need to use try incase it fails (no connection etc)
-            if (preferences$check.updates) {
+            if (preferences$check.updates && !getOption("inzight.lock.packages", FALSE)) {
                 oldpkg <- try(
                     old.packages(
                         repos = "https://r.docker.stat.auckland.ac.nz"
