@@ -36,6 +36,7 @@
 #'
 #' @import methods utils grDevices colorspace
 #' @importFrom magrittr %>%
+#' @importFrom translatr tr
 #' @export iNZGUI
 #' @exportClass iNZGUI
 iNZGUI <- setRefClass(
@@ -80,6 +81,7 @@ iNZGUI <- setRefClass(
             curPlot = "ANY",
             plotType = "ANY",
             OS = "character",
+            available.languages = "character",
             prefs.location = "character",
             preferences = "list",
             statusbar = "ANY",
@@ -141,6 +143,18 @@ iNZGUI <- setRefClass(
                 addonModuleDir <<- preferences$module_dir
             } else {
                 addonModuleDir <<- Sys.getenv("INZIGHT_MODULES_DIR")
+            }
+
+            ## Grab settings file (or try to!)
+            tf <- system.file("translations.csv", package = "iNZight")
+            available.languages <<- colnames(read.csv(tf, nrows = 1))[-1]
+            getPreferences()
+            if (file.exists(tf)) {
+                options(
+                    "translatr.language" =
+                        unique(c(preferences$language, "English")),
+                    "translatr.table" = read.csv(tf)
+                )
             }
 
             popOut <<- preferences$popout
@@ -889,6 +903,7 @@ iNZGUI <- setRefClass(
             }
 
             updatePlot()
+            .self$menuBarWidget$defaultMenu()
             dataNameWidget$updateWidget()
         },
         ## display warning message
@@ -1006,7 +1021,7 @@ iNZGUI <- setRefClass(
                 font.size = 10,
                 dev.features = FALSE,
                 show.code = FALSE,
-                language = "en",
+                language = available.languages[1],
                 module_dir = NULL
             )
         },
@@ -1061,6 +1076,7 @@ iNZGUI <- setRefClass(
 
             prefs$language <-
                 if (is.null(prefs$language) || !is.character(prefs$language)) defs$language
+                else if (!prefs$language %in% available.languages) defs$language
                 else prefs$language[1]
 
             prefs$module_dir <-

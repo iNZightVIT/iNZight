@@ -16,7 +16,7 @@ iNZMenuBarWidget <- setRefClass(
             )
 
             ## this is trickier, because it depends on a bunch of things
-            plotmenu <<- placeholder("Plot")
+            plotmenu <<- placeholder("menu_plot")
             menubar <<- gmenu(list(), container = container, expand = TRUE)
 
             hasModules()
@@ -32,40 +32,44 @@ iNZMenuBarWidget <- setRefClass(
             )
         },
         placeholder = function(name) {
-            x <- gaction(name)
+            x <- gaction(tr(name))
             enabled(x) <- FALSE
             x
         },
         defaultMenu = function() {
-            setMenu(
-                File = FileMenu(),
-                Dataset = DataMenu(),
-                Variables = VariablesMenu(),
-                Plot = PlotMenu(),
-                Advanced = AdvancedMenu(),
-                Help = HelpMenu()
+            m <- list(
+                menu_file = FileMenu(),
+                menu_data = DataMenu(),
+                menu_vars = VariablesMenu(),
+                menu_plot = PlotMenu(),
+                menu_adv = AdvancedMenu(),
+                menu_help = HelpMenu()
             )
+            names(m) <- tr(names(m))
+            z <- do.call(.self$setMenu, m)
+            invisible(NULL)
         },
         setMenu = function(...) {
             svalue(menubar) <<- list(...)
         },
         updateMenu = function(what, with) {
+            what <- tr(what)
             svalue(menubar)[[what]] <<- with
         },
         FileMenu = function() {
             m <- list(
                 import =
-                    gaction("Import data ...",
+                    gaction(paste(tr("menu_file_import"), "..."),
                         icon = "cdrom",
                         tooltip = "Import a new dataset",
                         handler = function(h, ...) iNZImportWin$new(GUI)),
                 export =
-                    gaction("Export data ...",
+                    gaction(paste(tr("menu_file_export"), "..."),
                         icon = "save-as",
                         handler = function(h, ...) iNZExportWin$new(GUI)),
                 gseparator(),
                 paste =
-                    gaction("Paste from ...",
+                    gaction(paste(tr("menu_file_paste"), "..."),
                         icon = "paste",
                         tooltip = "Import data by pasting/clipboard",
                         handler = function(h, ...)
@@ -73,35 +77,35 @@ iNZMenuBarWidget <- setRefClass(
                     ),
                 gseparator(),
                 example =
-                    gaction("Example data ...",
+                    gaction(paste(tr("menu_file_examples"), "..."),
                         icon = "dataframe",
                         tooltip = "Load an example dataset",
                         handler = function(h, ...) iNZImportExampleWin$new(GUI)),
                 gseparator(),
                 preferences =
-                    gaction ("Preferences ...",
+                    gaction (paste(tr("menu_file_prefs"), "..."),
                         icon = "preferences",
                         tooltip = "Customise iNZight",
                         handler = function(h, ...) iNZPrefsWin$new(GUI)),
                 reload =
-                    gaction("Reload iNZight",
+                    gaction(tr("menu_file_reload"),
                         icon = "refresh",
                         handler = function(h, ...) GUI$reload()
                     ),
                 exit =
-                    gaction("Exit",
+                    gaction(tr("menu_file_exit"),
                         icon = "quit",
                         handler = function(h, ...) GUI$close())
             )
             if (GUI$preferences$dev.features) {
                 m <- c(
                     list(
-                        load = gaction("Load [beta]",
+                        load = gaction(paste(tr("menu_file_load"), "..."),
                             icon = "open",
                             tooltip = "Load a saved iNZight session",
                             handler = function(h, ...) {
                                 f <- gfile(
-                                    text = "Load [beta]",
+                                    text = tr("menu_file_load"),
                                     type = "open",
                                     filter = list(
                                         "iNZight save files (*.inzsave)" = list(patterns = c("*.inzsave")),
@@ -112,12 +116,12 @@ iNZMenuBarWidget <- setRefClass(
                                 invisible(NULL)
                             }
                         ),
-                        save = gaction("Save [beta]",
+                        save = gaction(paste(tr("menu_file_save"), "..."),
                             icon = "save",
                             tooltip = "Save the current iNZight session",
                             handler = function(h, ...) {
                                 f <- gfile(
-                                    text = "Save [beta]",
+                                    text = tr("menu_file_save"),
                                     type = "save",
                                     initial.filename = "untitled.inzsave",
                                     filter = list(
@@ -147,37 +151,37 @@ iNZMenuBarWidget <- setRefClass(
             m
         },
         DataMenu = function() {
-            if (!hasData()) return(placeholder("Dataset"))
+            if (!hasData()) return(placeholder("menu_data"))
             menu <- list(
                 filter =
-                    gaction("Filter ...",
+                    gaction(paste(tr("menu_data_filter"), "..."),
                         icon = "subset",
                         handler = function(h, ...) iNZFilterWin$new(GUI)),
                 sort =
-                    gaction("Sort by variable(s) ...",
+                    gaction(paste(tr("menu_data_sort"), "..."),
                         icon = "sort-ascending",
                         handler = function(h, ...) iNZSortWin$new(GUI)),
                 aggregate =
-                    gaction("Aggregate ...",
+                    gaction(paste(tr("menu_data_agg"), "..."),
                         icon = "dnd-multiple",
                         handler = function(h, ...) iNZAggregateWin$new(GUI)),
                 stack =
-                    gaction("Stack ...",
+                    gaction(paste(tr("menu_data_stack"), "..."),
                         icon = "dnd-multiple",
                         handler = function(h, ...) iNZStackWin$new(GUI)),
-                "Dataset operation" = list(
+                "DATAOP" = list(
                     reshape =
-                        gaction("Reshape dataset ...",
+                        gaction(paste(tr("menu_data_reshape"), "..."),
                             icon = "dataframe",
                             tooltip = "Transform from wide- to long-form data",
                             handler = function(h, ...) iNZReshapeWin$new(GUI)),
                     separate =
-                        gaction("Separate column ...",
+                        gaction(paste(tr("menu_data_separate"), "..."),
                             icon = "dataframe",
                             tooltip = "Separate columns",
                             handler = function(h, ...) iNZSeparateWin$new(GUI)),
                     unite =
-                        gaction("Unite columns ...",
+                        gaction(paste(tr("menu_data_unite"), "..."),
                             icon = "dataframe",
                             tooltip = "Unite columns",
                             handler = function(h, ...) iNZUniteWin$new(GUI))
@@ -188,90 +192,90 @@ iNZMenuBarWidget <- setRefClass(
                         rmarkdown::pandoc_available()) {
                         report =
                             gaction(
-                                "Generate data report ...",
+                                paste(tr("menu_data_report"), "..."),
                                 icon = "select-all",
                                 handler = function(h, ...) iNZDataReportWin$new(GUI)
                             )
                     } else NULL,
                 validate =
-                    gaction("Validate ...",
+                    gaction(paste(tr("menu_data_validate"), "..."),
                         icon = "apply",
                         handler = function(h, ...) iNZValidateWin$new(GUI)
                     ),
                 reorder =
-                    gaction("Reorder and select variables ...",
+                    gaction(paste(tr("menu_data_reorder"), "..."),
                         icon = "sort-ascending",
                         handler = function(h, ...) iNZReorderWin$new(GUI)
                     ),
                 gseparator(),
                 view =
-                    gaction("View full dataset",
+                    gaction(tr("menu_data_view"),
                         icon = "datasheet",
                         handler = function(h, ...) GUI$view_dataset()
                     ),
                 rename =
-                    gaction("Rename dataset ...",
+                    gaction(paste(tr("menu_data_rename"), "..."),
                         icon = "editor",
                         handler = function(h, ...) iNZRenameDataWin$new(GUI)),
                 restore =
-                    gaction("Restore original dataset",
+                    gaction(tr("menu_data_restore"),
                         icon = "revert-to-saved",
                         handler = function(h, ...) GUI$restoreDataset()),
                 delete =
-                    gaction("Delete current dataset",
+                    gaction(tr("menu_data_delete"),
                         icon = "delete",
                         handler = function(h, ...) GUI$deleteDataset()),
-                "Merge/Join datasets" = list(
+                "MERGEJOIN" = list(
                     joinbycol =
-                        gaction("Join by column values",
+                        gaction(paste(tr("menu_data_joincols"), "..."),
                             icon = "copy",
                             handler = function(h, ...) iNZJoinWin$new(GUI)),
                     appendrows =
-                        gaction("Append new rows",
+                        gaction(paste(tr("menu_data_appendrows"), "..."),
                             icon = "edit",
                             handler = function(h, ...) iNZAppendRowsWin$new(GUI))
                 ),
                 gseparator(),
-                "Survey design" = list(
+                "SURVEY" = list(
                     surveydesign =
-                        gaction("Specify design ...",
+                        gaction(paste(tr("menu_data_svyspec"), "..."),
                             tooltip = "Specify survey design information for the data",
                             icon = "new",
                             handler = function(h, ...)
                                 iNZSurveyDesign$new(GUI, type = "survey")
                         ),
                     repdesign =
-                        gaction("Specify replicate design ...",
+                        gaction(paste(tr("menu_data_svyrep"), "..."),
                             icon = "new",
                             handler = function(h, ...)
                                 iNZSurveyDesign$new(GUI, type = "replicate")
                         ),
                     poststrat =
-                        gaction("Post stratify ...",
+                        gaction(paste(tr("menu_data_svypost"), "..."),
                             icon = "edit",
                             handler = function(h, ...) iNZSurveyPostStrat$new(GUI)
                         ),
                     removedesign =
-                        gaction("Remove design",
+                        gaction(tr("menu_data_svyremove"),
                             tooltip = "Remove survey design from data",
                             icon = "delete",
                             handler = function(h, ...) GUI$removeDesign()
                         )
                 ),
-                "Frequency tables" = list(
+                FREQS = list(
                     expandtable =
-                        gaction("Expand table",
+                        gaction(tr("menu_data_expandtbl"),
                             icon = "datasheet",
                             handler = function(h, ...) iNZexpandTblWin$new(GUI)
                         ),
                     setfrequency =
-                        gaction("Specify frequency column",
+                        gaction(paste(tr("menu_data_setfreq"), "..."),
                             icon = "datasheet",
                             handler = function(h, ...)
                                 iNZSurveyDesign$new(GUI, type = "frequency")
                         ),
                     dropfrequency =
-                        gaction("Remove frequency column",
+                        gaction(tr("menu_data_dropfreq"),
                             icon = "delete",
                             handler = function(h, ...) {
                                 GUI$getActiveDoc()$setSettings(list(freq = NULL))
@@ -283,138 +287,145 @@ iNZMenuBarWidget <- setRefClass(
             if (!is.null(GUI$getActiveDoc()$getModel()$getDesign())) {
                 # disable some items for surveys
                 enabled(menu$stack) <- FALSE
-                enabled(menu[["Dataset operation"]]$reshape) <- FALSE
-                enabled(menu[["Merge/Join datasets"]]$appendrows) <- FALSE
+                enabled(menu[["DATAOP"]]$reshape) <- FALSE
+                enabled(menu[["MERGEJOIN"]]$appendrows) <- FALSE
 
-                menu[["Frequency tables"]] <- gaction("Frequency tables", enabled = FALSE)
-                enabled(menu[["Frequency tables"]]) <- FALSE
+                menu[["FREQS"]] <- gaction(tr("menu_data_freq"))
+                enabled(menu[["FREQS"]]) <- FALSE
 
                 survey_type <- GUI$getActiveDoc()$getModel()$getDesign()$spec$type
                 if (survey_type == "survey") {
-                    svalue(menu[["Survey design"]]$surveydesign) <- "Modify design ..."
-                    menu[["Survey design"]]$repdesign <- NULL
+                    svalue(menu[["SURVEY"]]$surveydesign) <- "Modify design ..."
+                    menu[["SURVEY"]]$repdesign <- NULL
                 }
                 if (survey_type == "replicate") {
-                    svalue(menu[["Survey design"]]$repdesign) <- "Modify replicate design ..."
-                    menu[["Survey design"]]$surveydesign <- NULL
+                    svalue(menu[["SURVEY"]]$repdesign) <- "Modify replicate design ..."
+                    menu[["SURVEY"]]$surveydesign <- NULL
                 }
             } else {
                 # disable some items for non-surveys
-                menu[["Survey design"]]$poststrat <- NULL
-                menu[["Survey design"]]$removedesign <- NULL
+                menu[["SURVEY"]]$poststrat <- NULL
+                menu[["SURVEY"]]$removedesign <- NULL
             }
+            names(menu)[names(menu) == "DATAOP"] <- tr("menu_data_operation")
+            names(menu)[names(menu) == "MERGEJOIN"] <- tr("menu_data_mergejoin")
+            names(menu)[names(menu) == "SURVEY"] <- tr("menu_data_svy")
+            names(menu)[names(menu) == "FREQS"] <- tr("menu_data_freq")
             menu
         },
         VariablesMenu = function() {
-            if (!hasData()) return(placeholder("Variables"))
+            if (!hasData()) return(placeholder("menu_vars"))
             menu <- list(
                 cont2cat =
-                    gaction("Convert to categorical ...",
+                    gaction(paste(tr("menu_vars_convert2cat"), "..."),
                         icon = "convert",
                         tooltip = "Convert a variable to a categorical type",
                         handler = function(h, ...) iNZConToCatWin$new(GUI)),
-                "Categorical Variables" = list(
+                CATVARS = list(
                     reorder =
-                        gaction("Reorder levels ...",
+                        gaction(paste(tr("menu_vars_reorderlevels"), "..."),
                             icon = "sort-ascending",
                             tooltip = "Reorder the levels of a categorical variable",
                             handler = function(h, ...) iNZReorderWin$new(GUI)),
                     collapse =
-                        gaction("Collapse levels ...",
+                        gaction(paste(tr("menu_vars_collapse"), "..."),
                             icon = "dnd-multiple",
                             tooltip = "Collapse two or more levels into one",
                             handler = function(h, ...) iNZCollapseWin$new(GUI)),
                     rename =
-                        gaction("Rename levels ...",
+                        gaction(paste(tr("menu_vars_renamelevels"), "..."),
                             icon = "edit",
                             tooltip = "Rename a categorical variable's levels",
                             handler = function(h, ...) iNZRenameFactorLevelsWin$new(GUI)),
                     combine =
-                        gaction("Combine categorical variables ...",
+                        gaction(paste(tr("menu_vars_combinecatvars"), "..."),
                             icon = "dnd-multiple",
                             tooltip = "Combine two or more categorical variables",
                             handler = function(h, ...) iNZCombineWin$new(GUI))
                 ),
-                "Numeric Variables" = list(
+                NUMVARS = list(
                     transform =
-                        gaction("Transform ...",
+                        gaction(paste(tr("menu_vars_transform"), "..."),
                             icon = "convert",
                             tooltip = "Transform a variable using a function",
                             handler = function(h, ...) iNZTransformWin$new(GUI)),
                     standardise =
-                        gaction("Standardise ...",
+                        gaction(paste(tr("menu_vars_standardise"), "..."),
                             icon = "convert",
                             tooltip = "Standardise a numeric variable",
                             handler = function(h, ...) iNZStandardiseWin$new(GUI)),
                     class =
-                        gaction("Form class intervals ...",
+                        gaction(paste(tr("menu_vars_classint"), "..."),
                             icon = "convert",
                             tooltip = "Convert numeric variable into categorical intervals",
                             handler = function(h, ...) iNZFormClassIntervalsWin$new(GUI)),
                     rank =
-                        gaction("Rank numeric variables ...",
+                        gaction(paste(tr("menu_vars_rank"), "..."),
                             icon = "sort-ascending",
                             tooltip = "Create an ordering variable",
                             handler = function(h, ...) iNZRankWin$new(GUI)),
                     cat =
-                        gaction("Convert to categorical (multiple) ...",
+                        gaction(paste(tr("menu_vars_convert2catmulti"), "..."),
                             icon = "convert",
                             tooltip = "Convert multiple numeric variables to categorical",
                             handler = function(h, ...) iNZConToCatMultiWin$new(GUI))
                 ),
-                "Dates and Times" = list(
+                DATES = list(
                   convert =
-                    gaction("Convert to ...",
+                    gaction(paste(tr("menu_vars_convert2dt"), "..."),
                             icon = "date",
                             tooltip = "Convert a variable to a dates and times type",
                             handler = function(h, ...) iNZConToDtWin$new(GUI)),
                   extract =
-                    gaction("Extract from ...",
+                    gaction(paste(tr("menu_vars_extractdt"), "..."),
                             icon = "date",
                             tooltip = "Extract parts from a dates and times variable",
                             handler = function(h, ...) iNZExtFromDtWin$new(GUI)),
                   aggregation =
-                    gaction("Aggregate to ...",
+                    gaction(paste(tr("menu_vars_aggregate2dt"), "..."),
                             icon = "date",
                             tooltip = "Aggregate date-time into monthly or quarterly",
                             handler = function(h, ...) iNZAggDtWin$new(GUI))
                 ),
                 rename =
-                    gaction("Rename variables ...",
+                    gaction(paste(tr("menu_vars_rename"), "..."),
                         icon = "edit",
                         tooltip = "Rename a variable",
                         handler = function(h, ...) iNZRenameVarWin$new(GUI)),
                 create =
-                    gaction("Create new variable ...",
+                    gaction(paste(tr("menu_vars_create"), "..."),
                         icon = "new",
                         tooltip = "Create a new variable using a formula",
                         handler = function(h, ...) iNZCreateVarWin$new(GUI)),
                 miss2cat =
-                    gaction("Missing to categorical ...",
+                    gaction(paste(tr("menu_vars_miss2cat"), "..."),
                         icon = "index",
                         tooltip = "Create a variable to include missingness information",
                         handler = function(h, ...) iNZMissToCatWin$new(GUI)),
                 delete =
-                    gaction("Delete variables ...",
+                    gaction(paste(tr("menu_vars_delete"), "..."),
                         icon = "delete",
                         tooltip = "Permanently delete a variable",
                         handler = function(h, ...) iNZDeleteVarWin$new(GUI))
             )
             if (!is.null(GUI$getActiveDoc()$getModel()$getDesign())) {
                 # disable some items for surveys
-                # enabled(menu[["Numeric Variables"]]$class) <- FALSE
-                menu[["Dates and Times"]] <- gaction("Dates and Times", enabled = FALSE)
-                enabled(menu[["Dates and Times"]]) <- FALSE
+                # enabled(menu$NUMVARS$class) <- FALSE
+                menu$DATES <- gaction(tr("menu_vars_dates"), enabled = FALSE)
+                enabled(menu$DATES) <- FALSE
             }
+            names(menu)[names(menu) == "NUMVARS"] <- tr("menu_vars_numvars")
+            names(menu)[names(menu) == "CATVARS"] <- tr("menu_vars_catvars")
+            names(menu)[names(menu) == "DATES"] <- tr("menu_vars_dates")
             menu
         },
         PlotMenu = function() {
-            if (!hasData()) return(placeholder("Plot"))
+            if (!hasData()) return(placeholder("menu_plot"))
             plotmenu
         },
         setPlotMenu = function(menu) {
             plotmenu <<- menu
-            updateMenu("Plot", PlotMenu())
+            updateMenu("menu_plot", PlotMenu())
         },
         AdvancedMenu = function() {
             if (!hasData() && modules_installed) {
@@ -422,13 +433,13 @@ iNZMenuBarWidget <- setRefClass(
                 adv <-
                     list(
                         installmaps =
-                            gaction("Install Maps",
+                            gaction(paste(tr("menu_adv_mapsinstall"), "..."),
                                 icon = "symbol_diamond",
                                 "tooltip" = "Install the Maps module",
                                 handler = function(h, ...) InstallMaps(GUI)
                             ),
                         manage =
-                            gaction("Manage modules ...",
+                            gaction(paste(tr("menu_adv_manage"), "..."),
                                 icon = "execute",
                                 tooltip = "Add, update, and remove add-on modules.",
                                 handler = function(h, ...)
@@ -443,35 +454,35 @@ iNZMenuBarWidget <- setRefClass(
 
             if (modules_installed) {
                 adv <- list(
-                    "Quick Explore" = list(
+                    quick_explore = list(
                         missing =
-                            gaction("Missing values",
+                            gaction(paste(tr("menu_adv_missing"), "..."),
                                 icon = "symbol_diamond",
                                 tooltip = "Explore missing values",
                                 handler = function(h, ...) iNZExploreMissing$new(GUI)),
                         all1varplot =
-                            gaction("All 1-variable plots",
+                            gaction(paste(tr("menu_adv_plot1var"), "..."),
                                 icon = "symbol_diamond",
                                 tooltip = "Click through a plot of each variable",
                                 handler = function(h, ...) iNZallPlots$new(GUI)),
                         all2varsmry =
-                            gaction("All 1-variable summaries",
+                            gaction(paste(tr("menu_adv_smry1var"), "..."),
                                 icon = "symbol_diamond",
                                 tooltip = "Get a summary of all variables",
                                 handler = function(h, ...) iNZallSummaries$new(GUI)),
                         all2var =
-                            gaction("Explore 2-variable plots ...",
+                            gaction(paste(tr("menu_adv_plot2var"), "..."),
                                 icon = "symbol_diamond",
                                 tooltip = "Click through all 2-variable plots",
                                 handler = function(h, ...) iNZall2Plots$new(GUI)),
                         pairs =
-                            gaction("Pairs ...",
+                            gaction(paste(tr("menu_adv_pairs"), "..."),
                                 icon = "symbol_diamond",
                                 tooltip = "See a pairs plot matrix",
                                 handler = function(h, ...) iNZscatterMatrix$new(GUI))
                     ),
                     plot3d =
-                        gaction("3D plot ...",
+                        gaction(paste(tr("menu_adv_plot3d"), "..."),
                             icon = "3dcontour",
                             tooltip = "Start the 3D plotting module",
                             handler = function(h, ...) {
@@ -483,27 +494,27 @@ iNZMenuBarWidget <- setRefClass(
                             }
                         ),
                     timeseries =
-                        gaction("Time series ...",
+                        gaction(paste(tr("menu_adv_timeseries"), "..."),
                             icon = "ts",
                             tooltip = "Start the time series module",
                             handler = function(h, ...) iNZightModules::iNZightTSMod$new(GUI)),
                     modelfitting =
-                        gaction("Model fitting ...",
+                        gaction(paste(tr("menu_adv_modfit"), "..."),
                             icon = "lines",
                             tooltip = "Start the model fitting module",
                             handler = function(h, ...) iNZightModules::iNZightRegMod$new(GUI)),
                     multires =
-                        gaction("Multiple response ...",
+                        gaction(paste(tr("menu_adv_multires"), "..."),
                             icon = "hist",
                             tooltip = "Start the multiple response module",
                             handler = function(h, ...) iNZightModules::iNZightMultiRes$new(GUI)),
                     maps =
-                        gaction("Maps ...",
+                        gaction(paste(tr("menu_adv_maps"), "..."),
                             icon = "plot1",
                             handler = function(h, ...) iNZightModules::iNZightMapLanding$new(GUI)),
                     gseparator(),
                     manage =
-                        gaction("Manage modules ...",
+                        gaction(paste(tr("menu_adv_manage"), "..."),
                             icon = "execute",
                             tooltip = "Add, update, and remove add-on modules.",
                             handler = function(h, ...)
@@ -512,7 +523,7 @@ iNZMenuBarWidget <- setRefClass(
             } else if (can_install) {
                 adv <- list(
                     install_modules =
-                        gaction("Install the Modules package ...",
+                        gaction(paste(tr("menu_adv_install"), "..."),
                             icon = "execute",
                             tooltip = "Install the iNZightModules R pacakge to access add-on modules",
                             handler = function(h, ...) {
@@ -568,7 +579,7 @@ iNZMenuBarWidget <- setRefClass(
                 list(
                     gseparator(),
                     rcode =
-                        gaction("R code history [beta] ...",
+                        gaction(paste(tr("menu_adv_code"), "..."),
                             icon = "rlogo",
                             tooltip = "Show the R code history for your session",
                             handler = function(h, ...) GUI$showHistory())
@@ -580,7 +591,8 @@ iNZMenuBarWidget <- setRefClass(
                     instindex <- which(names(adv) == "maps") + 1
                     mods <- lapply(modules,
                         function(mod) {
-                            gaction(mod$display_name,
+                            # at this point, `tr(name, __DICTIONARY__)` where __DICTIONARY__ comes from module
+                            gaction(tr(mod$display_name),
                                 handler = function(h, ...) {
                                     x <- sprintf("mod$%s$new(GUI, name = '%s')",
                                         mod$name,
@@ -594,25 +606,26 @@ iNZMenuBarWidget <- setRefClass(
                     adv <- c(adv[1:(instindex-1)], mods, adv[instindex:length(adv)])
                 }
             }
+            names(adv)[names(adv) == "quick_explore"] <- tr("menu_adv_quick")
             adv
         },
         HelpMenu = function() {
             guides <- list(
-                user_guides.basics = "The Basics",
-                user_guides.interface = "The Interface",
-                user_guides.plot_options = "Plot Options",
-                user_guides.variables = "Variables menu",
-                user_guides.data_options = "Dataset menu",
-                user_guides.add_ons = "Advanced"
+                user_guides.basics = tr("menu_help_guide_basics"),
+                user_guides.interface = tr("menu_help_guide_interface"),
+                user_guides.plot_options = tr("menu_help_guide_plot"),
+                user_guides.variables = tr("menu_help_guide_vars"),
+                user_guides.data_options = tr("menu_help_guide_data"),
+                user_guides.add_ons = tr("menu_help_guide_advanced")
             )
-            list(
+            menu <- list(
                 about =
-                    gaction("About",
+                    gaction(tr("menu_help_about"),
                         icon = "about",
                         tooltip = "",
                         handler = function(h, ...) iNZAboutWidget$new(GUI)
                     ),
-                "User Guides" = lapply(
+                GUIDES = lapply(
                     names(guides),
                     function(n) {
                         gaction(
@@ -625,26 +638,28 @@ iNZMenuBarWidget <- setRefClass(
                     }
                 ),
                 change =
-                    gaction("Change history",
+                    gaction(tr("menu_help_history"),
                         icon = "file",
                         tooltip = "",
                         handler = function(h, ...)
                             help_page('support/changelog/?pkg=iNZight')
                     ),
                 faq =
-                    gaction("FAQ",
+                    gaction(tr("menu_help_faq"),
                         icon = "find",
                         tooltip = "",
                         handler = function(h, ...)
                             help_page("support/faq/")),
                 contact =
-                    gaction("Contact us or Report a Bug",
+                    gaction(tr("menu_help_contact"),
                         icon = "help",
                         tooltip = "",
                         handler = function(h, ...)
                             help_page("support/contact/")
                     )
             )
+            names(menu)[names(menu) == "GUIDES"] <- tr("menu_help_guides")
+            menu
         }
     )
 )

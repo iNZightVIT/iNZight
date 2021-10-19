@@ -33,8 +33,10 @@ Imports:
     png,
     reshape2,
     skimr,
+    stringi,
     stringr,
     survey,
+    translatr,
     utils
 Suggests:
     covr,
