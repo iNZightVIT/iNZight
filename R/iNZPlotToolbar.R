@@ -260,7 +260,7 @@ iNZPlotToolbar <- setRefClass(
                 gaction(paste(tr("menu_plot_rmv"), "..."),
                     handler = function(h, ...) iNZPlotRmveModWin$new(GUI)
                 ),
-                gaction(aste(tr("menu_plot_inf"), "..."),
+                gaction(paste(tr("menu_plot_inf"), "..."),
                     handler = function(h, ...) addInf()
                 ),
                 gseparator(),
@@ -275,7 +275,7 @@ iNZPlotToolbar <- setRefClass(
                     handler = function(h, ...) plotWidget$closePlot()
                 ),
                 gaction(
-                    label = paste(tr("menu_plot_renametab"),
+                    label = paste(tr("menu_plot_renametab"), "..."),
                     icon = "editor",
                     handler = function(h, ...) plotWidget$renamePlot()
                 ),
@@ -291,7 +291,7 @@ iNZPlotToolbar <- setRefClass(
                     handler = function(h, ...) refreshFn()
                 ),
                 gaction(
-                    label = paste(tr("menu_plot_save"),
+                    label = paste(tr("menu_plot_save"), "..."),
                     icon = "save",
                     handler = function(h, ...) plotWidget$savePlot(refreshFn)
                 )
