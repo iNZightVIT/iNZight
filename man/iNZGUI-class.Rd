@@ -14,11 +14,168 @@ Main class that builds the iNZight GUI
 \item{\code{iNZDocuments}}{A list of documents containing data, plot settings, etc.}
 
 \item{\code{activeDoc}}{The numeric ID of the currently active document}
+
+\item{\code{win}}{The main GUI window}
+
+\item{\code{menuBarWidget}}{the widget component containing the menu bar}
+
+\item{\code{leftMain}}{the left-hand-side panel containing data widgets and controls}
+
+\item{\code{moduleWindow}}{new modules are inserted into this component}
+
+\item{\code{activeModule}}{an indicator pointing at the currently active module}
+
+\item{\code{gp1}}{containing within the left panel}
+
+\item{\code{gp2}}{container within middle group}
+
+\item{\code{popOut}}{logical, indicates if the graphics window will be embedded or separate (TRUE)}
+
+\item{\code{dataViewWidget}}{a widget that displays the data to the user}
+
+\item{\code{dataToolbarWidget}}{the widget which lets user switch between data and variable view}
+
+\item{\code{dataNameWidget}}{displays the name of the current dataset, and allows users to switch between datasets}
+
+\item{\code{plotWidget}}{the widget containing the main plot window}
+
+\item{\code{plotToolbar}}{the widget in the bottom-right containing plot control buttons}
+
+\item{\code{ctrlWidget}}{the drop-down boxes allowing users to choose variables}
+
+\item{\code{sumBtn}}{the Get Summary button}
+
+\item{\code{infBtn}}{the Get Inference button}
+
+\item{\code{modWin}}{a container for the current module window}
+
+\item{\code{curPlot}}{the current plot object is returned and stored in this field}
+
+\item{\code{plotType}}{the type of the current plot}
+
+\item{\code{OS}}{the name of the user's operating system}
+
+\item{\code{prefs.location}}{the location user preferences are saved}
+
+\item{\code{preferences}}{the current user preferences}
+
+\item{\code{statusbar}}{(unused currently) a statusbar widget}
+
+\item{\code{moduledata}}{data for the current module, so they can preserve state if closed}
+
+\item{\code{rhistory}}{a module containing the R history for the user's session}
+
+\item{\code{plot_history}}{contains history of gg_* plot types}
+
+\item{\code{disposer}}{the function called when iNZight closes}
+
+\item{\code{addonModuleDir}}{the path where modules are installed}
+
+\item{\code{code_env}}{the environment in which R code is executed}
+
+\item{\code{code_panel}}{the interactive code widget at the bottom of the iNZight window}
+
+\item{\code{is_initialized}}{logical, indicates if iNZight is initialised or not}
 }}
 
 \section{Methods}{
 
 \describe{
-\item{\code{initializeGui(data = NULL, disposeR = FALSE, addonDir = NULL)}}{Initiates the GUI}
+\item{\code{addActDocObs(FUN, ...)}}{Adds an observer to the active document}
+
+\item{\code{checkData(module)}}{Checks that data is loaded (used before opening modules that require data)}
+
+\item{\code{checkPrefs(prefs)}}{Checks the provided preferences are valid, returning a valid list}
+
+\item{\code{close()}}{Closes the iNZight window, calling the user-supplied disposer function}
+
+\item{\code{close_module()}}{Closes the current module, and re-displays the default control panel}
+
+\item{\code{closerHandler(disposer)}}{Adds a close handler that is called when the user closes the iNZight window}
+
+\item{\code{defaultPrefs()}}{Returns the default preferences}
+
+\item{\code{deleteDataset()}}{Deletes the current dataset}
+
+\item{\code{displayMsg(module, type)}}{Displays a message about data requirements for the chosen module}
+
+\item{\code{do_delete_dataset()}}{Does the dataset deletion}
+
+\item{\code{get_data_object(nrow)}}{Returns the current dataset or survey design, if it exists}
+
+\item{\code{getActiveData()}}{Returns the current dataset}
+
+\item{\code{getActiveDoc()}}{Returns the currently active document}
+
+\item{\code{getActiveRowData()}}{Returns the row data of the current dataset}
+
+\item{\code{getPreferences()}}{Gets the user's preferences from a file}
+
+\item{\code{getState()}}{Returns the current state of the GUI}
+
+\item{\code{initializeCodeHistory()}}{Initializes the R code history widget}
+
+\item{\code{initializeControlWidget()}}{Initializes the control panel widget}
+
+\item{\code{initializeDataNameWidget()}}{Initializes the data name widget}
+
+\item{\code{initializeDataToolbar(dataThreshold)}}{Initializes the data toolbar widget}
+
+\item{\code{initializeDataView(dataThreshold)}}{Initializes the data view widget}
+
+\item{\code{initializeGui(
+  data = NULL,
+  dispose_fun = NULL,
+  addonDir = NULL,
+  show = TRUE,
+  stop_loading = FALSE,
+  ...
+)}}{Initiates the GUI}
+
+\item{\code{initializeMenu(cont)}}{Initializes the menu bar at the top of iNZight}
+
+\item{\code{initializeModuleWindow(mod, title, scroll = FALSE, border = 0, code = FALSE)}}{Initializes a module window in the left-hand panel}
+
+\item{\code{initializePlotHistory()}}{Initializes the plot history widget}
+
+\item{\code{initializePlotToolbar(cont)}}{Initializes the plot toolbar}
+
+\item{\code{initializePlotWidget()}}{Initializes the plot panel widget}
+
+\item{\code{initializeSummaryBtns()}}{Initializes the Get Summary and Get Inference buttons}
+
+\item{\code{loadState(file, .alert = TRUE)}}{Loads the state from a file called `file`}
+
+\item{\code{new_document(data, suffix)}}{Create a new document based on the existing one (`getActiveDoc()`)}
+
+\item{\code{plotMessage(heading, message, footer, type = "error")}}{Displays a message to the user using the plot panel}
+
+\item{\code{plotSplashScreen()}}{The default splash screen}
+
+\item{\code{reload()}}{Reloads iNZight}
+
+\item{\code{removeDesign()}}{Removes the survey design associated with a dataset}
+
+\item{\code{removeSignals()}}{Removes signals attached to the active document}
+
+\item{\code{restoreDataset()}}{Restores the original (first) dataset}
+
+\item{\code{savePreferences()}}{Saves the users preferences in a file}
+
+\item{\code{saveState(file)}}{Saves the state of the GUI in `file`}
+
+\item{\code{set_visible(visible = TRUE)}}{Makes the iNZight window visible, and updates the plot}
+
+\item{\code{setDocument(document, reset = FALSE)}}{Sets the current document}
+
+\item{\code{setState(state)}}{Sets the GUI to the provided state}
+
+\item{\code{showHistory()}}{Displays the code history}
+
+\item{\code{update_document(data)}}{Update the existing document with new data or survey design}
+
+\item{\code{updatePlot(allow.redraw = TRUE)}}{Updates the plot using the user's chosen variables and other settings}
+
+\item{\code{view_dataset()}}{Views the dataset using the `View()` function}
 }}
 

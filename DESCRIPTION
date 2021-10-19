@@ -1,8 +1,8 @@
 Package: iNZight
 Type: Package
-Title: iNZight GUI for Data Exploration and Visualisation
-Version: 3.5.3.9000
-Date: 2020-05-11
+Title: A GUI for Data Exploration and Visualisation
+Version: 4.1.4.9000
+Date: 2021-07-16
 Authors@R: c(person("Tom", "Elliott", role = c("aut", "cre"),
                     email = "tom.elliott@auckland.ac.nz"),
              person("Dineika", "Chandrananda", role = "ctb"),
@@ -11,45 +11,51 @@ Authors@R: c(person("Tom", "Elliott", role = c("aut", "cre"),
                     email = "MarcoKuper42@gmail.com"),
              person("David", "Banks", role = "ctb"),
              person("Yiwen", "He", role = "ctb"),
-             person("Daniel", "Barnett", role = "ctb"))
+             person("Daniel", "Barnett", role = "aut"))
 Description: An interactive GUI for easy visual exploration of datasets.
 License: GPL-3
 Depends:
-    R (>= 3.3),
-    objectProperties,
+    R (>= 4.0),
     RGtk2,
+    cairoDevice,
     gWidgets2,
-    cairoDevice
+    objectProperties
 Imports:
-    utils,
-    grDevices,
-    methods,
-    grid,
-    gdata,
-    gWidgets2RGtk2,
-    iNZightPlots (>= 2.11.5),
-    iNZightTools (>= 1.8.4),
-    reshape2,
-    plyr,
-    survey,
     colorspace,
-    magrittr
-Suggests:
-    RODBC,
-    iNZightMR (>= 2.2.4),
-    iNZightModules (>= 2.5),
+    grDevices,
+    grid,
+    gWidgets2RGtk2,
+    iNZightPlots (>= 2.13.4.9000),
+    iNZightTools (>= 1.11.4.9000),
+    magrittr,
+    methods,
+    plyr,
     png,
-    viridis,
-    RColorBrewer,
-    FutureLearnData,
-    testthat,
+    reshape2,
+    skimr,
+    stringr,
+    survey,
+    utils
+Suggests:
     covr,
+    dataMaid,
     dplyr,
     forcats,
+    FutureLearnData,
+    iNZightMR (>= 2.2.4),
+    iNZightModules (>= 2.5),
+    jsonlite,
+    knitr,
+    RColorBrewer,
     rlang,
+    rmarkdown,
+    RODBC,
+    testthat,
+    viridis,
     withr
 Additional_repositories: https://r.docker.stat.auckland.ac.nz
 LazyData: true
 Encoding: UTF-8
 Language: en-GB
-RoxygenNote: 7.1.0
+RoxygenNote: 7.1.1
+VignetteBuilder: knitr

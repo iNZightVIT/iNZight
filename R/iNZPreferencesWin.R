@@ -1,142 +1,258 @@
 iNZPrefsWin <- setRefClass(
     "iNZPrefsWin",
     fields = list(
-        GUI = "ANY"
-        ),
+        GUI = "ANY",
+        prefs = "list",
+        curprefs = "list",
+        sections = "ANY",
+        cancelBtn = "ANY", saveBtn = "ANY"
+    ),
     methods = list(
         initialize = function(gui = NULL) {
-            initFields(GUI = gui)
+            if (is.null(gui)) return()
+            initFields(
+                GUI = gui,
+                prefs = gui$preferences,
+                curprefs = gui$preferences
+            )
 
-            prefs <- GUI$preferences
+            try(dispose(GUI$modWin), silent = TRUE)
+            GUI$modWin <<- gwindow("iNZight Preferences",
+                parent = GUI$win,
+                width = 700,
+                height = 500,
+                visible = FALSE
+            )
 
-            if (!is.null(GUI)) {
-                try(dispose(GUI$modWin), silent = TRUE) ## close any current mod windows
-                GUI$modWin <<- gwindow("iNZight Preferences",
-                    parent = GUI$win,
-                    width = 600,
-                    height = 400
+            g_main <- gvbox(container = GUI$modWin)
+            g_main$set_borderwidth(5L)
+
+            sections <<- gnotebook(
+                tab.pos = 3L,
+                container = g_main,
+                expand = TRUE
+            )
+
+            ## --------------------------- GENERAL
+            sec_general <- gvbox(label = "General", container = sections)
+            sec_general$set_borderwidth(5L)
+
+            ### ---------------- Check for updates
+            p_check.updates <- gcheckbox(
+                "Check for updates when iNZight launched",
+                checked = prefs$check.updates,
+                container = sec_general,
+                handler = function(h, ...)
+                    set_pref("check.updates", svalue(h$obj))
+            )
+            lbl <- glabel(
+                paste(
+                    sep = "\n",
+                    "If updates are available, this will be displayed in the title bar of iNZight.",
+                    "Updates will not automatically be applied."
+                ),
+                container = sec_general,
+                anchor = c(-1, 0)
+            )
+            font(lbl) <- list(size = 9)
+
+            ### ---------------- Language
+            g_lang <- gformlayout(container = sec_general)
+            languages <- c(en = "English")
+            p_lang <- gcombobox(languages,
+                selected = which(names(languages) == prefs$language),
+                label = "Language :",
+                container = g_lang,
+                handler = function(h, ...)
+                    set_pref("language", names(languages)[h$obj$get_index()])
+            )
+            enabled(p_lang) <- length(languages) > 1L
+            visible(g_lang) <- file.exists(
+                system.file("translations.csv", package = "iNZight")
+            )
+
+            ## --------------------------- APPEARANCE
+            sec_appearance <- gvbox(label = "Appearance", container = sections)
+            sec_appearance$set_borderwidth(5L)
+
+            tbl_appearance <- glayout(container = sec_appearance)
+            ii <- 1L
+
+            ### ---------------- Window mode: single or dual
+            lbl <- glabel("Window mode :")
+            p_windowmode <- gcombobox(c("Single", "Dual"),
+                selected = prefs$popout + 1L,
+                handler = function(h, ...)
+                    set_pref("popout", h$obj$get_index() == 2L)
+            )
+            tbl_appearance[ii, 1L, anchor = c(1, 0), expand = TRUE] <- lbl
+            tbl_appearance[ii, 2L, expand = TRUE] <- p_windowmode
+            ii <- ii + 1L
+
+            lbl <- glabel(
+                paste(
+                    sep = "\n",
+                    "In single window mode (the default), iNZight uses one single window containing",
+                    "both the control panel and plot window.",
+                    "In dual window mode, the control panel and plot window are separate. Dual window",
+                    "mode is recommended for Windows users as the graphics device is prone to 'flickering'",
+                    "in single window mode."
                 )
+            )
+            font(lbl) <- list(size = 9)
+            tbl_appearance[ii, 2L, anchor = c(-1, 0), expand = TRUE] <- lbl
+            ii <- ii + 1L
 
-                g <- gvbox(container = GUI$modWin, expand = FALSE)
-                g$set_borderwidth(5)
+            lbl <- glabel("Window size (px) :")
+            g_windowsize <- ggroup()
+            tbl_appearance[ii, 1L, anchor = c(1, 0), expand = TRUE] <- lbl
+            tbl_appearance[ii, 2L, expand = TRUE] <- g_windowsize
+            ii <- ii + 1L
 
-                updOpt <- gcheckbox(
-                    "Check for updates when iNZight launched (NOTE: this will not automatically update iNZight)",
-                    checked = prefs$check.updates
-                )
-                add(g, updOpt)
+            lbl <- glabel("Width :", container = g_windowsize)
+            p_window.width <- gspinbutton(300, 2000, 50,
+                value = prefs$window.size[1],
+                container = g_windowsize,
+                handler = function(h, ...)
+                    set_pref("window.size", c(svalue(h$obj), prefs$window.size[2]))
+            )
+            addSpace(g_windowsize, 10)
+            lbl <- glabel("Height :", container = g_windowsize)
+            p_window.height <- gspinbutton(200, 1800, 50,
+                value = prefs$window.size[2],
+                container = g_windowsize,
+                handler = function(h, ...)
+                    set_pref("window.size", c(prefs$window.size[1], svalue(h$obj)))
+            )
 
-                addSpace(g, 30)
-
-                lab <- glabel("Default Window Size - Changes take effect next time your start iNZight")
-                font(lab) <- list(weight = "bold")
-                add(g, lab, anchor = c(-1, -1))
-
-                tbl <- glayout()
-                tbl[1, 1] <- glabel("Width (px): ")
-                winWd <- gedit(prefs$window.size[1], width = 4)
-                tbl[1, 2] <- winWd
-                tbl[1, 4] <- glabel("Height (px): ")
-                winHt <- gedit(prefs$window.size[2], width = 4)
-                tbl[1, 5] <- winHt
-
-                useCur <- gbutton("Use current dimensions")
-                addHandlerClicked(useCur, function(h, ...) {
+            addSpring(g_windowsize)
+            useCur <- gbutton("Use current",
+                container = g_windowsize,
+                handler = function(h, ...) {
                     curDim <- size(GUI$win)
-                    svalue(winWd) <- curDim[1]
-                    svalue(winHt) <- curDim[2]
-                })
-                tbl[1, 8] <- useCur
+                    svalue(p_window.width) <- curDim[1]
+                    svalue(p_window.height) <- curDim[2]
+                }
+            )
 
-                useDef <- gbutton("Reset default")
-                addHandlerClicked(useDef, function(h, ...) {
+            useDef <- gbutton("Reset default",
+                container = g_windowsize,
+                handler = function(h, ...) {
                     curDim <- GUI$defaultPrefs()$window.size
-                    svalue(winWd) <- curDim[1]
-                    svalue(winHt) <- curDim[2]
-                })
-                tbl[1, 9] <- useDef
+                    svalue(p_window.width) <- curDim[1]
+                    svalue(p_window.height) <- curDim[2]
+                }
+            )
 
-                add(g, tbl)
+            tbl_appearance[ii, 1:2] <- gseparator()
+            ii <- ii + 1L
 
-                addSpace(g, 30)
+            lbl <- glabel("Font size :")
+            g_fontsize <- ggroup()
+            tbl_appearance[ii, 1L, anchor = c(1, 0), expand = TRUE] <- lbl
+            tbl_appearance[ii, 2L, expand = TRUE] <- g_fontsize
+            ii <- ii + 1L
 
-                gfontSize <- ggroup(container = g)
-                glabel("Font size (for summary and inference windows):", container = gfontSize)
-                fsizebtn <- gspinbutton(5, 30, by = 1, value = prefs$font.size, container = gfontSize)
-                fsizeprv <- gtext("Preview text",
-                    height = 40,
-                    width = 200,
-                    container = gfontSize,
-                    font.attr = list(size = svalue(fsizebtn))
-                )
-                addHandlerChanged(fsizebtn,
-                    function(h, ...) {
-                        # this doesn't work [yet] for numeric size values
-                        # fsizeprv$set_font(list(size = svalue(h$obj)))
-                        svalue(fsizeprv) <- ""
-                        insert(fsizeprv, "Preview text", font.attr = list(size = svalue(h$obj)))
-                    }
-                )
+            p_font <- gspinbutton(5, 30, 1L,
+                value = prefs$font.size,
+                container = g_fontsize,
+                handler = function(h, ...) {
+                    font(font_preview) <- list(size = svalue(h$obj))
+                    set_pref("font.size", svalue(h$obj))
+                }
+            )
+            font_preview <- glabel(
+                "This is the font size used in summary and inference output.",
+                container = g_fontsize
+            )
+            font(font_preview) <- list(size = prefs$font.size)
 
-                addSpace(g, 30)
 
-                popoutWin <- gcheckbox(
-                    "Use dual-window display mode (strongly advised for Windows users who are not computer novices",
-                    checked = prefs$popout
-                )
-                add(g, popoutWin)
+            ## --------------------------- DEV FEATURES
+            sec_dev <- gvbox(label = "Developmental Features", container = sections)
+            sec_dev$set_borderwidth(5L)
+            lbl <- glabel(
+                paste(
+                    "We may occasionally include developmental features in our",
+                    "official release version. This allows users to experience",
+                    "\nand give feedback on them as they are being developed,",
+                    "but please be aware that they may not be stable and may change",
+                    "\nsignificantly before their final version.",
+                    "\nIf you do choose to enable these, we will happily take feedback",
+                    "sent to inzight_support@stat.auckland.ac.nz"
+                ),
+                container = sec_dev,
+                anchor = c(-1, 0)
+            )
+            font(lbl) <- list(size = 9)
 
-                devFeatures <- gcheckbox(
-                    "Enable developmental features",
-                    checked = prefs$dev.features
-                )
-                add(g, devFeatures)
-                lbl <- glabel(
-                    paste(sep = "\n",
-                        "     These will be marked with [beta], and may change or have unintended side effects, such as crashing.",
-                        "     You can help us improve them by lettings us know if you experience problems!"
+            ### ---------------- Enable dev features
+            p_dev.features <- gcheckbox("Enable developmental features",
+                checked = prefs$dev.features,
+                container = sec_dev,
+                handler = function(h, ...) {
+                    set_pref("dev.features", svalue(h$obj))
+                    visible(g_dev) <- prefs$dev.features
+                }
+            )
+
+            g_dev <- gvbox(container = sec_dev)
+            visible(g_dev) <- prefs$dev.features
+
+            gseparator(container = g_dev)
+
+            ### ---------------- Code widgets
+            p_show.code <- gcheckbox("Show editable code boxes",
+                checked = prefs$show.code,
+                container = g_dev,
+                handler = function(h, ...) set_pref("show.code", svalue(h$obj)))
+            lbl <- glabel(
+                paste(
+                    "This feature shows editable code boxes for the main plot,",
+                    "as well as inference and summary information windows,",
+                    "\nand some other components of iNZight. The code shown can",
+                    "be modified by the user and run, allowing users",
+                    "\nto get a basic feel for interfacing with code. In most cases,",
+                    "changes to the code will be reflected in the",
+                    "\ninterface (where it is possible to do so)."
+                ),
+                container = g_dev,
+                anchor = c(-1, 0)
+            )
+            font(lbl) <- list(size = 9)
+
+            ################ BUTTONS
+            g_buttons <- ggroup(container = g_main)
+            addSpring(g_buttons)
+
+            cancelBtn <<- gbutton("Exit without saving",
+                container = g_buttons,
+                handler = function(h, ...) dispose(GUI$modWin)
+            )
+
+            saveBtn <<- gbutton("Save changes",
+                container = g_buttons,
+                handler = function(h, ...) {
+                    GUI$preferences <<- prefs
+                    GUI$savePreferences()
+                    dispose(GUI$modWin)
+
+                    confmsg <- paste(sep = "\n",
+                        "Some changes require reloading iNZight. Do that now?",
+                        "All changes will be saved."
                     )
-                )
-                font(lbl) <- list(size = 8)
-                add(g, lbl, expand = TRUE, anchor = c(-1, 0))
+                    if (!interactive() || gconfirm(confmsg, icon = "question"))
+                        GUI$reload()
+                }
+            )
+            enabled(saveBtn) <<- FALSE
 
-                addSpring(g)
-
-                ## CANCEL / OK buttons
-                btnGrp <- ggroup(container = g, expand = FALSE)
-                addSpring(btnGrp)
-
-                cancelButton <- gbutton("Cancel",
-                    expand = FALSE,
-                    cont = btnGrp,
-                    handler = function(h, ...) dispose(GUI$modWin)
-                )
-
-                addSpace(btnGrp, 15)
-
-                okButton <- gbutton("Save",
-                    expand = FALSE,
-                    cont = btnGrp,
-                    handler = function(h, ...) {
-                        GUI$preferences <<- list(
-                            check.updates = svalue(updOpt),
-                            window.size = as.numeric(c(svalue(winWd), svalue(winHt))),
-                            popout = svalue(popoutWin),
-                            font.size = svalue(fsizebtn),
-                            dev.features = svalue(devFeatures)
-                        )
-                        GUI$savePreferences()
-                        dispose(GUI$modWin)
-                    }
-                )
-
-                addSpace(btnGrp, 15)
-
-                ## extra space between buttons and bottom of window
-                addSpace(g, 15)
-
-                visible(GUI$modWin) <<- TRUE
-            }
+            svalue(sections) <<- 1L
+            on.exit(visible(GUI$modWin) <<- TRUE)
+        },
+        set_pref = function(name, value) {
+            prefs[[name]] <<- value
+            enabled(saveBtn) <<- !identical(prefs, curprefs)
         }
     )
 )

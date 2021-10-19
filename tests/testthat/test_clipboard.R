@@ -12,12 +12,12 @@ demo <- "x\ty\tz
 test_that("Data can be loaded from the 'clipboard'", {
     cpy <- iNZClipboard$new(ui, "paste")
     cpy$textIn$set_value(demo)
-    expect_silent(cpy$parseData())
+    cpy$parseData()
     expect_equivalent(
         cpy$dataOut$get_items(),
         iNZightTools::read_text(demo, "\t")
     )
-    expect_silent(cpy$okBtn$invoke_change_handler())
+    cpy$okBtn$invoke_change_handler()
     expect_equivalent(
         ui$getActiveData(),
         iNZightTools::read_text(demo, "\t")

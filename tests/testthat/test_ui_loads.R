@@ -1,6 +1,7 @@
 context("The user interface loads")
 
 ui <- NULL
+on.exit(gWidgets2::dispose(ui$win))
 
 test_that("GUI is loaded and initialized without problems", {
     ## load (and then close) the ui object
@@ -20,6 +21,13 @@ test_that("GUI is loaded and initialized without problems", {
 })
 
 test_that("Primary UI widgets are loaded and displaying correctly", {
+    ## "Load Data" button displayed instead of dataset selection
+    expect_equal(
+        ui$dataNameWidget$widget$children[[2]]$get_value(),
+        "Import data ..."
+    )
+    expect_equal(length(ui$dataNameWidget$widget$children), 2L)
+
     ## data name is displayed as not loaded
     expect_equal(ui$dataNameWidget$datName, "No data loaded")
 
@@ -34,10 +42,20 @@ test_that("Primary UI widgets are loaded and displaying correctly", {
 # ui <<- iNZGUI$new(); ui$initializeGui()
 test_that("Data view loads", {
     expect_silent(ui$setDocument(iNZDocument$new(data = iris)))
-    expect_equal(ui$dataNameWidget$datName, "data")
+    expect_equal(
+        ui$dataNameWidget$widget$children[[2]]$get_value(),
+        "iris"
+    )
+    expect_equal(length(ui$dataNameWidget$widget$children), 2L)
+    expect_equal(ui$dataNameWidget$datName, "iris")
     df <- ui$dataViewWidget$dfView$children[[1]]
     expect_is(df, "GDf")
-    expect_equal(df$get_dim(), c(rows = 150, cols = 5))
+    expect_equal(
+        df$get_dim(),
+        c(rows = ui$dataViewWidget$paginate$nrow, cols = 5)
+    )
+    expect_false(enabled(ui$dataToolbarWidget$dataBtn))
+    expect_true(enabled(ui$dataToolbarWidget$listBtn))
 })
 
 test_that("UI closes quietly", {
@@ -47,13 +65,43 @@ test_that("UI closes quietly", {
 # load_all(); ui$close(); ui <- iNZGUI$new()
 
 test_that("Variable list can be searched", {
+    ui <<- iNZGUI$new()
     ui$initializeGui(gapminder)
+    on.exit(ui$close())
+    expect_true(enabled(ui$dataToolbarWidget$listBtn))
     ui$dataViewWidget$listView()
-    expect_true(visible(ui$dataViewWidget$varView))
+    expect_true(enabled(ui$dataToolbarWidget$dataBtn))
+    expect_false(enabled(ui$dataToolbarWidget$listBtn))
+    expect_equal(ui$dataViewWidget$current, "variables")
 
     svalue(ui$dataViewWidget$searchBox) <- "pop"
     expect_equal(
-        ui$dataViewWidget$varWidget$get_items(),
+        ui$dataViewWidget$varWidget$get_items()$Name,
         names(gapminder)[grepl("pop", names(gapminder), ignore.case = TRUE)]
     )
+})
+
+# Switching doesn't work on checks
+# test_that("Pop-out mode works OK", {
+#     ui$preferences$popout <- TRUE
+#     expect_silent(ui$savePreferences())
+#     on.exit({
+#         ui$preferences$popout <- FALSE
+#         ui$savePreferences()
+#     })
+#     ui$reload()
+#     Sys.sleep(10)
+
+#     expect_true(ui$popOut)
+# })
+
+test_that("Data view is enabled after changing data", {
+    ui <<- iNZGUI$new()
+    ui$initializeGui(census.at.school.500)
+    ui$dataViewWidget$listView()
+    expect_true(enabled(ui$dataToolbarWidget$dataBtn))
+    expect_false(enabled(ui$dataToolbarWidget$listBtn))
+    ui$new_document(census.at.school.500[1:100, ], "subset")
+    expect_true(enabled(ui$dataToolbarWidget$dataBtn))
+    expect_false(enabled(ui$dataToolbarWidget$listBtn))
 })

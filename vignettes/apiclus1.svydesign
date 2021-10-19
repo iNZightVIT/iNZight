@@ -1,0 +1,5 @@
+data = "apiclus1.csv"
+type = "survey"
+ids = "dnum"
+weights = "pw"
+fpc = "fpc"

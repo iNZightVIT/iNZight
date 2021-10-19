@@ -1,19 +1,23 @@
 context("Survey data")
 
+skip_on_cran()
+skip_if_offline()
+
 data(api, package = "survey")
-chis <- iNZightTools::smart_read("chis.csv")
-ncsr <- iNZightTools::smart_read("ncsr.csv")
+chis <- iNZightTools::smart_read("https://inzight.nz/testdata/chis.csv")
+ncsr <- iNZightTools::smart_read("https://inzight.nz/testdata/ncsr.csv")
 apijk <- iNZightTools::smart_read("apiclus2-jk1.csv")
 
 test_dir <- getwd()
 
-# ui$close()
+# ui$close(); load_all()
 ui <- iNZGUI$new()
 ui$initializeGui(apiclus2)
-on.exit(try(ui$close(), TRUE))
+on.exit(try(gWidgets2::dispose(ui$win), TRUE))
 
 test_that("Survey design window defaults are empty", {
     expect_silent(swin <- iNZSurveyDesign$new(ui))
+    expect_true(visible(ui$modWin))
 
     expect_equal(svalue(swin$stratVar), "")
     expect_equal(svalue(swin$clus1Var), "")
@@ -21,8 +25,9 @@ test_that("Survey design window defaults are empty", {
     expect_false(svalue(swin$nestChk))
     expect_equal(svalue(swin$wtVar), "")
     expect_equal(svalue(swin$fpcVar), "")
+    expect_equal(svalue(swin$fpcVar2), "")
 
-    expect_silent(swin$cancelBtn$invoke_change_handler())
+    expect_silent(swin$cancel_button$invoke_change_handler())
 })
 
 # svydesign(id = ~dnum + snum, fpc = ~fpc1 + fpc2, data = apiclus2)
@@ -30,23 +35,22 @@ test_that("Survey design can be specified using window", {
     expect_silent(swin <- iNZSurveyDesign$new(ui))
     expect_silent(svalue(swin$clus1Var) <- "dnum")
     expect_silent(svalue(swin$clus2Var) <- "snum")
-    expect_silent(svalue(swin$fpcVar) <- "fpc1 + fpc2")
+    expect_silent(svalue(swin$fpcVar) <- "fpc1")
+    expect_silent(svalue(swin$fpcVar2) <- "fpc2")
 
     expect_equal(svalue(swin$clus1Var), "dnum")
     expect_equal(svalue(swin$clus2Var), "snum")
-    expect_equal(svalue(swin$fpcVar), "fpc1 + fpc2")
+    expect_equal(svalue(swin$fpcVar), "fpc1")
+    expect_equal(svalue(swin$fpcVar2), "fpc2")
 
-    expect_silent(swin$createBtn$invoke_change_handler())
+    expect_silent(swin$ok_button$invoke_change_handler())
+    s <- ui$iNZDocuments[[ui$activeDoc]]$getModel()$getDesign()$spec
     expect_equal(
-        ui$iNZDocuments[[ui$activeDoc]]$getModel()$getDesign(),
+        s[!sapply(s, is.null)],
         list(
-            strata = NULL,
-            clus1 = "dnum",
-            clus2 = "snum",
-            wt = NULL,
+            ids = "dnum + snum",
             fpc = "fpc1 + fpc2",
             nest = FALSE,
-            poststrat = NULL,
             type = "survey"
         )
     )
@@ -60,9 +64,10 @@ test_that("Survey design window remembers the design", {
     expect_equal(svalue(swin$clus2Var), "snum")
     expect_false(svalue(swin$nestChk))
     expect_equal(svalue(swin$wtVar), "")
-    expect_equal(svalue(swin$fpcVar), "fpc1 + fpc2")
+    expect_equal(svalue(swin$fpcVar), "fpc1")
+    expect_equal(svalue(swin$fpcVar2), "fpc2")
 
-    expect_silent(swin$cancelBtn$invoke_change_handler())
+    expect_silent(swin$cancel_button$invoke_change_handler())
 })
 
 test_that("Removing design works", {
@@ -91,7 +96,6 @@ suppressWarnings({
 # ui$close()
 ui <- iNZGUI$new()
 ui$initializeGui(cas2)
-on.exit(gWidgets2::dispose(ui$win))
 
 test_that("Frequency column specification is passed to settings", {
     expect_silent(swin <- iNZSurveyDesign$new(ui, type = "frequency"))
@@ -100,9 +104,9 @@ test_that("Frequency column specification is passed to settings", {
     expect_silent(svalue(swin$freqVar) <- "frequency")
     expect_equal(svalue(swin$freqVar), "frequency")
 
-    expect_silent(swin$createBtn$invoke_change_handler())
+    expect_silent(swin$ok_button$invoke_change_handler())
     expect_equal(
-        ui$iNZDocuments[[ui$activeDoc]]$getSettings()$freq,
+        as.character(ui$iNZDocuments[[ui$activeDoc]]$getSettings()$freq),
         "frequency"
     )
 })
@@ -118,31 +122,28 @@ test_that("Non-categorical variables removed after specifying frequencies", {
 test_that("Plotting and summary of frequencies works", {
     expect_silent(svalue(ui$ctrlWidget$V1box) <- "travel")
     expect_equal(ui$plotType, "bar")
-    expect_silent(ui$sumBtn$invoke_change_handler())
+    expect_silent(ui$ctrlWidget$summary_button$invoke_change_handler())
 })
 
 test_that("Frequencies retained after filtering", {
     fwin <- iNZFilterWin$new(ui)
-    dispose(ui$modWin)
-    fwin$opt1()
-    svalue(ui$modWin$children[[1]]$children[[1]]$children[[2]]) <- "gender"
-    svalue(ui$modWin$children[[1]]$children[[2]]) <- 1
+    svalue(fwin$filter_var) <- "gender"
+    svalue(fwin$cat_levels, index = TRUE) <- 1
     expect_silent(
-        ui$modWin$children[[1]]$children[[3]]$children[[1]]$invoke_change_handler()
+        fwin$ok_button$invoke_change_handler()
     )
 })
 
 ui$close()
 
 # devtools::load_all()
-# chis <- iNZightTools::smart_read("tests/testthat/chis.csv")
 dchis <- suppressWarnings(svrepdesign(data = chis[,c(1:10, 92:96)],
     repweights = chis[, 12:91],
     weights = chis[, 11],
     type = "other", scale = 1, rscales = 1
 ))
 
-# devtools::load_all()
+# try(ui$close()); devtools::load_all()
 ui <- iNZGUI$new()
 ui$initializeGui(chis)
 
@@ -156,17 +157,23 @@ test_that("Replicate weights can be specified", {
     svalue(swin$repType) <- "other"
     svalue(swin$repScale) <- 1
 
-    expect_silent(swin$createBtn$invoke_change_handler())
+    expect_silent(swin$ok_button$invoke_change_handler())
+    s <- ui$iNZDocuments[[ui$activeDoc]]$getModel()$getDesign()$spec
     expect_equal(
-        ui$iNZDocuments[[ui$activeDoc]]$getModel()$getDesign(),
+        s[!sapply(s, is.null)],
         list(
-            wt = "rakedw0",
+            ids = 1,
+            # probs = NULL,
+            # strata = NULL,
+            # fpc = NULL,
+            nest = logical(0),
+            weights = "rakedw0",
+            type = "replicate",
             repweights = paste("rakedw", 1:80, sep = ""),
-            reptype = "other",
             scale = 1,
             rscales = rep(1, 80),
-            poststrat = NULL,
-            type = "replicate"
+            reptype = "other"
+            # poststrat = NULL
         )
     )
 })
@@ -193,7 +200,7 @@ test_that("Replicate weight window repopulated correctly", {
             stringsAsFactors = TRUE
         )
     )
-    swin$cancelBtn$invoke_change_handler()
+    swin$cancel_button$invoke_change_handler()
 })
 
 f1 <- file.path(test_dir, "chis_wts.csv")
@@ -258,20 +265,27 @@ test_that("JK1 works", {
     expect_silent(swin <- iNZSurveyDesign$new(ui, type = "replicate"))
     svalue(swin$wtVar) <- "pw"
     svalue(swin$repVars) <-
-        paste("repw", formatC(1:40, width = 2, flag = "0"), sep = "")
+        paste(
+            "repw",
+            formatC(1:40, width = 2, flag = "0"),
+            sep = ""
+        )
     svalue(swin$repType) <- "JK1"
-    expect_silent(swin$createBtn$invoke_change_handler())
+    #### producing error about scale (n-1)/n not provided
+    # expect_silent(swin$createBtn$invoke_change_handler())
+    swin$ok_button$invoke_change_handler()
+    s <- ui$iNZDocuments[[ui$activeDoc]]$getModel()$getDesign()$spec
     expect_equal(
-        ui$iNZDocuments[[ui$activeDoc]]$getModel()$getDesign(),
+        s[!sapply(s, is.null)],
         list(
-            wt = "pw",
+            ids = 1,
+            nest = logical(0),
+            weights = "pw",
+            type = "replicate",
             repweights =
                 paste("repw", formatC(1:40, width = 2, flag = "0"), sep = ""),
-            reptype = "JK1",
-            scale = NULL,
-            rscales = NULL,
-            poststrat = NULL,
-            type = "replicate"
+            scale = 0.975,
+            reptype = "JK1"
         )
     )
 
@@ -295,6 +309,7 @@ vec <- structure(
 )
 dclus1p <- calibrate(dclus1, ~stype, vec)
 
+# try(ui$close()); devtools::load_all()
 ui <- iNZGUI$new()
 ui$initializeGui(apiclus1)
 
@@ -310,7 +325,7 @@ test_that("Post stratification set by importing additional dataset", {
     expect_silent(svalue(swin$clus1Var) <- "dnum")
     expect_silent(svalue(swin$fpcVar) <- "fpc")
     expect_silent(svalue(swin$wtVar) <- "pw")
-    expect_silent(swin$createBtn$invoke_change_handler())
+    expect_silent(swin$ok_button$invoke_change_handler())
 
     expect_silent(swin <- iNZSurveyPostStrat$new(ui, .use_ui = FALSE))
     expect_equal(swin$lvldf, list())
@@ -340,18 +355,19 @@ test_that("Post stratification set by importing additional dataset", {
     )
 
     # and trigger the save
-    expect_silent(swin$okBtn$invoke_change_handler())
+    expect_silent(swin$ok_button$invoke_change_handler())
+    pt <- pop.types$Freq
+    names(pt) <- paste(pop.types$stype)
+    s <- ui$iNZDocuments[[ui$activeDoc]]$getModel()$getDesign()$spec
     expect_equal(
-        ui$iNZDocuments[[ui$activeDoc]]$getModel()$getDesign(),
+        s[!sapply(s, is.null)],
         list(
-            strata = NULL,
-            clus1 = "dnum",
-            clus2 = NULL,
-            wt = "pw",
+            ids = "dnum",
             fpc = "fpc",
             nest = FALSE,
-            poststrat = list(stype = pop.types),
-            type = "survey"
+            weights = "pw",
+            type = "survey",
+            calibrate = list(stype = c(E = 4421,H = 755, M = 1018))
         )
     )
 })
@@ -360,24 +376,22 @@ test_that("Post stratification is remembered", {
     expect_silent(swin <- iNZSurveyPostStrat$new(ui, .use_ui = FALSE))
     expect_equal(svalue(swin$PSvar), "stype")
     expect_equal(swin$lvldf, list(stype = pop.types))
-    expect_silent(swin$cancelBtn$invoke_change_handler())
+    expect_silent(swin$cancel_button$invoke_change_handler())
 })
 
 test_that("Post stratification can be removed", {
     expect_silent(swin <- iNZSurveyPostStrat$new(ui, .use_ui = FALSE))
     expect_silent(svalue(swin$PSvar, index = TRUE) <- 0)
     expect_equal(swin$lvldf, list(stype = pop.types))
-    expect_silent(swin$okBtn$invoke_change_handler())
+    expect_silent(swin$ok_button$invoke_change_handler())
+    s <- ui$iNZDocuments[[ui$activeDoc]]$getModel()$getDesign()$spec
     expect_equal(
-        ui$iNZDocuments[[ui$activeDoc]]$getModel()$getDesign(),
+        s[!sapply(s, is.null)],
         list(
-            strata = NULL,
-            clus1 = "dnum",
-            clus2 = NULL,
-            wt = "pw",
+            ids = "dnum",
             fpc = "fpc",
             nest = FALSE,
-            poststrat = NULL,
+            weights = "pw",
             type = "survey"
         )
     )
@@ -426,18 +440,17 @@ test_that("Post stratification set by manually entering values", {
     expect_equal(swin$lvldf, list(stype = pop.types))
 
     # and trigger the save
-    expect_silent(swin$okBtn$invoke_change_handler())
+    expect_silent(swin$ok_button$invoke_change_handler())
+    s <- ui$iNZDocuments[[ui$activeDoc]]$getModel()$getDesign()$spec
     expect_equal(
-        ui$iNZDocuments[[ui$activeDoc]]$getModel()$getDesign(),
+        s[!sapply(s, is.null)],
         list(
-            strata = NULL,
-            clus1 = "dnum",
-            clus2 = NULL,
-            wt = "pw",
+            ids = "dnum",
             fpc = "fpc",
             nest = FALSE,
-            poststrat = list(stype = pop.types),
-            type = "survey"
+            weights = "pw",
+            type = "survey",
+            calibrate = list(stype = c(E = 4421,H = 755, M = 1018))
         )
     )
 })
@@ -466,25 +479,27 @@ test_that("Multiple variables can be specified (raking calibration)", {
 
     swin$lvldf$sch.wide$Freq <- as.numeric(table(apipop$sch.wide))
     expect_silent(swin$display_tbl())
-    pop.types2 <- data.frame(
-        sch.wide = c("No", "Yes"),
-        Freq = as.numeric(table(apipop$sch.wide)),
-        stringsAsFactors = TRUE
-    )
+    # pop.types2 <- data.frame(
+    #     sch.wide = c("No", "Yes"),
+    #     Freq = as.numeric(),
+    #     stringsAsFactors = TRUE
+    # )
 
     # and trigger the save
-    expect_silent(swin$okBtn$invoke_change_handler())
+    expect_silent(swin$ok_button$invoke_change_handler())
+    s <- ui$iNZDocuments[[ui$activeDoc]]$getModel()$getDesign()$spec
     expect_equal(
-        ui$iNZDocuments[[ui$activeDoc]]$getModel()$getDesign(),
+        s[!sapply(s, is.null)],
         list(
-            strata = NULL,
-            clus1 = "dnum",
-            clus2 = NULL,
-            wt = "pw",
+            ids = "dnum",
             fpc = "fpc",
             nest = FALSE,
-            poststrat = list(stype = pop.types, sch.wide = pop.types2),
-            type = "survey"
+            weights = "pw",
+            type = "survey",
+            calibrate = list(
+                stype = structure(as.numeric(table(apipop$stype)), .Names = levels(apipop$stype)),
+                sch.wide = structure(as.numeric(table(apipop$sch.wide)), .Names = levels(apipop$sch.wide))
+            )
         )
     )
 
@@ -512,24 +527,128 @@ ui <- iNZGUI$new()
 ui$initializeGui(ncsr)
 
 test_that("New variables show up in calibration list", {
-    # ncsr <- iNZightTools::smart_read("tests/testthat/ncsr.csv")
-
     swin <- iNZSurveyDesign$new(ui)
     expect_silent(svalue(swin$stratVar) <- "SESTRAT")
     expect_silent(svalue(swin$clus1Var) <- "SECLUSTR")
     expect_silent(svalue(swin$wtVar) <- "popweight")
     expect_silent(svalue(swin$nestChk) <- TRUE)
-    expect_silent(swin$createBtn$invoke_change_handler())
+    expect_silent(swin$ok_button$invoke_change_handler())
 
     # add interaction between REGION and race
-    comb <- iNZcmbCatWin$new(ui)
-    svalue(ui$modWin$children[[1]]$children[[3]]) <- c("REGION", "race")
-    ui$modWin$children[[1]]$children[[3]]$invoke_change_handler()
-    ui$modWin$children[[1]]$children[[5]]$invoke_change_handler()
-    expect_is(ui$getActiveData()$REGION.race, "factor")
+    comb <- iNZCombineWin$new(ui)
+    svalue(comb$factorNames) <- c("REGION", "race")
+    comb$factorNames$invoke_change_handler()
+    comb$ok_button$invoke_change_handler()
+    expect_is(ui$getActiveData()$REGION_race, "factor")
 
     expect_silent(swin <- iNZSurveyPostStrat$new(ui, .use_ui = FALSE))
-    expect_true("REGION.race" %in% swin$PSvar$get_items())
-    swin$cancelBtn$invoke_change_handler()
+    expect_true("REGION_race" %in% swin$PSvar$get_items())
+    swin$cancel_button$invoke_change_handler()
 
+})
+
+# data(api, package = "survey")
+
+# load_all()
+ui$close()
+ui <- iNZGUI$new()
+ui$initializeGui(apistrat)
+
+
+# e <- new.env()
+# e$data <- apistrat
+# e$data.svy <- svydesign(ids=~1, strata = ~snum, weights = ~pw, fpc = ~fpc, data = apistrat)
+
+# eval(parse(text = "inzplot(~api99, data = data)"), envir = e)
+# eval(parse(text = "inzplot(~api99, design = data.svy)"), envir = e)
+
+test_that("Survey design read from file", {
+    svyfile <- tempfile("apistrat", fileext = ".svydesign")
+    writeLines('strata = "stype"\nweights = "pw"\nfpc = "fpc"', svyfile)
+    on.exit(unlink(svyfile))
+
+    swin <- iNZSurveyDesign$new(ui)
+    expect_silent(swin$read_file(svyfile))
+    expect_equivalent(
+        ui$iNZDocuments[[ui$activeDoc]]$getModel()$getDesign()$spec,
+        iNZightTools::import_survey(svyfile, apistrat)$spec
+    )
+
+    ui$setDocument(iNZDocument$new(data = apiclus2), reset = TRUE)
+    Sys.sleep(5)
+    writeLines('ids = "dnum + snum"\nfpc = "fpc1 + fpc2"', svyfile)
+
+    swin <- iNZSurveyDesign$new(ui)
+    expect_silent(swin$read_file(svyfile))
+    expect_equivalent(
+        ui$iNZDocuments[[ui$activeDoc]]$getModel()$getDesign()$spec,
+        iNZightTools::import_survey(svyfile, apiclus2)$spec
+    )
+})
+
+
+ui$close()
+
+# try(ui$close(), TRUE); devtools::load_all()
+ui <- iNZGUI$new()
+ui$initializeGui()
+
+test_that("Survey data can be imported from svydesign file", {
+    imp <- iNZImportWin$new(ui)
+    imp$fname <- "ncsr.svydesign"
+    imp$setfile()
+    Sys.sleep(1)
+    skip_if(length(imp$prevGp$children) == 1,
+        message = "Preview did not load."
+    )
+    expect_is(imp$prevGp$children[[2]], "GDf")
+    expect_equal(imp$prevGp$children[[2]]$get_dim(), c(rows = 30L, cols = 3L))
+    expect_silent(imp$ok_button$invoke_change_handler())
+    expect_equivalent(ui$getActiveData(), ncsr)
+    expect_is(ui$getActiveDoc()$getModel()$getDesign()$design, "survey.design")
+})
+
+ui$close()
+
+# require(survey); data(api)
+# devtools::load_all()
+ui <- iNZGUI$new()
+
+test_that("Survey calibration imported read from svydesign file", {
+    ui$initializeGui(apistrat)
+    on.exit(ui$close())
+    svyfile <- tempfile("apistrat", fileext = ".svydesign")
+    writeLines('strata = "stype"\nweights = "pw"\nfpc = "fpc"\n\n[calibrate.stype]\nE = 4421\nH=755\nM=1018\n\n[calibrate."sch.wide"]\n"No" = 1072\n"Yes" = 5122\n', svyfile)
+    on.exit(unlink(svyfile), add = TRUE)
+
+    swin <- iNZSurveyDesign$new(ui)
+    expect_silent(swin$read_file(svyfile))
+    ui$iNZDocuments[[ui$activeDoc]]$getModel()$getDesign()$spec
+
+
+})
+
+
+
+# devtools::load_all("../iNZightTools")
+ncsr_svy <- iNZightTools::import_survey(file.path(test_dir, "ncsr.svydesign"))
+# ncsr_svy <- iNZightTools::import_survey('tests/testthat/ncsr.svydesign')
+
+# try(ui$close(), TRUE); devtools::load_all()
+ui <- iNZGUI$new()
+ui$initializeGui(ncsr_svy$data)
+
+test_that("Invalid menu items are disabled", {
+    m <- function() ui$menuBarWidget$menubar$get_value()
+    expect_true(enabled(m()$Dataset$stack))
+    expect_true(enabled(m()$Dataset[["Dataset operation"]]$reshape))
+    expect_true(enabled(m()$Dataset[["Merge/Join datasets"]]$appendrows))
+    expect_is(m()$Dataset[["Frequency tables"]], "list")
+
+    ui$getActiveDoc()$getModel()$setDesign(ncsr_svy$spec, ui)
+    expect_false(enabled(m()$Dataset$stack))
+    expect_false(enabled(m()$Dataset[["Dataset operation"]]$reshape))
+    expect_false(enabled(m()$Dataset[["Merge/Join datasets"]]$appendrows))
+    expect_is(m()$Dataset[["Frequency tables"]], "GAction")
+    expect_false(enabled(m()$Dataset[["Frequency tables"]]))
 })

@@ -12,19 +12,17 @@ test_that("Exercise 1.15: Import data into iNZight", {
 
     ## Load course data files stored inside iNZight
     # File > Example data
-    expect_silent(exwin <- iNZImportExampleWin$new(ui))
+    expect_silent(exwin <- iNZight:::iNZImportExampleWin$new(ui))
 
     # > FutureLearn
-    mod <- exwin$importFileWin$children[[1]]$children[[1]]$children[[2]]
-    expect_silent(svalue(mod) <- "FutureLearn")
+    expect_silent(svalue(exwin$dsPkg) <- "FutureLearn")
 
     # > nhanes_1000
-    ds <- exwin$importFileWin$children[[1]]$children[[1]]$children[[4]]
-    expect_silent(svalue(ds) <- "nhanes_1000")
+    expect_silent(svalue(exwin$dsData) <- "nhanes_1000")
 
     # > Ok
     expect_silent(
-        exwin$importFileWin$children[[1]]$children[[2]]$children[[2]]$invoke_change_handler()
+        exwin$ok_button$invoke_change_handler()
     )
 
     # Check:
@@ -37,13 +35,11 @@ test_that("Exercise 1.15: Import data into iNZight", {
     expect_equal(ui$plotType, "dot")
 
     ## Load gapminder_2008:
-    expect_silent(exwin <- iNZImportExampleWin$new(ui))
-    mod <- exwin$importFileWin$children[[1]]$children[[1]]$children[[2]]
-    expect_silent(svalue(mod) <- "FutureLearn")
-    ds <- exwin$importFileWin$children[[1]]$children[[1]]$children[[4]]
-    expect_silent(svalue(ds) <- "gapminder_2008")
+    expect_silent(exwin <- iNZight:::iNZImportExampleWin$new(ui))
+    expect_silent(svalue(exwin$dsPkg) <- "FutureLearn")
+    expect_silent(svalue(exwin$dsData) <- "gapminder_2008")
     expect_silent(
-        exwin$importFileWin$children[[1]]$children[[2]]$children[[2]]$invoke_change_handler()
+        exwin$ok_button$invoke_change_handler()
     )
     expect_equal(ui$dataNameWidget$datName, "gapminder_2008_ex")
 
@@ -52,18 +48,18 @@ test_that("Exercise 1.15: Import data into iNZight", {
     skip_if_offline()
     url <- "https://www.stat.auckland.ac.nz/~wild/data/FutureLearn/olympics100m.csv"
     f <- tempfile(fileext = ".csv")
-    on.exit(unlink(f))
+    on.exit(unlink(f), add = TRUE)
     download.file(url, f, quiet = TRUE)
 
     # File > Import Data
-    expect_silent(imp <- iNZImportWin$new(ui))
+    expect_silent(imp <- iNZight:::iNZImportWin$new(ui))
 
     # > Browse
     imp$fname <- f
     expect_silent(imp$setfile())
 
     # > Import
-    expect_silent(imp$okBtn$invoke_change_handler())
+    expect_silent(imp$ok_button$invoke_change_handler())
 
     # Check:
     expect_equal(

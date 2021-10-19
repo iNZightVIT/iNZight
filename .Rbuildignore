@@ -1,9 +1,9 @@
-^appveyor\.yml$
 ^codecov\.yml$
-^scripts$
 ^Makefile$
 ^.*\.Md$
-^\.travis\.yml$
 ^revdep$
 ^.*\.Rproj$
 ^\.Rproj\.user$
+^\.vscode$
+^.github$
+^doc$

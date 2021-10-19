@@ -1,13 +1,17 @@
 context("Add-on Modules")
 
+skip_on_cran()
+
+skip_if_not_installed("iNZightModules")
 moduledir <- file.path(getwd(), "modules")
 
 # load_all("../../../iNZightModules")
 # load_all()
 
-# try(ui$close(), TRUE); load_all()
+# devtools::load_all(); try(ui$close())
 ui <- iNZGUI$new()
 ui$initializeGui(iris, addonDir = moduledir)
+on.exit(gWidgets2::dispose(ui$win))
 
 test_that("Modules loaded into menu", {
     advmenu <- svalue(ui$menuBarWidget$menubar)$Advanced
@@ -37,5 +41,3 @@ test_that("Add/remove modules window", {
     # expect_is(addrm, "GAction")
     ## more tests later
 })
-
-ui$close()
