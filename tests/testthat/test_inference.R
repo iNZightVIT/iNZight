@@ -1,11 +1,16 @@
 context("Get Inference window")
 
+skip_on_cran()
+
 # try(ui$close(), TRUE); devtools::load_all()
 ui <- iNZGUI$new()
 ui$initializeGui()
 on.exit(gWidgets2::dispose(ui$win))
 
-ui$setDocument(iNZDocument$new(data = census.at.school.500), reset = TRUE)
+ui$setDocument(
+    iNZDocument$new(data = census.at.school.500),
+    reset = TRUE
+)
 Sys.sleep(5)
 
 test_that("Get inference window - dot plots", {
@@ -215,6 +220,29 @@ test_that("Get inference window - scatter plots", {
     expect_match(svalue(iwin$info_text), "Please specify a trend line")
 })
 
+# # try(ui$close(), TRUE); devtools::load_all()
+# ui <- iNZGUI$new()
+# ui$initializeGui(census.at.school.500)
+# on.exit(gWidgets2::dispose(ui$win))
+
+
+test_that("Existing trend lines are kept when opening inference panel", {
+    svalue(ui$ctrlWidget$V1box) <- "height"
+    svalue(ui$ctrlWidget$V2box) <- "armspan"
+
+    expect_null(ui$getActiveDoc()$getSettings()$trend)
+    expect_silent(
+        ui$getActiveDoc()$setSettings(list(trend = "linear"))
+    )
+    on.exit(ui$getActiveDoc()$setSettings(list(trend = NULL)))
+    expect_equal(ui$getActiveDoc()$getSettings()$trend, "linear")
+
+    iwin <- iNZGetInference$new(ui)
+    on.exit(gWidgets2::dispose(iwin$win), add = TRUE)
+    expect_is(iwin, "iNZGetInference")
+    expect_equal(ui$getActiveDoc()$getSettings()$trend, "linear")
+})
+
 cas <- census.at.school.500
 library(dplyr)
 library(magrittr)
@@ -238,7 +266,7 @@ ui$getActiveDoc()$getModel()$setFrequencies("frequency", ui)
 
 test_that("Get inference works for frequencies", {
     svalue(ui$ctrlWidget$V1box) <- "gender"
-    expect_true(enabled(ui$infBtn))
+    expect_true(enabled(ui$ctrlWidget$inference_button))
 
     iwin <- iNZGetInference$new(ui)
     on.exit(gWidgets2::dispose(iwin$win))
@@ -250,7 +278,7 @@ test_that("Get inference works for frequencies", {
     gWidgets2::dispose(iwin$win)
 
     svalue(ui$ctrlWidget$V1box) <- "travel"
-    expect_true(enabled(ui$infBtn))
+    expect_true(enabled(ui$ctrlWidget$inference_button))
 
     iwin <- iNZGetInference$new(ui)
     on.exit(gWidgets2::dispose(iwin$win))
@@ -262,7 +290,7 @@ test_that("Get inference works for frequencies", {
     gWidgets2::dispose(iwin$win)
 
     svalue(ui$ctrlWidget$V2box) <- "gender"
-    expect_true(enabled(ui$infBtn))
+    expect_true(enabled(ui$ctrlWidget$inference_button))
 
     iwin <- iNZGetInference$new(ui)
     on.exit(gWidgets2::dispose(iwin$win))
@@ -283,15 +311,16 @@ ui$initializeGui(apiclus2)
 Sys.sleep(2)
 
 test_that("Get inference for surveys", {
-    expect_true(enabled(ui$infBtn))
     swin <- iNZSurveyDesign$new(ui)
     svalue(swin$clus1Var) <- "dnum"
     svalue(swin$clus2Var) <- "snum"
-    svalue(swin$fpcVar) <- "fpc1 + fpc2"
-    swin$createBtn$invoke_change_handler()
-    expect_true(enabled(ui$infBtn))
+    svalue(swin$fpcVar) <- "fpc1"
+    svalue(swin$fpcVar2) <- "fpc2"
+    swin$ok_button$invoke_change_handler()
+    expect_false(enabled(ui$ctrlWidget$inference_button))
 
     svalue(ui$ctrlWidget$V1box) <- "api00"
+    expect_true(enabled(ui$ctrlWidget$inference_button))
 
     iwin <- iNZGetInference$new(ui)
     on.exit(gWidgets2::dispose(iwin$win))
@@ -312,5 +341,5 @@ test_that("Get inference for surveys", {
 
 test_that("Get inference still enabled for non-surveys", {
     ui$removeDesign()
-    expect_true(enabled(ui$infBtn))
+    expect_true(enabled(ui$ctrlWidget$inference_button))
 })

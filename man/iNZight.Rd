@@ -4,19 +4,30 @@
 \alias{iNZight}
 \title{iNZight GUI}
 \usage{
-iNZight(data = NULL, disposeR = FALSE)
+iNZight(data = NULL, dispose_fun = NULL, ...)
 }
 \arguments{
 \item{data}{a data frame}
 
-\item{disposeR}{logical, if \code{TRUE}, R will quit when iNZight is closed.}
+\item{dispose_fun}{called when the iNZight GUI is closed}
+
+\item{...}{arguments passed to \code{dispose_fun}}
+}
+\value{
+invisibly returns the \code{iNZGUI} object
 }
 \description{
-iNZight GUI
+Starts iNZight, optionally with data and a dispose function.
+For example, a script called to open iNZight can automatically
+exit R once the iNZight session is complete using \code{q()} (see examples).
 }
-\details{
-Starts iNZight
+\examples{
+\dontrun{
+# to have iNZight quit R without saving after the session is over,
+# you may use the following:
+iNZight(dispose_fun = q, save = "n")
+}
 }
 \author{
-Marco Kuper
+Marco Kuper, Tom Elliott
 }

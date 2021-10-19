@@ -67,10 +67,7 @@ iNZCodePanel <- setRefClass(
             store_btn$set_icon("")
             run_btn$set_icon("")
             reset_btn$set_icon("")
-            # store_btn$set_icon("rlogo")
-            # run_btn$set_icon("go")
-            # reset_btn$set_icon("reset")
-            # button_height <<- size(store_btn)[2]
+
             size(store_btn) <<- c(button_width, button_height)
             size(run_btn) <<- c(button_width, button_height)
             size(reset_btn) <<- c(button_width, button_height)
@@ -83,7 +80,6 @@ iNZCodePanel <- setRefClass(
             enabled(store_btn) <<- enabled(run_btn) <<- enabled(reset_btn) <<-
                 svalue(input) != ""
 
-            # size(panel) <<- c(-1, 90)
             size(input) <<- c(-1, 60)
         },
         set_input = function(code) {
@@ -114,8 +110,6 @@ iNZCodePanel <- setRefClass(
 
             tryCatch(
                 {
-                    # print(svalue(input))
-                    # print(ls(env = GUI$code_env))
                     rawpl <- eval(
                         parse(text = svalue(input)),
                         envir = GUI$code_env
@@ -137,8 +131,10 @@ iNZCodePanel <- setRefClass(
                 print(rawpl)
             }
 
-            if (!grepl("^inzplot", svalue(input))) break
-            # if (!inherits(rawpl, "inzplotoutput")) break
+            if (!grepl("^inzplot", svalue(input))) {
+                GUI$plotType <<- "custom"
+                return()
+            }
 
             curpl <- unclass(rawpl)
             if (!is.null(attr(curpl, "dotplot.redraw")))
@@ -293,11 +289,13 @@ iNZCodePanel <- setRefClass(
         },
         reset_code = function() {
             set_input(original_code)
-            run_code()
+            GUI$updatePlot()
         },
         input_handler = function(h, ...) {
             enabled(store_btn) <<- enabled(run_btn) <<- enabled(reset_btn) <<-
                 svalue(input) != ""
-        }
+        },
+        show = function() visible(panel) <<- TRUE,
+        hide = function() visible(panel) <<- FALSE
     )
 )

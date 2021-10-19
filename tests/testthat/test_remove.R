@@ -1,5 +1,7 @@
 context("Add to Plot window")
 
+skip_on_cran()
+
 # try(ui$close(), TRUE); load_all()
 ui <- iNZGUI$new()
 ui$initializeGui(census.at.school.500)

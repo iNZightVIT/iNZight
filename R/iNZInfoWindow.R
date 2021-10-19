@@ -31,11 +31,6 @@ iNZInfoWindow <- setRefClass(
             # Check that the data exists
             env <<- new.env()
             curSet <<- GUI$getActiveDoc()$getSettings()
-            # if (is.null(curSet$x)) {
-            #     gmessage("No variable selected.")
-            #     dispose(win)
-            #     return()
-            # }
             gen_set_list()
 
             win <<- gwindow(title = name,
@@ -85,7 +80,6 @@ iNZInfoWindow <- setRefClass(
             font(run_btn) <<- list(size = 9)
             font(reset_btn) <<- list(size = 9)
 
-
             info_font <<- list(
                 family = "monospace",
                 size = font_size
@@ -98,7 +92,6 @@ iNZInfoWindow <- setRefClass(
 
             ctrl_panel <<- ggroup()
             ctrl_panel$set_borderwidth(5)
-
 
             # Main container will consist of three components:
             #  1. code panel (can be toggled; controls info)
@@ -126,12 +119,11 @@ iNZInfoWindow <- setRefClass(
             assign(dataname, GUI$getActiveData(), envir = env)
 
             if (!is.null(curMod$dataDesign)) {
+                designname <<- curMod$dataDesignName
                 curSet$data <<- NULL
-                curSet$design <<- as.name(".design")
+                curSet$design <<- as.name(designname)
+                assign(designname, curMod$createSurveyObject(), envir = env)
                 env$.design <<- curMod$createSurveyObject()
-                # designname <<- curMod$dataDesignName
-                # curSet$design <<- as.name(designname)
-                # assign(designname, curMod$createSurveyObject(), envir = env)
             }
         },
         set_input = function(code) {
@@ -142,8 +134,14 @@ iNZInfoWindow <- setRefClass(
                 svalue(code_box) != ""
         },
         set_output = function(out) {
-            svalue(info_text) <<- paste(out, collapse = "\n")
-            font(info_text) <<- info_font
+            svalue(info_text) <<- ""
+            gWidgets2::insert(
+                info_text,
+                paste(out, collapse = "\n"),
+                where = "beginning",
+                font.attr = info_font
+            )
+            # font(info_text) <<- info_font
         },
         store_code = function() {
             GUI$rhistory$add(svalue(code_box))
@@ -166,10 +164,32 @@ iNZInfoWindow <- setRefClass(
 
             tryCatch(
                 {
-                    output <- eval(
-                        parse(text = svalue(code_box)),
-                        envir = GUI$code_env
-                    )
+                    if (grepl("skimr", svalue(code_box))) {
+                        olocale <- Sys.getlocale("LC_CTYPE")
+                        owidth <- getOption("width")
+                        if (GUI$OS == "windows") {
+                            Sys.setlocale("LC_CTYPE", "Chinese")
+                        }
+                        options(width = 200)
+                        on.exit({
+                            Sys.setlocale("LC_CTYPE", olocale)
+                            options(width = owidth)
+                        })
+                    }
+                    output <-
+                        if (grepl("skimr", svalue(code_box))) {
+                            capture.output(
+                                eval(
+                                    parse(text = svalue(code_box)),
+                                    envir = GUI$code_env
+                                )
+                            )
+                        } else {
+                            eval(
+                                parse(text = svalue(code_box)),
+                                envir = GUI$code_env
+                            )
+                        }
                 },
                 error = function(e) {
                     gmessage(
@@ -183,7 +203,8 @@ iNZInfoWindow <- setRefClass(
 
             if (!exists("output")) return()
 
-            if (!inherits(output, "inzight.plotsummary")) {
+
+            if (!inherits(output, "inzight.plotsummary") && !grepl("skimr", svalue(code_box))) {
                 gmessage(
                     "The code you entered did not produce the appropriate output",
                     title = "Invalid output",
@@ -205,6 +226,71 @@ iNZInfoWindow <- setRefClass(
     )
 )
 
+## Dataset info
+iNZDataSummary <- setRefClass(
+    "iNZDataSummary",
+    contains = "iNZInfoWindow",
+    fields = list(),
+    methods = list(
+        initialize = function(gui) {
+            if (is.null(gui$getActiveData()) || all(dim(gui$getActiveData()) == 1L)) return()
+            callSuper(gui, controls = "top", name = "Dataset Summary")
+            setup_panel()
+            visible(win) <<- TRUE
+        },
+        gen_call = function() {
+            "Generate summary call"
+            d <- GUI$get_data_object()
+            sprintf("%sskimr::skim(%s)",
+                ifelse(iNZightTools::is_survey(d),
+                    sprintf("print(%s, design.summaries = TRUE)\n", designname),
+                    ""
+                ),
+                dataname
+            )
+        },
+        update_summary = function() {
+            # the following is required to ensure the output graphs look OK,
+            # and that the rows are all on one line
+            olocale <- Sys.getlocale("LC_CTYPE")
+            owidth <- getOption("width")
+            if (GUI$OS == "windows") {
+                Sys.setlocale("LC_CTYPE", "Chinese")
+            }
+            options(width = 200)
+            on.exit({
+                Sys.setlocale("LC_CTYPE", olocale)
+                options(width = owidth)
+            })
+
+            smry_call <- gen_call()
+            set_input(smry_call)
+
+            smry_call <- strsplit(smry_call, "\n", fixed = TRUE)[[1]]
+
+            smry <- try(
+                lapply(smry_call,
+                    function(c) capture.output(eval(parse(text = c), env))
+                ),
+                silent = TRUE
+            )
+            if (length(smry) > 1L) {
+                smry[-length(smry)] <- lapply(smry[-length(smry)],
+                    function(s) {
+                        c(s, "", paste(rep("-", 100), collapse = ""), "", "")
+                    }
+                )
+            }
+            smry <- do.call(c, smry)
+            if (inherits(smry, "try-error")) smry <- "Unable to generate summary."
+            set_output(smry)
+        },
+        setup_panel = function() {
+            update_summary()
+        }
+    )
+)
+
 
 ## A summary window
 iNZGetSummary <- setRefClass(
@@ -214,10 +300,12 @@ iNZGetSummary <- setRefClass(
         predBtn = "ANY",
         residBtn = "ANY",
         trend = "list",
-        trend_menu = "ANY"
+        trend_menu = "ANY",
+        tableDir = "ANY"
     ),
     methods = list(
         initialize = function(gui) {
+            if (is.null(gui$getActiveDoc()$getSettings()$x)) return()
             callSuper(gui, controls = "bottom", name = "Summary")
 
             ## Control panel
@@ -303,7 +391,6 @@ iNZGetSummary <- setRefClass(
 
             addSpace(g2, 20)
 
-
             tbl <- glayout(container = g2)
             ii <- 1
 
@@ -326,7 +413,7 @@ iNZGetSummary <- setRefClass(
             )
             fittedName.lin <- gedit(
                 sprintf("%s.%s%s", yname, varType,
-                        ifelse(length(curSet$trend) > 1, ".linear", "")),
+                    ifelse(length(curSet$trend) > 1, ".linear", "")),
                 width = 25
             )
             if (scatter && length(curSet$trend) >= 1 && "linear" %in% curSet$trend) {
@@ -341,7 +428,7 @@ iNZGetSummary <- setRefClass(
             )
             fittedName.quad <- gedit(
                 sprintf("%s.%s%s", yname, varType,
-                        ifelse(length(curSet$trend) > 1, ".quadratic", "")),
+                    ifelse(length(curSet$trend) > 1, ".quadratic", "")),
                 width = 25
             )
             if (scatter && length(curSet$trend) >= 1 && "quadratic" %in% curSet$trend) {
@@ -356,7 +443,7 @@ iNZGetSummary <- setRefClass(
             )
             fittedName.cub <- gedit(
                 sprintf("%s.%s%s", yname, varType,
-                        ifelse(length(curSet$trend) > 1, ".cubic", "")),
+                    ifelse(length(curSet$trend) > 1, ".cubic", "")),
                 width = 25
             )
             if (scatter && length(curSet$trend) >= 1 && "cubic" %in% curSet$trend) {
@@ -440,7 +527,6 @@ iNZGetSummary <- setRefClass(
                         newdata <- data.frame(newdata, pred, stringsAsFactors = TRUE)
                     }
 
-
                     GUI$getActiveDoc()$getModel()$updateData(newdata)
 
                     dispose(w2)
@@ -485,6 +571,26 @@ iNZGetSummary <- setRefClass(
 
             xnum <- is_num(xvar)
             ynum <- is_num(yvar)
+
+            if (GUI$plotType == "bar") {
+                lbl <- glabel("Table direction", container = ctrl_panel)
+                tableDir <<- gradio(c("Horizontal", "Vertical"),
+                    container = ctrl_panel,
+                    selected =
+                        if (is.null(curSet$table.direction)) 1L
+                        else switch(curSet$table.direction,
+                            horizontal = 1L, vertical = 2L),
+                    horizontal = TRUE,
+                    handler = function(h, ...) {
+                        curSet$table.direction <<- tolower(svalue(h$obj))
+                        GUI$getActiveDoc()$setSettings(
+                            list(table.direction = tolower(svalue(h$obj)))
+                        )
+                        update_summary()
+                    }
+                )
+            }
+
 
             # show predicted/residual buttons?
             if (!is.null(yvar) && (xnum || ynum)) {
@@ -557,10 +663,12 @@ iNZGetInference <- setRefClass(
         g_hypctrls = "ANY",
         g_hyptbl = "ANY",
         trend_choice = "list",
-        epi_chk = "ANY"
+        epi_chk = "ANY",
+        ci_slider = "ANY"
     ),
     methods = list(
         initialize = function(gui) {
+            if (is.null(gui$getActiveDoc()$getSettings()$x)) return()
             callSuper(gui, controls = "top", name = "Inference")
 
             # update_inference()
@@ -593,6 +701,13 @@ iNZGetInference <- setRefClass(
                 font(info_text) <<- info_font
                 Sys.sleep(0.1)
             }
+            GUI$getActiveDoc()$setSettings(
+                list(
+                    bs.inference = curSet$bs.inference,
+                    trend = curSet$trend,
+                    ci.width = curSet$ci.width
+                )
+            )
             smry_call <- gen_call()
             set_input(mend_call(smry_call, GUI))
 
@@ -656,14 +771,18 @@ iNZGetInference <- setRefClass(
                 )
                 font(lbl) <- list(weight = "bold")
 
-                inf_method <<- gradio(c("Normal theory", "Bootstrap"),
-                    horizontal = FALSE,
-                    container = g_method,
-                    handler = function(h, ...) {
-                        curSet$bs.inference <<- svalue(h$obj, index = TRUE) == 2L
-                        update_inference()
-                    }
-                )
+                if (getOption("inzight.disable.bootstraps", FALSE)) {
+                    inf_method <<- glabel("Normal theory", container = g_method, anchor = c(-1, 0))
+                } else {
+                    inf_method <<- gradio(c("Normal theory", "Bootstrap"),
+                        horizontal = FALSE,
+                        container = g_method,
+                        handler = function(h, ...) {
+                            curSet$bs.inference <<- svalue(h$obj, index = TRUE) == 2L
+                            update_inference()
+                        }
+                    )
+                }
             }
 
             # hypothesis testing (all except regression, for now)
@@ -802,7 +921,7 @@ iNZGetInference <- setRefClass(
                     size(ctrl_panel) <<- c(-1, 140)
                 }
 
-                if ("chi2" %in% hyp_tests) {
+                if ("chi2" %in% hyp_tests && !is_survey) {
                     hyp_simulatep <<- gcheckbox("Simulate p-value",
                         checked = FALSE,
                         container = g_hypctrls,
@@ -830,18 +949,21 @@ iNZGetInference <- setRefClass(
                 trend_choice <<- list(
                     linear = gcheckbox("Linear",
                         container = g_trendopt,
+                        checked = "linear" %in% curSet$trend,
                         handler = function(h, ...) {
                             handle_trend()
                         }
                     ),
                     quadratic = gcheckbox("Quadratic",
                         container = g_trendopt,
+                        checked = "quadratic" %in% curSet$trend,
                         handler = function(h, ...) {
                             handle_trend()
                         }
                     ),
                     cubic = gcheckbox("Cubic",
                         container = g_trendopt,
+                        checked = "cubic" %in% curSet$trend,
                         handler = function(h, ...) {
                             handle_trend()
                         }
@@ -862,6 +984,51 @@ iNZGetInference <- setRefClass(
                         update_inference()
                     }
                 )
+            }
+
+            adv_opts <- list(
+                ci_level = TRUE
+            )
+
+            if (any(unlist(adv_opts))) {
+                ## CI width and other controls:
+                addSpring(ctrl_panel)
+                add(ctrl_panel, gseparator())
+
+                g_advanced <- gvbox(container = ctrl_panel)
+                lbl <- glabel("Additional options",
+                    container = g_advanced,
+                    anchor = c(-1, 0),
+                    fill = TRUE
+                )
+                font(lbl) <- list(weight = "bold")
+
+                adv_tbl <- glayout(container = g_advanced)
+                ii <- 1L
+
+                if (adv_opts$ci_level) {
+                    ci_slider <<- gspinbutton(
+                        10, 99, 1,
+                        value = curSet$ci.width * 100,
+                        handler = function(h, ...) {
+                            curSet$ci.width <<- svalue(ci_slider) / 100
+                            update_inference()
+                        }
+                    )
+                    size(ci_slider) <<- c(100, -1)
+                    adv_tbl[ii, 1L, anchor = c(1, 0), fill = TRUE] <- "Confidence level (%):"
+                    adv_tbl[ii, 2:3, expand = TRUE] <- ci_slider
+                    ii <- ii + 1L
+
+                    addSpring(g_advanced)
+                    lbl <- glabel(
+                        "You may have to press Enter if you type values in manually.",
+                        container = g_advanced,
+                        anchor = c(-1, 0),
+                        fill = TRUE
+                    )
+                    font(lbl) <- list(size = 8)
+                }
             }
 
             update_inference()
@@ -921,8 +1088,6 @@ iNZGetInference <- setRefClass(
         handle_trend = function() {
             chosen <- sapply(trend_choice, function(x) svalue(x))
             curSet$trend <<- if (any(chosen)) names(trend_choice)[chosen] else NULL
-            # update the plot, too...
-            GUI$getActiveDoc()$setSettings(list(trend = curSet$trend))
             update_inference()
         }
     )

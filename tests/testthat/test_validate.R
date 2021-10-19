@@ -1,5 +1,7 @@
 context("Validation menu")
 
+skip_on_cran()
+
 ui <- iNZGUI$new()
 ui$initializeGui()
 on.exit(gWidgets2::dispose(ui$win))
@@ -24,9 +26,9 @@ test.results <- structure(
 
 test_that("rules validate on active dataset", {
   val <- iNZValidateWin$new(ui)
-  left.side <- val$window$children[[1]]$children[[1]]
+  left.side <- val$body$children[[1]]
 
-  on.exit(left.side$children[[7]]$invoke_change_handler())
+  on.exit(val$close())
 
   svalue(left.side$children[[3]]) <- test.rules
 
@@ -40,9 +42,9 @@ test_that("rules validate on active dataset", {
 
 test_that("rule files save", {
   val <- iNZValidateWin$new(ui)
-  left.side <- val$window$children[[1]]$children[[1]]
+  left.side <- val$body$children[[1]]
 
-  on.exit(left.side$children[[7]]$invoke_change_handler())
+  on.exit(val$close())
 
   val$save.file(temp.file, test.rules)
 
@@ -54,9 +56,9 @@ test_that("rule files save", {
 
 test_that("rule files open", {
   val <- iNZValidateWin$new(ui)
-  left.side <- val$window$children[[1]]$children[[1]]
+  left.side <- val$body$children[[1]]
 
-  on.exit(left.side$children[[7]]$invoke_change_handler())
+  on.exit(val$close())
 
   val$open.file(temp.file, left.side$children[[3]])
 

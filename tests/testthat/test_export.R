@@ -1,17 +1,42 @@
 context("Data is exported from the UI")
 
-# try(ui$close())
-ui <- iNZGUI$new()
-ui$initializeGui(census.at.school.500)
-on.exit(gWidgets2::dispose(ui$win))
+# skip_on_cran()
 
-test_that("Export RDA", {
-    on.exit(unlink("test.rda"))
-    iNZSaveFile("test.rda", "rda", data = census.at.school.500, dataname = "cas")
-    load("test.rda")
-    expect_equal(cas, census.at.school.500)
+# try(ui$close())
+# ui <- iNZGUI$new()
+# ui$initializeGui(census.at.school.500)
+# on.exit(gWidgets2::dispose(ui$win))
+
+test_that("Export RDS", {
+    fp <- tempfile(fileext = ".rds")
+    on.exit(unlink(fp))
+    ui <- list(OS = "windows", getActiveData = function() census.at.school.500)
+
+    w <- iNZExportWin$new(ui)
+    expect_is(w, "iNZExportWin")
+    w$file$set_value(fp)
+    expect_equal(w$ftype$get_index(), 3L)
+    expect_silent(w$ok_button$invoke_change_handler())
+
+    expect_equal(readRDS(fp), census.at.school.500)
 })
 
+test_that("Export TXT", {
+    fp <- tempfile(fileext = ".txt")
+    on.exit(unlink(fp))
+    ui <- list(OS = "windows", getActiveData = function() census.at.school.500)
+
+    w <- iNZExportWin$new(ui)
+    expect_is(w, "iNZExportWin")
+    w$file$set_value(fp)
+    expect_equal(w$ftype$get_index(), 2L)
+    expect_silent(w$ok_button$invoke_change_handler())
+
+    expect_equal(
+        dim(iNZightTools::smart_read(fp)),
+        dim(census.at.school.500)
+    )
+})
 
 if (FALSE) {
     ## Run manually (cannot be automated at this point in time)

@@ -1,12 +1,17 @@
 context("Get Summary window")
 
+skip_on_cran()
+
 # try(ui$close(), TRUE); devtools::load_all()
 ui <- iNZGUI$new()
 ui$initializeGui()
 on.exit(gWidgets2::dispose(ui$win))
 
-ui$setDocument(iNZDocument$new(data = census.at.school.500), reset = TRUE)
-if (!interactive()) Sys.sleep(5)
+ui$setDocument(
+    iNZDocument$new(data = census.at.school.500),
+    reset = TRUE
+)
+Sys.sleep(5)
 
 test_that("Get summary window opens", {
     ui$ctrlWidget$V1box$set_value("height")
@@ -44,13 +49,6 @@ test_that("Buttons for linear regression give correct predicted values", {
     )
 })
 
-if (interactive()) {
-    # try(ui$close(), TRUE); devtools::load_all()
-    ui <- iNZGUI$new()
-    ui$initializeGui(census.at.school.500)
-    on.exit(ui$close())
-}
-
 test_that("Summary function call can be modified", {
     ui$ctrlWidget$V1box$set_value("height")
     ui$ctrlWidget$V2box$set_index(1L)
@@ -66,7 +64,8 @@ test_that("Summary function call can be modified", {
 
 data(api, package = "survey")
 ui$setDocument(iNZDocument$new(data = apiclus1), reset = TRUE)
-if (!interactive()) Sys.sleep(2)
+Sys.sleep(2)
+
 ui$getActiveDoc()$getModel()$setDesign(
     list(
         clus1 = "dnum", clus2 = "snum", weights = "pw", nest = FALSE,

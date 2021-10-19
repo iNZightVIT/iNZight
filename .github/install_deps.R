@@ -1,10 +1,11 @@
 # R script
 github_deps <- c(
+    "tmelliott/gWidgets2@patch-1",
     "iNZightVIT/gWidgets2RGtk2@inz",
     "iNZightVIT/iNZightTools@dev",
     "iNZightVIT/iNZightTS@1.5.4",
     "iNZightVIT/iNZightMR@2.2.5",
-    "iNZightVIT/iNZightPlots@2.12",
+    "iNZightVIT/iNZightPlots@dev",
     "iNZightVIT/iNZightRegression@1.2.8",
     "iNZightVIT/iNZightModules@2.5.3",
     "tmelliott/translatr"
@@ -21,6 +22,9 @@ options(
 
 if (OS == "Windows" && getRversion() < numeric_version("4")) {
     install.packages("RODBC", type = "binary")
+}
+if (OS == "Windows" && !requireNamespace('utf8', quietly = TRUE)) {
+    install.packages("utf8", type = "source")
 }
 
 remotes::install_github(

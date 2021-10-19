@@ -36,7 +36,7 @@ It might not look like much has happened, but iNZight will now use the survey de
 ![iNZight drawing a histogram of `api00`](figures/inzight-api00.png){width=100%}
 </center>
 
-You may also obtain a numerical summary of `api00` by clicking on the **Get Summary** button. This will display information about the variable as well as the design specification of the data. The numeric summaries are estimates of the **population values**, and so---unlike standard data---have associated standard errors displayed underneath (i.e., the median `api00` of the population is etimated to be 652 with a standard error of 36.56).
+You may also obtain a numerical summary of `api00` by clicking on the **Get Summary** button. This will display information about the variable as well as the design specification of the data. The numeric summaries are estimates of the **population values**, and so---unlike standard data---have associated standard errors displayed underneath (i.e., the median `api00` of the population is estimated to be 652 with a standard error of 36.56).
 
 <center>
 ![Numerical summary of `api00`](figures/inzight-api00-summary.png){width=80%}
