@@ -93,3 +93,14 @@ test_that("Get summary works for survey design", {
 #     design = quote(!!data.svy),
 #     what = "summary")
 # eval(call, env)
+
+ui$close()
+ui <- iNZight(census.at.school.500)
+
+test_that("Privacy and confidentiality rules applied", {
+    # devtools::load_all("../iNZightPlots")
+    # devtools::load_all(); try(gWidgets2::dispose(sw$win))
+    ui$ctrlWidget$V1box$set_value("travel")
+    sw <- iNZGetSummary$new(ui)
+
+})

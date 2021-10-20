@@ -14,7 +14,10 @@ iNZInfoWindow <- setRefClass(
         code_font = "list",
         original_code = "character",
         store_btn = "ANY", run_btn = "ANY", reset_btn = "ANY",
-        font_size = "numeric"
+        font_size = "numeric",
+        # privacy control window
+        suppress = "ANY",
+        round = "ANY"
     ),
     methods = list(
         initialize = function(gui, controls = c("bottom", "top"),
@@ -642,6 +645,103 @@ iNZGetSummary <- setRefClass(
                 addPopupMenu(trend_btn, trend_menu)
             }
 
+            addSpring(ctrl_panel)
+
+            if (GUI$plotType == "bar") {
+                privacy_button <- gbutton(
+                    "Confidentiality Rules",
+                    container = ctrl_panel,
+                    handler = function(h, ...) editPrivacyRules()
+                )
+                icon <- RGtk2::gtkImage(
+                    file = system.file("images/icon-privacy.png",
+                        package = "iNZight"
+                    )
+                )
+                privacy_button$widget$setImage(icon)
+                privacy_button$widget$image$show()
+                tooltip(privacy_button) <- "Set or change privacy and confidentiality output controls"
+            }
+
+            update_summary()
+        },
+        editPrivacyRules = function() {
+            w <- gwindow(
+                parent = win,
+                width = 400,
+                height = 150,
+                title = "Privacy and Confidentialisation Options"
+            )
+
+            pc <- curSet$privacy_controls
+            if (is.null(pc)) pc <- list()
+
+            g <- gvbox(container = w)
+            g$set_borderwidth(5)
+
+            tbl <- glayout(container = g)
+            ii <- 1L
+
+            ## --- suppression of small counts
+            suppress <<- gspinbutton(0, 100, 1,
+                value = if (is.null(pc$suppression)) 10L else pc$suppression,
+                handler = function(h, ...) {
+                    setPrivacyControls()
+                }
+            )
+            enabled(suppress) <<- !is.null(pc$suppression)
+            suppressChk <- gcheckbox("Suppress counts smaller than",
+                checked = !is.null(pc$suppression),
+                handler = function(h, ...) {
+                    enabled(suppress) <<- svalue(h$obj)
+                    setPrivacyControls()
+                }
+            )
+
+            tbl[ii, 1L, anchor = c(1, 0), expand = TRUE] <- suppressChk
+            tbl[ii, 2:3, fill = TRUE] <- suppress
+            ii <- ii + 1L
+
+            ## --- rounding
+            round <<- gradio(
+                c("RR3"),
+                value = if (is.null(pc$rounding)) "RR3" else pc$rounding,
+                handler = function(h, ...) {
+                    setPrivacyControls()
+                }
+            )
+            enabled(round) <<- !is.null(pc$rounding)
+            roundChk <- gcheckbox("Round counts using",
+                checked = !is.null(pc$rounding),
+                handler = function(h, ...) {
+                    enabled(round) <<- svalue(h$obj)
+                    setPrivacyControls()
+                }
+            )
+
+            tbl[ii, 1L, anchor = c(1, 0), expand = TRUE] <- roundChk
+            tbl[ii, 2:3, fill = TRUE] <- round
+            ii <- ii + 1L
+
+            addSpring(g)
+            button_g <- ggroup(container = g)
+            addSpring(button_g)
+            close_button <- gbutton("Close",
+                container = button_g,
+                handler = function(h, ...) gWidgets2::dispose(w)
+            )
+        },
+        setPrivacyControls = function() {
+            pc <- curSet$privacy_controls
+            pc$suppression <- if (enabled(suppress)) svalue(suppress) else NULL
+            pc$rounding <- if (enabled(round)) svalue(round) else NULL
+
+            if (length(pc) == 0L || all(sapply(pc, is.null))) pc <- NULL
+
+            curSet$privacy_controls <<- pc
+            GUI$getActiveDoc()$setSettings(
+                list(privacy_controls = pc)
+            )
             update_summary()
         }
     )
