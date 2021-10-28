@@ -20,7 +20,9 @@ iNZInfoWindow <- setRefClass(
         secondarySuppression = "ANY",
         round = "ANY",
         roundVal = "ANY",
-        suppressMeans = "ANY"
+        suppressMeans = "ANY",
+        suppressMedian = "ANY",
+        suppressQuartiles = "ANY"
     ),
     methods = list(
         initialize = function(gui, controls = c("bottom", "top"),
@@ -887,16 +889,58 @@ iNZGetSummary <- setRefClass(
             tbl[ii, 2:3, fill = TRUE] <- suppressMeans
             ii <- ii + 1L
 
+            ## --- suppression of quantiles
+            suppressMedian <<- gspinbutton(0, 10000,
+                value = if (is.null(pc$suppression_quantiles)) 10L else {
+                    pc$suppression_quantiles$n[pc$suppression_quantiles$p == 0.5]
+                },
+                handler = function(h, ...) setPrivacyControls()
+            )
+            suppressQuartiles <<- gspinbutton(0, 10000,
+                value = if (is.null(pc$suppression_quantiles)) 20L else {
+                    pc$suppression_quantiles$n[pc$suppression_quantiles$p == 0.25]
+                },
+                handler = function(h, ...) setPrivacyControls()
+            )
+            enabled(suppressQuartiles) <<- enabled(suppressMedian) <<-
+                !is.null(pc$supression_quantiles)
+            suppressQuantilesChk <- gcheckbox("Suppress quantiles based on counts smaller than threshold",
+                checked = !is.null(pc$supression_quantiles),
+                handler = function(h, ...) {
+                    enabled(suppressQuartiles) <<- enabled(suppressMedian) <<-
+                        svalue(h$obj)
+                    setPrivacyControls()
+                }
+            )
+
+            tbl[ii, 1:2, anchor = c(1, 0), expand = TRUE] <- suppressQuantilesChk
+            ii <- ii + 1L
+
+            tbl[ii, 2L, anchor = c(1, 0), expand = TRUE] <- glabel("Median :")
+            tbl[ii, 3L, expand = TRUE, fill = TRUE] <- suppressMedian
+            ii <- ii + 1L
+
+            tbl[ii, 2L, anchor = c(1, 0), expand = TRUE] <- glabel("25% and 75% quartiles :")
+            tbl[ii, 3L, expand = TRUE, fill = TRUE] <- suppressQuartiles
+            ii <- ii + 1L
+
 
             addSpring(g)
             button_g <- ggroup(container = g)
             addSpring(button_g)
             close_button <- gbutton("Close",
-                container = button_g,
                 handler = function(h, ...) gWidgets2::dispose(w)
             )
+            apply_button <- gbutton("Apply",
+                handler = function(h, ...) setPrivacyControls(TRUE)
+            )
+
+            add(button_g, apply_button)
+            add(button_g, close_button)
         },
-        setPrivacyControls = function() {
+        setPrivacyControls = function(update = FALSE) {
+            if (!update) return()
+
             pc <- curSet$privacy_controls
             pc$suppression <- if (enabled(suppress)) svalue(suppress) else NULL
             pc$secondary_suppression <-
@@ -905,11 +949,22 @@ iNZGetSummary <- setRefClass(
                 if (svalue(round) == "fixed") svalue(roundVal) else svalue(round)
             } else NULL
 
-            pc$suppression_magnitude <- if(enabled(suppressMeans)) svalue(suppressMeans) else NULL
+            pc$suppression_magnitude <- if (enabled(suppressMeans)) svalue(suppressMeans) else NULL
+            pc$suppression_quantiles <- if (enabled(suppressMedian)) {
+                list(
+                    p = c(0.25, 0.5, 0.75),
+                    n = c(
+                        svalue(suppressQuartiles),
+                        svalue(suppressMedian),
+                        svalue(suppressQuartiles)
+                    )
+                )
+            } else NULL
 
             if (length(pc) == 0L || all(sapply(pc, is.null))) pc <- NULL
 
             curSet$privacy_controls <<- pc
+
             GUI$getActiveDoc()$setSettings(
                 list(privacy_controls = pc)
             )
