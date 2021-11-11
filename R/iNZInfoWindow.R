@@ -22,7 +22,8 @@ iNZInfoWindow <- setRefClass(
         roundVal = "ANY",
         suppressMeans = "ANY",
         suppressMedian = "ANY",
-        suppressQuartiles = "ANY"
+        suppressQuartiles = "ANY",
+        suppressRse = "ANY"
     ),
     methods = list(
         initialize = function(gui, controls = c("bottom", "top"),
@@ -925,6 +926,37 @@ iNZGetSummary <- setRefClass(
             ii <- ii + 1L
 
 
+            suppressRseChk <- gcheckbox("Suppress/identify values with RSE greater than ...",
+                checked = !is.null(pc$check_rse),
+                handler = function(h, ...) {
+                    enabled(suppressRse) <<- svalue(h$obj)
+                    setPrivacyControls()
+                }
+            )
+            tbl[ii, 1L, anchor = c(1, 0), expand = TRUE] <- suppressRseChk
+            ii <- ii + 1L
+
+
+            rseEg <- glabel(
+                paste(sep = "\n",
+                    "Example: entering '50=*,80=**,100=S' will mark values with RSE >= 50 with *,",
+                    "RSE >= 80 with **, and suppress values with RSE >= 100."
+                )
+            )
+            font(rseEg) <- list(size = 8L)
+            tbl[ii, 1L, expand = TRUE] <- rseEg
+
+            rseText <- ""
+            if (!is.null(pc$check_rse)) {
+                rseText <- paste0(pc$check_rse$cut, "=", pc$check_rse$output, collapse = ", ")
+            }
+            suppressRse <<- gedit(rseText,
+                handler = function(h, ...) setPrivacyControls()
+            )
+            enabled(suppressRse) <<- !is.null(pc$check_rse)
+            tbl[ii, 2:3, expand = TRUE, fill = TRUE] <- suppressRse
+            ii <- ii + 1L
+
             addSpring(g)
             button_g <- ggroup(container = g)
             addSpring(button_g)
@@ -961,9 +993,20 @@ iNZGetSummary <- setRefClass(
                 )
             } else NULL
 
+            pc$check_rse <- if (enabled(suppressRse)) {
+                x <- strsplit(svalue(suppressRse), ",")[[1]]
+                x <- sapply(x, strsplit, split = "=")
+                x <- as.data.frame(do.call(rbind, x))
+                x[[1]] <- as.integer(x[[1]])
+                x[[2]] <- ifelse(x[[2]] == "S", "suppress", x[[2]])
+                colnames(x) <- c("cut", "output")
+                as.list(x)
+            } else NULL
+
             if (length(pc) == 0L || all(sapply(pc, is.null))) pc <- NULL
 
             curSet$privacy_controls <<- pc
+            print(pc)
 
             GUI$getActiveDoc()$setSettings(
                 list(privacy_controls = pc)
