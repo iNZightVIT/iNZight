@@ -1,0 +1,28 @@
+name: Releases
+
+on:
+  push:
+    tags:
+      - "*"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: r-lib/actions/setup-r@v1
+        with:
+          r-version: latest
+      - name: create_body
+        run: |
+          news <- readLines('NEWS.Md')
+          i <- grep("^#{1,2}", news)[1:2]
+          if (is.na(i[2])) i[2L] <- length(news) + 1L
+          news <- news[(i[1L] + 1L):(i[2L] - 1L)]
+          news <- news[trimws(news) != ""]
+          writeLines(news, "body.md")
+        shell: Rscript {0}
+      - uses: ncipollo/release-action@v1
+        with:
+          bodyFile: "body.md"
+          token: ${{ secrets.GITHUB_TOKEN }}
