@@ -15,6 +15,7 @@ iNZExportWin <- setRefClass(
                 ok = "Export",
                 action = .self$export_data
             )
+            on.exit(.self$show())
 
             tbl <- glayout(expand = TRUE, fill = TRUE)
             ii <- 1L
