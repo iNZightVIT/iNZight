@@ -2325,7 +2325,7 @@ iNZAggDtWin <- setRefClass(
             type <<- ""
             values <- character()
 
-            if (lubridate::is.POSIXct(x) || lubridate::is.Date(var)) {
+            if (lubridate::is.POSIXct(x) || lubridate::is.Date(x)) {
                 type <<- "dt"
                 values <- c("Weekly", "Monthly", "Quarterly", "Yearly")
             } else if (all(grepl("W", x))) {
