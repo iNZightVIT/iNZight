@@ -913,8 +913,12 @@ iNZCreateVarWin <- setRefClass(
             )
 
             expr <- svalue(expression)
-            if (! "N" %in% names(GUI$getActiveData()))
-                expr <- gsub("N", "dplyr::n()", expr)
+            if (! "N" %in% names(GUI$getActiveData())) {
+                expr <- stringr::str_replace(expr,
+                    "([^a-zA-Z0-9])N([^a-zA-Z0-9])",
+                    "\\1dplyr::n()\\2"
+                )
+            }
 
             data <- try(
                 iNZightTools::createNewVar(
