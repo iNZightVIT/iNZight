@@ -730,7 +730,7 @@ iNZCombineWin <- setRefClass(
 
             ## separator (. or _ for now ...)
             lbl4 <- glabel("Value separator")
-            varSep <<- gcombobox(c("_", "."), selected = 1)
+            varSep <<- gcombobox(c("_", "."), selected = 1, editable = TRUE)
             ## automatically fill the name field when variables are selected
             addHandlerSelectionChanged(factorNames,
                 handler = function(h, ...) {

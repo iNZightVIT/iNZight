@@ -33,6 +33,7 @@ A major change in this release is the landing screen, with a tidied interface. W
 - changing values in the data view updates R Code History
 - add some extra space around plot toolbar in pop-out mode
 - 'Simulate P-value' checkbox removed for survey chi-square test
+- Combine categorical variables allows custom separator (#389)
 
 ## Structural behind-the-scenes changes
 
