@@ -877,8 +877,8 @@ iNZStackWin <- setRefClass(
     )
 )
 
-iNZReorderWin <- setRefClass(
-    "iNZReorderWin",
+iNZReorderVarsWin <- setRefClass(
+    "iNZReorderVarsWin",
     fields = list(
         dataVars = "ANY", chosenVars = "ANY",
         btn_add = "ANY", btn_rmv = "ANY",

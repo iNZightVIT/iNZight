@@ -41,11 +41,10 @@ Many of the user-visible changes are aesthetic, and part of this change included
 'superclass' for all module windows within 'iNZight'. This involved refactoring all of these
 modules to inherit from `iNZWindow`. Additionally, class names where changed as listed below.
 
-- create new `iNZWindow` 'superclass' to make it easier to create consistent pop-up windows (#375, @tmelliott). The following windows now inherit from `iNZWindow`: `iNZFilterWin`, `iNZSortWin`, `iNZAggregateWin`, `iNZStackWin`, `iNZReorderWin`, `iNZReshapeWin`, `iNZSeparateWin`, `iNZUniteWin`, `iNZJoinWin`, `iNZAppendRowsWin`, `iNZDataReportWin`, `iNZValidateWin`, `iNZRenameDataWin`, `iNZConToCatWin`, `iNZTransformWin`, `iNZStandardiseWin`, `iNZFormClassIntervalsWin`, `iNZRankWin`, `iNZConToCatMultiWin`, `iNZReorderWin`, `iNZRenameFactorLevelsWin`, `iNZCombineWin`, `iNZConToDtWin`, `iNZExtFromDtWin`, `iNZAggDtWin`, `iNZCreateVarWin`, `iNZMissToCatWin`, `iNZDeleteVarWin`
+- create new `iNZWindow` 'superclass' to make it easier to create consistent pop-up windows (#375, @tmelliott). The following windows now inherit from `iNZWindow`: `iNZFilterWin`, `iNZSortWin`, `iNZAggregateWin`, `iNZStackWin`, `iNZReorderVarsWin`, `iNZReshapeWin`, `iNZSeparateWin`, `iNZUniteWin`, `iNZJoinWin`, `iNZAppendRowsWin`, `iNZDataReportWin`, `iNZValidateWin`, `iNZRenameDataWin`, `iNZConToCatWin`, `iNZTransformWin`, `iNZStandardiseWin`, `iNZFormClassIntervalsWin`, `iNZRankWin`, `iNZConToCatMultiWin`, `iNZReorderLevelsWin`, `iNZRenameFactorLevelsWin`, `iNZCombineWin`, `iNZConToDtWin`, `iNZExtFromDtWin`, `iNZAggDtWin`, `iNZCreateVarWin`, `iNZMissToCatWin`, `iNZDeleteVarWin`
   - code only displayed when user preference specified (`iNZFilterWin`)
   - renamed `iNZSortbyDataWin` to `iNZSortWin`
   - renamed `iNZstackVarWin` to `iNZStackWin`
-  - renamed `iNZReorderVarsWin` to `iNZReorderWin`
   - renamed `iNZReshapeDataWin` to `iNZReshapeWin`
   - renamed `iNZSeparateDataWin` to `iNZSeparateWin`
   - renamed `iNZUniteDataWin` to `iNZUniteWin`
@@ -58,7 +57,7 @@ modules to inherit from `iNZWindow`. Additionally, class names where changed as 
   - renamed `iNZformClassIntervals` to `iNZFormClassIntervalsWin`
   - renamed `iNZrankNumWin` to `iNZRankWin`
   - renamed `iNZctocatmulWin` to `iNZConToCatMultiWin`
-  - renamed `iNZreorderWin` to `iNZReorderWin`
+  - renamed `iNZreorderWin` to `iNZReorderLevelsWin`
   - renamed `iNZcllpsWin` to `iNZCollapseWin`
   - renamed `iNZrenameWin` to `iNZRenameFactorLevelsWin`
   - renamed `iNZcmbCatWin` to `iNZCombineWin`
