@@ -519,163 +519,219 @@ iNZRenameFactorLevelsWin <- setRefClass(
     )
 )
 
-## reorder factor levels
 iNZReorderWin <- setRefClass(
     "iNZReorderWin",
     fields = list(
-        factorMenu = "ANY",
-        factorName = "ANY",
-        sortMenu = "ANY",
-        levelOrder = "ANY"
+        dataVars = "ANY", chosenVars = "ANY",
+        btn_add = "ANY", btn_rmv = "ANY",
+        btn_up = "ANY", btn_down = "ANY",
+        reordering = "logical"
     ),
-    contains = "iNZDataModWin",
+    contains = "iNZWindow",
     methods = list(
         initialize = function(gui) {
+            initFields(reordering = FALSE)
             ok <- callSuper(gui,
-                title = "Standardise variables",
-                width = "small",
-                height = "med",
-                help = "user_guides/variables/#reorderLvls",
-                ok = "Reorder",
-                action = .self$reorder,
+                title = "Reorder and Select Variables",
+                width = "med",
+                height = "large",
+                ok = "Done",
+                action = .self$reorder_select_vars,
+                # help = "user_guides/data_options/#reorder-and-select-variables",
                 show_code = FALSE,
-                scroll = TRUE
+                scroll = FALSE
             )
             if (!ok) return()
             on.exit(.self$show())
-            usingMethods("reorder")
+            usingMethods("reorder_select_vars")
 
-            tbl <- glayout()
-
-            ## Choose variable to reorder:
-            tbl[1, 1, expand = TRUE, anchor = c(1, 0)] <- glabel("Variable to reorder:")
-            factorIndices <- sapply(GUI$getActiveData(), is_cat)
-            factorMenu <<- gcombobox(
-                names(GUI$getActiveData())[factorIndices],
-                selected = 0
+            add_heading(
+                "Select variables from the left to retain",
+                "in the data set (hold CTRL to select many).",
+                "Use the horizontal arrows to move variables from",
+                "'Remove' to 'Keep'.",
+                "Use the vertical arrows on the right to move",
+                "the chosen variable in 'Keep' up/down."
             )
-            tbl[1, 2, expand = TRUE] <- factorMenu
 
-            ## Name for the new variable
-            tbl[2, 1, expand = TRUE, anchor = c(1, 0)] <- glabel("New variable name:")
-            factorName <<- gedit("")
-            tbl[2, 2] <- factorName
-
-            ## Sort method: frequency (default), or manual
-            tbl[3, 1, expand = TRUE, anchor = c(1, 0)] <- glabel("Sort levels ")
-            sortMenu <<- gcombobox(c("by frequency", "manually"), selected = 1)
-            tbl[3, 2, expand = TRUE] <- sortMenu
-
-            ## For manual ordering, gdf or gtable with up/down arrows ...
-            levelGrp <- ggroup()
-            levelOrder <<- gtable(data.frame(stringsAsFactors = TRUE), container = levelGrp)
-            size(levelOrder) <<- c(-1, 280)
-            tbl[4:5, 2, expand = TRUE] <- levelGrp
-
-            levelBtnGrp <- gvbox()
-            addSpace(levelBtnGrp, 20)
-            levelUp <- iNZight:::gimagebutton("up",
-                container = levelBtnGrp,
-                size = 'LARGE_TOOLBAR',
-                expand = FALSE,
-                anchor = c(1, 0)
+            # boxes with variables
+            g_vars <- ggroup()
+            dataVars <<- gtable(data.frame(Remove = names(GUI$getActiveData())),
+                multiple = TRUE,
+                container = g_vars,
+                expand = TRUE,
+                fill = TRUE
             )
-            levelDown <- iNZight:::gimagebutton("down",
-                container = levelBtnGrp,
-                size = 'LARGE_TOOLBAR',
-                expand = FALSE,
-                anchor = c(1, 0)
-            )
-            levelHelp <- glabel("Select level, then\nuse arrows to reorder.",
-                container = levelBtnGrp, anchor = c(1, 0))
-            tbl[4:5, 1, anchor = c(1, 1)] <- levelBtnGrp
 
-            visible(levelBtnGrp) <- visible(levelGrp) <- FALSE
-
-            ## Add everything to main window
-            add_body(tbl)
-
-            ## HANDLERS
-            addHandlerChanged(factorMenu,
+            g_btns <- gvbox(container = g_vars)
+            addSpring(g_btns)
+            btn_add <<- gimagebutton("forward",
+                size = "large_toolbar",
+                container = g_btns,
+                tooltip = "Add selected",
                 handler = function(h, ...) {
-                    svalue(factorName) <<- makeNames(sprintf("%s.reord", svalue(factorMenu)))
-                    levelOrder$set_items(
-                        data.frame(
-                            Levels = levels(GUI$getActiveData()[, svalue(factorMenu)]),
-                            stringsAsFactors = TRUE
-                        )
-                    )
+                    add_vars(svalue(dataVars, index = TRUE))
                 }
             )
-
-            addHandlerChanged(sortMenu,
+            btn_rmv <<- gimagebutton("backward",
+                size = "large_toolbar",
+                container = g_btns,
+                tooltip = "Remove selected",
                 handler = function(h, ...) {
-                    visible(levelBtnGrp) <-
-                    visible(levelGrp) <-
-                        svalue(sortMenu, index = TRUE) == 2
+                    rmv_vars(svalue(chosenVars, index = TRUE))
+                }
+            )
+            addSpring(g_btns)
+
+            chosenVars <<- gtable(data.frame(Keep = ""),
+                multiple = TRUE,
+                container = g_vars,
+                expand = TRUE,
+                fill = TRUE
+            )
+
+            g_btns2 <- gvbox(container = g_vars)
+            btn_up <<- gimagebutton("1uparrow",
+                size = "large_toolbar",
+                container = g_btns2,
+                tooltip = "Move selected variable up",
+                handler = function(h, ...) {
+                    if (reordering) return()
+                    reordering <<- TRUE
+                    on.exit(reordering <<- FALSE)
+
+                    index <- svalue(chosenVars, index = TRUE)
+                    if (length(index) != 1) return()
+                    if (index == 1) return()
+                    keep <- chosenVars$get_items()
+                    keep_index <- seq_along(keep)
+                    keep_index[index] <- index - 1
+                    keep_index[index - 1] <- index
+                    keep <- keep[keep_index]
+                    chosenVars$set_items(data.frame(Keep = keep))
+                    svalue(chosenVars) <<- index - 1
+                }
+            )
+            btn_down <<- gimagebutton("1downarrow",
+                size = "large_toolbar",
+                container = g_btns2,
+                tooltip = "Move selected variable down",
+                handler = function(h, ...) {
+                    if (reordering) return()
+                    reordering <<- TRUE
+                    on.exit(reordering <<- FALSE)
+
+                    index <- svalue(chosenVars, index = TRUE)
+                    if (length(index) != 1) return()
+                    keep <- chosenVars$get_items()
+                    if (index == length(keep)) return()
+                    keep_index <- seq_along(keep)
+                    keep_index[index] <- index + 1
+                    keep_index[index + 1] <- index
+                    keep <- keep[keep_index]
+                    chosenVars$set_items(data.frame(Keep = keep))
+                    svalue(chosenVars) <<- index + 1
                 }
             )
 
-            addHandlerClicked(levelUp,
-                function(h, ...) {
-                    # blockHandlers(levelUp)
-                    # blockHandlers(levelDown)
-                    i <- svalue(levelOrder, index = TRUE)
-                    if (length(i) == 0) {
-                        gmessage('Select a level, then use the arrows to shift it up/down')
-                        return()
-                    }
-                    lvls <- levelOrder$get_items()
-                    if (i == 1) return()
-                    li <- lvls[i]
-                    lvls[i] <- lvls[i - 1]
-                    lvls[i - 1] <- li
-                    levelOrder$set_items(
-                        data.frame(Levels = lvls, stringsAsFactors = TRUE)
-                    )
-                    svalue(levelOrder) <<- li
-                    # unblockHandlers(levelUp)
-                    # unblockHandlers(levelDown)
+            add_body(g_vars, fill = TRUE, expand = TRUE)
+
+            # controls
+            g_ctrls <- ggroup()
+            add_all_btn <- gbutton("Add all",
+                container = g_ctrls,
+                handler = function(h, ...) {
+                    add_vars(-1)
                 }
             )
-            addHandlerClicked(levelDown,
-                function(h, ...) {
-                    # blockHandlers(levelUp)
-                    # blockHandlers(levelDown)
-                    i <- svalue(levelOrder, index = TRUE)
-                    if (length(i) == 0) {
-                        gmessage('Select a level, then use the arrows to shift it up/down')
-                        return()
-                    }
-                    lvls <- levelOrder$get_items()
-                    if (i == length(lvls)) return()
-                    li <- lvls[i]
-                    lvls[i] <- lvls[i + 1]
-                    lvls[i + 1] <- li
-                    levelOrder$set_items(
-                        data.frame(Levels = lvls, stringsAsFactors = TRUE)
+
+            addSpring(g_ctrls)
+            glabel("Sort (alphabetically): ", container = g_ctrls)
+            sort_inc <- gimagebutton(
+                "sort-ascending",
+                size = "large_toolbar",
+                container = g_ctrls,
+                handler = function(h, ...) {
+                    keep <- chosenVars$get_items()
+                    chosenVars$set_items(
+                        data.frame(Keep = sort(keep))
                     )
-                    svalue(levelOrder) <<- li
-                    # unblockHandlers(levelUp)
-                    # unblockHandlers(levelDown)
                 }
             )
+            sort_desc <- gimagebutton(
+                "sort-descending",
+                size = "large_toolbar",
+                container = g_ctrls,
+                handler = function(h, ...) {
+                    keep <- chosenVars$get_items()
+                    chosenVars$set_items(
+                        data.frame(Keep = sort(keep, decreasing = TRUE))
+                    )
+                }
+            )
+            add_body(g_ctrls)
         },
-        reorder = function() {
-            var <- svalue(factorMenu)
-            varname <- svalue(factorName)
-            .dataset <- GUI$get_data_object()
+        add_vars = function(index) {
+            remove <- as.character(dataVars$get_items())
+            keep <- as.character(chosenVars$get_items())
 
-            if (!checkNames(varname)) return()
-            if (svalue(sortMenu, TRUE) == 1) {
-                data <- iNZightTools::reorderLevels(.dataset, var,
-                    freq = TRUE, name = varname)
+            if (index[1] == -1) {
+                keep <- c(keep, remove)
+                remove <- ""
             } else {
-                levels <- as.character(levelOrder$get_items())
-                data <- iNZightTools::reorderLevels(.dataset, var,
-                    levels, name = varname)
+                keep <- c(keep, remove[index])
+                remove <- remove[-index]
+                if (length(remove) == 0) remove <- ""
             }
-            updateData(data)
+            keep <- keep[keep != ""]
+
+            dataVars$set_items(data.frame(Remove = remove))
+            chosenVars$set_items(data.frame(Keep = keep))
+        },
+        rmv_vars = function(index) {
+            remove <- as.character(dataVars$get_items())
+            keep <- as.character(chosenVars$get_items())
+
+            if (index[1] == -1) {
+                remove <- c(remove, keep)
+                keep <- ""
+            } else {
+                remove <- c(remove, keep[index])
+                keep <- keep[-index]
+                if (length(keep) == 0) keep <- ""
+            }
+            remove <- remove[remove != ""]
+
+            dataVars$set_items(data.frame(Remove = remove))
+            chosenVars$set_items(data.frame(Keep = keep))
+        },
+        reorder_select_vars = function() {
+            vars <- as.character(chosenVars$get_items())
+            if (length(vars) == 1 && vars == "") {
+                gmessage("Add variables to the 'Keep' column on the right first.",
+                    title = "No variables selected",
+                    icon = "warning",
+                    parent = GUI$modWin
+                )
+                return()
+            }
+
+            .dataset <- GUI$get_data_object()
+            .d <- if (iNZightTools::is_survey(.dataset)) .dataset$variables else .dataset
+            if (identical(vars, colnames(.d))) {
+                gmessage("It looks like you have selected all of the variables in the same order.",
+                    title = "No change to variables",
+                    icon = "warning",
+                    parent = GUI$modWin
+                )
+                return()
+            }
+
+            newdata <- iNZightTools::selectVars(.dataset, vars)
+            GUI$new_document(data = newdata,
+                suffix = ifelse(length(vars) == ncol(.dataset), "reorder", "subset")
+            )
+
             close()
         }
     )
