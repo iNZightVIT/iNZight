@@ -889,6 +889,8 @@ iNZReorderVarsWin <- setRefClass(
     methods = list(
         initialize = function(gui) {
 
+            initFields(reordering = FALSE)
+
             ok <- callSuper(gui,
                 title = "Reorder and Select Variables",
                 width = "med",
