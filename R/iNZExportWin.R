@@ -42,7 +42,6 @@ iNZExportWin <- setRefClass(
             tbl[ii, 2:3, expand = TRUE] <- ftype
             ii <- ii + 1L
 
-
             add_body(tbl)
 
             invisible(NULL)
@@ -59,14 +58,14 @@ iNZExportWin <- setRefClass(
         export_data = function() {
             f <- svalue(file)
             if (length(f) == 0) {
-                gmessage("Please specify a file name.", parent = window)
+                gmessage("Please specify a file name.", parent = GUI$modWin)
                 return(FALSE)
             }
             if (file.exists(svalue(file))) {
                 c <- gconfirm("The file exists. Overwrite?",
                     title = "Overwrite file?",
                     icon = "warning",
-                    parent = window
+                    parent = GUI$modWin
                 )
                 if (!c) return(FALSE)
             }
@@ -95,7 +94,7 @@ iNZExportWin <- setRefClass(
                         "Failed to export data.\n\n",
                         attr(x, "condition")$message
                     ),
-                    parent = window,
+                    parent = GUI$modWin,
                     icon = "error"
                 )
                 return(FALSE)
