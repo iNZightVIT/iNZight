@@ -684,7 +684,7 @@ iNZAggregateWin <- setRefClass(
                 function(var)  {
                     x <- lapply(summaries[, 2],
                         function(smry) {
-                            if (!is.null(quantiles) && grepl("{p}", smry, fixed = TRUE)) {
+                            if (!is.null(quantiles)) {
                                 glue::glue(smry, .envir = list(var = var, p = quantiles))
                             } else {
                                 glue::glue(smry)
@@ -776,6 +776,7 @@ iNZAggregateWin <- setRefClass(
             if ("quantile" %in% summaries[,1]) {
                 quantiles <- summaries[summaries[,1] == "quantile", 3]
                 quantiles <- as.integer(strsplit(quantiles, ",")[[1]])
+                quantiles <- quantiles / 100
             }
             quantiles
         },

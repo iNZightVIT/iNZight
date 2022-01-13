@@ -86,6 +86,7 @@ Also we have added a new `update_document()` method for more modular control of 
 - fix Gtk-critcal error (#141)
 - fix tooltip for 'Refresh Plot' icon
 - fix bug in disabling of log axes in scatter plots
+- fix bug preventing Aggregate Data quantile summary from working (#397)
 
 ## iNZight 4.1.4
 
