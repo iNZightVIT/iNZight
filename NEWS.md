@@ -34,6 +34,7 @@ A major change in this release is the landing screen, with a tidied interface. W
 - add some extra space around plot toolbar in pop-out mode
 - 'Simulate P-value' checkbox removed for survey chi-square test
 - Combine categorical variables allows custom separator (#389)
+- add 'min' and 'max' options for date-time aggregation
 
 ## Structural behind-the-scenes changes
 

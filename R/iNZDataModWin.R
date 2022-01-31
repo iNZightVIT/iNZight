@@ -2284,7 +2284,7 @@ iNZAggDtWin <- setRefClass(
                 anchor = c(-1, 0))
 
             method <<- gtable(
-                list(Summary = c("Sum", "Mean", "Median")),
+                list(Summary = c("Sum", "Mean", "Median", "Min", "Max")),
                 container = left_panel
             )
             addHandlerSelectionChanged(method,
