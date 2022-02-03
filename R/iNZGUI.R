@@ -112,13 +112,18 @@ iNZGUI <- setRefClass(
             addonDir = NULL,
             show = TRUE,
             stop_loading = FALSE,
-            ...
+            ...,
+            disposer = NULL
         ) {
             "Initiates the GUI"
-            initFields(is_initialized = FALSE, disposer = function() {})
+            initFields(is_initialized = FALSE, disposer = disposer)
 
-            if (!is.null(dispose_fun) && is.function(dispose_fun))
-                disposer <<- function() dispose_fun(...)
+            if (is.null(disposer)) {
+                if (!is.null(dispose_fun) && is.function(dispose_fun))
+                    disposer <<- function() dispose_fun(...)
+                else
+                    disposer <<- function() {}
+            }
 
             win.title <- paste(
                 "iNZight (v",
@@ -1375,7 +1380,7 @@ iNZGUI <- setRefClass(
             state <- .self$getState()
             dispose(.self$win)
             if (popOut) try(grDevices::dev.off(), TRUE)
-            .self$initializeGui(dispose_fun = .self$disposer, show = FALSE)
+            .self$initializeGui(disposer = .self$disposer, show = FALSE)
             Sys.sleep(0.5)
             while (!is_initialized) {
                 Sys.sleep(0.1)

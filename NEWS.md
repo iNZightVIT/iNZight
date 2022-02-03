@@ -88,6 +88,7 @@ Also we have added a new `update_document()` method for more modular control of 
 - fix tooltip for 'Refresh Plot' icon
 - fix bug in disabling of log axes in scatter plots
 - fix bug preventing Aggregate Data quantile summary from working (#397)
+- fix bug in preventing `dispose_fun` from being called when iNZight closed after reloading
 
 ## iNZight 4.1.4
 
