@@ -624,6 +624,13 @@ iNZMenuBarWidget <- setRefClass(
                         )
                     }
                 ),
+                transition =
+                    gaction("Version 4.2 Transition Guide",
+                        icon = "file",
+                        tooltip = "",
+                        handler = function(h, ...)
+                            help_page('docs/transition-to-4.2/')
+                    ),
                 change =
                     gaction("Change history",
                         icon = "file",

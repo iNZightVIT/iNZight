@@ -1223,13 +1223,13 @@ iNZGUI <- setRefClass(
                 grid::grid.newpage()
                 grid::pushViewport(
                     grid::viewport(
-                        height = unit(0.8, "npc"),
+                        height = unit(0.9, "npc"),
                         layout = grid::grid.layout(
                             nrow = 3,
                             ncol = 1,
                             heights = unit.c(
-                                unit(0.2, "npc"),
-                                unit(2.5, "lines"),
+                                unit(0.15, "npc"),
+                                unit(2.2, "lines"),
                                 unit(1, "null")
                             )
                         )
@@ -1284,7 +1284,7 @@ iNZGUI <- setRefClass(
                         y = unit(1, "npc") - unit(3, "lines"),
                         x = 0,
                         just = c("left", "top"),
-                        gp = gpar(fontsize = 11)
+                        gp = gpar(fontsize = 9)
                     )
 
                     grid::grid.text(
@@ -1298,7 +1298,7 @@ iNZGUI <- setRefClass(
                         ),
                         y = unit(1, "npc") - unit(8, "lines"),
                         x = 0, c(just = "left", "top"),
-                        gp = gpar(fontsize = 11)
+                        gp = gpar(fontsize = 9)
                     )
 
                 } else {
