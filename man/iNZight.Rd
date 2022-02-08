@@ -13,6 +13,9 @@ iNZight(data = NULL, dispose_fun = NULL, ...)
 
 \item{...}{arguments passed to \code{dispose_fun}}
 }
+\value{
+invisibly returns the \code{iNZGUI} object
+}
 \description{
 Starts iNZight, optionally with data and a dispose function.
 For example, a script called to open iNZight can automatically

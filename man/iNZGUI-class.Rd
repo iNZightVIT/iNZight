@@ -33,7 +33,7 @@ Main class that builds the iNZight GUI
 
 \item{\code{dataViewWidget}}{a widget that displays the data to the user}
 
-\item{\code{viewSwitcherWidget}}{the widget which lets user switch between data and variable view}
+\item{\code{dataToolbarWidget}}{the widget which lets user switch between data and variable view}
 
 \item{\code{dataNameWidget}}{displays the name of the current dataset, and allows users to switch between datasets}
 
@@ -119,6 +119,8 @@ Main class that builds the iNZight GUI
 
 \item{\code{initializeDataNameWidget()}}{Initializes the data name widget}
 
+\item{\code{initializeDataToolbar(dataThreshold)}}{Initializes the data toolbar widget}
+
 \item{\code{initializeDataView(dataThreshold)}}{Initializes the data view widget}
 
 \item{\code{initializeGui(
@@ -126,6 +128,7 @@ Main class that builds the iNZight GUI
   dispose_fun = NULL,
   addonDir = NULL,
   show = TRUE,
+  stop_loading = FALSE,
   ...
 )}}{Initiates the GUI}
 
@@ -140,8 +143,6 @@ Main class that builds the iNZight GUI
 \item{\code{initializePlotWidget()}}{Initializes the plot panel widget}
 
 \item{\code{initializeSummaryBtns()}}{Initializes the Get Summary and Get Inference buttons}
-
-\item{\code{initializeViewSwitcher(dataThreshold)}}{Initializes the view switcher widget}
 
 \item{\code{loadState(file, .alert = TRUE)}}{Loads the state from a file called `file`}
 
@@ -163,7 +164,7 @@ Main class that builds the iNZight GUI
 
 \item{\code{saveState(file)}}{Saves the state of the GUI in `file`}
 
-\item{\code{set_visible()}}{Makes the iNZight window visible, and updates the plot}
+\item{\code{set_visible(visible = TRUE)}}{Makes the iNZight window visible, and updates the plot}
 
 \item{\code{setDocument(document, reset = FALSE)}}{Sets the current document}
 

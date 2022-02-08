@@ -6,7 +6,7 @@
 #' @param data a data frame
 #' @param dispose_fun called when the iNZight GUI is closed
 #' @param ... arguments passed to `dispose_fun`
-#' @return NULL
+#' @return invisibly returns the `iNZGUI` object
 #' @author Marco Kuper, Tom Elliott
 #' @md
 #' @export
@@ -18,5 +18,8 @@
 #' }
 iNZight <- function(data = NULL, dispose_fun = NULL, ...) {
     gui <- iNZGUI$new()
+    if (!is.null(data))
+        attr(data, "name") <- deparse(substitute(data))
     gui$initializeGui(data, dispose_fun, ...)
+    invisible(gui)
 }

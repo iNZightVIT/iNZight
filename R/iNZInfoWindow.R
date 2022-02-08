@@ -14,7 +14,16 @@ iNZInfoWindow <- setRefClass(
         code_font = "list",
         original_code = "character",
         store_btn = "ANY", run_btn = "ANY", reset_btn = "ANY",
-        font_size = "numeric"
+        font_size = "numeric",
+        # privacy control window
+        suppress = "ANY",
+        secondarySuppression = "ANY",
+        round = "ANY",
+        roundVal = "ANY",
+        suppressMeans = "ANY",
+        suppressMedian = "ANY",
+        suppressQuartiles = "ANY",
+        suppressRse = "ANY"
     ),
     methods = list(
         initialize = function(gui, controls = c("bottom", "top"),
@@ -119,8 +128,10 @@ iNZInfoWindow <- setRefClass(
             assign(dataname, GUI$getActiveData(), envir = env)
 
             if (!is.null(curMod$dataDesign)) {
+                designname <<- curMod$dataDesignName
                 curSet$data <<- NULL
-                curSet$design <<- as.name(".design")
+                curSet$design <<- as.name(designname)
+                assign(designname, curMod$createSurveyObject(), envir = env)
                 env$.design <<- curMod$createSurveyObject()
             }
         },
@@ -132,8 +143,14 @@ iNZInfoWindow <- setRefClass(
                 svalue(code_box) != ""
         },
         set_output = function(out) {
-            svalue(info_text) <<- paste(out, collapse = "\n")
-            font(info_text) <<- info_font
+            svalue(info_text) <<- ""
+            gWidgets2::insert(
+                info_text,
+                paste(out, collapse = "\n"),
+                where = "beginning",
+                font.attr = info_font
+            )
+            # font(info_text) <<- info_font
         },
         store_code = function() {
             GUI$rhistory$add(svalue(code_box))
@@ -156,10 +173,32 @@ iNZInfoWindow <- setRefClass(
 
             tryCatch(
                 {
-                    output <- eval(
-                        parse(text = svalue(code_box)),
-                        envir = GUI$code_env
-                    )
+                    if (grepl("skimr", svalue(code_box))) {
+                        olocale <- Sys.getlocale("LC_CTYPE")
+                        owidth <- getOption("width")
+                        if (GUI$OS == "windows") {
+                            Sys.setlocale("LC_CTYPE", "Chinese")
+                        }
+                        options(width = 200)
+                        on.exit({
+                            Sys.setlocale("LC_CTYPE", olocale)
+                            options(width = owidth)
+                        })
+                    }
+                    output <-
+                        if (grepl("skimr", svalue(code_box))) {
+                            capture.output(
+                                eval(
+                                    parse(text = svalue(code_box)),
+                                    envir = GUI$code_env
+                                )
+                            )
+                        } else {
+                            eval(
+                                parse(text = svalue(code_box)),
+                                envir = GUI$code_env
+                            )
+                        }
                 },
                 error = function(e) {
                     gmessage(
@@ -173,7 +212,8 @@ iNZInfoWindow <- setRefClass(
 
             if (!exists("output")) return()
 
-            if (!inherits(output, "inzight.plotsummary")) {
+
+            if (!inherits(output, "inzight.plotsummary") && !grepl("skimr", svalue(code_box))) {
                 gmessage(
                     "The code you entered did not produce the appropriate output",
                     title = "Invalid output",
@@ -195,6 +235,71 @@ iNZInfoWindow <- setRefClass(
     )
 )
 
+## Dataset info
+iNZDataSummary <- setRefClass(
+    "iNZDataSummary",
+    contains = "iNZInfoWindow",
+    fields = list(),
+    methods = list(
+        initialize = function(gui) {
+            if (is.null(gui$getActiveData()) || all(dim(gui$getActiveData()) == 1L)) return()
+            callSuper(gui, controls = "top", name = "Dataset Summary")
+            setup_panel()
+            visible(win) <<- TRUE
+        },
+        gen_call = function() {
+            "Generate summary call"
+            d <- GUI$get_data_object()
+            sprintf("%sskimr::skim(%s)",
+                ifelse(iNZightTools::is_survey(d),
+                    sprintf("print(%s, design.summaries = TRUE)\n", designname),
+                    ""
+                ),
+                dataname
+            )
+        },
+        update_summary = function() {
+            # the following is required to ensure the output graphs look OK,
+            # and that the rows are all on one line
+            olocale <- Sys.getlocale("LC_CTYPE")
+            owidth <- getOption("width")
+            if (GUI$OS == "windows") {
+                Sys.setlocale("LC_CTYPE", "Chinese")
+            }
+            options(width = 200)
+            on.exit({
+                Sys.setlocale("LC_CTYPE", olocale)
+                options(width = owidth)
+            })
+
+            smry_call <- gen_call()
+            set_input(smry_call)
+
+            smry_call <- strsplit(smry_call, "\n", fixed = TRUE)[[1]]
+
+            smry <- try(
+                lapply(smry_call,
+                    function(c) capture.output(eval(parse(text = c), env))
+                ),
+                silent = TRUE
+            )
+            if (length(smry) > 1L) {
+                smry[-length(smry)] <- lapply(smry[-length(smry)],
+                    function(s) {
+                        c(s, "", paste(rep("-", 100), collapse = ""), "", "")
+                    }
+                )
+            }
+            smry <- do.call(c, smry)
+            if (inherits(smry, "try-error")) smry <- "Unable to generate summary."
+            set_output(smry)
+        },
+        setup_panel = function() {
+            update_summary()
+        }
+    )
+)
+
 
 ## A summary window
 iNZGetSummary <- setRefClass(
@@ -204,10 +309,12 @@ iNZGetSummary <- setRefClass(
         predBtn = "ANY",
         residBtn = "ANY",
         trend = "list",
-        trend_menu = "ANY"
+        trend_menu = "ANY",
+        tableDir = "ANY"
     ),
     methods = list(
         initialize = function(gui) {
+            if (is.null(gui$getActiveDoc()$getSettings()$x)) return()
             callSuper(gui, controls = "bottom", name = "Summary")
 
             ## Control panel
@@ -474,6 +581,26 @@ iNZGetSummary <- setRefClass(
             xnum <- is_num(xvar)
             ynum <- is_num(yvar)
 
+            if (GUI$plotType == "bar") {
+                lbl <- glabel("Table direction", container = ctrl_panel)
+                tableDir <<- gradio(c("Horizontal", "Vertical"),
+                    container = ctrl_panel,
+                    selected =
+                        if (is.null(curSet$table.direction)) 1L
+                        else switch(curSet$table.direction,
+                            horizontal = 1L, vertical = 2L),
+                    horizontal = TRUE,
+                    handler = function(h, ...) {
+                        curSet$table.direction <<- tolower(svalue(h$obj))
+                        GUI$getActiveDoc()$setSettings(
+                            list(table.direction = tolower(svalue(h$obj)))
+                        )
+                        update_summary()
+                    }
+                )
+            }
+
+
             # show predicted/residual buttons?
             if (!is.null(yvar) && (xnum || ynum)) {
                 predBtn <<- gbutton("Store fitted values",
@@ -524,6 +651,366 @@ iNZGetSummary <- setRefClass(
                 addPopupMenu(trend_btn, trend_menu)
             }
 
+            addSpring(ctrl_panel)
+
+            settings_button <- gbutton(
+                "Output settings",
+                container = ctrl_panel,
+                handler = function(h, ...) editOutputSettings()
+            )
+            settings_button$set_icon("preferences")
+            tooltip(settings_button) <- "Edit settings for summary output"
+
+            privacy_button <- gbutton(
+                "Confidentiality Rules",
+                container = ctrl_panel,
+                handler = function(h, ...) editPrivacyRules()
+            )
+            icon <- RGtk2::gtkImage(
+                file = system.file("images/icon-privacy.png",
+                    package = "iNZight"
+                )
+            )
+            privacy_button$widget$setImage(icon)
+            privacy_button$widget$image$show()
+            tooltip(privacy_button) <- "Set or change privacy and confidentiality output controls"
+
+            update_summary()
+        },
+        editOutputSettings = function() {
+            w <- gwindow(
+                parent = win,
+                width = 400,
+                height = 150,
+                title = "Output settings"
+            )
+
+            g <- gvbox(container = w)
+            g$set_borderwidth(5)
+
+            lbl <- glabel(
+                paste(sep = "\n",
+                    "NOTE: work is still in progress on implementing these settings",
+                    "in the output, so some may not display."
+                ),
+                conatiner = g,
+                expand = TRUE
+            )
+            font(lbl) <- list(weight = "bold", size = 8L)
+
+            tbl <- glayout(container = g)
+            ii <- 1L
+
+            # TODO: table direction goes here
+
+            ## -- rounding
+            round_lbl <- glabel("Round values to ...")
+            tbl[ii, 1L, anchor = c(-1, 0), expand = TRUE] <- round_lbl
+            ii <- ii + 1L
+
+            g_round <- ggroup()
+            tbl[ii, 1L, expand = TRUE] <- g_round
+
+            signif_value <- gspinbutton(1, 20,
+                value = curSet$signif,
+                container = g_round,
+                expand = TRUE,
+                handler = function(h, ...) {
+                    curSet$signif <<- svalue(h$obj)
+                    GUI$getActiveDoc()$setSettings(list(signif = svalue(h$obj)))
+                    update_summary()
+                }
+            )
+            round_value <- gspinbutton(0, 5,
+                value = ifelse(is.na(curSet$round), 2L, curSet$round),
+                container = g_round,
+                expand = TRUE,
+                handler = function(h, ...) {
+                    curSet$round <<- svalue(h$obj)
+                    GUI$getActiveDoc()$setSettings(list(round = svalue(h$obj)))
+                    update_summary()
+                }
+            )
+            visible(round_value) <- is.na(curSet$round)
+            visible(signif_value) <- !visible(round_value)
+
+            round_toggle <- gradio(
+                c("significant digits", "decimal places"),
+                horizontal = TRUE,
+                selected = ifelse(is.na(curSet$round), 1L, 2L),
+                handler = function(h, ...) {
+                    # TODO: change visibility of round/signif value spinners
+
+                    curSet$signif <<- svalue(signif_value)
+                    if (h$obj$get_index() == 1L) {
+                        curSet$round <<- NA
+                    } else {
+                        curSet$round <<- svalue(round_value)
+                    }
+                    visible(round_value) <- is.na(curSet$round)
+                    visible(signif_value) <- !visible(round_value)
+                    GUI$getActiveDoc()$setSettings(
+                        list(
+                            signif = curSet$signif,
+                            round = curSet$round
+                        )
+                    )
+                    update_summary()
+                }
+            )
+            tbl[ii, 2:3, expand = TRUE] <- round_toggle
+            ii <- ii + 1L
+
+            ## -- rounding percentages
+            roundpc_lbl <- glabel("Round percentages to ")
+            tbl[ii, 1L, anchor = c(-1, 0), expand = TRUE] <- roundpc_lbl
+
+            roundpc_value <- gspinbutton(0, 4,
+                value = curSet$round_percent,
+                handler = function(h, ...) {
+                    curSet$round_percent <<- svalue(h$obj)
+                    GUI$getActiveDoc()$setSettings(list(round_percent = svalue(h$obj)))
+                    update_summary()
+                }
+            )
+            tbl[ii, 2L, expand = TRUE] <- roundpc_value
+            tbl[ii, 3L, anchor = c(-1, 0), expand = TRUE] <- glabel(" decimal places")
+            ii <- ii + 1L
+
+            addSpring(g)
+            button_g <- ggroup(container = g)
+            addSpring(button_g)
+            close_button <- gbutton("Close",
+                container = button_g,
+                handler = function(h, ...) gWidgets2::dispose(w)
+            )
+        },
+        editPrivacyRules = function() {
+            # TODO: This should only display relevant options for the current output type
+
+            w <- gwindow(
+                parent = win,
+                width = 400,
+                height = 150,
+                title = "Privacy and Confidentialisation Options"
+            )
+
+            pc <- curSet$privacy_controls
+            if (is.null(pc)) pc <- list()
+
+            g <- gvbox(container = w)
+            g$set_borderwidth(5)
+
+            tbl <- glayout(container = g)
+            ii <- 1L
+
+            ## --- suppression of small counts
+            suppress <<- gspinbutton(0, 10000, 1,
+                value = if (is.null(pc$suppression)) 10L else pc$suppression,
+                handler = function(h, ...) {
+                    setPrivacyControls()
+                }
+            )
+            enabled(suppress) <<- !is.null(pc$suppression)
+            suppressChk <- gcheckbox("Suppress counts smaller than",
+                checked = !is.null(pc$suppression),
+                handler = function(h, ...) {
+                    enabled(suppress) <<- svalue(h$obj)
+                    visible(secondarySuppression) <<- svalue(h$obj)
+                    setPrivacyControls()
+                }
+            )
+
+            tbl[ii, 1L, anchor = c(1, 0), expand = TRUE] <- suppressChk
+            tbl[ii, 2:3, fill = TRUE] <- suppress
+            ii <- ii + 1L
+
+            secondarySuppression <<- gcheckbox("Secondary suppression (row/column totals)",
+                handler = function(h, ...) setPrivacyControls()
+            )
+            tbl[ii, 1:3, anchor = c(1, 0)] <- secondarySuppression
+            ii <- ii + 1L
+            visible(secondarySuppression) <<- !is.null(pc$rounding)
+
+            ## --- rounding
+            round <<- gradio(
+                c("RR3", "GRR", "fixed"),
+                horizontal = TRUE,
+                value = if (is.null(pc$rounding)) "RR3" else pc$rounding,
+                handler = function(h, ...) {
+                    visible(roundVal) <<- visible(roundValLbl) <-
+                        svalue(h$obj) == "fixed"
+                    setPrivacyControls()
+                }
+            )
+            enabled(round) <<- !is.null(pc$rounding)
+            roundChk <- gcheckbox("Round counts using",
+                checked = !is.null(pc$rounding),
+                handler = function(h, ...) {
+                    enabled(round) <<- svalue(h$obj)
+                    visible(roundVal) <<- visible(roundValLbl) <-
+                        svalue(h$obj) && svalue(round) == "fixed"
+                    setPrivacyControls()
+                }
+            )
+
+            tbl[ii, 1L, anchor = c(1, 0), expand = TRUE] <- roundChk
+            tbl[ii, 2:3, fill = TRUE] <- round
+            ii <- ii + 1L
+
+            roundValLbl <- glabel("Round to base ")
+            roundVal <<- gspinbutton(0, 100000, by = 1, value = 100,
+                handler = function(h, ...) {
+                    setPrivacyControls()
+                }
+            )
+            tbl[ii, 1L, anchor = c(1, 0)] <- roundValLbl
+            tbl[ii, 2:3, fill = TRUE] <- roundVal
+            ii <- ii + 1L
+            visible(roundVal) <<- visible(roundValLbl) <-
+                !is.null(pc$rounding) && pc$rounding == "fixed"
+
+            ## --- suppression of means based on small counts
+            suppressMeans <<- gspinbutton(0, 10000, 1,
+                value = if (is.null(pc$suppression_magnitude)) 10L else pc$suppression_magnitude,
+                handler = function(h, ...) {
+                    setPrivacyControls()
+                }
+            )
+            enabled(suppressMeans) <<- !is.null(pc$suppression_magnitude)
+            suppressMeansChk <- gcheckbox("Suppress means and totals based on counts smaller than",
+                checked = !is.null(pc$suppression_magnitude),
+                handler = function(h, ...) {
+                    enabled(suppressMeans) <<- svalue(h$obj)
+                    setPrivacyControls()
+                }
+            )
+
+            tbl[ii, 1L, anchor = c(1, 0), expand = TRUE] <- suppressMeansChk
+            tbl[ii, 2:3, fill = TRUE] <- suppressMeans
+            ii <- ii + 1L
+
+            ## --- suppression of quantiles
+            suppressMedian <<- gspinbutton(0, 10000,
+                value = if (is.null(pc$suppression_quantiles)) 10L else {
+                    pc$suppression_quantiles$n[pc$suppression_quantiles$p == 0.5]
+                },
+                handler = function(h, ...) setPrivacyControls()
+            )
+            suppressQuartiles <<- gspinbutton(0, 10000,
+                value = if (is.null(pc$suppression_quantiles)) 20L else {
+                    pc$suppression_quantiles$n[pc$suppression_quantiles$p == 0.25]
+                },
+                handler = function(h, ...) setPrivacyControls()
+            )
+            enabled(suppressQuartiles) <<- enabled(suppressMedian) <<-
+                !is.null(pc$supression_quantiles)
+            suppressQuantilesChk <- gcheckbox("Suppress quantiles based on counts smaller than threshold",
+                checked = !is.null(pc$supression_quantiles),
+                handler = function(h, ...) {
+                    enabled(suppressQuartiles) <<- enabled(suppressMedian) <<-
+                        svalue(h$obj)
+                    setPrivacyControls()
+                }
+            )
+
+            tbl[ii, 1:2, anchor = c(1, 0), expand = TRUE] <- suppressQuantilesChk
+            ii <- ii + 1L
+
+            tbl[ii, 2L, anchor = c(1, 0), expand = TRUE] <- glabel("Median :")
+            tbl[ii, 3L, expand = TRUE, fill = TRUE] <- suppressMedian
+            ii <- ii + 1L
+
+            tbl[ii, 2L, anchor = c(1, 0), expand = TRUE] <- glabel("25% and 75% quartiles :")
+            tbl[ii, 3L, expand = TRUE, fill = TRUE] <- suppressQuartiles
+            ii <- ii + 1L
+
+
+            suppressRseChk <- gcheckbox("Suppress/identify values with RSE greater than ...",
+                checked = !is.null(pc$check_rse),
+                handler = function(h, ...) {
+                    enabled(suppressRse) <<- svalue(h$obj)
+                    setPrivacyControls()
+                }
+            )
+            tbl[ii, 1L, anchor = c(1, 0), expand = TRUE] <- suppressRseChk
+            ii <- ii + 1L
+
+
+            rseEg <- glabel(
+                paste(sep = "\n",
+                    "Example: entering '50=*,80=**,100=S' will mark values with RSE >= 50 with *,",
+                    "RSE >= 80 with **, and suppress values with RSE >= 100."
+                )
+            )
+            font(rseEg) <- list(size = 8L)
+            tbl[ii, 1L, expand = TRUE] <- rseEg
+
+            rseText <- ""
+            if (!is.null(pc$check_rse)) {
+                rseText <- paste0(pc$check_rse$cut, "=", pc$check_rse$output, collapse = ", ")
+            }
+            suppressRse <<- gedit(rseText,
+                handler = function(h, ...) setPrivacyControls()
+            )
+            enabled(suppressRse) <<- !is.null(pc$check_rse)
+            tbl[ii, 2:3, expand = TRUE, fill = TRUE] <- suppressRse
+            ii <- ii + 1L
+
+            addSpring(g)
+            button_g <- ggroup(container = g)
+            addSpring(button_g)
+            close_button <- gbutton("Close",
+                handler = function(h, ...) gWidgets2::dispose(w)
+            )
+            apply_button <- gbutton("Apply",
+                handler = function(h, ...) setPrivacyControls(TRUE)
+            )
+
+            add(button_g, apply_button)
+            add(button_g, close_button)
+        },
+        setPrivacyControls = function(update = FALSE) {
+            if (!update) return()
+
+            pc <- curSet$privacy_controls
+            pc$suppression <- if (enabled(suppress)) svalue(suppress) else NULL
+            pc$secondary_suppression <-
+                if (enabled(secondarySuppression)) svalue(secondarySuppression) else NULL
+            pc$rounding <- if (enabled(round)) {
+                if (svalue(round) == "fixed") svalue(roundVal) else svalue(round)
+            } else NULL
+
+            pc$suppression_magnitude <- if (enabled(suppressMeans)) svalue(suppressMeans) else NULL
+            pc$suppression_quantiles <- if (enabled(suppressMedian)) {
+                list(
+                    p = c(0.25, 0.5, 0.75),
+                    n = c(
+                        svalue(suppressQuartiles),
+                        svalue(suppressMedian),
+                        svalue(suppressQuartiles)
+                    )
+                )
+            } else NULL
+
+            pc$check_rse <- if (enabled(suppressRse)) {
+                x <- strsplit(svalue(suppressRse), ",")[[1]]
+                x <- sapply(x, strsplit, split = "=")
+                x <- as.data.frame(do.call(rbind, x))
+                x[[1]] <- as.integer(x[[1]])
+                x[[2]] <- ifelse(x[[2]] == "S", "suppress", x[[2]])
+                colnames(x) <- c("cut", "output")
+                as.list(x)
+            } else NULL
+
+            if (length(pc) == 0L || all(sapply(pc, is.null))) pc <- NULL
+
+            curSet$privacy_controls <<- pc
+            print(pc)
+
+            GUI$getActiveDoc()$setSettings(
+                list(privacy_controls = pc)
+            )
             update_summary()
         }
     )
@@ -545,10 +1032,12 @@ iNZGetInference <- setRefClass(
         g_hypctrls = "ANY",
         g_hyptbl = "ANY",
         trend_choice = "list",
-        epi_chk = "ANY"
+        epi_chk = "ANY",
+        ci_slider = "ANY"
     ),
     methods = list(
         initialize = function(gui) {
+            if (is.null(gui$getActiveDoc()$getSettings()$x)) return()
             callSuper(gui, controls = "top", name = "Inference")
 
             # update_inference()
@@ -581,6 +1070,13 @@ iNZGetInference <- setRefClass(
                 font(info_text) <<- info_font
                 Sys.sleep(0.1)
             }
+            GUI$getActiveDoc()$setSettings(
+                list(
+                    bs.inference = curSet$bs.inference,
+                    trend = curSet$trend,
+                    ci.width = curSet$ci.width
+                )
+            )
             smry_call <- gen_call()
             set_input(mend_call(smry_call, GUI))
 
@@ -644,14 +1140,18 @@ iNZGetInference <- setRefClass(
                 )
                 font(lbl) <- list(weight = "bold")
 
-                inf_method <<- gradio(c("Normal theory", "Bootstrap"),
-                    horizontal = FALSE,
-                    container = g_method,
-                    handler = function(h, ...) {
-                        curSet$bs.inference <<- svalue(h$obj, index = TRUE) == 2L
-                        update_inference()
-                    }
-                )
+                if (getOption("inzight.disable.bootstraps", FALSE)) {
+                    inf_method <<- glabel("Normal theory", container = g_method, anchor = c(-1, 0))
+                } else {
+                    inf_method <<- gradio(c("Normal theory", "Bootstrap"),
+                        horizontal = FALSE,
+                        container = g_method,
+                        handler = function(h, ...) {
+                            curSet$bs.inference <<- svalue(h$obj, index = TRUE) == 2L
+                            update_inference()
+                        }
+                    )
+                }
             }
 
             # hypothesis testing (all except regression, for now)
@@ -790,7 +1290,7 @@ iNZGetInference <- setRefClass(
                     size(ctrl_panel) <<- c(-1, 140)
                 }
 
-                if ("chi2" %in% hyp_tests) {
+                if ("chi2" %in% hyp_tests && !is_survey) {
                     hyp_simulatep <<- gcheckbox("Simulate p-value",
                         checked = FALSE,
                         container = g_hypctrls,
@@ -855,6 +1355,51 @@ iNZGetInference <- setRefClass(
                 )
             }
 
+            adv_opts <- list(
+                ci_level = TRUE
+            )
+
+            if (any(unlist(adv_opts))) {
+                ## CI width and other controls:
+                addSpring(ctrl_panel)
+                add(ctrl_panel, gseparator())
+
+                g_advanced <- gvbox(container = ctrl_panel)
+                lbl <- glabel("Additional options",
+                    container = g_advanced,
+                    anchor = c(-1, 0),
+                    fill = TRUE
+                )
+                font(lbl) <- list(weight = "bold")
+
+                adv_tbl <- glayout(container = g_advanced)
+                ii <- 1L
+
+                if (adv_opts$ci_level) {
+                    ci_slider <<- gspinbutton(
+                        10, 99, 1,
+                        value = curSet$ci.width * 100,
+                        handler = function(h, ...) {
+                            curSet$ci.width <<- svalue(ci_slider) / 100
+                            update_inference()
+                        }
+                    )
+                    size(ci_slider) <<- c(100, -1)
+                    adv_tbl[ii, 1L, anchor = c(1, 0), fill = TRUE] <- "Confidence level (%):"
+                    adv_tbl[ii, 2:3, expand = TRUE] <- ci_slider
+                    ii <- ii + 1L
+
+                    addSpring(g_advanced)
+                    lbl <- glabel(
+                        "You may have to press Enter if you type values in manually.",
+                        container = g_advanced,
+                        anchor = c(-1, 0),
+                        fill = TRUE
+                    )
+                    font(lbl) <- list(size = 8)
+                }
+            }
+
             update_inference()
         },
         handle_test = function() {
@@ -912,8 +1457,6 @@ iNZGetInference <- setRefClass(
         handle_trend = function() {
             chosen <- sapply(trend_choice, function(x) svalue(x))
             curSet$trend <<- if (any(chosen)) names(trend_choice)[chosen] else NULL
-            # update the plot, too...
-            GUI$getActiveDoc()$setSettings(list(trend = curSet$trend))
             update_inference()
         }
     )

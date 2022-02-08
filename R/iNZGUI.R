@@ -13,13 +13,11 @@
 #' @field gp2 container within middle group
 #' @field popOut logical, indicates if the graphics window will be embedded or separate (TRUE)
 #' @field dataViewWidget a widget that displays the data to the user
-#' @field viewSwitcherWidget the widget which lets user switch between data and variable view
+#' @field dataToolbarWidget the widget which lets user switch between data and variable view
 #' @field dataNameWidget displays the name of the current dataset, and allows users to switch between datasets
 #' @field plotWidget the widget containing the main plot window
 #' @field plotToolbar the widget in the bottom-right containing plot control buttons
 #' @field ctrlWidget the drop-down boxes allowing users to choose variables
-#' @field sumBtn the Get Summary button
-#' @field infBtn the Get Inference button
 #' @field modWin a container for the current module window
 #' @field curPlot the current plot object is returned and stored in this field
 #' @field plotType the type of the current plot
@@ -65,7 +63,7 @@ iNZGUI <- setRefClass(
             dataViewWidget = "ANY",
             ## the widget handling the switching between the
             ## 2 data views
-            viewSwitcherWidget = "ANY",
+            dataToolbarWidget = "ANY",
             dataNameWidget = "ANY",
             ## widget that handles the plot notebook
             plotWidget = "ANY",
@@ -73,9 +71,7 @@ iNZGUI <- setRefClass(
             ## widget that handles the drag/drop buttons
             ## under the dataViewWidget
             ctrlWidget = "ANY",
-            ## Save the summary and inference buttons to allow disabling
-            sumBtn = "ANY",
-            infBtn = "ANY",
+            subsetFilter = "ANY",
             ## every window that modifies plot/data
             ## this way we can ensure to only have one
             ## open at the time
@@ -98,7 +94,8 @@ iNZGUI <- setRefClass(
             ## rather than passing around the full object.
             code_env = "ANY",
             code_panel = "ANY",
-            is_initialized = "logical"
+            is_initialized = "logical",
+            stop_loading = "logical"
         ),
         prototype = list(
             activeDoc = 1,
@@ -114,15 +111,19 @@ iNZGUI <- setRefClass(
             dispose_fun = NULL,
             addonDir = NULL,
             show = TRUE,
-            ...
+            stop_loading = FALSE,
+            ...,
+            disposer = NULL
         ) {
             "Initiates the GUI"
-            initFields(is_initialized = FALSE, disposer = function() {})
+            initFields(is_initialized = FALSE, disposer = disposer)
 
-            iNZDocuments <<- list(iNZDocument$new(data = data))
-
-            if (!is.null(dispose_fun) && is.function(dispose_fun))
-                disposer <<- function() dispose_fun(...)
+            if (is.null(disposer)) {
+                if (!is.null(dispose_fun) && is.function(dispose_fun))
+                    disposer <<- function() dispose_fun(...)
+                else
+                    disposer <<- function() {}
+            }
 
             win.title <- paste(
                 "iNZight (v",
@@ -156,8 +157,12 @@ iNZGUI <- setRefClass(
                 height = preferences$window.size[2]
             )
 
+            if (!is.null(data) && is.null(attr(data, "name", exact = TRUE)))
+                attr(data, "name") <- deparse(substitute(data))
+            iNZDocuments <<- list(iNZDocument$new(data = data))
+
             ## Check for updates ... need to use try incase it fails (no connection etc)
-            if (preferences$check.updates) {
+            if (preferences$check.updates && !getOption("inzight.lock.packages", FALSE)) {
                 oldpkg <- try(
                     old.packages(
                         repos = "https://r.docker.stat.auckland.ac.nz"
@@ -197,20 +202,28 @@ iNZGUI <- setRefClass(
             dataThreshold <- 200000
             initializeDataView(dataThreshold)
 
-            ## set up buttons to switch between data/var view
-            add(gp1, .self$initializeViewSwitcher(dataThreshold)$viewGroup)
+            ## What I want this to do is essentially ...
+            # 1. layout all the things
+            # 2. display "load data" and other options if no data is loaded
+            # 3. display the dataset + controls if it is
+            # -- so, one single 'DATA' widgets?
 
             ## display the name of the data set
             add(gp1, .self$initializeDataNameWidget()$widget)
 
+            gtb <- ggroup(container = gp1)
+            # addSpace(gtb, 5)
+            ## set up buttons to switch between data/var view
+            add(gtb, .self$initializeDataToolbar(dataThreshold)$viewGroup)
+            addSpring(gtb)
+            ## column switcher
+            add(gtb,.self$dataViewWidget$colPageGp)
+
             ## display the data
-            add(gp1, dataViewWidget$dataGp, expand = TRUE)
+            add(gp1, dataViewWidget$widget, expand = TRUE)
 
             ## set up the drag and drop fields
             add(gp1, initializeControlWidget()$ctrlGp, expand = FALSE)
-
-            ## set up the summary buttongs
-            add(gp1, initializeSummaryBtns())
 
             ## set up widgets in the right group
             grpRight <- ggroup(horizontal = popOut,
@@ -228,13 +241,16 @@ iNZGUI <- setRefClass(
             )
             size(plotToolbar) <<- if (popOut) c(-1, -1) else c(-1, 45)
             initializePlotToolbar(plotToolbar)
+            if (popOut) {
+                addSpace(grpRight, 10)
+            }
 
             ## code panel for latest R function call
             code_panel <<- iNZCodePanel$new(.self)
             if (preferences$dev.features && preferences$show.code)
                 add(gtop, code_panel$panel, fill = TRUE)
 
-            visible(win) <<- show
+            set_visible(show)
 
             ## ensures that all plot control btns are visible on startup
             #svalue(g) <- 0.375
@@ -242,8 +258,29 @@ iNZGUI <- setRefClass(
             ## to ensure the correct device nr
             if (popOut)
                 iNZightTools::newdevice()
-            else
-                plotWidget$addPlot()
+            else {
+                tryCatch(plotWidget$addPlot(),
+                    error = function(e) {
+                        gmessage(
+                            "Unable to load built-in graphics device. iNZight will try reloading in dual-window mode.\n\nClick 'close' to continue.",
+                            title = "Unable to load graphics device",
+                            icon = "error"
+                        )
+
+                        # change mode
+                        preferences$popout <<- TRUE
+                        savePreferences()
+
+                        # reload (and return from initisalize())
+                        reload()
+                        stop_loading <<- TRUE
+                    }
+                )
+                if (stop_loading) {
+                    stop_loading <<- FALSE
+                    return()
+                }
+            }
 
             ## draw the iNZight splash screen
             plotSplashScreen()
@@ -275,10 +312,10 @@ iNZGUI <- setRefClass(
             )
         },
         ## set up buttons to switch between data and variable view
-        initializeViewSwitcher = function(dataThreshold) {
-            "Initializes the view switcher widget"
-            viewSwitcherWidget <<- iNZViewSwitcher$new(.self, dataThreshold)
-            .self$viewSwitcherWidget
+        initializeDataToolbar = function(dataThreshold) {
+            "Initializes the data toolbar widget"
+            dataToolbarWidget <<- iNZDataToolbar$new(.self, dataThreshold)
+            .self$dataToolbarWidget
         },
         ## set up the display to show the name of the data set
         initializeDataNameWidget = function() {
@@ -316,14 +353,14 @@ iNZGUI <- setRefClass(
             addActDocObs(
                 function() {
                     dataViewWidget$updateWidget()
-                    viewSwitcherWidget$updateWidget()
+                    dataToolbarWidget$updateWidget()
                 }
             )
             ## if the dataSet changes, update the variable View
             getActiveDoc()$addDataObserver(
                 function() {
                     dataViewWidget$updateWidget()
-                    viewSwitcherWidget$updateWidget()
+                    dataToolbarWidget$updateWidget()
                     getActiveDoc()$updateSettings()
                 }
             )
@@ -353,27 +390,6 @@ iNZGUI <- setRefClass(
 
             .self$ctrlWidget
         },
-        ## set up the summary and inference buttons under the
-        ## drag and drop fields
-        initializeSummaryBtns = function() {
-            "Initializes the Get Summary and Get Inference buttons"
-            sumGrp <- ggroup()
-            sumBtn <<- gbutton(
-                "Get Summary",
-                handler = function(h, ...) iNZGetSummary$new(.self)
-            )
-            infBtn <<- gbutton(
-                "Get Inference",
-                handler = function(h, ...) iNZGetInference$new(.self)
-            )
-            font(sumBtn) <<-
-                list(weight = "bold", family = "sans", color = "navy")
-            font(infBtn) <<-
-                list(weight = "bold", family = "sans", color = "navy")
-            add(sumGrp, sumBtn, expand = TRUE)
-            add(sumGrp, infBtn, expand = TRUE)
-            sumGrp
-        },
         ## set up the widget with the plot notebook
         initializePlotWidget = function() {
             "Initializes the plot panel widget"
@@ -399,6 +415,14 @@ iNZGUI <- setRefClass(
                     try(dev.off(), silent = TRUE)
                     disposer()
                     FALSE
+                }
+            )
+            addHandlerDestroy(win,
+                function(h, ...) {
+                    # clean up GDF in dataViewWidget
+                    .self$dataViewWidget$dfView$remove_child(
+                        .self$dataViewWidget$dfWidget
+                    )
                 }
             )
         },
@@ -655,13 +679,14 @@ iNZGUI <- setRefClass(
                 ctrlWidget$resetWidget()
                 ## add a iNZDocument to the end of the doc list
                 iNZDocuments <<- c(iNZDocuments, list(document))
+
+                ## clean up any 'empty' datasets ..
+                nonempty_docs <- sapply(iNZDocuments,
+                    function(d)
+                        !all(dim(d$dataModel$dataSet) == 1)
+                )
+                iNZDocuments <<- iNZDocuments[nonempty_docs]
             }
-            ## clean up any 'empty' datasets ..
-            nonempty_docs <- sapply(iNZDocuments,
-                function(d)
-                    !all(dim(d$dataModel$dataSet) == 1)
-            )
-            iNZDocuments <<- iNZDocuments[nonempty_docs]
 
             ## set the active document to the one we added
             activeDoc <<- length(iNZDocuments)
@@ -671,6 +696,7 @@ iNZGUI <- setRefClass(
             getActiveDoc()$addDataObserver(
                 function() {
                     dataViewWidget$updateWidget()
+                    dataToolbarWidget$updateWidget()
                     getActiveDoc()$updateSettings()
                     ctrlWidget$updateVariables()
                     dataNameWidget$updateWidget()
@@ -691,17 +717,24 @@ iNZGUI <- setRefClass(
                 ctrlWidget$setState(pset)
             else {
                 dataViewWidget$updateWidget()
+                dataToolbarWidget$updateWidget()
                 getActiveDoc()$updateSettings()
                 ctrlWidget$updateVariables()
                 rhistory$update()
             }
             dataNameWidget$updateWidget()
+            dataToolbarWidget$updateWidget()
+            dataViewWidget$updateWidget()
             is_initialized <<- TRUE
             updatePlot()
         },
-        new_document = function(data, suffix) {
+        new_document = function(data, suffix, name) {
             "Create a new document based on the existing one (`getActiveDoc()`)"
-            data_name <- iNZightTools::add_suffix(.self$dataNameWidget$datName, suffix)
+            data_name <- ifelse(
+                missing(name),
+                iNZightTools::add_suffix(.self$dataNameWidget$datName, suffix),
+                name
+            )
             spec <- .self$getActiveDoc()$getModel()$getDesign()
             prev_name <- ifelse(
                 !is.null(spec),
@@ -739,15 +772,15 @@ iNZGUI <- setRefClass(
         },
         getActiveDoc = function() {
             "Returns the currently active document"
-            iNZDocuments[[activeDoc]]
+            if (activeDoc) iNZDocuments[[activeDoc]] else NULL
         },
         getActiveData = function() {
             "Returns the current dataset"
-            iNZDocuments[[activeDoc]]$getData()
+            if (activeDoc) iNZDocuments[[activeDoc]]$getData() else NULL
         },
         getActiveRowData = function() {
             "Returns the row data of the current dataset"
-            iNZDocuments[[activeDoc]]$getRowData()
+            if (activeDoc) iNZDocuments[[activeDoc]]$getRowData() else NULL
         },
         ## add observer to the activeDoc class variable
         addActDocObs = function(FUN, ...) {
@@ -810,11 +843,11 @@ iNZGUI <- setRefClass(
             } else {
                 conf <- gconfirm(
                     paste0(
-                        "You are about to delete (permanently!) ",
-                        "the currently selected dataset:\n\n",
-                        attr(iNZDocuments[[activeDoc]]$getData(), "name", exact = TRUE),
+                        "This will remove the following dataset from iNZight,\n",
+                        "and any unsaved changes to the data will be lost:\n\n",
+                        attr(getActiveData(), "name", exact = TRUE),
                         "\n\n",
-                        "Are you sure you want to continue? This cannot be undone."
+                        "Are you sure you want to continue?"
                     ),
                     title = "You sure you want to delete this data?",
                     icon = "question",
@@ -826,15 +859,20 @@ iNZGUI <- setRefClass(
         do_delete_dataset = function() {
             "Does the dataset deletion"
             todelete <- activeDoc
-            activeDoc <<- max(1L, activeDoc - 1L)
             rhistory$disabled <<- TRUE
+            if (length(iNZDocuments) == 1L) {
+                .self$setDocument(iNZDocument$new(), reset = TRUE)
+                return()
+            }
+
             iNZDocuments <<- iNZDocuments[-todelete]
+            activeDoc <<- max(1L, activeDoc - 1L)
             dataNameWidget$updateWidget()
             rhistory$disabled <<- FALSE
             dataViewWidget$updateWidget()
+            dataToolbarWidget$updateWidget()
             pset <- getActiveDoc()$getSettings()
             ctrlWidget$setState(pset)
-            # updatePlot()
         },
         removeDesign = function() {
             "Removes the survey design associated with a dataset"
@@ -852,7 +890,7 @@ iNZGUI <- setRefClass(
                 # delete the current document
                 do_delete_dataset()
             } else {
-                getActiveDoc()$getModel()$setDesign()
+                getActiveDoc()$getModel()$setDesign(gui = .self)
             }
 
             updatePlot()
@@ -911,6 +949,7 @@ iNZGUI <- setRefClass(
                     footer =
                         ggroup(container = modContainer)
                 )
+            moduleWindow$footer$set_borderwidth(4)
 
             if (!missing(title)) {
                 title <- glabel(title)
@@ -966,11 +1005,7 @@ iNZGUI <- setRefClass(
             "Returns the default preferences"
             ## The default iNZight settings:
             list(
-                check.updates = ifelse(
-                    Sys.getenv('LOCK_PACKAGES') == "",
-                    TRUE,
-                    !as.logical(Sys.getenv('LOCK_PACKAGES'))
-                ),
+                check.updates = !getOption("inzight.lock.packages", FALSE),
                 window.size = c(1250, 850),
                 popout = FALSE,
                 font.size = 10,
@@ -1188,13 +1223,13 @@ iNZGUI <- setRefClass(
                 grid::grid.newpage()
                 grid::pushViewport(
                     grid::viewport(
-                        height = unit(0.8, "npc"),
+                        height = unit(0.9, "npc"),
                         layout = grid::grid.layout(
                             nrow = 3,
                             ncol = 1,
                             heights = unit.c(
-                                unit(0.2, "npc"),
-                                unit(2.5, "lines"),
+                                unit(0.15, "npc"),
+                                unit(2.2, "lines"),
                                 unit(1, "null")
                             )
                         )
@@ -1249,7 +1284,7 @@ iNZGUI <- setRefClass(
                         y = unit(1, "npc") - unit(3, "lines"),
                         x = 0,
                         just = c("left", "top"),
-                        gp = gpar(fontsize = 11)
+                        gp = gpar(fontsize = 9)
                     )
 
                     grid::grid.text(
@@ -1263,7 +1298,7 @@ iNZGUI <- setRefClass(
                         ),
                         y = unit(1, "npc") - unit(8, "lines"),
                         x = 0, c(just = "left", "top"),
-                        gp = gpar(fontsize = 11)
+                        gp = gpar(fontsize = 9)
                     )
 
                 } else {
@@ -1345,7 +1380,7 @@ iNZGUI <- setRefClass(
             state <- .self$getState()
             dispose(.self$win)
             if (popOut) try(grDevices::dev.off(), TRUE)
-            .self$initializeGui(dispose_fun = .self$disposer, show = FALSE)
+            .self$initializeGui(disposer = .self$disposer, show = FALSE)
             Sys.sleep(0.5)
             while (!is_initialized) {
                 Sys.sleep(0.1)
@@ -1356,10 +1391,13 @@ iNZGUI <- setRefClass(
             gtkWindowMove(.self$win$widget, ipos$root.x, ipos$root.y)
             .self$set_visible()
         },
-        set_visible = function() {
+        set_visible = function(visible = TRUE) {
             "Makes the iNZight window visible, and updates the plot"
-            visible(win) <<- TRUE
+            visible(win) <<- visible
             updatePlot()
+        },
+        show = function() {
+            cat("An iNZGUI object\n")
         }
     )
 )

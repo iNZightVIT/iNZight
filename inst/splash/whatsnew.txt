@@ -1,17 +1,18 @@
-We've gone ahead and made a few improvements ...
+Things might look a little bit different on the left-hand-side, but the functionality is still all the same!
+For a quick overview of changes, find a link to the Transition Guide in the Help menu.
 
-- Code writing for plots, summaries, and inference!
-  It's not enabled by default, but the biggest change in this release
-  is the implementation of interactive code snippets, enabled from
-  File > Preferences. You can see the R code for the current plot,
-  and edit it to see what happens. Learning R just got easier!
+An overview of changes in this version:
 
-- Get Summary and Get Inference have been redesigned
-  Now more consistent with the rest of iNZight, you can quickly add and
-  remove inference information, adjust your hypothesis, and see the
-  results instantly.
+- Buttons on the right have been reorganised, but from left to right:
+  - View dataset | View variables | Dataset info | Search
 
-- Survey designs are now completely supported: plots, summaries,
-  and data wrangling! 
+- You can now see the spreadsheet view for ALL datasets - even big ones!
 
-- Plus other bug fixes and improvements.
+- Get Summary and Get Inference now let you adjust the size of confidence intervals
+
+- All of the windows have been updated to be more consistent
+
+- Loads of behind-the-scenes changes and bug fixes
+
+We hope you enjoy! As always, let us know if you find issues or have suggestions
+using the contact button in the Help menu.

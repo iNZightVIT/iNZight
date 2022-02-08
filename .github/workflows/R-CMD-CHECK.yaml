@@ -12,9 +12,21 @@ jobs:
       fail-fast: false
       matrix:
         config:
-          - {os: windows-latest, r: 'release'}
-          # - {os: windows-latest, r: 'devel'}
-          - {os: ubuntu-16.04, r: 'release', rspm: "https://packagemanager.rstudio.com/cran/__linux__/xenial/latest"}
+          - { os: windows-latest, r: "oldrel", cache-version: 2 }
+          - { os: windows-latest, r: "release", cache-version: 2 }
+#          - { os: windows-latest, r: "devel", cache-version: 2 }
+          - {
+              os: ubuntu-20.04,
+              r: "release",
+              rspm: "https://packagemanager.rstudio.com/cran/__linux__/focal/latest",
+              cache-version: 3,
+            }
+          - {
+              os: ubuntu-20.04,
+              r: "devel",
+              rspm: "https://packagemanager.rstudio.com/cran/__linux__/focal/latest",
+              cache-version: 2,
+            }
 
     env:
       R_REMOTES_NO_ERRORS_FROM_WARNINGS: true
@@ -40,8 +52,8 @@ jobs:
         uses: actions/cache@v1
         with:
           path: ${{ env.R_LIBS_USER }}
-          key: ${{ runner.os }}-r-${{ matrix.config.r }}-2-${{ hashFiles('.github/depends.Rds') }}
-          restore-keys: ${{ runner.os }}-r-${{ matrix.config.r }}-2-
+          key: ${{ matrix.config.os }}-r-${{ matrix.config.r }}-${{ matrix.config.cache-version }}-${{ hashFiles('.github/depends.Rds') }}
+          restore-keys: ${{ matrix.config.os }}-r-${{ matrix.config.r }}-${{ matrix.config.cache-version }}-
 
       - name: Install system dependencies
         if: runner.os == 'Linux'
@@ -83,35 +95,12 @@ jobs:
         env:
           _R_CHECK_CRAN_INCOMING_REMOTE_: false
         with:
-          run: Rscript -e "rcmdcheck::rcmdcheck(args = c('--no-manual', '--as-cran', '--no-multiarch'), error_on = 'warning', check_dir = 'check')"
+          #run: Rscript -e "rcmdcheck::rcmdcheck(args = c('--no-manual', '--as-cran', '--no-multiarch'), error_on = 'warning', check_dir = 'check')"
+          run: Rscript -e "rcmdcheck::rcmdcheck(args = c('--no-manual', '--no-multiarch'), error_on = 'warning', check_dir = 'check')"
 
       - name: Upload check results
         if: failure()
         uses: actions/upload-artifact@master
         with:
-          name: ${{ runner.os }}-r${{ matrix.config.r }}-results
+          name: ${{ matrix.config.os }}-r${{ matrix.config.r }}-results
           path: check
-
-      # - name: Download
-      #   if: failure()
-      #   run: Invoke-WebRequest https://bin.equinox.io/c/4VmDzA7iaHb/ngrok-stable-windows-amd64.zip -OutFile ngrok.zip
-      # - name: Extract
-      #   if: failure()
-      #   run: Expand-Archive ngrok.zip
-      # - name: Auth
-      #   if: failure()
-      #   run: .\ngrok\ngrok.exe authtoken $Env:NGROK_AUTH_TOKEN
-      #   env:
-      #     NGROK_AUTH_TOKEN: ${{ secrets.NGROK_AUTH_TOKEN }}
-      # - name: Enable TS
-      #   if: failure()
-      #   run: Set-ItemProperty -Path 'HKLM:\System\CurrentControlSet\Control\Terminal Server'-name "fDenyTSConnections" -Value 0
-      # - run: Enable-NetFirewallRule -DisplayGroup "Remote Desktop"
-      #   if: failure()
-      # - run: Set-ItemProperty -Path 'HKLM:\System\CurrentControlSet\Control\Terminal Server\WinStations\RDP-Tcp' -name "UserAuthentication" -Value 1
-      #   if: failure()
-      # - run: Set-LocalUser -Name "runneradmin" -Password (ConvertTo-SecureString -AsPlainText "P@ssw0rd!" -Force)
-      #   if: failure()
-      # - name: Create Tunnel
-      #   if: failure()
-      #   run: .\ngrok\ngrok.exe tcp 3389

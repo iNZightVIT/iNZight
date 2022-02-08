@@ -1,8 +1,7 @@
 iNZImportWin <- setRefClass(
     "iNZImportWin",
+    contains = "iNZWindow",
     fields = list(
-        GUI = "ANY",
-        importFileWin = "ANY",
         loadURL = "ANY",
         filetypes = "list",
         fileTbl = "ANY",
@@ -23,13 +22,25 @@ iNZImportWin <- setRefClass(
         bigMark = "ANY", bigmarks = "list",
         encoding = "ANY", encodings = "character",
         dateFormat = "ANY", dateformats = "character",
-        svyspec = "ANY",
-        okBtn = "ANY", cancelBtn = "ANY"
+        svyspec = "ANY"
     ),
     methods = list(
-        initialize = function(GUI) {
+        initialize = function(gui) {
+            ok <- callSuper(gui,
+                title = "Import File",
+                width = "med",
+                height = "med",
+                ok = "Import",
+                action = .self$import,
+                help = "user_guides/file_options/#import",
+                show_code = FALSE,
+                scroll = FALSE
+            )
+            if (!ok) return()
+            on.exit(.self$show())
+            usingMethods("import")
+
             initFields(
-                GUI = GUI,
                 filetypes = list(
                     "All files" = list(patterns = c("*")),
                     "Comma Separated Values (.csv)" = list(patterns = c("*.csv")),
@@ -67,30 +78,22 @@ iNZImportWin <- setRefClass(
                 dateFormat = "%Y-%m-%d"
             )
 
-            importFileWin <<- gwindow("Import File",
-                parent = GUI$win,
-                width = 600,
-                visible = FALSE
-            )
-            mainGp <- gvbox(
-                container = importFileWin,
-                expand = TRUE,
-                fill = TRUE
-            )
-            mainGp$set_borderwidth(10)
-
-            glabel(paste(sep = "\n",
-                "Please let us know if you have difficulty importing data (if you can include the data",
-                "that would extremely helpful). Email: inzight_support@stat.auckland.ac.nz"),
-                container = mainGp,
-                fill = TRUE
-            )
+            # importFileWin <<- gwindow("Import File",
+            #     parent = GUI$win,
+            #     width = 600,
+            #     visible = FALSE
+            # )
+            # mainGp <- gvbox(
+            #     container = GUI$modWin,
+            #     expand = TRUE,
+            #     fill = TRUE
+            # )
+            # mainGp$set_borderwidth(10)
 
             ## Select file (and extension)
             fileGp <- gframe("Select File to Import",
                 pos = 0,
-                horizontal = FALSE,
-                container = mainGp
+                horizontal = FALSE
             )
             fileGp$set_borderwidth(10)
             fileTbl <<- glayout(container = fileGp)
@@ -111,6 +114,7 @@ iNZImportWin <- setRefClass(
                     setfile(h, ...)
                 }
             )
+            browseBtn$set_icon("gw-open")
             fileTbl[ii, 1L, anchor = c(1, 0)] <<- lbl
             font(lbl) <- list(weight = "bold")
             fileTbl[ii, 2:4, expand = TRUE, anchor = c(1, 0)] <<- filename
@@ -167,11 +171,12 @@ iNZImportWin <- setRefClass(
                 }
             )
 
+            add_body(fileGp)
+
             ## Preview:
             prevGp <<- gframe("Preview",
                 pos = 0,
-                horizontal = FALSE,
-                container = mainGp
+                horizontal = FALSE
             )
             size(prevGp) <<- c(100, 170)
             prevGp$set_borderwidth(10)
@@ -184,131 +189,18 @@ iNZImportWin <- setRefClass(
             font(prevLbl) <<- list(size = 9)
             prev <<- NULL
 
+            add_body(prevGp)
+
 
             ## Advanced Import Settings
             advGp <<- gexpandgroup("Advanced Options",
-                horizontal = FALSE,
-                container = mainGp
+                horizontal = FALSE
             )
             visible(advGp) <<- FALSE
 
+            add_body(advGp)
 
-            addSpring(mainGp)
-            ## Import Data!
-            btnGp <- ggroup(container = mainGp)
-            addSpring(btnGp)
-            cancelBtn <<- gbutton("Cancel",
-                handler = function(h, ...) dispose(importFileWin),
-                container = btnGp
-            )
-            okBtn <<- gbutton("Import",
-                handler = function(h, ...) {
-                    infw <- gwindow("Loading data ...", width = 320, height = 80, visible = FALSE, parent = GUI$win)
-                    infg <- gvbox(container = infw)
-                    addSpace(infg, 10)
-                    infl <- glabel(
-                        "Please wait while iNZight loads your data.\nIt might take some time depending on the size.",
-                        container = infg,
-                        anchor = c(0, -1)
-                    )
-                    font(infl) <- list(weight = "bold")
-                    visible(infw) <- TRUE
-
-                    ## without this, the text doesn't load before the next call is made,
-                    ## which means the message is pointless ...
-                    Sys.sleep(0.1)
-
-                    if (is.null(tmpData) || iNZightTools::is_preview(tmpData)) {
-                        readx <- try(readData(), silent = TRUE)
-
-                        if (inherits(readx, "try-error")) {
-                            dispose(infw)
-                            gmessage("There was an error loading the data.",
-                                icon = "error",
-                                title = "Unable to load data.",
-                                parent = importFileWin
-                            )
-                            return()
-                        }
-                    }
-
-                    ## give the dataset a name ...
-                    if (is.null(attr(tmpData, "name", exact = TRUE)))
-                        attr(tmpData, "name") <<-
-                            if (fext %in% c("RData", "rda"))
-                                svalue(rdaName)
-                            else
-                                make.names(
-                                    tools::file_path_sans_ext(basename(fname))
-                                )
-
-                    ## coerce character to factor
-                    GUI$setDocument(
-                        iNZDocument$new(
-                            data = as.data.frame(tmpData,
-                                stringsAsFactors = TRUE
-                            )
-                        ),
-                        reset = FALSE
-                    )
-                    if (fext == "svydesign") {
-                        ## This needs to be updated to simply pass the spec object ...
-                        spec <- svyspec$spec
-                        clus1 <- NULL
-                        clus2 <- NULL
-                        if (!is.null(spec$ids) && spec$ids != 1) {
-                            if (grepl("\\+", spec$ids)) {
-                                clus <- strsplit(spec$ids, "\\+")[[1]]
-                                clus <- gsub("^\\s|\\s$", "", clus)
-                                clus1 <- clus[1]
-                                clus2 <- clus[2]
-                            } else {
-                                clus1 <- svyspec$ids
-                            }
-                        }
-
-                        GUI$getActiveDoc()$getModel()$setDesign(spec, gui = GUI)
-
-                        setOK <- try(
-                            GUI$getActiveDoc()$getModel()$createSurveyObject(),
-                            TRUE
-                        )
-
-                        if (!inherits(setOK, "try-error")) {
-                            ## write design call
-                            call <- paste(deparse(setOK$call), collapse = "\n")
-
-                            call <- sprintf("%s <- %s",
-                                GUI$getActiveDoc()$getModel()$dataDesignName,
-                                gsub("dataSet", GUI$getActiveDoc()$getModel()$name, call)
-                            )
-                            GUI$rhistory$add(
-                                c("## create survey design object", call),
-                                tidy = TRUE
-                            )
-
-                            ## update plot
-                            GUI$updatePlot()
-                        } else {
-                            gmessage(
-                                paste0(
-                                    "There is a problem with the survey specification file:\n\n",
-                                    setOK
-                                ),
-                                icon = "error"
-                            )
-                        }
-                    }
-
-                    dispose(infw)
-
-                    ## dunno why but need to delete gdf ...
-                    dispose(importFileWin)
-                },
-                container = btnGp
-            )
-
-            addHandlerDestroy(importFileWin,
+            addHandlerDestroy(GUI$modWin,
                 handler = function(h, ...) {
                     ## Not sure why but if this isn't done before the window closes,
                     ## a GTK Critical error is thrown.
@@ -316,7 +208,6 @@ iNZImportWin <- setRefClass(
                     return(TRUE)
                 }
             )
-            visible(importFileWin) <<- TRUE
         }, # initialize()
         setfile = function(...) {
             svalue(filename) <<- basename(fname)
@@ -763,6 +654,109 @@ iNZImportWin <- setRefClass(
                     tbl[ii, 1L, anchor = c(-1, 0), expand = TRUE] <- lbl
                 }
             ) # end switch(fext)
+        },
+        import = function() {
+            infw <- gwindow("Loading data ...", width = 320, height = 80, visible = FALSE, parent = GUI$win)
+            infg <- gvbox(container = infw)
+            addSpace(infg, 10)
+            infl <- glabel(
+                "Please wait while iNZight loads your data.\nIt might take some time depending on the size.",
+                container = infg,
+                anchor = c(0, -1)
+            )
+            font(infl) <- list(weight = "bold")
+            visible(infw) <- TRUE
+
+            ## without this, the text doesn't load before the next call is made,
+            ## which means the message is pointless ...
+            Sys.sleep(0.1)
+
+            if (is.null(tmpData) || iNZightTools::is_preview(tmpData)) {
+                readx <- try(readData(), silent = TRUE)
+
+                if (inherits(readx, "try-error")) {
+                    dispose(infw)
+                    gmessage("There was an error loading the data.",
+                        icon = "error",
+                        title = "Unable to load data.",
+                        parent = importFileWin
+                    )
+                    return()
+                }
+            }
+
+            ## give the dataset a name ...
+            if (is.null(attr(tmpData, "name", exact = TRUE)))
+                attr(tmpData, "name") <<-
+                    if (fext %in% c("RData", "rda"))
+                        svalue(rdaName)
+                    else
+                        make.names(
+                            tools::file_path_sans_ext(basename(fname))
+                        )
+
+            ## coerce character to factor
+            GUI$setDocument(
+                iNZDocument$new(
+                    data = as.data.frame(tmpData,
+                        stringsAsFactors = TRUE
+                    )
+                ),
+                reset = FALSE
+            )
+            if (fext == "svydesign") {
+                ## This needs to be updated to simply pass the spec object ...
+                spec <- svyspec$spec
+                clus1 <- NULL
+                clus2 <- NULL
+                if (!is.null(spec$ids) && spec$ids != 1) {
+                    if (grepl("\\+", spec$ids)) {
+                        clus <- strsplit(spec$ids, "\\+")[[1]]
+                        clus <- gsub("^\\s|\\s$", "", clus)
+                        clus1 <- clus[1]
+                        clus2 <- clus[2]
+                    } else {
+                        clus1 <- svyspec$ids
+                    }
+                }
+
+                GUI$getActiveDoc()$getModel()$setDesign(spec, gui = GUI)
+
+                setOK <- try(
+                    GUI$getActiveDoc()$getModel()$createSurveyObject(),
+                    TRUE
+                )
+
+                if (!inherits(setOK, "try-error")) {
+                    ## write design call
+                    call <- paste(deparse(setOK$call), collapse = "\n")
+
+                    call <- sprintf("%s <- %s",
+                        GUI$getActiveDoc()$getModel()$dataDesignName,
+                        gsub("dataSet", GUI$getActiveDoc()$getModel()$name, call)
+                    )
+                    GUI$rhistory$add(
+                        c("## create survey design object", call),
+                        tidy = TRUE
+                    )
+
+                    ## update plot
+                    GUI$updatePlot()
+                } else {
+                    gmessage(
+                        paste0(
+                            "There is a problem with the survey specification file:\n\n",
+                            setOK
+                        ),
+                        icon = "error"
+                    )
+                }
+            }
+
+            dispose(infw)
+
+            ## dunno why but need to delete gdf ...
+            close()
         },
         closeHandler = function(h, ...) {
             if (!is.null(prev)) delete(prevGp, prev)

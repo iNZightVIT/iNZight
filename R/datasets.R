@@ -19,6 +19,7 @@
 #' @source This dataset is provided *exclusively for use within iNZight* by express permission
 #' from Chris Wild, the Director of Census at School New Zealand.
 #'  \url{http://new.censusatschool.org.nz/}
+#' @docType data
 #' @md
 "census.at.school.500"
 
@@ -30,6 +31,7 @@
 #'
 #' @source Based on free material from GAPMINDER.ORG, CC-BY LICENSE
 #'  \url{https://www.gapminder.org/data/}
+#' @docType data
 "gapminder"
 
 
@@ -57,4 +59,5 @@
 #' }
 #' @source Licensed under Creative Commons 4.0 by Stats NZ,
 #'  \url{https://www.stats.govt.nz/services/customised-data-services/statistics-for-university-staff-and-students/new-zealand-income-survey-super-surf/}
+#' @docType data
 "SURFIncomeSurvey_200"

@@ -15,16 +15,14 @@ test_that("Exercise 1.15: Import data into iNZight", {
     expect_silent(exwin <- iNZight:::iNZImportExampleWin$new(ui))
 
     # > FutureLearn
-    mod <- exwin$importFileWin$children[[1]]$children[[1]]$children[[2]]
-    expect_silent(svalue(mod) <- "FutureLearn")
+    expect_silent(svalue(exwin$dsPkg) <- "FutureLearn")
 
     # > nhanes_1000
-    ds <- exwin$importFileWin$children[[1]]$children[[1]]$children[[4]]
-    expect_silent(svalue(ds) <- "nhanes_1000")
+    expect_silent(svalue(exwin$dsData) <- "nhanes_1000")
 
     # > Ok
     expect_silent(
-        exwin$importFileWin$children[[1]]$children[[2]]$children[[2]]$invoke_change_handler()
+        exwin$ok_button$invoke_change_handler()
     )
 
     # Check:
@@ -38,12 +36,10 @@ test_that("Exercise 1.15: Import data into iNZight", {
 
     ## Load gapminder_2008:
     expect_silent(exwin <- iNZight:::iNZImportExampleWin$new(ui))
-    mod <- exwin$importFileWin$children[[1]]$children[[1]]$children[[2]]
-    expect_silent(svalue(mod) <- "FutureLearn")
-    ds <- exwin$importFileWin$children[[1]]$children[[1]]$children[[4]]
-    expect_silent(svalue(ds) <- "gapminder_2008")
+    expect_silent(svalue(exwin$dsPkg) <- "FutureLearn")
+    expect_silent(svalue(exwin$dsData) <- "gapminder_2008")
     expect_silent(
-        exwin$importFileWin$children[[1]]$children[[2]]$children[[2]]$invoke_change_handler()
+        exwin$ok_button$invoke_change_handler()
     )
     expect_equal(ui$dataNameWidget$datName, "gapminder_2008_ex")
 
@@ -63,7 +59,7 @@ test_that("Exercise 1.15: Import data into iNZight", {
     expect_silent(imp$setfile())
 
     # > Import
-    expect_silent(imp$okBtn$invoke_change_handler())
+    expect_silent(imp$ok_button$invoke_change_handler())
 
     # Check:
     expect_equal(

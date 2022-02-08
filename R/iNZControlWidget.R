@@ -7,15 +7,28 @@ iNZControlWidget <- setRefClass(
         V2box = "ANY",
         G1box = "ANY",
         G2box = "ANY",
+        V1clearbtn = "ANY",
+        V2clearbtn = "ANY",
+        G1clearbtn = "ANY",
+        G2clearbtn = "ANY",
         playButton = "list",
-        playdelay = "numeric"
+        playdelay = "numeric",
+        help_button = "ANY",
+        summary_button = "ANY",
+        inference_button = "ANY",
+        filter_button = "ANY",
+        newname = "character"
     ),
     methods = list(
         initialize = function(gui) {
-            ctrlGp <<- ggroup(horizontal = FALSE)
-            initFields(GUI = gui, playdelay = 0.6)
+            ctrlGp <<- gvbox()
+            ctrlGp$set_borderwidth(5L)
+
+            initFields(GUI = gui, playdelay = 0.6, newname = "")
             ## set up glayout
             tbl <- glayout(expand = TRUE, homogeneous = FALSE, cont = ctrlGp, spacing = 5)
+
+            clear_icon <- "clear"
 
             ### DRAG/DROP MENUS
             V1box <<- gcombobox(
@@ -31,17 +44,20 @@ iNZControlWidget <- setRefClass(
                 c("Select/Drag-drop Variable 4 (subset)", colnames(GUI$getActiveData()))
             )
 
-            tbl[1L, 1:5, anchor = c(0,0), expand = TRUE] <- V1box
-            tbl[3L, 1:5, anchor = c(0,0), expand = TRUE] <- V2box
-            tbl[5L, 1:5, anchor = c(0,0), expand = TRUE] <- G1box
-            tbl[7L, 1:5, anchor = c(0,0), expand = TRUE] <- G2box
+            tbl[1L, 1:6, anchor = c(0,0), expand = TRUE] <- V1box
+            tbl[3L, 1:6, anchor = c(0,0), expand = TRUE] <- V2box
+            tbl[5L, 1:6, anchor = c(0,0), expand = TRUE] <- G1box
+            tbl[7L, 1:6, anchor = c(0,0), expand = TRUE] <- G2box
+
+            enabled(V1box) <<- !is.null(GUI$getActiveData()) && any(dim(GUI$getActiveData()) > 1L)
+            enabled(V2box) <<- enabled(G1box) <<- enabled(G2box) <<- FALSE
 
 
             ### CLEAR BUTTONS
 
             ## -- Variable 1
-            V1clearbtn <- gimagebutton(
-                stock.id = "cancel",
+            V1clearbtn <<- gimagebutton(
+                stock.id = "clear",
                 tooltip = "Clear Variable",
                 handler = function(h,...) {
                     svalue(V1box, index = TRUE) <<- 1L
@@ -49,11 +65,11 @@ iNZControlWidget <- setRefClass(
                 }
             )
             ## V1clearbtn$set_icon("Cancel")
-            tbl[1L, 7L, anchor = c(0, 0)] <- V1clearbtn
+            tbl[1L, 8L, anchor = c(0, 0)] <- V1clearbtn
 
             ## -- Variable 2
-            V2clearbtn <- gimagebutton(
-                stock.id = "cancel",
+            V2clearbtn <<- gimagebutton(
+                stock.id = "clear",
                 tooltip = "Clear Variable",
                 handler = function(h,...) {
                     svalue(V2box, index = TRUE) <<- 1L
@@ -67,32 +83,33 @@ iNZControlWidget <- setRefClass(
                         reset = { GUI$plotType != "dot" })
                 }
             )
-            tbl[3L, 7L, anchor = c(0, 0)] <- V2clearbtn
+            tbl[3L, 8L, anchor = c(0, 0)] <- V2clearbtn
 
             ## -- Grouping Variable 1
-            G1clearbtn <- gimagebutton(
-                stock.id = "cancel",
+            G1clearbtn <<- gimagebutton(
+                stock.id = "clear",
                 tooltip = "Clear Variable",
                 handler = function(h,...) {
                     svalue(G1box, index = TRUE) <<- 1L
                     ## change handler will handle the rest
                 }
             )
-            tbl[5L, 7L, anchor = c(0, 0)] <- G1clearbtn
+            tbl[5L, 8L, anchor = c(0, 0)] <- G1clearbtn
 
             ## -- Grouping Variable 2
-            G2clearbtn <- gimagebutton(
-                stock.id = "cancel",
+            G2clearbtn <<- gimagebutton(
+                stock.id = "clear",
                 tooltip = "Clear Variable",
                 handler = function(h,...) {
                     svalue(G2box, index = TRUE) <<- 1L
                 }
             )
-            tbl[7L, 7L, anchor = c(0, 0)] <- G2clearbtn
+            tbl[7L, 8L, anchor = c(0, 0)] <- G2clearbtn
 
 
             ## "SWITCH" buttons:
-            switchV12 <- gimagebutton("go-down",
+            switchV12 <- gimagebutton(
+                filename = system.file("images/icon-double-arrow.png", package = "iNZight"),
                 tooltip = "Switch with Variable 2")
             addHandlerClicked(switchV12,
                 function(h, ...) {
@@ -132,7 +149,8 @@ iNZControlWidget <- setRefClass(
                     unblockHandlers(V2box)
                 }
             )
-            switchV23 <- gimagebutton("go-down",
+            switchV23 <- gimagebutton(
+                filename = system.file("images/icon-double-arrow.png", package = "iNZight"),
                 tooltip = "Switch with Variable 3")
             addHandlerClicked(switchV23,
                 function(h, ...) {
@@ -200,7 +218,9 @@ iNZControlWidget <- setRefClass(
                     unblockHandlers(G1box)
                 }
             )
-            switchV34 <- gimagebutton("go-down", tooltip = "Switch with Variable 4")
+            switchV34 <- gimagebutton(
+                filename = system.file("images/icon-double-arrow.png", package = "iNZight"),
+                tooltip = "Switch with Variable 4")
             addHandlerClicked(switchV34,
                 function(h, ...) {
                     if (svalue(G1box, TRUE) == 1L && svalue(G2box, TRUE) == 1L)
@@ -261,9 +281,104 @@ iNZControlWidget <- setRefClass(
                 }
             )
 
-            tbl[1L, 6L] <- switchV12
-            tbl[3L, 6L] <- switchV23
-            tbl[5L, 6L] <- switchV34
+            tbl[1L, 7L] <- switchV12
+            tbl[3L, 7L] <- switchV23
+            tbl[5L, 7L] <- switchV34
+
+            ## button controls at bottom
+
+            g_btns <- ggroup()
+            tbl[9L, 1:6, expand = TRUE] <- g_btns
+
+            # help button
+            help_button <<- gbutton("Help",
+                container = g_btns,
+                handler = function(h, ...) help_page("user_guides/interface")
+            )
+            font(help_button) <<- list(size = 8L)
+            help_button$set_icon("gw-help_topic")
+            tooltip(help_button) <<- "Control panel help"
+
+            summary_button <<- gbutton(
+                "Get Summary",
+                container = g_btns,
+                expand = TRUE,
+                handler = function(h, ...) iNZGetSummary$new(GUI)
+            )
+            inference_button <<- gbutton(
+                "Get Inference",
+                container = g_btns,
+                expand = TRUE,
+                handler = function(h, ...) iNZGetInference$new(GUI)
+            )
+            font(summary_button) <<-
+                font(inference_button) <<-
+                list(weight = "bold", family = "sans")
+            enabled(summary_button) <<- enabled(inference_button) <<- GUI$plotType != "none"
+
+            # filter button
+            filter_button <<- gbutton("",
+                handler = function(h, ...) {
+                    cw <- iNZWindow$new(
+                        GUI,
+                        title = "Subset dataset",
+                        ok = "Subset",
+                        action = function() {
+                            quick_filter()
+                            cw$close()
+                        }
+                    )
+                    cw$add_heading("You are about to create the following subset of the data:")
+
+                    set <- GUI$getActiveDoc()$getSettings()
+
+                    newname <<- paste(GUI$dataNameWidget$datName, "subset", sep = ".")
+
+                    if (!is.null(set$g1) &&
+                        iNZightTools::is_cat(GUI$getActiveData()[[set$g1]]) &&
+                        !is.null(set$g1.level) &&
+                        set$g1.level != "_MULTI")
+                    {
+                        cw$add_body(
+                            glabel(sprintf("%s = %s", as.character(set$g1), set$g1.level))
+                        )
+                        newname <<- sprintf("%s_%s.%s", newname, as.character(set$g1), set$g1.level)
+                    }
+
+                    if (!is.null(set$g2) &&
+                        iNZightTools::is_cat(GUI$getActiveData()[[set$g2]]) &&
+                        !is.null(set$g2.level) &&
+                        set$g2.level != "_ALL" &&
+                        set$g2.level != "_MULTI")
+                    {
+                        cw$add_body(
+                            glabel(sprintf("%s = %s", as.character(set$g2), set$g2.level))
+                        )
+                        newname <<- sprintf("%s_%s.%s", newname, as.character(set$g2), set$g2.level)
+                    }
+
+                    nameBox <- gedit(newname, width = 40)
+                    addHandlerKeystroke(nameBox,
+                        handler = function(h, ...)
+                            newname <<- svalue(h$obj)
+                    )
+
+                    cw$body_space(10)
+                    cw$add_body(
+                        glabel("Name for data subset: "),
+                        anchor = c(-1, 0)
+                    )
+                    cw$add_body(
+                        nameBox
+                    )
+
+                    cw$show()
+                }
+            )
+            filter_button$set_icon("gw-subset")
+            tooltip(filter_button) <<- "Filter data by selected subset (slider values)"
+            visible(filter_button) <<- FALSE
+            tbl[9L, 7:8] <- filter_button
 
             ## add drop functionality to the fields
 
@@ -406,9 +521,34 @@ iNZControlWidget <- setRefClass(
         ## change the plotSettings
         changePlotSettings = function(setList, reset = FALSE) {
             GUI$getActiveDoc()$setSettings(setList, reset)
+
+            set <- GUI$getActiveDoc()$getSettings()
+
+            enabled(V2box) <<- enabled(G1box) <<- enabled(G2box) <<- V1box$get_index() > 1L
+
+            enabled(summary_button) <<- enabled(inference_button) <<- GUI$plotType != "none"
+
+            visible(filter_button) <<-
+                (!is.null(set$g1) &&
+                    iNZightTools::is_cat(GUI$getActiveData()[[set$g1]]) &&
+                    !is.null(set$g1.level) &&
+                    set$g1.level != "_MULTI") ||
+                (!is.null(set$g2) &&
+                    iNZightTools::is_cat(GUI$getActiveData()[[set$g2]]) &&
+                    !is.null(set$g2.level) &&
+                    set$g2.level != "_ALL" &&
+                    set$g2.level != "_MULTI")
         },
         updateVariables = function() {
-            datavars <- colnames(GUI$getActiveData())
+            data <- GUI$getActiveData()
+            if (is.null(data) || all(dim(data) == 1L)) {
+                enabled(V1box) <<- enabled(V2box) <<- enabled(G1box) <<- enabled(G2box) <<- FALSE
+            } else {
+                enabled(V1box) <<- TRUE
+                enabled(V2box) <<- enabled(G1box) <<- enabled(G2box) <<- V1box$get_index() > 1L
+            }
+
+            datavars <- colnames(data)
 
             v1 <- if (svalue(V1box) %in% datavars)
                 which(datavars == svalue(V1box)) + 1L else 1L
@@ -566,9 +706,9 @@ iNZControlWidget <- setRefClass(
             )
 
             ## Add things to layout:
-            tbl[pos, 1:5, expand = TRUE] <- slider
-            tbl[pos, 6L, anchor = c(0, 0), expand = FALSE] <- delayBtn
-            tbl[pos, 7L, anchor = c(0, 0), expand = FALSE] <- playBtn
+            tbl[pos, 1:6, expand = TRUE] <- slider
+            tbl[pos, 7L, anchor = c(0, 0), expand = FALSE] <- delayBtn
+            tbl[pos, 8L, anchor = c(0, 0), expand = FALSE] <- playBtn
         },
         deleteSlider = function(pos) {
             ## get the child that is at the specified positions
@@ -598,7 +738,7 @@ iNZControlWidget <- setRefClass(
         resetWidget = function() {
             invisible(
                 sapply(c(1L, 3L, 5L, 7L),
-                    function(x) ctrlGp$children[[1L]][x, 7L]$invoke_change_handler()
+                    function(x) ctrlGp$children[[1L]][x, 8L]$invoke_change_handler()
                 )
             )
         },
@@ -682,6 +822,46 @@ iNZControlWidget <- setRefClass(
 
             GUI$getActiveDoc()$setSettings(set)
             GUI$updatePlot()
+        },
+        quick_filter = function() {
+            if (newname == "") return()
+
+            .dataset <- GUI$getActiveData()
+            set <- GUI$getActiveDoc()$getSettings()
+
+            code <- ""
+            if (!is.null(set$g1) &&
+                iNZightTools::is_cat(GUI$getActiveData()[[set$g1]]) &&
+                !is.null(set$g1.level) &&
+                set$g1.level != "_MULTI")
+            {
+                .dataset <- iNZightTools::filterLevels(
+                    .dataset,
+                    set$g1,
+                    set$g1.level
+                )
+                code <- attr(.dataset, "code")
+            }
+
+
+            if (!is.null(set$g2) &&
+                iNZightTools::is_cat(GUI$getActiveData()[[set$g2]]) &&
+                !is.null(set$g2.level) &&
+                set$g2.level != "_ALL" &&
+                set$g2.level != "_MULTI")
+            {
+                .dataset <- iNZightTools::filterLevels(
+                    .dataset,
+                    set$g2,
+                    set$g2.level
+                )
+                code <- gsub(".dataset", code, attr(.dataset, "code"), fixed = TRUE)
+                attr(.dataset, "code") <- code
+            }
+
+            GUI$new_document(.dataset, name = newname)
+            G1clearbtn$invoke_change_handler()
+            G2clearbtn$invoke_change_handler()
         }
     ) ## methods
 ) ## setRefClass

@@ -254,3 +254,18 @@ test_that("Axes and Labels - bar plots", {
     svalue(ui$ctrlWidget$V2box, TRUE) <- 1
     svalue(ui$ctrlWidget$V1box, TRUE) <- 1
 })
+
+ui$close()
+cas2 <- census.at.school.500
+cas2$height2 <- with(cas2, height - mean(height, na.rm = TRUE))
+ui <- iNZight(cas2)
+
+test_that("Correct log boxes are disabled if non-positive values present", {
+    svalue(ui$ctrlWidget$V1box) <- "height2"
+    svalue(ui$ctrlWidget$V2box) <- "armspan"
+    ui$plotToolbar$addToPlot(message = FALSE)
+    svalue(ui$moduleWindow$header$children[[2]]$children[[1]], TRUE) <- 3
+    axtbl <- ui$moduleWindow$body$children[[1]]$children[[1]]
+    expect_true(enabled(axtbl$children[[27]]))
+    expect_false(enabled(axtbl$children[[28]]))
+})

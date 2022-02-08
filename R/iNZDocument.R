@@ -122,9 +122,14 @@ iNZDataModel <- setRefClass(
             if (missing(x)) {
                 dataDesign <<- NULL
                 dataDesignName <<- name
+                if (!missing(gui)) {
+                    gui$dataNameWidget$updateWidget()
+                    gui$menuBarWidget$defaultMenu()
+                }
                 return()
             }
             if (inherits(x, "inzsvyspec")) {
+                spec <- x
                 if (is.null(x$design))
                     x <- iNZightTools::make_survey(dataSet, x)
             } else {
@@ -148,6 +153,18 @@ iNZDataModel <- setRefClass(
                     class = "inzsvyspec"
                 )
                 x <- iNZightTools::make_survey(dataSet, spec)
+            }
+            if (!is.null(spec$spec$calibrate)) {
+                cal <- lapply(names(spec$spec$calibrate),
+                    function(v) {
+                        c <- spec$spec$calibrate[[v]]
+                        d <- data.frame(x = names(c), Freq = as.numeric(c))
+                        names(d) <- c(v, "Freq")
+                        d
+                    }
+                )
+                names(cal) <- names(spec$spec$calibrate)
+                storeFreqTables(cal)
             }
             dataDesign <<- unclass(x)
             dataDesignName <<- sprintf("%s.%s",
@@ -286,6 +303,9 @@ iNZDocument <- setRefClass(
     ),
     methods = list(
         initialize = function(data = NULL, settings = NULL) {
+            ## set data name (default = "data")
+            if (!is.null(data) && is.null(attr(data, "name", exact = TRUE)))
+                attr(data, "name") <- deparse(substitute(data))
             initFields(
                 dataModel = iNZDataModel$new(data),
                 plotSettings = iNZPlotSettings$new(settings)
@@ -348,6 +368,7 @@ iNZDataNameWidget <- setRefClass(
     "iNZDataNameWidget",
     fields = list(
         GUI = "ANY",  ## the iNZight GUI object
+        import_button = "ANY",
         datName = "ANY", ## the string for the data set name
         widget = "ANY",
         nameLabel = "ANY"
@@ -360,8 +381,12 @@ iNZDataNameWidget <- setRefClass(
             )
 
             widget <<- ggroup()
-            addSpace(widget, 50)
-            add(widget, glabel("Data set: "))
+            addSpace(widget, 5)
+            add(widget, glabel("Dataset: "))
+
+            # nameLabel <<- glabel(.self$datName, expand = TRUE, anchor = c(-1, 0))
+            # font(nameLabel) <<- list(weight = "bold")
+
             nameLabel <<- gcombobox(.self$datName,
                 handler = function(h, ...) {
                     ## prevent code writing ...
@@ -372,23 +397,30 @@ iNZDataNameWidget <- setRefClass(
                     GUI$ctrlWidget$setState(pset)
                 }
             )
-            add(widget, nameLabel, expand = TRUE)
-            enabled(nameLabel) <<- FALSE
+            # add(widget, nameLabel, expand = TRUE)
+
+            import_button <<- gbutton("Import data ...",
+                handler = function(h, ...) iNZImportWin$new(gui)
+            )
+            import_button$set_icon("gw-file")
+            add(widget, import_button, expand = TRUE)
 
             updateWidget()
         },
         updateWidget = function() {
             dataSet <- GUI$getActiveData()
-            if(is.null(dataSet)){
+            if (is.null(dataSet) || names(dataSet)[1] == "empty"){
                 datName <<- "No data loaded"
-                enabled(nameLabel) <<- FALSE
-            } else {
-                if((names(dataSet)[1] == "empty"))
-                    datName <<- "No data loaded"
-                else {
-                    datName <<- attr(dataSet, "name", exact = TRUE)
+                if (identical(widget$children[[2]], nameLabel)) {
+                    widget$remove_child(nameLabel)
+                    add(widget, import_button, expand = TRUE)
                 }
-                enabled(nameLabel) <<- TRUE
+            } else {
+                datName <<- attr(dataSet, "name", exact = TRUE)
+                if (identical(widget$children[[2]], import_button)) {
+                    widget$remove_child(import_button)
+                    add(widget, nameLabel, expand = TRUE)
+                }
             }
             names <- sapply(GUI$iNZDocuments,
                 function(d) {
@@ -401,6 +433,7 @@ iNZDataNameWidget <- setRefClass(
                 }
             )
             blockHandlers(nameLabel)
+            # svalue(nameLabel) <<- datName
             nameLabel$set_items(names)
             svalue(nameLabel, index = TRUE) <<- GUI$activeDoc
             unblockHandlers(nameLabel)
