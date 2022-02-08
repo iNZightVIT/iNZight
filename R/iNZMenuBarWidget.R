@@ -201,7 +201,7 @@ iNZMenuBarWidget <- setRefClass(
                 reorder =
                     gaction("Reorder and select variables ...",
                         icon = "sort-ascending",
-                        handler = function(h, ...) iNZReorderWin$new(GUI)
+                        handler = function(h, ...) iNZReorderVarsWin$new(GUI)
                     ),
                 gseparator(),
                 view =
@@ -318,7 +318,7 @@ iNZMenuBarWidget <- setRefClass(
                         gaction("Reorder levels ...",
                             icon = "sort-ascending",
                             tooltip = "Reorder the levels of a categorical variable",
-                            handler = function(h, ...) iNZReorderWin$new(GUI)),
+                            handler = function(h, ...) iNZReorderLevelsWin$new(GUI)),
                     collapse =
                         gaction("Collapse levels ...",
                             icon = "dnd-multiple",
@@ -624,6 +624,13 @@ iNZMenuBarWidget <- setRefClass(
                         )
                     }
                 ),
+                transition =
+                    gaction("Version 4.2 Transition Guide",
+                        icon = "file",
+                        tooltip = "",
+                        handler = function(h, ...)
+                            help_page('docs/transition-to-4.2/')
+                    ),
                 change =
                     gaction("Change history",
                         icon = "file",

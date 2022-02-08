@@ -520,8 +520,8 @@ iNZRenameFactorLevelsWin <- setRefClass(
 )
 
 ## reorder factor levels
-iNZReorderWin <- setRefClass(
-    "iNZReorderWin",
+iNZReorderLevelsWin <- setRefClass(
+    "iNZReorderLevelsWin",
     fields = list(
         factorMenu = "ANY",
         factorName = "ANY",
@@ -532,7 +532,7 @@ iNZReorderWin <- setRefClass(
     methods = list(
         initialize = function(gui) {
             ok <- callSuper(gui,
-                title = "Standardise variables",
+                title = "Reorder levels",
                 width = "small",
                 height = "med",
                 help = "user_guides/variables/#reorderLvls",
@@ -730,7 +730,7 @@ iNZCombineWin <- setRefClass(
 
             ## separator (. or _ for now ...)
             lbl4 <- glabel("Value separator")
-            varSep <<- gcombobox(c("_", "."), selected = 1)
+            varSep <<- gcombobox(c("_", "."), selected = 1, editable = TRUE)
             ## automatically fill the name field when variables are selected
             addHandlerSelectionChanged(factorNames,
                 handler = function(h, ...) {
@@ -913,8 +913,12 @@ iNZCreateVarWin <- setRefClass(
             )
 
             expr <- svalue(expression)
-            if (! "N" %in% names(GUI$getActiveData()))
-                expr <- gsub("N", "dplyr::n()", expr)
+            if (! "N" %in% names(GUI$getActiveData())) {
+                expr <- stringr::str_replace(expr,
+                    "([^a-zA-Z0-9])N([^a-zA-Z0-9])",
+                    "\\1dplyr::n()\\2"
+                )
+            }
 
             data <- try(
                 iNZightTools::createNewVar(
@@ -2280,7 +2284,7 @@ iNZAggDtWin <- setRefClass(
                 anchor = c(-1, 0))
 
             method <<- gtable(
-                list(Summary = c("Sum", "Mean", "Median")),
+                list(Summary = c("Sum", "Mean", "Median", "Min", "Max")),
                 container = left_panel
             )
             addHandlerSelectionChanged(method,
@@ -2321,7 +2325,7 @@ iNZAggDtWin <- setRefClass(
             type <<- ""
             values <- character()
 
-            if (lubridate::is.POSIXct(x) || lubridate::is.Date(var)) {
+            if (lubridate::is.POSIXct(x) || lubridate::is.Date(x)) {
                 type <<- "dt"
                 values <- c("Weekly", "Monthly", "Quarterly", "Yearly")
             } else if (all(grepl("W", x))) {

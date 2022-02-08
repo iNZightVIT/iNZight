@@ -112,13 +112,18 @@ iNZGUI <- setRefClass(
             addonDir = NULL,
             show = TRUE,
             stop_loading = FALSE,
-            ...
+            ...,
+            disposer = NULL
         ) {
             "Initiates the GUI"
-            initFields(is_initialized = FALSE, disposer = function() {})
+            initFields(is_initialized = FALSE, disposer = disposer)
 
-            if (!is.null(dispose_fun) && is.function(dispose_fun))
-                disposer <<- function() dispose_fun(...)
+            if (is.null(disposer)) {
+                if (!is.null(dispose_fun) && is.function(dispose_fun))
+                    disposer <<- function() dispose_fun(...)
+                else
+                    disposer <<- function() {}
+            }
 
             win.title <- paste(
                 "iNZight (v",
@@ -1218,13 +1223,13 @@ iNZGUI <- setRefClass(
                 grid::grid.newpage()
                 grid::pushViewport(
                     grid::viewport(
-                        height = unit(0.8, "npc"),
+                        height = unit(0.9, "npc"),
                         layout = grid::grid.layout(
                             nrow = 3,
                             ncol = 1,
                             heights = unit.c(
-                                unit(0.2, "npc"),
-                                unit(2.5, "lines"),
+                                unit(0.15, "npc"),
+                                unit(2.2, "lines"),
                                 unit(1, "null")
                             )
                         )
@@ -1279,7 +1284,7 @@ iNZGUI <- setRefClass(
                         y = unit(1, "npc") - unit(3, "lines"),
                         x = 0,
                         just = c("left", "top"),
-                        gp = gpar(fontsize = 11)
+                        gp = gpar(fontsize = 9)
                     )
 
                     grid::grid.text(
@@ -1293,7 +1298,7 @@ iNZGUI <- setRefClass(
                         ),
                         y = unit(1, "npc") - unit(8, "lines"),
                         x = 0, c(just = "left", "top"),
-                        gp = gpar(fontsize = 11)
+                        gp = gpar(fontsize = 9)
                     )
 
                 } else {
@@ -1375,7 +1380,7 @@ iNZGUI <- setRefClass(
             state <- .self$getState()
             dispose(.self$win)
             if (popOut) try(grDevices::dev.off(), TRUE)
-            .self$initializeGui(dispose_fun = .self$disposer, show = FALSE)
+            .self$initializeGui(disposer = .self$disposer, show = FALSE)
             Sys.sleep(0.5)
             while (!is_initialized) {
                 Sys.sleep(0.1)

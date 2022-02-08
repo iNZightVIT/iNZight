@@ -684,7 +684,7 @@ iNZAggregateWin <- setRefClass(
                 function(var)  {
                     x <- lapply(summaries[, 2],
                         function(smry) {
-                            if (!is.null(quantiles) && grepl("{p}", smry, fixed = TRUE)) {
+                            if (!is.null(quantiles)) {
                                 glue::glue(smry, .envir = list(var = var, p = quantiles))
                             } else {
                                 glue::glue(smry)
@@ -776,6 +776,7 @@ iNZAggregateWin <- setRefClass(
             if ("quantile" %in% summaries[,1]) {
                 quantiles <- summaries[summaries[,1] == "quantile", 3]
                 quantiles <- as.integer(strsplit(quantiles, ",")[[1]])
+                quantiles <- quantiles / 100
             }
             quantiles
         },
@@ -877,8 +878,8 @@ iNZStackWin <- setRefClass(
     )
 )
 
-iNZReorderWin <- setRefClass(
-    "iNZReorderWin",
+iNZReorderVarsWin <- setRefClass(
+    "iNZReorderVarsWin",
     fields = list(
         dataVars = "ANY", chosenVars = "ANY",
         btn_add = "ANY", btn_rmv = "ANY",
@@ -888,6 +889,8 @@ iNZReorderWin <- setRefClass(
     contains = "iNZWindow",
     methods = list(
         initialize = function(gui) {
+
+            initFields(reordering = FALSE)
 
             ok <- callSuper(gui,
                 title = "Reorder and Select Variables",

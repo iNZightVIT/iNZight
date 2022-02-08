@@ -30,7 +30,7 @@ iNZWindow <- setRefClass("iNZWindow",
             scroll = FALSE,
             show_code = FALSE
         ) {
-            if (is.null(gui)) return(invisibl(FALSE))
+            if (is.null(gui)) return(invisible(FALSE))
             if (!is.function(action)) stop("action should be a function")
 
             initFields(
