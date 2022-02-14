@@ -59,11 +59,12 @@ iNZImportWin <- setRefClass(
                 fColTypes = NULL,
                 rdaName = NULL,
                 delimiters = list(
+                    "Detect automatically" = "auto",
                     "Comma (,)" = ",",
                     "Semi-colon (;)" = ";",
                     "Tab" = "\t"
                 ),
-                csvdelim = ",",
+                csvdelim = "auto",
                 txtdelim = "\t",
                 decimalmarks = list("Period (.)" = ".", "Comma (,)" = ","),
                 decMark = ".",

@@ -1,7 +1,7 @@
 Package: iNZight
 Type: Package
 Title: A GUI for Data Exploration and Visualisation
-Version: 4.2.0
+Version: 4.2.0.9000
 Date: 2022-02-08
 Authors@R: c(person("Tom", "Elliott", role = c("aut", "cre"),
                     email = "tom.elliott@auckland.ac.nz"),
@@ -26,7 +26,7 @@ Imports:
     grid,
     gWidgets2RGtk2,
     iNZightPlots (>= 2.14),
-    iNZightTools (>= 1.12.2),
+    iNZightTools (>= 1.12.2.9000),
     magrittr,
     methods,
     plyr,

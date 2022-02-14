@@ -1,3 +1,5 @@
+- enable automatic detection of delimited file separator (using `readr::read_delim`) (#401)
+
 # iNZight 4.2
 
 ## Major changes
