@@ -278,7 +278,7 @@ iNZSurveyDesign <- setRefClass(
                     gsub("dataSet", GUI$getActiveDoc()$getModel()$name, call)
                 )
                 GUI$rhistory$add(
-                    c("## create survey design object", call),
+                    c("## create survey design object\n", call),
                     tidy = TRUE
                 )
 
