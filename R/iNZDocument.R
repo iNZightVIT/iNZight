@@ -131,7 +131,7 @@ iNZDataModel <- setRefClass(
             if (inherits(x, "inzsvyspec")) {
                 spec <- x
                 if (is.null(x$design))
-                    x <- iNZightTools::make_survey(dataSet, x)
+                    x <- surveyspec::make_survey(dataSet, x)
             } else {
                 spec <- structure(
                     list(
@@ -147,12 +147,13 @@ iNZDataModel <- setRefClass(
                             scale = x$scale,
                             rscales = x$rscales,
                             reptype = x$reptype,
-                            calibrate = x$calibrate
+                            calibrate = x$calibrate,
+                            calfun = if (is.null(x$calfun)) "linear" else x$calfun
                         )
                     ),
                     class = "inzsvyspec"
                 )
-                x <- iNZightTools::make_survey(dataSet, spec)
+                x <- surveyspec::make_survey(dataSet, spec)
             }
             if (!is.null(spec$spec$calibrate)) {
                 cal <- lapply(names(spec$spec$calibrate),

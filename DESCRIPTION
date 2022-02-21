@@ -35,6 +35,7 @@ Imports:
     skimr,
     stringr,
     survey,
+    surveyspec,
     utils
 Suggests:
     covr,

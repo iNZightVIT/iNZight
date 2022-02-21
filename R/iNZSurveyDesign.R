@@ -196,7 +196,7 @@ iNZSurveyDesign <- setRefClass(
                     )
 
                     if (preview) {
-                        spec <- iNZightTools::make_survey(
+                        spec <- surveyspec::make_survey(
                             GUI$getActiveData(),
                             structure(list(spec = spec), class = "inzsvyspec")
                         )
@@ -237,7 +237,7 @@ iNZSurveyDesign <- setRefClass(
                         type = "replicate"
                     )
                     if (preview) {
-                        spec <- iNZightTools::make_survey(
+                        spec <- surveyspec::make_survey(
                             GUI$getActiveData(),
                             structure(
                                 list(spec = spec),
@@ -570,7 +570,7 @@ iNZSurveyDesign <- setRefClass(
                 )
                 if (length(file) == 0) return()
             }
-            svyspec <- iNZightTools::import_survey(file)
+            svyspec <- surveyspec::import_survey(file)
             GUI$getActiveDoc()$getModel()$setDesign(svyspec, gui = GUI)
 
             setOK <- try(
