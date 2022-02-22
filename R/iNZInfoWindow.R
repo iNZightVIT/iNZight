@@ -246,7 +246,7 @@ iNZDataSummary <- setRefClass(
         initialize = function(gui) {
             if (is.null(gui$getActiveData()) || all(dim(gui$getActiveData()) == 1L)) return()
             callSuper(gui, controls = "top", name = "Dataset Summary")
-            initFields(page = 1L, pagesize = 10L)
+            initFields(page = 1L, pagesize = 100L)
             setup_panel()
             visible(win) <<- TRUE
         },
