@@ -239,23 +239,30 @@ iNZInfoWindow <- setRefClass(
 iNZDataSummary <- setRefClass(
     "iNZDataSummary",
     contains = "iNZInfoWindow",
-    fields = list(),
+    fields = list(
+        page = "integer", pagesize = "integer"
+    ),
     methods = list(
         initialize = function(gui) {
             if (is.null(gui$getActiveData()) || all(dim(gui$getActiveData()) == 1L)) return()
             callSuper(gui, controls = "top", name = "Dataset Summary")
+            initFields(page = 1L, pagesize = 10L)
             setup_panel()
             visible(win) <<- TRUE
         },
         gen_call = function() {
             "Generate summary call"
             d <- GUI$get_data_object()
-            sprintf("%sskimr::skim(%s)",
+            sprintf("%sskimr::skim(%s%s)",
                 ifelse(iNZightTools::is_survey(d),
                     sprintf("print(%s, design.summaries = TRUE)\n", designname),
                     ""
                 ),
-                dataname
+                dataname,
+                ifelse(ncol(d) > pagesize,
+                    sprintf(", %s:%s", pagesize * (page - 1) + 1, min(ncol(d), pagesize * page)),
+                    ""
+                )
             )
         },
         update_summary = function() {
@@ -295,6 +302,28 @@ iNZDataSummary <- setRefClass(
             set_output(smry)
         },
         setup_panel = function() {
+            ds <- GUI$getActiveData()
+            N <- ncol(ds)
+            if (ncol(ds) <= pagesize) {
+                update_summary()
+                return()
+            }
+
+            g <- gvbox(container = ctrl_panel)
+            npage <- ceiling(N / pagesize)
+            lbl <- glabel(
+                "Summary shown for 100 variables at a time. Use slider to page through.",
+                container = g
+            )
+            sld <- gslider(1L, npage,
+                value = page,
+                handler = function(h, ...) {
+                    page <<- as.integer(svalue(h$obj))
+                    update_summary()
+                },
+                container = g
+            )
+
             update_summary()
         }
     )
