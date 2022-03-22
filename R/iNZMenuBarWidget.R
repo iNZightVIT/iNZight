@@ -514,7 +514,7 @@ iNZMenuBarWidget <- setRefClass(
                     install_modules =
                         gaction("Install the Modules package ...",
                             icon = "execute",
-                            tooltip = "Install the iNZightModules R pacakge to access add-on modules",
+                            tooltip = "Install the iNZightModules R package to access add-on modules",
                             handler = function(h, ...) {
                                 c <- gconfirm("You are about to install the iNZightModules R package. Are you sure you want to continue?",
                                     parent = GUI$win)
