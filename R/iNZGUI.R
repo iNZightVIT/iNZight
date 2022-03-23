@@ -34,6 +34,7 @@
 #' @field code_panel the interactive code widget at the bottom of the iNZight window
 #' @field is_initialized logical, indicates if iNZight is initialised or not
 #'
+#' @md
 #' @import methods utils grDevices colorspace
 #' @importFrom magrittr %>%
 #' @export iNZGUI

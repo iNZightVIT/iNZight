@@ -21,6 +21,13 @@ Starts iNZight, optionally with data and a dispose function.
 For example, a script called to open iNZight can automatically
 exit R once the iNZight session is complete using \code{q()} (see examples).
 }
+\section{Addon modules}{
+
+
+By default, iNZight uses the iNZightVIT install path to locate the modules directory ('modules'). However, you can override this by specifying the \code{addonDir} argument:\preformatted{iNZight(addonDir = '/path/to/modules')
+}
+}
+
 \examples{
 \dontrun{
 # to have iNZight quit R without saving after the session is over,

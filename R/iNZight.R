@@ -3,6 +3,15 @@
 #' Starts iNZight, optionally with data and a dispose function.
 #' For example, a script called to open iNZight can automatically
 #' exit R once the iNZight session is complete using `q()` (see examples).
+#'
+#' @section Addon modules:
+#'
+#' By default, iNZight uses the iNZightVIT install path to locate the modules directory ('modules'). However, you can override this by specifying the `addonDir` argument:
+#'
+#' ```
+#' iNZight(addonDir = '/path/to/modules')
+#' ```
+#'
 #' @param data a data frame
 #' @param dispose_fun called when the iNZight GUI is closed
 #' @param ... arguments passed to `dispose_fun`
