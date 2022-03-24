@@ -42,6 +42,7 @@ iNZMenuBarWidget <- setRefClass(
                 Dataset = DataMenu(),
                 Variables = VariablesMenu(),
                 Plot = PlotMenu(),
+                Modules = ModuleMenu(),
                 Advanced = AdvancedMenu(),
                 Help = HelpMenu()
             )
@@ -415,6 +416,19 @@ iNZMenuBarWidget <- setRefClass(
         setPlotMenu = function(menu) {
             plotmenu <<- menu
             updateMenu("Plot", PlotMenu())
+        },
+        ModuleMenu = function() {
+            mods <- lapply(GUI$activeModules,
+                function(m) {
+                    gaction(m$info$title,
+                        handler = function(h, ...) {
+                            run_module(GUI, m)
+                        }
+                    )
+                }
+            )
+            # TODO: add module manager item
+            mods
         },
         AdvancedMenu = function() {
             if (!hasData() && modules_installed) {

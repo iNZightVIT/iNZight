@@ -121,17 +121,18 @@ iNZModule <- setRefClass(
     "iNZModule",
     fields = list(
         GUI = "ANY",
+        mod = "ANY",
         modwin = "ANY",
         mainGrp = "ANY",
         homeButton = "ANY"
     ),
     methods = list(
-        initialize = function(gui,
-            name = "Module",
+        initialize = function(gui, mod,
+            name = mod$info$title %||% "Module",
             embedded = TRUE,
             uses_code_panel = FALSE
         ) {
-            initFields(GUI = gui)
+            initFields(GUI = gui, mod = mod)
 
             # if (embedded) {}
             modwin <<- GUI$initializeModuleWindow(.self,
@@ -139,6 +140,7 @@ iNZModule <- setRefClass(
                 scroll = TRUE
             )
             mainGrp <<- modwin$body
+            mainGrp$set_borderwidth(5L)
 
             homeButton <<- gbutton("Home",
                 handler = function(h, ...) close()
@@ -273,5 +275,5 @@ run_module <- function(ui, mod) {
         cl <- sapply(n, function(x) class(mod[[x]]))
         n[which(cl == "refObjectGenerator")[1]]
     }
-    eval(parse(text = sprintf("%s$new(ui)", moduleName)), mod)
+    mod[[moduleName]]$new(ui, mod = mod)
 }
