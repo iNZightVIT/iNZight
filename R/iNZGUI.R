@@ -930,8 +930,19 @@ iNZGUI <- setRefClass(
         },
         load_addons = function() {
             mod_dirs <- list.dirs(addonModuleDir, recursive = FALSE)
-            cli::cli_inform("Loading {length(mod_dirs)} modules")
-            mods <- lapply(mod_dirs, load_module)
+            nmod <- length(mod_dirs)
+            cli::cli_progress_bar("Loading modules", total = nmod)
+
+            start <- proc.time()
+            activeModules <<- vector("list", nmod)
+            for (i in seq_len(nmod)) {
+                activeModules[[i]] <<- load_module(mod_dirs[[i]])
+                cli::cli_progress_update()
+            }
+            cli::cli_progress_done()
+            end <- proc.time()
+            ptime <- end - start
+            cli::cli_alert_info("Loaded {nmod} module{?s} ({round(ptime[3], 1)}s)")
         },
         ## create a gvbox object into the module window (ie, initialize it)
         ## NOTE: should be run every time when a new module is open

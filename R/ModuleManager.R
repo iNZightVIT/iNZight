@@ -121,18 +121,17 @@ iNZModule <- setRefClass(
     "iNZModule",
     fields = list(
         GUI = "ANY",
-        e = "ANY",
         modwin = "ANY",
         mainGrp = "ANY",
         homeButton = "ANY"
     ),
     methods = list(
-        initialize = function(gui, env,
+        initialize = function(gui,
             name = "Module",
             embedded = TRUE,
             uses_code_panel = FALSE
         ) {
-            initFields(GUI = gui, e = env)
+            initFields(GUI = gui)
 
             # if (embedded) {}
             modwin <<- GUI$initializeModuleWindow(.self,
@@ -223,7 +222,7 @@ load_module <- function(dir) {
     info <- list(
         title = desc::desc_get_field("Title", file = mod_desc),
         description = desc::desc_get_field("Description", file = mod_desc),
-        author = desc::desc_get_author(file = mod_desc),
+        author = desc::desc_get_field("Author", file = mod_desc),
         version = desc::desc_get_version(file = mod_desc),
         pkgs = desc::desc_get_deps(file = mod_desc),
         github = desc::desc_get_field("Github", file = mod_desc)
@@ -240,6 +239,7 @@ load_module <- function(dir) {
     # now load all the bits and pieces
     mdir <- file.path(dir, "module")
 
+    ## special loading of menu - this should do some fancy checking, etc..
     if (file.exists(file.path(mdir, "menu.R")))
         source(file.path(mdir, "menu.R"), local = e)
 
@@ -250,8 +250,14 @@ load_module <- function(dir) {
     e
 }
 
+#' @export
 print.inzmodule <- function(x, ...) {
-    print(ls(envir = x))
+    cli::cli_h1("{x$info$title}")
+    cli::cli_text("Author: {.emph {x$info$author}}")
+    cli::cli_text("Version {x$info$version}")
+
+    cli::cli_h3("Description")
+    cli::cli_text("{x$info$description}")
 }
 
 ## helpers for modules
@@ -259,4 +265,13 @@ item <- function(title, action) {
     structure(list(title = title, action = action),
         class = "inzmenuitem"
     )
+}
+
+run_module <- function(ui, mod) {
+    n <- ls(envir = mod)
+    moduleName <- if (!is.null(mod$module_name)) mod$module_name else {
+        cl <- sapply(n, function(x) class(mod[[x]]))
+        n[which(cl == "refObjectGenerator")[1]]
+    }
+    eval(parse(text = sprintf("%s$new(ui)", moduleName)), mod)
 }
