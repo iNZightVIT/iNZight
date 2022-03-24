@@ -21,7 +21,9 @@ Depends:
     gWidgets2,
     objectProperties
 Imports:
+    cli,
     colorspace,
+    desc,
     grDevices,
     grid,
     gWidgets2RGtk2,

@@ -91,6 +91,7 @@ iNZGUI <- setRefClass(
             plot_history = "ANY",
             disposer = "ANY",
             addonModuleDir = "character",
+            activeModules = "list",
             ## This will be used to store the dataset, design, etc..
             ## rather than passing around the full object.
             code_env = "ANY",
@@ -117,7 +118,11 @@ iNZGUI <- setRefClass(
             disposer = NULL
         ) {
             "Initiates the GUI"
-            initFields(is_initialized = FALSE, disposer = disposer)
+            initFields(
+                is_initialized = FALSE,
+                disposer = disposer,
+                activeModules = list()
+            )
 
             if (is.null(disposer)) {
                 if (!is.null(dispose_fun) && is.function(dispose_fun))
@@ -148,6 +153,7 @@ iNZGUI <- setRefClass(
             } else {
                 addonModuleDir <<- Sys.getenv("INZIGHT_MODULES_DIR")
             }
+            if (dir.exists(addonModuleDir)) load_addons()
 
             popOut <<- preferences$popout
 
@@ -921,6 +927,11 @@ iNZGUI <- setRefClass(
                     icon = "error"
                 )
             }
+        },
+        load_addons = function() {
+            mod_dirs <- list.dirs(addonModuleDir, recursive = FALSE)
+            cli::cli_inform("Loading {length(mod_dirs)} modules")
+            mods <- lapply(mod_dirs, load_module)
         },
         ## create a gvbox object into the module window (ie, initialize it)
         ## NOTE: should be run every time when a new module is open
