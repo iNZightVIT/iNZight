@@ -269,6 +269,22 @@ item <- function(title, action) {
     )
 }
 
+convert_menu_items <- function(item, ...) UseMethod("convert_menu_items")
+
+#' @export
+convert_menu_items.default <- function(item, ...) item
+
+#' @export
+convert_menu_items.list <- function(item, ...) lapply(item, convert_menu_items, ...)
+
+#' @export
+convert_menu_items.inzmenuitem <- function(item, gui, mod) {
+    gaction(
+        item$title,
+        handler = function(h, ...) item$action(gui, mod)
+    )
+}
+
 run_module <- function(ui, mod) {
     n <- ls(envir = mod)
     moduleName <- if (!is.null(mod$module_name)) mod$module_name else {
