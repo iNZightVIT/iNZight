@@ -124,13 +124,15 @@ iNZModule <- setRefClass(
         mod = "ANY",
         modwin = "ANY",
         mainGrp = "ANY",
-        homeButton = "ANY"
+        homeButton = "ANY",
+        helpButton = "ANY"
     ),
     methods = list(
         initialize = function(gui, mod,
             name = mod$info$title %||% "Module",
             embedded = TRUE,
-            uses_code_panel = FALSE
+            uses_code_panel = FALSE,
+            help = NULL
         ) {
             initFields(GUI = gui, mod = mod)
 
@@ -146,10 +148,16 @@ iNZModule <- setRefClass(
                 handler = function(h, ...) close()
             )
 
-            GUI$plotToolbar$update(NULL)
+            if (!is.null(help)) {
+                helpButton <<- gbutton("Help",
+                    handler = function(h, ...) browseURL(help)
+                )
+                add(modwin$footer, helpButton, expand = TRUE, fill = TRUE)
+            }
 
-            # add(modwin$footer, helpButton, expand = TRUE, fill = TRUE)
             add(modwin$footer, homeButton, expand = TRUE, fill = TRUE)
+
+            GUI$plotToolbar$update(NULL)
 
             if (GUI$preferences$dev.features && GUI$preferences$show.code)
                 visible(GUI$code_panel$panel) <<- uses_code_panel
