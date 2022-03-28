@@ -200,15 +200,6 @@ iNZImportWin <- setRefClass(
             visible(advGp) <<- FALSE
 
             add_body(advGp)
-
-            addHandlerDestroy(GUI$modWin,
-                handler = function(h, ...) {
-                    ## Not sure why but if this isn't done before the window closes,
-                    ## a GTK Critical error is thrown.
-                    if (!is.null(prev)) delete(prevGp, prev)
-                    return(TRUE)
-                }
-            )
         }, # initialize()
         setfile = function(...) {
             svalue(filename) <<- basename(fname)

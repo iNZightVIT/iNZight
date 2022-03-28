@@ -11,8 +11,13 @@ NewModuleManager <- setRefClass(
         win = "ANY",
         m_dir = "character",
         confirm = "logical",
-        modules = "data.frame",
-        module_table = "ANY"
+        modules = "list",
+        g_mods = "ANY",
+        module_table = "ANY",
+        available_modules = "list",
+        mod_info_title = "ANY",
+        mod_info_author = "ANY",
+        mod_info_version = "ANY"
     ),
     methods = list(
         initialize = function(gui) {
@@ -30,12 +35,15 @@ NewModuleManager <- setRefClass(
             )
             if (!ok) return()
             on.exit(.self$show())
-            usingMethods()
 
             initFields(
                 m_dir = gui$addonModuleDir,
                 confirm = as.logical(Sys.getenv("INZIGHT_CONFIRM_DIALOGS", TRUE)),
-                modules = data.frame()
+                modules = list()
+            )
+
+            available_modules <<- yaml::read_yaml(
+                "https://raw.githubusercontent.com/iNZightVIT/addons/feature/modular/modules.yml",
             )
 
             if (!file.exists(m_dir)) create_module_directory(m_dir)
@@ -53,14 +61,44 @@ NewModuleManager <- setRefClass(
 
             add_body(info_tbl)
 
+            g_mods <<- ggroup()
+            add_body(g_mods, expand = TRUE)
+
             #
             ## --- list installed modules
             refresh_modules()
-            module_table <<- gdf(modules)
-            module_table$remove_popup_menu()
-            module_table$hide_row_names(TRUE)
+            module_table <<- gtable(make_modules_df(), container = g_mods)
 
-            add_body(module_table, expand = TRUE)
+            # TODO: remove dropdown from header
+
+            addHandlerSelectionChanged(module_table,
+                function(h, ...) update_info_panel())
+
+            g_mod_info <- gvbox()
+            size(g_mod_info) <- c(600, -1)
+            add(g_mods, g_mod_info)
+
+            mod_info_title <<- glabel("Select a module",
+                container = g_mod_info,
+                fill = TRUE,
+                anchor = c(-1, 0)
+            )
+
+            addSpace(g_mod_info, 10)
+
+            mod_info_tbl <- glayout(container = g_mod_info, expand = TRUE)
+            ii <- 1L
+
+            mod_info_author <<- glabel("")
+            mod_info_tbl[ii, 1L, anchor = c(1, 0), expand = TRUE] <- glabel("Author: ")
+            mod_info_tbl[ii, 2L, anchor = c(-1, 0), expand = TRUE, fill = TRUE] <- mod_info_author
+            ii <- ii + 1L
+
+            mod_info_version <<- glabel("")
+            mod_info_tbl[ii, 1L, anchor = c(1, 0), expand = TRUE] <- glabel("Latest version: ")
+            mod_info_tbl[ii, 2L, anchor = c(-1, 0), expand = TRUE, fill = TRUE] <- mod_info_version
+            ii <- ii + 1L
+
 
         },
         create_module_directory = function(dir) {
@@ -92,16 +130,66 @@ NewModuleManager <- setRefClass(
                 parent = GUI$win
             )
         },
+        module_load = function(dir) {
+            mod_desc <- file.path(dir, "DESCRIPTION")
+            info <- list(
+                title = desc::desc_get_field("Title", file = mod_desc),
+                description = desc::desc_get_field("Description", file = mod_desc),
+                author = desc::desc_get_field("Author", file = mod_desc),
+                version = desc::desc_get_version(file = mod_desc),
+                pkgs = desc::desc_get_deps(file = mod_desc),
+                github = desc::desc_get_field("Github", file = mod_desc),
+                subscribed = "stable",
+                update_available = ""
+            )
+            if (file.exists(file.path(dir, "VERSION")))
+                info$subscribed <- scan(file.path(dir, "VERSION"))
+            if (info$subscribed == "stable") {
+                si <- which(sapply(available_modules, function(x) x$title) == info$title)
+                info$update_available <- ifelse(
+                    info$version < numeric_version(available_modules[[si]]$latest),
+                    available_modules[[si]]$latest,
+                    ""
+                )
+            }
+            info
+        },
         refresh_modules = function() {
             "Update list of modules installed"
-            modules <<- data.frame(
-                Select = FALSE,
-                Name = "Module Name",
-                Description = "Here is a description",
-                Subscribed = "latest",
-                Version = "1.0.0",
-                `Update Available` = "TRUE"
-            )
+            modules <<- lapply(list.dirs(m_dir, recursive = FALSE), .self$module_load)
+        },
+        make_modules_df = function() {
+            mdf <- lapply(modules, function(mod) {
+                data.frame(
+                    # Select = FALSE,
+                    Name = mod$title,
+                    # Description = mod$description,
+                    # Subscribed = mod$subscribed,
+                    Version = as.character(mod$version),
+                    Latest = mod$update_available
+                )
+            })
+            do.call(rbind, mdf)
+        },
+        update_info_panel = function() {
+            modi <- module_table$get_selected()
+            if (modi == 0) {
+                # hide everything
+            } else {
+                # show everything
+                mod <- modules[[modi]]
+                svalue(mod_info_title) <<- mod$title
+                font(mod_info_title) <<- list(size = 12, weight = "bold")
+
+                svalue(mod_info_author) <<- mod$author
+                svalue(mod_info_version) <<- mod$version
+            }
+
+            # print(svalue(module_table))
+        },
+        closeHandler = function(h, ...) {
+            if (!is.null(module_table)) delete(g_mods, module_table)
+            return(TRUE)
         }
     )
 )

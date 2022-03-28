@@ -72,6 +72,7 @@ iNZWindow <- setRefClass("iNZWindow",
                 height = window_height + show_code * 80L,
                 parent = GUI$win
             )
+            addHandlerDestroy(GUI$modWin, function(h, ...) closeHandler(h, ...))
 
             body_direction <- match.arg(body_direction)
             g <- gvbox(expand = TRUE)
@@ -209,6 +210,7 @@ iNZWindow <- setRefClass("iNZWindow",
         },
         close = function() {
             dispose(GUI$modWin)
-        }
+        },
+        closeHandler = function(h, ...) TRUE
     )
 )
