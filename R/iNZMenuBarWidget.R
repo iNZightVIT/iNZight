@@ -452,6 +452,12 @@ iNZMenuBarWidget <- setRefClass(
                     }
                 }
             )
+            mods <- c(mods,
+                list(
+                    gseparator(),
+                    gaction("Manage ...", handler = function(h, ...) NewModuleManager$new(ui))
+                )
+            )
             # TODO: add module manager item
             do.call(c, mods)
         },

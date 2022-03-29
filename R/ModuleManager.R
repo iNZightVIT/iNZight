@@ -11,13 +11,15 @@ NewModuleManager <- setRefClass(
         win = "ANY",
         m_dir = "character",
         confirm = "logical",
-        modules = "list",
+        installed_modules = "list",
+        available_modules = "list",
         g_mods = "ANY",
         module_table = "ANY",
-        available_modules = "list",
         mod_info_title = "ANY",
         mod_info_author = "ANY",
-        mod_info_version = "ANY"
+        mod_info_version = "ANY",
+        mod_info_subscribed = "ANY",
+        mod_info_description = "ANY"
     ),
     methods = list(
         initialize = function(gui) {
@@ -39,11 +41,10 @@ NewModuleManager <- setRefClass(
             initFields(
                 m_dir = gui$addonModuleDir,
                 confirm = as.logical(Sys.getenv("INZIGHT_CONFIRM_DIALOGS", TRUE)),
-                modules = list()
-            )
-
-            available_modules <<- yaml::read_yaml(
-                "https://raw.githubusercontent.com/iNZightVIT/addons/feature/modular/modules.yml",
+                installed_modules = list(),
+                available_modules = yaml::read_yaml(
+                    "https://raw.githubusercontent.com/iNZightVIT/addons/feature/modular/modules.yml",
+                )
             )
 
             if (!file.exists(m_dir)) create_module_directory(m_dir)
@@ -75,7 +76,8 @@ NewModuleManager <- setRefClass(
                 function(h, ...) update_info_panel())
 
             g_mod_info <- gvbox()
-            size(g_mod_info) <- c(600, -1)
+            g_mod_info$set_borderwidth(5L)
+            # size(g_mod_info) <- c(600, -1)
             add(g_mods, g_mod_info)
 
             mod_info_title <<- glabel("Select a module",
@@ -91,12 +93,23 @@ NewModuleManager <- setRefClass(
 
             mod_info_author <<- glabel("")
             mod_info_tbl[ii, 1L, anchor = c(1, 0), expand = TRUE] <- glabel("Author: ")
-            mod_info_tbl[ii, 2L, anchor = c(-1, 0), expand = TRUE, fill = TRUE] <- mod_info_author
+            mod_info_tbl[ii, 2:3, anchor = c(-1, 0), expand = TRUE, fill = TRUE] <- mod_info_author
             ii <- ii + 1L
 
             mod_info_version <<- glabel("")
             mod_info_tbl[ii, 1L, anchor = c(1, 0), expand = TRUE] <- glabel("Latest version: ")
             mod_info_tbl[ii, 2L, anchor = c(-1, 0), expand = TRUE, fill = TRUE] <- mod_info_version
+
+            mod_info_subscribed <<- gcombobox("")
+            visible(mod_info_subscribed) <<- FALSE
+            mod_info_tbl[ii, 3L, fill = TRUE] <- mod_info_subscribed
+            ii <- ii + 1L
+
+            mod_info_description <<- gtext("", width = 500, height = 50)
+            RGtk2::gtkTextViewSetLeftMargin(mod_info_description$widget, 0)
+            enabled(mod_info_description) <<- FALSE
+            mod_info_tbl[ii, 1L, anchor = c(1, 1), expand = TRUE] <- glabel("Description: ")
+            mod_info_tbl[ii, 2:3, anchor = c(-1, 0), expand = TRUE, fill = TRUE] <- mod_info_description
             ii <- ii + 1L
 
 
@@ -144,31 +157,46 @@ NewModuleManager <- setRefClass(
             )
             if (file.exists(file.path(dir, "VERSION")))
                 info$subscribed <- scan(file.path(dir, "VERSION"))
-            if (info$subscribed == "stable") {
-                si <- which(sapply(available_modules, function(x) x$title) == info$title)
-                info$update_available <- ifelse(
-                    info$version < numeric_version(available_modules[[si]]$latest),
-                    available_modules[[si]]$latest,
-                    ""
+
+            si <- which(sapply(available_modules, function(x) x$title) == info$title)
+            if (si > 0) {
+                amod <- available_modules[[si]]
+                if (info$subscribed == "stable") {
+                    si <- which(sapply(available_modules, function(x) x$title) == info$title)
+                    info$update_available <- ifelse(
+                        info$version < numeric_version(amod$latest),
+                        available_modules[[si]]$latest,
+                        ""
+                    )
+                }
+                info$versions <- c("stable",
+                    if (amod$development == "") NULL else amod$development,
+                    amod$versions
                 )
             }
             info
         },
         refresh_modules = function() {
             "Update list of modules installed"
-            modules <<- lapply(list.dirs(m_dir, recursive = FALSE), .self$module_load)
+            mdirs <- list.dirs(m_dir, recursive = FALSE)
+            installed_modules <<- lapply(mdirs, .self$module_load)
+            names(installed_modules) <<- basename(mdirs)
         },
         make_modules_df = function() {
-            mdf <- lapply(modules, function(mod) {
-                data.frame(
-                    # Select = FALSE,
-                    Name = mod$title,
-                    # Description = mod$description,
-                    # Subscribed = mod$subscribed,
-                    Version = as.character(mod$version),
-                    Latest = mod$update_available
-                )
-            })
+            mdf <- lapply(names(available_modules),
+                function(mod) {
+                    amod <- available_modules[[mod]]
+                    imod <- installed_modules[[mod]]
+                    data.frame(
+                        # Select = FALSE,
+                        Name = amod$title,
+                        # Description = mod$description,
+                        # Subscribed = mod$subscribed,
+                        Latest = ifelse(is.null(imod), "", as.character(imod$version)),
+                        Installed = amod$version
+                    )
+                }
+            )
             do.call(rbind, mdf)
         },
         update_info_panel = function() {
@@ -177,12 +205,22 @@ NewModuleManager <- setRefClass(
                 # hide everything
             } else {
                 # show everything
-                mod <- modules[[modi]]
-                svalue(mod_info_title) <<- mod$title
+                mod <- names(available_modules)[modi]
+                amod <- available_modules[[mod]]
+                imod <- installed_modules[[mod]]
+                svalue(mod_info_title) <<- amod$title
                 font(mod_info_title) <<- list(size = 12, weight = "bold")
 
-                svalue(mod_info_author) <<- mod$author
-                svalue(mod_info_version) <<- mod$version
+                svalue(mod_info_author) <<- amod$author
+                svalue(mod_info_version) <<- amod$version
+                if (!is.null(amod$versions) && !is.null(imod)) {
+                    mod_info_subscribed$set_items(imod$versions)
+                    mod_info_subscribed$set_value(imod$subscribed)
+                    visible(mod_info_subscribed) <<- TRUE
+                } else {
+                    visible(mod_info_subscribed) <<- FALSE
+                }
+                svalue(mod_info_description) <<- amod$description
             }
 
             # print(svalue(module_table))
