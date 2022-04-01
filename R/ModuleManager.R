@@ -15,11 +15,12 @@ NewModuleManager <- setRefClass(
         available_modules = "list",
         g_mods = "ANY",
         module_table = "ANY",
-        mod_info_title = "ANY",
-        mod_info_author = "ANY",
-        mod_info_version = "ANY",
-        mod_info_subscribed = "ANY",
-        mod_info_description = "ANY"
+        g_mod_info = "ANY"
+        # mod_info_title = "ANY",
+        # mod_info_author = "ANY",
+        # mod_info_version = "ANY",
+        # mod_info_subscribed = "ANY",
+        # mod_info_description = "ANY"
     ),
     methods = list(
         initialize = function(gui) {
@@ -75,43 +76,12 @@ NewModuleManager <- setRefClass(
             addHandlerSelectionChanged(module_table,
                 function(h, ...) update_info_panel())
 
-            g_mod_info <- gvbox()
+            g_mod_info <<- gvbox()
             g_mod_info$set_borderwidth(5L)
-            # size(g_mod_info) <- c(600, -1)
+            size(g_mod_info) <<- c(700, -1)
+
             add(g_mods, g_mod_info)
-
-            mod_info_title <<- glabel("Select a module",
-                container = g_mod_info,
-                fill = TRUE,
-                anchor = c(-1, 0)
-            )
-
-            addSpace(g_mod_info, 10)
-
-            mod_info_tbl <- glayout(container = g_mod_info, expand = TRUE)
-            ii <- 1L
-
-            mod_info_author <<- glabel("")
-            mod_info_tbl[ii, 1L, anchor = c(1, 0), expand = TRUE] <- glabel("Author: ")
-            mod_info_tbl[ii, 2:3, anchor = c(-1, 0), expand = TRUE, fill = TRUE] <- mod_info_author
-            ii <- ii + 1L
-
-            mod_info_version <<- glabel("")
-            mod_info_tbl[ii, 1L, anchor = c(1, 0), expand = TRUE] <- glabel("Latest version: ")
-            mod_info_tbl[ii, 2L, anchor = c(-1, 0), expand = TRUE, fill = TRUE] <- mod_info_version
-
-            mod_info_subscribed <<- gcombobox("")
-            visible(mod_info_subscribed) <<- FALSE
-            mod_info_tbl[ii, 3L, fill = TRUE] <- mod_info_subscribed
-            ii <- ii + 1L
-
-            mod_info_description <<- gtext("", width = 500, height = 50)
-            RGtk2::gtkTextViewSetLeftMargin(mod_info_description$widget, 0)
-            enabled(mod_info_description) <<- FALSE
-            mod_info_tbl[ii, 1L, anchor = c(1, 1), expand = TRUE] <- glabel("Description: ")
-            mod_info_tbl[ii, 2:3, anchor = c(-1, 0), expand = TRUE, fill = TRUE] <- mod_info_description
-            ii <- ii + 1L
-
+            update_info_panel()
 
         },
         create_module_directory = function(dir) {
@@ -192,38 +162,82 @@ NewModuleManager <- setRefClass(
                         Name = amod$title,
                         # Description = mod$description,
                         # Subscribed = mod$subscribed,
-                        Latest = ifelse(is.null(imod), "", as.character(imod$version)),
-                        Installed = amod$version
+                        Latest = amod$version,
+                        Installed = ifelse(is.null(imod), "", as.character(imod$version))
                     )
                 }
             )
             do.call(rbind, mdf)
         },
         update_info_panel = function() {
-            modi <- module_table$get_selected()
-            if (modi == 0) {
-                # hide everything
-            } else {
-                # show everything
-                mod <- names(available_modules)[modi]
-                amod <- available_modules[[mod]]
-                imod <- installed_modules[[mod]]
-                svalue(mod_info_title) <<- amod$title
-                font(mod_info_title) <<- list(size = 12, weight = "bold")
+            # delete all contents
+            sapply(g_mod_info$children,
+                function(x) delete(g_mod_info, x)
+            )
+            g_info <- gvbox(expand = TRUE, container = g_mod_info)
 
-                svalue(mod_info_author) <<- amod$author
-                svalue(mod_info_version) <<- amod$version
-                if (!is.null(amod$versions) && !is.null(imod)) {
-                    mod_info_subscribed$set_items(imod$versions)
-                    mod_info_subscribed$set_value(imod$subscribed)
-                    visible(mod_info_subscribed) <<- TRUE
-                } else {
-                    visible(mod_info_subscribed) <<- FALSE
-                }
-                svalue(mod_info_description) <<- amod$description
+            modi <- module_table$get_selected()
+            if (length(modi) == 0L) {
+                # hide everything
+                lbl <- glabel("Select a module from the list")
+                add(g_info, lbl, anchor = c(-1, 0))
+                return()
             }
 
+            # show everything
+            mod <- names(available_modules)[modi]
+            amod <- available_modules[[mod]]
+            imod <- installed_modules[[mod]]
+
+            ## -- module title
+            mod_info_title <- glabel(amod$title)
+            font(mod_info_title) <- list(size = 12, weight = "bold")
+            add(g_info, mod_info_title, anchor = c(-1, 0), fill = TRUE)
+
+            addSpace(g_info, 10)
+
+            ## -- module information
+            mod_info_tbl <- glayout(container = g_info, expand = TRUE)
+            ii <- 1L
+
+            mod_info_author <- glabel(amod$author)
+            mod_info_tbl[ii, 1L, anchor = c(1, 0), expand = TRUE] <- "Authors: "
+            mod_info_tbl[ii, 2:3, anchor = c(-1, 0), expand = TRUE, fill = TRUE] <- mod_info_author
+            ii <- ii + 1L
+
+            mod_info_version <- glabel(amod$version)
+            mod_info_tbl[ii, 1L, anchor = c(1, 0), expand = TRUE] <- "Latest version: "
+            mod_info_tbl[ii, 2:3, anchor = c(-1, 0), expand = TRUE, fill = TRUE] <- mod_info_version
+
+            # if (!is.null(amod$versions) && !is.null(imod)) {
+            #     mod_info_subscribed$set_items(imod$versions)
+            #     mod_info_subscribed$set_value(imod$subscribed)
+            #     visible(mod_info_subscribed) <<- TRUE
+            # } else {
+            #     visible(mod_info_subscribed) <<- FALSE
+            # }
+
+            mod_info_description <- gtext(amod$description,
+                width = 500, height = 50)
+            RGtk2::gtkTextViewSetLeftMargin(mod_info_description$widget, 0)
+            enabled(mod_info_description) <- FALSE
+            mod_info_tbl[ii, 1L, anchor = c(1, 1), expand = TRUE] <- "Description: "
+            mod_info_tbl[ii, 2:3, anchor = c(-1, 0), expand = TRUE, fill = TRUE] <- mod_info_description
+            ii <- ii + 1L
+
+            # mod_info_subscribed <<- gcombobox("")
+            # visible(mod_info_subscribed) <<- FALSE
+            # mod_info_tbl[ii, 3L, fill = TRUE] <- mod_info_subscribed
+            # ii <- ii + 1L
+
+
+
+
             # print(svalue(module_table))
+        },
+        install_module = function(name, branch) {
+            # downloads the named module@branch
+
         },
         closeHandler = function(h, ...) {
             if (!is.null(module_table)) delete(g_mods, module_table)
