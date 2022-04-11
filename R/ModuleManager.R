@@ -322,6 +322,22 @@ NewModuleManager <- setRefClass(
             # writes a file VERSION indicating which version is being tracked
             cat(ref, file = file.path(mod_path, "VERSION"))
 
+            mod_lib <- file.path(mod_path, "lib")
+            dir.create(mod_lib)
+            deps <- desc::desc_get_deps(file = file.path(mod_path, "DESCRIPTION"))
+            gh_deps <- desc::desc_get_field(
+                "Github",
+                file = file.path(mod_path, "DESCRIPTION")
+            )
+
+            remotes::install_github(gh_deps,
+                lib = mod_lib,
+                upgrade = "never"
+            )
+            utils::install.packages(deps, lib = mod_lib)
+
+            # install dependencies into custom
+
             message(sprintf("Module %s installed!", mod$name))
             refresh_modules()
             update_info_panel()
@@ -491,6 +507,8 @@ load_module <- function(dir) {
     mdir <- file.path(dir, "module")
 
     ## special loading of menu - this should do some fancy checking, etc..
+    eval(.libPaths(file.path(dir, "lib")), envir = e)
+
     if (file.exists(file.path(mdir, "menu.R")))
         source(file.path(mdir, "menu.R"), local = e)
 

@@ -33,6 +33,7 @@ Imports:
     methods,
     plyr,
     png,
+    remotes,
     reshape2,
     skimr,
     stringr,
