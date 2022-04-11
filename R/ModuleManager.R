@@ -50,6 +50,12 @@ NewModuleManager <- setRefClass(
 
             if (!file.exists(m_dir)) create_module_directory(m_dir)
 
+            available_modules <<- lapply(names(available_modules),
+                function(z) c(list(name = z), available_modules[[z]])
+            )
+            names(available_modules) <<-
+                sapply(available_modules, function(x) x$name)
+
             ## --- show user where modules are installed:
             ## TODO: add button to specify new location / link to preferences
             info_tbl <- glayout()
@@ -68,8 +74,8 @@ NewModuleManager <- setRefClass(
 
             #
             ## --- list installed modules
+            module_table <<- gtable(data.frame(Modules = "None"), container = g_mods)
             refresh_modules()
-            module_table <<- gtable(make_modules_df(), container = g_mods)
 
             # TODO: remove dropdown from header
 
@@ -126,7 +132,7 @@ NewModuleManager <- setRefClass(
                 update_available = ""
             )
             if (file.exists(file.path(dir, "VERSION")))
-                info$subscribed <- scan(file.path(dir, "VERSION"))
+                info$subscribed <- scan(file.path(dir, "VERSION"), what = character())
 
             si <- which(sapply(available_modules, function(x) x$title) == info$title)
             if (si > 0) {
@@ -151,6 +157,10 @@ NewModuleManager <- setRefClass(
             mdirs <- list.dirs(m_dir, recursive = FALSE)
             installed_modules <<- lapply(mdirs, .self$module_load)
             names(installed_modules) <<- basename(mdirs)
+
+            module_table$set_items(
+                make_modules_df()
+            )
         },
         make_modules_df = function() {
             mdf <- lapply(names(available_modules),
@@ -201,21 +211,13 @@ NewModuleManager <- setRefClass(
             ii <- 1L
 
             mod_info_author <- glabel(amod$author)
-            mod_info_tbl[ii, 1L, anchor = c(1, 0), expand = TRUE] <- "Authors: "
+            mod_info_tbl[ii, 1L, anchor = c(1, 0), expand = TRUE] <- "Author(s): "
             mod_info_tbl[ii, 2:3, anchor = c(-1, 0), expand = TRUE, fill = TRUE] <- mod_info_author
             ii <- ii + 1L
 
             mod_info_version <- glabel(amod$version)
             mod_info_tbl[ii, 1L, anchor = c(1, 0), expand = TRUE] <- "Latest version: "
             mod_info_tbl[ii, 2:3, anchor = c(-1, 0), expand = TRUE, fill = TRUE] <- mod_info_version
-
-            # if (!is.null(amod$versions) && !is.null(imod)) {
-            #     mod_info_subscribed$set_items(imod$versions)
-            #     mod_info_subscribed$set_value(imod$subscribed)
-            #     visible(mod_info_subscribed) <<- TRUE
-            # } else {
-            #     visible(mod_info_subscribed) <<- FALSE
-            # }
 
             mod_info_description <- gtext(amod$description,
                 width = 500, height = 50)
@@ -225,19 +227,118 @@ NewModuleManager <- setRefClass(
             mod_info_tbl[ii, 2:3, anchor = c(-1, 0), expand = TRUE, fill = TRUE] <- mod_info_description
             ii <- ii + 1L
 
-            # mod_info_subscribed <<- gcombobox("")
-            # visible(mod_info_subscribed) <<- FALSE
-            # mod_info_tbl[ii, 3L, fill = TRUE] <- mod_info_subscribed
-            # ii <- ii + 1L
+            ## Version selection box
+            mod_versions <- c(
+                "None",
+                "Stable",
+                if (!is.null(amod$development) && amod$development != "")
+                    "Development" else NULL,
+                amod$versions
+            )
+            mod_version <- gcombobox(mod_versions,
+                selected = if (is.null(imod)) 1L else which(mod_versions == imod$subscribed),
+                handler = function(h, ...)
+                    install_module(amod, svalue(h$obj))
+            )
+            mod_info_tbl[ii, 1L, anchor = c(1, 0), expand = TRUE] <- "Installed version: "
+            mod_info_tbl[ii, 2L, fill = TRUE] <- mod_version
+
+            if (!is.null(imod)) {
+                del_btn <- gbutton("Uninstall",
+                    handler = function(h, ...) {
+                        uninstall_module(amod)
+                    }
+                )
+                mod_info_tbl[ii, 3L] <- del_btn
+            }
+
+            ii <- ii + 1L
+
+            # if (!is.null(amod$versions) && !is.null(imod)) {
+            #     mod_info_subscribed$set_items(imod$versions)
+            #     mod_info_subscribed$set_value(imod$subscribed)
+            #     visible(mod_info_subscribed) <<- TRUE
+            # } else {
+            #     visible(mod_info_subscribed) <<- FALSE
+            # }
+
+
 
 
 
 
             # print(svalue(module_table))
         },
-        install_module = function(name, branch) {
-            # downloads the named module@branch
+        install_module = function(mod, ref, confirm = TRUE) {
+            if (ref == "None") return()
+            # downloads the named module@ref
 
+            str <- sprintf("%s/archive/refs/%s/%s.zip",
+                gsub("\\.git$", "", mod$url),
+                ifelse(ref %in% c("Stable", "Development"),
+                    "heads",
+                    "tags"
+                ),
+                switch(ref,
+                    "Stable" = mod$stable,
+                    "Development" = mod$development,
+                    ref
+                )
+            )
+
+            if (confirm) {
+                c <- gconfirm(
+                    sprintf("You are about to install %s (%s).",
+                        mod$title, ref
+                    ),
+                    parent = GUI$win
+                )
+                if (!c) return(NULL)
+            }
+            message("Installing ", str)
+
+            mod_path <- file.path(mod_dir, mod$name)
+            if (dir.exists(mod_path)) {
+                if (confirm) {
+                    c <- gconfirm("This will remove the previous version. Continue?",
+                        parent = GUI$win
+                    )
+                    if (!c) return(NULL)
+                }
+            }
+
+            tf <- tempfile(fileext = ".zip")
+            message("Downloading module ...")
+            utils::download.file(str, tf, quiet = TRUE)
+
+            zdir <- basename(utils::unzip(tf, list = TRUE)$Name[1])
+            message("Exacting ...")
+            utils::unzip(tf, exdir = mod_dir)
+            message("Moving items into place ...")
+
+            if (dir.exists(mod_path)) unlink(mod_path, TRUE, TRUE)
+            file.rename(file.path(mod_dir, zdir), mod_path)
+
+            # writes a file VERSION indicating which version is being tracked
+            cat(ref, file = file.path(mod_path, "VERSION"))
+
+            message(sprintf("Module %s installed!", mod$name))
+            refresh_modules()
+            update_info_panel()
+        },
+        uninstall_module = function(mod, confirm = TRUE) {
+            if (confirm) {
+                c <- gconfirm(
+                    sprintf("Are you sure you want to uninstall %s?", mod$title),
+                    parent = GUI$win
+                )
+                if (!c) return(NULL)
+            }
+            d <- file.path(mod_dir, mod$name)
+            if (dir.exists(d)) unlink(d, TRUE, TRUE)
+
+            refresh_modules()
+            update_info_panel()
         },
         closeHandler = function(h, ...) {
             if (!is.null(module_table)) delete(g_mods, module_table)
