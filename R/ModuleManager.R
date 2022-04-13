@@ -325,16 +325,16 @@ NewModuleManager <- setRefClass(
             mod_lib <- file.path(mod_path, "lib")
             dir.create(mod_lib)
             deps <- desc::desc_get_deps(file = file.path(mod_path, "DESCRIPTION"))
+            deps <- deps[!deps %in% rownames(installed.packages())]
             gh_deps <- desc::desc_get_field(
                 "Github",
                 file = file.path(mod_path, "DESCRIPTION")
             )
-
             remotes::install_github(gh_deps,
                 lib = mod_lib,
                 upgrade = "never"
             )
-            utils::install.packages(deps, lib = mod_lib)
+            utils::install.packages(deps$package, lib = mod_lib)
 
             # install dependencies into custom
 
@@ -358,6 +358,8 @@ NewModuleManager <- setRefClass(
         },
         closeHandler = function(h, ...) {
             if (!is.null(module_table)) delete(g_mods, module_table)
+            GUI$load_addons()
+            GUI$menuBarWidget$defaultMenu()
             return(TRUE)
         }
     )
@@ -382,7 +384,8 @@ iNZModule <- setRefClass(
         modwin = "ANY",
         mainGrp = "ANY",
         homeButton = "ANY",
-        helpButton = "ANY"
+        helpButton = "ANY",
+        loaded_packages = "character"
     ),
     methods = list(
         initialize = function(gui, mod,
@@ -392,6 +395,31 @@ iNZModule <- setRefClass(
             help = NULL
         ) {
             initFields(GUI = gui, mod = mod)
+
+            ## special loading of menu - this should do some fancy checking, etc..
+
+            print(mod)
+            deps <- mod$info$pkgs$package
+            message("\nLoading module dependencies ...")
+            search_original_pkgs <- search()
+
+            for (pkg in deps) {
+                cat("+", pkg, "...")
+                mod_lib <- file.path(mod$mod_dir, "lib")
+                in_local_lib <- dir.exists(mod_lib) && dir.exists(file.path(mod_lib, pkg))
+                pkg_lib <- if (in_local_lib) mod_lib else NULL
+                loaded <- require(pkg,
+                    lib.loc = pkg_lib,
+                    character.only = TRUE,
+                    quietly = TRUE
+                )
+                if (loaded) {
+                    pv <- packageVersion(pkg, lib.loc = pkg_lib)
+                    cat("", as.character(pv), "\n")
+                } else cat(" failed\n")
+            }
+            search_final_pkgs <- search()
+            loaded_packages <<- search_final_pkgs[!search_final_pkgs %in% search_original_pkgs]
 
             # if (embedded) {}
             modwin <<- GUI$initializeModuleWindow(.self,
@@ -464,6 +492,11 @@ iNZModule <- setRefClass(
         close = function() {
             ## run module-specific closure?
 
+            ## clean up search path
+            message("Detaching module dependencies ...")
+            cleanup <- sapply(loaded_packages, detach, character.only = TRUE)
+            rm(cleanup)
+
             ## delete the module window
             GUI$close_module()
             ## display the default view (data, variable, etc.)
@@ -506,18 +539,20 @@ load_module <- function(dir) {
     # now load all the bits and pieces
     mdir <- file.path(dir, "module")
 
-    ## special loading of menu - this should do some fancy checking, etc..
-    eval(.libPaths(file.path(dir, "lib")), envir = e)
-
     if (file.exists(file.path(mdir, "menu.R")))
         source(file.path(mdir, "menu.R"), local = e)
 
     if (file.exists(file.path(mdir, "main.R")))
         source(file.path(mdir, "main.R"), local = e)
 
+    e$mod_dir <- dir
+
     class(e) <- "inzmodule"
     e
 }
+
+## also need a 'close module' method which can remove the loaded libraries ...
+
 
 #' @export
 print.inzmodule <- function(x, ...) {
