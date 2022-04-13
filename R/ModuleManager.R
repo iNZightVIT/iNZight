@@ -489,6 +489,7 @@ iNZModule <- setRefClass(
         add_body = function(x, ...) {
             add(mainGrp, x)
         },
+        body_space = function(x) addSpace(mainGrp, x),
         close = function() {
             ## run module-specific closure?
 
