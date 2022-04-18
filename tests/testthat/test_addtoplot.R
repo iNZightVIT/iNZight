@@ -245,9 +245,11 @@ test_that("Axes and Labels - bar plots", {
     expect_equal(svalue(axtbl[[10]]), "Percentages (%)")
 
     svalue(axtbl[[10]], TRUE) <- 2
+    Sys.sleep(0.1)
     expect_equal(round(ui$curPlot$ylim), c(0, 81))
 
     svalue(axtbl[[10]], TRUE) <- 1
+    Sys.sleep(0.1)
     expect_equal(round(ui$curPlot$ylim, 2), c(0, 0.47))
 
     ui$moduleWindow$footer$children[[2]]$invoke_change_handler()
@@ -259,12 +261,14 @@ ui$close()
 cas2 <- census.at.school.500
 cas2$height2 <- with(cas2, height - mean(height, na.rm = TRUE))
 ui <- iNZight(cas2)
+Sys.sleep(1)
 
 test_that("Correct log boxes are disabled if non-positive values present", {
     svalue(ui$ctrlWidget$V1box) <- "height2"
     svalue(ui$ctrlWidget$V2box) <- "armspan"
     ui$plotToolbar$addToPlot(message = FALSE)
     svalue(ui$moduleWindow$header$children[[2]]$children[[1]], TRUE) <- 3
+    Sys.sleep(0.1)
     axtbl <- ui$moduleWindow$body$children[[1]]$children[[1]]
     expect_true(enabled(axtbl$children[[27]]))
     expect_false(enabled(axtbl$children[[28]]))
