@@ -297,7 +297,7 @@ NewModuleManager <- setRefClass(
             }
             message("Installing ", str)
 
-            mod_path <- file.path(mod_dir, mod$name)
+            mod_path <- file.path(m_dir, mod$name)
             if (dir.exists(mod_path)) {
                 if (confirm) {
                     c <- gconfirm("This will remove the previous version. Continue?",
@@ -313,11 +313,11 @@ NewModuleManager <- setRefClass(
 
             zdir <- basename(utils::unzip(tf, list = TRUE)$Name[1])
             message("Exacting ...")
-            utils::unzip(tf, exdir = mod_dir)
+            utils::unzip(tf, exdir = m_dir)
             message("Moving items into place ...")
 
             if (dir.exists(mod_path)) unlink(mod_path, TRUE, TRUE)
-            file.rename(file.path(mod_dir, zdir), mod_path)
+            file.rename(file.path(m_dir, zdir), mod_path)
 
             # writes a file VERSION indicating which version is being tracked
             cat(ref, file = file.path(mod_path, "VERSION"))
@@ -350,7 +350,7 @@ NewModuleManager <- setRefClass(
                 )
                 if (!c) return(NULL)
             }
-            d <- file.path(mod_dir, mod$name)
+            d <- file.path(m_dir, mod$name)
             if (dir.exists(d)) unlink(d, TRUE, TRUE)
 
             refresh_modules()
@@ -529,6 +529,7 @@ load_module <- function(dir) {
         github = desc::desc_get_field("Github", file = mod_desc)
     )
     e <- new_module(info)
+    iNZModules <- e$iNZModule <- utils::getFromNamespace("iNZModule", "iNZight")
 
     modRdir <- file.path(dir, "R")
     if (dir.exists(modRdir))

@@ -455,10 +455,10 @@ iNZMenuBarWidget <- setRefClass(
             mods <- c(mods,
                 list(
                     gseparator(),
-                    gaction("Manage ...", handler = function(h, ...) NewModuleManager$new(ui)),
+                    gaction("Manage ...", handler = function(h, ...) NewModuleManager$new(GUI)),
                     gaction("Reload",
                         handler = function(h, ...) {
-                            ui$load_addons()
+                            GUI$load_addons()
                             defaultMenu()
                         }
                     )
