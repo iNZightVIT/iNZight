@@ -1,6 +1,12 @@
 - enable automatic detection of delimited file separator (using `readr::read_delim`) (#401)
 - Paginate dataset summary to prevent `skimr::skim()` freezing GUI when number of variables in the dataset is large
 
+## New Features
+
+### Modules
+
+Redesigned from the original prototype, the new modules functionality is built directly into 'iNZight', and will eventually lead to the deprecation of 'iNZightModules'. Modules can be installed at specific versions, including dependencies, and include capablity to add new menu items to 'iNZight'. Each module has its own library, which should reduce clashes where packages depend on different versions of a package.
+
 # iNZight 4.2
 
 ## Major changes
