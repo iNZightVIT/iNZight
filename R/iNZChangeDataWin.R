@@ -2136,3 +2136,208 @@ iNZAppendRowsWin <- setRefClass(
         }
     )
 )
+
+## Data dictionary class
+iNZDataDict <- setRefClass(
+    "iNZDataDict",
+    contains = "iNZWindow",
+    fields = list(
+        file_picker = "ANY",
+        vars = "character",
+        apply_dict = "ANY",
+        dict = "ANY",
+        dict_name = "ANY",
+        dict_type = "ANY",
+        dict_title = "ANY",
+        dict_description = "ANY",
+        dict_units = "ANY",
+        dict_codes = "ANY",
+        dict_values = "ANY",
+        dict_separator = "ANY",
+        dict_preview = "ANY",
+        updating = "logical"
+    ),
+    methods = list(
+        initialize = function(gui = NULL, ...) {
+            ok <- callSuper(gui,
+                title = "Load Data Dictionary",
+                width = "large",
+                height = "large",
+                ok = "Load",
+                action = .self$do_load,
+                help = "user_guides/data_options/#data-dictionary",
+                show_code = FALSE,
+                scroll = FALSE
+            )
+            if (!ok) return()
+            on.exit(.self$show())
+            usingMethods("do_load")
+
+            initFields(
+                updating = FALSE
+            )
+
+            add_heading(
+                "Choose a file containing a CSV- or Excel-formatted data dictionary."
+            )
+
+            g_file <- ggroup()
+            lb <- glabel("Data dictionary file :",
+                container = g_file
+            )
+            font(lb) <- list(weight = "bold")
+            file_picker <<- gfilebrowse(container = g_file,
+                handler = function(h, ...) {
+                    update_vars()
+                }
+            )
+            addSpring(g_file)
+
+            add_body(g_file)
+
+            tbl <- glayout()
+            ii <- 1L
+
+            dict_name <<- gcombobox("", handler = function(h, ...) update_preview())
+            tbl[ii, 1L, anchor = c(1, 0), expand = TRUE] <- glabel("Variable name :")
+            tbl[ii, 2L, expand = TRUE] <- dict_name
+            ii <- ii + 1L
+
+            dict_type <<- gcombobox("", handler = function(h, ...) update_preview())
+            tbl[ii, 1L, anchor = c(1, 0), expand = TRUE] <- glabel("Variable type :")
+            tbl[ii, 2L, expand = TRUE] <- dict_type
+            ii <- ii + 1L
+
+            dict_title <<- gcombobox("", handler = function(h, ...) update_preview())
+            tbl[ii, 1L, anchor = c(1, 0), expand = TRUE] <- glabel("Friendly name/title :")
+            tbl[ii, 2L, expand = TRUE] <- dict_title
+            ii <- ii + 1L
+
+            dict_description <<- gcombobox("", handler = function(h, ...) update_preview())
+            tbl[ii, 1L, anchor = c(1, 0), expand = TRUE] <- glabel("Description :")
+            tbl[ii, 2L, expand = TRUE] <- dict_description
+            ii <- ii + 1L
+
+            ii <- 1L
+
+            dict_units <<- gcombobox("", handler = function(h, ...) update_preview())
+            tbl[ii, 3L, anchor = c(1, 0), expand = TRUE] <- glabel("Units :")
+            tbl[ii, 4L, expand = TRUE] <- dict_units
+            ii <- ii + 1L
+
+            dict_codes <<- gcombobox("", handler = function(h, ...) update_preview())
+            tbl[ii, 3L, anchor = c(1, 0), expand = TRUE] <- glabel("Factor codes :")
+            tbl[ii, 4L, expand = TRUE] <- dict_codes
+            ii <- ii + 1L
+
+            dict_values <<- gcombobox("", handler = function(h, ...) update_preview())
+            tbl[ii, 3L, anchor = c(1, 0), expand = TRUE] <- glabel("Factor labels :")
+            tbl[ii, 4L, expand = TRUE] <- dict_values
+            ii <- ii + 1L
+
+            dict_separator <<- gedit("|")
+            tbl[ii, 3L, anchor = c(1, 0), expand = TRUE] <- glabel("Code/level separator :")
+            tbl[ii, 4L, expand = TRUE] <- dict_separator
+            ii <- ii + 1L
+
+            add_body(tbl)
+
+            dict_preview <<- gdf(data.frame(Preview = "Choose variables for boxes above"))
+            size(dict_preview) <<- c(-1, 100)
+
+            add_body(dict_preview, expand = TRUE, fill = TRUE)
+
+            apply_dict <<- gcheckbox(
+                "Apply dictionary to current data set",
+                checked = TRUE
+            )
+            add_body(apply_dict)
+
+        },
+        update_vars = function() {
+            file <- svalue(file_picker)
+            if (file == "") return()
+            vars <<- colnames(iNZightTools::smart_read(file))
+
+            # this prevents update_preview() from running while setting vars
+            updating <<- TRUE
+            on.exit(updating <<- FALSE)
+
+            # some guessing can go on here
+            dict_name$set_items(vars)
+            dict_name$set_index(1L)
+
+            dict_type$set_items(vars)
+            if ("type" %in% vars) dict_type$set_value("type")
+
+            dict_title$set_items(vars)
+            if ("title" %in% vars) dict_title$set_value("title")
+
+            dict_description$set_items(vars)
+            if ("description" %in% vars) dict_description$set_value("description")
+
+            dict_units$set_items(vars)
+            if ("units" %in% vars) dict_units$set_value("units")
+
+            dict_codes$set_items(vars)
+            if ("codes" %in% vars) dict_codes$set_value("codes")
+
+            dict_values$set_items(vars)
+            if ("values" %in% vars) dict_values$set_value("values")
+
+            updating <<- FALSE
+            update_preview()
+
+        },
+        val_or_null = function(x) {
+            x <- svalue(x)
+            if (length(x) == 0L || x == "") return(NULL)
+            x
+        },
+        update_preview = function() {
+            if (updating) return()
+            file <- svalue(file_picker)
+            if (file == "") return()
+
+            arglist <- list(
+                file = file,
+                name = val_or_null(dict_name),
+                type = val_or_null(dict_type),
+                title = val_or_null(dict_title),
+                description = val_or_null(dict_description),
+                units = val_or_null(dict_units),
+                codes = val_or_null(dict_codes),
+                values = val_or_null(dict_values),
+                level_separator = svalue(dict_separator)
+            )
+            arglist <- modifyList(list(), arglist) # drop NULLs
+
+            dict <<- try(
+                do.call(iNZightTools::read_dictionary, arglist),
+                silent = TRUE
+            )
+
+            if (inherits(dict, "try-error")) {
+                print(dict)
+                dict <<- NULL
+                dict_preview$set_frame(
+                    data.frame(
+                        Error = "Try choosing variables from boxes above."
+                    )
+                )
+                return()
+            }
+
+            dd <- iNZightTools:::as_tibble.dictionary(dict)
+            dict_preview$set_frame(dd)
+
+            apply
+
+        },
+        do_load = function() {
+            # load dict from file and (optionally) append to data
+            GUI$getActiveDoc()$setDictionary(dict, apply = svalue(apply_dict))
+            close()
+        }
+    )
+)

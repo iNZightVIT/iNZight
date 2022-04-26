@@ -277,6 +277,14 @@ iNZMenuBarWidget <- setRefClass(
                                 GUI$getActiveDoc()$setSettings(list(freq = NULL))
                             }
                         )
+                ),
+                gseparator(),
+                "Data Dictionary" = list(
+                    load_dd =
+                        gaction("Load ...",
+                            icon = "datasheet",
+                            handler = function(h, ...) iNZDataDict$new(GUI)
+                        )
                 )
             )
             if (is.null(menu$report)) menu$report <- NULL

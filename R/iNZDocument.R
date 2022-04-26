@@ -11,7 +11,8 @@ iNZDataModel <- setRefClass(
             oldname = "character",
             freqtables = "list",
             currentDesign = "list",
-            design_only = "logical"
+            design_only = "logical",
+            dictionary = "list"
         ),
         prototype = list(
             dataSet = data.frame(empty = " ", stringsAsFactors = TRUE),
@@ -21,7 +22,8 @@ iNZDataModel <- setRefClass(
             name = "data", oldname = "",
             freqtables = list(),
             currentDesign = list(),
-            design_only = FALSE
+            design_only = FALSE,
+            dictionary = list()
         )
     ),
     contains = "PropertySet", ## need this to add observer to object
@@ -220,6 +222,17 @@ iNZDataModel <- setRefClass(
         },
         getName = function() {
             name
+        },
+        setDictionary = function(dict, apply = FALSE) {
+            dictionary <<- unclass(dict)
+            if (!apply) return()
+            newdat <- try(
+                iNZightTools::apply_dictionary(dataSet, dict),
+                silent = TRUE
+            )
+            if (inherits(newdat, "try-error")) return()
+            attr(newdat, "name") <- name
+            setData(newdat)
         }
     )
 )
@@ -328,6 +341,9 @@ iNZDocument <- setRefClass(
         },
         setSettings = function(setList, reset = FALSE) {
             plotSettings$setSettings(setList, reset)
+        },
+        setDictionary = function(dict, apply = TRUE) {
+            dataModel$setDictionary(dict, apply = apply)
         },
         ## update the settings to take in current x,y values
         ## from the dataset
