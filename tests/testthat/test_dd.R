@@ -11,3 +11,8 @@ test_that("Data dictionary can be imported", {
     expect_silent(d$ok_button$invoke_change_handler())
     expect_is(ui$getActiveData()$travel, "factor")
 })
+
+test_that("Data dictionary can be viewed", {
+    expect_silent(d <- iNZDDView$new(ui))
+    on.exit(d$close())
+})

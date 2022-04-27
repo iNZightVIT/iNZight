@@ -2341,3 +2341,41 @@ iNZDataDict <- setRefClass(
         }
     )
 )
+
+iNZDDView <- setRefClass(
+    "iNZDDView",
+    contains = "iNZWindow",
+    fields = list(
+        dd_view = "ANY"
+    ),
+    methods = list(
+        initialize = function(gui) {
+            ok <- callSuper(gui,
+                title = "Data Dictionary",
+                width = "large",
+                height = "large",
+                ok = "Close",
+                cancel = NULL,
+                action = .self$close,
+                help = "user_guides/data_options/#data-dictionary",
+                show_code = FALSE,
+                scroll = FALSE
+            )
+            if (!ok) return()
+            on.exit(.self$show())
+
+            dict <- GUI$getActiveDoc()$getModel()$dictionary
+            dict_df <- iNZightTools:::as_tibble.dictionary(dict,
+                code_sep = "\n"
+            )
+
+            dd_view <<- gdf(dict_df)
+            add_body(dd_view, expand = TRUE, fill = TRUE)
+        },
+        close = function() {
+            # suppress Gtk-CRITICAL warnings:
+            body$remove_child(dd_view)
+            callSuper()
+        }
+    )
+)

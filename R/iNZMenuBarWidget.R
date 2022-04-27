@@ -284,6 +284,11 @@ iNZMenuBarWidget <- setRefClass(
                         gaction("Load ...",
                             icon = "datasheet",
                             handler = function(h, ...) iNZDataDict$new(GUI)
+                        ),
+                    view_dd =
+                        gaction("View",
+                            icont = "datasheet",
+                            handler = function(h, ...) iNZDDView$new(GUI)
                         )
                 )
             )
