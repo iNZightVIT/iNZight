@@ -1012,7 +1012,8 @@ iNZGUI <- setRefClass(
                 dev.features = FALSE,
                 show.code = FALSE,
                 language = "en",
-                module_dir = NULL
+                module_dir = NULL,
+                multiple_x = FALSE
             )
         },
         checkPrefs = function(prefs) {
@@ -1025,7 +1026,8 @@ iNZGUI <- setRefClass(
                 "dev.features",
                 "show.code",
                 "language",
-                "module_dir"
+                "module_dir",
+                "multiple_x"
             )
 
             ## Only keep allowed preferences --- anything else is discarded
@@ -1071,6 +1073,10 @@ iNZGUI <- setRefClass(
             prefs$module_dir <-
                 if (is.null(prefs$module_dir) || prefs$module_dir == "" || !dir.exists(prefs$module_dir)) defs$module_dir
                 else prefs$module_dir[1]
+
+            prefs$multiple_x <-
+                if (is.null(prefs$multiple_x) || !is.logical(prefs$multiple_x)) defs$multiple_x
+                else prefs$multiple_x
 
             prefs
 
