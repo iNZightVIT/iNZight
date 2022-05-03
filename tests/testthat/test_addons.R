@@ -1,6 +1,6 @@
 context("Add-on Modules")
 
-skip_on_cran()
+skip()
 
 skip_if_not_installed("iNZightModules")
 moduledir <- file.path(getwd(), "modules")
@@ -21,7 +21,6 @@ test_that("Modules loaded into menu", {
 })
 
 test_that("Modules launch and close", {
-    skip()
     advmenu <- svalue(ui$menuBarWidget$menubar)$Advanced
     DM <- advmenu[["DemoModule"]]
     expect_equal(DM$widget$label, "Demo Module")
