@@ -113,7 +113,10 @@ iNZSurveyDesign <- setRefClass(
                     if (!is.null(spec$weights))
                         svalue(wtVar) <<- spec$weights
                     if (!is.null(spec$repweights)) {
-                        svalue(repVars) <<- spec$repweights
+                        # suppress warning from bug in gWidgets2:
+                        suppressWarnings(
+                            svalue(repVars) <<- spec$repweights
+                        )
                         if (!is.null(spec$rscales)) {
                             repRscales <<- data.frame(
                                 rep.weight = spec$repweights,
@@ -154,7 +157,7 @@ iNZSurveyDesign <- setRefClass(
             )
             svalue(popSize) <<- format(
                 sum(wts),
-                digits = 0L,
+                nsmall = 0L,
                 big.mark = ",",
                 scientific = FALSE
             )
@@ -702,7 +705,9 @@ iNZSurveyPostStrat <- setRefClass(
             ## populate on load
             lvldf <<- GUI$getActiveDoc()$getModel()$getFreqTables()
             if (!is.null(curDes$calibrate)) {
-                svalue(PSvar) <<- names(curDes$calibrate)
+                suppressWarnings(
+                    svalue(PSvar) <<- names(curDes$calibrate)
+                )
                 display_tbl()
             }
 
