@@ -27,8 +27,8 @@ if (OS == "Windows" && !requireNamespace('utf8', quietly = TRUE)) {
 }
 if (OS == "Linux") {
     install.packages(
-        c("RGtk2", "cairoDevice", "gWidgets2RGtk2"),
-        repos = "https://r.docker.stat.auckland.ac.nz"
+        c("RGtk2", "cairoDevice", "gWidgets2RGtk2", "gWidgets2"),
+        repos = c(getOption("repos"), "https://r.docker.stat.auckland.ac.nz")
     )
 }
 
