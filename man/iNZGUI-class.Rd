@@ -43,10 +43,6 @@ Main class that builds the iNZight GUI
 
 \item{\code{ctrlWidget}}{the drop-down boxes allowing users to choose variables}
 
-\item{\code{sumBtn}}{the Get Summary button}
-
-\item{\code{infBtn}}{the Get Inference button}
-
 \item{\code{modWin}}{a container for the current module window}
 
 \item{\code{curPlot}}{the current plot object is returned and stored in this field}
@@ -101,8 +97,6 @@ Main class that builds the iNZight GUI
 
 \item{\code{do_delete_dataset()}}{Does the dataset deletion}
 
-\item{\code{get_data_object(nrow)}}{Returns the current dataset or survey design, if it exists}
-
 \item{\code{getActiveData()}}{Returns the current dataset}
 
 \item{\code{getActiveDoc()}}{Returns the currently active document}
@@ -112,6 +106,8 @@ Main class that builds the iNZight GUI
 \item{\code{getPreferences()}}{Gets the user's preferences from a file}
 
 \item{\code{getState()}}{Returns the current state of the GUI}
+
+\item{\code{get_data_object(nrow)}}{Returns the current dataset or survey design, if it exists}
 
 \item{\code{initializeCodeHistory()}}{Initializes the R code history widget}
 
@@ -129,7 +125,8 @@ Main class that builds the iNZight GUI
   addonDir = NULL,
   show = TRUE,
   stop_loading = FALSE,
-  ...
+  ...,
+  disposer = NULL
 )}}{Initiates the GUI}
 
 \item{\code{initializeMenu(cont)}}{Initializes the menu bar at the top of iNZight}
@@ -142,11 +139,9 @@ Main class that builds the iNZight GUI
 
 \item{\code{initializePlotWidget()}}{Initializes the plot panel widget}
 
-\item{\code{initializeSummaryBtns()}}{Initializes the Get Summary and Get Inference buttons}
-
 \item{\code{loadState(file, .alert = TRUE)}}{Loads the state from a file called `file`}
 
-\item{\code{new_document(data, suffix)}}{Create a new document based on the existing one (`getActiveDoc()`)}
+\item{\code{new_document(data, suffix, name)}}{Create a new document based on the existing one (`getActiveDoc()`)}
 
 \item{\code{plotMessage(heading, message, footer, type = "error")}}{Displays a message to the user using the plot panel}
 
@@ -164,17 +159,17 @@ Main class that builds the iNZight GUI
 
 \item{\code{saveState(file)}}{Saves the state of the GUI in `file`}
 
-\item{\code{set_visible(visible = TRUE)}}{Makes the iNZight window visible, and updates the plot}
-
 \item{\code{setDocument(document, reset = FALSE)}}{Sets the current document}
 
 \item{\code{setState(state)}}{Sets the GUI to the provided state}
 
+\item{\code{set_visible(visible = TRUE)}}{Makes the iNZight window visible, and updates the plot}
+
 \item{\code{showHistory()}}{Displays the code history}
 
-\item{\code{update_document(data)}}{Update the existing document with new data or survey design}
-
 \item{\code{updatePlot(allow.redraw = TRUE)}}{Updates the plot using the user's chosen variables and other settings}
+
+\item{\code{update_document(data)}}{Update the existing document with new data or survey design}
 
 \item{\code{view_dataset()}}{Views the dataset using the `View()` function}
 }}

@@ -1,6 +1,4 @@
-#' widget displaying a group of tags
-#'
-#' @importClassesFrom gWidgets2RGtk2 GWidget
+# widget displaying a group of tags
 GTags <- setRefClass("GTags",
     contains = "GGroup",
     fields = list(
@@ -62,22 +60,16 @@ GTags <- setRefClass("GTags",
     )
 )
 
-#' A custom class drawing a label with a background border
+# A custom class drawing a label with a background border
 gtags <- function(items, placeholder = NULL, only_unique = TRUE, handler = NULL, action = NULL, container = NULL, ...) {
     toolkit <- gWidgets2::guiToolkit()
 
     if (missing(items)) items <- NULL
     obj <- GTags$new(toolkit, items, placeholder, only_unique, handler, action, container, ...)
 
-    gWidgets2:::check_return_class(obj, "GTags")
+    check_return_class(obj, "GTags")
     obj
 }
-
-
-# need to import this:
-TARGET.TYPE.TEXT   <- gWidgets2RGtk2:::TARGET.TYPE.TEXT
-TARGET.TYPE.OBJECT <- gWidgets2RGtk2:::TARGET.TYPE.OBJECT
-widgetTargetTypes <- gWidgets2RGtk2:::widgetTargetTypes
 
 GTag <- setRefClass("GTag",
     contains = "GWidget",
@@ -108,12 +100,12 @@ GTag <- setRefClass("GTag",
     )
 )
 
-#' A custom class drawing a label with a background border
+# A custom class drawing a label with a background border
 gtag <- function(text, handler = NULL, action = NULL, container = NULL, ...) {
     toolkit <- gWidgets2::guiToolkit()
 
     obj <- GTag$new(toolkit, text, handler, action, container, ...)
 
-    gWidgets2:::check_return_class(obj, "GTag")
+    check_return_class(obj, "GTag")
     obj
 }
