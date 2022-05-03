@@ -14,7 +14,6 @@ OS <- Sys.getenv("OS_TYPE")
 options(
     repos = c(
         if (OS == "Linux") RSPM = Sys.getenv("RSPM"),
-        INZIGHT = "https://r.docker.stat.auckland.ac.nz",
         CRAN = "https://cloud.r-project.org"
     ),
     install.packages.compile.from.source = "never"
@@ -25,6 +24,12 @@ if (OS == "Windows" && getRversion() < numeric_version("4")) {
 }
 if (OS == "Windows" && !requireNamespace('utf8', quietly = TRUE)) {
     install.packages("utf8", type = "source")
+}
+if (OS == "Linux") {
+    install.packages(
+        c("RGtk2", "cairoDevice", "gWidgets2RGtk2"),
+        repos = "https://r.docker.stat.auckland.ac.nz"
+    )
 }
 
 remotes::install_github(
