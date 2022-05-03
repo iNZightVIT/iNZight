@@ -26,8 +26,17 @@ if (OS == "Windows" && !requireNamespace('utf8', quietly = TRUE)) {
     install.packages("utf8", type = "source")
 }
 if (OS == "Linux") {
+    remotes::install_github('lawremi/RGtk2',
+        subdir = "RGtk2",
+        dependencies = TRUE,
+        INSTALL_opts = "--no-multiarch"
+    )
+    remotes::install_github('tmelliott/cairoDevice',
+        dependencies = TRUE,
+        INSTALL_opts = "--no-multiarch"
+    )
     install.packages(
-        c("RGtk2", "cairoDevice", "gWidgets2RGtk2", "gWidgets2"),
+        c("gWidgets2", "gWidgets2RGtk2"),
         repos = c(getOption("repos"), "https://r.docker.stat.auckland.ac.nz")
     )
 }
