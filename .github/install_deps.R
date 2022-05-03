@@ -14,6 +14,7 @@ OS <- Sys.getenv("OS_TYPE")
 options(
     repos = c(
         if (OS == "Linux") RSPM = Sys.getenv("RSPM"),
+        INZIGHT = "https://r.docker.stat.auckland.ac.nz",
         CRAN = "https://cloud.r-project.org"
     ),
     install.packages.compile.from.source = "never"
