@@ -28,6 +28,7 @@ if (OS == "Windows" && !requireNamespace('utf8', quietly = TRUE)) {
 
 remotes::install_github(
     github_deps,
+    dependencies = TRUE,
     INSTALL_opts = "--no-multiarch"
 )
 remotes::install_deps(
