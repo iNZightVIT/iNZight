@@ -3,4 +3,4 @@ library(iNZight)
 
 options(readr.show_progress = FALSE)
 
-test_check("iNZight")
+# test_check("iNZight")
