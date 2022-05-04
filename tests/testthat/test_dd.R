@@ -13,6 +13,7 @@ test_that("Data dictionary can be imported", {
 })
 
 test_that("Data dictionary can be viewed", {
+    # devtools::load_all()
     expect_silent(d <- iNZDDView$new(ui))
     on.exit(d$close())
 })
