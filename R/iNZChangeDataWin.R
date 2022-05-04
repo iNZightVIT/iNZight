@@ -2328,14 +2328,17 @@ iNZDataDict <- setRefClass(
                 return()
             }
 
-            dd <- iNZightTools:::as_tibble.dictionary(dict)
+            dd <- iNZightTools::as_tibble(dict, n = 20L)
+            for (i in colnames(dd)) {
+                if (is.character(dd[[i]])) {
+                    dd[[i]] <- stringr::str_trunc(dd[[i]], 30L)
+                }
+            }
             dict_preview$set_frame(dd)
-
-            apply
 
         },
         do_load = function() {
-            # load dict from file and (optionally) append to data
+            # load dict from file and (optionally) append to dataz
             GUI$getActiveDoc()$setDictionary(dict, apply = svalue(apply_dict))
             close()
         }
