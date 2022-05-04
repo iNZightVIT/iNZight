@@ -2346,7 +2346,12 @@ iNZDDView <- setRefClass(
     "iNZDDView",
     contains = "iNZWindow",
     fields = list(
-        dd_view = "ANY"
+        dict_df = "ANY",
+        dd_view = "ANY",
+        search_box = "ANY",
+        match_case_chk = "ANY",
+        search_btn = "ANY",
+        clear_search_btn = "ANY"
     ),
     methods = list(
         initialize = function(gui) {
@@ -2365,12 +2370,55 @@ iNZDDView <- setRefClass(
             on.exit(.self$show())
 
             dict <- GUI$getActiveDoc()$getModel()$dictionary
-            dict_df <- iNZightTools:::as_tibble.dictionary(dict,
+            dict_df <<- iNZightTools:::as_tibble.dictionary(dict,
                 code_sep = "\n"
             )
 
+            ctrls_tbl <- glayout()
+            ii <- 1L
+
+            search_box <<- gedit("",
+                initial.msg = "Enter search term"
+            )
+            match_case_chk <<- gcheckbox("Case sensitive", checked = FALSE)
+            search_btn <<- gbutton("Search",
+                handler = function(h, ...) search()
+            )
+            clear_search_btn <<- gbutton("Clear",
+                handler = function(h, ...) {
+                    svalue(search_box) <<- ""
+                    search()
+                }
+            )
+            ctrls_tbl[ii, 1L, expand = TRUE] <- search_box
+            ctrls_tbl[ii, 2L] <- match_case_chk
+            ctrls_tbl[ii, 3L] <- search_btn
+            ctrls_tbl[ii, 4L] <- clear_search_btn
+            ii <- ii + 1L
+
+            add_body(ctrls_tbl)
+
             dd_view <<- gdf(dict_df)
+            dd_view$remove_popup_menu()
             add_body(dd_view, expand = TRUE, fill = TRUE)
+        },
+        search = function() {
+            fields <- c("name", "title", "description", "value")
+            term <- trimws(svalue(search_box))
+            if (term == "") {
+                dd_view$set_frame(dict_df)
+                return()
+            }
+            match_case <- svalue(match_case_chk)
+            if (!match_case) term <- tolower(term)
+            match_mat <- sapply(dict_df[, fields, drop = FALSE],
+                function(x) {
+                    if (!match_case) x <- tolower(x)
+                    grepl(term, x, fixed = TRUE)
+                }
+            )
+            matches <- apply(match_mat, 1L, any)
+            dd_view$set_frame(dict_df[matches, ])
         },
         close = function() {
             # suppress Gtk-CRITICAL warnings:
