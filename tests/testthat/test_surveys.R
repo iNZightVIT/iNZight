@@ -153,10 +153,7 @@ test_that("Replicate weights can be specified", {
     # select variables
     svalue(swin$wtVar) <- "rakedw0"
     ## TODO: make issue for bug in gWidgets2
-    expect_warning(
-        svalue(swin$repVars) <- paste("rakedw", 1:80, sep = ""),
-        "length\\(x\\) = 80 > 1"
-    )
+    svalue(swin$repVars) <- paste("rakedw", 1:80, sep = "")
     swin$repVars$invoke_change_handler()
     svalue(swin$repType) <- "other"
     svalue(swin$repScale) <- 1
@@ -268,14 +265,12 @@ ui$initializeGui(apijk)
 test_that("JK1 works", {
     expect_silent(swin <- iNZSurveyDesign$new(ui, type = "replicate"))
     svalue(swin$wtVar) <- "pw"
-    expect_warning(
-        svalue(swin$repVars) <-
-            paste(
-                "repw",
-                formatC(1:40, width = 2, flag = "0"),
-                sep = ""
-            )
-    )
+    svalue(swin$repVars) <-
+        paste(
+            "repw",
+            formatC(1:40, width = 2, flag = "0"),
+            sep = ""
+        )
     svalue(swin$repType) <- "JK1"
     #### producing error about scale (n-1)/n not provided
     # expect_silent(swin$createBtn$invoke_change_handler())
@@ -471,7 +466,7 @@ test_that("Post stratification object is correct", {
 
 test_that("Multiple variables can be specified (raking calibration)", {
     expect_silent(swin <- iNZSurveyPostStrat$new(ui, .use_ui = FALSE))
-    expect_warning(svalue(swin$PSvar, index = TRUE) <- 1:2)
+    svalue(swin$PSvar, index = TRUE) <- 1:2
     expect_equal(
         swin$lvldf,
         list(
@@ -542,7 +537,7 @@ test_that("New variables show up in calibration list", {
 
     # add interaction between REGION and race
     comb <- iNZCombineWin$new(ui)
-    expect_warning(svalue(comb$factorNames) <- c("REGION", "race"))
+    svalue(comb$factorNames) <- c("REGION", "race")
     comb$factorNames$invoke_change_handler()
     comb$ok_button$invoke_change_handler()
     expect_is(ui$getActiveData()$REGION_race, "factor")

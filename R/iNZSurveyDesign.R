@@ -705,9 +705,7 @@ iNZSurveyPostStrat <- setRefClass(
             ## populate on load
             lvldf <<- GUI$getActiveDoc()$getModel()$getFreqTables()
             if (!is.null(curDes$calibrate)) {
-                suppressWarnings(
-                    svalue(PSvar) <<- names(curDes$calibrate)
-                )
+                svalue(PSvar) <<- names(curDes$calibrate)
                 display_tbl()
             }
 
