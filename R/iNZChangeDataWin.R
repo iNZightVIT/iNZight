@@ -2339,6 +2339,23 @@ iNZDataDict <- setRefClass(
         },
         do_load = function() {
             # load dict from file and (optionally) append to dataz
+            iwin <- gwindow("Loading data dictionary",
+                width = 300,
+                height = 100,
+                # parent = .self$win,
+                visible = FALSE
+            )
+            ig <- gvbox(container = iwin)
+            addSpring(ig)
+            ig$set_borderwidth(10)
+            glabel("Loading data dictionary and applying to data set.",
+                container = ig
+            )
+            glabel("This may take a few moments ...", container = ig)
+            addSpring(ig)
+            visible(iwin) <- TRUE
+            on.exit(try(dispose(iwin), silent = TRUE))
+            Sys.sleep(0.01)
             GUI$getActiveDoc()$setDictionary(dict, apply = svalue(apply_dict))
             close()
         }
@@ -2372,10 +2389,13 @@ iNZDDView <- setRefClass(
             if (!ok) return()
             on.exit(.self$show())
 
-            dict <- GUI$getActiveDoc()$getModel()$dictionary
-            dict_df <<- iNZightTools:::as_tibble.dictionary(dict,
-                code_sep = "\n"
-            )
+            dict_df <<- GUI$getActiveDoc()$getModel()$dict_df
+            cn <- colnames(dict_df)
+            for (i in cn[!cn %in% c("code", "value")]) {
+                if (is.character(dict_df[[i]])) {
+                    dict_df[[i]] <<- stringr::str_wrap(dict_df[[i]], 80L)
+                }
+            }
 
             ctrls_tbl <- glayout()
             ii <- 1L

@@ -12,7 +12,8 @@ iNZDataModel <- setRefClass(
             freqtables = "list",
             currentDesign = "list",
             design_only = "logical",
-            dictionary = "list"
+            dictionary = "list",
+            dict_df = "data.frame"
         ),
         prototype = list(
             dataSet = data.frame(empty = " ", stringsAsFactors = TRUE),
@@ -23,7 +24,8 @@ iNZDataModel <- setRefClass(
             freqtables = list(),
             currentDesign = list(),
             design_only = FALSE,
-            dictionary = list()
+            dictionary = list(),
+            dict_df = data.frame()
         )
     ),
     contains = "PropertySet", ## need this to add observer to object
@@ -224,6 +226,8 @@ iNZDataModel <- setRefClass(
             name
         },
         setDictionary = function(dict, apply = FALSE) {
+            # do this once, so it's easily available:
+            dict_df <<- iNZightTools::as_tibble(dict, code_sep = "\n")
             dictionary <<- unclass(dict)
             if (!apply) return()
             newdat <- try(
