@@ -2427,6 +2427,7 @@ iNZDDView <- setRefClass(
         },
         search = function() {
             fields <- c("name", "title", "description", "value")
+            fields <- fields[fields %in% names(dict_df)]
             term <- trimws(svalue(search_box))
             if (term == "") {
                 dd_view$set_frame(dict_df)
