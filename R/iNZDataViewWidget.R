@@ -187,49 +187,113 @@ iNZDataViewWidget <- setRefClass(
             ## prefix variable type to variable names
             vnames <- if (length(columns)) columns else colnames(GUI$getActiveData())
 
-            vtypes <- sapply(GUI$getActiveData()[vnames],
-                function(x)
-                    switch(iNZightTools::vartype(x),
-                        'num' = 'numeric',
-                        'cat' = 'categorical',
-                        'dt' = 'datetime'
-                    )
-            )
+            if (nrow(GUI$getActiveDoc()$getModel()$dict_df)) {
+                ddf <- GUI$getActiveDoc()$getModel()$dict_df
+                ddf <- lapply(vnames, function(x) {
+                    ddf[ddf$name == x, , drop = FALSE]
+                })
+                ddf <- do.call(rbind, ddf)
 
-            vsmry <- sapply(GUI$getActiveData()[vnames],
-                function(x) {
-                    if (all(is.na(x))) return("All missing")
-                    switch(iNZightTools::vartype(x),
-                        'num' = {
-                            paste(
-                                c("min", "max"),
-                                signif(range(x, na.rm = TRUE), 4),
-                                collapse = ", "
-                            )
-                        },
-                        'cat' = {
-                            paste(length(levels(x)), "levels")
-                        },
-                        'dt' = {
-                            paste(
-                                as.character(range(x, na.rm = TRUE)),
-                                collapse = " to "
+                varsList <- list(Name = vnames)
+
+                if ("title" %in% colnames(ddf)) {
+                    varsList$Title <- stringr::str_wrap(ddf$title, 40L)
+                }
+
+                if ("type" %in% colnames(ddf)) {
+                    varsList$Type <- sapply(ddf$type,
+                        function(x) {
+                            switch(x,
+                                "factor" = ,
+                                "cat" = "categorical",
+                                "num" = "numeric",
+                                "dt" = "datetime",
+                                x
                             )
                         }
                     )
+                } else {
+                    varsList$Type <- sapply(GUI$getActiveData()[vnames],
+                        function(x)
+                            switch(iNZightTools::vartype(x),
+                                'num' = 'numeric',
+                                'cat' = 'categorical',
+                                'dt' = 'datetime'
+                            )
+                    )
                 }
-            )
 
-            vmiss <- sapply(GUI$getActiveData()[vnames],
-                function(x) sum(is.na(x))
-            )
+                varsList$Info <- sapply(GUI$getActiveData()[vnames],
+                    function(x) {
+                        if (all(is.na(x))) return("All missing")
+                        switch(iNZightTools::vartype(x),
+                            "num" = {
+                                paste(
+                                    c("min", "max"),
+                                    signif(range(x, na.rm = TRUE), 4),
+                                    collapse = ", "
+                                )
+                            },
+                            "cat" = {
+                                paste(length(levels(x)), "levels")
+                            },
+                            'dt' = {
+                                paste(
+                                    as.character(range(x, na.rm = TRUE)),
+                                    collapse = " to "
+                                )
+                            },
+                            "Unavailable"
+                        )
+                    }
+                )
+print(varsList)
+                varsDf <- do.call(data.frame, varsList)
+            } else {
+                vtypes <- sapply(GUI$getActiveData()[vnames],
+                    function(x)
+                        switch(iNZightTools::vartype(x),
+                            'num' = 'numeric',
+                            'cat' = 'categorical',
+                            'dt' = 'datetime'
+                        )
+                )
 
-            varsDf <- data.frame(
-                Name = vnames,
-                Type = vtypes,
-                Info = vsmry,
-                Missing = vmiss
-            )
+                vsmry <- sapply(GUI$getActiveData()[vnames],
+                    function(x) {
+                        if (all(is.na(x))) return("All missing")
+                        switch(iNZightTools::vartype(x),
+                            'num' = {
+                                paste(
+                                    c("min", "max"),
+                                    signif(range(x, na.rm = TRUE), 4),
+                                    collapse = ", "
+                                )
+                            },
+                            'cat' = {
+                                paste(length(levels(x)), "levels")
+                            },
+                            'dt' = {
+                                paste(
+                                    as.character(range(x, na.rm = TRUE)),
+                                    collapse = " to "
+                                )
+                            }
+                        )
+                    }
+                )
+
+                vmiss <- sapply(GUI$getActiveData()[vnames],
+                    function(x) sum(is.na(x))
+                )
+
+                varsDf <- data.frame(
+                    Name = vnames,
+                    Type = vtypes,
+                    Info = vsmry,
+                    Missing = vmiss
+                )
+            }
             varWidget$set_items(varsDf)
         },
         ## only update the data.frame view
