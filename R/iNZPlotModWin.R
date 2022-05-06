@@ -1207,7 +1207,7 @@ iNZPlotMod <- setRefClass(
             PLOTTYPES <- plot_list(
                 TYPE,
                 GUI$getActiveData()[[varnames["x"]]],
-                GUI$getActiveData()[[varnames["y"]]],
+                if ("y" %in% names(varnames)) GUI$getActiveData()[[varnames["y"]]] else NULL,
                 !is.null(GUI$getActiveDoc()$getModel()$dataDesign)
             )
 
