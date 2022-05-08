@@ -427,7 +427,7 @@ iNZControlWidget <- setRefClass(
                         }
                     }
 
-                    print(newX)
+                    # print(newX)
 
                     changePlotSettings(
                         list(
