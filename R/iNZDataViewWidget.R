@@ -247,7 +247,7 @@ iNZDataViewWidget <- setRefClass(
                         )
                     }
                 )
-print(varsList)
+
                 varsDf <- do.call(data.frame, varsList)
             } else {
                 vtypes <- sapply(GUI$getActiveData()[vnames],
