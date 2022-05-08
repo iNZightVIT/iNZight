@@ -22,4 +22,9 @@ test_that("Tags object works", {
 
     tags$drop_tag("hello")
     expect_equal(length(tags$children), 1L)
+
+    tags2 <- gtags(
+        container = g,
+        handler = function(h, ...) print("I changed!")
+    )
 })

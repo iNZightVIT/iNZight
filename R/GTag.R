@@ -3,7 +3,8 @@ GTags <- setRefClass("GTags",
     contains = "GGroup",
     fields = list(
         placeholder = "ANY",
-        only_unique = "logical"
+        only_unique = "logical",
+        init = "logical"
     ),
     methods = list(
         initialize = function(toolkit = NULL, items = NULL, placeholder = NULL,
@@ -11,8 +12,11 @@ GTags <- setRefClass("GTags",
                               handler, action, container, ...) {
 
             initFields(
-                only_unique = only_unique
+                only_unique = only_unique,
+                change_signal = "button-press-event",
+                init = FALSE
             )
+            on.exit(init <<- TRUE)
             callSuper(toolkit)
 
             add_to_parent(container, .self, ...)
@@ -36,6 +40,7 @@ GTags <- setRefClass("GTags",
             gtag(text, container = .self)
 
             toggle_placeholder()
+            invoke_change_handler()
             invisible(TRUE)
         },
         has_tag = function(x) {
@@ -52,10 +57,39 @@ GTags <- setRefClass("GTags",
             remove_child(tag)
 
             toggle_placeholder()
+            invoke_change_handler()
             invisible(TRUE)
+        },
+        drop_tags = function(x, ...) {
+            sapply(.self$get_value(), .self$drop_tag)
+            invoke_change_handler()
+        },
+        set_value = function(value, index = TRUE, drop = TRUE, ...) {
+            if (!init) return()
+            blockHandlers(.self)
+            on.exit(unblockHandlers(.self))
+            drop_tags()
+            sapply(value, .self$add_tag)
+            unblockHandlers(.self)
+            invoke_change_handler()
+        },
+        get_value = function(index = TRUE, drop = TRUE, ...) {
+            sapply(children, function(x) x$get_value())
         },
         toggle_placeholder = function() {
             visible(placeholder) <<- !is.null(placeholder) && length(children) == 1L
+        },
+        handler_widget = function() block, # put on block, not widget
+        add_handler_changed = function(handler, action=NULL, ...) {
+            add_handler_clicked(handler, action = action, ...)
+        },
+        add_handler_clicked = function(handler, action=NULL, ...) {
+            block$addEvents(GdkEventMask["all-events-mask"])
+            add_handler(block,
+                "button-press-event",
+                event_decorator(handler),
+                action
+            )
         }
     )
 )
@@ -81,6 +115,10 @@ GTag <- setRefClass("GTag",
             block$add(widget)
             toolkit <<- toolkit
 
+            block$modifyFg(
+                GtkStateType["normal"],
+                "black"
+            )
             block$modifyBg(
                 GtkStateType["normal"],
                 "gray90"

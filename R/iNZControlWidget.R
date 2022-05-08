@@ -3,7 +3,7 @@ iNZControlWidget <- setRefClass(
     fields = list(
         GUI = "ANY",
         ctrlGp = "ANY",
-        V1box = "ANY",
+        V1box = "ANY", multi_v1 = "logical",
         V2box = "ANY",
         G1box = "ANY",
         G2box = "ANY",
@@ -24,16 +24,24 @@ iNZControlWidget <- setRefClass(
             ctrlGp <<- gvbox()
             ctrlGp$set_borderwidth(5L)
 
-            initFields(GUI = gui, playdelay = 0.6, newname = "")
+            initFields(GUI = gui, playdelay = 0.6, newname = "",
+                multi_v1 = gui$preferences$multiple_x
+            )
             ## set up glayout
             tbl <- glayout(expand = TRUE, homogeneous = FALSE, cont = ctrlGp, spacing = 5)
 
             clear_icon <- "clear"
 
             ### DRAG/DROP MENUS
-            V1box <<- gcombobox(
-                c("Select/Drag-drop Variable 1", colnames(GUI$getActiveData()))
-            )
+            if (multi_v1) {
+                V1box <<- gtags(
+                    placeholder = "Drop outcome variables here ..."
+                )
+            } else {
+                V1box <<- gcombobox(
+                    c("Select/Drag-drop Variable 1", colnames(GUI$getActiveData()))
+                )
+            }
             V2box <<- gcombobox(
                 c("Select/Drag-drop Variable 2", colnames(GUI$getActiveData()))
             )
@@ -60,7 +68,11 @@ iNZControlWidget <- setRefClass(
                 stock.id = "clear",
                 tooltip = "Clear Variable",
                 handler = function(h,...) {
-                    svalue(V1box, index = TRUE) <<- 1L
+                    if (multi_v1) {
+                        V1box$drop_tags()
+                    } else {
+                        svalue(V1box, index = TRUE) <<- 1L
+                    }
                     changePlotSettings(list(x = NULL))
                 }
             )
@@ -384,18 +396,38 @@ iNZControlWidget <- setRefClass(
 
             ## -- Variable 1
             addDropTarget(V1box,
-                handler = function(h, ...) svalue(h$obj) <- h$dropdata
+                handler = function(h, ...) {
+                    if (multi_v1) {
+                        h$obj$add_tag(h$dropdata)
+                    } else {
+                        svalue(h$obj) <- h$dropdata
+                    }
+                }
             )
             addHandlerChanged(V1box,
                 handler = function(h, ...) {
-                    if (svalue(V1box, TRUE) == 1L) {
-                        newX <- NULL
-                        newXname <- NULL
+                    # TODO: merge into a single conditional:
+                    if (multi_v1) {
+                        if (length(svalue(V1box)) == 0L) {
+                            newX <- NULL
+                            newXname <- NULL
+                        } else {
+                            val <- paste(svalue(V1box), collapse = " + ")
+                            newX <- as.name(val)
+                            newXname <- val
+                        }
                     } else {
-                        val <- svalue(V1box)
-                        newX <- as.name(val)
-                        newXname <- val
+                        if (svalue(V1box, TRUE) == 1L) {
+                            newX <- NULL
+                            newXname <- NULL
+                        } else {
+                            val <- svalue(V1box)
+                            newX <- as.name(val)
+                            newXname <- val
+                        }
                     }
+
+                    print(newX)
 
                     changePlotSettings(
                         list(
