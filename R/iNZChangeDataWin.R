@@ -2318,6 +2318,7 @@ iNZDataDict <- setRefClass(
             )
 
             if (inherits(dict, "try-error")) {
+                print("Error ...")
                 print(dict)
                 dict <<- NULL
                 dict_preview$set_frame(
@@ -2342,7 +2343,7 @@ iNZDataDict <- setRefClass(
             iwin <- gwindow("Loading data dictionary",
                 width = 300,
                 height = 100,
-                # parent = .self$win,
+                parent = window(),
                 visible = FALSE
             )
             ig <- gvbox(container = iwin)
@@ -2354,8 +2355,9 @@ iNZDataDict <- setRefClass(
             glabel("This may take a few moments ...", container = ig)
             addSpring(ig)
             visible(iwin) <- TRUE
-            on.exit(try(dispose(iwin), silent = TRUE))
             Sys.sleep(0.01)
+            on.exit(try(dispose(iwin), silent = TRUE))
+
             GUI$getActiveDoc()$setDictionary(dict, apply = svalue(apply_dict))
             close()
         }
