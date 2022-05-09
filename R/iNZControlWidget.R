@@ -583,10 +583,14 @@ iNZControlWidget <- setRefClass(
 
             datavars <- colnames(data)
 
-            v1 <- if (svalue(V1box) %in% datavars)
-                which(datavars == svalue(V1box)) + 1L else 1L
-            V1box$set_items(c(V1box$get_items()[1L], datavars))
-            V1box$set_value(GUI$ctrlWidget$V1box$get_items()[v1])
+            if (multi_v1) {
+                V1box$set_items(NULL)
+            } else {
+                v1 <- if (svalue(V1box) %in% datavars)
+                    which(datavars == svalue(V1box)) + 1L else 1L
+                V1box$set_items(c(V1box$get_items()[1L], datavars))
+                V1box$set_value(GUI$ctrlWidget$V1box$get_items()[v1])
+            }
 
             v2 <- if (svalue(V2box) %in% datavars)
                 which(datavars == svalue(V2box)) + 1L else 1L
@@ -784,6 +788,7 @@ iNZControlWidget <- setRefClass(
             if (!is.null(set$x) && as.character(set$x) %in% vars) {
                 ## set variable 1 to whatever it's supposed to be
                 blockHandlers(V1box)
+                ## TODO: fix for multi v1
                 svalue(V1box) <<- as.character(set$x)
                 unblockHandlers(V1box)
                 set$x <- set$x
