@@ -485,6 +485,7 @@ iNZGUI <- setRefClass(
                         if (!is.null(curPlSet$y))
                             vartypes$y <- iNZightTools::vartype(.dataset[[curPlSet$y]])
                         plot_call <- construct_call(curPlSet, curMod, vartypes)
+                        print(plot_call)
                         rawpl <- eval(plot_call, e)
                         curPlot <<- unclass(rawpl)
                         if (allow.redraw & !is.null(attr(curPlot, "dotplot.redraw")))
@@ -566,7 +567,7 @@ iNZGUI <- setRefClass(
 
                 code_panel$set_input(code)
                 enabled(plotToolbar$exportplotBtn) <<- can.interact(rawpl)
-                plotType <<- attr(curPlot, "plottype") %||% "custom"
+                plotType <<- attr(curPlot, "plottype")
                 return(invisible(rawpl))
             }
 

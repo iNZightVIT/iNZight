@@ -3,23 +3,33 @@ GMultiLabel <- setRefClass(
     contains = "GWidgetWithItems",
     fields = list(
         change_handler = "ANY",
-        remove_on_click = "logical"
+        placeholder = "character",
+        remove_on_click = "logical",
+        only_unique = "logical"
     ),
     methods = list(
-        initialize = function(toolkit, items, placeholder,
+        initialize = function(toolkit, items, placeholder = "",
                               removeOnClick = FALSE,
+                              only_unique = TRUE,
                               horizontal,
                               handler, action, container, ...) {
 
-            widget <<- NULL
-            block <<- if (horizontal) gtkHBox() else gtkVBox()
-            gtkContainerSetBorderWidth(block, 5)
+            widget <<- if (horizontal) gtkHBox() else gtkVBox()
+            block <<- gtkScrolledWindowNew()
+            block$setPolicy("GTK_POLICY_AUTOMATIC", "GTK_POLICY_NEVER")
+
+            block$addWithViewport(widget)
+            gtkContainerSetBorderWidth(widget, 5)
+
+            block$setSizeRequest(-1, 50)
 
             initFields(
                 widgets = list(),
                 change_signal = "clicked",
                 change_handler = NULL,
-                remove_on_click = removeOnClick
+                placeholder = placeholder,
+                remove_on_click = removeOnClick,
+                only_unique = only_unique
             )
 
             set_items(value = items)
@@ -43,15 +53,26 @@ GMultiLabel <- setRefClass(
             setNames(items, NULL)
         },
         set_items = function(value, ...) {
+            if (only_unique) value <- unique(value)
             widgets <<- sapply(value, gbutton)
-            sapply(block$getChildren(), gtkContainerRemove, object = block)
-            sapply(widgets, function(x)
+            sapply(widget$getChildren(), gtkContainerRemove, object = widget)
+            sapply(widgets, function(x) {
+                font(x) <- list(size = 8)
                 gtkBoxPackStart(x$block,
-                    object = block,
+                    object = widget,
                     expand = FALSE,
                     padding = 5
                 )
-            )
+            })
+
+            if (length(widgets) == 0L) {
+                lbl <- gtkLabel(placeholder)
+                gtkBoxPackStart(lbl,
+                    object = widget,
+                    expand = FALSE,
+                    padding = 5
+                )
+            }
 
             # add click signal handler
             if (remove_on_click) {
@@ -92,18 +113,20 @@ GMultiLabel <- setRefClass(
             if (is.null(change_handler)) return(invisible())
             .self$change_handler(list(obj = .self))
         },
-        handler_widget = function() block
+        handler_widget = function() widget
     )
 )
 
-gmultilabel <- function(items, placeholder, removeOnClick = FALSE,
+gmultilabel <- function(items, placeholder = "", removeOnClick = FALSE,
+                        only_unique = TRUE,
                         horizontal = TRUE, handler = NULL, action = NULL,
                         container = NULL, ...) {
     toolkit <- gWidgets2::guiToolkit()
 
     if (missing(items)) items <- NULL
     obj <- GMultiLabel$new(toolkit, items, placeholder,
-        removeOnClick, horizontal, handler, action, container, ...)
+        removeOnClick, only_unique,
+        horizontal, handler, action, container, ...)
 
     check_return_class(obj, "GMultiLabel")
     obj

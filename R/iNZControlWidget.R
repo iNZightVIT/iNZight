@@ -35,7 +35,8 @@ iNZControlWidget <- setRefClass(
             ### DRAG/DROP MENUS
             if (multi_v1) {
                 V1box <<- gmultilabel(
-                    placeholder = "Drop outcome variables here ..."
+                    placeholder = "Drop outcome variables here ...",
+                    removeOnClick = TRUE
                 )
             } else {
                 V1box <<- gcombobox(
@@ -554,7 +555,9 @@ iNZControlWidget <- setRefClass(
 
             set <- GUI$getActiveDoc()$getSettings()
 
-            enabled(V2box) <<- enabled(G1box) <<- enabled(G2box) <<- V1box$get_index() > 1L
+            enabled(V2box) <<- enabled(G1box) <<- enabled(G2box) <<- ifelse(
+                multi_v1, V1box$get_length() > 0L, V1box$get_index() > 1L
+            )
 
             enabled(summary_button) <<- enabled(inference_button) <<- GUI$plotType != "none"
 
