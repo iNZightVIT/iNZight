@@ -553,7 +553,9 @@ iNZDataViewWidget <- setRefClass(
         ## create variable view (invisible)
         createVarView = function() {
             varView <<- gvbox(expand = TRUE)
-            varWidget <<- gtable(data.frame(), expand = TRUE)
+            varWidget <<- gtable(data.frame(), expand = TRUE,
+                multiple = GUI$preferences$multiple_x
+            )
             varWidget$remove_popup_menu()
             addDropSource(varWidget,
                 handler = function(h, ...) {

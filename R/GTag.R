@@ -104,6 +104,9 @@ GMultiLabel <- setRefClass(
 
             invisible(TRUE)
         },
+        clear = function() {
+            set_items(NULL)
+        },
         get_length = function() length(widgets),
         # hack a change handler ...
         add_handler_changed = function(handler, ...) {

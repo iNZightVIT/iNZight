@@ -70,7 +70,7 @@ iNZControlWidget <- setRefClass(
                 tooltip = "Clear Variable",
                 handler = function(h,...) {
                     if (multi_v1) {
-                        V1box$drop_tags()
+                        V1box$clear()
                     } else {
                         svalue(V1box, index = TRUE) <<- 1L
                     }
