@@ -1,3 +1,118 @@
+GMultiLabel <- setRefClass(
+    "GMultiLabel",
+    contains = "GWidgetWithItems",
+    fields = list(
+        change_handler = "ANY",
+        remove_on_click = "logical"
+    ),
+    methods = list(
+        initialize = function(toolkit, items, placeholder,
+                              removeOnClick = FALSE,
+                              horizontal,
+                              handler, action, container, ...) {
+
+            widget <<- NULL
+            block <<- if (horizontal) gtkHBox() else gtkVBox()
+            gtkContainerSetBorderWidth(block, 5)
+
+            initFields(
+                widgets = list(),
+                change_signal = "clicked",
+                change_handler = NULL,
+                remove_on_click = removeOnClick
+            )
+
+            set_items(value = items)
+            add_to_parent(container, .self, ...)
+
+            add_handler_changed(handler)
+
+            callSuper(toolkit)
+        },
+        get_value = function(drop = TRUE, ...) {
+            get_items()
+        },
+        set_value = function(value, drop = TRUE, ...) {
+            set_items(value)
+        },
+        # these don't do anything...
+        get_index = function(...) TRUE,
+        set_index = function(value, ...) invisible(),
+        get_items = function(...) {
+            items <- sapply(widgets, function(x) {
+                gtkContainerGetChildren(x)[[1]]$getLabel()
+            })
+            setNames(items, NULL)
+        },
+        set_items = function(value, ...) {
+            widgets <<- sapply(value, gtkTagNew)
+            sapply(block$getChildren(), gtkContainerRemove, object = block)
+            sapply(widgets, gtkBoxPackStart,
+                object = block,
+                expand = FALSE,
+                padding = 5
+            )
+
+            # add click signal handler
+            if (remove_on_click) {
+                sapply(widgets, function(w) {
+                    lbl <- gtkContainerGetChildren(w)[[1]]
+                    print(lbl)
+                    # lbl$add_handler_clicked(
+                    #     function(h, ...) {
+                    #         .self$drop_item()
+                    #     }
+                    # )
+                })
+            }
+
+            # then update action ...
+            update_handler()
+            invisible()
+        },
+        add_item = function(value, ...) {
+            items <- c(get_items(), value)
+            set_items(items)
+        },
+        drop_item = function(value, ...) {
+            if (is.character(value))
+                index <- which(sapply(get_items(), function(x) x == value))
+            else index <- as.integer(value)
+            if (length(index) == 0L) return (invisible(FALSE))
+
+            if (index == 0L || index > length(widgets)) return(invisible(FALSE))
+
+            items <- widgets[-index]
+            set_items(items)
+
+            invisible(TRUE)
+        },
+        get_length = function() length(widgets),
+        # hack a change handler ...
+        add_handler_changed = function(handler, ...) {
+            change_handler <<- handler
+        },
+        update_handler = function() {
+            if (is.null(change_handler)) return(invisible())
+            .self$change_handler(list(obj = .self))
+        },
+        handler_widget = function() block
+    )
+)
+
+gmultilabel <- function(items, placeholder, removeOnClick = FALSE,
+                        horizontal = TRUE, handler = NULL, action = NULL,
+                        container = NULL, ...) {
+    toolkit <- gWidgets2::guiToolkit()
+
+    if (missing(items)) items <- NULL
+    obj <- GMultiLabel$new(toolkit, items, placeholder,
+        removeOnClick, horizontal, handler, action, container, ...)
+
+    check_return_class(obj, "GMultiLabel")
+    obj
+}
+
 # widget displaying a group of tags
 GTags <- setRefClass("GTags",
     contains = "GGroup",
@@ -7,9 +122,14 @@ GTags <- setRefClass("GTags",
         init = "logical"
     ),
     methods = list(
-        initialize = function(toolkit = NULL, items = NULL, placeholder = NULL,
+        initialize = function(toolkit = NULL,
+                              items = NULL,
+                              placeholder = NULL,
                               only_unique = TRUE,
-                              handler, action, container, ...) {
+                              handler = NULL,
+                              action = NULL,
+                              container = NULL,
+                              ...) {
 
             initFields(
                 only_unique = only_unique,
@@ -31,6 +151,8 @@ GTags <- setRefClass("GTags",
 
             if (!is.null(items))
                 lapply(items, gtag, container = .self)
+
+            handler_id <<- add_handler_changed(handler, action)
 
             toggle_placeholder()
         },
@@ -93,6 +215,22 @@ GTags <- setRefClass("GTags",
         }
     )
 )
+
+gtkTagNew <- function(str) {
+    lbl <- gtkLabel(str)
+    widget <- gtkEventBox()
+    widget$add(lbl)
+    widget$modifyFg(
+        GtkStateType["normal"],
+        "black"
+    )
+    widget$modifyBg(
+        GtkStateType["normal"],
+        "gray90"
+    )
+    lbl$setPadding(6, 3)
+    widget
+}
 
 # A custom class drawing a label with a background border
 gtags <- function(items, placeholder = NULL, only_unique = TRUE, handler = NULL, action = NULL, container = NULL, ...) {

@@ -24,5 +24,6 @@ ui$savePreferences()
 ui$reload()
 
 test_that("V1 is ... when multiple_x is TRUE", {
-    # expect_is(ui$ctrlWidget$V1box, "GTags")
+    expect_is(ui$ctrlWidget$V1box, "GTags")
+
 })

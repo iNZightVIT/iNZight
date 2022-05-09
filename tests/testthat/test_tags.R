@@ -1,5 +1,12 @@
 # devtools::load_all(); try(dispose(w))
 
+w <- gwindow()
+g <- gvbox(container = w)
+t <- gmultilabel(placeholder = "Drop items here...", container = g)
+
+addHandlerChanged(t, function(h, ...) print("change!"))
+t$set_items(c("three"))
+
 test_that("Tag objects works", {
     w <- gwindow()
     on.exit(gWidgets2::dispose(w))
@@ -10,21 +17,35 @@ test_that("Tag objects works", {
 })
 
 test_that("Tags object works", {
+    # devtools::load_all(); try(dispose(w), TRUE)
     w <- gwindow()
     on.exit(gWidgets2::dispose(w))
 
     g <- gvbox(container = w)
-    tags <- gtags(placeholder = "Drop items here ...", container = g)
-    expect_is(tags, "GTags")
 
-    tags$add_tag("hello")
-    expect_equal(length(tags$children), 2L)
+    tags <- gmultilabel(placeholder = "Drop items here ...", container = g)
+    expect_is(tags, "GMultiLabel")
 
-    tags$drop_tag("hello")
-    expect_equal(length(tags$children), 1L)
+    tags$add_item("hello")
+    expect_equal(length(tags$widgets), 1L)
 
-    tags2 <- gtags(
+    tags$drop_item("hello")
+    expect_equal(length(tags$widgets), 0L)
+
+    tags2 <- gmultilabel(
+        c("some", "tags"),
         container = g,
+        removeOnClick = TRUE,
         handler = function(h, ...) print("I changed!")
     )
+    # expect_output(
+    #     tags2$invoke_change_handler(),
+    #     "I changed!"
+    # )
+
+    c <- gtable(names(iris), container = g)
+    addDropSource(c, handler = function(h, ...) svalue(h$obj))
+    addDropTarget(tags2, handler = function(h, ...) {
+        h$obj$add_item(h$dropdata)
+    })
 })
