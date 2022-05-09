@@ -398,7 +398,7 @@ iNZControlWidget <- setRefClass(
             addDropTarget(V1box,
                 handler = function(h, ...) {
                     if (multi_v1) {
-                        h$obj$add_tag(h$dropdata)
+                        h$obj$add_item(h$dropdata)
                     } else {
                         svalue(h$obj) <- h$dropdata
                     }
@@ -426,8 +426,6 @@ iNZControlWidget <- setRefClass(
                             newXname <- val
                         }
                     }
-
-                    # print(newX)
 
                     changePlotSettings(
                         list(

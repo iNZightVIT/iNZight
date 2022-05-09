@@ -566,7 +566,7 @@ iNZGUI <- setRefClass(
 
                 code_panel$set_input(code)
                 enabled(plotToolbar$exportplotBtn) <<- can.interact(rawpl)
-                plotType <<- attr(curPlot, "plottype")
+                plotType <<- attr(curPlot, "plottype") %||% "custom"
                 return(invisible(rawpl))
             }
 

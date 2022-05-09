@@ -39,31 +39,27 @@ GMultiLabel <- setRefClass(
         get_index = function(...) TRUE,
         set_index = function(value, ...) invisible(),
         get_items = function(...) {
-            items <- sapply(widgets, function(x) {
-                gtkContainerGetChildren(x)[[1]]$getLabel()
-            })
+            items <- sapply(widgets, function(x) x$get_value())
             setNames(items, NULL)
         },
         set_items = function(value, ...) {
-            widgets <<- sapply(value, gtkTagNew)
+            widgets <<- sapply(value, gbutton)
             sapply(block$getChildren(), gtkContainerRemove, object = block)
-            sapply(widgets, gtkBoxPackStart,
-                object = block,
-                expand = FALSE,
-                padding = 5
+            sapply(widgets, function(x)
+                gtkBoxPackStart(x$block,
+                    object = block,
+                    expand = FALSE,
+                    padding = 5
+                )
             )
 
             # add click signal handler
             if (remove_on_click) {
-                sapply(widgets, function(w) {
-                    lbl <- gtkContainerGetChildren(w)[[1]]
-                    print(lbl)
-                    # lbl$add_handler_clicked(
-                    #     function(h, ...) {
-                    #         .self$drop_item()
-                    #     }
-                    # )
-                })
+                sapply(widgets, addHandlerClicked,
+                    handler = function(h, ...) {
+                        .self$drop_item(h$obj$get_value())
+                    }
+                )
             }
 
             # then update action ...
@@ -82,7 +78,7 @@ GMultiLabel <- setRefClass(
 
             if (index == 0L || index > length(widgets)) return(invisible(FALSE))
 
-            items <- widgets[-index]
+            items <- sapply(widgets, function(x) x$get_value())[-index]
             set_items(items)
 
             invisible(TRUE)
@@ -249,7 +245,7 @@ GTag <- setRefClass("GTag",
         initialize = function(toolkit = NULL, text = NULL, handler, action, container, ...) {
 
             widget <<- gtkLabel(text)
-            block <<- gtkEventBox()
+            block <<- gtkButton()
             block$add(widget)
             toolkit <<- toolkit
 
@@ -264,7 +260,9 @@ GTag <- setRefClass("GTag",
 
             widget$setPadding(6, 3)
 
-            initFields()
+            initFields(
+                change_signal = "clicked"
+            )
 
             add_to_parent(container, .self, ...)
 
@@ -272,7 +270,8 @@ GTag <- setRefClass("GTag",
         },
         get_value = function(index = TRUE, drop = TRUE, ...) {
             widget$getLabel()
-        }
+        },
+        handler_widget = function() widget
     )
 )
 
