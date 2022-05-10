@@ -8,7 +8,7 @@ on.exit({
     ui$close()
 })
 
-if (!ui$preferences$multiple_x) {
+if (ui$preferences$multiple_x) {
     ui$preferences$multiple_x <- FALSE
     ui$savePreferences()
     ui$reload()
@@ -24,6 +24,6 @@ ui$savePreferences()
 ui$reload()
 
 test_that("V1 is ... when multiple_x is TRUE", {
-    expect_is(ui$ctrlWidget$V1box, "GTags")
+    expect_is(ui$ctrlWidget$V1box, "GMultiLabel")
 
 })

@@ -49,7 +49,7 @@ plot_list <- function(plot_type, x, y, is_survey) {
             gg_quasirandom = "(gg) beeswarm",
             gg_violin = "(gg) violin",
             gg_density = "(gg) density",
-            gg_cumcurve = "(gg) cumulative curve"
+            gg_cumcurve = "(gg) cumulative curve",
         )
 
         if (is.null(y)) {
@@ -96,14 +96,16 @@ plot_list <- function(plot_type, x, y, is_survey) {
             "gg_spine",
             "gg_gridplot",
             "gg_divergingstackedbar",
-            "bar"
+            "bar",
+            "gg_multi"
         )
     ) {
         return_list <- list(
             bar = "barplot",
             gg_column = "(gg) column/row bar",
             gg_stackedcolumn = "(gg) stacked column/row",
-            gg_lollipop2 = "(gg) lollipop"
+            gg_lollipop2 = "(gg) lollipop",
+            gg_multi = "(gg) multi variable"
         )
 
         if (is.null(y)) {
