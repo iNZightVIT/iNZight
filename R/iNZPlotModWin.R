@@ -8,10 +8,26 @@
 ## --------------------------------------------
 
 plot_list <- function(plot_type, x, y, is_survey) {
+
     if (ncol(x) > 1L) {
-        x <- x[[1]]
+        # multi plots
+
+        return_list <- list(
+            gg_multi_col = "(gg) multiple bar",
+            gg_multi_stack = "(gg) multiple stacked column"
+        )
+
+        if (length(unique(do.call(c, as.list(x)))) == 2L) {
+            return_list <- append(return_list,
+                list(gg_multi_binary = "(gg) multiple binary column")
+            )
+        }
+
+        attr(return_list, "null.y") <- is.null(y)
+        return(return_list)
     }
 
+    x <- x[[1]]
     if (plot_type %in%
         c(
         "scatter",
@@ -100,26 +116,15 @@ plot_list <- function(plot_type, x, y, is_survey) {
             "gg_spine",
             "gg_gridplot",
             "gg_divergingstackedbar",
-            "bar",
-            "gg_multi_stack",
-            "gg_multi_col",
-            "gg_multi_binary"
+            "bar"
         )
     ) {
         return_list <- list(
             bar = "barplot",
             gg_column = "(gg) column/row bar",
             gg_stackedcolumn = "(gg) stacked column/row",
-            gg_lollipop2 = "(gg) lollipop",
-            gg_multi_col = "(gg) multiple bar",
-            gg_multi_stack = "(gg) multiple stacked column"
+            gg_lollipop2 = "(gg) lollipop"
         )
-
-        if (nlevels(x) == 2L) {
-            return_list <- append(return_list,
-                list(gg_multi_binary = "(gg) multiple binary column")
-            )
-        }
 
         if (is.null(y)) {
             return_list <- append(return_list,
