@@ -8,6 +8,10 @@
 ## --------------------------------------------
 
 plot_list <- function(plot_type, x, y, is_survey) {
+    if (ncol(x) > 1L) {
+        x <- x[[1]]
+    }
+
     if (plot_type %in%
         c(
         "scatter",
@@ -97,7 +101,9 @@ plot_list <- function(plot_type, x, y, is_survey) {
             "gg_gridplot",
             "gg_divergingstackedbar",
             "bar",
-            "gg_multi"
+            "gg_multi_stack",
+            "gg_multi_col",
+            "gg_multi_binary"
         )
     ) {
         return_list <- list(
@@ -105,8 +111,15 @@ plot_list <- function(plot_type, x, y, is_survey) {
             gg_column = "(gg) column/row bar",
             gg_stackedcolumn = "(gg) stacked column/row",
             gg_lollipop2 = "(gg) lollipop",
-            gg_multi = "(gg) multi variable"
+            gg_multi_col = "(gg) multiple bar",
+            gg_multi_stack = "(gg) multiple stacked column"
         )
+
+        if (nlevels(x) == 2L) {
+            return_list <- append(return_list,
+                list(gg_multi_binary = "(gg) multiple binary column")
+            )
+        }
 
         if (is.null(y)) {
             return_list <- append(return_list,
@@ -1205,11 +1218,13 @@ iNZPlotMod <- setRefClass(
             ## PLOT TYPE
             lbl <- glabel("Plot type :")
 
-            varnames <- unlist(attr(GUI$curPlot, "varnames"))
+            varnames <- attr(GUI$curPlot, "varnames")
+            print(head(GUI$getActiveData()))
+            print(varnames["x"])
             PLOTTYPES <- plot_list(
                 TYPE,
-                GUI$getActiveData()[[varnames["x"]]],
-                if ("y" %in% names(varnames)) GUI$getActiveData()[[varnames["y"]]] else NULL,
+                GUI$getActiveData()[varnames[["x"]]],
+                if ("y" %in% names(varnames)) GUI$getActiveData()[[varnames[["y"]]]] else NULL,
                 !is.null(GUI$getActiveDoc()$getModel()$dataDesign)
             )
 
