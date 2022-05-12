@@ -272,7 +272,6 @@ iNZPlotSettings <- setRefClass(
         ## reset: if TRUE, the default plot settings are loaded
         ##        for the additions to the plot
         setSettings = function(setList, reset = FALSE) {
-            print(setList)
             ## changing x or y? reset the limits
             if (!is.null(setList$x) || !is.null(setList$y)) {
                 settings$xlim <<- NULL
