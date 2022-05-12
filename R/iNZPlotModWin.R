@@ -7,7 +7,7 @@
 ## which is the same since the two are linked together)
 ## --------------------------------------------
 
-plot_list <- function(plot_type, x, y, is_survey) {
+plot_list <- function(plot_type, x, y, is_survey, p) {
 
     if (ncol(x) > 1L) {
         # multi plots
@@ -17,9 +17,10 @@ plot_list <- function(plot_type, x, y, is_survey) {
             gg_multi_stack = "(gg) multiple stacked column"
         )
 
-        if (length(unique(do.call(c, as.list(x)))) == 2L) {
-            return_list <- append(return_list,
-                list(gg_multi_binary = "(gg) multiple binary column")
+        if (length(attr(p, "xlevels", exact = TRUE)) == 2L) {
+            return_list <- append(
+                list(gg_multi_binary = "(gg) multiple binary column"),
+                return_list
             )
         }
 
@@ -1224,13 +1225,12 @@ iNZPlotMod <- setRefClass(
             lbl <- glabel("Plot type :")
 
             varnames <- attr(GUI$curPlot, "varnames")
-            print(head(GUI$getActiveData()))
-            print(varnames["x"])
             PLOTTYPES <- plot_list(
                 TYPE,
                 GUI$getActiveData()[varnames[["x"]]],
                 if ("y" %in% names(varnames)) GUI$getActiveData()[[varnames[["y"]]]] else NULL,
-                !is.null(GUI$getActiveDoc()$getModel()$dataDesign)
+                !is.null(GUI$getActiveDoc()$getModel()$dataDesign),
+                GUI$curPlot
             )
 
             # if (PLOTTYPE != "bar") {

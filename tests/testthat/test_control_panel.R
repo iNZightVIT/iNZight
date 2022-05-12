@@ -1,4 +1,4 @@
-# devtools::load_all(); try(ui$close(), TRUE)
+# devtools::load_all("../iNZightPlots"); devtools::load_all(); try(ui$close(), TRUE)
 cas5k <- iNZightMR::census.at.school.5000
 ui <- iNZight(cas5k)
 
