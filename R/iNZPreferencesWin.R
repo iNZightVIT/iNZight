@@ -221,6 +221,29 @@ iNZPrefsWin <- setRefClass(
             )
             font(lbl) <- list(size = 9)
 
+            gseparator(container = g_dev)
+
+            ### ---------------- Code widgets
+            p_multiple_x <- gcheckbox("Enable multiple response variable interface",
+                checked = prefs$multiple_x,
+                container = g_dev,
+                handler = function(h, ...) set_pref("multiple_x", svalue(h$obj))
+            )
+            lbl <- glabel(
+                paste(
+                    "Enabling this option will replace the Variable 1 drop-down",
+                    "box with a multiple-label drop area. You can drag-and-drop",
+                    "\none or more variables here which will all be used as",
+                    "primary outcome variables. This is useful if you have multiple",
+                    "\nresponse type data, or variables with the same values",
+                    "you want to be able to compare in a single plot."
+                ),
+                container = g_dev,
+                anchor = c(-1, 0)
+            )
+            font(lbl) <- list(size = 9)
+
+
             ################ BUTTONS
             g_buttons <- ggroup(container = g_main)
             addSpring(g_buttons)
@@ -241,7 +264,8 @@ iNZPrefsWin <- setRefClass(
                         "Some changes require reloading iNZight. Do that now?",
                         "All changes will be saved."
                     )
-                    if (!interactive() || gconfirm(confmsg, icon = "question"))
+                    if (!interactive() || gconfirm(confmsg,
+                        icon = "question", parent = GUI$win))
                         GUI$reload()
                 }
             )

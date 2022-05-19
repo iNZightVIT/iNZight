@@ -25,7 +25,7 @@ iNZControlWidget <- setRefClass(
             ctrlGp$set_borderwidth(5L)
 
             initFields(GUI = gui, playdelay = 0.6, newname = "",
-                multi_v1 = gui$preferences$multiple_x
+                multi_v1 = gui$preferences$dev.features && gui$preferences$multiple_x
             )
             ## set up glayout
             tbl <- glayout(expand = TRUE, homogeneous = FALSE, cont = ctrlGp, spacing = 5)

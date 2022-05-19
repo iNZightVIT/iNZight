@@ -2346,7 +2346,7 @@ iNZPlotMod <- setRefClass(
                 )
             }
 
-            if (grepl("^gg_", PLOTTYPE)) {
+            if (grepl("^gg_", PLOTTYPE) && !grepl("^gg_multi", PLOTTYPE)) {
 
 
                 tbl[ii, 1:6, expand = TRUE] <- sectionTitle("Options (for ggplot2)")
