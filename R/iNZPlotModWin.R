@@ -1843,26 +1843,46 @@ iNZPlotMod <- setRefClass(
 
             ii <- ii + 1
 
-            if (PLOTTYPE %in% c("dot", "hist")) {
+            if (PLOTTYPE %in% c("dot", "hist", "gg_boxplot", "gg_density")) {
                 tbl[ii,  1:6, anchor = c(-1, 0), expand = TRUE] <-
                     sectionTitle("Summaries")
                 ii <- ii + 1
 
                 tbl[ii, 1:2, anchor = c(1, 0), expand = TRUE] <- glabel("Show :")
 
-                showBoxplot <- gcheckbox("Boxplot",
-                    checked = curSet$boxplot,
-                    handler = function(h, ...) updateEverything()
-                )
-                showMean <- gcheckbox("Mean indicator",
-                    checked = curSet$mean_indicator,
-                    handler = function(h, ...) updateEverything()
-                )
-                enabled(showBoxplot) <- enabled(showMean) <-
-                    is.null(curSet$inference.par)
+                if (PLOTTYPE %in% c("dot", "hist")) {
+                    showBoxplot <- gcheckbox("Boxplot",
+                        checked = curSet$boxplot,
+                        handler = function(h, ...) updateEverything()
+                    )
+                    enabled(showBoxplot) <- is.null(curSet$inference.par)
+                }
 
-                tbl[ii, 3:6, anchor = c(1, 0), expand = TRUE] <- showBoxplot
-                ii <- ii + 1
+                meanOpts <- c("No mean", "Overall mean", "Group means")
+                if (PLOTTYPE %in% c("dot", "hist", "gg_boxplot")) {
+                    showMean <- gcheckbox("Mean indicator",
+                        checked = ifelse(is.logical(curSet$mean_indicator),
+                            curSet$mean_indicator,
+                            curSet$mean_indicator %in% meanOpts[-1]
+                        ),
+                        handler = function(h, ...) updateEverything()
+                    )
+                } else {
+                    curMeanVal <- 1L
+                    if (is.logical(curSet$mean_indicator) && curSet$mean_indicator) curMeanVal <- 2L
+                    if (is.character(curSet$mean_indicator))
+                        curMeanVal <- switch(curSet$mean_indicator, "grand" = 2L, "group" = 3L)
+                    showMean <- gradio(meanOpts,
+                        selected = curMeanVal,
+                        handler = function(h, ...) updateEverything()
+                    )
+                }
+                enabled(showMean) <- is.null(curSet$inference.par)
+
+                if (PLOTTYPE %in% c("dot", "hist")) {
+                    tbl[ii, 3:6, anchor = c(1, 0), expand = TRUE] <- showBoxplot
+                    ii <- ii + 1
+                }
 
                 tbl[ii, 3:6, anchor = c(1, 0), expand = TRUE] <- showMean
                 ii <- ii + 1
@@ -2719,7 +2739,17 @@ iNZPlotMod <- setRefClass(
 
                 if (PLOTTYPE %in% c("dot", "hist")) {
                     newSet$boxplot <- svalue(showBoxplot)
+                }
+                if (PLOTTYPE %in% c("dot", "hist", "gg_boxplot")) {
                     newSet$mean_indicator <- svalue(showMean)
+                }
+                if (PLOTTYPE %in% c("gg_density")) {
+                    if (svalue(showMean, index = TRUE) == 1L)
+                        newSet <- modifyList(newSet, list(mean_indicator = NULL), keep.null = TRUE)
+                    else newSet$mean_indicator <- switch(
+                        svalue(showMean, index = TRUE),
+                        NULL, "grand", "group"
+                    )
                 }
 
                 GUI$getActiveDoc()$setSettings(newSet)
