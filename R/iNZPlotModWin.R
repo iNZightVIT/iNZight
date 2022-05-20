@@ -70,7 +70,7 @@ plot_list <- function(plot_type, x, y, is_survey, p) {
             gg_quasirandom = "(gg) beeswarm",
             gg_violin = "(gg) violin",
             gg_density = "(gg) density",
-            gg_cumcurve = "(gg) cumulative curve",
+            gg_cumcurve = "(gg) cumulative curve"
         )
 
         if (is.null(y)) {
