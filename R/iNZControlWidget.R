@@ -121,47 +121,60 @@ iNZControlWidget <- setRefClass(
 
 
             ## "SWITCH" buttons:
-            switchV12 <- gimagebutton(
-                filename = system.file("images/icon-double-arrow.png", package = "iNZight"),
-                tooltip = "Switch with Variable 2")
-            addHandlerClicked(switchV12,
-                function(h, ...) {
-                    if (svalue(V1box, TRUE) == 1L || svalue(V2box, TRUE) == 1L)
-                        return()
+            if (multi_v1) {
+                addV1 <- gimagebutton(
+                    system.file("images/add-multiple.png", package = "iNZight"),
+                    tooltip = "Add selected variables"
+                )
+                addHandlerClicked(addV1,
+                    function(h, ...) {
+                        vars <- svalue(GUI$dataViewWidget$varWidget)
+                        V1box$set_value(vars)
+                    }
+                )
+            } else {
+                switchV12 <- gimagebutton(
+                    filename = system.file("images/icon-double-arrow.png", package = "iNZight"),
+                    tooltip = "Switch with Variable 2")
+                addHandlerClicked(switchV12,
+                    function(h, ...) {
+                        if (svalue(V1box, TRUE) == 1L || svalue(V2box, TRUE) == 1L)
+                            return()
 
-                    V1 <- svalue(V1box)
-                    V2 <- svalue(V2box)
+                        V1 <- svalue(V1box)
+                        V2 <- svalue(V2box)
 
-                    blockHandlers(V1box)
-                    blockHandlers(V2box)
+                        blockHandlers(V1box)
+                        blockHandlers(V2box)
 
-                    svalue(V1box) <<- V2
-                    svalue(V2box) <<- V1
+                        svalue(V1box) <<- V2
+                        svalue(V2box) <<- V1
 
-                    valX <- svalue(V1box)
-                    newX <- as.name(valX)
-                    newXname <- valX
+                        valX <- svalue(V1box)
+                        newX <- as.name(valX)
+                        newXname <- valX
 
-                    valY <- svalue(V2box)
-                    newY <- as.name(valY)
-                    newYname <- valY
+                        valY <- svalue(V2box)
+                        newY <- as.name(valY)
+                        newYname <- valY
 
-                    changePlotSettings(
-                        list(
-                            x = newX,
-                            y = newY,
-                            xlab = NULL,
-                            ylab = NULL,
-                            main = NULL,
-                            varnames = list(x = newXname, y = newYname)
-                        ),
-                        reset = TRUE
-                    )
-                    unblockHandlers(V1box)
+                        changePlotSettings(
+                            list(
+                                x = newX,
+                                y = newY,
+                                xlab = NULL,
+                                ylab = NULL,
+                                main = NULL,
+                                varnames = list(x = newXname, y = newYname)
+                            ),
+                            reset = TRUE
+                        )
+                        unblockHandlers(V1box)
 
-                    unblockHandlers(V2box)
-                }
-            )
+                        unblockHandlers(V2box)
+                    }
+                )
+            }
             switchV23 <- gimagebutton(
                 filename = system.file("images/icon-double-arrow.png", package = "iNZight"),
                 tooltip = "Switch with Variable 3")
@@ -294,7 +307,11 @@ iNZControlWidget <- setRefClass(
                 }
             )
 
-            tbl[1L, 7L] <- switchV12
+            if (multi_v1) {
+                tbl[1L, 7L] <- addV1
+            } else {
+                tbl[1L, 7L] <- switchV12
+            }
             tbl[3L, 7L] <- switchV23
             tbl[5L, 7L] <- switchV34
 
@@ -555,7 +572,8 @@ iNZControlWidget <- setRefClass(
 
             set <- GUI$getActiveDoc()$getSettings()
 
-            enabled(V2box) <<- enabled(G1box) <<- enabled(G2box) <<- ifelse(
+            enabled(V2box) <<- ifelse(multi_v1, V1box$get_length() == 1L, V1box$get_index() > 1L)
+            enabled(G1box) <<- enabled(G2box) <<- ifelse(
                 multi_v1, V1box$get_length() > 0L, V1box$get_index() > 1L
             )
 
