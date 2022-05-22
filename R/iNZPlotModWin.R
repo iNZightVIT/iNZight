@@ -2281,14 +2281,22 @@ iNZPlotMod <- setRefClass(
                     "gg_column",
                     "gg_lollipop2",
                     "gg_pie",
-                    "gg_donut"
+                    "gg_donut",
+                    "gg_multi_binary"
                 )
             ) {
                 tbl[ii, 1:6, expand = TRUE] <- sectionTitle("Sorting")
                 ii <- ii + 1
 
                 tbl[ii, 1:2, anchor = c(1, 0), expand = TRUE] <-
-                    glabel("Sort categories by size :")
+                    glabel(
+                        sprintf("Sort %s :",
+                            ifelse(PLOTTYPE %in% c("gg_multi_binary"),
+                                "variables",
+                                "categories by size"
+                            )
+                        )
+                    )
 
                 sortCheck <- gcombobox(c("None", "Ascending", "Descending"),
                     handler = function(h, ...) updateEverything()
@@ -2645,7 +2653,8 @@ iNZPlotMod <- setRefClass(
                             "gg_column",
                             "gg_lollipop2",
                             "gg_pie",
-                            "gg_donut"
+                            "gg_donut",
+                            "gg_multi_binary"
                         )
                     ) {
                         newSet$ordered <-
