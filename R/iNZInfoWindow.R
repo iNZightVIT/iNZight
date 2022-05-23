@@ -265,7 +265,7 @@ iNZDataSummary <- setRefClass(
                 )
             )
         },
-        update_summary = function() {
+        update_summary = function(...) {
             # the following is required to ensure the output graphs look OK,
             # and that the rows are all on one line
             olocale <- Sys.getlocale("LC_CTYPE")
@@ -371,11 +371,19 @@ iNZGetSummary <- setRefClass(
                 what = "summary"
             )
         },
-        update_summary = function() {
+        update_summary = function(...) {
             smry_call <- gen_call()
-            set_input(mend_call(smry_call, GUI))
+            smry_call_list <- as.list(smry_call[[1]])
+            smry_call[[1]] <- as.call(modifyList(smry_call_list, list(...)))
 
             smry <- try(eval(smry_call, env), silent = TRUE)
+
+            if (inherits(smry, "kableExtra")) {
+                print(smry)
+                return()
+            }
+
+            set_input(mend_call(smry_call, GUI))
             if (inherits(smry, "try-error")) smry <- "Unable to generate summary."
             set_output(smry)
         },
@@ -599,6 +607,16 @@ iNZGetSummary <- setRefClass(
             update_summary()
         },
         setup_panel = function() {
+            if (grepl("^gg_multi", GUI$plotType)) {
+                # button to view as HTML
+                html_btn <- gbutton("View HTML table",
+                    handler = function(h, ...) {
+                        update_summary(html = TRUE)
+                    },
+                    container = ctrl_panel
+                )
+            }
+
             ds <- GUI$getActiveData()
             xvar <- if (!is.null(curSet$x)) ds[[curSet$x]] else NULL
             if (is.null(xvar)) {
