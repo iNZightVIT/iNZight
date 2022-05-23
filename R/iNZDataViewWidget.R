@@ -103,8 +103,23 @@ iNZDataViewWidget <- setRefClass(
             searchtimer <- NULL
             searchBox <<- gedit(
                 handler = function(h, ...) {
-                    matches <- grep(svalue(h$obj), names(GUI$getActiveData()),
+                    matches <- grepl(svalue(h$obj), names(GUI$getActiveData()),
                         ignore.case = TRUE)
+
+                    if (nrow(GUI$getActiveDoc()$getModel()$dict_df)) {
+                        ddf <- GUI$getActiveDoc()$getModel()$dict_df
+                        ddf <- lapply(names(GUI$getActiveData()), function(x) {
+                            ddf[ddf$name == x, , drop = FALSE]
+                        })
+                        ddf <- do.call(rbind, ddf)
+                        if ("title" %in% colnames(ddf)) {
+                            print(ddf$title)
+                            matches <- matches | grepl(svalue(h$obj), ddf$title, ignore.case = TRUE)
+                        }
+                    }
+
+                    matches <- which(matches)
+
                     if (length(matches) == 0)
                         matches <- NA_character_
                     else
