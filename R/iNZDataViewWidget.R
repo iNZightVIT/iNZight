@@ -113,7 +113,6 @@ iNZDataViewWidget <- setRefClass(
                         })
                         ddf <- do.call(rbind, ddf)
                         if ("title" %in% colnames(ddf)) {
-                            print(ddf$title)
                             matches <- matches | grepl(svalue(h$obj), ddf$title, ignore.case = TRUE)
                         }
                     }

@@ -2316,6 +2316,30 @@ iNZPlotMod <- setRefClass(
                 ii <- ii + 1
             }
 
+            if (PLOTTYPE %in%
+                c(
+                    "gg_multi_stack",
+                    "gg_multi_col"
+                )
+            ) {
+                # option to only show one level of the variable
+                # (useful e.g., if Yes/No/Don't Know, etc)
+                tbl[ii, 1:6, expand = TRUE] <- sectionTitle("Select response outcome")
+                ii <- ii + 1L
+
+                tbl[ii, 1:2, anchor = c(1, 0), expand = TRUE] <- glabel(
+                    "Show percent of responses with outcome :"
+                )
+
+                rvals <- levels(attr(GUI$curPlot, "data", exact = TRUE)$value)
+                multiResponseFilter <- gcombobox(c("- None -", rvals),
+                    selected = which(rvals == curSet$outcome_value) + 1L,
+                    handler = function(h, ...) updateEverything()
+                )
+                tbl[ii, 3:6, expand = TRUE] <- multiResponseFilter
+                ii <- ii + 1L
+            }
+
             if (PLOTTYPE %in% c("gg_gridplot")) {
                 tbl[ii, 1:6, expand = TRUE] <- sectionTitle("Gridplot Options")
                 ii <- ii + 1
@@ -2660,6 +2684,22 @@ iNZPlotMod <- setRefClass(
                         newSet$ordered <-
                             if (svalue(sortCheck, index = TRUE) == 1) FALSE
                             else c("asc", "desc")[svalue(sortCheck, TRUE) - 1]
+                    }
+
+                    if (PLOTTYPE %in%
+                        c(
+                            "gg_multi_stack",
+                            "gg_multi_col"
+                        )
+                    ) {
+                        if (svalue(multiResponseFilter, index = TRUE) == 1L) {
+                            newSet <- modifyList(newSet,
+                                list(outcome_value = NULL),
+                                keep.null = TRUE
+                            )
+                        } else {
+                            newSet$outcome_value <- svalue(multiResponseFilter)
+                        }
                     }
 
                     if (PLOTTYPE %in% c("gg_violin", "gg_density")) {
