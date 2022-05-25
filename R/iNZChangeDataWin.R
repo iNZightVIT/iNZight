@@ -1722,7 +1722,9 @@ iNZJoinWin <- setRefClass(
             prevTbl <<- glayout(homogeneous = FALSE)
 
             string1 <- glabel("Preview of the original dataset")
-            originview <- gtable(data.frame(head(GUI$getActiveData(), 10), stringsAsFactors = TRUE))
+            originview <- gpagedtable(
+                data.frame(head(GUI$getActiveData(), 10), stringsAsFactors = TRUE)
+            )
             string2 <- glabel("Select join methods")
             jointypes <- list(
                 "Inner Join" = "inner_join",
@@ -1758,14 +1760,14 @@ iNZJoinWin <- setRefClass(
             )
 
             prevTbl[1,1, expand = TRUE] <<- string1
-            prevTbl[2,1, expand = TRUE] <<- originview
+            prevTbl[2,1, expand = TRUE] <<- originview$block
             prevTbl[3,1, expand = TRUE] <<- string2
             prevTbl[4,1, expand = TRUE] <<- var1
             prevTbl[5,1, expand = TRUE] <<- left_name_box
-            size(originview) <- c(-1, 200)
+            size(originview$table) <- c(-1, 200)
 
             string3 <- glabel("Preview of the second dataset")
-            impview <<- gtable(data.frame("", stringsAsFactors = TRUE))
+            impview <<- gpagedtable(data.frame("", stringsAsFactors = TRUE))
 
             data2frombox <- ggroup()
             data2from <- gradio(c("Existing", "Import new"),
@@ -1787,12 +1789,13 @@ iNZJoinWin <- setRefClass(
                 }
             )
 
+
             prevTbl[1,2, expand = TRUE] <<- string3
-            prevTbl[2,2, expand = TRUE] <<- impview
+            prevTbl[2,2, expand = TRUE] <<- impview$block
             prevTbl[3,2, expand = TRUE] <<- data2frombox
             prevTbl[4,2, expand = TRUE] <<- data_name
             prevTbl[5,2, expand = TRUE] <<- right_name_box
-            size(impview) <<- c(-1, 200)
+            size(impview$table) <<- c(-1, 200)
 
             addHandlerChanged(data2from,
                 handler = function(h, ...) {
@@ -1853,8 +1856,8 @@ iNZJoinWin <- setRefClass(
             ## Bottom box
             bottom <- gvbox()
             preview_string2 = glabel("Preview", container = bottom, anchor = c(-1, 0))
-            joinview <<- gtable(data.frame("", stringsAsFactors = TRUE), container = bottom)
-            size(joinview) <<- c(-1, 150)
+            joinview <<- gpagedtable(data.frame("", stringsAsFactors = TRUE), container = bottom)
+            size(joinview$table) <<- c(-1, 150)
 
             add_body(bottom)
 
