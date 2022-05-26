@@ -1,4 +1,6 @@
-devtools::load_all()
+skip('in development')
+
+# devtools::load_all()
 try(dispose(w))
 w <- gwindow()
 g <- gvbox(container = w, fill = TRUE, expand = TRUE)
