@@ -701,7 +701,8 @@ iNZImportWin <- setRefClass(
                 iNZDocument$new(
                     data = as.data.frame(tmpData,
                         stringsAsFactors = TRUE
-                    )
+                    ),
+                    preferences = GUI$preferences
                 ),
                 reset = FALSE
             )

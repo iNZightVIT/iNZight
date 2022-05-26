@@ -120,7 +120,7 @@ iNZDataModel <- setRefClass(
                 attr(gui$getActiveData(), "name", exact = TRUE),
                 "freq"
             )
-            gui$setDocument(iNZDocument$new(data = newdata))
+            gui$setDocument(iNZDocument$new(data = newdata, preferences = gui$preferences))
         },
         setDesign = function(x, gui) {
             if (missing(x)) {
@@ -258,12 +258,16 @@ iNZPlotSettings <- setRefClass(
     ),
     contains = "PropertySet", ## need this to add observer to object
     methods = list(
-        initialize = function(settings = NULL) {
-            if(!is.null(settings))
+        initialize = function(settings = NULL, preferences = list()) {
+            defaultSettings <<- modifyList(
+                unclass(iNZightPlots:::inzpar()),
+                preferences[c("gg_theme")],
+                keep.null = TRUE
+            )
+            if (!is.null(settings))
                 settings <<- settings
             else
-                settings <<- unclass(iNZightPlots:::inzpar())
-            defaultSettings <<- unclass(iNZightPlots:::inzpar())
+                settings <<- defaultSettings
         },
         getSettings = function() {
             settings
@@ -322,13 +326,13 @@ iNZDocument <- setRefClass(
         plotSettings = "iNZPlotSettings"
     ),
     methods = list(
-        initialize = function(data = NULL, settings = NULL) {
+        initialize = function(data = NULL, settings = NULL, preferences = list()) {
             ## set data name (default = "data")
             if (!is.null(data) && is.null(attr(data, "name", exact = TRUE)))
                 attr(data, "name") <- deparse(substitute(data))
             initFields(
                 dataModel = iNZDataModel$new(data),
-                plotSettings = iNZPlotSettings$new(settings)
+                plotSettings = iNZPlotSettings$new(settings, preferences)
             )
         },
         getModel = function() {

@@ -7,6 +7,23 @@
 ## which is the same since the two are linked together)
 ## --------------------------------------------
 
+available.themes <- c(
+    "Default" = "grey",
+    "Black & White" = "bw",
+    "Light" = "light",
+    "Dark" = "dark",
+    "Minimal" = "minimal",
+    "Classic" = "classic",
+    "Void" = "void",
+    "Stata" = "stata",
+    "Wall Street Journal" = "wsj",
+    "Tufte" = "tufte",
+    "Google Docs" = "gdocs",
+    "FiveThirtyEight" = "fivethirtyeight",
+    "Excel" = "excel",
+    "Economist" = "economist"
+)
+
 plot_list <- function(plot_type, x, y, is_survey, p) {
 
     if (ncol(x) > 1L) {
@@ -1891,23 +1908,6 @@ iNZPlotMod <- setRefClass(
             ## FT PLOT OPTIONS
 
             if (grepl("^gg_", PLOTTYPE)) {
-                available.themes <- c(
-                    "Default" = "grey",
-                    "Black & White" = "bw",
-                    "Light" = "light",
-                    "Dark" = "dark",
-                    "Minimal" = "minimal",
-                    "Classic" = "classic",
-                    "Void" = "void",
-                    "Stata" = "stata",
-                    "Wall Street Journal" = "wsj",
-                    "Tufte" = "tufte",
-                    "Google Docs" = "gdocs",
-                    "FiveThirtyEight" = "fivethirtyeight",
-                    "Excel" = "excel",
-                    "Economist" = "economist"
-                )
-
                 if ("ggthemes" %in% installed.packages()) {
                     theme.options <- names(available.themes)
                 } else {
@@ -1928,7 +1928,7 @@ iNZPlotMod <- setRefClass(
                                 ],
                                 theme.options
                             )
-                        else 1,
+                        else 1L,
                     handler = function(h, ...) {
                         if (svalue(themeCombobox) == "Install additional themes...") {
                             tryCatch(

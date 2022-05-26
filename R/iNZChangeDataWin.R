@@ -871,7 +871,7 @@ iNZStackWin <- setRefClass(
                     attr(.dataset, "name", exact = TRUE),
                     attr(data, "code")
                 )
-            GUI$setDocument(iNZDocument$new(data = data))
+            GUI$setDocument(iNZDocument$new(data = data, preferences = GUI$preferences))
 
             close()
         }
@@ -1313,7 +1313,7 @@ iNZReshapeWin <- setRefClass(
                 paste(attr(.dataset, "name", exact = TRUE), "reshaped", sep = ".")
             attr(data, "code") <-
                 gsub(".dataset", attr(.dataset, "name", exact = TRUE), attr(data, "code"))
-            GUI$setDocument(iNZDocument$new(data = data))
+            GUI$setDocument(iNZDocument$new(data = data, preferences = GUI$preferences))
 
             close()
         }

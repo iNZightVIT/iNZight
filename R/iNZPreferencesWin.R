@@ -168,6 +168,34 @@ iNZPrefsWin <- setRefClass(
             font(font_preview) <- list(size = prefs$font.size)
 
 
+            ## --------------------------- PLOT SETTINGS
+            plot_settings <- gvbox(label = "Plot Defaults", container = sections)
+            plot_settings$set_borderwidth(5L)
+
+            tbl_plot <- glayout(container = plot_settings)
+            ii <- 1L
+
+            ### ---------------- Default ggplot theme
+            lbl <- glabel("Default (gg) theme :")
+
+            curIndex <-
+                if (is.character(prefs$gg_theme))
+                    which(available.themes == prefs$gg_theme)
+                else length(available.themes) + 1L
+            p_gg_theme <- gcombobox(
+                c(names(available.themes), "Custom"),
+                selected = curIndex,
+                handler = function(h, ...)
+                    set_pref("gg_theme", as.character(available.themes[h$obj$get_index()]))
+            )
+            tbl_plot[ii, 1L, anchor = c(1, 0), expand = TRUE] <- lbl
+            tbl_plot[ii, 2L, expand = TRUE] <- p_gg_theme
+            ii <- ii + 1L
+
+            # if custom, display a text box...!
+
+
+
             ## --------------------------- DEV FEATURES
             sec_dev <- gvbox(label = "Developmental Features", container = sections)
             sec_dev$set_borderwidth(5L)

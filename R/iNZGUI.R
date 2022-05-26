@@ -159,7 +159,7 @@ iNZGUI <- setRefClass(
 
             if (!is.null(data) && is.null(attr(data, "name", exact = TRUE)))
                 attr(data, "name") <- deparse(substitute(data))
-            iNZDocuments <<- list(iNZDocument$new(data = data))
+            iNZDocuments <<- list(iNZDocument$new(data = data, preferences = .self$preferences))
 
             ## Check for updates ... need to use try incase it fails (no connection etc)
             if (preferences$check.updates && !getOption("inzight.lock.packages", FALSE)) {
@@ -753,7 +753,7 @@ iNZGUI <- setRefClass(
             } else {
                 attr(data, "name") <- data_name
             }
-            .self$setDocument(iNZDocument$new(data = data))
+            .self$setDocument(iNZDocument$new(data = data, preferences = .self$preferences))
         },
         update_document = function(data) {
             "Update the existing document with new data or survey design"
@@ -826,7 +826,8 @@ iNZGUI <- setRefClass(
             "Restores the original (first) dataset"
             setDocument(
                 iNZDocument$new(
-                    data = iNZDocuments[[1]]$getModel()$origDataSet
+                    data = iNZDocuments[[1]]$getModel()$origDataSet,
+                    preferences = .self$preferences
                 )
             )
         },
@@ -861,7 +862,7 @@ iNZGUI <- setRefClass(
             todelete <- activeDoc
             rhistory$disabled <<- TRUE
             if (length(iNZDocuments) == 1L) {
-                .self$setDocument(iNZDocument$new(), reset = TRUE)
+                .self$setDocument(iNZDocument$new(preferences = .self$preferences), reset = TRUE)
                 return()
             }
 
@@ -1013,7 +1014,8 @@ iNZGUI <- setRefClass(
                 show.code = FALSE,
                 language = "en",
                 module_dir = NULL,
-                multiple_x = FALSE
+                multiple_x = FALSE,
+                gg_theme = NULL
             )
         },
         checkPrefs = function(prefs) {
@@ -1027,7 +1029,8 @@ iNZGUI <- setRefClass(
                 "show.code",
                 "language",
                 "module_dir",
-                "multiple_x"
+                "multiple_x",
+                "gg_theme"
             )
 
             ## Only keep allowed preferences --- anything else is discarded
@@ -1077,6 +1080,11 @@ iNZGUI <- setRefClass(
             prefs$multiple_x <-
                 if (is.null(prefs$multiple_x) || !is.logical(prefs$multiple_x)) defs$multiple_x
                 else prefs$multiple_x
+
+            prefs$gg_theme <-
+                if (is.character(prefs$gg_theme) && prefs$gg_theme %in% available.themes) prefs$gg_theme
+                else if (is.list(prefs$gg_theme) || inherits(prefs$gg_theme, "theme")) prefs$gg_theme
+                else defs$gg_theme
 
             prefs
 
