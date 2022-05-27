@@ -25,6 +25,7 @@ ui$reload()
 Sys.sleep(0.1)
 
 test_that("V1 is a multi label when multiple_x is TRUE", {
+    print(ui$ctrlWidget$V1box)
     expect_true(inherits(ui$ctrlWidget$V1box, "GMultiLabel"))
 
 })
