@@ -22,6 +22,7 @@ test_that("V1 is dropdown when multiple_x is FALSE", {
 ui$preferences$multiple_x <- TRUE
 ui$savePreferences()
 ui$reload()
+Sys.sleep(0.1)
 
 test_that("V1 is ... when multiple_x is TRUE", {
     expect_is(ui$ctrlWidget$V1box, "GMultiLabel")
