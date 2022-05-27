@@ -24,7 +24,7 @@ ui$savePreferences()
 ui$reload()
 Sys.sleep(0.1)
 
-test_that("V1 is ... when multiple_x is TRUE", {
-    expect_is(ui$ctrlWidget$V1box, "GMultiLabel")
+test_that("V1 is a multi label when multiple_x is TRUE", {
+    expect_true(inherits(ui$ctrlWidget$V1box, "GMultiLabel"))
 
 })
