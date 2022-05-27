@@ -6,8 +6,8 @@ github_deps <- c(
     "iNZightVIT/iNZightTS@1.5.4",
     "iNZightVIT/iNZightMR@2.2.5",
     "iNZightVIT/iNZightPlots@feature/guinz",
-    "iNZightVIT/iNZightRegression@1.2.8",
-    "iNZightVIT/iNZightModules@2.5.3"
+    "iNZightVIT/iNZightRegression@feature/guinz",
+    "iNZightVIT/iNZightModules@feature/guinz"
 )
 
 OS <- Sys.getenv("OS_TYPE")
