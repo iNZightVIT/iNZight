@@ -263,7 +263,7 @@ iNZPlotSettings <- setRefClass(
 
             pref_names <- c("gg_theme")
             if (any(pref_names %in% names(preferences))) {
-                prefs <- preferences[pref_names %in% names(preferences)]
+                prefs <- preferences[names(preferences) %in% pref_names]
                 if (length(prefs))
                     defaultSettings <<- modifyList(defaultSettings, prefs, keep.null = TRUE)
             }
