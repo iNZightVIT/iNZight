@@ -179,7 +179,8 @@ iNZPrefsWin <- setRefClass(
             lbl <- glabel("Default (gg) theme :")
 
             curIndex <-
-                if (is.character(prefs$gg_theme))
+                if (is.null(prefs$gg_theme)) 1L
+                else if (is.character(prefs$gg_theme))
                     which(available.themes == prefs$gg_theme)
                 else length(available.themes) + 1L
             p_gg_theme <- gcombobox(

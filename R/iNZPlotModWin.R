@@ -2328,7 +2328,7 @@ iNZPlotMod <- setRefClass(
                 ii <- ii + 1L
 
                 tbl[ii, 1:2, anchor = c(1, 0), expand = TRUE] <- glabel(
-                    "Show percent of responses with outcome :"
+                    "Show % with outcome :"
                 )
 
                 rvals <- levels(attr(GUI$curPlot, "data", exact = TRUE)$value)
