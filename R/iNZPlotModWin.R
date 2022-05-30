@@ -2334,7 +2334,13 @@ iNZPlotMod <- setRefClass(
                 rvals <- levels(attr(GUI$curPlot, "data", exact = TRUE)$value)
                 multiResponseFilter <- gcombobox(c("- None -", rvals),
                     selected = which(rvals == curSet$outcome_value) + 1L,
-                    handler = function(h, ...) updateEverything()
+                    handler = function(h, ...) {
+                        updateEverything()
+                        plType <- svalue(plotTypeList, index = TRUE)
+                        if (curSet$plottype != TYPE || h$obj$get_index() == 1L) {
+                            iNZPlotMod$new(GUI, which = 1)
+                        }
+                    }
                 )
                 tbl[ii, 3:6, expand = TRUE] <- multiResponseFilter
                 ii <- ii + 1L
