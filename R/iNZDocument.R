@@ -227,9 +227,9 @@ iNZDataModel <- setRefClass(
         },
         setDictionary = function(dict, apply = FALSE) {
             # do this once, so it's easily available:
-            cn <- colnames(dataSet)
-            cn <- cn[cn %in% names(dict)]
-            dict <- dict[cn]
+            cn <- tolower(colnames(dataSet))
+            # cn <- cn[cn %in% names(dict)]
+            dict <- dict[tolower(names(dict)) %in% cn]
             dict_df <<- iNZightTools::as_tibble(dict, code_sep = "\n")
             dictionary <<- unclass(dict)
             if (!apply) return()
