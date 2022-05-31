@@ -262,7 +262,10 @@ iNZDataViewWidget <- setRefClass(
                     }
                 )
 
-                varsDf <- do.call(data.frame, varsList)
+                varsDf <- do.call(
+                    data.frame,
+                    lapply(varsList, as.character)
+                )
             } else {
                 vtypes <- sapply(GUI$getActiveData()[vnames],
                     function(x)
