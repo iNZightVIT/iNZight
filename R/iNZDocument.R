@@ -135,7 +135,7 @@ iNZDataModel <- setRefClass(
             if (inherits(x, "inzsvyspec")) {
                 spec <- x
                 if (is.null(x$design))
-                    x <- iNZightTools::make_survey(dataSet, x)
+                    x <- iNZightTools::make_survey(getData(), x)
             } else {
                 spec <- structure(
                     list(
@@ -156,7 +156,7 @@ iNZDataModel <- setRefClass(
                     ),
                     class = "inzsvyspec"
                 )
-                x <- iNZightTools::make_survey(dataSet, spec)
+                x <- iNZightTools::make_survey(getData(), spec)
             }
             if (!is.null(spec$spec$calibrate)) {
                 cal <- lapply(names(spec$spec$calibrate),
@@ -227,14 +227,14 @@ iNZDataModel <- setRefClass(
         },
         setDictionary = function(dict, apply = FALSE) {
             # do this once, so it's easily available:
-            cn <- tolower(colnames(dataSet))
+            cn <- tolower(colnames(getData()))
             # cn <- cn[cn %in% names(dict)]
             dict <- dict[tolower(names(dict)) %in% cn]
             dict_df <<- iNZightTools::as_tibble(dict, code_sep = "\n")
             dictionary <<- unclass(dict)
             if (!apply) return()
             newdat <- try(
-                iNZightTools::apply_dictionary(dataSet, dict),
+                iNZightTools::apply_dictionary(getData(), dict),
                 silent = TRUE
             )
             if (inherits(newdat, "try-error")) return()

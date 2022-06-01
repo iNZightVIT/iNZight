@@ -676,6 +676,7 @@ iNZGUI <- setRefClass(
                     newname <- sprintf("%s_%s", newname, i)
                     i <- i + 1L
                 }
+                # TODO: this may cause issue ...
                 attr(document$dataModel$dataSet, "name") <- newname
                 ## reset control widget
                 # state <- ctrlWidget$getState()
@@ -687,7 +688,7 @@ iNZGUI <- setRefClass(
                 ## clean up any 'empty' datasets ..
                 nonempty_docs <- sapply(iNZDocuments,
                     function(d)
-                        !all(dim(d$dataModel$dataSet) == 1)
+                        !all(dim(d$dataModel$getData()) == 1)
                 )
                 iNZDocuments <<- iNZDocuments[nonempty_docs]
             }
