@@ -46,3 +46,27 @@ test_that("Modifying code updates GUI", {
     expect_silent(ui$code_panel$run_code())
     expect_equal(ui$ctrlWidget$V2box$get_index(), 1L)
 })
+
+ui$ctrlWidget$V2box$set_index(1)
+ui$ctrlWidget$G1box$set_index(1)
+ui$ctrlWidget$G2box$set_index(1)
+ui$ctrlWidget$V1box$set_index(1)
+
+test_that("Multiple dropbox supported", {
+    op <- ui$preferences
+    ui$preferences$dev.features <- TRUE
+    ui$preferences$show.code <- TRUE
+    ui$preferences$multiple_x <- TRUE
+    ui$savePreferences()
+    ui$reload()
+
+    on.exit({
+        ui$preferences <- op
+        ui$savePreferences()
+        ui$reload()
+    })
+
+    ui$code_panel$input$set_value("inzplot(~gender + getlunch, data = census.at.school.500)\n")
+    ui$code_panel$run_code()
+
+})

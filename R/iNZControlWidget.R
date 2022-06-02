@@ -804,15 +804,13 @@ iNZControlWidget <- setRefClass(
             vars <- names(data)
 
             if (!is.null(set$x)) {
-                if (multi_v1) {
-                    set$x <- NULL
-                } else if (as.character(set$x) %in% vars) {
+                setX <- strsplit(as.character(set$x), " + ", fixed = TRUE)[[1]]
+
+                if (all(setX %in% vars)) {
                     ## set variable 1 to whatever it's supposed to be
                     blockHandlers(V1box)
-                    ## TODO: fix for multi v1
-                    svalue(V1box) <<- as.character(set$x)
+                    V1box$set_value(setX)
                     unblockHandlers(V1box)
-                    set$x <- set$x
                 } else {
                     ## remove variable 1
                     set$x <- NULL

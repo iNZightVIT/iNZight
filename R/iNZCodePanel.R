@@ -163,6 +163,7 @@ iNZCodePanel <- setRefClass(
             } else {
                 # a more complex formula
                 vars$x <- as.character(call_xy[[2]])
+
                 call_yg <- as.list(call_xy[[3]])
                 if (length(call_yg) == 1) {
                     # no subsetting
@@ -182,6 +183,8 @@ iNZCodePanel <- setRefClass(
                     }
                 }
             }
+
+            if (length(vars$x) > 1) vars$x <- vars$x[-1]
 
             # g1.level and g2.level -> depend on g1 and g2
             if (!is.null(pcall$g1.level) && !is.null(vars$g1)) {
