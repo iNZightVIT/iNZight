@@ -1,3 +1,4 @@
+#' @importFrom iNZightTools inzdf
 iNZDataModel <- setRefClass(
     "iNZDataModel",
     properties(
@@ -16,7 +17,10 @@ iNZDataModel <- setRefClass(
             dict_df = "data.frame"
         ),
         prototype = list(
-            dataSet = data.frame(empty = " ", stringsAsFactors = TRUE),
+            dataSet = iNZightTools::inzdf(
+                data.frame(empty = " ", stringsAsFactors = TRUE),
+                name = "(empty)"
+            ),
             origDataSet = data.frame(empty = " ", stringsAsFactors = TRUE),
             rowDataSet = data.frame(Row.names = 1, empty = " ", stringsAsFactors = TRUE),
             dataDesign = NULL,
@@ -50,7 +54,7 @@ iNZDataModel <- setRefClass(
             if (is.null(attr(data, "name", exact = TRUE)))
                 attr(data, "name") <- "data"
 
-            dataSet <<- data
+            dataSet <<- iNZightTools::inzdf(data)
             origDataSet <<- data
             rowData <- data.frame(
                 Row.names = 1:nrow(data),
@@ -72,7 +76,7 @@ iNZDataModel <- setRefClass(
 
             if (is.null(attr(data, "name", exact = TRUE)))
                 attr(data, "name") <- "data"
-            dataSet <<- data
+            dataSet <<- inzdf(data)
             name <<- attr(data, "name", exact = TRUE)
             if (!is.null(dataDesign)) createSurveyObject(TRUE)
         },
@@ -81,7 +85,7 @@ iNZDataModel <- setRefClass(
             names(dataSet) <<- newNames
         },
         getData = function() {
-            dataSet
+            as.data.frame(dataSet)
         },
         getRowData = function() {
             rowDataSet
