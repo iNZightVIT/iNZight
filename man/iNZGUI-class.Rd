@@ -101,8 +101,6 @@ Main class that builds the iNZight GUI
 
 \item{\code{getActiveDoc()}}{Returns the currently active document}
 
-\item{\code{getActiveRowData()}}{Returns the row data of the current dataset}
-
 \item{\code{getPreferences()}}{Gets the user's preferences from a file}
 
 \item{\code{getState()}}{Returns the current state of the GUI}

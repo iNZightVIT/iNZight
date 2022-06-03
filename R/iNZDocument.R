@@ -5,7 +5,6 @@ iNZDataModel <- setRefClass(
         fields = list(
             dataSet = "ANY",
             origDataSet = "ANY",
-            rowDataSet = "ANY",
             dataDesign = "ANY",
             dataDesignName = "character",
             name = "character",
@@ -21,8 +20,10 @@ iNZDataModel <- setRefClass(
                 data.frame(empty = " ", stringsAsFactors = TRUE),
                 name = "(empty)"
             ),
-            origDataSet = data.frame(empty = " ", stringsAsFactors = TRUE),
-            rowDataSet = data.frame(Row.names = 1, empty = " ", stringsAsFactors = TRUE),
+            origDataSet = iNZightTools::inzdf(
+                data.frame(empty = " ", stringsAsFactors = TRUE),
+                name = "(empty)"
+            ),
             dataDesign = NULL,
             name = "data", oldname = "",
             freqtables = list(),
@@ -54,15 +55,11 @@ iNZDataModel <- setRefClass(
             if (is.null(attr(data, "name", exact = TRUE)))
                 attr(data, "name") <- "data"
 
-            dataSet <<- iNZightTools::inzdf(data)
+            if (!inherits(data, "inzdf"))
+                data <- iNZightTools::inzdf(data)
+
+            dataSet <<- data
             origDataSet <<- data
-            rowData <- data.frame(
-                Row.names = 1:nrow(data),
-                data,
-                check.names = TRUE,
-                stringsAsFactors = TRUE
-            )
-            rowDataSet <<- rowData
             name <<- attr(data, "name", exact = TRUE)
             oldname <<- ""
         },
@@ -86,9 +83,6 @@ iNZDataModel <- setRefClass(
         },
         getData = function() {
             as.data.frame(dataSet)
-        },
-        getRowData = function() {
-            rowDataSet
         },
         addDataObserver = function(FUN, ...) {
             .self$dataSetChanged$connect(FUN, ...)
@@ -353,9 +347,6 @@ iNZDocument <- setRefClass(
         },
         getSettings = function() {
             plotSettings$getSettings()
-        },
-        getRowData = function() {
-            dataModel$getRowData()
         },
         setSettings = function(setList, reset = FALSE) {
             plotSettings$setSettings(setList, reset)

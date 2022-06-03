@@ -14,6 +14,7 @@
 }
 
 setOldClass(c("inzdf_tbl_df", "inzdf", "tbl_df", "tbl", "data.frame"))
+setOldClass(c("inzdf_sqlite", "inzdf_db", "inzdf"))
 
 .onAttach <- function(libname, pkgname) {
     lwd <- getOption("width")

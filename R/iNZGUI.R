@@ -783,10 +783,6 @@ iNZGUI <- setRefClass(
             "Returns the current dataset"
             if (activeDoc) iNZDocuments[[activeDoc]]$getData() else NULL
         },
-        getActiveRowData = function() {
-            "Returns the row data of the current dataset"
-            if (activeDoc) iNZDocuments[[activeDoc]]$getRowData() else NULL
-        },
         ## add observer to the activeDoc class variable
         addActDocObs = function(FUN, ...) {
             "Adds an observer to the active document"
