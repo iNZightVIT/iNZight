@@ -14,7 +14,7 @@ test_that("New document is created correctly when data loaded", {
 
     expect_silent(doc <<- iNZDocument$new(data = testdata))
     expect_is(doc, "iNZDocument")
-    expect_equal(
+    expect_equivalent(
         doc$dataModel$getData(),
         testdata
     )

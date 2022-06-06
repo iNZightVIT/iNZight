@@ -116,12 +116,17 @@ iNZCodePanel <- setRefClass(
                     )
                 },
                 error = function(e) {
-                    gmessage(
-                        sprintf("There was an error in your plot code:\n\n%s", e$message),
-                        title = "Error",
-                        icon = "error",
-                        parent = GUI$win
-                    )
+                    msg <- sprintf("There was an error in your plot code:\n\n%s", e$message)
+                    if (interactive()) {
+                        gmessage(
+                            msg,
+                            title = "Error",
+                            icon = "error",
+                            parent = GUI$win
+                        )
+                    } else {
+                        stop(msg)
+                    }
                 }
             )
 

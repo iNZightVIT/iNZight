@@ -53,6 +53,8 @@ ui$ctrlWidget$G2box$set_index(1)
 ui$ctrlWidget$V1box$set_index(1)
 
 test_that("Multiple dropbox supported", {
+    skip_if_not_installed("ggthemes")
+
     op <- ui$preferences
     ui$preferences$dev.features <- TRUE
     ui$preferences$show.code <- TRUE
@@ -66,7 +68,8 @@ test_that("Multiple dropbox supported", {
         ui$reload()
     })
 
-    ui$code_panel$input$set_value("inzplot(~gender + getlunch, data = census.at.school.500)\n")
-    ui$code_panel$run_code()
-
+    ui$code_panel$input$set_value(
+        "inzplot(~gender + getlunch, data = census.at.school.500)\n"
+    )
+    expect_silent(ui$code_panel$run_code())
 })
