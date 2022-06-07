@@ -63,6 +63,8 @@ test_that("Multiple dropbox supported", {
     ui$reload()
     Sys.sleep(1)
 
+    skip_if(!inherits(ui$ctrlWidget$V1box, "GMultiLabel"))
+
     on.exit({
         ui$preferences <- op
         ui$savePreferences()

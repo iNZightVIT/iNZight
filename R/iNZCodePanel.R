@@ -189,7 +189,14 @@ iNZCodePanel <- setRefClass(
                 }
             }
 
-            if (length(vars$x) > 1) vars$x <- vars$x[-1]
+            if (length(vars$x) > 1) {
+                vars$x <- vars$x[-1]
+
+                if (!GUI$preferences$multiple_x) {
+                    warning("Enable multiple response variables (from Preferences) to continue.")
+                    vars$x <- NULL
+                }
+            }
 
             # g1.level and g2.level -> depend on g1 and g2
             if (!is.null(pcall$g1.level) && !is.null(vars$g1)) {
