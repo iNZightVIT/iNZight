@@ -280,7 +280,7 @@ iNZplothistory <- setRefClass(
 
             code_text <- parse(text = svalue(code_box))
             parsed <- find_libraries(code_text)
-            eval_env <- rlang::env(!!rlang::sym(attr(GUI$getActiveData(), "name")) := GUI$getActiveData())
+            eval_env <- rlang::env(!!rlang::sym(attr(GUI$getActiveData(lazy = TRUE), "name")) := GUI$getActiveData())
 
             if (length(parsed$libraries) > 0)
                 code_text <- with_packages(parsed$libraries, parsed$expr)

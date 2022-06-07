@@ -779,9 +779,9 @@ iNZGUI <- setRefClass(
             "Returns the currently active document"
             if (activeDoc) iNZDocuments[[activeDoc]] else NULL
         },
-        getActiveData = function() {
-            "Returns the current dataset"
-            if (activeDoc) iNZDocuments[[activeDoc]]$getData() else NULL
+        getActiveData = function(lazy = FALSE) {
+            "Returns the current dataset (if `lazy` is TRUE, will not be converted to data.frame)"
+            if (activeDoc) iNZDocuments[[activeDoc]]$getData(lazy = lazy) else NULL
         },
         ## add observer to the activeDoc class variable
         addActDocObs = function(FUN, ...) {
@@ -797,7 +797,7 @@ iNZGUI <- setRefClass(
                 res <- .self$getActiveData()
             }
             if (!missing(nrow))
-                res <- res[seq_len(min(nrow, nrow(.self$getActiveData()))), ]
+                res <- res[seq_len(min(nrow, nrow(.self$getActiveData(lazy = TRUE)))), ]
             res
         },
         view_dataset = function() {
@@ -847,7 +847,7 @@ iNZGUI <- setRefClass(
                     paste0(
                         "This will remove the following dataset from iNZight,\n",
                         "and any unsaved changes to the data will be lost:\n\n",
-                        attr(getActiveData(), "name", exact = TRUE),
+                        attr(getActiveData(lazy = TRUE), "name", exact = TRUE),
                         "\n\n",
                         "Are you sure you want to continue?"
                     ),
@@ -1284,7 +1284,7 @@ iNZGUI <- setRefClass(
                     )
                 )
 
-                if (all(dim(getActiveData()) == 1)) {
+                if (all(dim(getActiveData(lazy = TRUE)) == 1)) {
                     grid::grid.text(
                         "Kia ora and welcome! To get started, import some data.",
                         y = 1, x = 0, just = c("left", "top"),
@@ -1389,9 +1389,9 @@ iNZGUI <- setRefClass(
 
             # save the document
             has_data <-
-                nrow(.self$getActiveData()) > 1L ||
-                ncol(.self$getActiveData()) > 1L ||
-                names(.self$getActiveData()) != "empty"
+                nrow(.self$getActiveData(lazy = TRUE)) > 1L ||
+                ncol(.self$getActiveData(lazy = TRUE)) > 1L ||
+                names(.self$getActiveData(lazy = TRUE)) != "empty"
             state <- .self$getState()
             dispose(.self$win)
             if (popOut) try(grDevices::dev.off(), TRUE)

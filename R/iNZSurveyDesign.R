@@ -26,14 +26,14 @@ iNZSurveyDesign <- setRefClass(
     ),
     methods = list(
         initialize = function(gui, type = c("survey", "replicate", "frequency")) {
-            if (is.null(gui$getActiveData())) {
+            if (is.null(gui$getActiveData(lazy = TRUE))) {
                 gerror("Please import a data set first.",
                     title = "No data set",
                     icon = "error"
                 )
                 return()
             }
-            if (names(gui$getActiveData())[1] == "empty") {
+            if (names(gui$getActiveData(lazy = TRUE))[1] == "empty") {
                 gmessage("Please import a data set first.",
                     title = "No data set",
                     icon = "error"
@@ -302,7 +302,7 @@ iNZSurveyDesign <- setRefClass(
 
             tbl <- glayout(cont = g)
 
-            vars <- c("", colnames(GUI$getActiveData()))
+            vars <- c("", names(GUI$getActiveData(lazy = TRUE)))
 
             ii <- 2
             lbl <- glabel("Strata variable: ")
@@ -376,7 +376,7 @@ iNZSurveyDesign <- setRefClass(
 
             g1 <- gvbox(container = g)
 
-            vars <- c("", colnames(GUI$getActiveData()))
+            vars <- c("", names(GUI$getActiveData(lazy = TRUE)))
 
             ## ... weights, combine.weights here ...
             tbl <- glayout(container = g1)
@@ -554,7 +554,7 @@ iNZSurveyDesign <- setRefClass(
                 is.numeric(x) && all(floor(x) == x, na.rm = TRUE)
             }
             ints <- sapply(GUI$getActiveData(), as.int)
-            vars <- names(GUI$getActiveData())[ints]
+            vars <- names(GUI$getActiveData(lazy = TRUE))[ints]
 
             freqVar <<- gcombobox(vars, selected = 0, container = g)
 
@@ -661,7 +661,7 @@ iNZSurveyPostStrat <- setRefClass(
             ## only those with no missing values ...
             fvars <- sapply(GUI$getActiveData(),
                 function(v) length(levels(v)) > 0 && sum(is.na(v)) == 0)
-            factorvars <- names(GUI$getActiveData())[fvars]
+            factorvars <- names(GUI$getActiveData(lazy = TRUE))[fvars]
             PSvar <<- gtable(factorvars,
                 multiple = TRUE,
                 container = g1,
@@ -720,7 +720,7 @@ iNZSurveyPostStrat <- setRefClass(
             for (v in svalue(PSvar)) {
                 if (is.null(lvldf[[v]])) {
                     d <- data.frame(
-                        a = levels(GUI$getActiveData()[[v]]),
+                        a = levels(GUI$getActiveData(lazy = TRUE)[[v]]),
                         b = NA,
                         stringsAsFactors = TRUE
                     )

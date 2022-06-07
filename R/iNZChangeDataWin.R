@@ -86,7 +86,7 @@ iNZFilterWin <- setRefClass(
             tbl_value <- glayout(container = g_value)
 
             lbl <- glabel("Variable :")
-            filter_var <<- gcombobox(names(GUI$getActiveData()), selected = 0L)
+            filter_var <<- gcombobox(names(GUI$getActiveData(lazy = TRUE)), selected = 0L)
             size(filter_var) <<- c(250, -1)
             tbl_value[1, 1, anchor = c(1, 0)] <- lbl
             tbl_value[1, 2:3] <- filter_var
@@ -94,7 +94,7 @@ iNZFilterWin <- setRefClass(
             addHandlerChanged(filter_var,
                 function(h, ...) {
                     varname <- svalue(h$obj)
-                    var <- GUI$getActiveData()[[varname]]
+                    var <- GUI$getActiveData(lazy = TRUE)[[varname]]
                     vartype <<- iNZightTools::vartype(var)
 
                     # remove all children
@@ -212,7 +212,9 @@ iNZFilterWin <- setRefClass(
             tbl_row[1L, 2L] <- rand_size
 
             lbl <- glabel("Number of samples :")
-            rand_num <<- gspinbutton(from = 1, to = nrow(GUI$getActiveData()), by = 1L,
+            rand_num <<- gspinbutton(
+                from = 1,
+                to = nrow(GUI$getActiveData(lazy = TRUE)), by = 1L,
                 handler = handle_filter)
             size(rand_num) <<- c(150, -1)
             tbl_row[2L, 1L, anchor = c(1, 0), expand = TRUE] <- lbl
@@ -226,7 +228,10 @@ iNZFilterWin <- setRefClass(
 
             ### dataset info:
             ginfo <- gvbox()
-            cur_row <- glabel(sprintf("Current data has %d rows", nrow(GUI$getActiveData())),
+            cur_row <- glabel(
+                sprintf("Current data has %d rows",
+                    nrow(GUI$getActiveData(lazy = TRUE))
+                ),
                 container = body,
                 anchor = c(1, 0))
             new_row <<- glabel("", container = body,
@@ -267,7 +272,7 @@ iNZFilterWin <- setRefClass(
             if (iNZightTools::is_survey(data)) data <- data$variables
             str <- sprintf("New data has %d rows (%d deleted)",
                 nrow(data),
-                nrow(GUI$getActiveData()) - nrow(data)
+                nrow(GUI$getActiveData(lazy = TRUE)) - nrow(data)
             )
             svalue(new_row) <<- str
             enabled(okBtn) <<- TRUE
@@ -310,7 +315,7 @@ iNZFilterWin <- setRefClass(
             samplesize <- as.integer(svalue(rand_size))
             if (is.na(samplesize)) return()
             nsample <- svalue(rand_num)
-            if (samplesize * nsample > nrow(GUI$getActiveData())) {
+            if (samplesize * nsample > nrow(GUI$getActiveData(lazy = TRUE))) {
                 svalue(rand_msg) <<- paste(
                     sep = "\n",
                     "Cannot sample more rows than in the original dataset.",
@@ -377,7 +382,7 @@ iNZSortWin <- setRefClass(
             )
             body_space(10L)
 
-            var_names <<- names(GUI$getActiveData())
+            var_names <<- names(GUI$getActiveData(lazy = TRUE))
             var_tbl <<- glayout()
             add_body(var_tbl)
 
@@ -840,7 +845,7 @@ iNZStackWin <- setRefClass(
             ## display only numeric variables
             numIndices <- sapply(GUI$getActiveData(), function(x) !is_cat(x))
             stack_vars <<- gtable(
-                names(GUI$getActiveData())[numIndices],
+                names(GUI$getActiveData(lazy = TRUE))[numIndices],
                 multiple = TRUE
             )
             names(stack_vars) <<- "Variables"
@@ -917,7 +922,7 @@ iNZReorderVarsWin <- setRefClass(
 
             # boxes with variables
             g_vars <- ggroup()
-            dataVars <<- gtable(data.frame(Remove = names(GUI$getActiveData())),
+            dataVars <<- gtable(data.frame(Remove = names(GUI$getActiveData(lazy = TRUE))),
                 multiple = TRUE,
                 container = g_vars,
                 expand = TRUE,
@@ -1169,7 +1174,7 @@ iNZReshapeWin <- setRefClass(
             col_string <- glabel("Select column(s) to gather together", container = group1)
 
             colname <<- ""
-            var1 <- gcombobox(c("", names(GUI$getActiveData())),
+            var1 <- gcombobox(c("", names(GUI$getActiveData(lazy = TRUE))),
                 container = group1,
                 handler = function(h, ...) {
                     colname <<- svalue(var1)
@@ -1182,7 +1187,7 @@ iNZReshapeWin <- setRefClass(
             )
 
             var2box <- gvbox(container = group1)
-            var2 <- gtable(names(GUI$getActiveData()),
+            var2 <- gtable(names(GUI$getActiveData(lazy = TRUE)),
                 multiple = TRUE,
                 expand = TRUE,
                 container = var2box)
@@ -1247,7 +1252,7 @@ iNZReshapeWin <- setRefClass(
             label1 <- glabel(
                 "Select the column to spread out to multiple columns",
                 container = group2)
-            col1box <- gcombobox(items = c("", names(GUI$getActiveData())),
+            col1box <- gcombobox(items = c("", names(GUI$getActiveData(lazy = TRUE))),
                 container = group2,
                 handler = function(h, ...) {
                     col1 <<- svalue(col1box)
@@ -1263,7 +1268,7 @@ iNZReshapeWin <- setRefClass(
             label2 <- glabel(
                 "Select the column with the values to be put in these column",
                 container = group2)
-            col2box <- gcombobox(items = c("", names(GUI$getActiveData())),
+            col2box <- gcombobox(items = c("", names(GUI$getActiveData(lazy = TRUE))),
                 container = group2,
                 handler = function(h,...) {
                     col2 <<- svalue(col2box)
@@ -1393,7 +1398,7 @@ iNZSeparateWin <- setRefClass(
             ii <- ii + 1L
 
             col_string <- glabel("Select column to separate out :")
-            var1 <<- gcombobox(c(" ", names(GUI$getActiveData())),
+            var1 <<- gcombobox(c(" ", names(GUI$getActiveData(lazy = TRUE))),
                 handler = function(h, ...) {
                     col <<- svalue(var1)
                     updateView()
@@ -1450,7 +1455,7 @@ iNZSeparateWin <- setRefClass(
             prevTbl <- glayout(homogeneous = FALSE)
 
             string1 <- glabel("Original dataset")
-            originview <- gtable(data.frame(head(GUI$getActiveData(), 10L), stringsAsFactors = TRUE))
+            originview <- gtable(data.frame(head(GUI$getActiveData(lazy = TRUE), 10L), stringsAsFactors = TRUE))
             prevTbl[1,1, expand = TRUE] <- string1
             prevTbl[2,1, expand = TRUE] <- originview
             size(originview) = c(-1, 350)
@@ -1553,7 +1558,7 @@ iNZUniteWin <- setRefClass(
             font(col_string) <- list(weight = "bold")
             add(g_cols, col_string, anchor = c(-1, 0))
 
-            var1 <<- gtable(names(GUI$getActiveData()),
+            var1 <<- gtable(names(GUI$getActiveData(lazy = TRUE)),
                 multiple = TRUE,
                 expand = TRUE,
                 container = g_cols
@@ -1596,7 +1601,7 @@ iNZUniteWin <- setRefClass(
             prevTbl <- glayout(homogeneous = FALSE)
 
             string1 <- glabel("Original dataset")
-            originview = gtable(data.frame(head(GUI$getActiveData(), 10L), stringsAsFactors = TRUE))
+            originview = gtable(data.frame(head(GUI$getActiveData(lazy = TRUE), 10L), stringsAsFactors = TRUE))
             prevTbl[1,1, expand = TRUE] <- string1
             prevTbl[2,1, expand = TRUE] <- originview
             size(originview) = c(-1, 350)
@@ -1723,7 +1728,7 @@ iNZJoinWin <- setRefClass(
 
             string1 <- glabel("Preview of the original dataset")
             originview <- gpagedtable(
-                data.frame(head(GUI$getActiveData(), 10), stringsAsFactors = TRUE)
+                data.frame(head(GUI$getActiveData(lazy = TRUE), 10), stringsAsFactors = TRUE)
             )
             string2 <- glabel("Select join methods")
             jointypes <- list(
@@ -1906,7 +1911,7 @@ iNZJoinWin <- setRefClass(
                 ## checking for column types
                 list <- list()
                 for (i in 1:length(left_col)) {
-                    orig_type <- class(GUI$getActiveData()[[left_col[i]]])
+                    orig_type <- class(GUI$getActiveData(lazy = TRUE)[[left_col[i]]])
                     new_type <- class(newdata[[right_col[i]]])
                     if (orig_type == new_type | orig_type == "character" &
                         new_type == "factor" | orig_type == "factor" &
@@ -1963,7 +1968,8 @@ iNZJoinWin <- setRefClass(
         # Add joinby row
         add_joinby_row = function(coltbl, number) {
             n <- number + 1L
-            coltbl[n, 1L] <<- gcombobox(c("", setdiff(names(GUI$getActiveData()), left_col)),
+            coltbl[n, 1L] <<- gcombobox(
+                c("", setdiff(names(GUI$getActiveData(lazy = TRUE)), left_col)),
                 handler = function(h, ...) {
                     new_col <- svalue(coltbl[n, 1L])
                     left_col[number] <<- new_col

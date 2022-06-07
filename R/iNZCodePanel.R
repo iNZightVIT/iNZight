@@ -247,7 +247,7 @@ iNZCodePanel <- setRefClass(
                         if (vars$g2.level != "_MULTI") {
                             vindex <- vars$g2.level
                         } else {
-                            lvls <- levels(GUI$getActiveData()[[vars$g2]])
+                            lvls <- levels(GUI$getActiveData(lazy = TRUE)[[vars$g2]])
                             vindex <- length(lvls) + 1L
                         }
                     }

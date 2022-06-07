@@ -31,12 +31,12 @@ iNZDataModWin <- setRefClass(
         },
         ## this is used to autogenerate names for variables
         makeNames = function(vars) {
-            vnames <- names(GUI$getActiveData())
+            vnames <- names(GUI$getActiveData(lazy = TRUE))
             iNZightTools::make_names(vars, vnames)
         },
         ## this checks names exist; returns TRUE if everything is OK
         checkNames = function(var) {
-            if (any(w <- var %in% names(GUI$getActiveData()))) {
+            if (any(w <- var %in% names(GUI$getActiveData(lazy = TRUE)))) {
                 if (length(var == 0)) {
                     gmessage(
                         "A variable with that name already exists. Please choose another one.",
@@ -312,7 +312,7 @@ iNZCollapseWin <- setRefClass(
             ## its level in a gtable
             factorIndices <- sapply(GUI$getActiveData(), is_cat)
             factor_menu <<- gcombobox(
-                names(GUI$getActiveData())[factorIndices],
+                names(GUI$getActiveData(lazy = TRUE))[factorIndices],
                 selected = 0
             )
             addHandlerChanged(factor_menu,
@@ -372,7 +372,7 @@ iNZCollapseWin <- setRefClass(
             name <- svalue(new_varname)
             lvlname <- svalue(new_level)
 
-            if (lvlname %in% levels(GUI$getActiveData()[[var]]) &&
+            if (lvlname %in% levels(GUI$getActiveData(lazy = TRUE)[[var]]) &&
                 !lvlname %in% lvls) {
                 ## checking that the new level name isn't one of the other
                 ## level names (excluding those being collapsed)
@@ -422,7 +422,7 @@ iNZRenameFactorLevelsWin <- setRefClass(
             ## its levels together with their order
             factorIndices <- sapply(GUI$getActiveData(), is_cat)
             factor_menu <<- gcombobox(
-                names(GUI$getActiveData())[factorIndices],
+                names(GUI$getActiveData(lazy = TRUE))[factorIndices],
                 selected = 0L,
                 handler = function(h, ...) displayLevels()
             )
@@ -458,7 +458,7 @@ iNZRenameFactorLevelsWin <- setRefClass(
                 )
             }
 
-            var <- GUI$getActiveData()[[svalue(factor_menu)]]
+            var <- GUI$getActiveData(lazy = TRUE)[[svalue(factor_menu)]]
             var_levels <- levels(var)
             invisible(
                 sapply(
@@ -551,7 +551,7 @@ iNZReorderLevelsWin <- setRefClass(
             tbl[1, 1, expand = TRUE, anchor = c(1, 0)] <- glabel("Variable to reorder:")
             factorIndices <- sapply(GUI$getActiveData(), is_cat)
             factorMenu <<- gcombobox(
-                names(GUI$getActiveData())[factorIndices],
+                names(GUI$getActiveData(lazy = TRUE))[factorIndices],
                 selected = 0
             )
             tbl[1, 2, expand = TRUE] <- factorMenu
@@ -722,7 +722,7 @@ iNZCombineWin <- setRefClass(
             ## its level in a gtable
             factorIndices <- sapply(GUI$getActiveData(), is_cat)
             factorNames <<- gtable(
-                list("Categorical Variables" = names(GUI$getActiveData())[factorIndices]),
+                list("Categorical Variables" = names(GUI$getActiveData(lazy = TRUE))[factorIndices]),
                 multiple = TRUE,
                 expand = TRUE
             )
@@ -887,7 +887,7 @@ iNZCreateVarWin <- setRefClass(
                 c("date", format(Sys.time(), "\"%Y-%m-%d\"")),
                 c("random_noise", "rnorm(N, 100, 5)")
             )
-            if ("N" %in% names(GUI$getActiveData())) {
+            if ("N" %in% names(GUI$getActiveData(lazy = TRUE))) {
                 examples[[4]][2] <- "rnorm(dplyr::n(), 100, 5)"
             }
 
@@ -909,11 +909,11 @@ iNZCreateVarWin <- setRefClass(
 
             vname <- iNZightTools::make_names(
                 svalue(var_name),
-                names(GUI$getActiveData())
+                names(GUI$getActiveData(lazy = TRUE))
             )
 
             expr <- svalue(expression)
-            if (! "N" %in% names(GUI$getActiveData())) {
+            if (! "N" %in% names(GUI$getActiveData(lazy = TRUE))) {
                 expr <- stringr::str_replace(expr,
                     "([^a-zA-Z0-9])N([^a-zA-Z0-9])",
                     "\\1dplyr::n()\\2"
@@ -1304,7 +1304,7 @@ iNZRenameVarWin <- setRefClass(
             )
             body_space(10L)
 
-            vnames <- names(GUI$getActiveData())
+            vnames <- names(GUI$getActiveData(lazy = TRUE))
 
             names_table <<- glayout()
             invisible(
@@ -1391,7 +1391,7 @@ iNZStandardiseWin <- setRefClass(
             ## display only numeric variables
             numIndices <- sapply(GUI$getActiveData(), function(x) !is_cat(x))
             numVar <<- gtable(
-                list("Variables" = names(GUI$getActiveData())[numIndices]),
+                list("Variables" = names(GUI$getActiveData(lazy = TRUE))[numIndices]),
                 multiple = TRUE
             )
 
@@ -1443,7 +1443,7 @@ iNZDeleteVarWin <- setRefClass(
             )
 
             vars <<- gtable(
-                list(Variable = names(GUI$getActiveData())),
+                list(Variable = names(GUI$getActiveData(lazy = TRUE))),
                 multiple = TRUE
             )
             add_body(vars, expand = TRUE)
@@ -1451,7 +1451,7 @@ iNZDeleteVarWin <- setRefClass(
         delete = function() {
             v <- svalue(vars)
             if (length(v) == 0L) return()
-            if (length(v) == length(names(GUI$getActiveData()))) {
+            if (length(v) == length(names(GUI$getActiveData(lazy = TRUE)))) {
                 gmessage(
                     "You can't delete all of the variables ... you'll have nothing left!",
                     title = 'Oops...',
@@ -1516,7 +1516,7 @@ iNZMissToCatWin <- setRefClass(
             )
 
             vars <<- gtable(
-                list(Variables = names(GUI$getActiveData())),
+                list(Variables = names(GUI$getActiveData(lazy = TRUE))),
                 multiple = TRUE
             )
             add_body(vars, expand = TRUE)
@@ -1573,7 +1573,7 @@ iNZRankWin <- setRefClass(
             ## display only numeric variables
             numIndices <- sapply(GUI$getActiveData(), function(x) !is_cat(x))
             rank_vars <<- gtable(
-                list(Variables = names(GUI$getActiveData())[numIndices]),
+                list(Variables = names(GUI$getActiveData(lazy = TRUE))[numIndices]),
                 multiple = TRUE
             )
 
@@ -1625,7 +1625,7 @@ iNZConToCatMultiWin <- setRefClass(
             ## display only numeric variables
             numIndices <- sapply(GUI$getActiveData(), function(x) !is_cat(x))
             num_vars <<- gtable(
-                list(Variables = names(GUI$getActiveData())[numIndices]),
+                list(Variables = names(GUI$getActiveData(lazy = TRUE))[numIndices]),
                 multiple = TRUE
             )
             add_body(num_vars, expand = TRUE, fill = TRUE)
@@ -1668,7 +1668,7 @@ iNZRenameDataWin <- setRefClass(
             lbl <- glabel("Enter a new name for the current dataset")
             font(lbl) <- list(weight = "bold", family = "sans")
 
-            curname <- attr(GUI$getActiveData(), "name", exact = TRUE)
+            curname <- attr(GUI$getActiveData(lazy = TRUE), "name", exact = TRUE)
             if (length(curname) == 0) curname <- ""
             name <<- gedit(curname)
 
@@ -2321,7 +2321,7 @@ iNZAggDtWin <- setRefClass(
             )
             if (length(var) == 0L) return()
 
-            x <- GUI$getActiveData()[[var]]
+            x <- GUI$getActiveData(lazy = TRUE)[[var]]
             type <<- ""
             values <- character()
 

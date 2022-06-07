@@ -81,7 +81,8 @@ iNZDataModel <- setRefClass(
             newNames <- make.names(newNames, unique = TRUE)
             names(dataSet) <<- newNames
         },
-        getData = function() {
+        getData = function(lazy = FALSE) {
+            if (lazy) return(dataSet)
             as.data.frame(dataSet)
         },
         addDataObserver = function(FUN, ...) {
@@ -115,7 +116,7 @@ iNZDataModel <- setRefClass(
             catvars <- c(names(newdata)[sapply(newdata, is_cat)], freq)
             newdata <- newdata[, catvars]
             attr(newdata, "name") <- paste(sep = ".",
-                attr(gui$getActiveData(), "name", exact = TRUE),
+                attr(gui$getActiveData(lazy = TRUE), "name", exact = TRUE),
                 "freq"
             )
             gui$setDocument(iNZDocument$new(data = newdata, preferences = gui$preferences))
@@ -342,8 +343,8 @@ iNZDocument <- setRefClass(
         getPlotSettings = function() {
             plotSettings
         },
-        getData = function() {
-            dataModel$getData()
+        getData = function(lazy = FALSE) {
+            dataModel$getData(lazy)
         },
         getSettings = function() {
             plotSettings$getSettings()

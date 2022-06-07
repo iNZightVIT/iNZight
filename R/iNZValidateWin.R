@@ -75,7 +75,7 @@ iNZValidateWin <- setRefClass(
             group.identifier <- ggroup()
             add(group.identifier, glabel("Unique Identifier: "))
             dropdown.identifier <- gcombobox(
-                c("Row Number", colnames(GUI$getActiveData())),
+                c("Row Number", names(GUI$getActiveData(lazy = TRUE))),
                 container = group.identifier,
                 expand = TRUE
             )
@@ -92,7 +92,7 @@ iNZValidateWin <- setRefClass(
                     save.dialog <- gfile("Save Rules...",
                         type = "save",
                         initial.filename = paste0(
-                            attr(GUI$getActiveData(), "name", exact = TRUE),
+                            attr(GUI$getActiveData(lazy = TRUE), "name", exact = TRUE),
                             "_rules.txt"
                         )
                     )

@@ -300,7 +300,7 @@ iNZPlotModWin <- setRefClass(
 
             ## If sample size is too big, use a button instead of
             ## automatically apply changes
-            auto <<- nrow(GUI$getActiveData()) < 100000
+            auto <<- nrow(GUI$getActiveData(lazy = TRUE)) < 100000
             autoGrp <- ggroup(horizontal = TRUE, fill = TRUE)
             addSpring(autoGrp)
             autoChk <- gcheckbox("Update automatically",
@@ -442,7 +442,7 @@ iNZPlotModWin <- setRefClass(
             ii <- ii + 1
 
             txtLabs <- gcheckbox("Text Labels", checked = TRUE)
-            varmenu <- gcombobox(c("id", names(GUI$getActiveData())),
+            varmenu <- gcombobox(c("id", names(GUI$getActiveData(lazy = TRUE))),
                 selected = 1, expand = TRUE)
             tbl[ii, 1] <- txtLabs
             tbl[ii, 2, expand = TRUE] <- varmenu
@@ -450,7 +450,7 @@ iNZPlotModWin <- setRefClass(
 
             if (!is.null(locSet$txtLabs)) svalue(txtLabs) <- locSet$txtLabs
             if (!is.null(locSet$txtVar))
-                if (locSet$txtVar %in% c("id", names(GUI$getActiveData())))
+                if (locSet$txtVar %in% c("id", names(GUI$getActiveData(lazy = TRUE))))
                     svalue(varmenu) <- locSet$txtVar
 
             colLabs <- gcheckbox("Colour Points", checked = FALSE)
@@ -513,13 +513,13 @@ iNZPlotModWin <- setRefClass(
             if (!is.null(locSet$matchChk))
                 svalue(matchChk) <- locSet$matchChk
 
-            matchVar <- gcombobox(names(GUI$getActiveData()), selected = 1)
+            matchVar <- gcombobox(names(GUI$getActiveData(lazy = TRUE)), selected = 1)
             enabled(matchVar) <- svalue(matchChk)
             tbl[ii, 2, expand = TRUE] <- matchVar
             ii <- ii + 1
 
             if (!is.null(locSet$matchVar))
-                if (locSet$matchVar %in% names(GUI$getActiveData()))
+                if (locSet$matchVar %in% names(GUI$getActiveData(lazy = TRUE)))
                     svalue(matchVar) <- locSet$matchVar
 
             addHandlerChanged(matchChk,
@@ -560,7 +560,7 @@ iNZPlotModWin <- setRefClass(
             selectGrp <- ggroup(horiz = FALSE, expand = TRUE)
 
             locator <- function(h, remove = FALSE, btn, dot = FALSE, ...) {
-                .data <- GUI$getActiveData()
+                .data <- GUI$getActiveData(lazy = TRUE)
                 x <- .data[[curSet$x]]  # used for removing missing values ...
                 if (!dot)
                     y <- .data[[curSet$y]]
@@ -597,7 +597,7 @@ iNZPlotModWin <- setRefClass(
                 d <- data.frame(
                     x = .data[[curSet$x]],
                     locate = if (v == "id") 1:nrow(.data) else .data[[as.character(locVar)]],
-                    id = seq_len(nrow(GUI$getActiveData())),
+                    id = seq_len(nrow(GUI$getActiveData(lazy = TRUE))),
                     match = matchVar,
                     stringsAsFactors = TRUE
                 )
@@ -732,7 +732,7 @@ iNZPlotModWin <- setRefClass(
                 fill = TRUE
             )
             selectLab <- glabel("Variable: ", cont = selectList)
-            selectVar <- gcombobox(colnames(GUI$getActiveData()),
+            selectVar <- gcombobox(names(GUI$getActiveData(lazy = TRUE)),
                 selected = 0,
                 cont = selectList,
                 expand = TRUE
@@ -1245,7 +1245,7 @@ iNZPlotMod <- setRefClass(
             PLOTTYPES <- plot_list(
                 TYPE,
                 GUI$getActiveData()[varnames[["x"]]],
-                if ("y" %in% names(varnames)) GUI$getActiveData()[[varnames[["y"]]]] else NULL,
+                if ("y" %in% names(varnames)) GUI$getActiveData(lazy = TRUE)[[varnames[["y"]]]] else NULL,
                 !is.null(GUI$getActiveDoc()$getModel()$dataDesign),
                 GUI$curPlot
             )
@@ -1279,7 +1279,7 @@ iNZPlotMod <- setRefClass(
                             }
                         }
 
-                        newSet$gg_perN <- n_fun(nrow(GUI$getActiveData()))
+                        newSet$gg_perN <- n_fun(nrow(GUI$getActiveData(lazy = TRUE)))
                     }
 
                     GUI$getActiveDoc()$setSettings(newSet)
@@ -1349,7 +1349,7 @@ iNZPlotMod <- setRefClass(
                     ## SIZE BY
                     lbl <- glabel("Resize points by :")
                     sizeVarNames <-
-                        names(GUI$getActiveData())[sapply(GUI$getActiveData(), is_num)]
+                        names(GUI$getActiveData(lazy = TRUE))[sapply(GUI$getActiveData(), is_num)]
                     sizeVar <- gcombobox(c("", sizeVarNames),
                         selected = ifelse(
                             is.null(curSet$sizeby),
@@ -1509,9 +1509,9 @@ iNZPlotMod <- setRefClass(
                     lbl <- glabel("Colour by :")
                     if (bars)
                         colVarNames <-
-                            names(GUI$getActiveData()[sapply(GUI$getActiveData(), is_cat)])
+                            names(GUI$getActiveData(lazy = TRUE)[sapply(GUI$getActiveData(), is_cat)])
                     else
-                      colVarNames <- names(GUI$getActiveData())
+                      colVarNames <- names(GUI$getActiveData(lazy = TRUE))
                     colVar <-
                         gcombobox(c("", colVarNames),
                             selected = ifelse(
@@ -1558,7 +1558,7 @@ iNZPlotMod <- setRefClass(
                     if (bars) visible(barCol) <- FALSE
                     else visible(ptCol) <- FALSE
 
-                    if (is_num(GUI$getActiveData()[[cval]]) & PLOTTYPE != "hex" & !bars) {
+                    if (is_num(GUI$getActiveData(lazy = TRUE)[[cval]]) & PLOTTYPE != "hex" & !bars) {
                         visible(palCat) <- FALSE
                     } else {
                         visible(useRank) <- visible(palCont) <- FALSE
@@ -1804,7 +1804,7 @@ iNZPlotMod <- setRefClass(
                     if (visible(pchMatch)) {
                         enabled(pchMatch) <-
                             length(
-                                levels(GUI$getActiveData()[[svalue(colVar)]])
+                                levels(GUI$getActiveData(lazy = TRUE)[[svalue(colVar)]])
                             ) %in% 1:5
                         visible(pchMsg) <- !enabled(pchMatch)
                     }
@@ -1831,7 +1831,7 @@ iNZPlotMod <- setRefClass(
                 tbl[ii, 3:6] <- symPch
                 ii <- ii + 1
 
-                symVars <- colnames(GUI$getActiveData())[
+                symVars <- colnames(GUI$getActiveData(lazy = TRUE))[
                     sapply(GUI$getActiveData(), function(x) length(levels(x)) %in% 1:5)
                 ]
                 lbl <- glabel("Symbol by :")
@@ -2363,7 +2363,7 @@ iNZPlotMod <- setRefClass(
                         1
                     }
                 }
-                gridNPerSquare <- gedit(n_fun(nrow(GUI$getActiveData())))
+                gridNPerSquare <- gedit(n_fun(nrow(GUI$getActiveData(lazy = TRUE))))
                 addHandlerChanged(gridNPerSquare,
                     function(h, ...) updateEverything())
                 tbl[ii, 3:6, expand = TRUE] <- gridNPerSquare
@@ -2929,7 +2929,7 @@ iNZPlotMod <- setRefClass(
                                 if (bars) visible(barCol) <- FALSE
                                 else visible(ptCol) <- FALSE
 
-                                if (is_num(GUI$getActiveData()[[svalue(h$obj)]]) &
+                                if (is_num(GUI$getActiveData(lazy = TRUE)[[svalue(h$obj)]]) &
                                     PLOTTYPE != "hex"
                                 ) {
                                     visible(palCat) <- FALSE
@@ -2980,7 +2980,7 @@ iNZPlotMod <- setRefClass(
                 )
                 addHandlerChanged(symPch,
                     handler = function(h, ...) {
-                        if (svalue(symPch, index = TRUE) %in% c(3:5) && nrow(GUI$getActiveData()) > 2000) {
+                        if (svalue(symPch, index = TRUE) %in% c(3:5) && nrow(GUI$getActiveData(lazy = TRUE)) > 2000) {
                             ## TRANSPARENCY VERY SLOW!
                             if (svalue(transpSlider) > 0) {
                                 gmessage(
@@ -3423,8 +3423,8 @@ iNZPlotMod <- setRefClass(
             PLOTTYPE <- GUI$plotType
             YAX <- TRUE
             YAXlbl <- FALSE
-            xvar <- GUI$getActiveData()[[curSet$x]]
-            yvar <- if (!is.null(curSet$y)) GUI$getActiveData()[[curSet$y]] else NULL
+            xvar <- GUI$getActiveData(lazy = TRUE)[[curSet$x]]
+            yvar <- if (!is.null(curSet$y)) GUI$getActiveData(lazy = TRUE)[[curSet$y]] else NULL
             if (PLOTTYPE %in% c("dot", "hist", "bar")) {
                 YAXlbl <- YAX <- PLOTTYPE %in% c("dot", "hist") & !is.null(yvar)
             }
@@ -3750,8 +3750,8 @@ iNZPlotMod <- setRefClass(
                     transform = list()
                 )
 
-                xvar <- GUI$getActiveData()[[curSet$x]]
-                yvar <- if (!is.null(curSet$y)) GUI$getActiveData()[[curSet$y]] else NULL
+                xvar <- GUI$getActiveData(lazy = TRUE)[[curSet$x]]
+                yvar <- if (!is.null(curSet$y)) GUI$getActiveData(lazy = TRUE)[[curSet$y]] else NULL
 
                 if (YAX)
                     newSet["ylab"] <-
@@ -3805,7 +3805,7 @@ iNZPlotMod <- setRefClass(
 
                     # need to explicitely add NULL to the list
                     # newSet$transform
-                    whichx <- ifelse(is_num(GUI$getActiveData()[[curSet$x]]), "x", "y")
+                    whichx <- ifelse(is_num(GUI$getActiveData(lazy = TRUE)[[curSet$x]]), "x", "y")
                     newSet$transform[whichx] <- list(
                         if (svalue(xLog)) "log10" else NULL
                     )

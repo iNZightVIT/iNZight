@@ -66,8 +66,8 @@ iNZDataViewWidget <- setRefClass(
                 silent = TRUE
             )
 
-            if (nrow(GUI$getActiveData()) == 1L &&
-                colnames(GUI$getActiveData())[1] == "empty")
+            if (nrow(GUI$getActiveData(lazy = TRUE)) == 1L &&
+                names(GUI$getActiveData(lazy = TRUE))[1] == "empty")
             {
                 show_landing()
                 return()
@@ -103,12 +103,12 @@ iNZDataViewWidget <- setRefClass(
             searchtimer <- NULL
             searchBox <<- gedit(
                 handler = function(h, ...) {
-                    matches <- grepl(svalue(h$obj), names(GUI$getActiveData()),
+                    matches <- grepl(svalue(h$obj), names(GUI$getActiveData(lazy = TRUE)),
                         ignore.case = TRUE)
 
                     if (nrow(GUI$getActiveDoc()$getModel()$dict_df)) {
                         ddf <- GUI$getActiveDoc()$getModel()$dict_df
-                        ddf <- lapply(names(GUI$getActiveData()), function(x) {
+                        ddf <- lapply(names(GUI$getActiveData(lazy = TRUE)), function(x) {
                             ddf[ddf$name == x, , drop = FALSE]
                         })
                         ddf <- do.call(rbind, ddf)
@@ -122,7 +122,7 @@ iNZDataViewWidget <- setRefClass(
                     if (length(matches) == 0)
                         matches <- NA_character_
                     else
-                        matches <- names(GUI$getActiveData())[matches]
+                        matches <- names(GUI$getActiveData(lazy = TRUE))[matches]
 
                     paginate$col <<- 1L
                     columns <<- matches
@@ -199,7 +199,7 @@ iNZDataViewWidget <- setRefClass(
             }
 
             ## prefix variable type to variable names
-            vnames <- if (length(columns)) columns else colnames(GUI$getActiveData())
+            vnames <- if (length(columns)) columns else names(GUI$getActiveData(lazy = TRUE))
 
             if (nrow(GUI$getActiveDoc()$getModel()$dict_df)) {
                 ddf <- GUI$getActiveDoc()$getModel()$dict_df
@@ -327,7 +327,7 @@ iNZDataViewWidget <- setRefClass(
             dfWidget$set_frame(data)
             dfWidget$add_dnd_columns()
 
-            Nc <- ncol(GUI$getActiveData())
+            Nc <- ncol(GUI$getActiveData(lazy = TRUE))
             colPageLbl$set_value(
                 sprintf("Variables %s-%s of %s",
                     paginate$col,
@@ -339,7 +339,7 @@ iNZDataViewWidget <- setRefClass(
             enabled(btnColNext) <<- paginate$col + paginate$ncol - 1L < Nc
             visible(colPageGp) <<- Nc > paginate$ncol
 
-            Nr <- nrow(GUI$getActiveData())
+            Nr <- nrow(GUI$getActiveData(lazy = TRUE))
             pageLbl$set_value(
                 sprintf("Rows %s-%s of %s",
                     paginate$row,
@@ -429,7 +429,7 @@ iNZDataViewWidget <- setRefClass(
             btnColNext <<- gbutton("",
                 container = colPageGp,
                 handler = function(h, ...) {
-                    if (paginate$col + paginate$ncol - 1L >= ncol(GUI$getActiveData())) return()
+                    if (paginate$col + paginate$ncol - 1L >= ncol(GUI$getActiveData(lazy = TRUE))) return()
                     paginate$col <<- paginate$col + paginate$ncol
                     updateDfView()
                 }
@@ -516,7 +516,7 @@ iNZDataViewWidget <- setRefClass(
 
             btnNext <<- gbutton("", container = pageGp,
                 handler = function(h, ...) {
-                    if (paginate$row + paginate$nrow - 1L >= nrow(GUI$getActiveData())) return()
+                    if (paginate$row + paginate$nrow - 1L >= nrow(GUI$getActiveData(lazy = TRUE))) return()
                     paginate$row <<- paginate$row + paginate$nrow
                     updateDfView()
                 }
@@ -540,10 +540,10 @@ iNZDataViewWidget <- setRefClass(
                         )
                         return()
                     }
-                    if (n < 1L || n > nrow(GUI$getActiveData())) {
+                    if (n < 1L || n > nrow(GUI$getActiveData(lazy = TRUE))) {
                         gmessage(
                             sprintf("Row number should be between %i and %i",
-                                1L, nrow(GUI$getActiveData())
+                                1L, nrow(GUI$getActiveData(lazy = TRUE))
                             ),
                             title = "Invalid row number",
                             icon = "error",

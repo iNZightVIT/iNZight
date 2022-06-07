@@ -24,7 +24,7 @@ iNZMenuBarWidget <- setRefClass(
             defaultMenu()
         },
         hasData = function() {
-            !all(dim(GUI$getActiveData()) == 1)
+            !all(dim(GUI$getActiveData(lazy = TRUE)) == 1)
         },
         hasModules = function() {
             modules_installed <<- suppressMessages(
