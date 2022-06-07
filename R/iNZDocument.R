@@ -434,7 +434,7 @@ iNZDataNameWidget <- setRefClass(
             updateWidget()
         },
         updateWidget = function() {
-            dataSet <- GUI$getActiveData()
+            dataSet <- GUI$getActiveData(lazy = TRUE)
             if (is.null(dataSet) || names(dataSet)[1] == "empty"){
                 datName <<- "No data loaded"
                 if (identical(widget$children[[2]], nameLabel)) {
