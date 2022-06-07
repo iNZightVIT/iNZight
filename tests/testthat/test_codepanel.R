@@ -61,6 +61,7 @@ test_that("Multiple dropbox supported", {
     ui$preferences$multiple_x <- TRUE
     ui$savePreferences()
     ui$reload()
+    Sys.sleep(1)
 
     on.exit({
         ui$preferences <- op
