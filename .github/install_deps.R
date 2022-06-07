@@ -25,9 +25,6 @@ if (OS == "Windows" && getRversion() < numeric_version("4")) {
 if (OS == "Windows" && !requireNamespace('utf8', quietly = TRUE)) {
     install.packages("utf8", type = "source")
 }
-if (OS == "Windows" && packageVersion("cli") < package_version("3.3.0")) {
-    install.packages("cli", type = "source")
-}
 if (OS == "Linux") {
     remotes::install_github('lawremi/RGtk2',
         subdir = "RGtk2",
