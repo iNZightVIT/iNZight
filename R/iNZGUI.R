@@ -443,12 +443,12 @@ iNZGUI <- setRefClass(
 
             curPlSet <- getActiveDoc()$getSettings()
 
-            .dataset <- getActiveData()
+            .dataset <- getActiveData(lazy = FALSE)
             .design <- NULL
             curPlSet$data <- quote(.dataset)
 
             # if (!is.null(curPlSet$freq))
-            #     curPlSet$freq <- getActiveData()[[curPlSet$freq]]
+            #     curPlSet$freq <- getActiveData( )[[curPlSet$freq]]
             if (!is.null(curPlSet$x)) {
                 varx <- .dataset[[curPlSet$x]]
                 vary <- if (!is.null(curPlSet$y)) .dataset[[curPlSet$y]] else NULL
@@ -788,13 +788,13 @@ iNZGUI <- setRefClass(
             "Adds an observer to the active document"
             .self$activeDocChanged$connect(FUN, ...)
         },
-        get_data_object = function(nrow) {
+        get_data_object = function(nrow, lazy = FALSE) {
             "Returns the current dataset or survey design, if it exists"
             curMod <- .self$getActiveDoc()$getModel()
             if (!is.null(curMod$dataDesign)) {
                 res <- curMod$dataDesign$design
             } else {
-                res <- .self$getActiveData()
+                res <- .self$getActiveData(lazy = lazy)
             }
             if (!missing(nrow))
                 res <- res[seq_len(min(nrow, nrow(.self$getActiveData(lazy = TRUE)))), ]
@@ -802,15 +802,15 @@ iNZGUI <- setRefClass(
         },
         view_dataset = function() {
             "Views the dataset using the `View()` function"
-            d <- getActiveData()
+            d <- getActiveData(lazy = FALSE)
             utils::View(d, title = attr(d, "name"))
         },
         ## data check
         checkData = function(module) {
             "Checks that data is loaded (used before opening modules that require data)"
-            data = .self$getActiveData()
-            vars = names(data)
-            ret = TRUE
+            data <- .self$getActiveData(lazy = TRUE)
+            vars <- names(data)
+            ret <- TRUE
 
             ## If dataset is empty (no data imported) display type 1 message,
             ## otherwise check whether imported data is appropriate for module
@@ -818,7 +818,7 @@ iNZGUI <- setRefClass(
             if (length(vars) == 1 && vars[1] == "empty") {
                 ## check for empty data
                 displayMsg(module, type = 1)
-                ret = FALSE
+                ret <- FALSE
             }
 
             return(ret)

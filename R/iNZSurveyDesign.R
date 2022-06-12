@@ -200,7 +200,7 @@ iNZSurveyDesign <- setRefClass(
 
                     if (preview) {
                         spec <- iNZightTools::make_survey(
-                            GUI$getActiveData(),
+                            GUI$getActiveData(lazy = FALSE),
                             structure(list(spec = spec), class = "inzsvyspec")
                         )
                         return(spec$design)
@@ -241,7 +241,7 @@ iNZSurveyDesign <- setRefClass(
                     )
                     if (preview) {
                         spec <- iNZightTools::make_survey(
-                            GUI$getActiveData(),
+                            GUI$getActiveData(lazy = FALSE),
                             structure(
                                 list(spec = spec),
                                 class = "inzsvyspec"
@@ -553,7 +553,7 @@ iNZSurveyDesign <- setRefClass(
             as.int <- function(x) {
                 is.numeric(x) && all(floor(x) == x, na.rm = TRUE)
             }
-            ints <- sapply(GUI$getActiveData(), as.int)
+            ints <- sapply(GUI$getActiveData(lazy = FALSE), as.int)
             vars <- names(GUI$getActiveData(lazy = TRUE))[ints]
 
             freqVar <<- gcombobox(vars, selected = 0, container = g)
@@ -659,7 +659,7 @@ iNZSurveyPostStrat <- setRefClass(
             g1 <- gvbox()
 
             ## only those with no missing values ...
-            fvars <- sapply(GUI$getActiveData(),
+            fvars <- sapply(GUI$getActiveData(lazy = FALSE),
                 function(v) length(levels(v)) > 0 && sum(is.na(v)) == 0)
             factorvars <- names(GUI$getActiveData(lazy = TRUE))[fvars]
             PSvar <<- gtable(factorvars,

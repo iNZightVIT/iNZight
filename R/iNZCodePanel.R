@@ -96,7 +96,7 @@ iNZCodePanel <- setRefClass(
             # set code environment
             assign(
                 GUI$dataNameWidget$datName,
-                GUI$getActiveData(),
+                GUI$getActiveData(lazy = FALSE),
                 GUI$code_env
             )
 

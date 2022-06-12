@@ -191,7 +191,7 @@ iNZplothistory <- setRefClass(
             addHandlerClicked(plot_image,
                 function(h, ...) {
                     eval_env <- rlang::env(
-                        .dataset := GUI$getActiveData()
+                        .dataset := GUI$getActiveData(lazy = FALSE)
                     )
                     GUI$code_panel$input$set_value("")
                     eval_results <- lapply(item$expr, eval, envir = eval_env)
@@ -280,7 +280,11 @@ iNZplothistory <- setRefClass(
 
             code_text <- parse(text = svalue(code_box))
             parsed <- find_libraries(code_text)
-            eval_env <- rlang::env(!!rlang::sym(attr(GUI$getActiveData(lazy = TRUE), "name")) := GUI$getActiveData())
+            eval_env <- rlang::env(
+                !!rlang::sym(
+                    attr(GUI$getActiveData(lazy = TRUE), "name")
+                ) := GUI$getActiveData(lazy = FALSE)
+            )
 
             if (length(parsed$libraries) > 0)
                 code_text <- with_packages(parsed$libraries, parsed$expr)

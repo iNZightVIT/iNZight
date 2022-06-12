@@ -108,13 +108,14 @@ iNZDataModel <- setRefClass(
             }
             gui$getActiveDoc()$setSettings(
                 list(
-                    freq = as.name(freq) # gui$getActiveData()[[freq]]
+                    freq = as.name(freq)
                 )
             )
             # remove any non-categorical variables
-            newdata <- gui$getActiveData()
-            catvars <- c(names(newdata)[sapply(newdata, is_cat)], freq)
-            newdata <- newdata[, catvars]
+            newdata <- gui$getActiveData(lazy = TRUE)
+            vcars <- iNZightTools::vartypes(newdata) == "cat"
+            catvars <- c(names(newdata)[vcat], freq)
+            newdata <- as.data.frame(newdata[, catvars])
             attr(newdata, "name") <- paste(sep = ".",
                 attr(gui$getActiveData(lazy = TRUE), "name", exact = TRUE),
                 "freq"

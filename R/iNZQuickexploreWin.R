@@ -30,7 +30,7 @@ iNZExploreMissing <- setRefClass(
             callSuper(gui)
             svalue(GUI$modWin) <<- "Explore Missing Values"
             oldWd <- options(width = 1000)  # so it doesn't wrap
-            dd <- GUI$getActiveData()
+            dd <- GUI$getActiveData(lazy = FALSE)
             g <- gtext(
                 text = paste(
                     iNZightMR::calcmissing(dd,
@@ -61,7 +61,7 @@ iNZallSummaries <- setRefClass(
             svalue(GUI$modWin) <<- "Explore all 1-way Summaries"
             oldWd <- options(width = 1000)  # so it doesn't wrap
             g <- gtext(
-                text = iNZightPlots::exploreAllSummaries(GUI$getActiveData()),
+                text = iNZightPlots::exploreAllSummaries(GUI$getActiveData(lazy = FALSE)),
                 expand = TRUE,
                 cont = GUI$modWin,
                 wrap = FALSE,
@@ -80,7 +80,7 @@ iNZallPlots <- setRefClass(
         initialize = function(gui) {
             ## Instead, we will make a gui that cycles through them ...
             ign <- gwindow("...", visible = FALSE)
-            tag(ign, "dataSet") <- gui$getActiveData()
+            tag(ign, "dataSet") <- gui$getActiveData(lazy = FALSE)
             e <- list(obj = ign)
             e$win <- gui$win
             iNZightModules::allUniPlots(e)
@@ -95,7 +95,7 @@ iNZall2Plots <- setRefClass(
         initialize = function(gui) {
             ## Instead, we will make a gui that cycles through them ...
             ign <- gwindow("...", visible = FALSE)
-            tag(ign, "dataSet") <- gui$getActiveData()
+            tag(ign, "dataSet") <- gui$getActiveData(lazy = FALSE)
             e <- list(obj = ign)
             e$win <- gui$win
             iNZightModules::allBivarPlots(e)
@@ -109,7 +109,7 @@ iNZscatterMatrix <- setRefClass(
     methods = list(
         initialize = function(gui) {
             ign <- gwindow("...", visible = FALSE)
-            tag(ign, "dataSet") <- gui$getActiveData()
+            tag(ign, "dataSet") <- gui$getActiveData(lazy = FALSE)
             e <- list(obj = ign)
             e$win <- gui$win
             iNZightModules::scatterPlotMatrix(e)

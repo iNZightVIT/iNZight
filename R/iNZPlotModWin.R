@@ -402,7 +402,7 @@ iNZPlotModWin <- setRefClass(
                 if (locSet$matchChk) {
                     loc.lvl <- as.name(locSet$matchVar)
                     levs <-
-                        unique(GUI$getActiveData()[highlight, locSet$matchVar])
+                        unique(GUI$getActiveData(lazy = TRUE)[[locSet$matchVar]][highlight])
 
                     if (length(levs) > 1)
                         levs <- paste0("{", paste(levs, collapse = ", "), "}")
@@ -590,7 +590,7 @@ iNZPlotModWin <- setRefClass(
                 locVar <- if (v == "id") v else as.name(v)
 
                 matchVar <-
-                    as.character(GUI$getActiveData()[, svalue(matchVar)])
+                    as.character(GUI$getActiveData(lazy = TRUE)[[svalue(matchVar)]])
                 matchVar[is.na(matchVar)] <- "missing"
 
                 ## Entire data set - ignore missing values etc etc
@@ -750,7 +750,7 @@ iNZPlotModWin <- setRefClass(
                 function(h, ...) {
                     enabled(selectGo) <- svalue(selectVar, TRUE) > 0
 
-                    selVar <- GUI$getActiveData()[, svalue(selectVar)]
+                    selVar <- GUI$getActiveData(lazy = TRUE)[[svalue(selectVar)]]
 
                     if (length(selectSlideGrp$children) > 0)
                         selectSlideGrp$remove_child(selectSlideGrp$children[[1]])
@@ -913,7 +913,7 @@ iNZPlotModWin <- setRefClass(
 
                     if (svalue(matchChk)) {
                         mVar <- as.character(
-                            GUI$getActiveData()[, svalue(matchVar)]
+                            GUI$getActiveData(lazy = TRUE)[[svalue(matchVar)]]
                         )
                         mVar[is.na(mVar)] <- "missing"
                         mLevs <- unique(mVar[ids])
@@ -953,7 +953,7 @@ iNZPlotModWin <- setRefClass(
                     selectLevels <- gtable(
                         levels(
                             as.factor(
-                                GUI$getActiveData()[, svalue(selectVar)]
+                                GUI$getActiveData(lazy = TRUE)[[svalue(selectVar)]]
                             )
                         ),
                         multiple = TRUE,
@@ -1225,7 +1225,7 @@ iNZPlotMod <- setRefClass(
             defts <- iNZightPlots:::inzpar()
             TYPE <- PLOTTYPE <- GUI$plotType
 
-            .data <- GUI$getActiveData()
+            .data <- GUI$getActiveData(lazy = TRUE)
 
             ## ----- GENERAL APPEARANCE ----------------------------------------------------------
             ##
@@ -1244,7 +1244,7 @@ iNZPlotMod <- setRefClass(
             varnames <- attr(GUI$curPlot, "varnames")
             PLOTTYPES <- plot_list(
                 TYPE,
-                GUI$getActiveData()[varnames[["x"]]],
+                GUI$getActiveData(lazy = TRUE)[varnames[["x"]]],
                 if ("y" %in% names(varnames)) GUI$getActiveData(lazy = TRUE)[[varnames[["y"]]]] else NULL,
                 !is.null(GUI$getActiveDoc()$getModel()$dataDesign),
                 GUI$curPlot
@@ -1348,8 +1348,8 @@ iNZPlotMod <- setRefClass(
                 if (PLOTTYPE == "scatter") {
                     ## SIZE BY
                     lbl <- glabel("Resize points by :")
-                    sizeVarNames <-
-                        names(GUI$getActiveData(lazy = TRUE))[sapply(GUI$getActiveData(), is_num)]
+                    numv <- iNZightTools::varnames(GUI$getActiveData(lazy = TRUE)) %in% c("num", "dt")
+                    sizeVarNames <- names(GUI$getActiveData(lazy = TRUE))[numv]
                     sizeVar <- gcombobox(c("", sizeVarNames),
                         selected = ifelse(
                             is.null(curSet$sizeby),
@@ -1507,11 +1507,12 @@ iNZPlotMod <- setRefClass(
                 if (!hist & (!bars | is.null(curSet$y))) {
                     ## Colour by
                     lbl <- glabel("Colour by :")
-                    if (bars)
-                        colVarNames <-
-                            names(GUI$getActiveData(lazy = TRUE)[sapply(GUI$getActiveData(), is_cat)])
-                    else
+                    if (bars) {
+                        cvars <- iNZightTools::varnames(GUI$getActiveData(lazy = TRUE)) %in% c("cat")
+                        colVarNames <- names(GUI$getActiveData(lazy = TRUE))[cvars]
+                    } else {
                       colVarNames <- names(GUI$getActiveData(lazy = TRUE))
+                    }
                     colVar <-
                         gcombobox(c("", colVarNames),
                             selected = ifelse(
@@ -1832,7 +1833,7 @@ iNZPlotMod <- setRefClass(
                 ii <- ii + 1
 
                 symVars <- colnames(GUI$getActiveData(lazy = TRUE))[
-                    sapply(GUI$getActiveData(), function(x) length(levels(x)) %in% 1:5)
+                    sapply(GUI$getActiveData(lazy = FALSE), function(x) length(levels(x)) %in% 1:5)
                 ]
                 lbl <- glabel("Symbol by :")
                 symVar <- gcombobox(c("", symVars), selected = 1)
@@ -3016,7 +3017,7 @@ iNZPlotMod <- setRefClass(
             ii <- 3
 
             PLOTTYPE <- GUI$plotType
-            .data <- GUI$getActiveData()
+            .data <- GUI$getActiveData(lazy = TRUE)
 
             ## PLOT APPEARANCE
             tbl[ii,  1:6, anchor = c(-1,-1), expand = TRUE] <-

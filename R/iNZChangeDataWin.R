@@ -453,7 +453,6 @@ iNZAggregateWin <- setRefClass(
     "iNZAggregateWin",
     fields = list(
         GUI = "ANY",
-        data = "ANY",
         design = "ANY", is_survey = "logical",
         catvars = "character", numvars = "character",
         available_aggvars = "ANY", aggvars = "ANY",
@@ -485,11 +484,11 @@ iNZAggregateWin <- setRefClass(
             usingMethods("do_aggregation")
 
             initFields(
-                data = gui$getActiveData(),
                 reordering = FALSE
             )
-            allvars <- colnames(data)
-            vt <- sapply(data, iNZightTools::vartype)
+            d <- GUI$getActiveData(lazy = TRUE)
+            allvars <- names(d)
+            vt <- iNZightTools::vartypes(d)
             catvars <<- allvars[vt == "cat"]
             numvars <<- allvars[vt != "cat"] # includes datetimes
 
@@ -797,7 +796,7 @@ iNZAggregateWin <- setRefClass(
 
             }
 
-            .dataset <- GUI$get_data_object()
+            .dataset <- GUI$get_data_object(lazy = FALSE)
             newdata <- iNZightTools::aggregateData(
                 .dataset,
                 vars = aggvars$get_items(),
@@ -843,7 +842,7 @@ iNZStackWin <- setRefClass(
             add_heading("Hold CTRL to choose many.", size = 8L, weight = "bold")
 
             ## display only numeric variables
-            numIndices <- sapply(GUI$getActiveData(), function(x) !is_cat(x))
+            numIndices <- iNZightTools::vartypes(GUI$getActiveData(lazy = TRUE)) != "cat"
             stack_vars <<- gtable(
                 names(GUI$getActiveData(lazy = TRUE))[numIndices],
                 multiple = TRUE
@@ -863,7 +862,7 @@ iNZStackWin <- setRefClass(
 
             vars <- svalue(stack_vars)
 
-            .dataset <- GUI$getActiveData()
+            .dataset <- GUI$getActiveData(lazy = FALSE)
             data <- iNZightTools::stackVars(.dataset, vars)
             attr(data, "name") <-
                 paste(
@@ -1287,7 +1286,10 @@ iNZReshapeWin <- setRefClass(
             prevTbl <- glayout(homogeneous = FALSE, container = previewbox)
 
             string1 <- glabel("Original dataset")
-            originview <- gtable(data.frame(GUI$getActiveData(), stringsAsFactors = TRUE))
+            originview <- gtable(
+                data.frame(head(GUI$getActiveData(lazy = TRUE)),
+                    stringsAsFactors = TRUE)
+            )
             prevTbl[1,1, expand = TRUE] <- string1
             prevTbl[2,1, expand = TRUE] <- originview
             size(originview) = c(-1, 250)
@@ -1308,11 +1310,11 @@ iNZReshapeWin <- setRefClass(
             newview$set_items(d)
         },
         reshape = function() {
-            .dataset <- GUI$getActiveData()
+            .dataset <- GUI$getActiveData(lazy = FALSE)
             df <- iNZightTools::reshape_data(.dataset, col1, col2, colname, key, value, check)
         },
         do_reshape = function() {
-            .dataset <- GUI$getActiveData()
+            .dataset <- GUI$getActiveData(lazy = FALSE)
             data <- reshape()
             attr(data, "name") <-
                 paste(attr(.dataset, "name", exact = TRUE), "reshaped", sep = ".")
@@ -1653,7 +1655,7 @@ iNZexpandTblWin <- setRefClass(
 
             if (!conf) return()
 
-            dat <- GUI$getActiveData()
+            dat <- GUI$getActiveData(lazy = FALSE)
             dat <- tryCatch(
                 {
                     as.numeric(rownames(dat))
@@ -1906,7 +1908,6 @@ iNZJoinWin <- setRefClass(
             }
         },
         joinData = function() {
-            data <- GUI$getActiveData()
             if (length(left_col) != 0 & length(left_col) == length(right_col)) {
                 ## checking for column types
                 list <- list()
@@ -1924,7 +1925,7 @@ iNZJoinWin <- setRefClass(
                 ## Now left_col contains some column namese and the mataching columns from two datasets are in the same class so JOIN
                 if (all(list == TRUE)) {
                     d <- iNZightTools::joindata(
-                        GUI$getActiveData(),
+                        GUI$getActiveData(lazy = FALSE),
                         newdata,
                         left_col,
                         right_col,
@@ -2004,10 +2005,11 @@ iNZJoinWin <- setRefClass(
             create_join_table()
         },
         do_join = function() {
-            .dataset <- GUI$getActiveData()
+            .dataset <- GUI$getActiveData(lazy = FALSE)
             data <- joinData()
+            # TODO: this should report a warning/error?
             if (length(data) == 0 | nrow(data) == 0)
-                data <- GUI$getActiveData()
+                data <- GUI$getActiveData(lazy = TRUE)
 
             GUI$new_document(data, "joined")
             close()
@@ -2120,7 +2122,7 @@ iNZAppendRowsWin <- setRefClass(
             add_body(check_box)
         },
         appendrow = function() {
-            data <- GUI$getActiveData()
+            data <- GUI$getActiveData(lazy = TRUE)
             oldcols <- names(data)
             newcols <- names(newdata)
             common <- intersect(oldcols, newcols)
@@ -2128,17 +2130,17 @@ iNZAppendRowsWin <- setRefClass(
                 for (i in 1:length(common)) {
                     colname <- common[i]
                     if (class(data[[colname]]) != class(newdata[[colname]])) {
-                        colnames(data)[which(names(data) == colname)] <-
+                        names(data)[which(names(data) == colname)] <-
                             paste0(colname, class(data[[colname]]))
-                        colnames(newdata)[which(names(newdata) == colname)] <<-
+                        names(newdata)[which(names(newdata) == colname)] <<-
                             paste0(colname, class(newdata[[colname]]))
                     }
                 }
             }
-            iNZightTools::appendrows(data, newdata, date)
+            iNZightTools::appendrows(as.data.frame(data), newdata, date)
         },
         do_append = function() {
-            .dataset <- GUI$getActiveData()
+            .dataset <- GUI$getActiveData(lazy = FALSE)
             data <- appendrow()
             GUI$new_document(data, "appended")
             close()

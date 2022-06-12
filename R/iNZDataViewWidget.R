@@ -156,7 +156,7 @@ iNZDataViewWidget <- setRefClass(
                 )
                 return()
             }
-            data <<- GUI$getActiveData()
+            data <<- GUI$getActiveData(lazy = FALSE)
             if (length(columns)) data <<- data[, columns, drop = FALSE]
             nr <- nrow(data)
             nc <- ncol(data)
@@ -227,9 +227,10 @@ iNZDataViewWidget <- setRefClass(
                         }
                     )
                 } else {
-                    varsList$Type <- sapply(GUI$getActiveData()[vnames],
+                    varsList$Type <- sapply(
+                        iNZightTools::vartypes(GUI$getActiveData(lazy = TRUE))[vnames],
                         function(x)
-                            switch(iNZightTools::vartype(x),
+                            switch(x,
                                 'num' = 'numeric',
                                 'cat' = 'categorical',
                                 'dt' = 'datetime'
@@ -237,8 +238,9 @@ iNZDataViewWidget <- setRefClass(
                     )
                 }
 
-                varsList$Info <- sapply(GUI$getActiveData()[vnames],
+                varsList$Info <- sapply(vnames,
                     function(x) {
+                        x <- GUI$getActiveData(lazy = TRUE)[[x]]
                         if (all(is.na(x))) return("All missing")
                         switch(iNZightTools::vartype(x),
                             "num" = {
@@ -267,17 +269,22 @@ iNZDataViewWidget <- setRefClass(
                     lapply(varsList, as.character)
                 )
             } else {
-                vtypes <- sapply(GUI$getActiveData()[vnames],
-                    function(x)
-                        switch(iNZightTools::vartype(x),
-                            'num' = 'numeric',
-                            'cat' = 'categorical',
-                            'dt' = 'datetime'
-                        )
+                vtypes <- setNames(
+                    sapply(
+                        iNZightTools::vartypes(GUI$getActiveData(lazy = TRUE))[vnames],
+                        function(x)
+                            switch(x,
+                                'num' = 'numeric',
+                                'cat' = 'categorical',
+                                'dt' = 'datetime'
+                            )
+                    ),
+                    vnames
                 )
 
-                vsmry <- sapply(GUI$getActiveData()[vnames],
+                vsmry <- sapply(vnames,
                     function(x) {
+                        x <- GUI$getActiveData(lazy = TRUE)[[x]]
                         if (all(is.na(x))) return("All missing")
                         switch(iNZightTools::vartype(x),
                             'num' = {
@@ -300,8 +307,8 @@ iNZDataViewWidget <- setRefClass(
                     }
                 )
 
-                vmiss <- sapply(GUI$getActiveData()[vnames],
-                    function(x) sum(is.na(x))
+                vmiss <- sapply(vnames,
+                    function(x) sum(is.na(GUI$getActiveData(lazy = TRUE)[[x]]))
                 )
 
                 varsDf <- data.frame(
@@ -450,9 +457,9 @@ iNZDataViewWidget <- setRefClass(
                     di <- as.integer(rownames(dfWidget$get_frame()))
                     dj <- colnames(dfWidget$get_frame())
                     same <-
-                        dfWidget$get_frame() == GUI$getActiveData()[di, dj, drop = FALSE] |
+                        dfWidget$get_frame() == GUI$getActiveData(lazy = FALSE)[di, dj, drop = FALSE] |
                         # only one is NA
-                        (is.na(dfWidget$get_frame()) + is.na(GUI$getActiveData()[di, dj, drop = FALSE])) == 2L
+                        (is.na(dfWidget$get_frame()) + is.na(GUI$getActiveData(lazy = FALSE)[di, dj, drop = FALSE])) == 2L
                     same <- ifelse(is.na(same), FALSE, same)
                     if (all(same)) return()
                     if (sum(!same) > 1L) {
@@ -470,7 +477,7 @@ iNZDataViewWidget <- setRefClass(
                         return()
                     }
 
-                    .dataset <- GUI$getActiveData()
+                    .dataset <- GUI$getActiveData(lazy = FALSE)
                     code <- sprintf(".dataset[%i, \"%s\"] <- %s",
                         di[changed[1]],
                         dj[changed[2]],

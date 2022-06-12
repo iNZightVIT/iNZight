@@ -592,7 +592,7 @@ iNZControlWidget <- setRefClass(
                     set$g2.level != "_MULTI")
         },
         updateVariables = function() {
-            data <- GUI$getActiveData()
+            data <- GUI$getActiveData(lazy = TRUE)
             if (is.null(data) || all(dim(data) == 1L)) {
                 enabled(V1box) <<- enabled(V2box) <<- enabled(G1box) <<- enabled(G2box) <<- FALSE
             } else {
@@ -600,7 +600,7 @@ iNZControlWidget <- setRefClass(
                 enabled(V2box) <<- enabled(G1box) <<- enabled(G2box) <<- V1box$get_index() > 1L
             }
 
-            datavars <- colnames(data)
+            datavars <- names(data)
 
             if (multi_v1) {
                 V1box$set_items(NULL)
@@ -635,7 +635,7 @@ iNZControlWidget <- setRefClass(
             tbl <- ctrlGp$children[[1L]]
 
             ## build the level names that are used for the slider
-            grpData <- GUI$getActiveData()[dropdata][[1L]]
+            grpData <- GUI$getActiveData(lazy = TRUE)[[dropdata[1L]]]
             grpData <- iNZightPlots:::convert.to.factor(grpData)
             if (pos == 6L)
                 lev <- c("_MULTI", levels(grpData))
@@ -801,8 +801,7 @@ iNZControlWidget <- setRefClass(
         setState = function(set) {
             updateVariables()
 
-            data <- GUI$getActiveData()
-            vars <- names(data)
+            vars <- names(GUI$getActiveData(lazy = TRUE))
 
             if (!is.null(set$x)) {
                 setX <- strsplit(as.character(set$x), " + ", fixed = TRUE)[[1]]
@@ -885,7 +884,7 @@ iNZControlWidget <- setRefClass(
         quick_filter = function() {
             if (newname == "") return()
 
-            .dataset <- GUI$getActiveData()
+            .dataset <- GUI$getActiveData(lazy = FALSE)
             set <- GUI$getActiveDoc()$getSettings()
 
             code <- ""

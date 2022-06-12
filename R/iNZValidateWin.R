@@ -118,7 +118,7 @@ iNZValidateWin <- setRefClass(
                                 stringsAsFactors = TRUE
                             )
                             vali <<- validate::validator(.data = rules.df)
-                            cf <<- validate::confront(GUI$getActiveData(), vali)
+                            cf <<- validate::confront(GUI$getActiveData(lazy = FALSE), vali)
 
                             results.df <- iNZightTools::validation_summary(cf)
 
@@ -189,7 +189,7 @@ iNZValidateWin <- setRefClass(
                     vali,
                     paste0("V", i),
                     id.var,
-                    GUI$getActiveData()
+                    GUI$getActiveData(lazy = FALSE)
                 )
                 font(details.box) <- c(family = "monospace")
             }

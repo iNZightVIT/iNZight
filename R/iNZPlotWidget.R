@@ -128,7 +128,7 @@ iNZPlotWidget <- setRefClass(
 
                 tabHTML <- gtable(
                     data.frame(
-                        Variable = colnames(GUI$getActiveData()),
+                        Variable = names(GUI$getActiveData(lazy = TRUE)),
                         stringsAsFactors = TRUE
                     ),
                     container = gHTML, multiple = TRUE
@@ -200,27 +200,28 @@ iNZPlotWidget <- setRefClass(
                         fp <- ""
                         tryCatch(
                             {
+                                dat <- NULL
+
                                 if (visible(gHTML) && length(svalue(tabHTML)) > 0) {
-                                    dat <- GUI$getActiveData()
+                                    dat <- TRUE
                                     vars <- as.character(svalue(tabHTML))
-                                } else {
-                                    dat <- NULL
-                                    vars <- NULL
                                 }
 
                                 plot.settings <- GUI$getActiveDoc()$getSettings()
 
                                 if (isTRUE(length(plot.settings$locate.id) > 0)) {
                                     if (isTRUE(plot.settings$locate.settings$txtVar != "id")) {
-                                        dat <- GUI$getActiveData()
+                                        dat <- TRUE
                                         vars <- c(vars, plot.settings$locate.settings$txtVar)
                                     }
 
                                     if (isTRUE(plot.settings$locate.settings$matchChk)) {
-                                        dat <- GUI$getActiveData()
+                                        dat <- TRUE
                                         vars <- c(vars, plot.settings$locate.settings$matchVar)
                                     }
                                 }
+                                if (!is.null(dat) && isTRUE(dat))
+                                    dat <- GUI$getActiveData(lazy = FALSE)
                                 args <- list(fun, f, data = dat, extra.vars = vars)
                                 if (visible(gHTML)) {
                                     args$dir <- dir

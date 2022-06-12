@@ -489,7 +489,7 @@ iNZMenuBarWidget <- setRefClass(
                             tooltip = "Start the 3D plotting module",
                             handler = function(h, ...) {
                                 ign <- gwindow("...", visible = FALSE)
-                                tag(ign, "dataSet") <- GUI$getActiveData()
+                                tag(ign, "dataSet") <- GUI$getActiveData(lazy = FALSE)
                                 e <- list(obj = ign)
                                 e$win <- GUI$win
                                 iNZightModules::plot3D(e)

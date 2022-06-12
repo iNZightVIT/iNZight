@@ -102,8 +102,9 @@ iNZConToCatWin <- setRefClass(
             lbl <- glabel("Select numeric variable :")
             tbl[ii, 1L, anchor = c(1, 0), expand = TRUE] <- lbl
 
-            data <- GUI$getActiveData()
-            numvars <- names(data)[sapply(data, iNZightTools::is_num)]
+            data <- GUI$getActiveData(lazy = TRUE)
+            nvars <- iNZightTools::vartypes(data) %in% c("num", "dt")
+            numvars <- names(data)[nvars]
             varLbl <<- gcombobox(numvars,
                 selected = 0L,
                 handler = function(h, ...) {
@@ -179,7 +180,7 @@ iNZTransformWin <- setRefClass(
             )
             if (!ok) return()
             on.exit(.self$show())
-            initFields(data = GUI$getActiveData())
+            initFields(data = GUI$getActiveData(lazy = FALSE))
 
             ## need to specify the methods that we want to use in
             ## do.call later on
@@ -267,8 +268,9 @@ iNZTransformWin <- setRefClass(
             newdata <- iNZightTools::transformVar(.dataset, var, fn, vname)
             updateData(newdata)
 
-            data <<- GUI$getActiveData()
-            numvars <- names(data)[sapply(data, iNZightTools::is_num)]
+            data <<- GUI$getActiveData(lazy = TRUE)
+            nvars <- iNZightTools::vartypes(data) %in% c("num", "dt")
+            numvars <- names(data)[nvars]
             varbox$set_items(numvars)
         }
     )
@@ -310,7 +312,7 @@ iNZCollapseWin <- setRefClass(
 
             ## choose a factor column from the dataset and display
             ## its level in a gtable
-            factorIndices <- sapply(GUI$getActiveData(), is_cat)
+            factorIndices <- iNZightTools::vartypes(GUI$getActiveData(lazy = TRUE)) %in% c("cat")
             factor_menu <<- gcombobox(
                 names(GUI$getActiveData(lazy = TRUE))[factorIndices],
                 selected = 0
@@ -318,7 +320,7 @@ iNZCollapseWin <- setRefClass(
             addHandlerChanged(factor_menu,
                 handler = function(h, ...) {
                     factor_levels[] <<-
-                        levels(GUI$getActiveData()[svalue(factor_menu)][[1L]])
+                        levels(GUI$getActiveData(lazy = TRUE)[[svalue(factor_menu)]])
                     svalue(new_varname) <<-
                         makeNames(sprintf("%s_coll", svalue(h$obj)))
                 }
@@ -420,7 +422,7 @@ iNZRenameFactorLevelsWin <- setRefClass(
 
             ## choose a factor column from the dataset and display
             ## its levels together with their order
-            factorIndices <- sapply(GUI$getActiveData(), is_cat)
+            factorIndices <- iNZightTools::vartypes(GUI$getActiveData(lazy = TRUE)) %in% c("cat")
             factor_menu <<- gcombobox(
                 names(GUI$getActiveData(lazy = TRUE))[factorIndices],
                 selected = 0L,
@@ -484,7 +486,7 @@ iNZRenameFactorLevelsWin <- setRefClass(
                 return(FALSE)
             }
 
-            var <- GUI$getActiveData()[[svalue(factor_menu)]]
+            var <- GUI$getActiveData(lazy = TRUE)[[svalue(factor_menu)]]
             var_levels <- levels(var)
             new_levels <- sapply(level_table[seq_along(var_levels), 2L], svalue)
             names(var_levels) <- new_levels
@@ -549,7 +551,7 @@ iNZReorderLevelsWin <- setRefClass(
 
             ## Choose variable to reorder:
             tbl[1, 1, expand = TRUE, anchor = c(1, 0)] <- glabel("Variable to reorder:")
-            factorIndices <- sapply(GUI$getActiveData(), is_cat)
+            factorIndices <- iNZightTools::vartypes(GUI$getActiveData(lazy = TRUE)) %in% c("cat")
             factorMenu <<- gcombobox(
                 names(GUI$getActiveData(lazy = TRUE))[factorIndices],
                 selected = 0
@@ -601,7 +603,7 @@ iNZReorderLevelsWin <- setRefClass(
                     svalue(factorName) <<- makeNames(sprintf("%s.reord", svalue(factorMenu)))
                     levelOrder$set_items(
                         data.frame(
-                            Levels = levels(GUI$getActiveData()[, svalue(factorMenu)]),
+                            Levels = levels(GUI$getActiveData(lazy = TRUE)[[svalue(factorMenu)]]),
                             stringsAsFactors = TRUE
                         )
                     )
@@ -720,7 +722,7 @@ iNZCombineWin <- setRefClass(
 
             ## choose a factor column from the dataset and display
             ## its level in a gtable
-            factorIndices <- sapply(GUI$getActiveData(), is_cat)
+            factorIndices <- iNZightTools::vartypes(GUI$getActiveData(lazy = TRUE)) %in% c("cat")
             factorNames <<- gtable(
                 list("Categorical Variables" = names(GUI$getActiveData(lazy = TRUE))[factorIndices]),
                 multiple = TRUE,
@@ -990,8 +992,9 @@ iNZFormClassIntervalsWin <- setRefClass(
             tbl <- glayout()
             ii <- 1L
 
-            .dataset <- GUI$getActiveData()
-            numvars <- names(.dataset)[sapply(.dataset, iNZightTools::is_num)]
+            .dataset <- GUI$getActiveData(lazy = TRUE)
+            nvars <- iNZightTools::vartypes(.dataset) %in% c("num", "dt")
+            numvars <- names(.dataset)[nvars]
             lbl <- glabel("Variable :")
             variable <<- gcombobox(numvars,
                 selected = 0,
@@ -1225,7 +1228,7 @@ iNZFormClassIntervalsWin <- setRefClass(
         create_intervals = function(preview = TRUE) {
             if (skip_update) return()
 
-            data <- GUI$getActiveData()
+            data <- GUI$getActiveData(lazy = TRUE)
 
             break_points <- NULL
             if (svalue(type) == "Manual") {
@@ -1235,7 +1238,7 @@ iNZFormClassIntervalsWin <- setRefClass(
                 break_points <- c(xr[1], break_points, xr[2])
             }
 
-            .dataset <- GUI$get_data_object()
+            .dataset <- GUI$get_data_object(lazy = FALSE)
             if (preview && !iNZightTools::is_survey(.dataset)) {
                 .dataset <- .dataset[svalue(variable)]
             }
@@ -1389,7 +1392,7 @@ iNZStandardiseWin <- setRefClass(
             body_space(5L)
 
             ## display only numeric variables
-            numIndices <- sapply(GUI$getActiveData(), function(x) !is_cat(x))
+            numIndices <- iNZightTools::vartypes(GUI$getActiveData(lazy = TRUE)) %in% c("num", "dt")
             numVar <<- gtable(
                 list("Variables" = names(GUI$getActiveData(lazy = TRUE))[numIndices]),
                 multiple = TRUE
@@ -1571,7 +1574,7 @@ iNZRankWin <- setRefClass(
             )
 
             ## display only numeric variables
-            numIndices <- sapply(GUI$getActiveData(), function(x) !is_cat(x))
+            numIndices <- iNZightTools::vartypes(GUI$getActiveData(lazy = TRUE)) %in% c("num", "dt")
             rank_vars <<- gtable(
                 list(Variables = names(GUI$getActiveData(lazy = TRUE))[numIndices]),
                 multiple = TRUE
@@ -1623,7 +1626,7 @@ iNZConToCatMultiWin <- setRefClass(
             )
 
             ## display only numeric variables
-            numIndices <- sapply(GUI$getActiveData(), function(x) !is_cat(x))
+            numIndices <- iNZightTools::vartypes(GUI$getActiveData(lazy = TRUE)) %in% c("num", "dt")
             num_vars <<- gtable(
                 list(Variables = names(GUI$getActiveData(lazy = TRUE))[numIndices]),
                 multiple = TRUE

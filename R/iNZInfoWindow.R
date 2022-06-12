@@ -125,7 +125,7 @@ iNZInfoWindow <- setRefClass(
             curSet$data_name <<- dataname
             ## Design or data?
             curMod <<- GUI$getActiveDoc()$getModel()
-            assign(dataname, GUI$getActiveData(), envir = env)
+            assign(dataname, GUI$getActiveData(lazy = FALSE), envir = env)
 
             if (!is.null(curMod$dataDesign)) {
                 designname <<- curMod$dataDesignName
@@ -159,7 +159,7 @@ iNZInfoWindow <- setRefClass(
             # set code environment
             assign(
                 GUI$dataNameWidget$datName,
-                GUI$getActiveData(),
+                GUI$getActiveData(lazy = FALSE),
                 GUI$code_env
             )
 
@@ -553,12 +553,12 @@ iNZGetSummary <- setRefClass(
                     }
                     if (!is.null(pred))
                         newdata <- data.frame(
-                            GUI$getActiveData(),
+                            GUI$getActiveData(lazy = FALSE),
                             pred,
                             stringsAsFactors = TRUE
                         )
                     else
-                        newdata <- GUI$getActiveData()
+                        newdata <- GUI$getActiveData(lazy = FALSE)
 
 
                     if (curSet$smooth > 0 && xnum && ynum) {
@@ -1151,7 +1151,7 @@ iNZGetInference <- setRefClass(
         },
         setup_panel = function() {
             ## this depends on the type of analysis going on
-            ds <- GUI$getActiveData()
+            ds <- GUI$getActiveData(lazy = TRUE)
             xvar <- ds[[curSet$x]]
             yvar <- if (!is.null(curSet$y)) ds[[curSet$y]] else NULL
 

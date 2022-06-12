@@ -76,13 +76,13 @@ iNZExportWin <- setRefClass(
             x <- try(
                 switch(fn,
                     "csv" = {
-                        readr::write_csv(GUI$getActiveData(), f)
+                        readr::write_csv(GUI$getActiveData(lazy = FALSE), f)
                     },
                     "txt" = {
-                        readr::write_delim(GUI$getActiveData(), f)
+                        readr::write_delim(GUI$getActiveData(lazy = FALSE), f)
                     },
                     "rds" = {
-                        saveRDS(GUI$getActiveData(), f)
+                        saveRDS(GUI$getActiveData(lazy = FALSE), f)
                     }
                 ),
                 silent = TRUE
