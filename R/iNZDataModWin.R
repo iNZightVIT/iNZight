@@ -1730,7 +1730,7 @@ iNZConToDtWin <- setRefClass(
             on.exit(.self$show())
             usingMethods("convert", "add_format", "del_format")
 
-            initFields(data = GUI$getActiveData())
+            initFields(data = GUI$getActiveData(lazy = TRUE))
 
             add_heading(
                 "Choose variable(s) to convert to a date/time.",
@@ -1853,8 +1853,11 @@ iNZConToDtWin <- setRefClass(
                 return()
             }
 
-            vars <- apply(data[svalue(dt_vars)], 1, paste,
-                collapse = " ")
+            vars <- apply(
+                as.data.frame(data[svalue(dt_vars)]),
+                1,
+                paste, collapse = " "
+            )
             svalue(vname) <<- makeNames(
                 sprintf("%s_dt",
                     paste(paste(svalue(dt_vars), collapse = "_"))
@@ -1966,9 +1969,9 @@ iNZExtFromDtWin <- setRefClass(
             on.exit(.self$show())
             usingMethods("extract")
 
-            initFields(data = GUI$getActiveData())
+            initFields(data = GUI$getActiveData(lazy = TRUE))
 
-            dt_vars <- names(data)[sapply(data, iNZightTools::is_dt)]
+            dt_vars <- names(data)[iNZightTools::vartypes(data) == "dt"]
             if (length(dt_vars) == 0L) {
                 gmessage(
                     "No datetime variables to extract information from",
@@ -2176,7 +2179,7 @@ iNZExtFromDtWin <- setRefClass(
             if (length(svalue(element_tree)) == 0L) return()
             if (svalue(vname) == "") return()
 
-            .dataset <- GUI$getActiveData()
+            .dataset <- GUI$getActiveData(lazy = FALSE)
             if (preview)
                 .dataset <- .dataset[svalue(dt_var)]
 
@@ -2266,8 +2269,7 @@ iNZAggDtWin <- setRefClass(
                 container = left_panel,
                 anchor = c(-1, 0))
 
-            d <- GUI$getActiveData()
-            cols <- names(d)#[sapply(d, iNZightTools::is_dt)]
+            cols <- names(GUI$getActiveData(lazy = TRUE))
             dt_var <<- gcombobox(cols,
                 selected = 0L,
                 container = left_panel,
@@ -2304,7 +2306,7 @@ iNZAggDtWin <- setRefClass(
                 anchor = c(-1, 0))
             font(lbl) <- list(weight = "bold")
 
-            df_orig <- gtable(GUI$getActiveData(),
+            df_orig <- gtable(head(GUI$getActiveData(lazy = TRUE)),
                 container = right_panel)
             size(df_orig) <- c(450, -1)
 
@@ -2357,7 +2359,7 @@ iNZAggDtWin <- setRefClass(
             if (length(svalue(format)) == 0L) return()
             if (length(svalue(method)) == 0L) return()
 
-            .dataset <- GUI$getActiveData()
+            .dataset <- GUI$getActiveData(lazy = FALSE)
             cname <- gsub("ly$", "", svalue(format))
 
             if (type == "dt" && length(svalue(format))) {
@@ -2503,7 +2505,7 @@ iNZDataReportWin <- setRefClass(
             tryCatch(
                 {
                     dataMaid::makeDataReport(
-                        GUI$getActiveData(),
+                        GUI$getActiveData(lazy = FALSE),
                         output = switch(svalue(output_format),
                             "PDF" = "pdf",
                             "Word Document" = "word",
