@@ -1348,7 +1348,7 @@ iNZPlotMod <- setRefClass(
                 if (PLOTTYPE == "scatter") {
                     ## SIZE BY
                     lbl <- glabel("Resize points by :")
-                    numv <- iNZightTools::varnames(GUI$getActiveData(lazy = TRUE)) %in% c("num", "dt")
+                    numv <- iNZightTools::vartypes(GUI$getActiveData(lazy = TRUE)) %in% c("num", "dt")
                     sizeVarNames <- names(GUI$getActiveData(lazy = TRUE))[numv]
                     sizeVar <- gcombobox(c("", sizeVarNames),
                         selected = ifelse(
@@ -1508,7 +1508,7 @@ iNZPlotMod <- setRefClass(
                     ## Colour by
                     lbl <- glabel("Colour by :")
                     if (bars) {
-                        cvars <- iNZightTools::varnames(GUI$getActiveData(lazy = TRUE)) %in% c("cat")
+                        cvars <- iNZightTools::vartypes(GUI$getActiveData(lazy = TRUE)) %in% c("cat")
                         colVarNames <- names(GUI$getActiveData(lazy = TRUE))[cvars]
                     } else {
                       colVarNames <- names(GUI$getActiveData(lazy = TRUE))
