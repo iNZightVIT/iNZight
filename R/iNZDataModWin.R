@@ -148,7 +148,7 @@ iNZConToCatWin <- setRefClass(
                 title = "Invalid variable choice",
                 parent = GUI$modWin)
             else if (checkNames(name)) {
-                .dataset <- GUI$get_data_object()
+                .dataset <- GUI$get_data_object(lazy = FALSE)
                 newdata <- iNZightTools::convertToCat(.dataset, orgVar, name)
                 updateData(newdata)
                 close()
@@ -264,7 +264,7 @@ iNZTransformWin <- setRefClass(
             }
 
             fn <- trans[2L]
-            .dataset <- GUI$get_data_object()
+            .dataset <- GUI$get_data_object(lazy = FALSE)
             newdata <- iNZightTools::transformVar(.dataset, var, fn, vname)
             updateData(newdata)
 
@@ -383,7 +383,7 @@ iNZCollapseWin <- setRefClass(
                     parent = GUI$modWin,
                     icon = "warning")
             } else if (checkNames(name)) {
-                .dataset <- GUI$get_data_object()
+                .dataset <- GUI$get_data_object(lazy = FALSE)
                 data <- iNZightTools::collapseLevels(.dataset, var, lvls, lvlname, name)
                 updateData(data)
                 dispose(GUI$modWin)
@@ -513,7 +513,7 @@ iNZRenameFactorLevelsWin <- setRefClass(
             name <- svalue(factor_name)
             if (!is.list(newlvls) || !checkNames(name)) return()
 
-            .dataset <- GUI$get_data_object()
+            .dataset <- GUI$get_data_object(lazy = FALSE)
             data <- iNZightTools::renameLevels(.dataset, var, newlvls, name)
             updateData(data)
             close()
@@ -666,7 +666,7 @@ iNZReorderLevelsWin <- setRefClass(
         reorder = function() {
             var <- svalue(factorMenu)
             varname <- svalue(factorName)
-            .dataset <- GUI$get_data_object()
+            .dataset <- GUI$get_data_object(lazy = FALSE)
 
             if (!checkNames(varname)) return()
             if (svalue(sortMenu, TRUE) == 1) {
@@ -798,7 +798,7 @@ iNZCombineWin <- setRefClass(
             chks <- checkSelection(vars, name)
             if (!chks || !checkNames(name)) return()
 
-            .dataset <- GUI$get_data_object()
+            .dataset <- GUI$get_data_object(lazy = FALSE)
             data <- iNZightTools::combineCatVars(.dataset, vars, sep, name)
             updateData(data)
             close()
@@ -907,7 +907,7 @@ iNZCreateVarWin <- setRefClass(
             body_spring()
         },
         create = function() {
-            .dataset <- GUI$get_data_object()
+            .dataset <- GUI$get_data_object(lazy = FALSE)
 
             vname <- iNZightTools::make_names(
                 svalue(var_name),
@@ -1349,7 +1349,7 @@ iNZRenameVarWin <- setRefClass(
                 .Names = old_names[w]
             )
 
-            .dataset <- GUI$get_data_object()
+            .dataset <- GUI$get_data_object(lazy = FALSE)
             data <- iNZightTools::renameVars(.dataset, name_list)
             updateData(data)
             close()
@@ -1405,7 +1405,7 @@ iNZStandardiseWin <- setRefClass(
 
             varnames <- svalue(numVar)
             names <- makeNames(paste0(varnames, ".std"))
-            .dataset <- GUI$get_data_object()
+            .dataset <- GUI$get_data_object(lazy = FALSE)
             data <- iNZightTools::standardizeVars(.dataset, varnames, names)
             updateData(data)
             close()
@@ -1476,7 +1476,7 @@ iNZDeleteVarWin <- setRefClass(
             )
             if (!conf) return()
 
-            .dataset <- GUI$get_data_object()
+            .dataset <- GUI$get_data_object(lazy = FALSE)
             data <- iNZightTools::deleteVars(.dataset, v)
             updateData(data)
             close()
@@ -1530,7 +1530,7 @@ iNZMissToCatWin <- setRefClass(
             v <- svalue(vars)
             names <- makeNames(paste0(v, "_miss"))
 
-            .dataset <- GUI$get_data_object()
+            .dataset <- GUI$get_data_object(lazy = FALSE)
             data <- iNZightTools::missingToCat(.dataset, v, names)
             updateData(data)
             close()
@@ -1587,7 +1587,7 @@ iNZRankWin <- setRefClass(
         rank = function() {
             if (length(svalue(rank_vars)) == 0L) return()
             vars <- svalue(rank_vars)
-            .dataset <- GUI$get_data_object()
+            .dataset <- GUI$get_data_object(lazy = FALSE)
             data <- iNZightTools::rankVars(.dataset, vars)
             updateData(data)
             close()
@@ -1639,7 +1639,7 @@ iNZConToCatMultiWin <- setRefClass(
             vars <- svalue(num_vars)
             varnames <- makeNames(paste(vars, "cat", sep = "."))
 
-            .dataset <- GUI$get_data_object()
+            .dataset <- GUI$get_data_object(lazy = FALSE)
             data <- iNZightTools::convertToCat(.dataset, vars, varnames)
             updateData(data)
             dispose(GUI$modWin)
@@ -1706,7 +1706,7 @@ iNZConToDtWin <- setRefClass(
     contains = "iNZDataModWin",
     methods = list(
         initialize = function(gui) {
-            if (iNZightTools::is_survey(gui$get_data_object())) {
+            if (iNZightTools::is_survey(gui$get_data_object(lazy = TRUE))) {
                 gmessage(
                     "Survey designs are not handled by this action yet.",
                     title = "Surveys not handled",
@@ -1889,7 +1889,7 @@ iNZConToDtWin <- setRefClass(
             if (svalue(time_fmt) == "") return()
             if (svalue(vname) == "") return()
 
-            .dataset <- GUI$get_data_object()
+            .dataset <- GUI$get_data_object(lazy = FALSE)
             if (preview)
                 .dataset <- .dataset[svalue(dt_vars)]
 
@@ -1945,7 +1945,7 @@ iNZExtFromDtWin <- setRefClass(
     ),
     methods = list(
         initialize = function(gui) {
-            if (iNZightTools::is_survey(gui$get_data_object())) {
+            if (iNZightTools::is_survey(gui$get_data_object(lazy = TRUE))) {
                 gmessage(
                     "Survey designs are not handled by this action yet.",
                     title = "Surveys not handled",
@@ -2231,7 +2231,7 @@ iNZAggDtWin <- setRefClass(
     ),
     methods = list(
         initialize = function(gui) {
-            if (iNZightTools::is_survey(gui$get_data_object())) {
+            if (iNZightTools::is_survey(gui$get_data_object(lazy = TRUE))) {
                 gmessage(
                     "Survey designs are not handled by this action yet.",
                     title = "Surveys not handled",

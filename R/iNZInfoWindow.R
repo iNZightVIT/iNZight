@@ -252,7 +252,7 @@ iNZDataSummary <- setRefClass(
         },
         gen_call = function() {
             "Generate summary call"
-            d <- GUI$get_data_object()
+            d <- GUI$get_data_object(lazy = FALSE)
             sprintf("%sskimr::skim(%s%s)",
                 ifelse(iNZightTools::is_survey(d),
                     sprintf("print(%s, design.summaries = TRUE)\n", designname),

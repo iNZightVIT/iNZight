@@ -258,7 +258,7 @@ iNZFilterWin <- setRefClass(
                 return()
             }
 
-            .dataset <- GUI$get_data_object()
+            .dataset <- GUI$get_data_object(lazy = FALSE)
             attr(newdata, "code") <<- gsub(".dataset",
                 if (iNZightTools::is_survey(.dataset)) GUI$getActiveDoc()$getModel()$dataDesignName
                 else GUI$dataNameWidget$datName,
@@ -287,7 +287,7 @@ iNZFilterWin <- setRefClass(
             if (vartype == "cat" && length(cat_levels$get_index()) == 0) return()
             if (vartype == "num" && svalue(num_cond) == "") return()
 
-            .dataset <- GUI$get_data_object()
+            .dataset <- GUI$get_data_object(lazy = FALSE)
             switch(vartype,
                 "cat" = {
                     newdata <<- iNZightTools::filterLevels(.dataset,
@@ -306,7 +306,7 @@ iNZFilterWin <- setRefClass(
         },
         filter_row = function() {
             if (svalue(row_nums) == "") return()
-            .dataset <- GUI$get_data_object()
+            .dataset <- GUI$get_data_object(lazy = FALSE)
             delrows <- sprintf("c(%s)", svalue(row_nums))
             newdata <<- iNZightTools::filterRows(.dataset, delrows)
         },
@@ -325,7 +325,7 @@ iNZFilterWin <- setRefClass(
             } else {
                 svalue(rand_msg) <<- ""
             }
-            .dataset <- GUI$get_data_object()
+            .dataset <- GUI$get_data_object(lazy = FALSE)
             newdata <<- iNZightTools::filterRandom(.dataset, nsample, samplesize)
         },
         update_data = function(h, ...) {
@@ -431,7 +431,7 @@ iNZSortWin <- setRefClass(
                 add_var()
         },
         sort_data = function() {
-            .dataset <- GUI$get_data_object()
+            .dataset <- GUI$get_data_object(lazy = FALSE)
             i <- names(sort_vars) != ""
             newdata <- iNZightTools::sortVars(
                 .dataset,
@@ -1081,7 +1081,7 @@ iNZReorderVarsWin <- setRefClass(
                 return()
             }
 
-            .dataset <- GUI$get_data_object()
+            .dataset <- GUI$get_data_object(lazy = FALSE)
             .d <- if (iNZightTools::is_survey(.dataset)) .dataset$variables else .dataset
             if (identical(vars, colnames(.d))) {
                 gmessage("It looks like you have selected all of the variables in the same order.",
@@ -1376,7 +1376,7 @@ iNZSeparateWin <- setRefClass(
             format_string <- glabel("Separate variable into :")
             input_tbl[ii, 1L, anchor = c(1, 0), expand = TRUE] <- format_string
 
-            if (iNZightTools::is_survey(GUI$get_data_object())) {
+            if (iNZightTools::is_survey(GUI$get_data_object(lazy = TRUE))) {
                 format <<- glabel(format.list[[1]])
                 input_tbl[ii, 2:3, anchor = c(-1, 0), fill = TRUE] <- format
                 check <<- "Column"
@@ -1491,7 +1491,7 @@ iNZSeparateWin <- setRefClass(
                     }
                 }
 
-                data <- if (preview) GUI$get_data_object(nrow = 10L) else GUI$get_data_object()
+                data <- if (preview) GUI$get_data_object(nrow = 10L) else GUI$get_data_object(lazy = FALSE)
                 tmp <- iNZightTools::separate(data, col, left, right, sep, check)
 
                 if (iNZightTools::is_survey(tmp) && preview) tmp <- tmp$variables
@@ -1511,7 +1511,7 @@ iNZSeparateWin <- setRefClass(
             }
         },
         do_separate = function() {
-            .dataset <- GUI$get_data_object()
+            .dataset <- GUI$get_data_object(lazy = FALSE)
             newdata <- separatedt(preview = FALSE)
             GUI$new_document(newdata, "separated")
             close()
@@ -1623,7 +1623,7 @@ iNZUniteWin <- setRefClass(
             newview$set_items(df)
         },
         do_unite = function() {
-            .dataset <- GUI$get_data_object()
+            .dataset <- GUI$get_data_object(lazy = FALSE)
             newdata <- iNZightTools::unite(.dataset, name, col, sep)
             GUI$new_document(newdata, "united")
             close()
@@ -1750,7 +1750,7 @@ iNZJoinWin <- setRefClass(
             )
 
             join_method <<- "left_join"
-            enabled(var1) <- !iNZightTools::is_survey(GUI$get_data_object())
+            enabled(var1) <- !iNZightTools::is_survey(GUI$get_data_object(lazy = TRUE))
 
             left_name_box <- gvbox()
             name_string <- glabel("Duplicated cols: suffix for Original",
