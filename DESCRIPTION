@@ -40,7 +40,7 @@ Imports:
 Suggests:
     covr,
     dataMaid,
-    dplyr,
+    DBI,
     forcats,
     FutureLearnData,
     iNZightMR (>= 2.2.4),
@@ -52,6 +52,7 @@ Suggests:
     rlang,
     rmarkdown,
     RODBC,
+    RSQLite,
     testthat,
     viridis,
     withr
