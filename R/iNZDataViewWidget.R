@@ -41,22 +41,15 @@ iNZDataViewWidget <- setRefClass(
 
             widget <<- gvbox(expand = TRUE)
 
-            message(" ------- Init data view widget - 1")
             add(widget, init_search())
-            message(" ------- Init data view widget - 2")
 
             dataGp <<- gvbox(expand = TRUE, container = widget)
             set_data()
-            message(" ------- Init data view widget - 3")
 
             createLandingView()
-            message(" ------- Init data view widget - 4")
             createDfView()
-            message(" ------- Init data view widget - 5")
             createVarView()
-            message(" ------- Init data view widget - 6")
             show("data")
-            message(" ------- Init data view widget - 7 (end)")
         },
         show = function(what = c("data", "variables", "landing")) {
             what <- match.arg(what)
@@ -109,7 +102,6 @@ iNZDataViewWidget <- setRefClass(
             searchtimer <- NULL
             searchBox <<- gedit(
                 handler = function(h, ...) {
-                    message(" ------------ handle search box ...")
                     matches <- grepl(svalue(h$obj), names(GUI$getActiveData(lazy = TRUE)),
                         ignore.case = TRUE)
 
@@ -190,9 +182,7 @@ iNZDataViewWidget <- setRefClass(
             set_data(update = FALSE)
 
             ## (re)create the views, with any changes to data
-            message(" ------------ about to update DF view")
             updateDfView()
-            message(" ------------ about to update Var view")
             updateVarView()
             if (current == "") return()
             showing <- current
@@ -203,7 +193,6 @@ iNZDataViewWidget <- setRefClass(
         updateVarView = function() {
             if (block_update) return()
             if (is.null(varView)) {
-                message(" ------------ about to CREATE DF view")
                 createVarView()
                 return()
             }
@@ -279,7 +268,6 @@ iNZDataViewWidget <- setRefClass(
                     lapply(varsList, as.character)
                 )
             } else {
-                message(" ------------ update VAR view -- 1")
                 vtypes <- setNames(
                     sapply(
                         iNZightTools::vartypes(GUI$getActiveData(lazy = TRUE))[vnames],
@@ -293,12 +281,10 @@ iNZDataViewWidget <- setRefClass(
                     vnames
                 )
 
-                message(" ------------ update VAR view -- 2")
-                vsmry <- pbapply::pbsapply(vnames, gen_var_summary,
+                vsmry <- sapply(vnames, gen_var_summary,
                     data = GUI$getActiveData(lazy = TRUE)
                 )
 
-                message(" ------------ update VAR view -- 3")
                 if (inherits(GUI$getActiveData(lazy = TRUE), "inzdf_db")) {
                     vmiss <- character(length(vnames))
                 } else {
@@ -307,7 +293,6 @@ iNZDataViewWidget <- setRefClass(
                     )
                 }
 
-                message(" ------------ update VAR view -- 4")
                 varsDf <- data.frame(
                     Name = vnames,
                     Type = vtypes,
@@ -315,9 +300,7 @@ iNZDataViewWidget <- setRefClass(
                     Missing = vmiss
                 )
             }
-            message(" ------------ update VAR view -- 5")
             varWidget$set_items(varsDf)
-            message(" ------------ update VAR view -- 6")
         },
         ## only update the data.frame view
         updateDfView = function() {
