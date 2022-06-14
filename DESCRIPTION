@@ -23,6 +23,7 @@ Depends:
     objectProperties
 Imports:
     colorspace,
+    dplyr,
     grDevices,
     grid,
     iNZightPlots (>= 2.14),
