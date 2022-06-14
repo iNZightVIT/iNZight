@@ -590,11 +590,12 @@ iNZDataViewWidget <- setRefClass(
 )
 
 # TODO: move to iNZightTools ...
+#' @importFrom dplyr .data
 gen_var_summary <- function(var, data) {
     if (inherits(data, "inzdf_db")) {
         return("")
         # check missing values in lazy var
-        x <- data %>% select(var)
+        x <- data %>% dplyr::select(var)
 
         nmiss <- x %>%
             dplyr::summarize(n_miss = sum(!is.na(.data[[var]]), na.rm = TRUE)) %>%
