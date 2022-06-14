@@ -1244,7 +1244,7 @@ iNZPlotMod <- setRefClass(
             varnames <- attr(GUI$curPlot, "varnames")
             PLOTTYPES <- plot_list(
                 TYPE,
-                GUI$getActiveData(lazy = TRUE)[varnames[["x"]]],
+                GUI$getActiveData(lazy = TRUE)[, varnames[["x"]]],
                 if ("y" %in% names(varnames)) GUI$getActiveData(lazy = TRUE)[[varnames[["y"]]]] else NULL,
                 !is.null(GUI$getActiveDoc()$getModel()$dataDesign),
                 GUI$curPlot

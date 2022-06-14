@@ -41,16 +41,22 @@ iNZDataViewWidget <- setRefClass(
 
             widget <<- gvbox(expand = TRUE)
 
+            message(" ------- Init data view widget - 1")
             add(widget, init_search())
+            message(" ------- Init data view widget - 2")
 
             dataGp <<- gvbox(expand = TRUE, container = widget)
             set_data()
+            message(" ------- Init data view widget - 3")
 
             createLandingView()
+            message(" ------- Init data view widget - 4")
             createDfView()
+            message(" ------- Init data view widget - 5")
             createVarView()
-
+            message(" ------- Init data view widget - 6")
             show("data")
+            message(" ------- Init data view widget - 7 (end)")
         },
         show = function(what = c("data", "variables", "landing")) {
             what <- match.arg(what)
@@ -103,6 +109,7 @@ iNZDataViewWidget <- setRefClass(
             searchtimer <- NULL
             searchBox <<- gedit(
                 handler = function(h, ...) {
+                    message(" ------------ handle search box ...")
                     matches <- grepl(svalue(h$obj), names(GUI$getActiveData(lazy = TRUE)),
                         ignore.case = TRUE)
 
@@ -183,7 +190,9 @@ iNZDataViewWidget <- setRefClass(
             set_data(update = FALSE)
 
             ## (re)create the views, with any changes to data
+            message(" ------------ about to update DF view")
             updateDfView()
+            message(" ------------ about to update Var view")
             updateVarView()
             if (current == "") return()
             showing <- current
@@ -194,6 +203,7 @@ iNZDataViewWidget <- setRefClass(
         updateVarView = function() {
             if (block_update) return()
             if (is.null(varView)) {
+                message(" ------------ about to CREATE DF view")
                 createVarView()
                 return()
             }
@@ -269,6 +279,7 @@ iNZDataViewWidget <- setRefClass(
                     lapply(varsList, as.character)
                 )
             } else {
+                message(" ------------ update VAR view -- 1")
                 vtypes <- setNames(
                     sapply(
                         iNZightTools::vartypes(GUI$getActiveData(lazy = TRUE))[vnames],
@@ -282,35 +293,21 @@ iNZDataViewWidget <- setRefClass(
                     vnames
                 )
 
-                vsmry <- sapply(vnames,
-                    function(x) {
-                        x <- GUI$getActiveData(lazy = TRUE)[[x]]
-                        if (all(is.na(x))) return("All missing")
-                        switch(iNZightTools::vartype(x),
-                            'num' = {
-                                paste(
-                                    c("min", "max"),
-                                    signif(range(x, na.rm = TRUE), 4),
-                                    collapse = ", "
-                                )
-                            },
-                            'cat' = {
-                                paste(length(levels(x)), "levels")
-                            },
-                            'dt' = {
-                                paste(
-                                    as.character(range(x, na.rm = TRUE)),
-                                    collapse = " to "
-                                )
-                            }
-                        )
-                    }
+                message(" ------------ update VAR view -- 2")
+                vsmry <- pbapply::pbsapply(vnames, gen_var_summary,
+                    data = GUI$getActiveData(lazy = TRUE)
                 )
 
-                vmiss <- sapply(vnames,
-                    function(x) sum(is.na(GUI$getActiveData(lazy = TRUE)[[x]]))
-                )
+                message(" ------------ update VAR view -- 3")
+                if (inherits(GUI$getActiveData(lazy = TRUE), "inzdf_db")) {
+                    vmiss <- character(length(vnames))
+                } else {
+                    vmiss <- sapply(vnames,
+                        function(x) sum(is.na(GUI$getActiveData(lazy = TRUE)[[x]]))
+                    )
+                }
 
+                message(" ------------ update VAR view -- 4")
                 varsDf <- data.frame(
                     Name = vnames,
                     Type = vtypes,
@@ -318,7 +315,9 @@ iNZDataViewWidget <- setRefClass(
                     Missing = vmiss
                 )
             }
+            message(" ------------ update VAR view -- 5")
             varWidget$set_items(varsDf)
+            message(" ------------ update VAR view -- 6")
         },
         ## only update the data.frame view
         updateDfView = function() {
@@ -606,3 +605,75 @@ iNZDataViewWidget <- setRefClass(
         }
     )
 )
+
+# TODO: move to iNZightTools ...
+gen_var_summary <- function(var, data) {
+    if (inherits(data, "inzdf_db")) {
+        return("")
+        # check missing values in lazy var
+        x <- data %>% select(var)
+
+        nmiss <- x %>%
+            dplyr::summarize(n_miss = sum(!is.na(.data[[var]]), na.rm = TRUE)) %>%
+            dplyr::pull("n_miss")
+        if (nmiss == 0L) return("All missing")
+
+        res <- switch(iNZightTools::vartypes(x)[[1]],
+            'num' = {
+                xr <- x %>%
+                    dplyr::summarize(
+                        min = min(.data[[var]], na.rm = TRUE),
+                        max = max(.data[[var]], na.rm = TRUE)
+                    ) %>%
+                    dplyr::collect()
+                paste(
+                    c("min", "max"),
+                    signif(c(xr[[1]], xr[[2]]), 4L),
+                    collapse = ", "
+                )
+            },
+            'cat' = {
+                xn <- x %>%
+                    dplyr::distinct() %>%
+                    dplyr::count() %>%
+                    dplyr::collect()
+                paste(xn$n, "levels")
+            },
+            'dt' = {
+                xr <- x %>%
+                    dplyr::summarize(
+                        min = min(.data[[var]], na.rm = TRUE),
+                        max = max(.data[[var]], na.rm = TRUE)
+                    ) %>%
+                    dplyr::collect()
+                paste(
+                    as.character(c(xr$min, xr$max)),
+                    collapse = " to "
+                )
+            }
+        )
+        return(res)
+    }
+
+    x <- data[[var]]
+    if (all(is.na(x))) return("All missing")
+
+    switch(iNZightTools::vartype(x),
+        'num' = {
+            paste(
+                c("min", "max"),
+                signif(range(x, na.rm = TRUE), 4),
+                collapse = ", "
+            )
+        },
+        'cat' = {
+            paste(length(levels(x)), "levels")
+        },
+        'dt' = {
+            paste(
+                as.character(range(x, na.rm = TRUE)),
+                collapse = " to "
+            )
+        }
+    )
+}

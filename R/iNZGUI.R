@@ -184,6 +184,8 @@ iNZGUI <- setRefClass(
             menugrp <- ggroup(container = gtop, fill = TRUE)
             initializeMenu(menugrp)
 
+            message("Init - 1")
+
             g <- gpanedgroup(container = gtop, expand = TRUE)
 
             ## Left side group
@@ -200,7 +202,10 @@ iNZGUI <- setRefClass(
             ## dataThreshold is used as maximum nr of cells
             ## before data.frame view gets deactivated
             dataThreshold <- 200000
+
+            message("Init - 2")
             initializeDataView(dataThreshold)
+            message("Init - 3")
 
             ## What I want this to do is essentially ...
             # 1. layout all the things
@@ -348,7 +353,9 @@ iNZGUI <- setRefClass(
         initializeDataView = function(dataThreshold) {
             "Initializes the data view widget"
             ## create the widget
+            message("--- initializeDataView 1")
             dataViewWidget <<- iNZDataViewWidget$new(.self, dataThreshold)
+            message("--- initializeDataView 2")
             ## if the list of active document changes, update the data view
             addActDocObs(
                 function() {
@@ -356,6 +363,7 @@ iNZGUI <- setRefClass(
                     dataToolbarWidget$updateWidget()
                 }
             )
+            message("--- initializeDataView 3")
             ## if the dataSet changes, update the variable View
             getActiveDoc()$addDataObserver(
                 function() {
@@ -365,7 +373,9 @@ iNZGUI <- setRefClass(
                 }
             )
             ## if the settings change, redraw the plot
+            message("--- initializeDataView 4")
             getActiveDoc()$addSettingsObjObserver(function() updatePlot())
+            message("--- initializeDataView 5 (end)")
         },
         ## set up the buttons used for drag and drop and control of
         ## the plot; they update the plotSettings
