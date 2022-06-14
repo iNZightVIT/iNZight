@@ -59,7 +59,7 @@ test_that("Linked data can be loaded into iNZight", {
         unlink(t0)
     })
 
-    d <- load_linked(
+    d <- iNZightTools::load_linked(
         c(iris_species = t1, iris_data = t2, iris_extra = t3),
         schema = iris_schema,
         con = con,
