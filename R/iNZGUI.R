@@ -443,7 +443,7 @@ iNZGUI <- setRefClass(
 
             curPlSet <- getActiveDoc()$getSettings()
 
-            .dataset <- getActiveData(lazy = FALSE)
+            .dataset <- getActiveData(lazy = TRUE)
             .design <- NULL
             curPlSet$data <- quote(.dataset)
 
@@ -489,7 +489,9 @@ iNZGUI <- setRefClass(
                         if (!is.null(curPlSet$y))
                             vartypes$y <- iNZightTools::vartype(.dataset[[curPlSet$y]])
                         plot_call <- construct_call(curPlSet, curMod, vartypes)
+                        print("--- start plot")
                         rawpl <- eval(plot_call, e)
+                        print("--- end plot")
                         curPlot <<- unclass(rawpl)
                         if (allow.redraw & !is.null(attr(curPlot, "dotplot.redraw")))
                             if (attr(curPlot, "dotplot.redraw"))
