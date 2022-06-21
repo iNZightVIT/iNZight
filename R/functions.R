@@ -155,7 +155,7 @@ construct_call <- function(settings, model, vartypes,
 mend_call <- function(call, gui) {
     iNZightPlots:::mend_call(
         call,
-        gui$getActiveData(lazy = FALSE),
+        gui$getActiveData(lazy = TRUE),
         gui$getActiveDoc()$getModel()$dataDesignName,
         gui$curPlot
     )
