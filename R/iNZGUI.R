@@ -451,7 +451,14 @@ iNZGUI <- setRefClass(
             #     curPlSet$freq <- getActiveData( )[[curPlSet$freq]]
             if (!is.null(curPlSet$x)) {
                 if (length(as.character(curPlSet$x)) > 1) {
-                    xx <- as.character(curPlSet$x)[-1]
+                    xx <-  paste(as.character(curPlSet$x)[-1], collapse = " + ")
+                    xx <- strsplit(xx, " + ", fixed = TRUE)[[1]]
+                    varx <- iNZightTools::as_tibble(
+                        iNZightTools::select(.dataset, xx)
+                    )
+                    xtypes <- iNZightTools::vartypes(varx)
+                } else if (grepl("+", as.character(curPlSet$x), fixed = TRUE)) {
+                    xx <- strsplit(as.character(curPlSet$x), " + ", fixed = TRUE)[[1]]
                     varx <- iNZightTools::as_tibble(
                         iNZightTools::select(.dataset, xx)
                     )
