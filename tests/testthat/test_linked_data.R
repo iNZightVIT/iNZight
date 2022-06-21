@@ -67,7 +67,7 @@ test_that("Linked data can be loaded into iNZight", {
     )
 
     ui <- iNZight(d)
+    on.exit(try(ui$close(), silent = TRUE), add = TRUE)
     expect_is(ui, "iNZGUI")
     expect_equal(ui$getActiveData(lazy = TRUE), d)
-
 })

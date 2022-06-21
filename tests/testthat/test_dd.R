@@ -1,6 +1,7 @@
 # devtools::load_all(); try(ui$close(), TRUE)
 cas <- iNZightTools::smart_read('cas500_coded.csv')
 ui <- iNZight(cas)
+on.exit(try(ui$close(), silent = TRUE))
 Sys.sleep(0.1)
 
 test_that("Data dictionary can be imported", {
