@@ -450,10 +450,19 @@ iNZGUI <- setRefClass(
             # if (!is.null(curPlSet$freq))
             #     curPlSet$freq <- getActiveData( )[[curPlSet$freq]]
             if (!is.null(curPlSet$x)) {
-                varx <- .dataset[[curPlSet$x]]
+                if (length(as.character(curPlSet$x)) > 1) {
+                    xx <- as.character(curPlSet$x)[-1]
+                    varx <- iNZightTools::as_tibble(
+                        iNZightTools::select(.dataset, xx)
+                    )
+                    xtypes <- iNZightTools::vartypes(varx)
+                } else {
+                    varx <- .dataset[[curPlSet$x]]
+                    xtypes <- iNZightTools::vartype(varx)
+                }
                 vary <- if (!is.null(curPlSet$y)) .dataset[[curPlSet$y]] else NULL
 
-                if (!is.null(vary) && is_cat(vary) && is_cat(varx)) {
+                if (!is.null(vary) && is_cat(vary) && any(xtypes == "cat")) {
                     # if both x and y are categorical - two-way bar graph
                     # -> requires specifying colour palette!
                     if (is.null(curPlSet$col.fun)) {
@@ -483,7 +492,7 @@ iNZGUI <- setRefClass(
                     {
                         ## Generate the plot ... and update the interaction button
                         vartypes <- list(
-                            x = iNZightTools::vartype(.dataset[[curPlSet$x]]),
+                            x = xtypes[1],
                             y = NULL
                         )
                         if (!is.null(curPlSet$y))

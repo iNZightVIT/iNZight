@@ -201,6 +201,7 @@ iNZPlotWidget <- setRefClass(
                         tryCatch(
                             {
                                 dat <- NULL
+                                vars <- character()
 
                                 if (visible(gHTML) && length(svalue(tabHTML)) > 0) {
                                     dat <- TRUE
@@ -222,6 +223,8 @@ iNZPlotWidget <- setRefClass(
                                 }
                                 if (!is.null(dat) && isTRUE(dat))
                                     dat <- GUI$getActiveData(lazy = FALSE)
+
+                                if (length(vars) == 0L) vars <- NULL
                                 args <- list(fun, f, data = dat, extra.vars = vars)
                                 if (visible(gHTML)) {
                                     args$dir <- dir
