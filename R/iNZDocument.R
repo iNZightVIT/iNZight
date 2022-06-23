@@ -62,6 +62,10 @@ iNZDataModel <- setRefClass(
             origDataSet <<- data
             name <<- attr(data, "name", exact = TRUE)
             oldname <<- ""
+
+            if (!is.null(attr(data, "dictionary", exact = TRUE))) {
+                setDictionary(attr(data, "dictionary", exact = TRUE))
+            }
         },
         updateData = function(data) {
             if (inherits(data, "inzsvyspec")) {

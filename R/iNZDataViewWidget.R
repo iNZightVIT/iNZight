@@ -237,31 +237,35 @@ iNZDataViewWidget <- setRefClass(
                     )
                 }
 
-                varsList$Info <- sapply(vnames,
-                    function(x) {
-                        x <- GUI$getActiveData(lazy = TRUE)[[x]]
-                        if (all(is.na(x))) return("All missing")
-                        switch(iNZightTools::vartype(x),
-                            "num" = {
-                                paste(
-                                    c("min", "max"),
-                                    signif(range(x, na.rm = TRUE), 4),
-                                    collapse = ", "
-                                )
-                            },
-                            "cat" = {
-                                paste(length(levels(x)), "levels")
-                            },
-                            'dt' = {
-                                paste(
-                                    as.character(range(x, na.rm = TRUE)),
-                                    collapse = " to "
-                                )
-                            },
-                            "Unavailable"
-                        )
-                    }
-                )
+                if (inherits(GUI$getActiveData(lazy = TRUE), "inzdf_db")) {
+                    varsList$Info <- character(length(vnames))
+                } else {
+                    varsList$Info <- sapply(vnames,
+                        function(x) {
+                            x <- GUI$getActiveData(lazy = TRUE)[[x]]
+                            if (all(is.na(x))) return("All missing")
+                            switch(iNZightTools::vartype(x),
+                                "num" = {
+                                    paste(
+                                        c("min", "max"),
+                                        signif(range(x, na.rm = TRUE), 4),
+                                        collapse = ", "
+                                    )
+                                },
+                                "cat" = {
+                                    paste(length(levels(x)), "levels")
+                                },
+                                'dt' = {
+                                    paste(
+                                        as.character(range(x, na.rm = TRUE)),
+                                        collapse = " to "
+                                    )
+                                },
+                                "Unavailable"
+                            )
+                        }
+                    )
+                }
 
                 varsDf <- do.call(
                     data.frame,
