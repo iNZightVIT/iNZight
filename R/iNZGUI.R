@@ -420,9 +420,11 @@ iNZGUI <- setRefClass(
             addHandlerDestroy(win,
                 function(h, ...) {
                     # clean up GDF in dataViewWidget
-                    .self$dataViewWidget$dfView$remove_child(
-                        .self$dataViewWidget$dfWidget
-                    )
+                    if (!is.null(.self$dataViewWidget$dfWidget)) {
+                        .self$dataViewWidget$dfView$remove_child(
+                            .self$dataViewWidget$dfWidget
+                        )
+                    }
                 }
             )
         },

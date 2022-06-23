@@ -53,6 +53,8 @@ iNZDataViewWidget <- setRefClass(
         },
         show = function(what = c("data", "variables", "landing")) {
             what <- match.arg(what)
+            if (what == "data" && inherits(GUI$getActiveData(lazy = TRUE), "inzdf_db"))
+                what <- "variables"
             if (current != "" && what == current) return()
 
             # delete existing:
@@ -155,17 +157,29 @@ iNZDataViewWidget <- setRefClass(
                 )
                 return()
             }
-            data <<- GUI$getActiveData(lazy = FALSE)
-            if (length(columns)) data <<- data[, columns, drop = FALSE]
-            nr <- nrow(data)
-            nc <- ncol(data)
-            page <- list(
-                rows = paginate$row + seq_len(paginate$nrow) - 1L,
-                cols = paginate$col + seq_len(paginate$ncol) - 1L
-            )
-            page$rows <- page$rows[page$rows <= nr]
-            page$cols <- page$cols[page$cols <= nc]
-            data <<- data[page$rows, page$cols, drop = FALSE]
+
+            if (!inherits(GUI$getActiveData(lazy = TRUE), "inzdf_db")) {
+                data <<- GUI$getActiveData(lazy = FALSE)
+                if (length(columns)) data <<- data[, columns, drop = FALSE]
+                nr <- nrow(data)
+                nc <- ncol(data)
+                page <- list(
+                    rows = paginate$row + seq_len(paginate$nrow) - 1L,
+                    cols = paginate$col + seq_len(paginate$ncol) - 1L
+                )
+                page$rows <- page$rows[page$rows <= nr]
+                page$cols <- page$cols[page$cols <= nc]
+                data <<- data[page$rows, page$cols, drop = FALSE]
+            } else {
+                data <<- GUI$getActiveData(lazy = TRUE)
+                nr <- nrow(data)
+                nc <- length(columns)
+                page <- list(
+                    rows = paginate$row + seq_len(paginate$nrow) - 1L,
+                    cols = paginate$col + seq_len(paginate$ncol) - 1L
+                )
+            }
+
             if (update) updateWidget()
         },
         ## recreate both views with active dataset
@@ -315,10 +329,14 @@ iNZDataViewWidget <- setRefClass(
 
             set_data(update = FALSE)
 
-            blockHandlers(dfWidget)
-            on.exit(unblockHandlers(dfWidget))
-            dfWidget$set_frame(data)
-            dfWidget$add_dnd_columns()
+            is_lazy_db <- inherits(GUI$getActiveData(lazy = TRUE), "inzdf_db")
+
+            if (!is_lazy_db) {
+                blockHandlers(dfWidget)
+                on.exit(unblockHandlers(dfWidget))
+                dfWidget$set_frame(data)
+                dfWidget$add_dnd_columns()
+            }
 
             Nc <- ncol(GUI$getActiveData(lazy = TRUE))
             colPageLbl$set_value(
@@ -332,16 +350,18 @@ iNZDataViewWidget <- setRefClass(
             enabled(btnColNext) <<- paginate$col + paginate$ncol - 1L < Nc
             visible(colPageGp) <<- Nc > paginate$ncol
 
-            Nr <- nrow(GUI$getActiveData(lazy = TRUE))
-            pageLbl$set_value(
-                sprintf("Rows %s-%s of %s",
-                    paginate$row,
-                    min(Nr, paginate$row + paginate$nrow - 1L),
-                    Nr
+            if (!is_lazy_db) {
+                Nr <- nrow(GUI$getActiveData(lazy = TRUE))
+                pageLbl$set_value(
+                    sprintf("Rows %s-%s of %s",
+                        paginate$row,
+                        min(Nr, paginate$row + paginate$nrow - 1L),
+                        Nr
+                    )
                 )
-            )
-            enabled(btnPrev) <<- paginate$row > 1L
-            enabled(btnNext) <<- paginate$row + paginate$nrow - 1L < Nr
+                enabled(btnPrev) <<- paginate$row > 1L
+                enabled(btnNext) <<- paginate$row + paginate$nrow - 1L < Nr
+            }
         },
         createLandingView = function() {
             addCentered <- function(g, widget) {
@@ -429,6 +449,10 @@ iNZDataViewWidget <- setRefClass(
             )
             btnColNext$set_icon("go-forward")
 
+            if (inherits(data, "inzdf_db")) {
+                updateDfView()
+                return()
+            }
 
             ## This will be paginated, at some stage:
             dfWidget <<- gdf(data, expand = TRUE)

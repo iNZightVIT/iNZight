@@ -245,6 +245,11 @@ iNZDataSummary <- setRefClass(
     methods = list(
         initialize = function(gui) {
             if (is.null(gui$getActiveData(lazy = TRUE)) || all(dim(gui$getActiveData(lazy = TRUE)) == 1L)) return()
+            if (length(gui$getActiveDoc()$getModel()$dictionary)) {
+                iNZDDView$new(gui)
+                return()
+            }
+
             callSuper(gui, controls = "top", name = "Dataset Summary")
             initFields(page = 1L, pagesize = 100L)
             setup_panel()

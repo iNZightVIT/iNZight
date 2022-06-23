@@ -2278,22 +2278,22 @@ iNZDataDict <- setRefClass(
             dict_name$set_items(vars)
             dict_name$set_index(1L)
 
-            dict_type$set_items(vars)
+            dict_type$set_items(c("", vars))
             if ("type" %in% vars) dict_type$set_value("type")
 
-            dict_title$set_items(vars)
+            dict_title$set_items(c("", vars))
             if ("title" %in% vars) dict_title$set_value("title")
 
-            dict_description$set_items(vars)
+            dict_description$set_items(c("", vars))
             if ("description" %in% vars) dict_description$set_value("description")
 
-            dict_units$set_items(vars)
+            dict_units$set_items(c("", vars))
             if ("units" %in% vars) dict_units$set_value("units")
 
-            dict_codes$set_items(vars)
+            dict_codes$set_items(c("", vars))
             if ("codes" %in% vars) dict_codes$set_value("codes")
 
-            dict_values$set_items(vars)
+            dict_values$set_items(c("", vars))
             if ("values" %in% vars) dict_values$set_value("values")
 
             updating <<- FALSE

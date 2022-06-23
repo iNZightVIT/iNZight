@@ -99,6 +99,13 @@ iNZDataToolbar <- setRefClass(
             }
             enabled(infoBtn) <<- enabled(searchBtn) <<- TRUE
 
+            if (inherits(dataSet, "inzdf_db")) {
+                visible(listBtn) <<- visible(dataBtn) <<- FALSE
+                return()
+            }
+
+            visible(listBtn) <<- visible(dataBtn) <<- TRUE
+
             if (GUI$dataViewWidget$current == "data") {
                 enabled(listBtn) <<- TRUE
                 enabled(dataBtn) <<- FALSE
