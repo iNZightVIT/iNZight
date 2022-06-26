@@ -74,5 +74,6 @@ test_that("Multiple dropbox supported", {
     ui$code_panel$input$set_value(
         "inzplot(~gender + getlunch, data = census.at.school.500)\n"
     )
-    expect_silent(ui$code_panel$run_code())
+    ui$code_panel$run_code()
+    expect_equal(ui$plotType, "gg_multi_stack")
 })

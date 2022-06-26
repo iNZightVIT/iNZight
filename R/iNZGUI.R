@@ -44,6 +44,8 @@ iNZGUI <- setRefClass(
         fields = list(
             ## list of iNZDocuments (contain data, plotSettings)
             iNZDocuments = "list",
+            dbcon = "ANY",
+
             ## the active document of the iNZDocuments list
             activeDoc = "numeric",
             ## the main GUI window
@@ -661,6 +663,14 @@ iNZGUI <- setRefClass(
                 }
             )
             menuBarWidget$defaultMenu()
+            invisible(TRUE)
+        },
+        create_db_connection = function(name) {
+            t <- tempfile(name, fileext = "sqlite")
+            dbcon <<- DBI::dbConnect(
+                RSQLite::SQLite(),
+                t
+            )
             invisible(TRUE)
         },
         ## set a new iNZDocument and make it the active one

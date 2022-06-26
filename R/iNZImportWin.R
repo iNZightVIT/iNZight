@@ -54,7 +54,8 @@ iNZImportWin <- setRefClass(
                     "JSON (.json)" = list(patterns = c("*.json")),
                     "R Object (.rds)" = list(patterns = c("*.rds")),
                     "RData Files (.RData, .rda)" = list(patterns = c("*.RData", "*.rda")),
-                    "Survey Design Files (.svydesign)" = list(patterns = "*.svydesign")
+                    "Survey Design Files (.svydesign)" = list(patterns = "*.svydesign"),
+                    "Linked Data (.inzlnk)" = list(patterns = '*.inzlnk')
                 ),
                 fColTypes = NULL,
                 rdaName = NULL,
@@ -317,6 +318,12 @@ iNZImportWin <- setRefClass(
                         return(NULL)
                     }
                     tmpData <<- svyspec$data
+                },
+                "inzlnk" = {
+                    cname <- tools::file_path_sans_ext(basename(fname))
+                    if (!GUI$create_db_connection(cname))
+                        stop("Unable to create connection")
+                    tmpData <<- iNZightTools::load_linked(fname, con = GUI$dbcon, name = cname)
                 },
                 {
                     tmpData <<- iNZightTools::smart_read(
@@ -697,11 +704,15 @@ iNZImportWin <- setRefClass(
                         )
 
             ## coerce character to factor
+            if (fext != "inzlnk") {
+                tmpData <<- as.data.frame(tmpData,
+                    stringsAsFactors = TRUE
+                )
+            }
+
             GUI$setDocument(
                 iNZDocument$new(
-                    data = as.data.frame(tmpData,
-                        stringsAsFactors = TRUE
-                    ),
+                    data = tmpData,
                     preferences = GUI$preferences
                 ),
                 reset = FALSE
