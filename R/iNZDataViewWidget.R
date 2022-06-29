@@ -172,12 +172,14 @@ iNZDataViewWidget <- setRefClass(
                 data <<- data[page$rows, page$cols, drop = FALSE]
             } else {
                 data <<- GUI$getActiveData(lazy = TRUE)
-                nr <- nrow(data)
-                nc <- length(columns)
+                if (length(columns)) data <<- dplyr::select(data, columns)
+                nc <- ncol(data)
                 page <- list(
-                    rows = paginate$row + seq_len(paginate$nrow) - 1L,
+                    rows = NULL,
                     cols = paginate$col + seq_len(paginate$ncol) - 1L
                 )
+                page$cols <- page$cols[page$cols <= nc]
+                data <<- dplyr::collect(head(dplyr::select(data, page$cols)))
             }
 
             if (update) updateWidget()
@@ -212,7 +214,8 @@ iNZDataViewWidget <- setRefClass(
             }
 
             ## prefix variable type to variable names
-            vnames <- if (length(columns)) columns else names(GUI$getActiveData(lazy = TRUE))
+            # vnames <- if (length(columns)) columns else names(data)
+            vnames <- names(data)
 
             if (nrow(GUI$getActiveDoc()$getModel()$dict_df)) {
                 ddf <- GUI$getActiveDoc()$getModel()$dict_df
@@ -435,6 +438,7 @@ iNZDataViewWidget <- setRefClass(
                     if (paginate$col == 1L) return()
                     paginate$col <<- paginate$col - paginate$ncol
                     updateDfView()
+                    updateVarView()
                 }
             )
             btnColPrev$set_icon("go-back")
@@ -445,6 +449,7 @@ iNZDataViewWidget <- setRefClass(
                     if (paginate$col + paginate$ncol - 1L >= ncol(GUI$getActiveData(lazy = TRUE))) return()
                     paginate$col <<- paginate$col + paginate$ncol
                     updateDfView()
+                    updateVarView()
                 }
             )
             btnColNext$set_icon("go-forward")
