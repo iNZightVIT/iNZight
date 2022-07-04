@@ -97,17 +97,15 @@ Main class that builds the iNZight GUI
 
 \item{\code{do_delete_dataset()}}{Does the dataset deletion}
 
-\item{\code{getActiveData()}}{Returns the current dataset}
+\item{\code{getActiveData(lazy = FALSE)}}{Returns the current dataset (if `lazy` is TRUE, will not be converted to data.frame)}
 
 \item{\code{getActiveDoc()}}{Returns the currently active document}
-
-\item{\code{getActiveRowData()}}{Returns the row data of the current dataset}
 
 \item{\code{getPreferences()}}{Gets the user's preferences from a file}
 
 \item{\code{getState()}}{Returns the current state of the GUI}
 
-\item{\code{get_data_object(nrow)}}{Returns the current dataset or survey design, if it exists}
+\item{\code{get_data_object(nrow, lazy = FALSE)}}{Returns the current dataset or survey design, if it exists}
 
 \item{\code{initializeCodeHistory()}}{Initializes the R code history widget}
 

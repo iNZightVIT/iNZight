@@ -23,6 +23,7 @@ Depends:
     objectProperties
 Imports:
     colorspace,
+    dplyr,
     grDevices,
     grid,
     iNZightPlots (>= 2.14),
@@ -39,7 +40,7 @@ Imports:
 Suggests:
     covr,
     dataMaid,
-    dplyr,
+    DBI,
     forcats,
     FutureLearnData,
     iNZightMR (>= 2.2.4),
@@ -51,6 +52,7 @@ Suggests:
     rlang,
     rmarkdown,
     RODBC,
+    RSQLite,
     testthat,
     viridis,
     withr
@@ -58,5 +60,5 @@ Additional_repositories: https://r.docker.stat.auckland.ac.nz
 LazyData: true
 Encoding: UTF-8
 Language: en-GB
-RoxygenNote: 7.1.2
+RoxygenNote: 7.2.0
 VignetteBuilder: knitr

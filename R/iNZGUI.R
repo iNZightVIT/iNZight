@@ -44,6 +44,8 @@ iNZGUI <- setRefClass(
         fields = list(
             ## list of iNZDocuments (contain data, plotSettings)
             iNZDocuments = "list",
+            dbcon = "ANY",
+
             ## the active document of the iNZDocuments list
             activeDoc = "numeric",
             ## the main GUI window
@@ -420,9 +422,11 @@ iNZGUI <- setRefClass(
             addHandlerDestroy(win,
                 function(h, ...) {
                     # clean up GDF in dataViewWidget
-                    .self$dataViewWidget$dfView$remove_child(
-                        .self$dataViewWidget$dfWidget
-                    )
+                    if (!is.null(.self$dataViewWidget$dfWidget)) {
+                        .self$dataViewWidget$dfView$remove_child(
+                            .self$dataViewWidget$dfWidget
+                        )
+                    }
                 }
             )
         },
@@ -443,17 +447,33 @@ iNZGUI <- setRefClass(
 
             curPlSet <- getActiveDoc()$getSettings()
 
-            .dataset <- getActiveData()
+            .dataset <- getActiveData(lazy = TRUE)
             .design <- NULL
             curPlSet$data <- quote(.dataset)
 
             # if (!is.null(curPlSet$freq))
-            #     curPlSet$freq <- getActiveData()[[curPlSet$freq]]
+            #     curPlSet$freq <- getActiveData( )[[curPlSet$freq]]
             if (!is.null(curPlSet$x)) {
-                varx <- .dataset[[curPlSet$x]]
+                if (length(as.character(curPlSet$x)) > 1) {
+                    xx <-  paste(as.character(curPlSet$x)[-1], collapse = " + ")
+                    xx <- strsplit(xx, " + ", fixed = TRUE)[[1]]
+                    varx <- iNZightTools::as_tibble(
+                        iNZightTools::select(.dataset, xx)
+                    )
+                    xtypes <- iNZightTools::vartypes(varx)
+                } else if (grepl("+", as.character(curPlSet$x), fixed = TRUE)) {
+                    xx <- strsplit(as.character(curPlSet$x), " + ", fixed = TRUE)[[1]]
+                    varx <- iNZightTools::as_tibble(
+                        iNZightTools::select(.dataset, xx)
+                    )
+                    xtypes <- iNZightTools::vartypes(varx)
+                } else {
+                    varx <- .dataset[[curPlSet$x]]
+                    xtypes <- iNZightTools::vartype(varx)
+                }
                 vary <- if (!is.null(curPlSet$y)) .dataset[[curPlSet$y]] else NULL
 
-                if (!is.null(vary) && is_cat(vary) && is_cat(varx)) {
+                if (!is.null(vary) && is_cat(vary) && any(xtypes == "cat")) {
                     # if both x and y are categorical - two-way bar graph
                     # -> requires specifying colour palette!
                     if (is.null(curPlSet$col.fun)) {
@@ -483,7 +503,7 @@ iNZGUI <- setRefClass(
                     {
                         ## Generate the plot ... and update the interaction button
                         vartypes <- list(
-                            x = iNZightTools::vartype(.dataset[[curPlSet$x]]),
+                            x = xtypes[1],
                             y = NULL
                         )
                         if (!is.null(curPlSet$y))
@@ -645,6 +665,14 @@ iNZGUI <- setRefClass(
             menuBarWidget$defaultMenu()
             invisible(TRUE)
         },
+        create_db_connection = function(name) {
+            t <- tempfile(name, fileext = "sqlite")
+            dbcon <<- DBI::dbConnect(
+                RSQLite::SQLite(),
+                t
+            )
+            invisible(TRUE)
+        },
         ## set a new iNZDocument and make it the active one
         setDocument = function(document, reset = FALSE) {
             "Sets the current document"
@@ -676,6 +704,7 @@ iNZGUI <- setRefClass(
                     newname <- sprintf("%s_%s", newname, i)
                     i <- i + 1L
                 }
+                # TODO: this may cause issue ...
                 attr(document$dataModel$dataSet, "name") <- newname
                 ## reset control widget
                 # state <- ctrlWidget$getState()
@@ -687,7 +716,7 @@ iNZGUI <- setRefClass(
                 ## clean up any 'empty' datasets ..
                 nonempty_docs <- sapply(iNZDocuments,
                     function(d)
-                        !all(dim(d$dataModel$dataSet) == 1)
+                        !all(dim(d$dataModel$getData()) == 1)
                 )
                 iNZDocuments <<- iNZDocuments[nonempty_docs]
             }
@@ -778,42 +807,38 @@ iNZGUI <- setRefClass(
             "Returns the currently active document"
             if (activeDoc) iNZDocuments[[activeDoc]] else NULL
         },
-        getActiveData = function() {
-            "Returns the current dataset"
-            if (activeDoc) iNZDocuments[[activeDoc]]$getData() else NULL
-        },
-        getActiveRowData = function() {
-            "Returns the row data of the current dataset"
-            if (activeDoc) iNZDocuments[[activeDoc]]$getRowData() else NULL
+        getActiveData = function(lazy = FALSE) {
+            "Returns the current dataset (if `lazy` is TRUE, will not be converted to data.frame)"
+            if (activeDoc) iNZDocuments[[activeDoc]]$getData(lazy = lazy) else NULL
         },
         ## add observer to the activeDoc class variable
         addActDocObs = function(FUN, ...) {
             "Adds an observer to the active document"
             .self$activeDocChanged$connect(FUN, ...)
         },
-        get_data_object = function(nrow) {
+        get_data_object = function(nrow, lazy = FALSE) {
             "Returns the current dataset or survey design, if it exists"
             curMod <- .self$getActiveDoc()$getModel()
             if (!is.null(curMod$dataDesign)) {
                 res <- curMod$dataDesign$design
             } else {
-                res <- .self$getActiveData()
+                res <- .self$getActiveData(lazy = lazy)
             }
             if (!missing(nrow))
-                res <- res[seq_len(min(nrow, nrow(.self$getActiveData()))), ]
+                res <- res[seq_len(min(nrow, nrow(.self$getActiveData(lazy = TRUE)))), ]
             res
         },
         view_dataset = function() {
             "Views the dataset using the `View()` function"
-            d <- getActiveData()
+            d <- getActiveData(lazy = FALSE)
             utils::View(d, title = attr(d, "name"))
         },
         ## data check
         checkData = function(module) {
             "Checks that data is loaded (used before opening modules that require data)"
-            data = .self$getActiveData()
-            vars = names(data)
-            ret = TRUE
+            data <- .self$getActiveData(lazy = TRUE)
+            vars <- names(data)
+            ret <- TRUE
 
             ## If dataset is empty (no data imported) display type 1 message,
             ## otherwise check whether imported data is appropriate for module
@@ -821,7 +846,7 @@ iNZGUI <- setRefClass(
             if (length(vars) == 1 && vars[1] == "empty") {
                 ## check for empty data
                 displayMsg(module, type = 1)
-                ret = FALSE
+                ret <- FALSE
             }
 
             return(ret)
@@ -850,7 +875,7 @@ iNZGUI <- setRefClass(
                     paste0(
                         "This will remove the following dataset from iNZight,\n",
                         "and any unsaved changes to the data will be lost:\n\n",
-                        attr(getActiveData(), "name", exact = TRUE),
+                        attr(getActiveData(lazy = TRUE), "name", exact = TRUE),
                         "\n\n",
                         "Are you sure you want to continue?"
                     ),
@@ -1287,7 +1312,7 @@ iNZGUI <- setRefClass(
                     )
                 )
 
-                if (all(dim(getActiveData()) == 1)) {
+                if (all(dim(getActiveData(lazy = TRUE)) == 1)) {
                     grid::grid.text(
                         "Kia ora and welcome! To get started, import some data.",
                         y = 1, x = 0, just = c("left", "top"),
@@ -1392,9 +1417,9 @@ iNZGUI <- setRefClass(
 
             # save the document
             has_data <-
-                nrow(.self$getActiveData()) > 1L ||
-                ncol(.self$getActiveData()) > 1L ||
-                names(.self$getActiveData()) != "empty"
+                nrow(.self$getActiveData(lazy = TRUE)) > 1L ||
+                ncol(.self$getActiveData(lazy = TRUE)) > 1L ||
+                names(.self$getActiveData(lazy = TRUE)) != "empty"
             state <- .self$getState()
             dispose(.self$win)
             if (popOut) try(grDevices::dev.off(), TRUE)

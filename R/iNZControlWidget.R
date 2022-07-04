@@ -40,17 +40,17 @@ iNZControlWidget <- setRefClass(
                 )
             } else {
                 V1box <<- gcombobox(
-                    c("Select/Drag-drop Variable 1", colnames(GUI$getActiveData()))
+                    c("Select/Drag-drop Variable 1", names(GUI$getActiveData(lazy = TRUE)))
                 )
             }
             V2box <<- gcombobox(
-                c("Select/Drag-drop Variable 2", colnames(GUI$getActiveData()))
+                c("Select/Drag-drop Variable 2", names(GUI$getActiveData(lazy = TRUE)))
             )
             G1box <<- gcombobox(
-                c("Select/Drag-drop Variable 3 (subset)", colnames(GUI$getActiveData()))
+                c("Select/Drag-drop Variable 3 (subset)", names(GUI$getActiveData(lazy = TRUE)))
             )
             G2box <<- gcombobox(
-                c("Select/Drag-drop Variable 4 (subset)", colnames(GUI$getActiveData()))
+                c("Select/Drag-drop Variable 4 (subset)", names(GUI$getActiveData(lazy = TRUE)))
             )
 
             tbl[1L, 1:6, anchor = c(0,0), expand = TRUE] <- V1box
@@ -58,7 +58,8 @@ iNZControlWidget <- setRefClass(
             tbl[5L, 1:6, anchor = c(0,0), expand = TRUE] <- G1box
             tbl[7L, 1:6, anchor = c(0,0), expand = TRUE] <- G2box
 
-            enabled(V1box) <<- !is.null(GUI$getActiveData()) && any(dim(GUI$getActiveData()) > 1L)
+            enabled(V1box) <<- !is.null(GUI$getActiveData(lazy = TRUE)) &&
+                any(dim(GUI$getActiveData(lazy = TRUE)) > 1L)
             enabled(V2box) <<- enabled(G1box) <<- enabled(G2box) <<- FALSE
 
 
@@ -365,7 +366,7 @@ iNZControlWidget <- setRefClass(
                     newname <<- paste(GUI$dataNameWidget$datName, "subset", sep = ".")
 
                     if (!is.null(set$g1) &&
-                        iNZightTools::is_cat(GUI$getActiveData()[[set$g1]]) &&
+                        iNZightTools::is_cat(GUI$getActiveData(lazy = TRUE)[[set$g1]]) &&
                         !is.null(set$g1.level) &&
                         set$g1.level != "_MULTI")
                     {
@@ -376,7 +377,7 @@ iNZControlWidget <- setRefClass(
                     }
 
                     if (!is.null(set$g2) &&
-                        iNZightTools::is_cat(GUI$getActiveData()[[set$g2]]) &&
+                        iNZightTools::is_cat(GUI$getActiveData(lazy = TRUE)[[set$g2]]) &&
                         !is.null(set$g2.level) &&
                         set$g2.level != "_ALL" &&
                         set$g2.level != "_MULTI")
@@ -581,17 +582,17 @@ iNZControlWidget <- setRefClass(
 
             visible(filter_button) <<-
                 (!is.null(set$g1) &&
-                    iNZightTools::is_cat(GUI$getActiveData()[[set$g1]]) &&
+                    iNZightTools::is_cat(GUI$getActiveData(lazy = TRUE)[[set$g1]]) &&
                     !is.null(set$g1.level) &&
                     set$g1.level != "_MULTI") ||
                 (!is.null(set$g2) &&
-                    iNZightTools::is_cat(GUI$getActiveData()[[set$g2]]) &&
+                    iNZightTools::is_cat(GUI$getActiveData(lazy = TRUE)[[set$g2]]) &&
                     !is.null(set$g2.level) &&
                     set$g2.level != "_ALL" &&
                     set$g2.level != "_MULTI")
         },
         updateVariables = function() {
-            data <- GUI$getActiveData()
+            data <- GUI$getActiveData(lazy = TRUE)
             if (is.null(data) || all(dim(data) == 1L)) {
                 enabled(V1box) <<- enabled(V2box) <<- enabled(G1box) <<- enabled(G2box) <<- FALSE
             } else {
@@ -599,7 +600,7 @@ iNZControlWidget <- setRefClass(
                 enabled(V2box) <<- enabled(G1box) <<- enabled(G2box) <<- V1box$get_index() > 1L
             }
 
-            datavars <- colnames(data)
+            datavars <- names(data)
 
             if (multi_v1) {
                 V1box$set_items(NULL)
@@ -634,7 +635,7 @@ iNZControlWidget <- setRefClass(
             tbl <- ctrlGp$children[[1L]]
 
             ## build the level names that are used for the slider
-            grpData <- GUI$getActiveData()[dropdata][[1L]]
+            grpData <- GUI$getActiveData(lazy = TRUE)[[dropdata[1L]]]
             grpData <- iNZightPlots:::convert.to.factor(grpData)
             if (pos == 6L)
                 lev <- c("_MULTI", levels(grpData))
@@ -800,19 +801,16 @@ iNZControlWidget <- setRefClass(
         setState = function(set) {
             updateVariables()
 
-            data <- GUI$getActiveData()
-            vars <- names(data)
+            vars <- names(GUI$getActiveData(lazy = TRUE))
 
             if (!is.null(set$x)) {
-                if (multi_v1) {
-                    set$x <- NULL
-                } else if (as.character(set$x) %in% vars) {
+                setX <- strsplit(as.character(set$x), " + ", fixed = TRUE)[[1]]
+
+                if (all(setX %in% vars)) {
                     ## set variable 1 to whatever it's supposed to be
                     blockHandlers(V1box)
-                    ## TODO: fix for multi v1
-                    svalue(V1box) <<- as.character(set$x)
+                    V1box$set_value(setX)
                     unblockHandlers(V1box)
-                    set$x <- set$x
                 } else {
                     ## remove variable 1
                     set$x <- NULL
@@ -886,12 +884,12 @@ iNZControlWidget <- setRefClass(
         quick_filter = function() {
             if (newname == "") return()
 
-            .dataset <- GUI$getActiveData()
+            .dataset <- GUI$getActiveData(lazy = FALSE)
             set <- GUI$getActiveDoc()$getSettings()
 
             code <- ""
             if (!is.null(set$g1) &&
-                iNZightTools::is_cat(GUI$getActiveData()[[set$g1]]) &&
+                iNZightTools::is_cat(GUI$getActiveData(lazy = TRUE)[[set$g1]]) &&
                 !is.null(set$g1.level) &&
                 set$g1.level != "_MULTI")
             {
@@ -905,7 +903,7 @@ iNZControlWidget <- setRefClass(
 
 
             if (!is.null(set$g2) &&
-                iNZightTools::is_cat(GUI$getActiveData()[[set$g2]]) &&
+                iNZightTools::is_cat(GUI$getActiveData(lazy = TRUE)[[set$g2]]) &&
                 !is.null(set$g2.level) &&
                 set$g2.level != "_ALL" &&
                 set$g2.level != "_MULTI")

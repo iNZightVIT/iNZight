@@ -1,12 +1,5 @@
 # devtools::load_all(); try(dispose(w))
 
-w <- gwindow()
-g <- gvbox(container = w)
-t <- gmultilabel(placeholder = "Drop items here...", container = g)
-
-addHandlerChanged(t, function(h, ...) print("change!"))
-t$set_items(c("three"))
-
 test_that("Tag objects works", {
     w <- gwindow()
     on.exit(gWidgets2::dispose(w))
@@ -48,4 +41,14 @@ test_that("Tags object works", {
     addDropTarget(tags2, handler = function(h, ...) {
         h$obj$add_item(h$dropdata)
     })
+})
+
+test_that("Change handlers work", {
+    w <- gwindow()
+    on.exit(gWidgets2::dispose(w))
+    g <- gvbox(container = w)
+    t <- gmultilabel(placeholder = "Drop items here...", container = g)
+
+    addHandlerChanged(t, function(h, ...) print("change!"))
+    expect_output(t$set_items(c("three")), "change!")
 })

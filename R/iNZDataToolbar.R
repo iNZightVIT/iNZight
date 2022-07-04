@@ -57,7 +57,7 @@ iNZDataToolbar <- setRefClass(
             updateWidget()
         },
         viewData = function(h, ...) {
-            dataSet <- GUI$getActiveData() ## get the active dataSet
+            dataSet <- GUI$getActiveData(lazy = TRUE) ## get the active dataSet
             if (is.null(dataSet)) {
                 gmessage(
                     "Please load a new data set (with named columns)",
@@ -73,7 +73,7 @@ iNZDataToolbar <- setRefClass(
             }
         },
         viewList = function(h, ...) {
-            dataSet <- GUI$getActiveData() ## get the active dataSet
+            dataSet <- GUI$getActiveData(lazy = TRUE) ## get the active dataSet
             if (is.null(dataSet)) {
                 gmessage("Please load a new data set (with named columns)",
                          parent = GUI$win)
@@ -89,7 +89,7 @@ iNZDataToolbar <- setRefClass(
         ## check wich view is activate and the current data size
         ## and enable the buttongs accordingly
         updateWidget = function() {
-            dataSet <- GUI$getActiveData()
+            dataSet <- GUI$getActiveData(lazy = TRUE)
             if (is.null(dataSet) || names(dataSet)[1] == "empty") {
                 enabled(listBtn) <<-
                     enabled(dataBtn) <<-
@@ -98,6 +98,13 @@ iNZDataToolbar <- setRefClass(
                 return()
             }
             enabled(infoBtn) <<- enabled(searchBtn) <<- TRUE
+
+            if (inherits(dataSet, "inzdf_db")) {
+                visible(listBtn) <<- visible(dataBtn) <<- FALSE
+                return()
+            }
+
+            visible(listBtn) <<- visible(dataBtn) <<- TRUE
 
             if (GUI$dataViewWidget$current == "data") {
                 enabled(listBtn) <<- TRUE
