@@ -50,7 +50,7 @@ GMultiLabel <- setRefClass(
         set_index = function(value, ...) invisible(),
         get_items = function(...) {
             items <- sapply(widgets, function(x) x$get_value())
-            setNames(items, NULL)
+            stats::setNames(items, NULL)
         },
         set_items = function(value, ...) {
             if (only_unique) value <- unique(value)

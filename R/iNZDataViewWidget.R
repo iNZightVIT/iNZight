@@ -289,7 +289,7 @@ iNZDataViewWidget <- setRefClass(
                     lapply(varsList, as.character)
                 )
             } else {
-                vtypes <- setNames(
+                vtypes <- stats::setNames(
                     sapply(
                         iNZightTools::vartypes(GUI$getActiveData(lazy = TRUE))[vnames],
                         function(x)
