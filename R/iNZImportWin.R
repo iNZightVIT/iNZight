@@ -320,7 +320,7 @@ iNZImportWin <- setRefClass(
                     tmpData <<- svyspec$data
                 },
                 "inzlnk" = {
-                    # cname <- tools::file_path_sans_ext(basename(fname))
+                    cname <- tools::file_path_sans_ext(basename(fname))
                     # if (!GUI$create_db_connection(cname))
                     #     stop("Unable to create connection")
                     tmpData <<- iNZightTools::load_linked(fname,
