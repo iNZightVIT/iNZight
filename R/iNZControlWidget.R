@@ -27,6 +27,13 @@ iNZControlWidget <- setRefClass(
             initFields(GUI = gui, playdelay = 0.6, newname = "",
                 multi_v1 = gui$preferences$dev.features && gui$preferences$multiple_x
             )
+
+            if (multi_v1) {
+                aLbl <- glabel('CTRL+1 to add selected vars to existing Variable 1 box')
+                font(aLbl) <- list(size = 8)
+                add(ctrlGp, aLbl, anchor = c(-1, 0))
+            }
+
             ## set up glayout
             tbl <- glayout(expand = TRUE, homogeneous = FALSE, cont = ctrlGp, spacing = 5)
 
@@ -137,17 +144,6 @@ iNZControlWidget <- setRefClass(
                 # add accelerators:
                 GUI$key_map$accel$connect(
                     get('GDK_1'),
-                    'control-mask',
-                    "visible",
-                    function(...) {
-                        vars <- svalue(GUI$dataViewWidget$varWidget)
-                        if (length(vars))
-                            V1box$set_value(vars)
-                        TRUE
-                    }
-                )
-                GUI$key_map$accel$connect(
-                    get('GDK_exclam'),
                     'control-mask',
                     "visible",
                     function(...) {
