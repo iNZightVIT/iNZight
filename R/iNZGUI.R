@@ -50,8 +50,10 @@ iNZGUI <- setRefClass(
             activeDoc = "numeric",
             ## the main GUI window
             win = "ANY",
+            ## Accelerator key map
+            key_map = "ANY",
+            ## Menu bar
             menuBarWidget = "ANY",
-
             ## left group
             leftMain = "ANY",
             moduleWindow = "ANY",
@@ -96,6 +98,7 @@ iNZGUI <- setRefClass(
             ## rather than passing around the full object.
             code_env = "ANY",
             code_panel = "ANY",
+            ## loading flags
             is_initialized = "logical",
             stop_loading = "logical"
         ),
@@ -158,6 +161,10 @@ iNZGUI <- setRefClass(
                 width = if (popOut) NULL else preferences$window.size[1],
                 height = preferences$window.size[2]
             )
+
+            ## initialize accelerator - do this first so other widgets can use it
+            key_map <<- list(accel = RGtk2::gtkAccelGroup())
+            win$widget$addAccelGroup(key_map$accel)
 
             if (!is.null(data) && is.null(attr(data, "name", exact = TRUE)))
                 attr(data, "name") <- deparse(substitute(data))

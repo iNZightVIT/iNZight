@@ -133,9 +133,35 @@ iNZControlWidget <- setRefClass(
                         V1box$set_value(vars)
                     }
                 )
+
+                # add accelerators:
+                GUI$key_map$accel$connect(
+                    get('GDK_1'),
+                    'control-mask',
+                    "visible",
+                    function(...) {
+                        vars <- svalue(GUI$dataViewWidget$varWidget)
+                        if (length(vars))
+                            V1box$set_value(vars)
+                        TRUE
+                    }
+                )
+                GUI$key_map$accel$connect(
+                    get('GDK_exclam'),
+                    'control-mask',
+                    "visible",
+                    function(...) {
+                        print('CTRL+SHIFT+1')
+                        vars <- svalue(GUI$dataViewWidget$varWidget)
+                        if (length(vars))
+                            V1box$add_item(vars)
+                        TRUE
+                    }
+                )
             } else {
                 switchV12 <- gimagebutton(
-                    filename = system.file("images/icon-double-arrow.png", package = "iNZight"),
+                    filename = system.file("images/icon-double-arrow.png",
+                        package = "iNZight"),
                     tooltip = "Switch with Variable 2")
                 addHandlerClicked(switchV12,
                     function(h, ...) {
@@ -175,6 +201,10 @@ iNZControlWidget <- setRefClass(
                         unblockHandlers(V2box)
                     }
                 )
+
+                # remove accelerators:
+                # GUI$key_map$accel$disconnectKey(get('GDK_1'), c('control-mask'))
+                # GUI$key_map$accel$disconnectKey(get('GDK_1'), c('control-mask', 'shift-mask'))
             }
             switchV23 <- gimagebutton(
                 filename = system.file("images/icon-double-arrow.png", package = "iNZight"),

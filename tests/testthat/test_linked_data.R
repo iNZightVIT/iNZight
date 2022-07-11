@@ -71,3 +71,18 @@ test_that("Linked data can be loaded into iNZight", {
     expect_is(ui, "iNZGUI")
     expect_equal(ui$getActiveData(lazy = TRUE), d)
 })
+
+
+
+# #
+# a <- RGtk2::gtkAccelGroup()
+# ui$win$widget$addAccelGroup(a)
+# a$connect(get('GDK_A'), 'shift-mask', "visible", function(...) {
+#     print('SHIFT-A')
+#     TRUE
+# })
+# a$connect(get('GDK_A'), c('control-mask', 'shift-mask'), "visible", function(...) {
+#     print('CTRL+SHIFT+A')
+#     TRUE
+# })
+gtkAccelGroupDisconnectKey(a, get('GDK_a'), c('shift-mask'))

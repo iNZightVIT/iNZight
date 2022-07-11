@@ -23,6 +23,7 @@ iNZDataViewWidget <- setRefClass(
         dataThreshold = "numeric",
         varWidget = "ANY",
         searchBox = "ANY",
+        searchtimer = "ANY",
         searchGp = "ANY",
         block_update = "logical"
     ),
@@ -101,45 +102,45 @@ iNZDataViewWidget <- setRefClass(
 
             lbl <- glabel("Filter/search variables :", container = searchGp)
 
-            searchtimer <- NULL
+            searchtimer <<- NULL
             searchBox <<- gedit(
-                handler = function(h, ...) {
-                    matches <- grepl(svalue(h$obj), names(GUI$getActiveData(lazy = TRUE)),
-                        ignore.case = TRUE)
-
-                    if (nrow(GUI$getActiveDoc()$getModel()$dict_df)) {
-                        ddf <- GUI$getActiveDoc()$getModel()$dict_df
-                        ddf <- lapply(names(GUI$getActiveData(lazy = TRUE)), function(x) {
-                            ddf[ddf$name == x, , drop = FALSE]
-                        })
-                        ddf <- do.call(rbind, ddf)
-                        if ("title" %in% colnames(ddf)) {
-                            matches <- matches | grepl(svalue(h$obj), ddf$title, ignore.case = TRUE)
-                        }
-                    }
-
-                    matches <- which(matches)
-
-                    if (length(matches) == 0)
-                        matches <- NA_character_
-                    else
-                        matches <- names(GUI$getActiveData(lazy = TRUE))[matches]
-
-                    paginate$col <<- 1L
-                    columns <<- matches
-                    set_data()
-                },
                 container = searchGp,
                 expand = TRUE
             )
+            searchHandler <- function(data) {
+                enabled(searchBox) <<- FALSE
+                on.exit(enabled(searchBox) <<- TRUE)
+                matches <- grepl(data, names(GUI$getActiveData(lazy = TRUE)),
+                    ignore.case = TRUE)
+
+                if (nrow(GUI$getActiveDoc()$getModel()$dict_df)) {
+                    ddf <- GUI$getActiveDoc()$getModel()$dict_df
+                    dd_title <- sapply(names(GUI$getActiveData(lazy = TRUE)),
+                        function(x) ifelse(x %in% ddf$name, ddf$title[ddf$name == x], "")
+                    )
+                    matches <- matches | grepl(data, dd_title, ignore.case = TRUE)
+                }
+
+                matches <- which(matches)
+
+                if (length(matches) == 0)
+                    matches <- NA_character_
+                else
+                    matches <- names(GUI$getActiveData(lazy = TRUE))[matches]
+
+                paginate$col <<- 1L
+                columns <<- matches
+                set_data()
+            }
             addHandlerKeystroke(searchBox,
                 function(h, ...) {
                     if (!is.null(searchtimer))
                         if (searchtimer$started)
                             searchtimer$stop_timer()
 
-                    searchtimer <- gtimer(300,
-                        searchBox$invoke_change_handler,
+                    searchtimer <<- gtimer(1000,
+                        searchHandler,
+                        data = svalue(h$obj),
                         one.shot = TRUE
                     )
                 }
@@ -341,7 +342,7 @@ iNZDataViewWidget <- setRefClass(
                 dfWidget$add_dnd_columns()
             }
 
-            Nc <- ncol(GUI$getActiveData(lazy = TRUE))
+            Nc <- length(columns)
             colPageLbl$set_value(
                 sprintf("Variables %s-%s of %s",
                     paginate$col,
