@@ -28,12 +28,6 @@ iNZControlWidget <- setRefClass(
                 multi_v1 = gui$preferences$dev.features && gui$preferences$multiple_x
             )
 
-            if (multi_v1) {
-                aLbl <- glabel('CTRL+1 to add selected vars to existing Variable 1 box')
-                font(aLbl) <- list(size = 8)
-                add(ctrlGp, aLbl, anchor = c(-1, 0))
-            }
-
             ## set up glayout
             tbl <- glayout(expand = TRUE, homogeneous = FALSE, cont = ctrlGp, spacing = 5)
 
@@ -196,10 +190,6 @@ iNZControlWidget <- setRefClass(
                         unblockHandlers(V2box)
                     }
                 )
-
-                # remove accelerators:
-                # GUI$key_map$accel$disconnectKey(get('GDK_1'), c('control-mask'))
-                # GUI$key_map$accel$disconnectKey(get('GDK_1'), c('control-mask', 'shift-mask'))
             }
             switchV23 <- gimagebutton(
                 filename = system.file("images/icon-double-arrow.png", package = "iNZight"),

@@ -232,6 +232,12 @@ iNZGUI <- setRefClass(
             add(gp1, dataViewWidget$widget, expand = TRUE)
 
             ## set up the drag and drop fields
+            if (preferences$multiple_x) {
+                aLbl <- glabel('CTRL+1 to add selected vars to existing Variable 1 box')
+                font(aLbl) <- list(size = 8)
+                add(gp1, aLbl, anchor = c(-1, 0))
+            }
+
             add(gp1, initializeControlWidget()$ctrlGp, expand = FALSE)
 
             ## set up widgets in the right group

@@ -103,10 +103,7 @@ iNZDataViewWidget <- setRefClass(
             lbl <- glabel("Filter/search variables :", container = searchGp)
 
             searchtimer <<- NULL
-            searchBox <<- gedit(
-                container = searchGp,
-                expand = TRUE
-            )
+
             searchHandler <- function(data) {
                 enabled(searchBox) <<- FALSE
                 on.exit(enabled(searchBox) <<- TRUE)
@@ -132,6 +129,11 @@ iNZDataViewWidget <- setRefClass(
                 columns <<- matches
                 set_data()
             }
+            searchBox <<- gedit(
+                container = searchGp,
+                expand = TRUE,
+                handler = function(h, ...) searchHandler(svalue(h$obj))
+            )
             addHandlerKeystroke(searchBox,
                 function(h, ...) {
                     if (!is.null(searchtimer))
