@@ -151,7 +151,6 @@ iNZControlWidget <- setRefClass(
                     'control-mask',
                     "visible",
                     function(...) {
-                        print('CTRL+SHIFT+1')
                         vars <- svalue(GUI$dataViewWidget$varWidget)
                         if (length(vars))
                             V1box$add_item(vars)
