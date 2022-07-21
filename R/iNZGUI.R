@@ -1049,15 +1049,15 @@ iNZGUI <- setRefClass(
             ## The default iNZight settings:
             list(
                 check.updates = !getOption("inzight.lock.packages", FALSE),
-                window.size = c(1250, 850),
-                popout = FALSE,
-                font.size = 10,
-                dev.features = FALSE,
-                show.code = FALSE,
-                language = "en",
-                module_dir = NULL,
-                multiple_x = FALSE,
-                gg_theme = NULL
+                window.size = getOption("inzight.default.window.size", c(1250, 850)),
+                popout = getOption("inzight.default.popout", FALSE),
+                font.size = getOption("inzight.default.font.size", 10),
+                dev.features = getOption("inzight.default.dev.features", FALSE),
+                show.code = getOption("inzight.default.show.code", FALSE),
+                language = getOption("inzight.default.langauge", "en"),
+                module_dir = getOption("inzight.default.module_dir", NULL),
+                multiple_x = getOption("inzight.default.multiple_x", FALSE),
+                gg_theme = getOption("inzight.default.gg_theme", NULL)
             )
         },
         checkPrefs = function(prefs) {
