@@ -448,6 +448,10 @@ iNZGUI <- setRefClass(
             "Updates the plot using the user's chosen variables and other settings"
             if (!is_initialized || !visible(win)) return()
 
+            # disable drag-and-drop until plot rendered
+            enabled(dataViewWidget$dfView) <<- enabled(dataViewWidget$varView) <<- FALSE
+            on.exit(enabled(dataViewWidget$dfView) <<- enabled(dataViewWidget$varView) <<- TRUE)
+
             # if plot is NOT `inzplotoutput`, AND code widget is turned on, run the code instead
             if (!is.null(plotType) &&
                 plotType == "custom" &&
