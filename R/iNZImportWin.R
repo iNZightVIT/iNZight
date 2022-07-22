@@ -320,12 +320,35 @@ iNZImportWin <- setRefClass(
                     tmpData <<- svyspec$data
                 },
                 "inzlnk" = {
+                    prog <- list(
+                        create = function(from, to) {
+                            w <- gwindow(title = "Loading data",
+                                width = 300,
+                                height = 80,
+                                parent = GUI$win
+                            )
+                            g <- gvbox(container = w)
+                            g$set_borderwidth(5)
+                            glabel("Please wait while data loads ...", anchor = c(-1, 0), container = g)
+                            addSpace(g, 10)
+                            pb <- gprogressbar(from, container = g)
+                            addSpace(g, 10)
+                            Sys.sleep(0.1)
+                            list(w = w, pb = pb, N = to)
+                        },
+                        set = function(x, i) {
+                            x$pb$set_value(round(100 * i / x$N))
+                            Sys.sleep(0.1)
+                        },
+                        destroy = function(x) dispose(x$w)
+                    )
                     cname <- tools::file_path_sans_ext(basename(fname))
                     # if (!GUI$create_db_connection(cname))
                     #     stop("Unable to create connection")
                     tmpData <<- iNZightTools::load_linked(fname,
                         # con = GUI$dbcon,
-                        name = cname
+                        name = cname,
+                        progress = prog
                     )
                 },
                 {
