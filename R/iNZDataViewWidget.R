@@ -23,7 +23,7 @@ iNZDataViewWidget <- setRefClass(
         dataThreshold = "numeric",
         varWidget = "ANY",
         searchBox = "ANY",
-        searchtimer = "ANY",
+        searchBtn = "ANY",
         searchGp = "ANY",
         block_update = "logical"
     ),
@@ -102,8 +102,6 @@ iNZDataViewWidget <- setRefClass(
 
             lbl <- glabel("Filter/search variables :", container = searchGp)
 
-            searchtimer <<- NULL
-
             searchHandler <- function(data) {
                 enabled(searchBox) <<- FALSE
                 on.exit(enabled(searchBox) <<- TRUE)
@@ -136,17 +134,22 @@ iNZDataViewWidget <- setRefClass(
             )
             addHandlerKeystroke(searchBox,
                 function(h, ...) {
-                    if (!is.null(searchtimer))
-                        if (searchtimer$started)
-                            searchtimer$stop_timer()
-
-                    searchtimer <<- gtimer(1000,
-                        searchHandler,
-                        data = svalue(h$obj),
-                        one.shot = TRUE
-                    )
+                    enabled(searchBtn) <<- svalue(h$obj) != ""
                 }
             )
+            searchBtn <<- gbutton(
+                "Search",
+                container = searchGp,
+                handler = function(h, ...) searchHandler(svalue(searchBox))
+            )
+            searchBtn$set_icon("")
+            enabled(searchBtn) <<- FALSE
+
+            clearBtn <- gbutton("", container = searchGp,
+                handler = function(h, ...) searchBox$set_value("")
+            )
+            clearBtn$set_icon("close")
+
             visible(searchGp) <<- FALSE
             invisible(searchGp)
         },

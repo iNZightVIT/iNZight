@@ -1,6 +1,7 @@
 - enable automatic detection of delimited file separator (using `readr::read_delim`) (#401)
 - Paginate dataset summary to prevent `skimr::skim()` freezing GUI when number of variables in the dataset is large
 - New 'GTag' and 'GTags' classes for labels with a background and a collection of droppable labels, respectively
+- add search button/clear button to search group (in data view widget)
 
 **Interface changes**
 
