@@ -1,7 +1,7 @@
 {
   "menu_file": "Fichier",
-  "menu_file_save": "Enregistrer [bêta]",
-  "menu_file_load": "Ouvrir",
+  "menu_file_save": "Save (beta)",
+  "menu_file_load": "Load (beta)",
   "menu_file_import": "Importer",
   "menu_file_export": "Exporter",
   "menu_file_paste": "Coller de",
@@ -83,7 +83,7 @@
   "menu_adv_multires": "Réponse multiple",
   "menu_adv_maps": "Cartes",
   "menu_adv_install": "Installez les pacakge 'Modules'",
-  "menu_adv_code": "Historique du code R",
+  "menu_adv_code": "R code history (beta)",
   "menu_help": "Aider",
   "menu_help_about": "A propos",
   "menu_help_guides": "Guides de l'utilisateur",
