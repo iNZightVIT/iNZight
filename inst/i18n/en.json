@@ -1,7 +1,7 @@
 {
   "menu_file": "File",
-  "menu_file_save": "Save [beta]",
-  "menu_file_load": "Load [beta]",
+  "menu_file_save": "Save (beta)",
+  "menu_file_load": "Load (beta)",
   "menu_file_import": "Import",
   "menu_file_export": "Export",
   "menu_file_paste": "Paste from",
@@ -83,7 +83,7 @@
   "menu_adv_multires": "Multiple response",
   "menu_adv_maps": "Maps",
   "menu_adv_install": "Install the Modules package",
-  "menu_adv_code": "R code history [beta]",
+  "menu_adv_code": "R code history (beta)",
   "menu_help": "Help",
   "menu_help_about": "About",
   "menu_help_guides": "User Guides",
