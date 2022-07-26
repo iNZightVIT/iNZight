@@ -1,0 +1,47 @@
+# -----------------------------------------------------------
+# CITATION file created with {cffr} R package, v0.2.2
+# See also: https://docs.ropensci.org/cffr/
+# -----------------------------------------------------------
+
+cff-version: 1.2.0
+message: 'To cite package "iNZight" in publications use:'
+type: software
+license: GPL-3.0-only
+title: "iNZight: A GUI for Data Exploration and Visualisation"
+version: 4.2.0
+abstract: An interactive GUI for easy visual exploration of datasets.
+authors:
+  - family-names: Elliott
+    given-names: Tom
+    email: tom.elliott@auckland.ac.nz
+  - family-names: Kuper
+    given-names: Marco
+    email: MarcoKuper42@gmail.com
+  - family-names: Barnett
+    given-names: Daniel
+preferred-citation:
+  type: manual
+  title: "iNZight: A GUI for Data Exploration and Visualisation"
+  authors:
+    - family-names: Elliott
+      given-names: Tom
+      email: tom.elliott@auckland.ac.nz
+    - family-names: Kuper
+      given-names: Marco
+      email: MarcoKuper42@gmail.com
+    - family-names: Barnett
+      given-names: Daniel
+  version: 4.2.0
+  abstract: An interactive GUI for easy visual exploration of datasets.
+  date-released: "2022-02-08"
+  contact:
+    - family-names: Elliott
+      given-names: Tom
+      email: tom.elliott@auckland.ac.nz
+  license: GPL-3.0-only
+  year: "2022"
+date-released: "2022-02-08"
+contact:
+  - family-names: Elliott
+    given-names: Tom
+    email: tom.elliott@auckland.ac.nz

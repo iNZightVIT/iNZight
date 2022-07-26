@@ -9,3 +9,4 @@
 ^doc$
 ^.git$
 ^scripts$
+^CITATION\.cff$
