@@ -290,6 +290,17 @@ iNZDataViewWidget <- setRefClass(
                     )
                 }
 
+                var_table_groups <- sapply(vnames,
+                    function(x) {
+                        t <- attr(GUI$getActiveData(lazy = TRUE)[[x]], "table", exact = TRUE)
+                        if (is.null(t)) return("")
+                        t
+                    }
+                )
+                if (any(var_table_groups != "")) {
+                    varsList$Dataset <- var_table_groups
+                }
+
                 varsDf <- do.call(
                     data.frame,
                     lapply(varsList, as.character)
