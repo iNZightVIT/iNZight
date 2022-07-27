@@ -105,16 +105,40 @@ iNZDataViewWidget <- setRefClass(
             searchHandler <- function(data) {
                 enabled(searchBox) <<- FALSE
                 on.exit(enabled(searchBox) <<- TRUE)
-                matches <- grepl(data, names(GUI$getActiveData(lazy = TRUE)),
-                    ignore.case = TRUE)
+
+                if (data == "") {
+                    paginate$col <<- 1L
+                    columns <<- names(GUI$getActiveData(lazy = TRUE))
+                    set_data()
+                    return()
+                }
+
+                d <- strsplit(data, "\\s+AND\\s+")[[1]]
+                d <- gsub("\\s+OR\\s+", "|", d)
+
+                tomatch <- names(GUI$getActiveData(lazy = TRUE))
 
                 if (nrow(GUI$getActiveDoc()$getModel()$dict_df)) {
                     ddf <- GUI$getActiveDoc()$getModel()$dict_df
                     dd_title <- sapply(names(GUI$getActiveData(lazy = TRUE)),
                         function(x) ifelse(x %in% ddf$name, ddf$title[ddf$name == x], "")
                     )
-                    matches <- matches | grepl(data, dd_title, ignore.case = TRUE)
+                    tomatch <- paste(tomatch, dd_title)
+
+                    var_table_groups <- sapply(names(GUI$getActiveData(lazy = TRUE)),
+                        function(x) {
+                            t <- attr(GUI$getActiveData(lazy = TRUE)[[x]], "table", exact = TRUE)
+                            if (is.null(t)) return("")
+                            t
+                        }
+                    )
+                    if (any(var_table_groups != "")) {
+                        tomatch <- paste(tomatch, var_table_groups)
+                    }
                 }
+
+                matches <- sapply(d, function(x) grepl(x, tomatch, ignore.case = TRUE))
+                if (length(d) > 1) matches <- rowSums(matches) == length(d) # and matching
 
                 matches <- which(matches)
 
