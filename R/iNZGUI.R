@@ -878,8 +878,13 @@ iNZGUI <- setRefClass(
             )
         },
         ## delete the current dataset
-        deleteDataset = function() {
+        deleteDataset = function(ask = TRUE) {
             "Deletes the current dataset"
+            if (!ask) {
+                if (activeDoc > 0) do_delete_dataset()
+                return()
+            }
+
             if (activeDoc == 0) {
                 gmessage(
                     "Sorry, but you can't delete this dataset (it's the original, afterall!).",

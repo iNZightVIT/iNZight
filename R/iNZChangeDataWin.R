@@ -2156,6 +2156,7 @@ iNZDataDict <- setRefClass(
         file_picker = "ANY",
         vars = "character",
         apply_dict = "ANY",
+        apply_to_all = "ANY",
         dict = "ANY",
         dict_name = "ANY",
         dict_type = "ANY",
@@ -2260,10 +2261,16 @@ iNZDataDict <- setRefClass(
 
             apply_dict <<- gcheckbox(
                 "Apply dictionary to current data set",
-                checked = TRUE
+                checked = TRUE,
+                handler = function(h, ...) enabled(apply_to_all) <<- svalue(h$obj)
             )
             add_body(apply_dict)
 
+            apply_to_all <<- gcheckbox(
+                "Apply to all loaded data sets",
+                checked = FALSE
+            )
+            add_body(apply_to_all)
         },
         update_vars = function() {
             file <- svalue(file_picker)
@@ -2369,7 +2376,11 @@ iNZDataDict <- setRefClass(
             Sys.sleep(0.01)
             on.exit(try(dispose(iwin), silent = TRUE))
 
-            GUI$getActiveDoc()$setDictionary(dict, apply = svalue(apply_dict))
+            if (svalue(apply_dict) && svalue(apply_to_all)) {
+                lapply(GUI$iNZDocuments, function(x) x$setDictionary(dict, apply = TRUE))
+            } else {
+                GUI$getActiveDoc()$setDictionary(dict, apply = svalue(apply_dict))
+            }
             close()
         }
     )

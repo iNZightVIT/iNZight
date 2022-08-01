@@ -36,7 +36,7 @@ iNZControlWidget <- setRefClass(
             ### DRAG/DROP MENUS
             if (multi_v1) {
                 V1box <<- gmultilabel(
-                    placeholder = "Drop outcome variables here ...",
+                    placeholder = "Select outcome variables and click the '+' button ...",
                     removeOnClick = TRUE
                 )
             } else {
