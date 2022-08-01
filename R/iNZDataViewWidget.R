@@ -257,12 +257,13 @@ iNZDataViewWidget <- setRefClass(
                 varsList <- list(Name = vnames)
 
                 if ("title" %in% colnames(ddf)) {
-                    varsList$Title <- stringr::str_wrap(ddf$title, 40L)
+                    varsList$Title <- stringr::str_wrap(ddf$title[vnames], 40L)
                 }
 
                 if ("type" %in% colnames(ddf)) {
-                    varsList$Type <- sapply(ddf$type,
+                    varsList$Type <- sapply(ddf$type[vnames],
                         function(x) {
+                            if (is.na(x)) return(NA)
                             switch(x,
                                 "factor" = ,
                                 "cat" = "categorical",
