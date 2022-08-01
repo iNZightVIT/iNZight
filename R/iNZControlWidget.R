@@ -589,8 +589,11 @@ iNZControlWidget <- setRefClass(
             set <- GUI$getActiveDoc()$getSettings()
 
             enabled(V2box) <<- ifelse(multi_v1, V1box$get_length() == 1L, V1box$get_index() > 1L)
-            enabled(G1box) <<- enabled(G2box) <<- ifelse(
+            enabled(G1box) <<-ifelse(
                 multi_v1, V1box$get_length() > 0L, V1box$get_index() > 1L
+            )
+            enabled(G2box) <<- ifelse(
+                multi_v1, FALSE, V1box$get_index() > 1L
             )
 
             enabled(summary_button) <<- enabled(inference_button) <<- GUI$plotType != "none"
@@ -610,6 +613,13 @@ iNZControlWidget <- setRefClass(
             data <- GUI$getActiveData(lazy = TRUE)
             if (is.null(data) || all(dim(data) == 1L)) {
                 enabled(V1box) <<- enabled(V2box) <<- enabled(G1box) <<- enabled(G2box) <<- FALSE
+            } else if (multi_v1) {
+                enabled(V1box) <<- TRUE
+                enabled(V2box) <<- V1box$get_length() == 1L
+                enabled(G1box) <<-ifelse(
+                    multi_v1, V1box$get_length() > 0L, V1box$get_index() > 1L
+                )
+                enabled(G2box) <<- ifelse(multi_v1, FALSE, V1box$get_index() > 1L)
             } else {
                 enabled(V1box) <<- TRUE
                 enabled(V2box) <<- enabled(G1box) <<- enabled(G2box) <<- V1box$get_index() > 1L

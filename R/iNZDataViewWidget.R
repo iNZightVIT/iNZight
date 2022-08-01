@@ -382,7 +382,7 @@ iNZDataViewWidget <- setRefClass(
                 dfWidget$add_dnd_columns()
             }
 
-            Nc <- length(columns)
+            Nc <- if (length(columns)) length(columns) else length(names(GUI$getActiveData(lazy = TRUE)))
             colPageLbl$set_value(
                 sprintf("Variables %s-%s of %s",
                     paginate$col,
