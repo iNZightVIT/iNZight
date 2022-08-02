@@ -8,7 +8,7 @@
 ## --------------------------------------------
 
 available.themes <- c(
-    "Default" = "grey",
+    "Default" = "_default",
     "Black & White" = "bw",
     "Light" = "light",
     "Dark" = "dark",
@@ -1297,6 +1297,7 @@ iNZPlotMod <- setRefClass(
             ii <- ii + 1
 
             ## BACKGROUND COLOUR
+            # TODO: disable this (and other things) for multiplots
             lbl <- "Background colour :"
             bgCols <- do.call(c, bgColours)
             if (!curSet$bg %in% bgCols) {

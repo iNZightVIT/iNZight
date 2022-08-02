@@ -53,16 +53,16 @@ schema:
 )
 
 test_that("Linked data can be loaded into iNZight", {
-    con <- DBI::dbConnect(RSQLite::SQLite(), t0)
-    on.exit({
-        DBI::dbDisconnect(con)
-        unlink(t0)
-    })
+    # con <- DBI::dbConnect(RSQLite::SQLite(), t0)
+    # on.exit({
+    #     DBI::dbDisconnect(con)
+    #     unlink(t0)
+    # })
 
     d <- iNZightTools::load_linked(
         c(iris_species = t1, iris_data = t2, iris_extra = t3),
         schema = iris_schema,
-        con = con,
+        # con = con,
         name = "iris"
     )
 
