@@ -263,7 +263,12 @@ iNZPlotSettings <- setRefClass(
     contains = "PropertySet", ## need this to add observer to object
     methods = list(
         initialize = function(settings = NULL, preferences = list()) {
-            defaultSettings <<- unclass(iNZightPlots:::inzpar())
+            defaultSettings <<- unclass(
+                getOption(
+                    "inzight.default.par",
+                    default = iNZightPlots:::inzpar()
+                )
+            )
 
             pref_names <- c("gg_theme")
             if (any(pref_names %in% names(preferences))) {
