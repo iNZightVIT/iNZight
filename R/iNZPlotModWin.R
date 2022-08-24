@@ -23,6 +23,7 @@ available.themes <- c(
     "Excel" = "excel",
     "Economist" = "economist"
 )
+names(available.themes)[1] <- getOption("inzight.default.ggtheme.name", "Default")
 
 plot_list <- function(plot_type, x, y, is_survey, p) {
 
@@ -1674,12 +1675,14 @@ iNZPlotMod <- setRefClass(
             ) {
                 lbl <- glabel("Colour palette :")
                 palette_options <- c(
-                    "default", "greyscale",
+                    getOption("inzight.default.palette.cat.name", "default"),
+                    "greyscale",
                     "viridis", "magma", "plasma", "inferno",
                     "BrBG", "PiYG", "PRGn",
                     "Accent", "Dark2", "Paired", "Pastel1", "Set1",
                     "Blues", "BuGn", "BuPu", "GnBu"
                 )
+
                 paletteCombobox <- gcombobox(palette_options,
                     selected = ifelse(!is.null(curSet$palette),
                         which(palette_options == curSet$palette), 1
@@ -2652,7 +2655,7 @@ iNZPlotMod <- setRefClass(
                             )
                         )
                     ) {
-                        newSet$palette <- svalue(paletteCombobox)
+                        newSet$palette <- ifelse(paletteCombobox$get_index() == 1L, "default", svalue(paletteCombobox))
                     }
 
                     if (PLOTTYPE %in%
