@@ -7,7 +7,7 @@
 ## which is the same since the two are linked together)
 ## --------------------------------------------
 
-available.themes <- c(
+AVAILABLE_THEMES <- c(
     "Default" = "_default",
     "Black & White" = "bw",
     "Light" = "light",
@@ -23,7 +23,6 @@ available.themes <- c(
     "Excel" = "excel",
     "Economist" = "economist"
 )
-names(available.themes)[1] <- getOption("inzight.default.ggtheme.name", "Default")
 
 plot_list <- function(plot_type, x, y, is_survey, p) {
 
@@ -1913,6 +1912,9 @@ iNZPlotMod <- setRefClass(
             ## FT PLOT OPTIONS
 
             if (grepl("^gg_", PLOTTYPE)) {
+                available.themes <- AVAILABLE_THEMES
+                names(available.themes)[1] <- getOption("inzight.default.ggtheme.name", "Default")
+
                 if ("ggthemes" %in% installed.packages()) {
                     theme.options <- names(available.themes)
                 } else {
@@ -1923,6 +1925,7 @@ iNZPlotMod <- setRefClass(
                 }
 
                 tbl[ii, 1:2, anchor = c(1, 0), expand = TRUE] <- glabel("Theme :")
+                print(theme.options)
                 themeCombobox <- gcombobox(
                     theme.options,
                     selected =
