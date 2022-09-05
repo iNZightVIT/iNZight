@@ -3456,30 +3456,32 @@ iNZPlotMod <- setRefClass(
             tbl[ii, 3:6, expand = TRUE] <- labMain
             ii <- ii + 1
 
-            lbl <- glabel("x-axis :")
-            labXlab <- gedit(
-                ifelse(is.null(curSet$xlab), "", curSet$xlab)
-            )
-            tbl[ii, 1:2, anchor = c(1, 0), expand = TRUE] <- lbl
-            tbl[ii, 3:6, expand = TRUE] <- labXlab
-            ii <- ii + 1
-
-            if (YAX) {
-                lbl <- glabel("y-axis :")
-                labYlab <- gedit(
-                    ifelse(is.null(curSet$ylab), "", curSet$ylab)
+            if (!grepl("multi", PLOTTYPE)) {
+                lbl <- glabel("x-axis :")
+                labXlab <- gedit(
+                    ifelse(is.null(curSet$xlab), "", curSet$xlab)
                 )
                 tbl[ii, 1:2, anchor = c(1, 0), expand = TRUE] <- lbl
-                tbl[ii, 3:6, expand = TRUE] <- labYlab
+                tbl[ii, 3:6, expand = TRUE] <- labXlab
                 ii <- ii + 1
 
-                if (YAXlbl) {
-                    intLabs <- gcheckbox(
-                        "Display group labels inside graph",
-                        checked = curSet$internal.labels
+                if (YAX) {
+                    lbl <- glabel("y-axis :")
+                    labYlab <- gedit(
+                        ifelse(is.null(curSet$ylab), "", curSet$ylab)
                     )
-                    tbl[ii, 3:6, anchor = c(-1, -1), expand= TRUE] <- intLabs
+                    tbl[ii, 1:2, anchor = c(1, 0), expand = TRUE] <- lbl
+                    tbl[ii, 3:6, expand = TRUE] <- labYlab
                     ii <- ii + 1
+
+                    if (YAXlbl) {
+                        intLabs <- gcheckbox(
+                            "Display group labels inside graph",
+                            checked = curSet$internal.labels
+                        )
+                        tbl[ii, 3:6, anchor = c(-1, -1), expand= TRUE] <- intLabs
+                        ii <- ii + 1
+                    }
                 }
             }
 
@@ -3754,18 +3756,21 @@ iNZPlotMod <- setRefClass(
                 ## Things that don't need checking:
                 newSet <- list(
                     main = if (svalue(labMain) == "") NULL else svalue(labMain),
-                    xlab = if (svalue(labXlab) == "") NULL else svalue(labXlab),
                     transform = list()
                 )
 
                 xvar <- GUI$getActiveData(lazy = TRUE)[[curSet$x]]
                 yvar <- if (!is.null(curSet$y)) GUI$getActiveData(lazy = TRUE)[[curSet$y]] else NULL
 
-                if (YAX)
-                    newSet["ylab"] <-
-                        if (svalue(labYlab) == "") list(NULL)
-                        else list(svalue(labYlab))
-                if (YAXlbl) newSet$internal.labels <- svalue(intLabs)
+                if (!grepl("multi", PLOTTYPE)) {
+                    newSet["xlab"] <-
+                        if (svalue(labXlab) == "") list(NULL) else list(svalue(labXlab))
+                    if (YAX)
+                        newSet["ylab"] <-
+                            if (svalue(labYlab) == "") list(NULL)
+                            else list(svalue(labYlab))
+                    if (YAXlbl) newSet$internal.labels <- svalue(intLabs)
+                }
 
                 if (PLOTTYPE == "scatter") {
                     newSet$jitter <- paste0(
@@ -3865,9 +3870,11 @@ iNZPlotMod <- setRefClass(
             }
 
             addHandlerKeystroke(labMain, updT)
-            addHandlerKeystroke(labXlab, updT)
-            if (YAX) {
-              addHandlerKeystroke(labYlab, updT)
+            if (!grepl("multi", PLOTTYPE)) {
+                addHandlerKeystroke(labXlab, updT)
+                if (YAX) {
+                   addHandlerKeystroke(labYlab, updT)
+                }
             }
             if (YAXlbl)
                 addHandlerChanged(intLabs,
