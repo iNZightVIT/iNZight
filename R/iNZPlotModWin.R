@@ -2283,7 +2283,7 @@ iNZPlotMod <- setRefClass(
                 ii <- ii + 1
             }
 
-            curArgs <- attr(ui$curPlot, "args", exact = TRUE)
+            curArgs <- attr(GUI$curPlot, "args", exact = TRUE)
             if (PLOTTYPE %in%
                 c(
                     "gg_multi_stack",
