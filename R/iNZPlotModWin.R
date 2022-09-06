@@ -1925,7 +1925,6 @@ iNZPlotMod <- setRefClass(
                 }
 
                 tbl[ii, 1:2, anchor = c(1, 0), expand = TRUE] <- glabel("Theme :")
-                print(theme.options)
                 themeCombobox <- gcombobox(
                     theme.options,
                     selected =
@@ -2284,6 +2283,40 @@ iNZPlotMod <- setRefClass(
                 ii <- ii + 1
             }
 
+            curArgs <- attr(ui$curPlot, "args", exact = TRUE)
+            if (PLOTTYPE %in%
+                c(
+                    "gg_multi_stack",
+                    "gg_multi_col"
+                ) ||
+                (!is.null(curArgs) && !is.null(curArgs$outcome_value))
+            ) {
+                # option to only show one level of the variable
+                # (useful e.g., if Yes/No/Don't Know, etc)
+                tbl[ii, 1:6, expand = TRUE] <- sectionTitle("Select response outcome")
+                ii <- ii + 1L
+
+                tbl[ii, 1:2, anchor = c(1, 0), expand = TRUE] <- glabel(
+                    "Show % with outcome :"
+                )
+
+                rvals <- levels(attr(GUI$curPlot, "data", exact = TRUE)$value)
+                if (!is.null(curArgs$outcome_value_options))
+                    rvals <- curArgs$outcome_value_options
+                multiResponseFilter <- gcombobox(c("- None -", rvals),
+                    selected = which(rvals == curSet$outcome_value) + 1L,
+                    handler = function(h, ...) {
+                        updateEverything()
+                        plType <- svalue(plotTypeList, index = TRUE)
+                        if (curSet$plottype != TYPE || h$obj$get_index() == 1L) {
+                            iNZPlotMod$new(GUI, which = 1)
+                        }
+                    }
+                )
+                tbl[ii, 3:6, expand = TRUE] <- multiResponseFilter
+                ii <- ii + 1L
+            }
+
             if (PLOTTYPE %in%
                 c(
                     "gg_column",
@@ -2322,36 +2355,6 @@ iNZPlotMod <- setRefClass(
                 }
 
                 ii <- ii + 1
-            }
-
-            if (PLOTTYPE %in%
-                c(
-                    "gg_multi_stack",
-                    "gg_multi_col"
-                )
-            ) {
-                # option to only show one level of the variable
-                # (useful e.g., if Yes/No/Don't Know, etc)
-                tbl[ii, 1:6, expand = TRUE] <- sectionTitle("Select response outcome")
-                ii <- ii + 1L
-
-                tbl[ii, 1:2, anchor = c(1, 0), expand = TRUE] <- glabel(
-                    "Show % with outcome :"
-                )
-
-                rvals <- levels(attr(GUI$curPlot, "data", exact = TRUE)$value)
-                multiResponseFilter <- gcombobox(c("- None -", rvals),
-                    selected = which(rvals == curSet$outcome_value) + 1L,
-                    handler = function(h, ...) {
-                        updateEverything()
-                        plType <- svalue(plotTypeList, index = TRUE)
-                        if (curSet$plottype != TYPE || h$obj$get_index() == 1L) {
-                            iNZPlotMod$new(GUI, which = 1)
-                        }
-                    }
-                )
-                tbl[ii, 3:6, expand = TRUE] <- multiResponseFilter
-                ii <- ii + 1L
             }
 
             if (PLOTTYPE %in% c("gg_gridplot")) {
@@ -2704,7 +2707,8 @@ iNZPlotMod <- setRefClass(
                         c(
                             "gg_multi_stack",
                             "gg_multi_col"
-                        )
+                        ) ||
+                        (!is.null(curArgs) && !is.null(curArgs$outcome_value))
                     ) {
                         if (svalue(multiResponseFilter, index = TRUE) == 1L) {
                             newSet <- modifyList(newSet,
