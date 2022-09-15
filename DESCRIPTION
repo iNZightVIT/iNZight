@@ -1,8 +1,8 @@
 Package: iNZight
 Type: Package
 Title: A GUI for Data Exploration and Visualisation
-Version: 4.2.0.9000
-Date: 2022-02-08
+Version: 4.2.0.20220916
+Date: 2022-09-16
 Authors@R: c(person("Tom", "Elliott", role = c("aut", "cre"),
                     email = "tom.elliott@auckland.ac.nz"),
              person("Dineika", "Chandrananda", role = "ctb"),
