@@ -111,23 +111,22 @@ iNZGUI <- setRefClass(
         ## Start the iNZight GUI
         ## This is the main method of iNZight and calls all the other
         ## methods of the GUI class.
-        initializeGui = function(
-            data = NULL,
-            dispose_fun = NULL,
-            addonDir = NULL,
-            show = TRUE,
-            stop_loading = FALSE,
-            ...,
-            disposer = NULL
-        ) {
+        initializeGui = function(data = NULL,
+                                 dispose_fun = NULL,
+                                 addonDir = NULL,
+                                 show = TRUE,
+                                 stop_loading = FALSE,
+                                 ...,
+                                 disposer = NULL) {
             "Initiates the GUI"
             initFields(is_initialized = FALSE, disposer = disposer)
 
             if (is.null(disposer)) {
-                if (!is.null(dispose_fun) && is.function(dispose_fun))
+                if (!is.null(dispose_fun) && is.function(dispose_fun)) {
                     disposer <<- function() dispose_fun(...)
-                else
+                } else {
                     disposer <<- function() {}
+                }
             }
 
             win.title <- paste(
@@ -138,9 +137,13 @@ iNZGUI <- setRefClass(
             )
 
             OS <<-
-                if (.Platform$OS == "windows") "windows"
-                else if (Sys.info()["sysname"] == "Darwin") "mac"
-                else "linux"
+                if (.Platform$OS == "windows") {
+                    "windows"
+                } else if (Sys.info()["sysname"] == "Darwin") {
+                    "mac"
+                } else {
+                    "linux"
+                }
 
             ## Grab settings file (or try to!)
             getPreferences()
@@ -166,8 +169,9 @@ iNZGUI <- setRefClass(
             key_map <<- list(accel = RGtk2::gtkAccelGroup())
             win$widget$addAccelGroup(key_map$accel)
 
-            if (!is.null(data) && is.null(attr(data, "name", exact = TRUE)))
+            if (!is.null(data) && is.null(attr(data, "name", exact = TRUE))) {
                 attr(data, "name") <- deparse(substitute(data))
+            }
             iNZDocuments <<- list(iNZDocument$new(data = data, preferences = .self$preferences))
 
             ## Check for updates ... need to use try incase it fails (no connection etc)
@@ -226,14 +230,14 @@ iNZGUI <- setRefClass(
             add(gtb, .self$initializeDataToolbar(dataThreshold)$viewGroup)
             addSpring(gtb)
             ## column switcher
-            add(gtb,.self$dataViewWidget$colPageGp)
+            add(gtb, .self$dataViewWidget$colPageGp)
 
             ## display the data
             add(gp1, dataViewWidget$widget, expand = TRUE)
 
             ## set up the drag and drop fields
             if (preferences$multiple_x) {
-                aLbl <- glabel('CTRL+1 to add selected vars to existing Variable 1 box')
+                aLbl <- glabel("CTRL+1 to add selected vars to existing Variable 1 box")
                 font(aLbl) <- list(size = 8)
                 add(gp1, aLbl, anchor = c(-1, 0))
             }
@@ -241,12 +245,17 @@ iNZGUI <- setRefClass(
             add(gp1, initializeControlWidget()$ctrlGp, expand = FALSE)
 
             ## set up widgets in the right group
-            grpRight <- ggroup(horizontal = popOut,
-                               container = gp2, expand = TRUE)
+            grpRight <- ggroup(
+                horizontal = popOut,
+                container = gp2, expand = TRUE
+            )
             ## set up plot notebook
             initializePlotWidget()
-            if (!popOut) add(grpRight, plotWidget$plotNb, expand = TRUE)
-            else addSpace(grpRight, 10)
+            if (!popOut) {
+                add(grpRight, plotWidget$plotNb, expand = TRUE)
+            } else {
+                addSpace(grpRight, 10)
+            }
 
             ## set up plot toolbar
             plotToolbar <<- ggroup(
@@ -262,18 +271,19 @@ iNZGUI <- setRefClass(
 
             ## code panel for latest R function call
             code_panel <<- iNZCodePanel$new(.self)
-            if (preferences$dev.features && preferences$show.code)
+            if (preferences$dev.features && preferences$show.code) {
                 add(gtop, code_panel$panel, fill = TRUE)
+            }
 
             set_visible(show)
 
             ## ensures that all plot control btns are visible on startup
-            #svalue(g) <- 0.375
+            # svalue(g) <- 0.375
             ## first plot(empty) needs to be added after window is drawn
             ## to ensure the correct device nr
-            if (popOut)
+            if (popOut) {
                 iNZightTools::newdevice()
-            else {
+            } else {
                 tryCatch(plotWidget$addPlot(),
                     error = function(e) {
                         gmessage(
@@ -307,7 +317,7 @@ iNZGUI <- setRefClass(
             initializeCodeHistory()
 
             ## init statusbar
-            statusbar <<- gstatusbar("iNZight is ready")# , container = win) ## disabled
+            statusbar <<- gstatusbar("iNZight is ready") # , container = win) ## disabled
 
             plot_history <<- NULL
             code_env <<- new.env()
@@ -338,7 +348,7 @@ iNZGUI <- setRefClass(
             ## create the widget
             dataNameWidget <<- iNZDataNameWidget$new(.self)
 
-             ## if the list of active document changes, update the data set name
+            ## if the list of active document changes, update the data set name
             addActDocObs(
                 function() {
                     dataNameWidget$updateWidget()
@@ -425,14 +435,17 @@ iNZGUI <- setRefClass(
                         icon = "question",
                         parent = win
                     )
-                    if (!confirm) return(TRUE)
+                    if (!confirm) {
+                        return(TRUE)
+                    }
 
                     try(dev.off(), silent = TRUE)
                     disposer()
                     FALSE
                 }
             )
-            addHandlerDestroy(win,
+            addHandlerDestroy(
+                win,
                 function(h, ...) {
                     # clean up GDF in dataViewWidget
                     if (!is.null(.self$dataViewWidget$dfWidget)) {
@@ -446,7 +459,9 @@ iNZGUI <- setRefClass(
         ## plot with the current active plot settings
         updatePlot = function(allow.redraw = TRUE) {
             "Updates the plot using the user's chosen variables and other settings"
-            if (!is_initialized || !visible(win)) return()
+            if (!is_initialized || !visible(win)) {
+                return()
+            }
 
             # disable drag-and-drop until plot rendered
             enabled(dataViewWidget$dfView) <<- enabled(dataViewWidget$varView) <<- FALSE
@@ -472,7 +487,7 @@ iNZGUI <- setRefClass(
             #     curPlSet$freq <- getActiveData( )[[curPlSet$freq]]
             if (!is.null(curPlSet$x)) {
                 if (length(as.character(curPlSet$x)) > 1) {
-                    xx <-  paste(as.character(curPlSet$x)[-1], collapse = " + ")
+                    xx <- paste(as.character(curPlSet$x)[-1], collapse = " + ")
                     xx <- strsplit(xx, " + ", fixed = TRUE)[[1]]
                     varx <- iNZightTools::as_tibble(
                         iNZightTools::select(.dataset, xx)
@@ -523,14 +538,17 @@ iNZGUI <- setRefClass(
                             x = xtypes[1],
                             y = NULL
                         )
-                        if (!is.null(curPlSet$y))
+                        if (!is.null(curPlSet$y)) {
                             vartypes$y <- iNZightTools::vartype(.dataset[[curPlSet$y]])
+                        }
                         plot_call <- construct_call(curPlSet, curMod, vartypes)
                         rawpl <- eval(plot_call, e)
                         curPlot <<- unclass(rawpl)
-                        if (allow.redraw & !is.null(attr(curPlot, "dotplot.redraw")))
-                            if (attr(curPlot, "dotplot.redraw"))
+                        if (allow.redraw & !is.null(attr(curPlot, "dotplot.redraw"))) {
+                            if (attr(curPlot, "dotplot.redraw")) {
                                 curPlot <<- unclass(rawpl <- eval(plot_call, e))
+                            }
+                        }
                     },
                     silent = TRUE
                 )
@@ -544,7 +562,8 @@ iNZGUI <- setRefClass(
                         vars <- strsplit(msg, "\n[ ]+")[[1]][3]
                         plotMessage(
                             heading = "Unable to plot chosen variables",
-                            message = paste(sep = "\n",
+                            message = paste(
+                                sep = "\n",
                                 "iNZight cannot plot factor variables in a survey design",
                                 "with only one level.",
                                 "",
@@ -566,7 +585,8 @@ iNZGUI <- setRefClass(
                     if (length(err_call) > n_max) {
                         err_call <- c(
                             err_call[1:n_max],
-                            sprintf("+ %i more lines (printed to R console)",
+                            sprintf(
+                                "+ %i more lines (printed to R console)",
                                 length(err_call) - n_max
                             )
                         )
@@ -575,7 +595,8 @@ iNZGUI <- setRefClass(
                     if (length(err_msg) > n_max) {
                         err_msg <- c(
                             err_msg[1:n_max],
-                            sprintf("+ %i more lines (printed to R console)",
+                            sprintf(
+                                "+ %i more lines (printed to R console)",
                                 length(err_msg) - n_max
                             )
                         )
@@ -588,7 +609,8 @@ iNZGUI <- setRefClass(
                             "\n\nError: \n",
                             paste(collapse = "\n ", err_msg)
                         ),
-                        footer = paste(sep = "\n",
+                        footer = paste(
+                            sep = "\n",
                             "If you continue to experience this problem, please send a bug report to",
                             "inzight_support@stat.auckland.ac.nz including",
                             "- a screenshot of the current window",
@@ -620,8 +642,9 @@ iNZGUI <- setRefClass(
         },
         removeSignals = function() {
             "Removes signals attached to the active document"
-            for (i in seq_along(listeners(activeDocChanged)))
+            for (i in seq_along(listeners(activeDocChanged))) {
                 activeDocChanged$disconnect(1)
+            }
         },
         getState = function() {
             "Returns the current state of the GUI"
@@ -643,18 +666,20 @@ iNZGUI <- setRefClass(
         loadState = function(file, .alert = TRUE) {
             "Loads the state from a file called `file`"
             if (!file.exists(file)) {
-                if (.alert)
+                if (.alert) {
                     gmessage("File doesn't exist", icon = "error")
+                }
                 return()
             }
 
             e <- new.env()
             load(file, envir = e)
             if (is.null(e$state)) {
-                if (.alert)
+                if (.alert) {
                     gmessage("That file doesn't seem to be a valid iNZight save.",
                         icon = "error"
                     )
+                }
                 return()
             }
 
@@ -712,7 +737,8 @@ iNZGUI <- setRefClass(
                 )
             } else {
                 ## give the new document a good name
-                names <- sapply(iNZDocuments,
+                names <- sapply(
+                    iNZDocuments,
                     function(d) attr(d$getData(), "name", exact = TRUE)
                 )
                 i <- 2L
@@ -731,9 +757,11 @@ iNZGUI <- setRefClass(
                 iNZDocuments <<- c(iNZDocuments, list(document))
 
                 ## clean up any 'empty' datasets ..
-                nonempty_docs <- sapply(iNZDocuments,
-                    function(d)
+                nonempty_docs <- sapply(
+                    iNZDocuments,
+                    function(d) {
                         !all(dim(d$dataModel$getData()) == 1)
+                    }
                 )
                 iNZDocuments <<- iNZDocuments[nonempty_docs]
             }
@@ -763,9 +791,9 @@ iNZGUI <- setRefClass(
             ## if plotSettings change, update the plot
             getActiveDoc()$addSettingsObserver(function() updatePlot())
 
-            if (!reset)
+            if (!reset) {
                 ctrlWidget$setState(pset)
-            else {
+            } else {
                 dataViewWidget$updateWidget()
                 dataToolbarWidget$updateWidget()
                 getActiveDoc()$updateSettings()
@@ -841,8 +869,9 @@ iNZGUI <- setRefClass(
             } else {
                 res <- .self$getActiveData(lazy = lazy)
             }
-            if (!missing(nrow))
+            if (!missing(nrow)) {
                 res <- res[seq_len(min(nrow, nrow(.self$getActiveData(lazy = TRUE)))), ]
+            }
             res
         },
         view_dataset = function() {
@@ -938,7 +967,9 @@ iNZGUI <- setRefClass(
                     icon = "question",
                     parent = .self$win
                 )
-                if (!conf) return()
+                if (!conf) {
+                    return()
+                }
                 # delete the current document
                 do_delete_dataset()
             } else {
@@ -1015,15 +1046,18 @@ iNZGUI <- setRefClass(
 
             if (code) .self$code_panel$show() else .self$code_panel$hide()
 
-            if (!missing(mod))
+            if (!missing(mod)) {
                 activeModule <<- mod
+            }
 
             invisible(moduleWindow)
         },
         close_module = function() {
             "Closes the current module, and re-displays the default control panel"
             activeModule <<- NULL
-            if (length(leftMain$children) <= 1) return()
+            if (length(leftMain$children) <= 1) {
+                return()
+            }
             ## delete the module window
             delete(leftMain, leftMain$children[[2]])
             ## display the default view (data, variable, etc.)
@@ -1090,55 +1124,89 @@ iNZGUI <- setRefClass(
 
             ## check.updates = TRUE | FALSE
             prefs$check.updates <-
-                if (is.null(prefs$check.updates)) defs$check.updates
-                else if (!is.na(prefs$check.updates) & is.logical(prefs$check.updates)) prefs$check.updates
-                else defs$check.updates
+                if (is.null(prefs$check.updates)) {
+                    defs$check.updates
+                } else if (!is.na(prefs$check.updates) & is.logical(prefs$check.updates)) {
+                    prefs$check.updates
+                } else {
+                    defs$check.updates
+                }
 
             ## window.size = c(WIDTH, HEIGHT)
             prefs$window.size <-
-                if (is.null(prefs$window.size)) defs$window.size
-                else if (length(prefs$window.size) != 2) defs$window.size
-                else if (is_num(prefs$window.size)) prefs$window.size
-                else defs$window.size
+                if (is.null(prefs$window.size)) {
+                    defs$window.size
+                } else if (length(prefs$window.size) != 2) {
+                    defs$window.size
+                } else if (is_num(prefs$window.size)) {
+                    prefs$window.size
+                } else {
+                    defs$window.size
+                }
 
             ## pop-out layout = FALSE
             prefs$popout <-
-                if (is.null(prefs$popout)) defs$popout
-                else if (is.logical(prefs$popout)) prefs$popout
-                else defs$popout
+                if (is.null(prefs$popout)) {
+                    defs$popout
+                } else if (is.logical(prefs$popout)) {
+                    prefs$popout
+                } else {
+                    defs$popout
+                }
 
             ## font size
             prefs$font.size <-
-                if (is.null(prefs$font.size) || !is_num(prefs$font.size)) defs$font.size
-                else prefs$font.size
+                if (is.null(prefs$font.size) || !is_num(prefs$font.size)) {
+                    defs$font.size
+                } else {
+                    prefs$font.size
+                }
 
             prefs$dev.features <-
-                if (is.null(prefs$dev.features) || !is.logical(prefs$dev.features)) defs$dev.features
-                else prefs$dev.features
+                if (is.null(prefs$dev.features) || !is.logical(prefs$dev.features)) {
+                    defs$dev.features
+                } else {
+                    prefs$dev.features
+                }
 
             prefs$show.code <-
-                if (is.null(prefs$show.code) || !is.logical(prefs$show.code)) defs$show.code
-                else prefs$show.code
+                if (is.null(prefs$show.code) || !is.logical(prefs$show.code)) {
+                    defs$show.code
+                } else {
+                    prefs$show.code
+                }
 
             prefs$language <-
-                if (is.null(prefs$language) || !is.character(prefs$language)) defs$language
-                else prefs$language[1]
+                if (is.null(prefs$language) || !is.character(prefs$language)) {
+                    defs$language
+                } else {
+                    prefs$language[1]
+                }
 
             prefs$module_dir <-
-                if (is.null(prefs$module_dir) || prefs$module_dir == "" || !dir.exists(prefs$module_dir)) defs$module_dir
-                else prefs$module_dir[1]
+                if (is.null(prefs$module_dir) || prefs$module_dir == "" || !dir.exists(prefs$module_dir)) {
+                    defs$module_dir
+                } else {
+                    prefs$module_dir[1]
+                }
 
             prefs$multiple_x <-
-                if (is.null(prefs$multiple_x) || !is.logical(prefs$multiple_x)) defs$multiple_x
-                else prefs$multiple_x
+                if (is.null(prefs$multiple_x) || !is.logical(prefs$multiple_x)) {
+                    defs$multiple_x
+                } else {
+                    prefs$multiple_x
+                }
 
             prefs$gg_theme <-
-                if (is.character(prefs$gg_theme) && prefs$gg_theme %in% available.themes) prefs$gg_theme
-                else if (is.list(prefs$gg_theme) || inherits(prefs$gg_theme, "theme")) prefs$gg_theme
-                else defs$gg_theme
+                if (is.character(prefs$gg_theme) && prefs$gg_theme %in% available.themes) {
+                    prefs$gg_theme
+                } else if (is.list(prefs$gg_theme) || inherits(prefs$gg_theme, "theme")) {
+                    prefs$gg_theme
+                } else {
+                    defs$gg_theme
+                }
 
             prefs
-
         },
         getPreferences = function() {
             "Gets the user's preferences from a file"
@@ -1151,26 +1219,31 @@ iNZGUI <- setRefClass(
             if (file.exists(prefs.location)) {
                 prefs <- try(checkPrefs(dget(prefs.location)), silent = TRUE)
 
-                if (!inherits(prefs, "try-error"))
+                if (!inherits(prefs, "try-error")) {
                     preferences <<- prefs
+                }
             }
         },
         savePreferences = function() {
             "Saves the users preferences in a file"
             if (!dir.exists(dirname(prefs.location))) {
-                if (!interactive()) return()
+                if (!interactive()) {
+                    return()
+                }
                 # ask user to create config directory to save GUI preferences:
                 make_dir <- gconfirm(
                     sprintf(
-                        paste(sep = "\n",
+                        paste(
+                            sep = "\n",
                             "iNZight needs to create the following directory/ies. Is that OK?",
                             "", "+ %s"
                         ),
                         dirname(prefs.location)
                     )
                 )
-                if (make_dir)
+                if (make_dir) {
                     dir.create(dirname(prefs.location), recursive = TRUE)
+                }
             }
 
             ## attempt to save the preferences in the expected location:
@@ -1192,8 +1265,9 @@ iNZGUI <- setRefClass(
             plotType <<- "none"
             enabled(plotToolbar$exportplotBtn) <<- FALSE
 
-            if (missing(heading) || missing(message))
+            if (missing(heading) || missing(message)) {
                 plotSplashScreen()
+            }
 
             grid::grid.newpage()
             grid::pushViewport(
@@ -1235,7 +1309,7 @@ iNZGUI <- setRefClass(
             grid::grid.text(
                 heading,
                 y = 1, x = 0, just = c("left", "top"),
-                gp = gpar(fontsize = 12, fontface = 'bold')
+                gp = gpar(fontsize = 12, fontface = "bold")
             )
 
             switch(type,
@@ -1280,7 +1354,9 @@ iNZGUI <- setRefClass(
         },
         plotSplashScreen = function() {
             "The default splash screen"
-            if (!visible(win)) return()
+            if (!visible(win)) {
+                return()
+            }
             if (requireNamespace("png", quietly = TRUE)) {
                 img <- png::readPNG(
                     system.file("images/inzight_transp.png", package = "iNZight")
@@ -1307,20 +1383,22 @@ iNZGUI <- setRefClass(
 
                 grid::pushViewport(grid::viewport(layout.pos.row = 2))
                 grid::grid.text(
-                    sprintf("Version %s", packageVersion('iNZight')),
+                    sprintf("Version %s", packageVersion("iNZight")),
                     x = unit(0.8, "npc"),
                     y = unit(0.75, "npc"),
-                    just = 'right'
+                    just = "right"
                 )
                 grid::grid.text(
-                    sprintf("Release date: %s",
-                        format(as.Date(packageDescription('iNZight')$Date),
-                            '%d %b %Y'
+                    sprintf(
+                        "Release date: %s",
+                        format(
+                            as.Date(packageDescription("iNZight")$Date),
+                            "%d %b %Y"
                         )
                     ),
                     x = unit(0.8, "npc"),
                     y = unit(0.25, "npc"),
-                    just = 'right',
+                    just = "right",
                     gp = gpar(fontsize = 9)
                 )
                 grid::upViewport()
@@ -1338,7 +1416,7 @@ iNZGUI <- setRefClass(
                     grid::grid.text(
                         "Kia ora and welcome! To get started, import some data.",
                         y = 1, x = 0, just = c("left", "top"),
-                        gp = gpar(fontsize = 12, fontface = 'bold')
+                        gp = gpar(fontsize = 12, fontface = "bold")
                     )
                     grid::grid.text(
                         paste0(
@@ -1365,12 +1443,11 @@ iNZGUI <- setRefClass(
                         x = 0, c(just = "left", "top"),
                         gp = gpar(fontsize = 9)
                     )
-
                 } else {
                     grid::grid.text(
                         "That's some fine looking data ... ",
                         y = 1, x = 0, just = c("left", "top"),
-                        gp = gpar(fontsize = 12, fontface = 'bold')
+                        gp = gpar(fontsize = 12, fontface = "bold")
                     )
 
                     grid::grid.text(
@@ -1428,7 +1505,8 @@ iNZGUI <- setRefClass(
             addSpring(rg)
 
             s <- (size(.self$win) - size(rwin)) / 2
-            gtkWindowMove(rwin$widget,
+            gtkWindowMove(
+                rwin$widget,
                 ipos$root.x + s[1],
                 ipos$root.y + s[2]
             )
@@ -1440,8 +1518,8 @@ iNZGUI <- setRefClass(
             # save the document
             has_data <-
                 nrow(.self$getActiveData(lazy = TRUE)) > 1L ||
-                ncol(.self$getActiveData(lazy = TRUE)) > 1L ||
-                names(.self$getActiveData(lazy = TRUE)) != "empty"
+                    ncol(.self$getActiveData(lazy = TRUE)) > 1L ||
+                    names(.self$getActiveData(lazy = TRUE)) != "empty"
             state <- .self$getState()
             dispose(.self$win)
             if (popOut) try(grDevices::dev.off(), TRUE)
@@ -1450,8 +1528,9 @@ iNZGUI <- setRefClass(
             while (!is_initialized) {
                 Sys.sleep(0.1)
             }
-            if (has_data)
+            if (has_data) {
                 res <- .self$setState(state)
+            }
 
             gtkWindowMove(.self$win$widget, ipos$root.x, ipos$root.y)
             .self$set_visible()

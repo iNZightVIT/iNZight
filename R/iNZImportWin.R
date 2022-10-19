@@ -303,7 +303,21 @@ iNZImportWin <- setRefClass(
                     )
                 },
                 "svydesign" = {
-                    svyspec <<- iNZightTools::import_survey(fname)
+                    if (!requireNamespace("surveyspec", quietly = TRUE)) {
+                        p <- gconfirm("You need to install additional packages. Do it now?",
+                            "Install required packages?",
+                            icon = "question",
+                            parent = GUI$win
+                        )
+                        if (!p) {
+                            gmessage("Unable to set survey design.",
+                                parent = GUI$win
+                            )
+                            return()
+                        }
+                        install.packages("surveyspec")
+                    }
+                    svyspec <<- surveyspec::import_survey(fname)
                     if (is.null(svyspec$data)) {
                         gmessage(
                             paste(

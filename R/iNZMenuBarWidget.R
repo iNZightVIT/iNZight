@@ -302,7 +302,7 @@ iNZMenuBarWidget <- setRefClass(
                 menu[["Frequency tables"]] <- gaction("Frequency tables", enabled = FALSE)
                 enabled(menu[["Frequency tables"]]) <- FALSE
 
-                survey_type <- GUI$getActiveDoc()$getModel()$getDesign()$spec$type
+                survey_type <- GUI$getActiveDoc()$getModel()$getDesign()$spec$survey_type
                 if (survey_type == "survey") {
                     svalue(menu[["Survey design"]]$surveydesign) <- "Modify design ..."
                     menu[["Survey design"]]$repdesign <- NULL

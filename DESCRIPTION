@@ -26,7 +26,7 @@ Imports:
     dplyr,
     grDevices,
     grid,
-    iNZightPlots (>= 2.14),
+    iNZightPlots (>= 2.14.4.9000),
     iNZightTools (>= 1.12.2.9000),
     magrittr,
     methods,
@@ -36,7 +36,6 @@ Imports:
     skimr,
     stats,
     stringr,
-    survey,
     utils
 Suggests:
     covr,
@@ -54,6 +53,8 @@ Suggests:
     rmarkdown,
     RODBC,
     RSQLite,
+    survey,
+    surveyspec,
     testthat,
     viridis,
     withr

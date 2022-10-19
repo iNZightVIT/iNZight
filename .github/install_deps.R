@@ -1,19 +1,20 @@
 # R script
 github_deps <- c(
+    "tmelliott/surveyspec",
     "tmelliott/gWidgets2@patch-1",
     "iNZightVIT/gWidgets2RGtk2@inz",
-    "iNZightVIT/iNZightTools@feature/guinz",
+    "iNZightVIT/iNZightTools@dev",
     "iNZightVIT/iNZightTS@dev",
     "iNZightVIT/iNZightMR@dev",
-    "iNZightVIT/iNZightPlots@feature/guinz",
-    "iNZightVIT/iNZightRegression@feature/guinz",
-    "iNZightVIT/iNZightModules@feature/guinz"
+    "iNZightVIT/iNZightPlots@dev",
+    "iNZightVIT/iNZightRegression@dev",
+    "iNZightVIT/iNZightModules@dev"
 )
 
 OS <- Sys.getenv("OS_TYPE")
 options(
     repos = c(
-        if (OS == "Linux") RSPM = Sys.getenv("RSPM"),
+        if (OS == "Linux") RSPM <- Sys.getenv("RSPM"),
         CRAN = "https://cloud.r-project.org"
     ),
     install.packages.compile.from.source = "never"
@@ -22,16 +23,16 @@ options(
 if (OS == "Windows" && getRversion() < numeric_version("4")) {
     install.packages("RODBC", type = "binary")
 }
-if (OS == "Windows" && !requireNamespace('utf8', quietly = TRUE)) {
+if (OS == "Windows" && !requireNamespace("utf8", quietly = TRUE)) {
     install.packages("utf8", type = "source")
 }
 if (OS == "Linux") {
-    remotes::install_github('lawremi/RGtk2',
+    remotes::install_github("lawremi/RGtk2",
         subdir = "RGtk2",
         dependencies = TRUE,
         INSTALL_opts = "--no-multiarch"
     )
-    remotes::install_github('tmelliott/cairoDevice',
+    remotes::install_github("tmelliott/cairoDevice",
         dependencies = TRUE,
         INSTALL_opts = "--no-multiarch"
     )

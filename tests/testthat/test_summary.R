@@ -69,7 +69,7 @@ Sys.sleep(2)
 ui$getActiveDoc()$getModel()$setDesign(
     list(
         clus1 = "dnum", clus2 = "snum", weights = "pw", nest = FALSE,
-        fpc = NULL, type = "survey"
+        fpc = NULL, survey_type = "survey"
     ),
     gui = ui
 )
@@ -102,5 +102,4 @@ test_that("Privacy and confidentiality rules applied", {
     # devtools::load_all(); try(gWidgets2::dispose(sw$win))
     ui$ctrlWidget$V1box$set_value("travel")
     sw <- iNZGetSummary$new(ui)
-
 })
