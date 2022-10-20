@@ -2,6 +2,7 @@ context("Survey data")
 
 skip_on_cran()
 skip_if_offline()
+skip_if_not_installed("survey")
 
 data(api, package = "survey")
 chis <- iNZightTools::smart_read("https://inzight.nz/testdata/chis.csv")
@@ -137,7 +138,7 @@ test_that("Frequencies retained after filtering", {
 ui$close()
 
 # devtools::load_all()
-dchis <- suppressWarnings(svrepdesign(
+dchis <- suppressWarnings(survey::svrepdesign(
     data = chis[, c(1:10, 92:96)],
     repweights = chis[, 12:91],
     weights = chis[, 11],
@@ -302,7 +303,7 @@ ui$close()
 # devtools::load_all()
 data(api, package = "survey")
 # replicate this:
-dclus1 <- svydesign(id = ~dnum, weights = ~pw, data = apiclus1, fpc = ~fpc)
+dclus1 <- survey::svydesign(id = ~dnum, weights = ~pw, data = apiclus1, fpc = ~fpc)
 pop.types <- data.frame(
     stype = c("E", "H", "M"), Freq = c(4421, 755, 1018),
     stringsAsFactors = TRUE
@@ -311,7 +312,7 @@ vec <- structure(
     c(sum(pop.types$Freq), pop.types$Freq[-1]),
     .Names = c("(Intercept)", paste0("stype", as.character(pop.types$stype[-1])))
 )
-dclus1p <- calibrate(dclus1, ~stype, vec)
+dclus1p <- survey::calibrate(dclus1, ~stype, vec)
 
 # try(ui$close()); devtools::load_all()
 ui <- iNZGUI$new()
@@ -520,7 +521,7 @@ test_that("Multiple variables can be specified (raking calibration)", {
         )
     )
 
-    dclus1g2 <- calibrate(
+    dclus1g2 <- survey::calibrate(
         dclus1, ~ stype + sch.wide,
         c(vec, sch.wideYes = 5122)
     )

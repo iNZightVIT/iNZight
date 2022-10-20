@@ -31,7 +31,6 @@ Imports:
     magrittr,
     methods,
     plyr,
-    png,
     reshape2,
     skimr,
     stats,
@@ -48,6 +47,7 @@ Suggests:
     jsonlite,
     knitr,
     kableExtra,
+    png,
     RColorBrewer,
     rlang,
     rmarkdown,
@@ -62,5 +62,5 @@ Additional_repositories: https://r.docker.stat.auckland.ac.nz
 LazyData: true
 Encoding: UTF-8
 Language: en-GB
-RoxygenNote: 7.2.0
+RoxygenNote: 7.2.1
 VignetteBuilder: knitr

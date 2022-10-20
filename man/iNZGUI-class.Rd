@@ -91,7 +91,7 @@ Main class that builds the iNZight GUI
 
 \item{\code{defaultPrefs()}}{Returns the default preferences}
 
-\item{\code{deleteDataset()}}{Deletes the current dataset}
+\item{\code{deleteDataset(ask = TRUE)}}{Deletes the current dataset}
 
 \item{\code{displayMsg(module, type)}}{Displays a message about data requirements for the chosen module}
 
