@@ -7,6 +7,6 @@ md gtk
 del gtk.zip
 
 echo "Installing RGtk2 ..."
-Rscript -e "Sys.setenv(GTK_PATH = file.path(getwd(), 'gtk')); install.packages('RGtk2', repos = 'https://r.docker.stat.auckland.ac.nz')"
+Rscript -e "Sys.setenv(GTK_PATH = file.path(getwd(), 'gtk')); install.packages(c('RGtk2', 'cairoDevice'), repos = 'https://r.docker.stat.auckland.ac.nz')"
 
 mv gtk D:\a\_temp\Library\RGtk2\
