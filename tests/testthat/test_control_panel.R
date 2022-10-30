@@ -1,3 +1,5 @@
+skip_on_os("windows")
+
 # devtools::load_all("../iNZightPlots"); devtools::load_all(); try(ui$close(), TRUE)
 cas5k <- iNZightMR::census.at.school.5000
 ui <- iNZight(cas5k)
@@ -26,5 +28,4 @@ Sys.sleep(0.1)
 
 test_that("V1 is a multi label when multiple_x is TRUE", {
     # expect_true(inherits(ui$ctrlWidget$V1box, "GMultiLabel"))
-
 })

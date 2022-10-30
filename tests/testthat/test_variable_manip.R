@@ -1,5 +1,6 @@
 context("Variable manipulation menu")
 
+skip_on_os("windows")
 skip_on_cran()
 
 # devtools::load_all("../iNZightTools")

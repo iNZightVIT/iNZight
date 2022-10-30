@@ -1,5 +1,6 @@
 context("Update Plot method and code writing")
 
+skip_on_os("windows")
 skip_on_cran()
 
 # devtools::load_all(); ui$close();
@@ -27,7 +28,6 @@ test_that("Construct call function works", {
 
 test_that("Update plot call: basic dot plot", {
     expect_equal(ui$getActiveDoc()$getSettings()$x, quote(height))
-
 })
 
 

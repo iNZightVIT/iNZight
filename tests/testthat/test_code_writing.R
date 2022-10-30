@@ -1,5 +1,6 @@
 context("Code writing")
 
+skip_on_os("windows")
 skip_on_cran()
 
 # load_all("../iNZightPlots")

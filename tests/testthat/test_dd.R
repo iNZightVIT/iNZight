@@ -1,5 +1,7 @@
+skip_on_os("windows")
+
 # devtools::load_all(); try(ui$close(), TRUE)
-cas <- iNZightTools::smart_read('cas500_coded.csv')
+cas <- iNZightTools::smart_read("cas500_coded.csv")
 ui <- iNZight(cas)
 on.exit(try(ui$close(), silent = TRUE))
 Sys.sleep(0.1)
@@ -35,7 +37,8 @@ test_that("DD can be applied to multiple datasets", {
     expect_is(ui$getActiveData()$travel, "factor")
     expect_true(
         all(
-            sapply(ui$iNZDocuments,
+            sapply(
+                ui$iNZDocuments,
                 function(x) is.factor(x$dataModel$dataSet$travel)
             )
         )

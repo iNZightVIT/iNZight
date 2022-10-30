@@ -1,5 +1,7 @@
 context("Add to Plot window")
 
+skip_on_os("windows")
+
 ui <- iNZGUI$new()
 ui$initializeGui()
 on.exit(gWidgets2::dispose(ui$win))
@@ -50,7 +52,8 @@ test_that("Add to Plot shows correct options by plot", {
 
     atptbl <- ui$moduleWindow$body$children[[1]]$children[[1]]$children
     expect_equal(svalue(atptbl[[3]]), "scatter")
-    expect_equal(atptbl[[3]]$get_items(),
+    expect_equal(
+        atptbl[[3]]$get_items(),
         c("scatter", "hexagonal binning", "grid-density")
     )
 
@@ -65,7 +68,8 @@ test_that("Add to Plot shows correct options by plot", {
     expect_equal(cmbo$get_items(), atpOpts[c(1, 3)])
 
     atptbl <- ui$moduleWindow$body$children[[1]]$children[[1]]$children
-    expect_equal(atptbl[[3]]$get_items(),
+    expect_equal(
+        atptbl[[3]]$get_items(),
         c(
             "barplot", "(gg) column/row bar", "(gg) stacked column/row",
             "(gg) lollipop", "(gg) gridplot", "(gg) pie", "(gg) donut"
@@ -152,7 +156,8 @@ test_that("Axes and Labels - scatter plots", {
     svalue(ui$moduleWindow$header$children[[2]]$children[[1]], TRUE) <- 3
 
     axtbl <- ui$moduleWindow$body$children[[1]]$children[[1]]
-    vals <- sapply(seq_len(axtbl$get_dim()[1L]),
+    vals <- sapply(
+        seq_len(axtbl$get_dim()[1L]),
         function(x) {
             x <- svalue(axtbl[x, 1L])
             if (is.null(x)) NA else x

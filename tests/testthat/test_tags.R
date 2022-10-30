@@ -1,5 +1,6 @@
 # devtools::load_all(); try(dispose(w))
 
+skip_on_os("windows")
 test_that("Tag objects works", {
     w <- gwindow()
     on.exit(gWidgets2::dispose(w))

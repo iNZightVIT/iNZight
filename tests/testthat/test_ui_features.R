@@ -1,5 +1,6 @@
 context("Various UI elements")
 
+skip_on_os("windows")
 skip_on_cran()
 
 ui <- iNZGUI$new()
