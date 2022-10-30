@@ -5,7 +5,6 @@ skip_on_cran()
 # load_all("../iNZightPlots")
 
 message("Starting CODE WRITING test\n")
-skip_on_os("windows")
 
 # try(ui$close()); load_all()
 ui <- iNZGUI$new()
