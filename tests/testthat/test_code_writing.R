@@ -5,6 +5,7 @@ skip_on_cran()
 # load_all("../iNZightPlots")
 
 msg <- function(x, type = 1L) {
+    Sys.sleep(0.5)
     x <- sprintf(
         "\n %s %s %s\n",
         switch(type,
