@@ -13,7 +13,7 @@ jobs:
       matrix:
         config:
           # - { os: windows-latest, r: "4.0", cache-version: 3 }
-          # - { os: windows-latest, r: "4.1", cache-version: 3 }
+          - { os: windows-latest, r: "4.1", cache-version: 3 }
           - { os: windows-latest, r: "release", cache-version: 3 }
           # - { os: windows-latest, r: "devel", cache-version: 2 }
           - {
