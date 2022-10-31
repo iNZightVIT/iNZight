@@ -57,24 +57,28 @@ test_that("magrittr library call is included", {
 
 msg("Plot code is generated correctly", 2L)
 test_that("Plot code is generated correctly", {
+    msg("height", 3L)
     svalue(ui$ctrlWidget$V1box) <- "height"
     expect_equal(
         attr(ui$curPlot, "code"),
         "inzplot(~height, data = cas)"
     )
 
+    msg("height ~ travel", 3L)
     svalue(ui$ctrlWidget$V2box) <- "travel"
     expect_equal(
         attr(ui$curPlot, "code"),
         "inzplot(height ~ travel, data = cas)"
     )
 
+    msg("height ~ travel | gender", 3L)
     svalue(ui$ctrlWidget$G1box) <- "gender"
     expect_equal(
         attr(ui$curPlot, "code"),
         "inzplot(height ~ travel | gender, data = cas)"
     )
 
+    msg("height ~ travel | gender + age", 3L)
     svalue(ui$ctrlWidget$G2box) <- "age"
     expect_equal(
         attr(ui$curPlot, "code"),
@@ -87,25 +91,28 @@ test_that("Plot code is generated correctly", {
         "inzplot(height ~ travel | gender + age, g2.level = \"[7 - 11]\", data = cas)"
     )
 
-
+    msg("height ~ travel | gender + age[7 - 11]", 3L)
     svalue(ui$ctrlWidget$V2box, TRUE) <- 1L
     expect_equal(
         attr(ui$curPlot, "code"),
         "inzplot(~height | gender + age, g2.level = \"[7 - 11]\", data = cas)"
     )
 
+    msg("height | age[7 - 11]", 3L)
     svalue(ui$ctrlWidget$G1box, TRUE) <- 1L
     expect_equal(
         attr(ui$curPlot, "code"),
         "inzplot(~height | age, data = cas, g1.level = \"[7 - 11]\")"
     )
 
+    msg("height ...", 3L)
     ui$ctrlWidget$ctrlGp$children[[1]][8L, 1L]$set_index(1L)
     expect_equal(
         attr(ui$curPlot, "code"),
         "inzplot(~height, data = cas)"
     )
 
+    msg("height | gender", 3L)
     svalue(ui$ctrlWidget$G2box, TRUE) <- 1L
     svalue(ui$ctrlWidget$G1box) <- "gender"
     expect_equal(
