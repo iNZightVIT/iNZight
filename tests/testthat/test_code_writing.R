@@ -67,6 +67,7 @@ test_that("Plot code is generated correctly", {
 
     msg("height ~ travel", 3L)
     svalue(ui$ctrlWidget$V2box) <- "travel"
+    msg("now checking the code ...", 3L)
     expect_equal(
         attr(ui$curPlot, "code"),
         "inzplot(height ~ travel, data = cas)"
