@@ -6,6 +6,11 @@ md gtk
 7z x gtk.zip -ogtk > nul
 del gtk.zip
 
+if exist D:\a\_temp\Library\RGtk2\NUL; then
+  mv gtk D:\a\_temp\Library\RGtk2\
+  exit 0
+fi
+
 echo "Installing RGtk2 ..."
 Rscript -e "Sys.setenv(GTK_PATH = file.path(getwd(), 'gtk')); install.packages(c('RGtk2', 'cairoDevice'), repos = 'https://r.docker.stat.auckland.ac.nz', type = 'source')"
 
