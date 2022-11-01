@@ -66,7 +66,7 @@ jobs:
       - name: Install RGtk source and gtk binaries
         if: runner.os == 'Windows'
         shell: bash
-        run: ./github/install_gtk.cmd
+        run: ./.github/install_gtk.cmd
 
       - name: Add GTK to PATH
         if: runner.os == 'Windows'
