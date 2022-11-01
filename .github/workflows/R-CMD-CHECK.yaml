@@ -62,7 +62,11 @@ jobs:
           if (getRversion() <= numeric_version("4.2")) {
             install.packages(c("RGtk2", "cairoDevice"), repos = "https://r.docker.stat.auckland.ac.nz")
           }
-          system("./github/install_gtk.cmd")
+
+      - name: Install RGtk source and gtk binaries
+        if: runner.os == 'Windows'
+        shell: bash
+        run: ./github/install_gtk.cmd
 
       - name: Add GTK to PATH
         if: runner.os == 'Windows'
