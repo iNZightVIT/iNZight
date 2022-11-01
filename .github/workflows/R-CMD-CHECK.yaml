@@ -59,11 +59,11 @@ jobs:
         if: runner.os == 'Windows'
         shell: Rscript {0}
         run: |
-          if (getRversion() <= numeric_version("4.2")) {
-            install.packages(c("RGtk2", "cairoDevice"), repos = "https://r.docker.stat.auckland.ac.nz")
-          }
+          # if (getRversion() <= numeric_version("4.2")) {
+          install.packages(c("RGtk2", "cairoDevice"), repos = "https://r.docker.stat.auckland.ac.nz")
+          # }
 
-      - name: Install RGtk source and gtk binaries
+      - name: Install gtk binaries, and RGtk2 from source if needed
         if: runner.os == 'Windows'
         shell: bash
         run: ./.github/install_gtk.cmd
