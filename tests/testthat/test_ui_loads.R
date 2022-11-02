@@ -1,5 +1,10 @@
 context("The user interface loads")
 
+test_that <- function(desc, code, ...) {
+    cat(sprintf("Running test %s", desc))
+    testthat::test_that(desc, code, ...)
+}
+
 ui <- NULL
 on.exit(gWidgets2::dispose(ui$win))
 
