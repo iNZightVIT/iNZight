@@ -1,6 +1,5 @@
 context("The user interface loads")
 
-skip_on_os("windows")
 ui <- NULL
 on.exit(gWidgets2::dispose(ui$win))
 
