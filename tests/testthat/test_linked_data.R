@@ -1,4 +1,3 @@
-skip_on_os("windows")
 
 iris_species <- data.frame(
     species_id = 1:3,

@@ -1,6 +1,5 @@
 context("Data is exported from the UI")
 
-skip_on_os("windows")
 # skip_on_cran()
 
 # try(ui$close())

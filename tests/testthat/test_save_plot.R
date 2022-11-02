@@ -1,6 +1,5 @@
 context("Save plot")
 
-skip_on_os("windows")
 skip_on_ci()
 skip_on_covr()
 skip_on_cran()

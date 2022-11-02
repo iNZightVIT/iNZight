@@ -1,6 +1,5 @@
 context("Update Plot method and code writing")
 
-skip_on_os("windows")
 skip_on_cran()
 
 # devtools::load_all(); ui$close();

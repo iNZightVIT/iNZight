@@ -1,6 +1,5 @@
 context("Help functions for iNZight")
 
-skip_on_os("windows")
 
 test_that("URLs for help pages generated correctly", {
     skip_on_cran()

@@ -1,6 +1,5 @@
 context("Data is loaded into the UI")
 
-skip_on_os("windows")
 
 # setwd('tests/testthat'); devtools::load_all()
 wd <- getwd()
