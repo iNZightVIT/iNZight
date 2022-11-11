@@ -727,6 +727,13 @@ iNZGetSummary <- setRefClass(
             privacy_button$widget$image$show()
             tooltip(privacy_button) <- "Set or change privacy and confidentiality output controls"
 
+            # button to save output to file
+            save_button <- gbutton(
+                "Save ...",
+                container = ctrl_panel,
+                handler = function(h, ...) save_results()
+            )
+
             update_summary()
         },
         editOutputSettings = function() {
@@ -1064,6 +1071,26 @@ iNZGetSummary <- setRefClass(
                 list(privacy_controls = pc)
             )
             update_summary()
+        },
+        save_results = function() {
+            # if confidentiality rules are specified,
+            # include option to store raw results
+            # (i.e., for Data Lab output checking)
+            if (!is.null(curSet$privacy_controls)) {
+
+            }
+
+            file <- gfile(type = "save",
+                initial.file.name = "summary.txt",
+                filter = list("Plain text file" = list(patterns = c("*.txt")))
+            )
+            if (length(file)) {
+                writeLines(
+                    svalue(info_text),
+                    file,
+                    sep = ""
+                )
+            }
         }
     )
 )

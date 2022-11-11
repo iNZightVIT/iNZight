@@ -14,6 +14,7 @@ ui$setDocument(
 Sys.sleep(5)
 
 test_that("Get summary window opens", {
+    # devtools::load_all();
     ui$ctrlWidget$V1box$set_value("height")
     sw <- iNZGetSummary$new(ui)
     on.exit(gWidgets2::dispose(sw$win))
