@@ -2,6 +2,7 @@ context("Survey data")
 
 skip_on_cran()
 skip_if_offline()
+skip_if_not_installed("survey")
 
 data(api, package = "survey")
 chis <- iNZightTools::smart_read("https://inzight.nz/testdata/chis.csv")
@@ -10,7 +11,7 @@ apijk <- iNZightTools::smart_read("apiclus2-jk1.csv")
 
 test_dir <- getwd()
 
-# ui$close(); load_all()
+# ui$close(); devtools::load_all()
 ui <- iNZGUI$new()
 ui$initializeGui(apiclus2)
 on.exit(try(gWidgets2::dispose(ui$win), TRUE))
@@ -51,7 +52,7 @@ test_that("Survey design can be specified using window", {
             ids = "dnum + snum",
             fpc = "fpc1 + fpc2",
             nest = FALSE,
-            type = "survey"
+            survey_type = "survey"
         )
     )
 })
@@ -137,7 +138,8 @@ test_that("Frequencies retained after filtering", {
 ui$close()
 
 # devtools::load_all()
-dchis <- suppressWarnings(svrepdesign(data = chis[,c(1:10, 92:96)],
+dchis <- suppressWarnings(survey::svrepdesign(
+    data = chis[, c(1:10, 92:96)],
     repweights = chis[, 12:91],
     weights = chis[, 11],
     type = "other", scale = 1, rscales = 1
@@ -152,6 +154,7 @@ test_that("Replicate weights can be specified", {
 
     # select variables
     svalue(swin$wtVar) <- "rakedw0"
+    ## TODO: make issue for bug in gWidgets2
     svalue(swin$repVars) <- paste("rakedw", 1:80, sep = "")
     swin$repVars$invoke_change_handler()
     svalue(swin$repType) <- "other"
@@ -168,11 +171,11 @@ test_that("Replicate weights can be specified", {
             # fpc = NULL,
             nest = logical(0),
             weights = "rakedw0",
-            type = "replicate",
+            survey_type = "replicate",
             repweights = paste("rakedw", 1:80, sep = ""),
             scale = 1,
             rscales = rep(1, 80),
-            reptype = "other"
+            type = "other"
             # poststrat = NULL
         )
     )
@@ -210,7 +213,8 @@ test_that("Replicate weights can be specified by file", {
     expect_silent(swin$repRscalesClear$invoke_change_handler())
     expect_equal(
         swin$rscalesTbl$get_items(),
-        data.frame(rep.weight = character(), rscales = numeric(),
+        data.frame(
+            rep.weight = character(), rscales = numeric(),
             stringsAsFactors = TRUE
         )
     )
@@ -228,7 +232,8 @@ test_that("Replicate weights can be specified by file", {
     expect_silent(swin$repRscalesClear$invoke_change_handler())
     expect_equal(
         swin$rscalesTbl$get_items(),
-        data.frame(rep.weight = character(), rscales = numeric(),
+        data.frame(
+            rep.weight = character(), rscales = numeric(),
             stringsAsFactors = TRUE
         )
     )
@@ -281,11 +286,11 @@ test_that("JK1 works", {
             ids = 1,
             nest = logical(0),
             weights = "pw",
-            type = "replicate",
+            survey_type = "replicate",
             repweights =
                 paste("repw", formatC(1:40, width = 2, flag = "0"), sep = ""),
             scale = 0.975,
-            reptype = "JK1"
+            type = "JK1"
         )
     )
 
@@ -298,7 +303,7 @@ ui$close()
 # devtools::load_all()
 data(api, package = "survey")
 # replicate this:
-dclus1 <- svydesign(id = ~dnum, weights = ~pw, data = apiclus1, fpc = ~fpc)
+dclus1 <- survey::svydesign(id = ~dnum, weights = ~pw, data = apiclus1, fpc = ~fpc)
 pop.types <- data.frame(
     stype = c("E", "H", "M"), Freq = c(4421, 755, 1018),
     stringsAsFactors = TRUE
@@ -307,7 +312,7 @@ vec <- structure(
     c(sum(pop.types$Freq), pop.types$Freq[-1]),
     .Names = c("(Intercept)", paste0("stype", as.character(pop.types$stype[-1])))
 )
-dclus1p <- calibrate(dclus1, ~stype, vec)
+dclus1p <- survey::calibrate(dclus1, ~stype, vec)
 
 # try(ui$close()); devtools::load_all()
 ui <- iNZGUI$new()
@@ -334,8 +339,9 @@ test_that("Post stratification set by importing additional dataset", {
 
     expect_equal(
         swin$lvldf,
-        list(stype =
-            data.frame(stype = c("E", "H", "M"), Freq = NA, stringsAsFactors = TRUE)
+        list(
+            stype =
+                data.frame(stype = c("E", "H", "M"), Freq = NA, stringsAsFactors = TRUE)
         )
     )
 
@@ -366,8 +372,9 @@ test_that("Post stratification set by importing additional dataset", {
             fpc = "fpc",
             nest = FALSE,
             weights = "pw",
-            type = "survey",
-            calibrate = list(stype = c(E = 4421,H = 755, M = 1018))
+            survey_type = "survey",
+            calibrate = list(stype = c(E = 4421, H = 755, M = 1018)),
+            calfun = "linear"
         )
     )
 })
@@ -392,7 +399,7 @@ test_that("Post stratification can be removed", {
             fpc = "fpc",
             nest = FALSE,
             weights = "pw",
-            type = "survey"
+            survey_type = "survey"
         )
     )
 })
@@ -413,10 +420,12 @@ test_that("Post stratification set by manually entering values", {
 
     expect_equal(
         swin$lvldf,
-        list(stype =
-            data.frame(stype = c("E", "H", "M"), Freq = NA,
-                stringsAsFactors = TRUE
-            )
+        list(
+            stype =
+                data.frame(
+                    stype = c("E", "H", "M"), Freq = NA,
+                    stringsAsFactors = TRUE
+                )
         )
     )
 
@@ -427,14 +436,20 @@ test_that("Post stratification set by manually entering values", {
     )
 
     # manually enter values
-    j <- which(sapply(swin$PSlvls$children,
-        function(x) identical(x, swin$PSlvls[2, 2])))
+    j <- which(sapply(
+        swin$PSlvls$children,
+        function(x) identical(x, swin$PSlvls[2, 2])
+    ))
     svalue(swin$PSlvls$children[[j]]) <- pop.types$Freq[1]
-    j <- which(sapply(swin$PSlvls$children,
-        function(x) identical(x, swin$PSlvls[3, 2])))
+    j <- which(sapply(
+        swin$PSlvls$children,
+        function(x) identical(x, swin$PSlvls[3, 2])
+    ))
     svalue(swin$PSlvls$children[[j]]) <- pop.types$Freq[2]
-    j <- which(sapply(swin$PSlvls$children,
-        function(x) identical(x, swin$PSlvls[4, 2])))
+    j <- which(sapply(
+        swin$PSlvls$children,
+        function(x) identical(x, swin$PSlvls[4, 2])
+    ))
     svalue(swin$PSlvls$children[[j]]) <- pop.types$Freq[3]
 
     expect_equal(swin$lvldf, list(stype = pop.types))
@@ -449,8 +464,9 @@ test_that("Post stratification set by manually entering values", {
             fpc = "fpc",
             nest = FALSE,
             weights = "pw",
-            type = "survey",
-            calibrate = list(stype = c(E = 4421,H = 755, M = 1018))
+            survey_type = "survey",
+            calibrate = list(stype = c(E = 4421, H = 755, M = 1018)),
+            calfun = "linear"
         )
     )
 })
@@ -465,13 +481,14 @@ test_that("Post stratification object is correct", {
 
 test_that("Multiple variables can be specified (raking calibration)", {
     expect_silent(swin <- iNZSurveyPostStrat$new(ui, .use_ui = FALSE))
-    expect_silent(svalue(swin$PSvar, index = TRUE) <- 1:2)
+    svalue(swin$PSvar, index = TRUE) <- 1:2
     expect_equal(
         swin$lvldf,
         list(
             stype = pop.types,
             sch.wide =
-                data.frame(sch.wide = c("No", "Yes"), Freq = NA,
+                data.frame(
+                    sch.wide = c("No", "Yes"), Freq = NA,
                     stringsAsFactors = TRUE
                 )
         )
@@ -495,16 +512,19 @@ test_that("Multiple variables can be specified (raking calibration)", {
             fpc = "fpc",
             nest = FALSE,
             weights = "pw",
-            type = "survey",
+            survey_type = "survey",
             calibrate = list(
                 stype = structure(as.numeric(table(apipop$stype)), .Names = levels(apipop$stype)),
                 sch.wide = structure(as.numeric(table(apipop$sch.wide)), .Names = levels(apipop$sch.wide))
-            )
+            ),
+            calfun = "linear"
         )
     )
 
-    dclus1g2 <- calibrate(dclus1, ~stype + sch.wide,
-        c(vec, sch.wideYes = 5122))
+    dclus1g2 <- survey::calibrate(
+        dclus1, ~ stype + sch.wide,
+        c(vec, sch.wideYes = 5122)
+    )
 
     expect_silent(
         des <- ui$iNZDocuments[[ui$activeDoc]]$getModel()$createSurveyObject()
@@ -544,7 +564,6 @@ test_that("New variables show up in calibration list", {
     expect_silent(swin <- iNZSurveyPostStrat$new(ui, .use_ui = FALSE))
     expect_true("REGION_race" %in% swin$PSvar$get_items())
     swin$cancel_button$invoke_change_handler()
-
 })
 
 # data(api, package = "survey")
@@ -571,7 +590,7 @@ test_that("Survey design read from file", {
     expect_silent(swin$read_file(svyfile))
     expect_equivalent(
         ui$iNZDocuments[[ui$activeDoc]]$getModel()$getDesign()$spec,
-        iNZightTools::import_survey(svyfile, apistrat)$spec
+        surveyspec::import_survey(svyfile, apistrat)$spec
     )
 
     ui$setDocument(iNZDocument$new(data = apiclus2), reset = TRUE)
@@ -582,7 +601,7 @@ test_that("Survey design read from file", {
     expect_silent(swin$read_file(svyfile))
     expect_equivalent(
         ui$iNZDocuments[[ui$activeDoc]]$getModel()$getDesign()$spec,
-        iNZightTools::import_survey(svyfile, apiclus2)$spec
+        surveyspec::import_survey(svyfile, apiclus2)$spec
     )
 })
 
@@ -624,15 +643,13 @@ test_that("Survey calibration imported read from svydesign file", {
     swin <- iNZSurveyDesign$new(ui)
     expect_silent(swin$read_file(svyfile))
     ui$iNZDocuments[[ui$activeDoc]]$getModel()$getDesign()$spec
-
-
 })
 
 
 
 # devtools::load_all("../iNZightTools")
-ncsr_svy <- iNZightTools::import_survey(file.path(test_dir, "ncsr.svydesign"))
-# ncsr_svy <- iNZightTools::import_survey('tests/testthat/ncsr.svydesign')
+ncsr_svy <- surveyspec::import_survey(file.path(test_dir, "ncsr.svydesign"))
+# ncsr_svy <- surveyspec::import_survey('tests/testthat/ncsr.svydesign')
 
 # try(ui$close(), TRUE); devtools::load_all()
 ui <- iNZGUI$new()

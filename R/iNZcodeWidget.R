@@ -65,7 +65,7 @@ iNZcodeWidget <- setRefClass(
 
             if (length(code) == 1 && code == "") return()
             if (is.null(GUI$getActiveDoc()$getModel()$getDesign()))
-                dname <- attr(GUI$getActiveData(), "name", exact = TRUE)
+                dname <- attr(GUI$getActiveData(lazy = TRUE), "name", exact = TRUE)
             else
                 dname <- GUI$getActiveDoc()$getModel()$dataDesignName
             if (is.null(dname) || dname == "")

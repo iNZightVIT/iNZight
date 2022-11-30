@@ -7,4 +7,6 @@
 ^\.vscode$
 ^.github$
 ^doc$
+^.git$
+^scripts$
 ^CITATION\.cff$

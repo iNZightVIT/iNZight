@@ -1,5 +1,6 @@
 context("Data is loaded into the UI")
 
+
 # setwd('tests/testthat'); devtools::load_all()
 wd <- getwd()
 ui <- iNZGUI$new()
@@ -14,7 +15,10 @@ test_that("New document is created correctly when data loaded", {
 
     expect_silent(doc <<- iNZDocument$new(data = testdata))
     expect_is(doc, "iNZDocument")
-    expect_equal(doc$dataModel$dataSet, testdata)
+    expect_equivalent(
+        doc$dataModel$getData(),
+        testdata
+    )
     expect_equal(doc$dataModel$name, "testdata")
 })
 

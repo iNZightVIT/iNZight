@@ -168,6 +168,35 @@ iNZPrefsWin <- setRefClass(
             font(font_preview) <- list(size = prefs$font.size)
 
 
+            ## --------------------------- PLOT SETTINGS
+            plot_settings <- gvbox(label = "Plot Defaults", container = sections)
+            plot_settings$set_borderwidth(5L)
+
+            tbl_plot <- glayout(container = plot_settings)
+            ii <- 1L
+
+            ### ---------------- Default ggplot theme
+            lbl <- glabel("Default (gg) theme :")
+
+            curIndex <-
+                if (is.null(prefs$gg_theme)) 1L
+                else if (is.character(prefs$gg_theme))
+                    which(available.themes == prefs$gg_theme)
+                else length(available.themes) + 1L
+            p_gg_theme <- gcombobox(
+                c(names(available.themes), "Custom"),
+                selected = curIndex,
+                handler = function(h, ...)
+                    set_pref("gg_theme", as.character(available.themes[h$obj$get_index()]))
+            )
+            tbl_plot[ii, 1L, anchor = c(1, 0), expand = TRUE] <- lbl
+            tbl_plot[ii, 2L, expand = TRUE] <- p_gg_theme
+            ii <- ii + 1L
+
+            # if custom, display a text box...!
+
+
+
             ## --------------------------- DEV FEATURES
             sec_dev <- gvbox(label = "Developmental Features", container = sections)
             sec_dev$set_borderwidth(5L)
@@ -221,6 +250,29 @@ iNZPrefsWin <- setRefClass(
             )
             font(lbl) <- list(size = 9)
 
+            gseparator(container = g_dev)
+
+            ### ---------------- Code widgets
+            p_multiple_x <- gcheckbox("Enable multiple response variable interface",
+                checked = prefs$multiple_x,
+                container = g_dev,
+                handler = function(h, ...) set_pref("multiple_x", svalue(h$obj))
+            )
+            lbl <- glabel(
+                paste(
+                    "Enabling this option will replace the Variable 1 drop-down",
+                    "box with a multiple-label drop area. You can drag-and-drop",
+                    "\none or more variables here which will all be used as",
+                    "primary outcome variables. This is useful if you have multiple",
+                    "\nresponse type data, or variables with the same values",
+                    "you want to be able to compare in a single plot."
+                ),
+                container = g_dev,
+                anchor = c(-1, 0)
+            )
+            font(lbl) <- list(size = 9)
+
+
             ################ BUTTONS
             g_buttons <- ggroup(container = g_main)
             addSpring(g_buttons)
@@ -241,7 +293,8 @@ iNZPrefsWin <- setRefClass(
                         "Some changes require reloading iNZight. Do that now?",
                         "All changes will be saved."
                     )
-                    if (!interactive() || gconfirm(confmsg, icon = "question"))
+                    if (!interactive() || gconfirm(confmsg,
+                        icon = "question", parent = GUI$win))
                         GUI$reload()
                 }
             )

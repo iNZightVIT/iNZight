@@ -137,7 +137,7 @@ iNZImportExampleWin <- setRefClass("iNZImportExampleWin",
             attr(data, "name") <- sprintf("%s_ex", dname)
             attr(data, "code") <- sprintf(".dataset <- %s", dname)
 
-            GUI$setDocument(iNZDocument$new(data = data), reset = TRUE)
+            GUI$setDocument(iNZDocument$new(data = data, preferences = GUI$preferences), reset = TRUE)
 
             ## clean up
             rm("tmp.env")
