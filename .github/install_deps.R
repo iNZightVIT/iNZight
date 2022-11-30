@@ -1,6 +1,5 @@
 # R script
 github_deps <- c(
-    "tmelliott/expss",
     "tmelliott/surveyspec",
     "tmelliott/gWidgets2@patch-1",
     "iNZightVIT/gWidgets2RGtk2@inz",
