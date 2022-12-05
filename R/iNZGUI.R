@@ -1198,7 +1198,7 @@ iNZGUI <- setRefClass(
                 }
 
             prefs$gg_theme <-
-                if (is.character(prefs$gg_theme) && prefs$gg_theme %in% available.themes) {
+                if (is.character(prefs$gg_theme) && prefs$gg_theme %in% AVAILABLE_THEMES) {
                     prefs$gg_theme
                 } else if (is.list(prefs$gg_theme) || inherits(prefs$gg_theme, "theme")) {
                     prefs$gg_theme
