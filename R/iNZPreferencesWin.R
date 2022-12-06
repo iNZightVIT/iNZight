@@ -9,7 +9,9 @@ iNZPrefsWin <- setRefClass(
     ),
     methods = list(
         initialize = function(gui = NULL) {
-            if (is.null(gui)) return()
+            if (is.null(gui)) {
+                return()
+            }
             initFields(
                 GUI = gui,
                 prefs = gui$preferences,
@@ -42,8 +44,9 @@ iNZPrefsWin <- setRefClass(
                 "Check for updates when iNZight launched",
                 checked = prefs$check.updates,
                 container = sec_general,
-                handler = function(h, ...)
+                handler = function(h, ...) {
                     set_pref("check.updates", svalue(h$obj))
+                }
             )
             lbl <- glabel(
                 paste(
@@ -63,8 +66,9 @@ iNZPrefsWin <- setRefClass(
                 selected = which(names(languages) == prefs$language),
                 label = "Language :",
                 container = g_lang,
-                handler = function(h, ...)
+                handler = function(h, ...) {
                     set_pref("language", names(languages)[h$obj$get_index()])
+                }
             )
             enabled(p_lang) <- length(languages) > 1L
             visible(g_lang) <- file.exists(
@@ -82,8 +86,9 @@ iNZPrefsWin <- setRefClass(
             lbl <- glabel("Window mode :")
             p_windowmode <- gcombobox(c("Single", "Dual"),
                 selected = prefs$popout + 1L,
-                handler = function(h, ...)
+                handler = function(h, ...) {
                     set_pref("popout", h$obj$get_index() == 2L)
+                }
             )
             tbl_appearance[ii, 1L, anchor = c(1, 0), expand = TRUE] <- lbl
             tbl_appearance[ii, 2L, expand = TRUE] <- p_windowmode
@@ -113,16 +118,18 @@ iNZPrefsWin <- setRefClass(
             p_window.width <- gspinbutton(300, 2000, 50,
                 value = prefs$window.size[1],
                 container = g_windowsize,
-                handler = function(h, ...)
+                handler = function(h, ...) {
                     set_pref("window.size", c(svalue(h$obj), prefs$window.size[2]))
+                }
             )
             addSpace(g_windowsize, 10)
             lbl <- glabel("Height :", container = g_windowsize)
             p_window.height <- gspinbutton(200, 1800, 50,
                 value = prefs$window.size[2],
                 container = g_windowsize,
-                handler = function(h, ...)
+                handler = function(h, ...) {
                     set_pref("window.size", c(prefs$window.size[1], svalue(h$obj)))
+                }
             )
 
             addSpring(g_windowsize)
@@ -179,15 +186,19 @@ iNZPrefsWin <- setRefClass(
             lbl <- glabel("Default (gg) theme :")
 
             curIndex <-
-                if (is.null(prefs$gg_theme)) 1L
-                else if (is.character(prefs$gg_theme))
-                    which(available.themes == prefs$gg_theme)
-                else length(available.themes) + 1L
+                if (is.null(prefs$gg_theme)) {
+                    1L
+                } else if (is.character(prefs$gg_theme)) {
+                    which(AVAILABLE_THEMES == prefs$gg_theme)
+                } else {
+                    length(AVAILABLE_THEMES) + 1L
+                }
             p_gg_theme <- gcombobox(
-                c(names(available.themes), "Custom"),
+                c(names(AVAILABLE_THEMES), "Custom"),
                 selected = curIndex,
-                handler = function(h, ...)
-                    set_pref("gg_theme", as.character(available.themes[h$obj$get_index()]))
+                handler = function(h, ...) {
+                    set_pref("gg_theme", as.character(AVAILABLE_THEMES[h$obj$get_index()]))
+                }
             )
             tbl_plot[ii, 1L, anchor = c(1, 0), expand = TRUE] <- lbl
             tbl_plot[ii, 2L, expand = TRUE] <- p_gg_theme
@@ -234,7 +245,8 @@ iNZPrefsWin <- setRefClass(
             p_show.code <- gcheckbox("Show editable code boxes",
                 checked = prefs$show.code,
                 container = g_dev,
-                handler = function(h, ...) set_pref("show.code", svalue(h$obj)))
+                handler = function(h, ...) set_pref("show.code", svalue(h$obj))
+            )
             lbl <- glabel(
                 paste(
                     "This feature shows editable code boxes for the main plot,",
@@ -289,13 +301,16 @@ iNZPrefsWin <- setRefClass(
                     GUI$savePreferences()
                     dispose(GUI$modWin)
 
-                    confmsg <- paste(sep = "\n",
+                    confmsg <- paste(
+                        sep = "\n",
                         "Some changes require reloading iNZight. Do that now?",
                         "All changes will be saved."
                     )
                     if (!interactive() || gconfirm(confmsg,
-                        icon = "question", parent = GUI$win))
+                        icon = "question", parent = GUI$win
+                    )) {
                         GUI$reload()
+                    }
                 }
             )
             enabled(saveBtn) <<- FALSE
