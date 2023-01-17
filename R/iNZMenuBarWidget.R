@@ -24,7 +24,7 @@ iNZMenuBarWidget <- setRefClass(
             defaultMenu()
         },
         hasData = function() {
-            !all(dim(GUI$getActiveData()) == 1)
+            !all(dim(GUI$getActiveData(lazy = TRUE)) == 1)
         },
         hasModules = function() {
             modules_installed <<- suppressMessages(
@@ -277,6 +277,19 @@ iNZMenuBarWidget <- setRefClass(
                                 GUI$getActiveDoc()$setSettings(list(freq = NULL))
                             }
                         )
+                ),
+                gseparator(),
+                "Data Dictionary" = list(
+                    load_dd =
+                        gaction("Load ...",
+                            icon = "datasheet",
+                            handler = function(h, ...) iNZDataDict$new(GUI)
+                        ),
+                    view_dd =
+                        gaction("View",
+                            icont = "datasheet",
+                            handler = function(h, ...) iNZDDView$new(GUI)
+                        )
                 )
             )
             if (is.null(menu$report)) menu$report <- NULL
@@ -289,7 +302,7 @@ iNZMenuBarWidget <- setRefClass(
                 menu[["Frequency tables"]] <- gaction("Frequency tables", enabled = FALSE)
                 enabled(menu[["Frequency tables"]]) <- FALSE
 
-                survey_type <- GUI$getActiveDoc()$getModel()$getDesign()$spec$type
+                survey_type <- GUI$getActiveDoc()$getModel()$getDesign()$spec$survey_type
                 if (survey_type == "survey") {
                     svalue(menu[["Survey design"]]$surveydesign) <- "Modify design ..."
                     menu[["Survey design"]]$repdesign <- NULL
@@ -476,7 +489,7 @@ iNZMenuBarWidget <- setRefClass(
                             tooltip = "Start the 3D plotting module",
                             handler = function(h, ...) {
                                 ign <- gwindow("...", visible = FALSE)
-                                tag(ign, "dataSet") <- GUI$getActiveData()
+                                tag(ign, "dataSet") <- GUI$getActiveData(lazy = FALSE)
                                 e <- list(obj = ign)
                                 e$win <- GUI$win
                                 iNZightModules::plot3D(e)
@@ -514,7 +527,7 @@ iNZMenuBarWidget <- setRefClass(
                     install_modules =
                         gaction("Install the Modules package ...",
                             icon = "execute",
-                            tooltip = "Install the iNZightModules R pacakge to access add-on modules",
+                            tooltip = "Install the iNZightModules R package to access add-on modules",
                             handler = function(h, ...) {
                                 c <- gconfirm("You are about to install the iNZightModules R package. Are you sure you want to continue?",
                                     parent = GUI$win)

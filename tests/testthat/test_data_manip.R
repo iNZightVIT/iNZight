@@ -56,7 +56,6 @@ test_that("Filtering data leaves code OK", {
 
 
     # filter randomly
-
 })
 
 # source("R/iNZChangeDataWin.R")
@@ -81,10 +80,14 @@ ui$initializeGui()
 
 test_that("Existing datasets can be joined", {
     # first, set two datasets:
-    d1 <- data.frame(x = c("A", "B", "C", "D"), y = 1:4,
-        stringsAsFactors = TRUE)
-    d2 <- data.frame(x = c("A", "B", "C", "D"), z = 1:4 * 1234,
-        stringsAsFactors = TRUE)
+    d1 <- data.frame(
+        x = c("A", "B", "C", "D"), y = 1:4,
+        stringsAsFactors = TRUE
+    )
+    d2 <- data.frame(
+        x = c("A", "B", "C", "D"), z = 1:4 * 1234,
+        stringsAsFactors = TRUE
+    )
 
     attr(d1, "name") <- "data1"
     attr(d2, "name") <- "data2"
@@ -101,7 +104,7 @@ test_that("Existing datasets can be joined", {
     expect_silent(jw$data_name$set_value("data1"))
     expect_silent(jw$ok_button$invoke_change_handler())
     expect_equivalent(
-        ui$getActiveData()[,c("x", "y", "z")],
+        ui$getActiveData()[, c("x", "y", "z")],
         dplyr::inner_join(d1, d2, by = "x")
     )
     expect_equal(

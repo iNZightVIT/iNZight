@@ -76,6 +76,7 @@ iNZAboutWidget <- setRefClass(
                 statsnz = "https://stats.govt.nz",
                 minedu = "https://minedu.govt.nz",
                 abs = "https://abs.gov.au",
+                guinz = "https://growingup.co.nz/",
                 terourou = "https://terourou.org",
                 inzan = NULL
             )

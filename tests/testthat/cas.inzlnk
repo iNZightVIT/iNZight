@@ -1,0 +1,7 @@
+files:
+    cas: ./cas500_coded.csv
+schema:
+    cas:
+dictionary:
+    file: ./casdict.csv
+    name: variable

@@ -54,16 +54,18 @@ iNZImportWin <- setRefClass(
                     "JSON (.json)" = list(patterns = c("*.json")),
                     "R Object (.rds)" = list(patterns = c("*.rds")),
                     "RData Files (.RData, .rda)" = list(patterns = c("*.RData", "*.rda")),
-                    "Survey Design Files (.svydesign)" = list(patterns = "*.svydesign")
+                    "Survey Design Files (.svydesign)" = list(patterns = "*.svydesign"),
+                    "Linked Data (.inzlnk)" = list(patterns = '*.inzlnk')
                 ),
                 fColTypes = NULL,
                 rdaName = NULL,
                 delimiters = list(
+                    "Detect automatically" = "auto",
                     "Comma (,)" = ",",
                     "Semi-colon (;)" = ";",
                     "Tab" = "\t"
                 ),
-                csvdelim = ",",
+                csvdelim = "auto",
                 txtdelim = "\t",
                 decimalmarks = list("Period (.)" = ".", "Comma (,)" = ","),
                 decMark = ".",
@@ -301,7 +303,21 @@ iNZImportWin <- setRefClass(
                     )
                 },
                 "svydesign" = {
-                    svyspec <<- iNZightTools::import_survey(fname)
+                    if (!requireNamespace("surveyspec", quietly = TRUE)) {
+                        p <- gconfirm("You need to install additional packages. Do it now?",
+                            "Install required packages?",
+                            icon = "question",
+                            parent = GUI$win
+                        )
+                        if (!p) {
+                            gmessage("Unable to set survey design.",
+                                parent = GUI$win
+                            )
+                            return()
+                        }
+                        install.packages("surveyspec")
+                    }
+                    svyspec <<- surveyspec::import_survey(fname)
                     if (is.null(svyspec$data)) {
                         gmessage(
                             paste(
@@ -316,6 +332,38 @@ iNZImportWin <- setRefClass(
                         return(NULL)
                     }
                     tmpData <<- svyspec$data
+                },
+                "inzlnk" = {
+                    prog <- list(
+                        create = function(from, to) {
+                            w <- gwindow(title = "Loading data",
+                                width = 300,
+                                height = 80,
+                                parent = GUI$win
+                            )
+                            g <- gvbox(container = w)
+                            g$set_borderwidth(5)
+                            glabel("Please wait while data loads ...", anchor = c(-1, 0), container = g)
+                            addSpace(g, 10)
+                            pb <- gprogressbar(from, container = g)
+                            addSpace(g, 10)
+                            Sys.sleep(0.1)
+                            list(w = w, pb = pb, N = to)
+                        },
+                        set = function(x, i) {
+                            x$pb$set_value(round(100 * i / x$N))
+                            Sys.sleep(0.1)
+                        },
+                        destroy = function(x) dispose(x$w)
+                    )
+                    cname <- tools::file_path_sans_ext(basename(fname))
+                    # if (!GUI$create_db_connection(cname))
+                    #     stop("Unable to create connection")
+                    tmpData <<- iNZightTools::load_linked(fname,
+                        # con = GUI$dbcon,
+                        name = cname,
+                        progress = prog
+                    )
                 },
                 {
                     tmpData <<- iNZightTools::smart_read(
@@ -375,8 +423,48 @@ iNZImportWin <- setRefClass(
                 tryCatch(
                     {
                         readData(preview = TRUE)
-
-                        if (ncol(tmpData) > 20L) {
+                        if (inherits(tmpData, "inzdf_db")) {
+                            dfinfo <- data.frame(
+                                Name = names(tmpData),
+                                Type = iNZightTools::vartypes(tmpData),
+                                Values = sapply(head(tmpData),
+                                    function(d) {
+                                        if (is_cat(d)) {
+                                            if (length(levels(d)) > 10) {
+                                                lvls <- paste0(
+                                                    paste0(
+                                                        "\"", levels(d)[1:6], "\"",
+                                                        collapse = ", "
+                                                    ),
+                                                    ", and ",
+                                                    length(levels(d)) - 6,
+                                                    " more"
+                                                )
+                                            } else {
+                                                lvls <- paste0(
+                                                    "\"", levels(d), "\"",
+                                                    collapse = ", "
+                                                )
+                                            }
+                                            sprintf("Categories: %s", lvls)
+                                        } else {
+                                            paste(
+                                                paste(d[1:5], collapse = " "),
+                                                "..."
+                                            )
+                                        }
+                                    }
+                                ),
+                                stringsAsFactors = TRUE
+                            )
+                            rownames(dfinfo) <- seq_len(nrow(dfinfo))
+                            prev <<- gdf(dfinfo, container = prevGp)
+                            prev$set_editable(FALSE, 1L)
+                            prev$set_editable(FALSE, 2L)
+                            prev$set_editable(FALSE, 3L)
+                            invisible(prev$remove_popup_menu())
+                            svalue(prevLbl) <<- ""
+                        } else if (ncol(tmpData) > 20L) {
                             can_edit_types <- FALSE
                             dfinfo <- data.frame(
                                 Name = colnames(tmpData),
@@ -696,11 +784,16 @@ iNZImportWin <- setRefClass(
                         )
 
             ## coerce character to factor
+            if (fext != "inzlnk") {
+                tmpData <<- as.data.frame(tmpData,
+                    stringsAsFactors = TRUE
+                )
+            }
+
             GUI$setDocument(
                 iNZDocument$new(
-                    data = as.data.frame(tmpData,
-                        stringsAsFactors = TRUE
-                    )
+                    data = tmpData,
+                    preferences = GUI$preferences
                 ),
                 reset = FALSE
             )

@@ -69,7 +69,7 @@ iNZClipboard <- setRefClass(
                 container = btnGrp,
                 handler = function(h, ...) {
                     GUI$setDocument(
-                        iNZDocument$new(data = data),
+                        iNZDocument$new(data = data, preferences = GUI$preferences),
                         reset = TRUE
                     )
                     dispose(w)

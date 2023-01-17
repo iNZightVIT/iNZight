@@ -125,7 +125,7 @@ iNZInfoWindow <- setRefClass(
             curSet$data_name <<- dataname
             ## Design or data?
             curMod <<- GUI$getActiveDoc()$getModel()
-            assign(dataname, GUI$getActiveData(), envir = env)
+            assign(dataname, GUI$getActiveData(lazy = FALSE), envir = env)
 
             if (!is.null(curMod$dataDesign)) {
                 designname <<- curMod$dataDesignName
@@ -159,7 +159,7 @@ iNZInfoWindow <- setRefClass(
             # set code environment
             assign(
                 GUI$dataNameWidget$datName,
-                GUI$getActiveData(),
+                GUI$getActiveData(lazy = FALSE),
                 GUI$code_env
             )
 
@@ -239,26 +239,38 @@ iNZInfoWindow <- setRefClass(
 iNZDataSummary <- setRefClass(
     "iNZDataSummary",
     contains = "iNZInfoWindow",
-    fields = list(),
+    fields = list(
+        page = "integer", pagesize = "integer"
+    ),
     methods = list(
         initialize = function(gui) {
-            if (is.null(gui$getActiveData()) || all(dim(gui$getActiveData()) == 1L)) return()
+            if (is.null(gui$getActiveData(lazy = TRUE)) || all(dim(gui$getActiveData(lazy = TRUE)) == 1L)) return()
+            if (length(gui$getActiveDoc()$getModel()$dictionary)) {
+                iNZDDView$new(gui)
+                return()
+            }
+
             callSuper(gui, controls = "top", name = "Dataset Summary")
+            initFields(page = 1L, pagesize = 100L)
             setup_panel()
             visible(win) <<- TRUE
         },
         gen_call = function() {
             "Generate summary call"
-            d <- GUI$get_data_object()
-            sprintf("%sskimr::skim(%s)",
+            d <- GUI$get_data_object(lazy = FALSE)
+            sprintf("%sskimr::skim(%s%s)",
                 ifelse(iNZightTools::is_survey(d),
                     sprintf("print(%s, design.summaries = TRUE)\n", designname),
                     ""
                 ),
-                dataname
+                dataname,
+                ifelse(ncol(d) > pagesize,
+                    sprintf(", %s:%s", pagesize * (page - 1) + 1, min(ncol(d), pagesize * page)),
+                    ""
+                )
             )
         },
-        update_summary = function() {
+        update_summary = function(...) {
             # the following is required to ensure the output graphs look OK,
             # and that the rows are all on one line
             olocale <- Sys.getlocale("LC_CTYPE")
@@ -295,6 +307,28 @@ iNZDataSummary <- setRefClass(
             set_output(smry)
         },
         setup_panel = function() {
+            ds <- GUI$getActiveData(lazy = TRUE)
+            N <- ncol(ds)
+            if (ncol(ds) <= pagesize) {
+                update_summary()
+                return()
+            }
+
+            g <- gvbox(container = ctrl_panel)
+            npage <- ceiling(N / pagesize)
+            lbl <- glabel(
+                "Summary shown for 100 variables at a time. Use slider to page through.",
+                container = g
+            )
+            sld <- gslider(1L, npage,
+                value = page,
+                handler = function(h, ...) {
+                    page <<- as.integer(svalue(h$obj))
+                    update_summary()
+                },
+                container = g
+            )
+
             update_summary()
         }
     )
@@ -332,9 +366,9 @@ iNZGetSummary <- setRefClass(
                 y = NULL
             )
             if (!is.null(curSet$x))  {
-                vartypes$x <- iNZightTools::vartype(GUI$getActiveData()[[curSet$x]])
+                vartypes$x <- iNZightTools::vartype(GUI$getActiveData(lazy = TRUE)[[curSet$x]])
                 if (!is.null(curSet$y))
-                    vartypes$y <- iNZightTools::vartype(GUI$getActiveData()[[curSet$y]])
+                    vartypes$y <- iNZightTools::vartype(GUI$getActiveData(lazy = TRUE)[[curSet$y]])
             }
 
             construct_call(curSet, curMod, vartypes,
@@ -342,11 +376,19 @@ iNZGetSummary <- setRefClass(
                 what = "summary"
             )
         },
-        update_summary = function() {
+        update_summary = function(...) {
             smry_call <- gen_call()
-            set_input(mend_call(smry_call, GUI))
+            smry_call_list <- as.list(smry_call[[1]])
+            smry_call[[1]] <- as.call(modifyList(smry_call_list, list(...)))
 
             smry <- try(eval(smry_call, env), silent = TRUE)
+
+            if (inherits(smry, "kableExtra")) {
+                print(smry)
+                return()
+            }
+
+            set_input(mend_call(smry_call, GUI))
             if (inherits(smry, "try-error")) smry <- "Unable to generate summary."
             set_output(smry)
         },
@@ -355,7 +397,7 @@ iNZGetSummary <- setRefClass(
 
             if (is.null(curSet$y)) return()
 
-            ds <- GUI$getActiveData()
+            ds <- GUI$getActiveData(lazy = TRUE)
             xvar <- ds[[curSet$x]]
             yvar <- ds[[curSet$y]]
             xnum <- is_num(xvar)
@@ -516,12 +558,12 @@ iNZGetSummary <- setRefClass(
                     }
                     if (!is.null(pred))
                         newdata <- data.frame(
-                            GUI$getActiveData(),
+                            GUI$getActiveData(lazy = FALSE),
                             pred,
                             stringsAsFactors = TRUE
                         )
                     else
-                        newdata <- GUI$getActiveData()
+                        newdata <- GUI$getActiveData(lazy = FALSE)
 
 
                     if (curSet$smooth > 0 && xnum && ynum) {
@@ -547,7 +589,7 @@ iNZGetSummary <- setRefClass(
             invisible(w2)
         },
         trend_handler = function(h, ...) {
-            ds <- GUI$getActiveData()
+            ds <- GUI$getActiveData(lazy = TRUE)
             xvar <- ds[[curSet$x]]
             yvar <- if (!is.null(curSet$y)) ds[[curSet$y]] else NULL
             xnum <- is_num(xvar)
@@ -570,7 +612,17 @@ iNZGetSummary <- setRefClass(
             update_summary()
         },
         setup_panel = function() {
-            ds <- GUI$getActiveData()
+            if (grepl("^gg_multi", GUI$plotType)) {
+                # button to view as HTML
+                html_btn <- gbutton("View HTML table",
+                    handler = function(h, ...) {
+                        update_summary(html = TRUE)
+                    },
+                    container = ctrl_panel
+                )
+            }
+
+            ds <- GUI$getActiveData(lazy = TRUE)
             xvar <- if (!is.null(curSet$x)) ds[[curSet$x]] else NULL
             if (is.null(xvar)) {
                 update_summary()
@@ -674,6 +726,13 @@ iNZGetSummary <- setRefClass(
             privacy_button$widget$setImage(icon)
             privacy_button$widget$image$show()
             tooltip(privacy_button) <- "Set or change privacy and confidentiality output controls"
+
+            # button to save output to file
+            save_button <- gbutton(
+                "Save ...",
+                container = ctrl_panel,
+                handler = function(h, ...) save_results()
+            )
 
             update_summary()
         },
@@ -1012,6 +1071,26 @@ iNZGetSummary <- setRefClass(
                 list(privacy_controls = pc)
             )
             update_summary()
+        },
+        save_results = function() {
+            # if confidentiality rules are specified,
+            # include option to store raw results
+            # (i.e., for Data Lab output checking)
+            if (!is.null(curSet$privacy_controls)) {
+
+            }
+
+            file <- gfile(type = "save",
+                initial.file.name = "summary.txt",
+                filter = list("Plain text file" = list(patterns = c("*.txt")))
+            )
+            if (length(file)) {
+                writeLines(
+                    svalue(info_text),
+                    file,
+                    sep = ""
+                )
+            }
         }
     )
 )
@@ -1053,11 +1132,11 @@ iNZGetInference <- setRefClass(
             # This will, at some stage, fetch values from the CODE CALL
             # when it is modified by the user ... and update curSet ... =]
             vartypes <- list(
-                x = iNZightTools::vartype(GUI$getActiveData()[[curSet$x]]),
+                x = iNZightTools::vartype(GUI$getActiveData(lazy = TRUE)[[curSet$x]]),
                 y = NULL
             )
             if (!is.null(curSet$y))
-                vartypes$y <- iNZightTools::vartype(GUI$getActiveData()[[curSet$y]])
+                vartypes$y <- iNZightTools::vartype(GUI$getActiveData(lazy = TRUE)[[curSet$y]])
             construct_call(curSet, curMod, vartypes,
                 data = as.name(dataname),
                 what = "inference"
@@ -1081,8 +1160,10 @@ iNZGetInference <- setRefClass(
             set_input(mend_call(smry_call, GUI))
 
             smry <- try(eval(smry_call, env), silent = TRUE)
-            if (inherits(smry, "try-error"))
+            if (inherits(smry, "try-error")) {
+                print(smry)
                 smry <- "Unable to generate inference."
+            }
             set_output(smry)
 
             # disable simulate p-value checkbox if expected counts small
@@ -1104,7 +1185,7 @@ iNZGetInference <- setRefClass(
         },
         setup_panel = function() {
             ## this depends on the type of analysis going on
-            ds <- GUI$getActiveData()
+            ds <- GUI$getActiveData(lazy = TRUE)
             xvar <- ds[[curSet$x]]
             yvar <- if (!is.null(curSet$y)) ds[[curSet$y]] else NULL
 

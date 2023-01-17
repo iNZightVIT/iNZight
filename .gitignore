@@ -10,4 +10,6 @@ revdep
 inst/doc
 doc
 Meta
+scripts
+.vscode
 *.log

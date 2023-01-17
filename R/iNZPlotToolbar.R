@@ -105,7 +105,7 @@ iNZPlotToolbar <- setRefClass(
                             tmpurl <- iNZightPlots::exportHTML(
                                 refreshFn,
                                 file = tempfile(fileext = ".html"),
-                                data = GUI$getActiveData(),
+                                data = GUI$getActiveData(lazy = FALSE),
                                 extra.vars = vars
                             )
                             if (inherits(tmpurl, "htmlwidget")) print(tmpurl)

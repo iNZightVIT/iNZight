@@ -96,7 +96,7 @@ iNZCodePanel <- setRefClass(
             # set code environment
             assign(
                 GUI$dataNameWidget$datName,
-                GUI$getActiveData(),
+                GUI$getActiveData(lazy = FALSE),
                 GUI$code_env
             )
 
@@ -116,12 +116,18 @@ iNZCodePanel <- setRefClass(
                     )
                 },
                 error = function(e) {
-                    gmessage(
-                        sprintf("There was an error in your plot code:\n\n%s", e$message),
-                        title = "Error",
-                        icon = "error",
-                        parent = GUI$win
-                    )
+                    print(e)
+                    msg <- sprintf("There was an error in your plot code:\n\n%s", e$message)
+                    if (interactive()) {
+                        gmessage(
+                            msg,
+                            title = "Error",
+                            icon = "error",
+                            parent = GUI$win
+                        )
+                    } else {
+                        stop(msg)
+                    }
                 }
             )
 
@@ -163,6 +169,7 @@ iNZCodePanel <- setRefClass(
             } else {
                 # a more complex formula
                 vars$x <- as.character(call_xy[[2]])
+
                 call_yg <- as.list(call_xy[[3]])
                 if (length(call_yg) == 1) {
                     # no subsetting
@@ -180,6 +187,15 @@ iNZCodePanel <- setRefClass(
                         vars$g1 <- as.character(call_g[[2]])
                         vars$g2 <- as.character(call_g[[3]])
                     }
+                }
+            }
+
+            if (length(vars$x) > 1) {
+                vars$x <- vars$x[-1]
+
+                if (!GUI$preferences$multiple_x) {
+                    warning("Enable multiple response variables (from Preferences) to continue.")
+                    vars$x <- NULL
                 }
             }
 
@@ -232,7 +248,7 @@ iNZCodePanel <- setRefClass(
                         if (vars$g2.level != "_MULTI") {
                             vindex <- vars$g2.level
                         } else {
-                            lvls <- levels(GUI$getActiveData()[[vars$g2]])
+                            lvls <- levels(GUI$getActiveData(lazy = TRUE)[[vars$g2]])
                             vindex <- length(lvls) + 1L
                         }
                     }
