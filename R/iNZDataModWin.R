@@ -149,7 +149,7 @@ iNZConToCatWin <- setRefClass(
                 parent = GUI$modWin)
             else if (checkNames(name)) {
                 .dataset <- GUI$get_data_object(lazy = FALSE)
-                newdata <- iNZightTools::convertToCat(.dataset, orgVar, name)
+                newdata <- iNZightTools::convert_to_cat(.dataset, vars = orgVar, names = name)
                 updateData(newdata)
                 close()
             }
@@ -265,7 +265,7 @@ iNZTransformWin <- setRefClass(
 
             fn <- trans[2L]
             .dataset <- GUI$get_data_object(lazy = FALSE)
-            newdata <- iNZightTools::transformVar(.dataset, var, fn, vname)
+            newdata <- iNZightTools::transform_vars(.dataset, vars = var, fn, names = vname)
             updateData(newdata)
 
             data <<- GUI$getActiveData(lazy = TRUE)
@@ -384,7 +384,7 @@ iNZCollapseWin <- setRefClass(
                     icon = "warning")
             } else if (checkNames(name)) {
                 .dataset <- GUI$get_data_object(lazy = FALSE)
-                data <- iNZightTools::collapseLevels(.dataset, var, lvls, lvlname, name)
+                data <- iNZightTools::collapse_cat(.dataset, var, levels = lvls, new_level = lvlname, name)
                 updateData(data)
                 dispose(GUI$modWin)
             }
@@ -514,7 +514,7 @@ iNZRenameFactorLevelsWin <- setRefClass(
             if (!is.list(newlvls) || !checkNames(name)) return()
 
             .dataset <- GUI$get_data_object(lazy = FALSE)
-            data <- iNZightTools::renameLevels(.dataset, var, newlvls, name)
+            data <- iNZightTools::rename_levels(.dataset, var, tobe_asis = newlvls, name)
             updateData(data)
             close()
         }
@@ -670,12 +670,10 @@ iNZReorderLevelsWin <- setRefClass(
 
             if (!checkNames(varname)) return()
             if (svalue(sortMenu, TRUE) == 1) {
-                data <- iNZightTools::reorderLevels(.dataset, var,
-                    freq = TRUE, name = varname)
+                data <- iNZightTools::reorder_levels(.dataset, var, auto = "freq", name = varname)
             } else {
                 levels <- as.character(levelOrder$get_items())
-                data <- iNZightTools::reorderLevels(.dataset, var,
-                    levels, name = varname)
+                data <- iNZightTools::reorder_levels(.dataset, var, new_levels = levels, name = varname)
             }
             updateData(data)
             close()
@@ -799,7 +797,7 @@ iNZCombineWin <- setRefClass(
             if (!chks || !checkNames(name)) return()
 
             .dataset <- GUI$get_data_object(lazy = FALSE)
-            data <- iNZightTools::combineCatVars(.dataset, vars, sep, name)
+            data <- iNZightTools::combine_vars(.dataset, vars, sep, name)
             updateData(data)
             close()
         }
@@ -923,10 +921,10 @@ iNZCreateVarWin <- setRefClass(
             }
 
             data <- try(
-                iNZightTools::createNewVar(
+                iNZightTools::create_vars(
                     .dataset,
-                    vname,
-                    expr
+                    vars = vname,
+                    vars_expr = expr
                 ),
                 silent = TRUE
             )
@@ -1344,13 +1342,10 @@ iNZRenameVarWin <- setRefClass(
             w <- old_names != new_names
             if (!any(w)) return()
 
-            name_list <- structure(
-                as.list(new_names[w]),
-                .Names = old_names[w]
-            )
+            name_list <- setNames(as.list(old_names[w]), new_names[w])
 
             .dataset <- GUI$get_data_object(lazy = FALSE)
-            data <- iNZightTools::renameVars(.dataset, name_list)
+            data <- iNZightTools::rename_vars(.dataset, tobe_asis = name_list)
             updateData(data)
             close()
         }
@@ -1406,7 +1401,7 @@ iNZStandardiseWin <- setRefClass(
             varnames <- svalue(numVar)
             names <- makeNames(paste0(varnames, ".std"))
             .dataset <- GUI$get_data_object(lazy = FALSE)
-            data <- iNZightTools::standardizeVars(.dataset, varnames, names)
+            data <- iNZightTools::standardize_vars(.dataset, vars = varnames, names)
             updateData(data)
             close()
         }
@@ -1477,7 +1472,7 @@ iNZDeleteVarWin <- setRefClass(
             if (!conf) return()
 
             .dataset <- GUI$get_data_object(lazy = FALSE)
-            data <- iNZightTools::deleteVars(.dataset, v)
+            data <- iNZightTools::delete_vars(.dataset, vars = v)
             updateData(data)
             close()
         }
@@ -1531,7 +1526,7 @@ iNZMissToCatWin <- setRefClass(
             names <- makeNames(paste0(v, "_miss"))
 
             .dataset <- GUI$get_data_object(lazy = FALSE)
-            data <- iNZightTools::missingToCat(.dataset, v, names)
+            data <- iNZightTools::missing_to_cat(.dataset, vars = v, names)
             updateData(data)
             close()
         }
@@ -1588,7 +1583,7 @@ iNZRankWin <- setRefClass(
             if (length(svalue(rank_vars)) == 0L) return()
             vars <- svalue(rank_vars)
             .dataset <- GUI$get_data_object(lazy = FALSE)
-            data <- iNZightTools::rankVars(.dataset, vars)
+            data <- iNZightTools::rank_vars(.dataset, vars)
             updateData(data)
             close()
         }
@@ -1640,7 +1635,7 @@ iNZConToCatMultiWin <- setRefClass(
             varnames <- makeNames(paste(vars, "cat", sep = "."))
 
             .dataset <- GUI$get_data_object(lazy = FALSE)
-            data <- iNZightTools::convertToCat(.dataset, vars, varnames)
+            data <- iNZightTools::convert_to_cat(.dataset, vars, names = varnames)
             updateData(data)
             dispose(GUI$modWin)
         }
@@ -2385,13 +2380,12 @@ iNZAggDtWin <- setRefClass(
                 )
 
             } else {
-                df1 <- iNZightTools::separate(
+                df1 <- iNZightTools::separate_var(
                     .dataset,
                     svalue(dt_var),
-                    "left",
-                    "right",
-                    type,
-                    "Column"
+                    by = type,
+                    names = c("left", "right"),
+                    into = "cols"
                 )
                 df2 <- iNZightTools::aggregatedt(
                     df1,

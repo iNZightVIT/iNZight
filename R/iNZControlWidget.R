@@ -918,7 +918,7 @@ iNZControlWidget <- setRefClass(
                 !is.null(set$g1.level) &&
                 set$g1.level != "_MULTI")
             {
-                .dataset <- iNZightTools::filterLevels(
+                .dataset <- iNZightTools::filter_cat(
                     .dataset,
                     set$g1,
                     set$g1.level
@@ -933,7 +933,7 @@ iNZControlWidget <- setRefClass(
                 set$g2.level != "_ALL" &&
                 set$g2.level != "_MULTI")
             {
-                .dataset <- iNZightTools::filterLevels(
+                .dataset <- iNZightTools::filter_cat(
                     .dataset,
                     set$g2,
                     set$g2.level
