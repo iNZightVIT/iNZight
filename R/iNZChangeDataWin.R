@@ -863,7 +863,7 @@ iNZStackWin <- setRefClass(
             vars <- svalue(stack_vars)
 
             .dataset <- GUI$getActiveData(lazy = FALSE)
-            data <- iNZightTools::stackVars(.dataset, vars)
+            data <- iNZightTools::reshape_data(.dataset, cols = vars, names_to = "stack_variable", values_to = "stack_value")
             attr(data, "name") <-
                 paste(
                     attr(.dataset, "name", exact = TRUE),

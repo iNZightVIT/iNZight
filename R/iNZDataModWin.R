@@ -2026,44 +2026,7 @@ iNZExtFromDtWin <- setRefClass(
                 )
             }
 
-            l <- list(
-                Date = list(
-                    Year = list(
-                        "Century" = "Century",
-                        "Decimal Year" = "Decimal Year"
-                    ),
-                    Quarter = list(
-                        "Year Quarter" = "Year Quarter"
-                    ),
-                    Month = list(
-                        "Month (abbreviated)" = "Month (abbreviated)",
-                        "Month (number)" = "Month (number)",
-                        "Year Month" = "Year Month"
-                    ),
-                    Week = list(
-                        "Week of the year (Sunday as first day of the week)" =
-                            "Week of the year (Sunday as first day of the week)",
-                        "Week of the year (Monday as first day of the week)" =
-                            "Week of the year (Monday as first day of the week)"
-                    ),
-                    Day = list(
-                        "Day of the year" = "Day of the year",
-                        "Day of the week (name)" = "Day of the week (name)",
-                        "Day of the week (abbreviated)" =
-                            "Day of the week (abbreviated)",
-                        "Day of the week (1-7, Monday as 1)" =
-                            "Day of the week (number, Monday as 1)",
-                        "Day of the week (0-6, Sunday as 0)" =
-                            "Day of the week (number, Sunday as 0)"
-                    )
-                ),
-                Time = list(
-                    "Hours (decimal)" = "Hours (decimal)",
-                    "Hour" = "Hour",
-                    "Minute" = "Minute",
-                    "Second" = "Second"
-                )
-            )
+            l <- iNZightTools:::get_dt_comp_tree(iNZightTools:::inz_dt_comp)
 
             element_tree <<- gtree(
                 offspring = offspring,
@@ -2123,47 +2086,9 @@ iNZExtFromDtWin <- setRefClass(
 
             component <- svalue(element_tree)
             svalue(vname) <<- makeNames(
-                sprintf("%s_%s",
+                sprintf("%s%s",
                     svalue(dt_var),
-                    switch(component[length(component)],
-                        "Date" = ,
-                        "Date only" =
-                            "Date",
-                        "Decimal Year" =
-                            "Decimal_Year",
-                        "Year Quarter" =
-                            "Year_Quarter",
-                        "Year Month" =
-                            "Year_Month",
-                        "Month (abbreviated)" =
-                            "Month_cat",
-                        "Month (full)" =
-                            "Month_cat",
-                        "Month (number)" =
-                            "Month_number",
-                        "Week of the year (Sunday as first day of the week)" =
-                            "Week_year",
-                        "Week of the year (Monday as first day of the week)" =
-                            "Week_year",
-                        "Day of the year" =
-                            "Day_year",
-                        "Day of the week (name)" =
-                            "Day_week",
-                        "Day of the week (abbreviated)" =
-                            "Day_week.abbreviated",
-                        "Day of the week (number)" =
-                            "Day_week.number",
-                        "Day of the week (number, Monday as 1)" =
-                            "Day_week.number",
-                        "Day of the week (number, Sunday as 0)" =
-                            "Day_week.number",
-                        "Time" = ,
-                        "Time only" =
-                            "Time",
-                        "Hours (decimal)" =
-                            "Hour_decimal",
-                        component[length(component)]
-                    )
+                    iNZightTools:::get_dt_comp(component[length(component)])$suffix
                 )
             )
 
@@ -2181,7 +2106,7 @@ iNZExtFromDtWin <- setRefClass(
             component <- svalue(element_tree)
             tryCatch(
                 {
-                    res <- iNZightTools::extract_part(
+                    res <- iNZightTools::extract_dt_comp(
                         .dataset,
                         svalue(dt_var),
                         component[length(component)],
@@ -2362,19 +2287,14 @@ iNZAggDtWin <- setRefClass(
                     "Weekly" = "Year Week",
                     "Monthly" = "Year Month",
                     "Quarterly" = "Year Quarter",
-                    "Yearly" = "Year"
+                    "Yearly" = "Decimal Year"
                 )
 
-                df <- iNZightTools::extract_part(
+                v <- colnames(.dataset)[sapply(.dataset, iNZightTools::is_num) & !sapply(.dataset, iNZightTools::is_dt)]
+                res <- iNZightTools::aggregate_dt(
                     .dataset,
                     svalue(dt_var),
                     part,
-                    cname
-                )
-                v <- colnames(df)[sapply(df, iNZightTools::is_num) & !sapply(df, iNZightTools::is_dt)]
-                res <- iNZightTools::aggregateData(
-                    df,
-                    cname,
                     tolower(svalue(method)),
                     v
                 )
