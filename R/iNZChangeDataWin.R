@@ -797,14 +797,13 @@ iNZAggregateWin <- setRefClass(
             }
 
             .dataset <- GUI$get_data_object(lazy = FALSE)
-            newdata <- iNZightTools::aggregateData(
+            newdata <- iNZightTools::aggregate_data(
                 .dataset,
-                vars = aggvars$get_items(),
-                summary_vars = svalue(smryvars),
+                group_vars = aggvars$get_items(),
+                vars = svalue(smryvars),
                 summaries = summaries[,1],
-                varnames = summaries[,2],
-                quantiles = quantiles,
-                custom_funs = custom
+                names = summaries[,2],
+                quantiles = quantiles
             )
 
             GUI$new_document(data = newdata, suffix = "aggregated")
