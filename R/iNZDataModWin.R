@@ -2253,13 +2253,13 @@ iNZAggDtWin <- setRefClass(
             if (lubridate::is.POSIXct(x) || lubridate::is.Date(x)) {
                 type <<- "dt"
                 values <- c("Weekly", "Monthly", "Quarterly", "Yearly")
-            } else if (all(grepl("^[Y]?[0-9]+\\s+[W][0-9]+$", x, TRUE))) {
+            } else if (all(grepl("^[Y]?[0-9]+\\s?[W][0-9]+$", x, TRUE))) {
                 type <<- "yearweek"
                 values <- c("Quarterly", "Yearly")
-            } else if (all(grepl("^[Y]?[0-9]+\\s+[M][0-9]+$", x, TRUE))) {
+            } else if (all(grepl("^[Y]?[0-9]+\\s?[M][0-9]+$", x, TRUE))) {
                 type <<- "yearmonth"
                 values <- c("Quarterly", "Yearly")
-            } else if (all(grepl("^[Y]?[0-9]+\\s+[Q][0-9]+$", x, TRUE))) {
+            } else if (all(grepl("^[Y]?[0-9]+\\s?[Q][0-9]+$", x, TRUE))) {
                 type <<- "yearquarter"
                 values <- c("Yearly")
             } else {
