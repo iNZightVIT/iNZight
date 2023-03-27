@@ -2253,14 +2253,14 @@ iNZAggDtWin <- setRefClass(
             if (lubridate::is.POSIXct(x) || lubridate::is.Date(x)) {
                 type <<- "dt"
                 values <- c("Weekly", "Monthly", "Quarterly", "Yearly")
-            } else if (all(grepl("W", x))) {
-                type <<- "W"
+            } else if (all(grepl("^[Y]?[0-9]+\\s+[W][0-9]+$", x, TRUE))) {
+                type <<- "yearweek"
                 values <- c("Quarterly", "Yearly")
-            } else if (all(grepl("M", x))) {
-                type <<- "M"
+            } else if (all(grepl("^[Y]?[0-9]+\\s+[M][0-9]+$", x, TRUE))) {
+                type <<- "yearmonth"
                 values <- c("Quarterly", "Yearly")
-            } else if (all(grepl("Q", x))) {
-                type <<- "Q"
+            } else if (all(grepl("^[Y]?[0-9]+\\s+[Q][0-9]+$", x, TRUE))) {
+                type <<- "yearquarter"
                 values <- c("Yearly")
             } else {
                 gmessage("That variable does not contain date/time information.",
@@ -2280,7 +2280,6 @@ iNZAggDtWin <- setRefClass(
             if (length(svalue(method)) == 0L) return()
 
             .dataset <- GUI$getActiveData(lazy = FALSE)
-            cname <- gsub("ly$", "", svalue(format))
 
             if (type == "dt" && length(svalue(format))) {
                 part <- switch(svalue(format),
@@ -2295,32 +2294,26 @@ iNZAggDtWin <- setRefClass(
                     .dataset,
                     svalue(dt_var),
                     part,
+                    NULL,
                     tolower(svalue(method)),
                     v
                 )
 
             } else {
-                df1 <- iNZightTools::separate_var(
-                    .dataset,
-                    svalue(dt_var),
-                    by = type,
-                    names = c("left", "right"),
-                    into = "cols"
-                )
-                df2 <- iNZightTools::aggregatedt(
-                    df1,
-                    svalue(format),
-                    type,
-                    cname
-                )
-                res <- iNZightTools::aggregateData(
-                    df2,
-                    cname,
-                    tolower(svalue(method))
-                )
+                v <- colnames(.dataset)[sapply(.dataset, iNZightTools::is_num) & !sapply(.dataset, iNZightTools::is_dt)]
+                dt_name <- sprintf("%s.%s", svalue(dt_var), type)
+                res <- .dataset |>
+                    dplyr::mutate(
+                        !!rlang::sym(dt_name) := (!!getFromNamespace(type, "tsibble"))(!!rlang::sym(svalue(dt_var)))
+                    ) |>
+                    iNZightTools::aggregate_data(
+                        dt_name,
+                        tolower(svalue(method)),
+                        v
+                    )
             }
             for (i in seq_along(colnames(res))) {
-                if (all(res[[i]] == 0))
+                if (isTRUE(all.equal(res[[i]], rep(0, length(res[[i]])))))
                     res[i] <- NULL
             }
 
