@@ -1473,8 +1473,9 @@ iNZSeparateWin <- setRefClass(
         separatedt = function(preview = TRUE) {
             if (sep == "") return()
 
-            left <- svalue(leftCol)
-            right <- svalue(rightCol)
+            data <- if (preview) GUI$get_data_object(nrow = 10L) else GUI$get_data_object(lazy = FALSE)
+            left <- iNZightTools::make_names(svalue(leftCol), names(data))
+            right <- iNZightTools::make_names(svalue(rightCol), names(data))
             if (check == "Column") {
                 if (left == "" || right == "") {
                     splitlist <- c("_", ".", "-")
@@ -1483,23 +1484,20 @@ iNZSeparateWin <- setRefClass(
                         if (length(x) == 2L) {
                             blockHandlers(leftCol)
                             blockHandlers(rightCol)
-                            svalue(leftCol) <<- left <- x[1]
-                            svalue(rightCol) <<- right <- x[2]
+                            svalue(leftCol) <<- left <- iNZightTools::make_names(x[1], names(data))
+                            svalue(rightCol) <<- right <- iNZightTools::make_names(x[2], names(data))
                             unblockHandlers(leftCol)
                             unblockHandlers(rightCol)
                         }
                     }
                 }
 
-                data <- if (preview) GUI$get_data_object(nrow = 10L) else GUI$get_data_object(lazy = FALSE)
-                into <- dplyr::case_match(check, "Column" ~ "cols", "Row" ~ "rows")
-                tmp <- iNZightTools::separate_var(data, var = col, by = sep, names = c(left, right), into = into)
+                tmp <- iNZightTools::separate_var(data, var = col, by = sep, names = c(left, right), into = "cols")
 
                 if (iNZightTools::is_survey(tmp) && preview) tmp <- tmp$variables
 
             } else if (check == "Row") {
-                into <- dplyr::case_match(check, "Column" ~ "cols", "Row" ~ "rows")
-                tmp <- iNZightTools::separate_var(data, var = col, by = sep, names = c(left, right), into = into)
+                tmp <- iNZightTools::separate_var(data, var = col, by = sep, into = "rows")
             }
             return(tmp)
         },
@@ -1924,12 +1922,17 @@ iNZJoinWin <- setRefClass(
                         list <- append(list, FALSE)
                     }
                 }
+                if (any("" %in% c(left_col, right_col), !length(left_col), !length(right_col))) {
+                    by <- NULL
+                } else {
+                    by <- setNames(right_col, left_col)
+                }
                 ## Now left_col contains some column names and the matching columns from two datasets are in the same class so JOIN
                 if (all(list == TRUE)) {
                     d <- iNZightTools::join_data(
                         GUI$getActiveData(lazy = FALSE),
                         newdata,
-                        by = setNames(right_col, left_col),
+                        by,
                         how = gsub("_join$", "", join_method),
                         suffix_l = sprintf(".%s", left_name),
                         suffix_r = sprintf(".%s", right_name)
