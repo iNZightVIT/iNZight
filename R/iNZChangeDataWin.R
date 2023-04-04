@@ -307,7 +307,9 @@ iNZFilterWin <- setRefClass(
         filter_row = function() {
             if (svalue(row_nums) == "") return()
             .dataset <- GUI$get_data_object(lazy = FALSE)
-            delrows <- sprintf("c(%s)", svalue(row_nums))
+            delrows <- sprintf("c(%s)", svalue(row_nums)) |>
+                rlang::parse_expr() |>
+                rlang::eval_tidy()
             newdata <<- iNZightTools::remove_rows(.dataset, rows = delrows)
         },
         filter_random = function() {

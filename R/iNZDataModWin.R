@@ -265,6 +265,8 @@ iNZTransformWin <- setRefClass(
 
             fn <- trans[2L]
             .dataset <- GUI$get_data_object(lazy = FALSE)
+            reciprocal <- function(x) 1 / x
+            square <- function(x) x^2
             newdata <- iNZightTools::transform_vars(.dataset, vars = var, fn, names = vname)
             updateData(newdata)
 
@@ -1256,8 +1258,8 @@ iNZFormClassIntervalsWin <- setRefClass(
                     as.numeric(svalue(start_point)),
                     as.numeric(svalue(end_point))
                 ),
-                format.lowest = svalue(label_lower),
-                format.highest = svalue(label_upper),
+                format_lowest = svalue(label_lower),
+                format_highest = svalue(label_upper),
                 break_points = break_points
             )
 
