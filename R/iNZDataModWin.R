@@ -2146,6 +2146,7 @@ iNZAggDtWin <- setRefClass(
     contains = "iNZDataModWin",
     fields = list(
         dt_var = "ANY",
+        group_vars = "ANY",
         type = "character",
         format = "ANY",
         method = "ANY",
@@ -2206,13 +2207,27 @@ iNZAggDtWin <- setRefClass(
                 container = left_panel,
                 handler = function(h, ...) aggregate(preview = TRUE))
 
-            glabel("Aggregation summary :",
+            glabel("Grouping variable (optional) (hold CTRL to select many) :",
                 container = left_panel,
                 anchor = c(-1, 0))
 
+            group_vars <<- gtable(
+                list(Summary = GUI$getActiveData(lazy = TRUE) |> (\(.) names(.)[sapply(., is_cat)])()),
+                container = left_panel,
+                multiple = TRUE
+            )
+            addHandlerSelectionChanged(group_vars,
+                handler = function(h, ...) aggregate(preview = TRUE)
+            )
+            
+            glabel("Aggregation summary (hold CTRL to select many) :",
+                   container = left_panel,
+                   anchor = c(-1, 0))
+            
             method <<- gtable(
                 list(Summary = c("Sum", "Mean", "Median", "Min", "Max")),
-                container = left_panel
+                container = left_panel,
+                multiple = TRUE
             )
             addHandlerSelectionChanged(method,
                 handler = function(h, ...) aggregate(preview = TRUE)
@@ -2290,13 +2305,18 @@ iNZAggDtWin <- setRefClass(
                     "Quarterly" = "Year Quarter",
                     "Yearly" = "Decimal Year"
                 )
+                if (length(svalue(group_vars))) {
+                    gr_v <- svalue(group_vars)
+                } else {
+                    gr_v <- NULL
+                }
 
                 v <- colnames(.dataset)[sapply(.dataset, iNZightTools::is_num) & !sapply(.dataset, iNZightTools::is_dt)]
                 res <- iNZightTools::aggregate_dt(
                     .dataset,
                     svalue(dt_var),
                     part,
-                    NULL,
+                    gr_v,
                     tolower(svalue(method)),
                     v
                 )
