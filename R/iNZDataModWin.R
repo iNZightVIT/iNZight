@@ -567,7 +567,7 @@ iNZReorderLevelsWin <- setRefClass(
 
             ## Sort method: frequency (default), or manual
             tbl[3, 1, expand = TRUE, anchor = c(1, 0)] <- glabel("Sort levels ")
-            sortMenu <<- gcombobox(c("by frequency", "manually"), selected = 1)
+            sortMenu <<- gcombobox(c("by frequency", "by 1st appearance order", "by numeric value", "manually"), selected = 1)
             tbl[3, 2, expand = TRUE] <- sortMenu
 
             ## For manual ordering, gdf or gtable with up/down arrows ...
@@ -616,7 +616,7 @@ iNZReorderLevelsWin <- setRefClass(
                 handler = function(h, ...) {
                     visible(levelBtnGrp) <-
                     visible(levelGrp) <-
-                        svalue(sortMenu, index = TRUE) == 2
+                        svalue(sortMenu) == "manually"
                 }
             )
 
@@ -671,8 +671,17 @@ iNZReorderLevelsWin <- setRefClass(
             .dataset <- GUI$get_data_object(lazy = FALSE)
 
             if (!checkNames(varname)) return()
-            if (svalue(sortMenu, TRUE) == 1) {
-                data <- iNZightTools::reorder_levels(.dataset, var, auto = "freq", name = varname)
+            if (svalue(sortMenu) != "manually") {
+                auto <- dplyr::case_match(svalue(sortMenu),
+                    "by frequency" ~ "freq",
+                    "by 1st appearance order" ~ "order",
+                    "by numeric value" ~ "seq"
+                )
+                if (auto == "seq" && all(is.na(suppressWarnings(as.numeric(levels(.dataset[[var]])))))) {
+                    gmessage("Sorting levels by numeric value only works for factors coercible to numeric.")
+                    return()
+                }
+                data <- iNZightTools::reorder_levels(.dataset, var, auto = auto, name = varname)
             } else {
                 levels <- as.character(levelOrder$get_items())
                 data <- iNZightTools::reorder_levels(.dataset, var, new_levels = levels, name = varname)
@@ -690,7 +699,9 @@ iNZCombineWin <- setRefClass(
     fields = list(
         factorNames = "ANY",
         newName = "ANY",
-        varSep = "ANY"
+        varSep = "ANY",
+        keep_empty2 = "ANY",
+        keep_na2 = "ANY"
     ),
     contains = "iNZDataModWin",
     methods = list(
@@ -768,6 +779,25 @@ iNZCombineWin <- setRefClass(
             tbl[2, 1, anchor = c(1, 0), expand = TRUE] <- lbl4
             tbl[2, 2, expand = TRUE] <- varSep
             add_body(tbl)
+
+            keep_empty2 <<- FALSE
+            keep_empty_cb2 <- gcheckbox(
+                "Keep combinations with no observations as levels in the combined categorical variable",
+                handler = function(h, ...) {
+                    keep_empty2 <<- svalue(keep_empty_cb2)
+                }
+            )
+            add_body(keep_empty_cb2)
+
+            keep_na2 <<- TRUE
+            keep_na_cb2 <- gcheckbox(
+                "Keep missing value in the combined categorical variable as an explicit level",
+                checked = TRUE,
+                handler = function(h, ...) {
+                    keep_na2 <<- svalue(keep_na_cb2)
+                }
+            )
+            add_body(keep_na_cb2)
         },
         ## check whether the specified variables are illegible
         ## for combining
@@ -799,7 +829,7 @@ iNZCombineWin <- setRefClass(
             if (!chks || !checkNames(name)) return()
 
             .dataset <- GUI$get_data_object(lazy = FALSE)
-            data <- iNZightTools::combine_vars(.dataset, vars, sep, name)
+            data <- iNZightTools::combine_vars(.dataset, vars, sep, name, keep_empty2, keep_na2)
             updateData(data)
             close()
         }
@@ -1540,7 +1570,8 @@ iNZMissToCatWin <- setRefClass(
 iNZRankWin <- setRefClass(
   "iNZRankWin",
   fields = list(
-      rank_vars = "ANY"
+      rank_vars = "ANY",
+      rank_type = "ANY"
   ),
   contains = "iNZDataModWin",
     methods = list(
@@ -1579,13 +1610,28 @@ iNZRankWin <- setRefClass(
 
             add_body(rank_vars, expand = TRUE, fill = TRUE)
 
+            rank_types <- list(
+                "Integer ranking with \"min\" ties method" = "min",
+                "Integer ranking with \"dense\" ties method" = "dense",
+                "Proportional (percentile) ranking method" = "percent"
+            )
+            rank_type <<- "min"
+            rank_type_cb <- gcombobox(
+                items = names(rank_types),
+                handler = function(h, ...) {
+                    rank_type <<- rank_types[[svalue(rank_type_cb)]]
+                }
+            )
+
+            add_body(rank_type_cb)
+
             visible(GUI$modWin) <<- TRUE
         },
         rank = function() {
             if (length(svalue(rank_vars)) == 0L) return()
             vars <- svalue(rank_vars)
             .dataset <- GUI$get_data_object(lazy = FALSE)
-            data <- iNZightTools::rank_vars(.dataset, vars)
+            data <- iNZightTools::rank_vars(.dataset, vars, rank_type)
             updateData(data)
             close()
         }
@@ -1698,7 +1744,9 @@ iNZConToDtWin <- setRefClass(
         dt_vars = "ANY",
         vname = "ANY",
         time_fmt = "ANY",
-        df_orig = "ANY", df_conv = "ANY"
+        tz = "ANY",
+        df_orig = "ANY",
+        df_conv = "ANY"
     ),
     contains = "iNZDataModWin",
     methods = list(
@@ -1757,6 +1805,23 @@ iNZConToDtWin <- setRefClass(
                 anchor = c(-1, 0)
             )
             vname <<- gedit("", container = left_panel)
+
+            tz <<- ""
+            tz_string <- glabel("Time zone",
+                container = left_panel,
+                anchor = c(-1, 0)
+            )
+            tz_cb <- gcombobox(
+                items = c("System time zone", OlsonNames()),
+                handler = function(h, ...) {
+                    tz <<- dplyr::case_when(
+                        svalue(tz_cb) == "System time zone" ~ "",
+                        TRUE ~ svalue(tz_cb)
+                    )
+                    convert(preview = TRUE)
+                },
+                container = left_panel
+            )
 
             dt.formats <- c(
                 "",
@@ -1896,7 +1961,8 @@ iNZConToDtWin <- setRefClass(
                         .dataset,
                         svalue(dt_vars),
                         svalue(time_fmt),
-                        svalue(vname)
+                        svalue(vname),
+                        tz
                     )
                 },
                 warning = function(w) {

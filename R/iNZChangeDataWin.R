@@ -1533,6 +1533,8 @@ iNZUniteWin <- setRefClass(
         sep = "ANY",
         col = "ANY",
         name = "ANY",
+        keep_empty = "ANY",
+        keep_na = "ANY",
         newview = "ANY",
         unitebtn = "ANY"
     ),
@@ -1600,6 +1602,27 @@ iNZUniteWin <- setRefClass(
                 }
             )
 
+            keep_empty <<- FALSE
+            keep_empty_cb <- gcheckbox(
+                "Keep combinations with no observations as levels in the united factor variable",
+                handler = function(h, ...) {
+                    keep_empty <<- svalue(keep_empty_cb)
+                    updateView()
+                }
+            )
+            add_body(keep_empty_cb)
+
+            keep_na <<- TRUE
+            keep_na_cb <- gcheckbox(
+                "Keep missing value in the united factor variable as an explicit level",
+                checked = TRUE,
+                handler = function(h, ...) {
+                    keep_na <<- svalue(keep_na_cb)
+                    updateView()
+                }
+            )
+            add_body(keep_na_cb)
+
             add_body(g_top)
 
             prevTbl <- glayout(homogeneous = FALSE)
@@ -1620,13 +1643,13 @@ iNZUniteWin <- setRefClass(
         },
         updateView = function() {
             data <- GUI$get_data_object(nrow = 10L)
-            df <- iNZightTools::combine_vars(data, vars = col, sep, name)
+            df <- iNZightTools::combine_vars(data, vars = col, sep, name, keep_empty, keep_na)
             if (iNZightTools::is_survey(df)) df <- df$variables
             newview$set_items(df)
         },
         do_unite = function() {
             .dataset <- GUI$get_data_object(lazy = FALSE)
-            newdata <- iNZightTools::combine_vars(.dataset, vars = col, sep, name)
+            newdata <- iNZightTools::combine_vars(.dataset, vars = col, sep, name, keep_empty, keep_na)
             GUI$new_document(newdata, "united")
             close()
         }
@@ -1738,6 +1761,7 @@ iNZJoinWin <- setRefClass(
             jointypes <- list(
                 "Inner Join" = "inner_join",
                 "Left Join" = "left_join",
+                "Right Join" = "right_join",
                 "Full Join" = "full_join",
                 "Semi Join" = "semi_join",
                 "Anti Join" = "anti_join"
@@ -2039,6 +2063,20 @@ iNZJoinWin <- setRefClass(
                     paste(
                         "Keep every row in the original dataset and",
                         "match them to the imported dataset"
+                    ),
+                    50
+                ),
+                container = win, anchor = c(-1, 0)
+            )
+            addSpace(win, 5)
+
+            right_join <- glabel("Right Join", container = win, anchor = c(-1, 0))
+            font(right_join) <- list(size = 12, weight = "bold")
+            right_join_help <- glabel(
+                add_lines(
+                    paste(
+                        "Keep every row in the imported dataset and",
+                        "match them to the original dataset"
                     ),
                     50
                 ),
