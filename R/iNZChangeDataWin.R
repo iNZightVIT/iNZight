@@ -1476,8 +1476,13 @@ iNZSeparateWin <- setRefClass(
             if (sep == "") return()
 
             data <- if (preview) GUI$get_data_object(nrow = 10L) else GUI$get_data_object(lazy = FALSE)
-            left <- iNZightTools::make_names(svalue(leftCol), names(data))
-            right <- iNZightTools::make_names(svalue(rightCol), names(data))
+            if (iNZightTools::is_survey(data)) {
+                var_name <- names(data$variables)
+            } else {
+                var_name <- names(data)
+            }
+            left <- iNZightTools::make_names(svalue(leftCol), var_name)
+            right <- iNZightTools::make_names(svalue(rightCol), var_name)
             if (check == "Column") {
                 if (left == "" || right == "") {
                     splitlist <- c("_", ".", "-")
@@ -1486,8 +1491,8 @@ iNZSeparateWin <- setRefClass(
                         if (length(x) == 2L) {
                             blockHandlers(leftCol)
                             blockHandlers(rightCol)
-                            svalue(leftCol) <<- left <- iNZightTools::make_names(x[1], names(data))
-                            svalue(rightCol) <<- right <- iNZightTools::make_names(x[2], names(data))
+                            svalue(leftCol) <<- left <- iNZightTools::make_names(x[1], var_name)
+                            svalue(rightCol) <<- right <- iNZightTools::make_names(x[2], var_name)
                             unblockHandlers(leftCol)
                             unblockHandlers(rightCol)
                         }
