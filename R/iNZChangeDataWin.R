@@ -1533,14 +1533,14 @@ iNZUniteWin <- setRefClass(
         sep = "ANY",
         col = "ANY",
         name = "ANY",
-        keep_empty = "ANY",
+        remove_empty = "ANY",
         keep_na = "ANY",
         newview = "ANY",
         unitebtn = "ANY"
     ),
     contains = "iNZWindow",
     methods = list(
-        initialize = function(gui = NULL) {
+        initialize = function(gui = NULL, cat_only = FALSE) {
             ok <- callSuper(gui,
                 title = "Unite columns",
                 width = "med",
@@ -1564,7 +1564,13 @@ iNZUniteWin <- setRefClass(
             font(col_string) <- list(weight = "bold")
             add(g_cols, col_string, anchor = c(-1, 0))
 
-            var1 <<- gtable(names(GUI$getActiveData(lazy = TRUE)),
+            d <- GUI$getActiveData(lazy = TRUE)
+            allvars <- names(d)
+            vt <- iNZightTools::vartypes(d)
+            if (cat_only) {
+                allvars <- allvars[vt == "cat"]
+            }
+            var1 <<- gtable(allvars,
                 multiple = TRUE,
                 expand = TRUE,
                 container = g_cols
@@ -1602,26 +1608,27 @@ iNZUniteWin <- setRefClass(
                 }
             )
 
-            keep_empty <<- FALSE
-            keep_empty_cb <- gcheckbox(
-                "Keep combinations with no observations as levels in the united factor variable",
+            remove_empty <<- TRUE
+            remove_empty_cb <- gcheckbox(
+                "Remove empty combinations",
                 handler = function(h, ...) {
-                    keep_empty <<- svalue(keep_empty_cb)
+                    remove_empty <<- svalue(remove_empty_cb)
                     updateView()
-                }
+                },
+                checked = TRUE
             )
-            add_body(keep_empty_cb)
+            add(g_info, remove_empty_cb, anchor = c(-1, 0), fill = TRUE)
 
             keep_na <<- TRUE
             keep_na_cb <- gcheckbox(
-                "Keep missing value in the united factor variable as an explicit level",
+                "Treat missing values as a category",
                 checked = TRUE,
                 handler = function(h, ...) {
                     keep_na <<- svalue(keep_na_cb)
                     updateView()
                 }
             )
-            add_body(keep_na_cb)
+            add(g_info, keep_na_cb, anchor = c(-1, 0), fill = TRUE)
 
             add_body(g_top)
 
@@ -1643,13 +1650,13 @@ iNZUniteWin <- setRefClass(
         },
         updateView = function() {
             data <- GUI$get_data_object(nrow = 10L)
-            df <- iNZightTools::combine_vars(data, vars = col, sep, name, keep_empty, keep_na)
+            df <- iNZightTools::combine_vars(data, vars = col, sep, name, !remove_empty, keep_na)
             if (iNZightTools::is_survey(df)) df <- df$variables
             newview$set_items(df)
         },
         do_unite = function() {
             .dataset <- GUI$get_data_object(lazy = FALSE)
-            newdata <- iNZightTools::combine_vars(.dataset, vars = col, sep, name, keep_empty, keep_na)
+            newdata <- iNZightTools::combine_vars(.dataset, vars = col, sep, name, !remove_empty, keep_na)
             GUI$new_document(newdata, "united")
             close()
         }

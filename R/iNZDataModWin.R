@@ -693,149 +693,6 @@ iNZReorderLevelsWin <- setRefClass(
 )
 
 
-## combine categorical variables
-iNZCombineWin <- setRefClass(
-    "iNZCombineWin",
-    fields = list(
-        factorNames = "ANY",
-        newName = "ANY",
-        varSep = "ANY",
-        keep_empty2 = "ANY",
-        keep_na2 = "ANY"
-    ),
-    contains = "iNZDataModWin",
-    methods = list(
-        initialize = function(gui) {
-            ok <- callSuper(gui,
-                title = "Combine Categorical Variables",
-                width = "small",
-                height = "med",
-                help = "user_guides/variables/#catcombine",
-                ok = "Combine",
-                action = .self$combine,
-                show_code = FALSE,
-                scroll = FALSE
-            )
-            if (!ok) return()
-            on.exit(.self$show())
-            usingMethods("combine")
-
-            add_heading(
-                "Choose two or more variables to combine."
-            )
-            add_heading(
-                "Hold CTRL to choose many",
-                size = 8,
-                weight = "bold"
-            )
-
-            lbl3 <- glabel("New Variable Name")
-
-            ## choose a factor column from the dataset and display
-            ## its level in a gtable
-            factorIndices <- iNZightTools::vartypes(GUI$getActiveData(lazy = TRUE)) %in% c("cat")
-            factorNames <<- gtable(
-                list("Categorical Variables" = names(GUI$getActiveData(lazy = TRUE))[factorIndices]),
-                multiple = TRUE,
-                expand = TRUE
-            )
-            newName <<- gedit()
-
-            ## separator (. or _ for now ...)
-            lbl4 <- glabel("Value separator")
-            varSep <<- gcombobox(c("_", "."), selected = 1, editable = TRUE)
-            ## automatically fill the name field when variables are selected
-            addHandlerSelectionChanged(factorNames,
-                handler = function(h, ...) {
-                    if (length(svalue(factorNames)) > 1)
-                    svalue(newName) <<-
-                        makeNames(
-                            paste(svalue(factorNames),
-                                collapse = svalue(varSep)
-                            )
-                        )
-                    else svalue(newName) <<- ""
-                }
-            )
-            addHandlerChanged(varSep,
-                function(h, ...) {
-                    if (length(svalue(factorNames)) <= 1) return()
-                    sep <- svalue(h$obj)
-                    # osep <- switch(sep, "_" = ".", "." = "_")
-                    oname <- makeNames(paste(svalue(factorNames), collapse = sep))
-                    if (svalue(newName) == oname) {
-                        ## user hasn't changed the name, so update it
-                        svalue(newName) <<-
-                            makeNames(paste(svalue(factorNames), collapse = sep))
-                    }
-                }
-            )
-
-            add_body(factorNames, expand = TRUE)
-
-            tbl <- glayout()
-            tbl[1, 1, anchor = c(1, 0), expand = TRUE] <- lbl3
-            tbl[1, 2, expand = TRUE] <- newName
-            tbl[2, 1, anchor = c(1, 0), expand = TRUE] <- lbl4
-            tbl[2, 2, expand = TRUE] <- varSep
-            add_body(tbl)
-
-            keep_empty2 <<- FALSE
-            keep_empty_cb2 <- gcheckbox(
-                "Keep combinations with no observations as levels in the combined categorical variable",
-                handler = function(h, ...) {
-                    keep_empty2 <<- svalue(keep_empty_cb2)
-                }
-            )
-            add_body(keep_empty_cb2)
-
-            keep_na2 <<- TRUE
-            keep_na_cb2 <- gcheckbox(
-                "Keep missing value in the combined categorical variable as an explicit level",
-                checked = TRUE,
-                handler = function(h, ...) {
-                    keep_na2 <<- svalue(keep_na_cb2)
-                }
-            )
-            add_body(keep_na_cb2)
-        },
-        ## check whether the specified variables are illegible
-        ## for combining
-        checkSelection = function(levels, name) {
-            if (is.null(levels) || length(levels) < 2) {
-                gmessage(title = "Not enough variables selected",
-                    icon = "error",
-                    msg = "Need to select at least two variables to combine",
-                    parent = GUI$modWin
-                )
-                FALSE
-            } else if (length(name) == 0) {
-                gmessage(title = "New name not specified",
-                    icon = "error",
-                    msg = "Please specify a non-empty name for the new variable",
-                    parent = GUI$modWin
-                )
-                FALSE
-            } else {
-                TRUE
-            }
-        },
-        combine = function() {
-            vars <- svalue(factorNames)
-            name <- svalue(newName)
-            sep <- svalue(varSep)
-
-            chks <- checkSelection(vars, name)
-            if (!chks || !checkNames(name)) return()
-
-            .dataset <- GUI$get_data_object(lazy = FALSE)
-            data <- iNZightTools::combine_vars(.dataset, vars, sep, name, keep_empty2, keep_na2)
-            updateData(data)
-            close()
-        }
-    )
-)
-
 ## create new variables using an expression
 iNZCreateVarWin <- setRefClass(
     "iNZCreateVarWin",
@@ -1610,16 +1467,12 @@ iNZRankWin <- setRefClass(
 
             add_body(rank_vars, expand = TRUE, fill = TRUE)
 
-            rank_types <- list(
-                "Integer ranking with \"min\" ties method" = "min",
-                "Integer ranking with \"dense\" ties method" = "dense",
-                "Proportional (percentile) ranking method" = "percent"
-            )
             rank_type <<- "min"
-            rank_type_cb <- gcombobox(
-                items = names(rank_types),
+            rank_type_cb <- gcheckbox(
+                "Use proportional (percentile) ranking method",
+                checked = FALSE,
                 handler = function(h, ...) {
-                    rank_type <<- rank_types[[svalue(rank_type_cb)]]
+                    rank_type <<- ifelse(svalue(rank_type_cb), "percent", "min")
                 }
             )
 

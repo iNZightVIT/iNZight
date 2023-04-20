@@ -346,7 +346,7 @@ iNZMenuBarWidget <- setRefClass(
                         gaction("Combine categorical variables ...",
                             icon = "dnd-multiple",
                             tooltip = "Combine two or more categorical variables",
-                            handler = function(h, ...) iNZCombineWin$new(GUI))
+                            handler = function(h, ...) iNZUniteWin$new(GUI, cat_only = TRUE))
                 ),
                 "Numeric Variables" = list(
                     transform =
