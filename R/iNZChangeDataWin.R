@@ -1886,9 +1886,12 @@ iNZJoinWin <- setRefClass(
                     if (e$message == "`by` required, because the data sources have no common variables") {
                         a <- tibble::tibble()
                         attr(a, "join_cols") <- ""
+                    } else {
+                        print(e)
                     }
                 }
             )
+            print(str(d1))
             attr <- attr(d1, "join_cols")
             left_col <<- as.character(attr)
             right_col <<- left_col
