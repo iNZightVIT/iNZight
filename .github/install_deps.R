@@ -4,11 +4,11 @@ github_deps <- c(
     "tmelliott/gWidgets2@patch-1",
     "iNZightVIT/gWidgets2RGtk2@inz",
     "iNZightVIT/iNZightTools@1.13.0",
-    "iNZightVIT/iNZightTS@dev",
+    "iNZightVIT/iNZightTS@1.5.8",
     "iNZightVIT/iNZightMR@2.2.7",
     "iNZightVIT/iNZightPlots@2.15.0",
-    "iNZightVIT/iNZightRegression@dev",
-    "iNZightVIT/iNZightModules@dev"
+    "iNZightVIT/iNZightRegression@1.3.3",
+    "iNZightVIT/iNZightModules@2.5.3"
 )
 
 OS <- Sys.getenv("OS_TYPE")
