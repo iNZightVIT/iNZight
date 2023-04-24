@@ -510,12 +510,15 @@ iNZModule <- setRefClass(
 )
 
 
-new_module <- function(info) {
+new_module <- function(info, ui_env) {
+    e <- new.env(parent = ui_env)
     menu <- list(Modules = list(info$title))
-    environment()
+    assign("info", info, envir = e)
+    assign("menu", menu, envir = e)
+    e
 }
 
-load_module <- function(dir) {
+load_module <- function(dir, ui_env) {
     # load a module into a nice structure ...
 
     # parse description file
@@ -528,7 +531,8 @@ load_module <- function(dir) {
         pkgs = desc::desc_get_deps(file = mod_desc),
         github = desc::desc_get_field("Github", file = mod_desc)
     )
-    e <- new_module(info)
+
+    e <- new_module(info, ui_env)
     iNZModules <- e$iNZModule <- utils::getFromNamespace("iNZModule", "iNZight")
 
     modRdir <- file.path(dir, "R")

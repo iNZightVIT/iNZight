@@ -97,7 +97,8 @@ iNZGUI <- setRefClass(
             code_env = "ANY",
             code_panel = "ANY",
             is_initialized = "logical",
-            stop_loading = "logical"
+            stop_loading = "logical",
+            ui_env = "ANY"
         ),
         prototype = list(
             activeDoc = 1,
@@ -115,13 +116,15 @@ iNZGUI <- setRefClass(
             show = TRUE,
             stop_loading = FALSE,
             ...,
-            disposer = NULL
+            disposer = NULL,
+            ui_env = parent.frame()
         ) {
             "Initiates the GUI"
             initFields(
                 is_initialized = FALSE,
                 disposer = disposer,
-                activeModules = list()
+                activeModules = list(),
+                ui_env = ui_env
             )
 
             if (is.null(disposer)) {
@@ -936,7 +939,7 @@ iNZGUI <- setRefClass(
             start <- proc.time()
             activeModules <<- vector("list", nmod)
             for (i in seq_len(nmod)) {
-                activeModules[[i]] <<- load_module(mod_dirs[[i]])
+                activeModules[[i]] <<- load_module(mod_dirs[[i]], ui_env)
                 cli::cli_progress_update()
             }
             cli::cli_progress_done()

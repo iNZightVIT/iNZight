@@ -25,10 +25,11 @@
 #' # you may use the following:
 #' iNZight(dispose_fun = q, save = "n")
 #' }
-iNZight <- function(data = NULL, dispose_fun = NULL, ...) {
+iNZight <- function(data = NULL, dispose_fun = NULL, ...,
+                    ui_env = parent.frame()) {
     gui <- iNZGUI$new()
     if (!is.null(data))
         attr(data, "name") <- deparse(substitute(data))
-    gui$initializeGui(data, dispose_fun, ...)
+    gui$initializeGui(data, dispose_fun, ..., ui_env = ui_env)
     invisible(gui)
 }
