@@ -30,7 +30,7 @@ The obvious place to specify the design is from the **Dataset** > **Survey**, wh
 ![Survey specification for `apiclus1`](figures/survey-spec-apiclus1-m1.png)
 </center>
 
-It might not look like much has happened, but iNZight will now use the survey design in all operations---plots, summaries, even regression modelling! Try it out: make a graph of `api00` and notice that in place of iNZight's usual *dot plot*, you get a *histogram* instead. And if you've enabled the *code panel*, you'll see that the call to `inzplot()` is using the `design` argument (instead of `data`).
+It might not look like much has happened, but iNZight will now use the survey design in all operations---plots, summaries, even regression modelling! Try it out: make a graph of `api00` and notice that in place of iNZight's usual _dot plot_, you get a _histogram_ instead. And if you've enabled the _code panel_, you'll see that the call to `inzplot()` is using the `design` argument (instead of `data`).
 
 <center>
 ![iNZight drawing a histogram of `api00`](figures/inzight-api00.png){width=100%}
@@ -42,11 +42,10 @@ You may also obtain a numerical summary of `api00` by clicking on the **Get Summ
 ![Numerical summary of `api00`](figures/inzight-api00-summary.png){width=80%}
 </center>
 
-
-
 ### Method 2: the 'survey specification' format
 
 You may have noticed the 'Read from file' button in the survey specification window. This is an alternative method of setting the specification, which is particularly useful if you aren't familiar with the survey design (and it saves you from having to look it up each time and, likely, making a mistake!). This file uses `TOML` format, which is machine- and human-readable, and specifies the variables using syntax closely resembling arguments to the `survey::svydesign()` function. Here's what the file looks like for the `apiclus1` data:
+
 ```
 # apiclus1.svydesign
 type = "survey"
@@ -54,12 +53,13 @@ ids = "dnum"
 weights = "pw"
 fpc = "fpc"
 ```
-This should be given a `.svydesign` extension. After clicking the **Read from file** button, browse for the file and load it. Again, nothing will happen (especially if you didn't remove the previous design first!), but in the background iNZight has parsed the file (using the helper function `iNZightTools::import_survey`, see end of Vignette for R usage) and is now using the design.
 
+This should be given a `.svydesign` extension. After clicking the **Read from file** button, browse for the file and load it. Again, nothing will happen (especially if you didn't remove the previous design first!), but in the background iNZight has parsed the file (using the helper function `iNZightTools::import_survey`, see end of Vignette for R usage) and is now using the design.
 
 ### Method 3: one-step survey loading
 
-In a typical scenario, researchers would provide a data file containing the survey data (a `.csv`, perhaps), and with this they might also need to provide a `.svydesign` specification file. To make importing survey data *even easier*, the survey specification accepts another argument: a file path. If you're following along, you'll first need to save the `apiclus1` data into the same folder as the `apiclus1.svydesign` file from method 2, which can be done from **File** > **Export data**, clicking 'open' to browse for the save location, and specifying CSV for the file type. Now edit the specification file by adding an extra line:
+In a typical scenario, researchers would provide a data file containing the survey data (a `.csv`, perhaps), and with this they might also need to provide a `.svydesign` specification file. To make importing survey data _even easier_, the survey specification accepts another argument: a file path. If you're following along, you'll first need to save the `apiclus1` data into the same folder as the `apiclus1.svydesign` file from method 2, which can be done from **File** > **Export data**, clicking 'open' to browse for the save location, and specifying CSV for the file type. Now edit the specification file by adding an extra line:
+
 ```
 # apiclus1.svydesign
 data = "apiclus1.csv"  # this should be whatever you called the file when you saved it
@@ -75,8 +75,7 @@ Now you can close iNZight and start it up again. Now, instead of loading the exa
 ![Load survey specification file](figures/inzight-load-survey.png)
 </center>
 
-Now, just like that, you've loaded a complex survey data set *with the design information already attached*!! Go ahead and make some graphs, produce summaries, perform some simple hypothesis tests (from the **Get Inference** button) and, if you're feeling adventurous, fit some regression models (**Advanced** > **Model Fitting**).
-
+Now, just like that, you've loaded a complex survey data set _with the design information already attached_!! Go ahead and make some graphs, produce summaries, perform some simple hypothesis tests (from the **Get Inference** button) and, if you're feeling adventurous, fit some regression models (**Advanced** > **Model Fitting**).
 
 ## Other specification options
 
@@ -95,7 +94,7 @@ nest = false               # or true
 
 ### Replicate designs
 
-Replicate designs use different arguments, and most importantly specify the columns containing the replicate weights, and some other details. The replicate weights can either be a *vector* of names, or a regular expression (which is preferred as it is easier that typing out 20, 30, or 80 variable names!).
+Replicate designs use different arguments, and most importantly specify the columns containing the replicate weights, and some other details. The replicate weights can either be a _vector_ of names, or a regular expression (which is preferred as it is easier that typing out 20, 30, or 80 variable names!).
 
 ```
 data = "path/to/data.csv"
@@ -113,7 +112,7 @@ rscales = 1                # either a single number if same for all replicate we
 
 ### Calibration
 
-If available, this information can be automatically included in the survey by passing additional lines to the specification file. This uses some TOML-specific syntax, but should be fairly straightforward (it's also the reason we needed to use TOML and not something simpler). In this example, we calibrate using `stype` and `sch.wide` by passing in the *raw* population values (behind the scenes iNZight formats these correctly):
+If available, this information can be automatically included in the survey by passing additional lines to the specification file. This uses some TOML-specific syntax, but should be fairly straightforward (it's also the reason we needed to use TOML and not something simpler). In this example, we calibrate using `stype` and `sch.wide` by passing in the _raw_ population values (behind the scenes iNZight formats these correctly):
 
 ```
 # apical.svydesign
@@ -133,13 +132,12 @@ No = 1072
 Yes = 5122
 ```
 
-
 ## For R nerds: The survey specification object
 
-The magic all happens in the 'iNZightTools' package, which has a handy 'import_survey' function.
+The magic all happens in the ['surveyspec'](github.com/tmelliott/surveyspec) package, which has a handy 'import_survey' function.
 
 ```{r import_demo}
-library(iNZightTools)
+library(surveyspec)
 (svy <- import_survey('apiclus1.svydesign'))
 
 summary(survey::svyglm(api00 ~ api99, design = svy$design))

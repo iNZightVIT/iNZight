@@ -27,7 +27,6 @@ test_that("Construct call function works", {
 
 test_that("Update plot call: basic dot plot", {
     expect_equal(ui$getActiveDoc()$getSettings()$x, quote(height))
-
 })
 
 

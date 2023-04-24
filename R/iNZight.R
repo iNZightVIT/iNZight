@@ -15,6 +15,8 @@
 #' @param data a data frame
 #' @param dispose_fun called when the iNZight GUI is closed
 #' @param ... arguments passed to `dispose_fun`
+#' @param ui_env pass parent environment to the GUI to used as a base
+#'  envirionment for loading modules
 #' @return invisibly returns the `iNZGUI` object
 #' @author Marco Kuper, Tom Elliott
 #' @md
@@ -28,7 +30,7 @@
 iNZight <- function(data = NULL, dispose_fun = NULL, ...,
                     ui_env = parent.frame()) {
     gui <- iNZGUI$new()
-    if (!is.null(data))
+    if (!is.null(data) && is.null(attr(data, "name", exact = TRUE)))
         attr(data, "name") <- deparse(substitute(data))
     gui$initializeGui(data, dispose_fun, ..., ui_env = ui_env)
     invisible(gui)

@@ -72,6 +72,9 @@ Main class that builds the iNZight GUI
 \item{\code{code_panel}}{the interactive code widget at the bottom of the iNZight window}
 
 \item{\code{is_initialized}}{logical, indicates if iNZight is initialised or not}
+
+\item{\code{ui_env}}{the environment in which the GUI is created. Used as a base env
+for loading modules.}
 }}
 
 \section{Methods}{
@@ -91,23 +94,21 @@ Main class that builds the iNZight GUI
 
 \item{\code{defaultPrefs()}}{Returns the default preferences}
 
-\item{\code{deleteDataset()}}{Deletes the current dataset}
+\item{\code{deleteDataset(ask = TRUE)}}{Deletes the current dataset}
 
 \item{\code{displayMsg(module, type)}}{Displays a message about data requirements for the chosen module}
 
 \item{\code{do_delete_dataset()}}{Does the dataset deletion}
 
-\item{\code{getActiveData()}}{Returns the current dataset}
+\item{\code{getActiveData(lazy = FALSE)}}{Returns the current dataset (if `lazy` is TRUE, will not be converted to data.frame)}
 
 \item{\code{getActiveDoc()}}{Returns the currently active document}
-
-\item{\code{getActiveRowData()}}{Returns the row data of the current dataset}
 
 \item{\code{getPreferences()}}{Gets the user's preferences from a file}
 
 \item{\code{getState()}}{Returns the current state of the GUI}
 
-\item{\code{get_data_object(nrow)}}{Returns the current dataset or survey design, if it exists}
+\item{\code{get_data_object(nrow, lazy = FALSE)}}{Returns the current dataset or survey design, if it exists}
 
 \item{\code{initializeCodeHistory()}}{Initializes the R code history widget}
 
@@ -126,7 +127,8 @@ Main class that builds the iNZight GUI
   show = TRUE,
   stop_loading = FALSE,
   ...,
-  disposer = NULL
+  disposer = NULL,
+  ui_env = parent.frame()
 )}}{Initiates the GUI}
 
 \item{\code{initializeMenu(cont)}}{Initializes the menu bar at the top of iNZight}

@@ -79,7 +79,7 @@ iNZSaveWin <- setRefClass(
                         fileBrowse = filebrowse,
                         filetype = filetype,
                         fileExtensions = fileExtensions,
-                        dataname = attr(gui$getActiveData(), "name")
+                        dataname = attr(gui$getActiveData(lazy = TRUE), "name")
                     )
                     l2 <- modifyList(l1, extra.args)
                     do.call(.self$okButtonHandler, l2)

@@ -586,7 +586,7 @@ convert_menu_items.default <- function(item, ...) item
 convert_menu_items.list <- function(item, ...) lapply(item, convert_menu_items, ...)
 
 #' @export
-convert_menu_items.inzmenuitem <- function(item, gui, mod) {
+convert_menu_items.inzmenuitem <- function(item, gui, mod, ...) {
     gaction(
         item$title,
         handler = function(h, ...) item$action(gui, mod)

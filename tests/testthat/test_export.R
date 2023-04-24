@@ -10,7 +10,7 @@ context("Data is exported from the UI")
 test_that("Export RDS", {
     fp <- tempfile(fileext = ".rds")
     on.exit(unlink(fp))
-    ui <- list(OS = "windows", getActiveData = function() census.at.school.500)
+    ui <- list(OS = "windows", getActiveData = function(lazy) census.at.school.500)
 
     w <- iNZExportWin$new(ui)
     expect_is(w, "iNZExportWin")
@@ -24,7 +24,7 @@ test_that("Export RDS", {
 test_that("Export TXT", {
     fp <- tempfile(fileext = ".txt")
     on.exit(unlink(fp))
-    ui <- list(OS = "windows", getActiveData = function() census.at.school.500)
+    ui <- list(OS = "windows", getActiveData = function(lazy) census.at.school.500)
 
     w <- iNZExportWin$new(ui)
     expect_is(w, "iNZExportWin")

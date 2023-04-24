@@ -211,6 +211,7 @@ iNZWindow <- setRefClass("iNZWindow",
         close = function() {
             dispose(GUI$modWin)
         },
+        window = function() invisible(GUI$modWin),
         closeHandler = function(h, ...) TRUE
     )
 )

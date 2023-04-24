@@ -1,8 +1,8 @@
 Package: iNZight
 Type: Package
 Title: A GUI for Data Exploration and Visualisation
-Version: 4.2.0.9000
-Date: 2022-02-08
+Version: 4.3.0
+Date: 2023-01-16
 Authors@R: c(person("Tom", "Elliott", role = c("aut", "cre"),
                     email = "tom.elliott@auckland.ac.nz"),
              person("Dineika", "Chandrananda", role = "ctb"),
@@ -19,40 +19,45 @@ Depends:
     RGtk2,
     cairoDevice,
     gWidgets2,
+    gWidgets2RGtk2,
     objectProperties
 Imports:
     cli,
     colorspace,
     desc,
+    dplyr,
     grDevices,
     grid,
-    gWidgets2RGtk2,
-    iNZightPlots (>= 2.14),
-    iNZightTools (>= 1.12.2.9000),
+    iNZightPlots (>= 2.15.0),
+    iNZightTools (>= 1.13.0),
     magrittr,
     methods,
     plyr,
-    png,
-    remotes,
     reshape2,
     skimr,
+    stats,
     stringr,
-    survey,
     utils
 Suggests:
     covr,
     dataMaid,
-    dplyr,
+    DBI,
     forcats,
     FutureLearnData,
-    iNZightMR (>= 2.2.4),
+    iNZightMR (>= 2.2.7),
     iNZightModules (>= 2.5),
     jsonlite,
     knitr,
+    kableExtra,
+    png,
     RColorBrewer,
+    remotes,
     rlang,
     rmarkdown,
     RODBC,
+    RSQLite,
+    survey,
+    surveyspec,
     testthat,
     viridis,
     withr
@@ -60,5 +65,5 @@ Additional_repositories: https://r.docker.stat.auckland.ac.nz
 LazyData: true
 Encoding: UTF-8
 Language: en-GB
-RoxygenNote: 7.1.2
+RoxygenNote: 7.2.3
 VignetteBuilder: knitr

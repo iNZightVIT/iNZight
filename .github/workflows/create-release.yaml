@@ -8,15 +8,18 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    concurrency:
+      group: ${{ github.workflow }}-${{ github.ref }}
+      cancel-in-progress: true
     steps:
       - uses: actions/checkout@v2
-      - uses: r-lib/actions/setup-r@v1
+      - uses: r-lib/actions/setup-r@v2
         with:
           r-version: latest
       - name: create_body
         run: |
           news <- readLines('NEWS.md')
-          i <- grep("^#{1,2}", news)[1:2]
+          i <- grep("^#{1,2} iNZ", news)[1:2]
           if (is.na(i[2])) i[2L] <- length(news) + 1L
           news <- news[(i[1L] + 1L):(i[2L] - 1L)]
           news <- news[trimws(news) != ""]
