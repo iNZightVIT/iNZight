@@ -34,6 +34,7 @@
 #' @field code_panel the interactive code widget at the bottom of the iNZight window
 #' @field is_initialized logical, indicates if iNZight is initialised or not
 #'
+#' @md
 #' @import methods utils grDevices colorspace
 #' @importFrom magrittr %>%
 #' @export iNZGUI
@@ -94,13 +95,15 @@ iNZGUI <- setRefClass(
             plot_history = "ANY",
             disposer = "ANY",
             addonModuleDir = "character",
+            activeModules = "list",
             ## This will be used to store the dataset, design, etc..
             ## rather than passing around the full object.
             code_env = "ANY",
             code_panel = "ANY",
             ## loading flags
             is_initialized = "logical",
-            stop_loading = "logical"
+            stop_loading = "logical",
+            ui_env = "ANY"
         ),
         prototype = list(
             activeDoc = 1,
@@ -111,15 +114,23 @@ iNZGUI <- setRefClass(
         ## Start the iNZight GUI
         ## This is the main method of iNZight and calls all the other
         ## methods of the GUI class.
-        initializeGui = function(data = NULL,
-                                 dispose_fun = NULL,
-                                 addonDir = NULL,
-                                 show = TRUE,
-                                 stop_loading = FALSE,
-                                 ...,
-                                 disposer = NULL) {
+        initializeGui = function(
+            data = NULL,
+            dispose_fun = NULL,
+            addonDir = NULL,
+            show = TRUE,
+            stop_loading = FALSE,
+            ...,
+            disposer = NULL,
+            ui_env = parent.frame()
+        ) {
             "Initiates the GUI"
-            initFields(is_initialized = FALSE, disposer = disposer)
+            initFields(
+                is_initialized = FALSE,
+                disposer = disposer,
+                activeModules = list(),
+                ui_env = ui_env
+            )
 
             if (is.null(disposer)) {
                 if (!is.null(dispose_fun) && is.function(dispose_fun)) {
@@ -155,6 +166,7 @@ iNZGUI <- setRefClass(
             } else {
                 addonModuleDir <<- Sys.getenv("INZIGHT_MODULES_DIR")
             }
+            if (dir.exists(addonModuleDir)) load_addons()
 
             popOut <<- preferences$popout
 
@@ -1003,6 +1015,22 @@ iNZGUI <- setRefClass(
                     icon = "error"
                 )
             }
+        },
+        load_addons = function() {
+            mod_dirs <- list.dirs(addonModuleDir, recursive = FALSE)
+            nmod <- length(mod_dirs)
+            cli::cli_progress_bar("Loading modules", total = nmod)
+
+            start <- proc.time()
+            activeModules <<- vector("list", nmod)
+            for (i in seq_len(nmod)) {
+                activeModules[[i]] <<- load_module(mod_dirs[[i]], ui_env)
+                cli::cli_progress_update()
+            }
+            cli::cli_progress_done()
+            end <- proc.time()
+            ptime <- end - start
+            cli::cli_alert_info("Loaded {nmod} module{?s} ({round(ptime[3], 1)}s)")
         },
         ## create a gvbox object into the module window (ie, initialize it)
         ## NOTE: should be run every time when a new module is open

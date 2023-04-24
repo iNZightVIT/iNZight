@@ -22,7 +22,9 @@ Depends:
     gWidgets2RGtk2,
     objectProperties
 Imports:
+    cli,
     colorspace,
+    desc,
     dplyr,
     grDevices,
     grid,
@@ -49,6 +51,7 @@ Suggests:
     kableExtra,
     png,
     RColorBrewer,
+    remotes,
     rlang,
     rmarkdown,
     RODBC,

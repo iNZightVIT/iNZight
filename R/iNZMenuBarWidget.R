@@ -42,6 +42,7 @@ iNZMenuBarWidget <- setRefClass(
                 Dataset = DataMenu(),
                 Variables = VariablesMenu(),
                 Plot = PlotMenu(),
+                Modules = ModuleMenu(),
                 Advanced = AdvancedMenu(),
                 Help = HelpMenu()
             )
@@ -144,6 +145,11 @@ iNZMenuBarWidget <- setRefClass(
                 enabled(m$export) <- FALSE
                 if (!is.null(m$save)) enabled(m$save) <- FALSE
             }
+
+            mods <- mod_menu_items("File")
+            if (!is.null(mods))
+                menu <- modifyList(menu, mods, keep.null = TRUE)
+
             m
         },
         DataMenu = function() {
@@ -316,6 +322,11 @@ iNZMenuBarWidget <- setRefClass(
                 menu[["Survey design"]]$poststrat <- NULL
                 menu[["Survey design"]]$removedesign <- NULL
             }
+
+            mods <- mod_menu_items("Dataset")
+            if (!is.null(mods))
+                menu <- modifyList(menu, mods, keep.null = TRUE)
+
             menu
         },
         VariablesMenu = function() {
@@ -419,15 +430,55 @@ iNZMenuBarWidget <- setRefClass(
                 menu[["Dates and Times"]] <- gaction("Dates and Times", enabled = FALSE)
                 enabled(menu[["Dates and Times"]]) <- FALSE
             }
+
+            mods <- mod_menu_items("Variables")
+            if (!is.null(mods))
+                menu <- modifyList(menu, mods, keep.null = TRUE)
+
             menu
         },
         PlotMenu = function() {
             if (!hasData()) return(placeholder("Plot"))
-            plotmenu
+            mods <- mod_menu_items("Plot")
+            if (!is.null(mods))
+                modifyList(plotmenu, mods, keep.null = TRUE)
+            else plotmenu
         },
         setPlotMenu = function(menu) {
             plotmenu <<- menu
             updateMenu("Plot", PlotMenu())
+        },
+        ModuleMenu = function() {
+            mods <- lapply(GUI$activeModules,
+                function(m) {
+                    if (is.null(m$menu)) {
+                        # transform menu item into menu actions
+                        convert_menu_items(m$menu$Modules, GUI, m)
+                    } else {
+                        list(
+                            gaction(m$info$title,
+                                handler = function(h, ...) {
+                                    run_module(GUI, m)
+                                }
+                            )
+                        )
+                    }
+                }
+            )
+            mods <- c(mods,
+                list(
+                    gseparator(),
+                    gaction("Manage ...", handler = function(h, ...) NewModuleManager$new(GUI)),
+                    gaction("Reload",
+                        handler = function(h, ...) {
+                            GUI$load_addons()
+                            defaultMenu()
+                        }
+                    )
+                )
+            )
+            # TODO: add module manager item
+            do.call(c, mods)
         },
         AdvancedMenu = function() {
             if (!hasData() && modules_installed) {
@@ -665,6 +716,16 @@ iNZMenuBarWidget <- setRefClass(
                             help_page("support/contact/")
                     )
             )
+        },
+        mod_menu_items = function(x) {
+            mods <- lapply(GUI$activeModules,
+                function(m) {
+                    if (is.null(m$menu)) return(NULL)
+                    # transform menu item into menu actions
+                    convert_menu_items(m$menu[[x]], GUI, m)
+                }
+            )
+            if (length(mods)) do.call(c, mods) else NULL
         }
     )
 )
