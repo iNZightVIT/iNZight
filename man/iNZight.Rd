@@ -12,6 +12,9 @@ iNZight(data = NULL, dispose_fun = NULL, ..., ui_env = parent.frame())
 \item{dispose_fun}{called when the iNZight GUI is closed}
 
 \item{...}{arguments passed to \code{dispose_fun}}
+
+\item{ui_env}{pass parent environment to the GUI to used as a base
+envirionment for loading modules}
 }
 \value{
 invisibly returns the \code{iNZGUI} object

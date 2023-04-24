@@ -72,6 +72,9 @@ Main class that builds the iNZight GUI
 \item{\code{code_panel}}{the interactive code widget at the bottom of the iNZight window}
 
 \item{\code{is_initialized}}{logical, indicates if iNZight is initialised or not}
+
+\item{\code{ui_env}}{the environment in which the GUI is created. Used as a base env
+for loading modules.}
 }}
 
 \section{Methods}{

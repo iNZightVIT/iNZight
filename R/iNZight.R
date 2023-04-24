@@ -15,6 +15,8 @@
 #' @param data a data frame
 #' @param dispose_fun called when the iNZight GUI is closed
 #' @param ... arguments passed to `dispose_fun`
+#' @param ui_env pass parent environment to the GUI to used as a base
+#'  envirionment for loading modules
 #' @return invisibly returns the `iNZGUI` object
 #' @author Marco Kuper, Tom Elliott
 #' @md

@@ -33,6 +33,9 @@
 #' @field code_env the environment in which R code is executed
 #' @field code_panel the interactive code widget at the bottom of the iNZight window
 #' @field is_initialized logical, indicates if iNZight is initialised or not
+#' @field stop_loading
+#' @field ui_env the environment in which the GUI is created. Used as a base env
+#'  for loading modules.
 #'
 #' @md
 #' @import methods utils grDevices colorspace
