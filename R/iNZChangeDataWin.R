@@ -290,13 +290,13 @@ iNZFilterWin <- setRefClass(
             .dataset <- GUI$get_data_object(lazy = FALSE)
             switch(vartype,
                 "cat" = {
-                    newdata <<- iNZightTools::filterLevels(.dataset,
+                    newdata <<- iNZightTools::filter_cat(.dataset,
                         var = svalue(filter_var),
                         levels = svalue(cat_levels)
                     )
                 },
                 "num" = {
-                    newdata <<- iNZightTools::filterNumeric(.dataset,
+                    newdata <<- iNZightTools::filter_num(.dataset,
                         var = svalue(filter_var),
                         op = svalue(num_cond),
                         num = svalue(num_value)
@@ -307,8 +307,10 @@ iNZFilterWin <- setRefClass(
         filter_row = function() {
             if (svalue(row_nums) == "") return()
             .dataset <- GUI$get_data_object(lazy = FALSE)
-            delrows <- sprintf("c(%s)", svalue(row_nums))
-            newdata <<- iNZightTools::filterRows(.dataset, delrows)
+            delrows <- sprintf("c(%s)", svalue(row_nums)) |>
+                rlang::parse_expr() |>
+                rlang::eval_tidy()
+            newdata <<- iNZightTools::remove_rows(.dataset, rows = delrows)
         },
         filter_random = function() {
             if (svalue(rand_size) == "") return()
@@ -326,7 +328,7 @@ iNZFilterWin <- setRefClass(
                 svalue(rand_msg) <<- ""
             }
             .dataset <- GUI$get_data_object(lazy = FALSE)
-            newdata <<- iNZightTools::filterRandom(.dataset, nsample, samplesize)
+            newdata <<- iNZightTools::random_sample(.dataset, n = nsample, sample_size = samplesize)
         },
         update_data = function(h, ...) {
             if (is.null(newdata)) {
@@ -433,7 +435,7 @@ iNZSortWin <- setRefClass(
         sort_data = function() {
             .dataset <- GUI$get_data_object(lazy = FALSE)
             i <- names(sort_vars) != ""
-            newdata <- iNZightTools::sortVars(
+            newdata <- iNZightTools::sort_vars(
                 .dataset,
                 names(sort_vars[i]),
                 as.logical(sort_vars[i])
@@ -797,14 +799,13 @@ iNZAggregateWin <- setRefClass(
             }
 
             .dataset <- GUI$get_data_object(lazy = FALSE)
-            newdata <- iNZightTools::aggregateData(
+            newdata <- iNZightTools::aggregate_data(
                 .dataset,
-                vars = aggvars$get_items(),
-                summary_vars = svalue(smryvars),
+                group_vars = aggvars$get_items(),
+                vars = svalue(smryvars),
                 summaries = summaries[,1],
-                varnames = summaries[,2],
-                quantiles = quantiles,
-                custom_funs = custom
+                names = summaries[,2],
+                quantiles = quantiles
             )
 
             GUI$new_document(data = newdata, suffix = "aggregated")
@@ -863,7 +864,7 @@ iNZStackWin <- setRefClass(
             vars <- svalue(stack_vars)
 
             .dataset <- GUI$getActiveData(lazy = FALSE)
-            data <- iNZightTools::stackVars(.dataset, vars)
+            data <- iNZightTools::reshape_data(.dataset, cols = vars, names_to = "stack_variable", values_to = "stack_value")
             attr(data, "name") <-
                 paste(
                     attr(.dataset, "name", exact = TRUE),
@@ -1092,7 +1093,7 @@ iNZReorderVarsWin <- setRefClass(
                 return()
             }
 
-            newdata <- iNZightTools::selectVars(.dataset, vars)
+            newdata <- iNZightTools::select_vars(.dataset, vars)
             GUI$new_document(data = newdata,
                 suffix = ifelse(length(vars) == ncol(.dataset), "reorder", "subset")
             )
@@ -1311,7 +1312,8 @@ iNZReshapeWin <- setRefClass(
         },
         reshape = function() {
             .dataset <- GUI$getActiveData(lazy = FALSE)
-            df <- iNZightTools::reshape_data(.dataset, col1, col2, colname, key, value, check)
+            data_to <- dplyr::case_match(check, "long" ~ "wide", "wide" ~ "long")
+            df <- iNZightTools::reshape_data(.dataset, data_to, cols = colname, names_to = key, values_to = value, names_from = col1, values_from = col2)
         },
         do_reshape = function() {
             .dataset <- GUI$getActiveData(lazy = FALSE)
@@ -1473,8 +1475,14 @@ iNZSeparateWin <- setRefClass(
         separatedt = function(preview = TRUE) {
             if (sep == "") return()
 
-            left <- svalue(leftCol)
-            right <- svalue(rightCol)
+            data <- if (preview) GUI$get_data_object(nrow = 10L) else GUI$get_data_object(lazy = FALSE)
+            if (iNZightTools::is_survey(data)) {
+                var_name <- names(data$variables)
+            } else {
+                var_name <- names(data)
+            }
+            left <- iNZightTools::make_names(svalue(leftCol), var_name)
+            right <- iNZightTools::make_names(svalue(rightCol), var_name)
             if (check == "Column") {
                 if (left == "" || right == "") {
                     splitlist <- c("_", ".", "-")
@@ -1483,21 +1491,20 @@ iNZSeparateWin <- setRefClass(
                         if (length(x) == 2L) {
                             blockHandlers(leftCol)
                             blockHandlers(rightCol)
-                            svalue(leftCol) <<- left <- x[1]
-                            svalue(rightCol) <<- right <- x[2]
+                            svalue(leftCol) <<- left <- iNZightTools::make_names(x[1], var_name)
+                            svalue(rightCol) <<- right <- iNZightTools::make_names(x[2], var_name)
                             unblockHandlers(leftCol)
                             unblockHandlers(rightCol)
                         }
                     }
                 }
 
-                data <- if (preview) GUI$get_data_object(nrow = 10L) else GUI$get_data_object(lazy = FALSE)
-                tmp <- iNZightTools::separate(data, col, left, right, sep, check)
+                tmp <- iNZightTools::separate_var(data, var = col, by = sep, names = c(left, right), into = "cols")
 
                 if (iNZightTools::is_survey(tmp) && preview) tmp <- tmp$variables
 
             } else if (check == "Row") {
-                tmp <- iNZightTools::separate(data, col, left, right, sep, check)
+                tmp <- iNZightTools::separate_var(data, var = col, by = sep, into = "rows")
             }
             return(tmp)
         },
@@ -1531,12 +1538,14 @@ iNZUniteWin <- setRefClass(
         sep = "ANY",
         col = "ANY",
         name = "ANY",
+        remove_empty = "ANY",
+        keep_na = "ANY",
         newview = "ANY",
         unitebtn = "ANY"
     ),
     contains = "iNZWindow",
     methods = list(
-        initialize = function(gui = NULL) {
+        initialize = function(gui = NULL, cat_only = FALSE) {
             ok <- callSuper(gui,
                 title = "Unite columns",
                 width = "med",
@@ -1560,7 +1569,13 @@ iNZUniteWin <- setRefClass(
             font(col_string) <- list(weight = "bold")
             add(g_cols, col_string, anchor = c(-1, 0))
 
-            var1 <<- gtable(names(GUI$getActiveData(lazy = TRUE)),
+            d <- GUI$getActiveData(lazy = TRUE)
+            allvars <- names(d)
+            vt <- iNZightTools::vartypes(d)
+            if (cat_only) {
+                allvars <- allvars[vt == "cat"]
+            }
+            var1 <<- gtable(allvars,
                 multiple = TRUE,
                 expand = TRUE,
                 container = g_cols
@@ -1598,6 +1613,28 @@ iNZUniteWin <- setRefClass(
                 }
             )
 
+            remove_empty <<- TRUE
+            remove_empty_cb <- gcheckbox(
+                "Remove empty combinations",
+                handler = function(h, ...) {
+                    remove_empty <<- svalue(remove_empty_cb)
+                    updateView()
+                },
+                checked = TRUE
+            )
+            add(g_info, remove_empty_cb, anchor = c(-1, 0), fill = TRUE)
+
+            keep_na <<- TRUE
+            keep_na_cb <- gcheckbox(
+                "Treat missing values as a category",
+                checked = TRUE,
+                handler = function(h, ...) {
+                    keep_na <<- svalue(keep_na_cb)
+                    updateView()
+                }
+            )
+            add(g_info, keep_na_cb, anchor = c(-1, 0), fill = TRUE)
+
             add_body(g_top)
 
             prevTbl <- glayout(homogeneous = FALSE)
@@ -1618,13 +1655,13 @@ iNZUniteWin <- setRefClass(
         },
         updateView = function() {
             data <- GUI$get_data_object(nrow = 10L)
-            df <- iNZightTools::unite(data, name, col, sep)
+            df <- iNZightTools::combine_vars(data, vars = col, sep, name, !remove_empty, keep_na)
             if (iNZightTools::is_survey(df)) df <- df$variables
             newview$set_items(df)
         },
         do_unite = function() {
             .dataset <- GUI$get_data_object(lazy = FALSE)
-            newdata <- iNZightTools::unite(.dataset, name, col, sep)
+            newdata <- iNZightTools::combine_vars(.dataset, vars = col, sep, name, !remove_empty, keep_na)
             GUI$new_document(newdata, "united")
             close()
         }
@@ -1736,6 +1773,7 @@ iNZJoinWin <- setRefClass(
             jointypes <- list(
                 "Inner Join" = "inner_join",
                 "Left Join" = "left_join",
+                "Right Join" = "right_join",
                 "Full Join" = "full_join",
                 "Semi Join" = "semi_join",
                 "Anti Join" = "anti_join"
@@ -1925,16 +1963,20 @@ iNZJoinWin <- setRefClass(
                         list <- append(list, FALSE)
                     }
                 }
-                ## Now left_col contains some column namese and the mataching columns from two datasets are in the same class so JOIN
+                if (any("" %in% c(left_col, right_col), !length(left_col), !length(right_col))) {
+                    by <- NULL
+                } else {
+                    by <- setNames(right_col, left_col)
+                }
+                ## Now left_col contains some column names and the matching columns from two datasets are in the same class so JOIN
                 if (all(list == TRUE)) {
-                    d <- iNZightTools::joindata(
+                    d <- iNZightTools::join_data(
                         GUI$getActiveData(lazy = FALSE),
                         newdata,
-                        left_col,
-                        right_col,
-                        join_method,
-                        left_name,
-                        right_name
+                        by,
+                        how = gsub("_join$", "", join_method),
+                        suffix_l = sprintf(".%s", left_name),
+                        suffix_r = sprintf(".%s", right_name)
                     )
                     return(d)
                 } else {
@@ -2043,6 +2085,20 @@ iNZJoinWin <- setRefClass(
             )
             addSpace(win, 5)
 
+            right_join <- glabel("Right Join", container = win, anchor = c(-1, 0))
+            font(right_join) <- list(size = 12, weight = "bold")
+            right_join_help <- glabel(
+                add_lines(
+                    paste(
+                        "Keep every row in the imported dataset and",
+                        "match them to the original dataset"
+                    ),
+                    50
+                ),
+                container = win, anchor = c(-1, 0)
+            )
+            addSpace(win, 5)
+
             full_join <- glabel("Full Join", container = win, anchor = c(-1, 0))
             font(full_join) <- list(size = 12, weight = "bold")
             full_join_help <- glabel(
@@ -2140,7 +2196,7 @@ iNZAppendRowsWin <- setRefClass(
                     }
                 }
             }
-            iNZightTools::appendrows(as.data.frame(data), newdata, date)
+            iNZightTools::append_rows(as.data.frame(data), new_data = newdata, when_added = date)
         },
         do_append = function() {
             .dataset <- GUI$getActiveData(lazy = FALSE)

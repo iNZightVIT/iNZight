@@ -1,3 +1,18 @@
+# iNZight 4.4
+
+## Interface changes
+
+- aggregation by date-time can now involve additional grouping variables
+- uniting columns and combining categorical variables now share the same window, and added options to remove empty combinations and treat missing values as a category
+- added an option to rank variables with proportional method (by percentile)
+- added more methods for reordering levels of categorical variables
+- added an option to specify time zone for date-time variable conversion
+- added "right-join" as an option for joining data frames
+
+## Structural behind-the-scenes changes
+
+Changed all data and variable-related functions to `iNZightTools` 2.0.0. 
+
 # iNZight 4.3
 
 ## Interface changes
