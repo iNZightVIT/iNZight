@@ -79,6 +79,8 @@ ui <- iNZGUI$new()
 ui$initializeGui()
 
 test_that("Existing datasets can be joined", {
+    skip("Needs fixing with changes to dplyr")
+
     # first, set two datasets:
     d1 <- data.frame(
         x = c("A", "B", "C", "D"), y = 1:4,

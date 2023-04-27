@@ -2,7 +2,8 @@
     opts <- options()
     inzight_opts <- list(
         inzight.disable.bootstraps = FALSE,
-        inzight.lock.packages = FALSE
+        inzight.lock.packages = FALSE,
+        inzighttools.comment = "#"
     )
     toset <- !(names(inzight_opts) %in% names(opts))
     if (any(toset)) options(inzight_opts[toset])
