@@ -130,7 +130,7 @@ test_that("Uniting columns works", {
     expect_silent(w$ok_button$invoke_change_handler())
     expect_equal(
         ui$getActiveData()$travel_gender,
-        with(census.at.school.500, as.factor(paste(travel, gender, sep = "_")))
+        with(census.at.school.500, forcats::fct_cross(travel, gender, sep = "_"))
     )
 })
 
@@ -143,8 +143,8 @@ test_that("Separating columns works", {
     expect_true(w$var2$set_value("_"))
     w$sep <- "_"
     expect_silent(w$updateView())
-    expect_equal(svalue(w$leftCol), "travel")
-    expect_equal(svalue(w$rightCol), "gender")
+    expect_equal(svalue(w$leftCol), "travel1")
+    expect_equal(svalue(w$rightCol), "gender1")
     expect_true(w$leftCol$set_value("mode_of_travel"))
     expect_true(w$rightCol$set_value("sex"))
     expect_silent(w$updateView())
