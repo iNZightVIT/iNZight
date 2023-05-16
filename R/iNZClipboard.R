@@ -113,3 +113,76 @@ iNZClipboard <- setRefClass(
         }
     )
 )
+
+iNZCopyToClipboard <- setRefClass(
+    "iNZCopyToClipboard",
+    contains = "iNZWindow",
+    fields = list(
+        text_data = "ANY",
+        delimiter = "character"
+    ),
+    methods = list(
+        initialize = function(gui) {
+            callSuper(gui,
+                title = "Copy to Clipboard",
+                width = "med",
+                height = "med",
+                ok = "Close",
+                cancel = NULL,
+                action = close
+            )
+            on.exit(.self$show())
+
+            initFields(delimiter = "\t")
+
+            g <- gvbox()
+            add_body(g)
+
+            lbl <- glabel("  Copy the data below to paste elsewhere:",
+                container = g,
+                anchor = c(-1, 0)
+            )
+            font(lbl) <- list(weight = "bold")
+
+            text_data <<- gtext("",
+                height = 500,
+                wrap = FALSE,
+                expand = TRUE
+            )
+            text_data$set_editable(FALSE)
+            # addHandlerFocus(text_data,
+            #     handler = function(h, ...) {
+            #         RGtk2::gtkTextBufferSelectRange(
+            #             text_data$buffer,
+            #             text_data$buffer$GetStartIter()$iter,
+            #             text_data$buffer$GetEndIter()$iter
+            #         )
+            #     }
+            # )
+
+            add_body(text_data, fill = TRUE, expand = TRUE)
+
+            add_body(
+                glabel("Use CTRL+A to select the data, and CTRL+C to copy it.")
+            )
+
+            setTextData()
+
+            invisible(NULL)
+        },
+        setTextData = function() {
+            text <- paste(
+                apply(GUI$getActiveData(), 1L, paste, collapse = delimiter),
+                collapse = "\n"
+            )
+
+            svalue(text_data) <<- ""
+            text_data$insert_text(
+                text,
+                where = "beginning",
+                font.attr = list(family = "monospace"),
+                do.newline = FALSE
+            )
+        }
+    )
+)

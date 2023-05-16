@@ -64,12 +64,21 @@ iNZMenuBarWidget <- setRefClass(
                         icon = "save-as",
                         handler = function(h, ...) iNZExportWin$new(GUI)),
                 gseparator(),
-                paste =
-                    gaction("Paste from ...",
-                        icon = "paste",
-                        tooltip = "Import data by pasting/clipboard",
-                        handler = function(h, ...)
-                            iNZClipboard$new(GUI, type = "paste")
+                Clipboard = list(
+                    paste =
+                        gaction("Paste from ...",
+                            icon = "paste",
+                            tooltip = "Import data by pasting/clipboard",
+                            handler = function(h, ...)
+                                iNZClipboard$new(GUI, type = "paste")
+                        ),
+                    copy =
+                        gaction("Copy to ...",
+                            icon = "copy",
+                            tooltip = "Copy data to clipboard",
+                            handler = function(h, ...)
+                                iNZCopyToClipboard$new(GUI)
+                        )
                     ),
                 gseparator(),
                 example =
