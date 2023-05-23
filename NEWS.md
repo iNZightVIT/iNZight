@@ -1,3 +1,5 @@
+- move 'paste from' to 'clipboard' menu and add 'copy to' option (to copy to clipboard) (#402)
+
 # iNZight 4.4
 
 ## Interface changes
@@ -11,7 +13,7 @@
 
 ## Structural behind-the-scenes changes
 
-Changed all data and variable-related functions to `iNZightTools` 2.0.0. 
+Changed all data and variable-related functions to `iNZightTools` 2.0.0.
 
 # iNZight 4.3
 
