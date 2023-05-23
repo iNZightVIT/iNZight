@@ -1,5 +1,3 @@
-- move 'paste from' to 'clipboard' menu and add 'copy to' option (to copy to clipboard) (#402)
-
 # iNZight 4.4
 
 ## Interface changes
@@ -10,10 +8,17 @@
 - added more methods for reordering levels of categorical variables
 - added an option to specify time zone for date-time variable conversion
 - added "right-join" as an option for joining data frames
+- move 'paste from' to 'clipboard' menu and add 'copy to' option (to copy to clipboard) (#402)
 
 ## Structural behind-the-scenes changes
 
 Changed all data and variable-related functions to `iNZightTools` 2.0.0.
+
+## Modules redesigned
+
+Mdules are now more modular, and accessed from a separate menu item 'Modules'. The modules in the 'Advanced' menu will slowly be deprecated as they are ported to the new API.
+
+For developers, modules are now easier to maintain independently (as git submodules), and the `iNZModule` class supports installation of dependencies, plus some other methods.
 
 # iNZight 4.3
 
