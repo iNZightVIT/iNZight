@@ -161,7 +161,6 @@ iNZGUI <- setRefClass(
 
             ## Grab settings file (or try to!)
             getPreferences()
-
             if (!is.null(addonDir) && dir.exists(addonDir)) {
                 addonModuleDir <<- addonDir
             } else if (!is.null(preferences$module_dir)) {
@@ -169,6 +168,7 @@ iNZGUI <- setRefClass(
             } else {
                 addonModuleDir <<- Sys.getenv("INZIGHT_MODULES_DIR")
             }
+
             if (dir.exists(addonModuleDir)) load_addons()
 
             popOut <<- preferences$popout
@@ -1214,12 +1214,15 @@ iNZGUI <- setRefClass(
                     prefs$language[1]
                 }
 
-            prefs$module_dir <-
-                if (is.null(prefs$module_dir) || prefs$module_dir == "" || !dir.exists(prefs$module_dir)) {
-                    defs$module_dir
-                } else {
-                    prefs$module_dir[1]
-                }
+            prefs <- modifyList(prefs,
+                list(module_dir =
+                    if (is.null(prefs$module_dir) || prefs$module_dir == "" || !dir.exists(prefs$module_dir)) {
+                        defs$module_dir
+                    } else {
+                        prefs$module_dir[1]
+                    }),
+                keep.null = TRUE
+            )
 
             prefs$multiple_x <-
                 if (is.null(prefs$multiple_x) || !is.logical(prefs$multiple_x)) {
@@ -1228,14 +1231,18 @@ iNZGUI <- setRefClass(
                     prefs$multiple_x
                 }
 
-            prefs$gg_theme <-
-                if (is.character(prefs$gg_theme) && prefs$gg_theme %in% AVAILABLE_THEMES) {
-                    prefs$gg_theme
-                } else if (is.list(prefs$gg_theme) || inherits(prefs$gg_theme, "theme")) {
-                    prefs$gg_theme
-                } else {
-                    defs$gg_theme
-                }
+            prefs <- modifyList(prefs,
+                list(gg_theme =
+                    if (is.character(prefs$gg_theme) && prefs$gg_theme %in% AVAILABLE_THEMES) {
+                        prefs$gg_theme
+                    } else if (is.list(prefs$gg_theme) || inherits(prefs$gg_theme, "theme")) {
+                        prefs$gg_theme
+                    } else {
+                        defs$gg_theme
+                    }),
+                keep.null = TRUE
+            )
+
 
             prefs
         },
@@ -1257,6 +1264,7 @@ iNZGUI <- setRefClass(
         },
         savePreferences = function() {
             "Saves the users preferences in a file"
+            preferences <<- checkPrefs(preferences)
             if (!dir.exists(dirname(prefs.location))) {
                 if (!interactive()) {
                     return()

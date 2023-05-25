@@ -10,6 +10,7 @@ NewModuleManager <- setRefClass(
         GUI = "ANY",
         win = "ANY",
         m_dir = "character",
+        m_dir_exists = "logical",
         confirm = "logical",
         installed_modules = "list",
         available_modules = "list",
@@ -41,6 +42,7 @@ NewModuleManager <- setRefClass(
 
             initFields(
                 m_dir = gui$addonModuleDir,
+                m_dir_exists = file.exists(gui$addonModuleDir),
                 confirm = as.logical(Sys.getenv("INZIGHT_CONFIRM_DIALOGS", TRUE)),
                 installed_modules = list(),
                 available_modules = yaml::read_yaml(
@@ -48,7 +50,37 @@ NewModuleManager <- setRefClass(
                 )
             )
 
-            if (!file.exists(m_dir)) create_module_directory(m_dir)
+            if (!m_dir_exists) create_module_directory(m_dir)
+
+            ## --- show user where modules are installed:
+            ## TODO: add button to specify new location / link to preferences
+            info_tbl <- glayout()
+            lbl <- glabel("Addon module directory:")
+            font(lbl) <- list(weight = "bold")
+            info_tbl[1L, 1L, anchor = c(1, 0)] <- lbl
+
+            # m_dir_lbl <- glabel(if (m_dir_exists) mdir else "Not specified")
+            m_dir_file <- gfilebrowse(
+                text = "Not specified",
+                type = "selectdir",
+                initial.filename = ifelse(m_dir_exists, m_dir, getwd())
+            )
+            if (m_dir_exists)
+                m_dir_file$set_value(tools::file_path_as_absolute(m_dir))
+            addHandlerChanged(m_dir_file,
+                handler = function(h, ...) {
+                    m_dir <<- svalue(h$obj)
+                    GUI$preferences$module_dir <<- m_dir
+                    GUI$savePreferences()
+                    GUI$addonModuleDir <<- GUI$preferences$module_dir
+                    m_dir_exists <<- file.exists(m_dir)
+                    create_module_directory(m_dir)
+                    refresh_modules()
+                }
+            )
+            info_tbl[1L, 2L, expand = TRUE] <- m_dir_file
+
+            add_body(info_tbl)
 
             available_modules <<- lapply(names(available_modules),
                 function(z) c(list(name = z), available_modules[[z]])
@@ -56,20 +88,9 @@ NewModuleManager <- setRefClass(
             names(available_modules) <<-
                 sapply(available_modules, function(x) x$name)
 
-            ## --- show user where modules are installed:
-            ## TODO: add button to specify new location / link to preferences
-            info_tbl <- glayout()
-
-            lbl <- glabel("Addon module directory:")
-            font(lbl) <- list(weight = "bold")
-            info_tbl[1L, 1L, anchor = c(1, 0)] <- lbl
-
-            m_dir_lbl <- glabel(m_dir)
-            info_tbl[1L, 2L, expand = TRUE] <- m_dir_lbl
-
-            add_body(info_tbl)
 
             g_mods <<- ggroup()
+            visible(g_mods) <<- m_dir_exists
             add_body(g_mods, expand = TRUE)
 
             #
@@ -91,10 +112,20 @@ NewModuleManager <- setRefClass(
 
         },
         create_module_directory = function(dir) {
-            if (is.null(dir) || trimws(dir) == "")
-                stop("Please specify module directory. See ?iNZight")
-            if (!interactive())
-                stop(sprintf("Module directory does not exist. Please create %s.", dir))
+            if (file.exists(dir)) {
+                m_dir_exists <<- TRUE
+                visible(g_mods) <<- TRUE
+                return()
+            }
+
+            if (is.null(dir) || trimws(dir) == "") {
+                message("Please specify module directory. See ?iNZight")
+                return()
+            }
+            if (!interactive()) {
+                message(sprintf("Module directory does not exist. Please create %s.", dir))
+                return()
+            }
 
             conf <- gconfirm(
                 paste0(
@@ -118,9 +149,16 @@ NewModuleManager <- setRefClass(
                 icon = "error",
                 parent = GUI$win
             )
+
+            m_dir_exists <<- file.exists(dir)
+            visible(g_mods) <<- m_dir_exists
         },
         module_load = function(dir) {
             mod_desc <- file.path(dir, "DESCRIPTION")
+            if (!file.exists(mod_desc)) {
+                message("Module description file not found.")
+                return()
+            }
             info <- list(
                 title = desc::desc_get_field("Title", file = mod_desc),
                 description = desc::desc_get_field("Description", file = mod_desc),
@@ -157,6 +195,8 @@ NewModuleManager <- setRefClass(
             mdirs <- list.dirs(m_dir, recursive = FALSE)
             installed_modules <<- lapply(mdirs, .self$module_load)
             names(installed_modules) <<- basename(mdirs)
+            installed_modules <<-
+                installed_modules[!sapply(installed_modules, is.null)]
 
             module_table$set_items(
                 make_modules_df()
@@ -392,9 +432,20 @@ iNZModule <- setRefClass(
             name = mod$info$title %||% "Module",
             embedded = TRUE,
             uses_code_panel = FALSE,
+            requires_data = TRUE,
             help = NULL
         ) {
             initFields(GUI = gui, mod = mod)
+
+            if (requires_data) {
+                if (all(colnames(GUI$getActiveData()) == "empty")) {
+                    gmessage("Load data before using this module.",
+                        parent = GUI$win,
+                        icon = "error"
+                    )
+                    stop()
+                }
+            }
 
             ## special loading of menu - this should do some fancy checking, etc..
 
