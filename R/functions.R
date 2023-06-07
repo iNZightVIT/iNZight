@@ -189,5 +189,6 @@ center_window <- function(w) {
     gtkWindowMove(w$widget, win_pos[1], win_pos[2])
 }
 
+#' @export
 `%||%` <- function(a, b)
     if (is.null(a)) b else a

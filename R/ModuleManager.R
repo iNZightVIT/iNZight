@@ -37,7 +37,9 @@ NewModuleManager <- setRefClass(
                 show_code = FALSE,
                 scroll = FALSE
             )
-            if (!ok) return()
+            if (!ok) {
+                return()
+            }
             on.exit(.self$show())
 
             initFields(
@@ -65,8 +67,9 @@ NewModuleManager <- setRefClass(
                 type = "selectdir",
                 initial.filename = ifelse(m_dir_exists, m_dir, getwd())
             )
-            if (m_dir_exists)
+            if (m_dir_exists) {
                 m_dir_file$set_value(tools::file_path_as_absolute(m_dir))
+            }
             addHandlerChanged(m_dir_file,
                 handler = function(h, ...) {
                     m_dir <<- svalue(h$obj)
@@ -82,7 +85,8 @@ NewModuleManager <- setRefClass(
 
             add_body(info_tbl)
 
-            available_modules <<- lapply(names(available_modules),
+            available_modules <<- lapply(
+                names(available_modules),
                 function(z) c(list(name = z), available_modules[[z]])
             )
             names(available_modules) <<-
@@ -100,8 +104,10 @@ NewModuleManager <- setRefClass(
 
             # TODO: remove dropdown from header
 
-            addHandlerSelectionChanged(module_table,
-                function(h, ...) update_info_panel())
+            addHandlerSelectionChanged(
+                module_table,
+                function(h, ...) update_info_panel()
+            )
 
             g_mod_info <<- gvbox()
             g_mod_info$set_borderwidth(5L)
@@ -109,7 +115,6 @@ NewModuleManager <- setRefClass(
 
             add(g_mods, g_mod_info)
             update_info_panel()
-
         },
         create_module_directory = function(dir) {
             if (file.exists(dir)) {
@@ -137,9 +142,13 @@ NewModuleManager <- setRefClass(
                 icon = "question",
                 parent = GUI$win
             )
-            if (!conf) return()
+            if (!conf) {
+                return()
+            }
 
-            if (dir.create(dir)) return()
+            if (dir.create(dir)) {
+                return()
+            }
             gmessage(
                 paste0(
                     "Please create the following directory manually:\n\n",
@@ -169,8 +178,9 @@ NewModuleManager <- setRefClass(
                 subscribed = "stable",
                 update_available = ""
             )
-            if (file.exists(file.path(dir, "VERSION")))
+            if (file.exists(file.path(dir, "VERSION"))) {
                 info$subscribed <- scan(file.path(dir, "VERSION"), what = character())
+            }
 
             si <- which(sapply(available_modules, function(x) x$title) == info$title)
             if (si > 0) {
@@ -183,7 +193,8 @@ NewModuleManager <- setRefClass(
                         ""
                     )
                 }
-                info$versions <- c("stable",
+                info$versions <- c(
+                    "stable",
                     if (amod$development == "") NULL else amod$development,
                     amod$versions
                 )
@@ -203,7 +214,8 @@ NewModuleManager <- setRefClass(
             )
         },
         make_modules_df = function() {
-            mdf <- lapply(names(available_modules),
+            mdf <- lapply(
+                names(available_modules),
                 function(mod) {
                     amod <- available_modules[[mod]]
                     imod <- installed_modules[[mod]]
@@ -221,7 +233,8 @@ NewModuleManager <- setRefClass(
         },
         update_info_panel = function() {
             # delete all contents
-            sapply(g_mod_info$children,
+            sapply(
+                g_mod_info$children,
                 function(x) delete(g_mod_info, x)
             )
             g_info <- gvbox(expand = TRUE, container = g_mod_info)
@@ -260,7 +273,8 @@ NewModuleManager <- setRefClass(
             mod_info_tbl[ii, 2:3, anchor = c(-1, 0), expand = TRUE, fill = TRUE] <- mod_info_version
 
             mod_info_description <- gtext(amod$description,
-                width = 500, height = 50)
+                width = 500, height = 50
+            )
             RGtk2::gtkTextViewSetLeftMargin(mod_info_description$widget, 0)
             enabled(mod_info_description) <- FALSE
             mod_info_tbl[ii, 1L, anchor = c(1, 1), expand = TRUE] <- "Description: "
@@ -271,14 +285,18 @@ NewModuleManager <- setRefClass(
             mod_versions <- c(
                 "None",
                 "Stable",
-                if (!is.null(amod$development) && amod$development != "")
-                    "Development" else NULL,
+                if (!is.null(amod$development) && amod$development != "") {
+                    "Development"
+                } else {
+                    NULL
+                },
                 amod$versions
             )
             mod_version <- gcombobox(mod_versions,
                 selected = if (is.null(imod)) 1L else which(mod_versions == imod$subscribed),
-                handler = function(h, ...)
+                handler = function(h, ...) {
                     install_module(amod, svalue(h$obj))
+                }
             )
             mod_info_tbl[ii, 1L, anchor = c(1, 0), expand = TRUE] <- "Installed version: "
             mod_info_tbl[ii, 2L, fill = TRUE] <- mod_version
@@ -310,10 +328,13 @@ NewModuleManager <- setRefClass(
             # print(svalue(module_table))
         },
         install_module = function(mod, ref, confirm = TRUE) {
-            if (ref == "None") return()
+            if (ref == "None") {
+                return()
+            }
             # downloads the named module@ref
 
-            str <- sprintf("%s/archive/refs/%s/%s.zip",
+            str <- sprintf(
+                "%s/archive/refs/%s/%s.zip",
                 gsub("\\.git$", "", mod$url),
                 ifelse(ref %in% c("Stable", "Development"),
                     "heads",
@@ -328,12 +349,15 @@ NewModuleManager <- setRefClass(
 
             if (confirm) {
                 c <- gconfirm(
-                    sprintf("You are about to install %s (%s).",
+                    sprintf(
+                        "You are about to install %s (%s).",
                         mod$title, ref
                     ),
                     parent = GUI$win
                 )
-                if (!c) return(NULL)
+                if (!c) {
+                    return(NULL)
+                }
             }
             message("Installing ", str)
 
@@ -343,7 +367,9 @@ NewModuleManager <- setRefClass(
                     c <- gconfirm("This will remove the previous version. Continue?",
                         parent = GUI$win
                     )
-                    if (!c) return(NULL)
+                    if (!c) {
+                        return(NULL)
+                    }
                 }
             }
 
@@ -388,7 +414,9 @@ NewModuleManager <- setRefClass(
                     sprintf("Are you sure you want to uninstall %s?", mod$title),
                     parent = GUI$win
                 )
-                if (!c) return(NULL)
+                if (!c) {
+                    return(NULL)
+                }
             }
             d <- file.path(m_dir, mod$name)
             if (dir.exists(d)) unlink(d, TRUE, TRUE)
@@ -429,12 +457,11 @@ iNZModule <- setRefClass(
     ),
     methods = list(
         initialize = function(gui, mod,
-            name = mod$info$title %||% "Module",
-            embedded = TRUE,
-            uses_code_panel = FALSE,
-            requires_data = TRUE,
-            help = NULL
-        ) {
+                              name = mod$info$title %||% "Module",
+                              embedded = TRUE,
+                              uses_code_panel = FALSE,
+                              requires_data = TRUE,
+                              help = NULL) {
             initFields(GUI = gui, mod = mod)
 
             if (requires_data) {
@@ -467,7 +494,9 @@ iNZModule <- setRefClass(
                 if (loaded) {
                     pv <- packageVersion(pkg, lib.loc = pkg_lib)
                     cat("", as.character(pv), "\n")
-                } else cat(" failed\n")
+                } else {
+                    cat(" failed\n")
+                }
             }
             search_final_pkgs <- search()
             loaded_packages <<- search_final_pkgs[!search_final_pkgs %in% search_original_pkgs]
@@ -495,9 +524,9 @@ iNZModule <- setRefClass(
 
             GUI$plotToolbar$update(NULL)
 
-            if (GUI$preferences$dev.features && GUI$preferences$show.code)
+            if (GUI$preferences$dev.features && GUI$preferences$show.code) {
                 visible(GUI$code_panel$panel) <<- uses_code_panel
-
+            }
         },
         get_data = function() {
             GUI$getActiveData()
@@ -511,8 +540,10 @@ iNZModule <- setRefClass(
             if (!missing(pkgs)) {
                 pkgs <- pkgs[!pkgs %in% rownames(utils::installed.packages())]
                 if (length(pkgs) > 0) {
-                    plot(0, 0, type = "n", bty = "n", xaxt = "n", yaxt = "n",
-                        xlab = "", ylab = "")
+                    plot(0, 0,
+                        type = "n", bty = "n", xaxt = "n", yaxt = "n",
+                        xlab = "", ylab = ""
+                    )
                     text(0, 0, "Installing dependencies, please wait ...")
 
                     utils::install.packages(pkgs, quiet = TRUE, repos = repo, dependencies = TRUE)
@@ -533,9 +564,11 @@ iNZModule <- setRefClass(
                 remotes::install_github(github, repos = repo)
             }
 
-            plot(0, 0, type = "n", bty = "n",
+            plot(0, 0,
+                type = "n", bty = "n",
                 xaxt = "n", yaxt = "n",
-                xlab = "", ylab = "")
+                xlab = "", ylab = ""
+            )
         },
         add_body = function(x, ...) {
             add(mainGrp, x)
@@ -587,20 +620,23 @@ load_module <- function(dir, ui_env) {
     iNZModules <- e$iNZModule <- utils::getFromNamespace("iNZModule", "iNZight")
 
     modRdir <- file.path(dir, "R")
-    if (dir.exists(modRdir))
+    if (dir.exists(modRdir)) {
         lapply(
             list.files(modRdir, full.names = TRUE),
             function(x) source(x, local = e)
         )
+    }
 
     # now load all the bits and pieces
     mdir <- file.path(dir, "module")
 
-    if (file.exists(file.path(mdir, "menu.R")))
+    if (file.exists(file.path(mdir, "menu.R"))) {
         source(file.path(mdir, "menu.R"), local = e)
+    }
 
-    if (file.exists(file.path(mdir, "main.R")))
+    if (file.exists(file.path(mdir, "main.R"))) {
         source(file.path(mdir, "main.R"), local = e)
+    }
 
     e$mod_dir <- dir
 
@@ -646,7 +682,9 @@ convert_menu_items.inzmenuitem <- function(item, gui, mod, ...) {
 
 run_module <- function(ui, mod) {
     n <- ls(envir = mod)
-    moduleName <- if (!is.null(mod$module_name)) mod$module_name else {
+    moduleName <- if (!is.null(mod$module_name)) {
+        mod$module_name
+    } else {
         cl <- sapply(n, function(x) class(mod[[x]]))
         n[which(cl == "refObjectGenerator")[1]]
     }
