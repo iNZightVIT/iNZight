@@ -224,10 +224,7 @@ NewModuleManager <- setRefClass(
                     amod <- available_modules[[mod]]
                     imod <- installed_modules[[mod]]
                     data.frame(
-                        # Select = FALSE,
                         Name = amod$title,
-                        # Description = mod$description,
-                        # Subscribed = mod$subscribed,
                         Latest = amod$version,
                         Installed = ifelse(is.null(imod), "", as.character(imod$version))
                     )
@@ -315,21 +312,6 @@ NewModuleManager <- setRefClass(
             }
 
             ii <- ii + 1L
-
-            # if (!is.null(amod$versions) && !is.null(imod)) {
-            #     mod_info_subscribed$set_items(imod$versions)
-            #     mod_info_subscribed$set_value(imod$subscribed)
-            #     visible(mod_info_subscribed) <<- TRUE
-            # } else {
-            #     visible(mod_info_subscribed) <<- FALSE
-            # }
-
-
-
-
-
-
-            # print(svalue(module_table))
         },
         install_module = function(mod, ref, confirm = TRUE) {
             if (ref == "None") {
@@ -647,9 +629,6 @@ load_module <- function(dir, ui_env) {
     class(e) <- "inzmodule"
     e
 }
-
-## also need a 'close module' method which can remove the loaded libraries ...
-
 
 #' @export
 print.inzmodule <- function(x, ...) {
