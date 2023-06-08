@@ -48,7 +48,7 @@ iNZImportExampleWin <- setRefClass("iNZImportExampleWin",
                     if (!dir.exists(lib)) {
                         return(NULL)
                     }
-                    pkgs <- list.files(lib)
+                    lib.pkgs <- list.files(lib)
                 })
             }
 

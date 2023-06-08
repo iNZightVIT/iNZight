@@ -225,7 +225,7 @@ NewModuleManager <- setRefClass(
                     imod <- installed_modules[[mod]]
                     data.frame(
                         Name = amod$title,
-                        Latest = amod$version,
+                        Latest = amod$latest,
                         Installed = ifelse(is.null(imod), "", as.character(imod$version))
                     )
                 }
@@ -291,7 +291,7 @@ NewModuleManager <- setRefClass(
                 } else {
                     NULL
                 },
-                amod$versions
+                if (length(amod$versions)) amod$versions else NULL
             )
             mod_version <- gcombobox(mod_versions,
                 selected = if (is.null(imod)) 1L else which(mod_versions == imod$subscribed),
@@ -565,7 +565,15 @@ iNZModule <- setRefClass(
 
             ## clean up search path
             message("Detaching module dependencies ...")
-            cleanup <- sapply(loaded_packages, detach, character.only = TRUE)
+            cleanup <- sapply(
+                loaded_packages,
+                function(x) {
+                    try(
+                        detach(x, character.only = TRUE),
+                        silent = TRUE
+                    )
+                }
+            )
             rm(cleanup)
 
             ## delete the module window
