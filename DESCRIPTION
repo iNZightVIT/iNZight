@@ -11,7 +11,8 @@ Authors@R: c(person("Tom", "Elliott", role = c("aut", "cre"),
                     email = "MarcoKuper42@gmail.com"),
              person("David", "Banks", role = "ctb"),
              person("Yiwen", "He", role = "ctb"),
-             person("Daniel", "Barnett", role = "aut"))
+             person("Daniel", "Barnett", role = "aut"),
+             person("Zhaoming", "Su", role = "ctb"))
 Description: An interactive GUI for easy visual exploration of datasets.
 License: GPL-3
 Depends:
@@ -22,7 +23,9 @@ Depends:
     gWidgets2RGtk2,
     objectProperties
 Imports:
+    cli,
     colorspace,
+    desc,
     dplyr,
     grDevices,
     grid,
@@ -49,6 +52,7 @@ Suggests:
     kableExtra,
     png,
     RColorBrewer,
+    remotes,
     rlang,
     rmarkdown,
     RODBC,

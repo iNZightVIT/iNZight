@@ -1,5 +1,3 @@
-- move 'paste from' to 'clipboard' menu and add 'copy to' option (to copy to clipboard) (#402)
-
 # iNZight 4.4
 
 ## Interface changes
@@ -10,10 +8,17 @@
 - added more methods for reordering levels of categorical variables
 - added an option to specify time zone for date-time variable conversion
 - added "right-join" as an option for joining data frames
+- move 'paste from' to 'clipboard' menu and add 'copy to' option (to copy to clipboard) (#402)
 
 ## Structural behind-the-scenes changes
 
 Changed all data and variable-related functions to `iNZightTools` 2.0.0.
+
+## Modules redesigned
+
+Mdules are now more modular, and accessed from a separate menu item 'Modules'. The modules in the 'Advanced' menu will slowly be deprecated as they are ported to the new API.
+
+For developers, modules are now easier to maintain independently (as git submodules), and the `iNZModule` class supports installation of dependencies, plus some other methods.
 
 # iNZight 4.3
 
@@ -33,6 +38,12 @@ Changed all data and variable-related functions to `iNZightTools` 2.0.0.
 - New 'GTag' and 'GTags' classes for labels with a background and a collection of droppable labels, respectively
 - add search button/clear button to search group (in data view widget)
 - iNZDocument class uses global option `inzight.default.par` to override the default values for any `iNZightPlots::inzpar()` settings
+
+## New Features
+
+### Modules
+
+Redesigned from the original prototype, the new modules functionality is built directly into 'iNZight', and will eventually lead to the deprecation of 'iNZightModules'. Modules can be installed at specific versions, including dependencies, and include capablity to add new menu items to 'iNZight'. Each module has its own library, which should reduce clashes where packages depend on different versions of a package.
 
 # iNZight 4.2
 
