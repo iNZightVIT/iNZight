@@ -89,9 +89,13 @@ NewModuleManager <- setRefClass(
                 names(available_modules),
                 function(z) c(list(name = z), available_modules[[z]])
             )
+            include_all <- as.logical(Sys.getenv("inzight.show.all.modules", FALSE))
+            if (!isTRUE(include_all)) {
+                available_modules <<-
+                    available_modules[!sapply(available_modules, function(x) x$exclude)]
+            }
             names(available_modules) <<-
                 sapply(available_modules, function(x) x$name)
-
 
             g_mods <<- ggroup()
             visible(g_mods) <<- m_dir_exists
@@ -686,7 +690,7 @@ run_module <- function(ui, mod) {
         mod$module_name
     } else {
         cl <- sapply(n, function(x) class(mod[[x]]))
-        n[which(cl == "refObjectGenerator")[1]]
+        n[which(cl == "refObjectGenerator" & n != "iNZModule")[1]]
     }
     mod[[moduleName]]$new(ui, mod = mod)
 }
