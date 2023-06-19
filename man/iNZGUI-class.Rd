@@ -73,6 +73,8 @@ Main class that builds the iNZight GUI
 
 \item{\code{is_initialized}}{logical, indicates if iNZight is initialised or not}
 
+\item{\code{stop_loading}}{logical, indicates if iNZight should stop loading}
+
 \item{\code{ui_env}}{the environment in which the GUI is created. Used as a base env
 for loading modules.}
 }}

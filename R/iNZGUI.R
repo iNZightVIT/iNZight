@@ -33,7 +33,7 @@
 #' @field code_env the environment in which R code is executed
 #' @field code_panel the interactive code widget at the bottom of the iNZight window
 #' @field is_initialized logical, indicates if iNZight is initialised or not
-#' @field stop_loading
+#' @field stop_loading logical, indicates if iNZight should stop loading
 #' @field ui_env the environment in which the GUI is created. Used as a base env
 #'  for loading modules.
 #'
@@ -117,16 +117,14 @@ iNZGUI <- setRefClass(
         ## Start the iNZight GUI
         ## This is the main method of iNZight and calls all the other
         ## methods of the GUI class.
-        initializeGui = function(
-            data = NULL,
-            dispose_fun = NULL,
-            addonDir = NULL,
-            show = TRUE,
-            stop_loading = FALSE,
-            ...,
-            disposer = NULL,
-            ui_env = parent.frame()
-        ) {
+        initializeGui = function(data = NULL,
+                                 dispose_fun = NULL,
+                                 addonDir = NULL,
+                                 show = TRUE,
+                                 stop_loading = FALSE,
+                                 ...,
+                                 disposer = NULL,
+                                 ui_env = parent.frame()) {
             "Initiates the GUI"
             initFields(
                 is_initialized = FALSE,
@@ -1215,12 +1213,14 @@ iNZGUI <- setRefClass(
                 }
 
             prefs <- modifyList(prefs,
-                list(module_dir =
-                    if (is.null(prefs$module_dir) || prefs$module_dir == "" || !dir.exists(prefs$module_dir)) {
-                        defs$module_dir
-                    } else {
-                        prefs$module_dir[1]
-                    }),
+                list(
+                    module_dir =
+                        if (is.null(prefs$module_dir) || prefs$module_dir == "" || !dir.exists(prefs$module_dir)) {
+                            defs$module_dir
+                        } else {
+                            prefs$module_dir[1]
+                        }
+                ),
                 keep.null = TRUE
             )
 
@@ -1232,14 +1232,16 @@ iNZGUI <- setRefClass(
                 }
 
             prefs <- modifyList(prefs,
-                list(gg_theme =
-                    if (is.character(prefs$gg_theme) && prefs$gg_theme %in% AVAILABLE_THEMES) {
-                        prefs$gg_theme
-                    } else if (is.list(prefs$gg_theme) || inherits(prefs$gg_theme, "theme")) {
-                        prefs$gg_theme
-                    } else {
-                        defs$gg_theme
-                    }),
+                list(
+                    gg_theme =
+                        if (is.character(prefs$gg_theme) && prefs$gg_theme %in% AVAILABLE_THEMES) {
+                            prefs$gg_theme
+                        } else if (is.list(prefs$gg_theme) || inherits(prefs$gg_theme, "theme")) {
+                            prefs$gg_theme
+                        } else {
+                            defs$gg_theme
+                        }
+                ),
                 keep.null = TRUE
             )
 
