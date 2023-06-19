@@ -444,12 +444,13 @@ iNZModule <- setRefClass(
     ),
     methods = list(
         initialize = function(gui, mod,
-                              name = mod$info$title %||% "Module",
+                              name = "Module",
                               embedded = TRUE,
                               uses_code_panel = FALSE,
                               requires_data = TRUE,
                               help = NULL) {
             initFields(GUI = gui, mod = mod)
+            if (!is.null(mod$info$title)) name <- mod$info$title
 
             if (requires_data) {
                 if (all(colnames(GUI$getActiveData()) == "empty")) {
@@ -618,7 +619,9 @@ load_module <- function(dir, ui_env) {
     if (dir.exists(modRdir)) {
         lapply(
             list.files(modRdir, full.names = TRUE),
-            function(x) source(x, local = e)
+            function(x) {
+                source(x, local = e)
+            }
         )
     }
 
