@@ -11,6 +11,7 @@ NewModuleManager <- setRefClass(
         GUI = "ANY",
         win = "ANY",
         m_dir = "character",
+        m_dir_file = "ANY",
         m_dir_exists = "logical",
         confirm = "logical",
         installed_modules = "list",
@@ -62,8 +63,7 @@ NewModuleManager <- setRefClass(
             font(lbl) <- list(weight = "bold")
             info_tbl[1L, 1L, anchor = c(1, 0)] <- lbl
 
-            # m_dir_lbl <- glabel(if (m_dir_exists) mdir else "Not specified")
-            m_dir_file <- gfilebrowse(
+            m_dir_file <<- gfilebrowse(
                 text = "Not specified",
                 type = "selectdir",
                 initial.filename = ifelse(m_dir_exists, m_dir, getwd())
@@ -152,6 +152,7 @@ NewModuleManager <- setRefClass(
             }
 
             if (dir.create(dir)) {
+                svalue(m_dir_file) <<- dir
                 return()
             }
             gmessage(
