@@ -347,7 +347,6 @@ NewModuleManager <- setRefClass(
                     return(NULL)
                 }
             }
-            message("Installing ", str)
 
             mod_path <- file.path(m_dir, mod$name)
             if (dir.exists(mod_path)) {
@@ -361,14 +360,20 @@ NewModuleManager <- setRefClass(
                 }
             }
 
+            alert_win <- gwindow(paste("Installing", mod$name),
+                parent = GUI$win
+            )
+            alert_t <- gtext("Downloading ...", container = alert_win)
             tf <- tempfile(fileext = ".zip")
-            message("Downloading module ...")
+
+            insert(alert_t, "Downloading module ...")
             utils::download.file(str, tf, quiet = TRUE)
 
             zdir <- basename(utils::unzip(tf, list = TRUE)$Name[1])
-            message("Exacting ...")
+            insert(alert_t, "Exacting ...\n")
+
             utils::unzip(tf, exdir = m_dir)
-            message("Moving items into place ...")
+            insert(alert_t, "Moving items into place ...")
 
             if (dir.exists(mod_path)) unlink(mod_path, TRUE, TRUE)
             file.rename(file.path(m_dir, zdir), mod_path)
@@ -376,6 +381,7 @@ NewModuleManager <- setRefClass(
             # writes a file VERSION indicating which version is being tracked
             cat(ref, file = file.path(mod_path, "VERSION"))
 
+            insert(alert_t, "Installing dependencies ... this may take a few moments ...")
             mod_lib <- file.path(mod_path, "lib")
             dir.create(mod_lib)
             deps <- desc::desc_get_deps(file = file.path(mod_path, "DESCRIPTION"))
@@ -384,17 +390,20 @@ NewModuleManager <- setRefClass(
                 "Github",
                 file = file.path(mod_path, "DESCRIPTION")
             )
-            remotes::install_github(gh_deps,
-                lib = mod_lib,
-                upgrade = "never"
-            )
+            if (!is.null(gh_deps)) {
+                remotes::install_github(gh_deps,
+                    lib = mod_lib,
+                    upgrade = "never"
+                )
+            }
             utils::install.packages(deps$package, lib = mod_lib)
 
             # install dependencies into custom
 
-            message(sprintf("Module %s installed!", mod$name))
+            insert(alert_t, sprintf("Module %s installed!", mod$name))
             refresh_modules()
             update_info_panel()
+            dispose(alert_win)
         },
         uninstall_module = function(mod, confirm = TRUE) {
             if (confirm) {
@@ -441,7 +450,8 @@ iNZModule <- setRefClass(
         mainGrp = "ANY",
         homeButton = "ANY",
         helpButton = "ANY",
-        loaded_packages = "character"
+        loaded_packages = "character",
+        oldLibPath = "character"
     ),
     methods = list(
         initialize = function(gui, mod,
@@ -469,19 +479,22 @@ iNZModule <- setRefClass(
             deps <- mod$info$pkgs$package
             message("\nLoading module dependencies ...")
             search_original_pkgs <- search()
+            oldLibPath <<- .libPaths()
+
+            mod_lib <- file.path(mod$mod_dir, "lib")
+            in_local_lib <- dir.exists(mod_lib)
+            if (in_local_lib) {
+                .libPaths(c(mod_lib, .libPaths()))
+            }
 
             for (pkg in deps) {
                 cat("+", pkg, "...")
-                mod_lib <- file.path(mod$mod_dir, "lib")
-                in_local_lib <- dir.exists(mod_lib) && dir.exists(file.path(mod_lib, pkg))
-                pkg_lib <- if (in_local_lib) mod_lib else NULL
                 loaded <- require(pkg,
-                    lib.loc = pkg_lib,
                     character.only = TRUE,
                     quietly = TRUE
                 )
                 if (loaded) {
-                    pv <- packageVersion(pkg, lib.loc = pkg_lib)
+                    pv <- packageVersion(pkg)
                     cat("", as.character(pv), "\n")
                 } else {
                     cat(" failed\n")
@@ -578,6 +591,8 @@ iNZModule <- setRefClass(
                 }
             )
             rm(cleanup)
+
+            .libPaths(oldLibPath)
 
             ## delete the module window
             GUI$close_module()
