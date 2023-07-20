@@ -360,20 +360,20 @@ NewModuleManager <- setRefClass(
                 }
             }
 
-            alert_win <- gwindow(paste("Installing", mod$name),
+            alert_win <- gwindow(paste("Installing", mod$title),
                 parent = GUI$win
             )
-            alert_t <- gtext("Downloading ...", container = alert_win)
+            alert_t <- gtext("", container = alert_win)
             tf <- tempfile(fileext = ".zip")
 
-            insert(alert_t, "Downloading module ...")
+            insert(alert_t, "Downloading module ...\n")
             utils::download.file(str, tf, quiet = TRUE)
 
             zdir <- basename(utils::unzip(tf, list = TRUE)$Name[1])
             insert(alert_t, "Exacting ...\n")
 
             utils::unzip(tf, exdir = m_dir)
-            insert(alert_t, "Moving items into place ...")
+            insert(alert_t, "Moving items into place ...\n")
 
             if (dir.exists(mod_path)) unlink(mod_path, TRUE, TRUE)
             file.rename(file.path(m_dir, zdir), mod_path)
@@ -381,7 +381,7 @@ NewModuleManager <- setRefClass(
             # writes a file VERSION indicating which version is being tracked
             cat(ref, file = file.path(mod_path, "VERSION"))
 
-            insert(alert_t, "Installing dependencies ... this may take a few moments ...")
+            insert(alert_t, "Installing dependencies (this may take a few moments) ...\n")
             mod_lib <- file.path(mod_path, "lib")
             dir.create(mod_lib)
             deps <- desc::desc_get_deps(file = file.path(mod_path, "DESCRIPTION"))
@@ -400,7 +400,7 @@ NewModuleManager <- setRefClass(
 
             # install dependencies into custom
 
-            insert(alert_t, sprintf("Module %s installed!", mod$name))
+            insert(alert_t, sprintf("Module %s installed!\n", mod$name))
             refresh_modules()
             update_info_panel()
             dispose(alert_win)
