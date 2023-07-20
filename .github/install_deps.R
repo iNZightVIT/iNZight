@@ -14,7 +14,7 @@ github_deps <- c(
 OS <- Sys.getenv("OS_TYPE")
 options(
     repos = c(
-        if (OS == "Linux") RSPM = Sys.getenv("RSPM"),
+        if (OS == "Linux") RSPM <- Sys.getenv("RSPM"),
         inzight = "https://r.docker.stat.auckland.ac.nz",
         CRAN = "https://cloud.r-project.org"
     ),
@@ -26,6 +26,9 @@ if (OS == "Windows" && getRversion() < numeric_version("4")) {
 }
 if (OS == "Windows" && !requireNamespace("utf8", quietly = TRUE)) {
     install.packages("utf8", type = "source")
+}
+if (OS == "Windows" && packageVersion("Matrix") < "1.6-0") {
+    install.packages("Matrix", type = "source")
 }
 if (OS == "Linux") {
     remotes::install_github("lawremi/RGtk2",
