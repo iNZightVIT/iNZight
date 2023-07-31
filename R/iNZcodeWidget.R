@@ -11,7 +11,7 @@ iNZcodeWidget <- setRefClass(
         initialize = function(gui) {
             initFields(
                 GUI = gui, keep.last = TRUE,
-                packages = c("iNZightPlots", "magrittr"), disabled = FALSE
+                packages = c("iNZightPlots"), disabled = FALSE
             )
             history <<- list()
         },
@@ -26,6 +26,10 @@ iNZcodeWidget <- setRefClass(
                 xpkg <- x[grepl("::", x)]
                 m <- stringr::str_match(xpkg, "([a-zA-Z][a-zA-Z0-9]+):{2,3}")
             }
+            if (any(grepl("%>%", x)) && !"magrittr" %in% packages) {
+                packages <<- c(packages, "magrittr")
+            }
+
             if (any(grepl("library\\([a-zA-Z0-9]+\\)", x))) {
                 sapply(
                     x[grepl("library\\([a-zA-Z0-9]+\\)", x)],
@@ -134,7 +138,9 @@ iNZcodeWidget <- setRefClass(
                 "",
                 sep(),
                 "",
-                "library(magrittr)  # enables the pipe (%>%) operator",
+                if ("magrittr" %in% packages) {
+                    "library(magrittr)  # enables the pipe (%>%) operator"
+                },
                 "library(iNZightPlots)",
                 ""
             )
