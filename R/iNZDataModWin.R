@@ -46,7 +46,8 @@ iNZDataModWin <- setRefClass(
                     )
                 } else {
                     gmessage(
-                        paste(sep = "\n",
+                        paste(
+                            sep = "\n",
                             "The follow variable names already exist:",
                             paste(collapse = ", ", var[w]),
                             "Please choose new names."
@@ -86,7 +87,9 @@ iNZConToCatWin <- setRefClass(
                 show_code = FALSE,
                 scroll = FALSE
             )
-            if (!ok) return()
+            if (!ok) {
+                return()
+            }
             on.exit(.self$show())
             usingMethods("convert")
 
@@ -127,7 +130,8 @@ iNZConToCatWin <- setRefClass(
                     dropData <- GUI$getActiveDoc()$getData()[h$dropdata][[1L]]
                     if (all(is_cat(dropData))) {
                         gmessage("Already a categorical variable!",
-                            parent = GUI$win, icon = 'warning')
+                            parent = GUI$win, icon = "warning"
+                        )
                     } else {
                         svalue(varLbl) <<- h$dropdata
                     }
@@ -138,16 +142,18 @@ iNZConToCatWin <- setRefClass(
         },
         convert = function() {
             orgVar <- svalue(varLbl)
-            name <- gsub('\\n+', "", svalue(varname), perl = TRUE)
-            if (name == "" || !is.character(name))
+            name <- gsub("\\n+", "", svalue(varname), perl = TRUE)
+            if (name == "" || !is.character(name)) {
                 gmessage("Please choose a non-empty name for the new variable",
-                title = "Invalid variable choice",
-                parent = GUI$modWin)
-            else if (length(orgVar) == 0L)
+                    title = "Invalid variable choice",
+                    parent = GUI$modWin
+                )
+            } else if (length(orgVar) == 0L) {
                 gmessage("Please choose a variable to convert",
-                title = "Invalid variable choice",
-                parent = GUI$modWin)
-            else if (checkNames(name)) {
+                    title = "Invalid variable choice",
+                    parent = GUI$modWin
+                )
+            } else if (checkNames(name)) {
                 .dataset <- GUI$get_data_object(lazy = FALSE)
                 newdata <- iNZightTools::convert_to_cat(.dataset, vars = orgVar, names = name)
                 updateData(newdata)
@@ -178,7 +184,9 @@ iNZTransformWin <- setRefClass(
                 show_code = FALSE,
                 scroll = FALSE
             )
-            if (!ok) return()
+            if (!ok) {
+                return()
+            }
             on.exit(.self$show())
             initFields(data = GUI$getActiveData(lazy = FALSE))
 
@@ -213,12 +221,12 @@ iNZTransformWin <- setRefClass(
             ## function names: the X will be converted to the variable name (e.g., log.height, height.squared, etc)
             ##  Display name           new name     function
             transforms <- list(
-                "Natural Log (base e)" = c("log.e.X",   "log"),
-                "Log (base 10)" = c("log.10.X",  "log10"),
-                "Exponential (e^x)" = c("exp.X",     "exp"),
+                "Natural Log (base e)" = c("log.e.X", "log"),
+                "Log (base 10)" = c("log.10.X", "log10"),
+                "Exponential (e^x)" = c("exp.X", "exp"),
                 "Square (X^2)" = c("X.squared", "square"),
-                "Square root" = c("root.X",    "sqrt"),
-                "Reciprocal (1/X)" = c("recip.X",   "reciprocal")
+                "Square root" = c("root.X", "sqrt"),
+                "Reciprocal (1/X)" = c("recip.X", "reciprocal")
             )
 
             tbl <- glayout()
@@ -250,7 +258,8 @@ iNZTransformWin <- setRefClass(
                 gmessage("Not a numeric variable",
                     title = "Error: non-numeric variable",
                     icon = "error",
-                    parent = GUI$modWin)
+                    parent = GUI$modWin
+                )
                 return()
             }
 
@@ -259,7 +268,8 @@ iNZTransformWin <- setRefClass(
                 gmessage("Unable to create new variable",
                     title = "Error creating variable",
                     icon = "error",
-                    parent = GUI$modWin)
+                    parent = GUI$modWin
+                )
                 return()
             }
 
@@ -300,7 +310,9 @@ iNZCollapseWin <- setRefClass(
                 show_code = FALSE,
                 scroll = FALSE
             )
-            if (!ok) return()
+            if (!ok) {
+                return()
+            }
             on.exit(.self$show())
             usingMethods("collapse")
 
@@ -360,16 +372,22 @@ iNZCollapseWin <- setRefClass(
         ## check whether the specified levels are ellegible
         ## for collapsing
         checkLevels = function(levels) {
-            if (!is.null(levels) && length(levels) >= 2) return(TRUE)
+            if (!is.null(levels) && length(levels) >= 2) {
+                return(TRUE)
+            }
 
-            gmessage(title = "ALERT",
-                    icon = "warning",
-                    msg = "Need to select at least two levels to collapse",
-                    parent = GUI$modWin)
+            gmessage(
+                title = "ALERT",
+                icon = "warning",
+                msg = "Need to select at least two levels to collapse",
+                parent = GUI$modWin
+            )
             FALSE
         },
         collapse = function() {
-            if (!checkLevels(svalue(factor_levels))) return()
+            if (!checkLevels(svalue(factor_levels))) {
+                return()
+            }
 
             var <- svalue(factor_menu)
             lvls <- svalue(factor_levels)
@@ -383,7 +401,8 @@ iNZCollapseWin <- setRefClass(
                 gmessage("That level name already exists. Please choose another.",
                     title = "Invalid level name",
                     parent = GUI$modWin,
-                    icon = "warning")
+                    icon = "warning"
+                )
             } else if (checkNames(name)) {
                 .dataset <- GUI$get_data_object(lazy = FALSE)
                 data <- iNZightTools::collapse_cat(.dataset, var, levels = lvls, new_level = lvlname, name)
@@ -415,7 +434,9 @@ iNZRenameFactorLevelsWin <- setRefClass(
                 show_code = FALSE,
                 scroll = TRUE
             )
-            if (!ok) return()
+            if (!ok) {
+                return()
+            }
             on.exit(.self$show())
             usingMethods("rename")
 
@@ -481,7 +502,8 @@ iNZRenameFactorLevelsWin <- setRefClass(
         },
         changeLevels = function() {
             if (svalue(factor_menu) == 0L) {
-                gmessage(msg = "Please choose a factor to reorder",
+                gmessage(
+                    msg = "Please choose a factor to reorder",
                     icon = "error",
                     parent = GUI$modWin
                 )
@@ -495,14 +517,16 @@ iNZRenameFactorLevelsWin <- setRefClass(
 
             ## check if all order numbers are unique
             if (anyDuplicated(new_levels) > 0L) {
-                gmessage(msg = "Please choose unique names for the levels",
+                gmessage(
+                    msg = "Please choose unique names for the levels",
                     icon = "error",
                     parent = GUI$modWin
                 )
                 return(FALSE)
             }
 
-            changed <- sapply(seq_along(var_levels),
+            changed <- sapply(
+                seq_along(var_levels),
                 function(i) new_levels[i] != var_levels[i]
             )
             as.list(var_levels)[changed]
@@ -513,7 +537,9 @@ iNZRenameFactorLevelsWin <- setRefClass(
 
             ## newFactor will be FALSE, if the user input was wrong
             name <- svalue(factor_name)
-            if (!is.list(newlvls) || !checkNames(name)) return()
+            if (!is.list(newlvls) || !checkNames(name)) {
+                return()
+            }
 
             .dataset <- GUI$get_data_object(lazy = FALSE)
             data <- iNZightTools::rename_levels(.dataset, var, tobe_asis = newlvls, name)
@@ -545,7 +571,9 @@ iNZReorderLevelsWin <- setRefClass(
                 show_code = FALSE,
                 scroll = TRUE
             )
-            if (!ok) return()
+            if (!ok) {
+                return()
+            }
             on.exit(.self$show())
             usingMethods("reorder")
 
@@ -580,18 +608,19 @@ iNZReorderLevelsWin <- setRefClass(
             addSpace(levelBtnGrp, 20)
             levelUp <- iNZight:::gimagebutton("up",
                 container = levelBtnGrp,
-                size = 'LARGE_TOOLBAR',
+                size = "LARGE_TOOLBAR",
                 expand = FALSE,
                 anchor = c(1, 0)
             )
             levelDown <- iNZight:::gimagebutton("down",
                 container = levelBtnGrp,
-                size = 'LARGE_TOOLBAR',
+                size = "LARGE_TOOLBAR",
                 expand = FALSE,
                 anchor = c(1, 0)
             )
             levelHelp <- glabel("Select level, then\nuse arrows to reorder.",
-                container = levelBtnGrp, anchor = c(1, 0))
+                container = levelBtnGrp, anchor = c(1, 0)
+            )
             tbl[4:5, 1, anchor = c(1, 1)] <- levelBtnGrp
 
             visible(levelBtnGrp) <- visible(levelGrp) <- FALSE
@@ -615,22 +644,25 @@ iNZReorderLevelsWin <- setRefClass(
             addHandlerChanged(sortMenu,
                 handler = function(h, ...) {
                     visible(levelBtnGrp) <-
-                    visible(levelGrp) <-
+                        visible(levelGrp) <-
                         svalue(sortMenu) == "manually"
                 }
             )
 
-            addHandlerClicked(levelUp,
+            addHandlerClicked(
+                levelUp,
                 function(h, ...) {
                     # blockHandlers(levelUp)
                     # blockHandlers(levelDown)
                     i <- svalue(levelOrder, index = TRUE)
                     if (length(i) == 0) {
-                        gmessage('Select a level, then use the arrows to shift it up/down')
+                        gmessage("Select a level, then use the arrows to shift it up/down")
                         return()
                     }
                     lvls <- levelOrder$get_items()
-                    if (i == 1) return()
+                    if (i == 1) {
+                        return()
+                    }
                     li <- lvls[i]
                     lvls[i] <- lvls[i - 1]
                     lvls[i - 1] <- li
@@ -642,17 +674,20 @@ iNZReorderLevelsWin <- setRefClass(
                     # unblockHandlers(levelDown)
                 }
             )
-            addHandlerClicked(levelDown,
+            addHandlerClicked(
+                levelDown,
                 function(h, ...) {
                     # blockHandlers(levelUp)
                     # blockHandlers(levelDown)
                     i <- svalue(levelOrder, index = TRUE)
                     if (length(i) == 0) {
-                        gmessage('Select a level, then use the arrows to shift it up/down')
+                        gmessage("Select a level, then use the arrows to shift it up/down")
                         return()
                     }
                     lvls <- levelOrder$get_items()
-                    if (i == length(lvls)) return()
+                    if (i == length(lvls)) {
+                        return()
+                    }
                     li <- lvls[i]
                     lvls[i] <- lvls[i + 1]
                     lvls[i + 1] <- li
@@ -670,9 +705,12 @@ iNZReorderLevelsWin <- setRefClass(
             varname <- svalue(factorName)
             .dataset <- GUI$get_data_object(lazy = FALSE)
 
-            if (!checkNames(varname)) return()
+            if (!checkNames(varname)) {
+                return()
+            }
             if (svalue(sortMenu) != "manually") {
-                auto <- dplyr::case_match(svalue(sortMenu),
+                auto <- dplyr::case_match(
+                    svalue(sortMenu),
                     "by frequency" ~ "freq",
                     "by 1st appearance order" ~ "order",
                     "by numeric value" ~ "seq"
@@ -715,7 +753,9 @@ iNZCreateVarWin <- setRefClass(
                 show_code = FALSE,
                 scroll = FALSE
             )
-            if (!ok) return()
+            if (!ok) {
+                return()
+            }
             on.exit(.self$show())
             usingMethods("create")
 
@@ -780,7 +820,8 @@ iNZCreateVarWin <- setRefClass(
                 examples[[4]][2] <- "rnorm(dplyr::n(), 100, 5)"
             }
 
-            sapply(seq_along(examples),
+            sapply(
+                seq_along(examples),
                 function(i) {
                     lbl <- glabel(examples[[i]][1])
                     ex_layout[i, 1L, anchor = c(1, 0), expand = TRUE] <<- lbl
@@ -802,8 +843,9 @@ iNZCreateVarWin <- setRefClass(
             )
 
             expr <- svalue(expression)
-            if (! "N" %in% names(GUI$getActiveData(lazy = TRUE))) {
-                expr <- stringr::str_replace(expr,
+            if (!"N" %in% names(GUI$getActiveData(lazy = TRUE))) {
+                expr <- stringr::str_replace(
+                    expr,
                     "([^a-zA-Z0-9])N([^a-zA-Z0-9])",
                     "\\1dplyr::n()\\2"
                 )
@@ -818,14 +860,14 @@ iNZCreateVarWin <- setRefClass(
                 silent = TRUE
             )
 
-            if (inherits(data, 'try-error')) {
+            if (inherits(data, "try-error")) {
                 print(data)
                 err <- strsplit(data, "\n")[[1]]
-                ew <- grepl('Evaluation error', err, fixed = TRUE)
-                err <- ifelse(any(ew), gsub('Evaluation error:', '', err[ew]), '')
+                ew <- grepl("Evaluation error", err, fixed = TRUE)
+                err <- ifelse(any(ew), gsub("Evaluation error:", "", err[ew]), "")
 
-                gmessage(paste(sep = "\n\n", 'Invalid expression:', err),
-                    icon = 'error',
+                gmessage(paste(sep = "\n\n", "Invalid expression:", err),
+                    icon = "error",
                     parent = GUI$modWin
                 )
                 return()
@@ -871,7 +913,9 @@ iNZFormClassIntervalsWin <- setRefClass(
                 show_code = FALSE,
                 scroll = FALSE
             )
-            if (!ok) return()
+            if (!ok) {
+                return()
+            }
             on.exit(.self$show())
             usingMethods("create")
 
@@ -925,21 +969,26 @@ iNZFormClassIntervalsWin <- setRefClass(
                     tbl_range[1L, 2:3] <<- start_point
                     tbl_range[2L, 2:3] <<- end_point
 
-                    fmts <- if (discrete) c("[a,b]", "a-b")
-                        else c("(a,b]", "[a,b)")
+                    fmts <- if (discrete) {
+                        c("[a,b]", "a-b")
+                    } else {
+                        c("(a,b]", "[a,b)")
+                    }
                     label_format$set_items(fmts)
 
                     label_lower$set_items(
-                        if (discrete)
+                        if (discrete) {
                             c(paste(spec_char("lte"), "a"))
-                        else
+                        } else {
                             c("< a")
+                        }
                     )
                     label_upper$set_items(
-                        if (discrete)
+                        if (discrete) {
                             c(paste(spec_char("gte"), "b"), "b+")
-                        else
+                        } else {
                             c("> b", "b+")
+                        }
                     )
 
                     type$invoke_change_handler()
@@ -957,7 +1006,9 @@ iNZFormClassIntervalsWin <- setRefClass(
                 handler = function(h, ...) {
                     # set visibility of things
                     k <- h$obj$get_index()
-                    if (variable$get_index() == 0L) return()
+                    if (variable$get_index() == 0L) {
+                        return()
+                    }
                     visible(tbl_width) <<- k == 1 || k == 3
                     visible(tbl_count) <<- k == 2
                     visible(tbl_range) <<- k <= 2
@@ -987,7 +1038,8 @@ iNZFormClassIntervalsWin <- setRefClass(
             ii <- 1L
 
             lbl <- glabel("Number of intervals :")
-            n_interval <<- gspinbutton(2L, 100L, by = 1L,
+            n_interval <<- gspinbutton(2L, 100L,
+                by = 1L,
                 value = 4L,
                 handler = function(h, ...) {
                     create_intervals()
@@ -1005,7 +1057,8 @@ iNZFormClassIntervalsWin <- setRefClass(
             ii <- 1L
 
             lbl <- "Interval width :"
-            interval_width <<- gspinbutton(1L, 100L, by = 1L,
+            interval_width <<- gspinbutton(1L, 100L,
+                by = 1L,
                 value = 10L,
                 handler = function(h, ...) {
                     create_intervals()
@@ -1045,7 +1098,8 @@ iNZFormClassIntervalsWin <- setRefClass(
 
             lbl <- glabel("Breakpoints :")
             breaks <<- gedit("",
-                handler = function(h, ...) create_intervals())
+                handler = function(h, ...) create_intervals()
+            )
             size(breaks) <<- c(250, -1)
             tbl_manual[ii, 1L, anchor = c(1, 0), expand = TRUE] <<- lbl
             tbl_manual[ii, 2:3] <<- breaks
@@ -1066,7 +1120,8 @@ iNZFormClassIntervalsWin <- setRefClass(
             label_format <<- gradio(
                 "",
                 horizontal = TRUE,
-                handler = function(h, ...) create_intervals())
+                handler = function(h, ...) create_intervals()
+            )
             size(label_format) <<- c(250, -1)
             tbl_format[ii, 1L, anchor = c(1, 0), expand = TRUE] <<- lbl
             tbl_format[ii, 2:3] <<- label_format
@@ -1077,8 +1132,10 @@ iNZFormClassIntervalsWin <- setRefClass(
             tbl_format_lower <<- glayout()
             visible(tbl_format_lower) <<- FALSE
             lbl <- glabel("Format lower bound :")
-            label_lower <<- gradio("", horizontal = TRUE,
-                handler = function(h, ...) create_intervals())
+            label_lower <<- gradio("",
+                horizontal = TRUE,
+                handler = function(h, ...) create_intervals()
+            )
             size(label_lower) <<- c(250, -1)
             tbl_format_lower[1L, 1L, anchor = c(1, 0), expand = TRUE] <<- lbl
             tbl_format_lower[1L, 2:3] <<- label_lower
@@ -1087,8 +1144,10 @@ iNZFormClassIntervalsWin <- setRefClass(
             tbl_format_upper <<- glayout()
             visible(tbl_format_upper) <<- FALSE
             lbl <- glabel("Format upper bound :")
-            label_upper <<- gradio("", horizontal = TRUE,
-                handler = function(h, ...) create_intervals())
+            label_upper <<- gradio("",
+                horizontal = TRUE,
+                handler = function(h, ...) create_intervals()
+            )
             size(label_upper) <<- c(250, -1)
             tbl_format_upper[1L, 1L, anchor = c(1, 0), expand = TRUE] <<- lbl
             tbl_format_upper[1L, 2:3] <<- label_upper
@@ -1110,16 +1169,19 @@ iNZFormClassIntervalsWin <- setRefClass(
             add_body(tbl)
 
             skip_update <<- FALSE
-
         },
         create_intervals = function(preview = TRUE) {
-            if (skip_update) return()
+            if (skip_update) {
+                return()
+            }
 
             data <- GUI$getActiveData(lazy = TRUE)
 
             break_points <- NULL
             if (svalue(type) == "Manual") {
-                if (trimws(svalue(breaks)) == "") return()
+                if (trimws(svalue(breaks)) == "") {
+                    return()
+                }
                 xr <- range(data[[svalue(variable)]], na.rm = TRUE)
                 break_points <- as.numeric(strsplit(svalue(breaks), ",")[[1]])
                 break_points <- c(xr[1], break_points, xr[2])
@@ -1151,9 +1213,11 @@ iNZFormClassIntervalsWin <- setRefClass(
             )
 
             if (preview) {
-                lvls <- if (iNZightTools::is_survey(result))
+                lvls <- if (iNZightTools::is_survey(result)) {
                     levels(result$variables[[ncol(result$variables)]])
-                    else levels(result[[2]])
+                } else {
+                    levels(result[[2]])
+                }
                 lvls <- paste(lvls, collapse = ", ")
                 svalue(preview_levels) <<- lvls
             } else {
@@ -1185,7 +1249,9 @@ iNZRenameVarWin <- setRefClass(
                 show_code = FALSE,
                 scroll = TRUE
             )
-            if (!ok) return()
+            if (!ok) {
+                return()
+            }
             on.exit(.self$show())
             usingMethods("rename")
 
@@ -1198,7 +1264,8 @@ iNZRenameVarWin <- setRefClass(
 
             names_table <<- glayout()
             invisible(
-                sapply(seq_along(vnames),
+                sapply(
+                    seq_along(vnames),
                     function(pos) {
                         names_table[pos, 1L, anchor = c(1, 0), expand = TRUE] <<-
                             glabel(vnames[pos])
@@ -1216,7 +1283,8 @@ iNZRenameVarWin <- setRefClass(
             if (any(tbl > 1L)) {
                 dup <- names(tbl)[tbl > 1L]
                 gmessage(
-                    paste(sep = " ",
+                    paste(
+                        sep = " ",
                         "You cannot use the same name twice.",
                         "Please rename the following variables:",
                         paste("\n - ", dup, collapse = "")
@@ -1229,7 +1297,9 @@ iNZRenameVarWin <- setRefClass(
             }
 
             w <- old_names != new_names
-            if (!any(w)) return()
+            if (!any(w)) {
+                return()
+            }
 
             name_list <- setNames(as.list(old_names[w]), new_names[w])
 
@@ -1260,7 +1330,9 @@ iNZStandardiseWin <- setRefClass(
                 show_code = FALSE,
                 scroll = FALSE
             )
-            if (!ok) return()
+            if (!ok) {
+                return()
+            }
             on.exit(.self$show())
             usingMethods("standardise")
 
@@ -1285,7 +1357,9 @@ iNZStandardiseWin <- setRefClass(
             add_body(numVar, expand = TRUE)
         },
         standardise = function() {
-            if (length(svalue(numVar)) == 0) return()
+            if (length(svalue(numVar)) == 0) {
+                return()
+            }
 
             varnames <- svalue(numVar)
             names <- makeNames(paste0(varnames, ".std"))
@@ -1316,7 +1390,9 @@ iNZDeleteVarWin <- setRefClass(
                 show_code = FALSE,
                 scroll = FALSE
             )
-            if (!ok) return()
+            if (!ok) {
+                return()
+            }
             on.exit(.self$show())
             usingMethods("delete")
 
@@ -1337,12 +1413,14 @@ iNZDeleteVarWin <- setRefClass(
         },
         delete = function() {
             v <- svalue(vars)
-            if (length(v) == 0L) return()
+            if (length(v) == 0L) {
+                return()
+            }
             if (length(v) == length(names(GUI$getActiveData(lazy = TRUE)))) {
                 gmessage(
                     "You can't delete all of the variables ... you'll have nothing left!",
-                    title = 'Oops...',
-                    icon = 'error',
+                    title = "Oops...",
+                    icon = "error",
                     parent = GUI$modWin
                 )
                 return()
@@ -1358,7 +1436,9 @@ iNZDeleteVarWin <- setRefClass(
                 ),
                 icon = "question"
             )
-            if (!conf) return()
+            if (!conf) {
+                return()
+            }
 
             .dataset <- GUI$get_data_object(lazy = FALSE)
             data <- iNZightTools::delete_vars(.dataset, vars = v)
@@ -1387,7 +1467,9 @@ iNZMissToCatWin <- setRefClass(
                 show_code = FALSE,
                 scroll = FALSE
             )
-            if (!ok) return()
+            if (!ok) {
+                return()
+            }
             on.exit(.self$show())
             usingMethods("convert")
 
@@ -1409,7 +1491,9 @@ iNZMissToCatWin <- setRefClass(
             add_body(vars, expand = TRUE)
         },
         convert = function() {
-            if (length(svalue(vars)) == 0L) return()
+            if (length(svalue(vars)) == 0L) {
+                return()
+            }
 
             v <- svalue(vars)
             names <- makeNames(paste0(v, "_miss"))
@@ -1425,12 +1509,12 @@ iNZMissToCatWin <- setRefClass(
 
 # iNZrankNumWin: Rank the numerical variables X (vector, matrix)
 iNZRankWin <- setRefClass(
-  "iNZRankWin",
-  fields = list(
-      rank_vars = "ANY",
-      rank_type = "ANY"
-  ),
-  contains = "iNZDataModWin",
+    "iNZRankWin",
+    fields = list(
+        rank_vars = "ANY",
+        rank_type = "ANY"
+    ),
+    contains = "iNZDataModWin",
     methods = list(
         initialize = function(gui) {
             ok <- callSuper(gui,
@@ -1443,7 +1527,9 @@ iNZRankWin <- setRefClass(
                 show_code = FALSE,
                 scroll = FALSE
             )
-            if (!ok) return()
+            if (!ok) {
+                return()
+            }
             on.exit(.self$show())
             usingMethods("rank")
 
@@ -1481,7 +1567,9 @@ iNZRankWin <- setRefClass(
             visible(GUI$modWin) <<- TRUE
         },
         rank = function() {
-            if (length(svalue(rank_vars)) == 0L) return()
+            if (length(svalue(rank_vars)) == 0L) {
+                return()
+            }
             vars <- svalue(rank_vars)
             .dataset <- GUI$get_data_object(lazy = FALSE)
             data <- iNZightTools::rank_vars(.dataset, vars, rank_type)
@@ -1510,7 +1598,9 @@ iNZConToCatMultiWin <- setRefClass(
                 show_code = FALSE,
                 scroll = FALSE
             )
-            if (!ok) return()
+            if (!ok) {
+                return()
+            }
             on.exit(.self$show())
             usingMethods("convert")
 
@@ -1530,7 +1620,9 @@ iNZConToCatMultiWin <- setRefClass(
             add_body(num_vars, expand = TRUE, fill = TRUE)
         },
         convert = function() {
-            if (length(svalue(num_vars)) == 0) return()
+            if (length(svalue(num_vars)) == 0) {
+                return()
+            }
 
             vars <- svalue(num_vars)
             varnames <- makeNames(paste(vars, "cat", sep = "."))
@@ -1549,7 +1641,7 @@ iNZRenameDataWin <- setRefClass(
         name = "ANY"
     ),
     contains = "iNZDataModWin",
-    methods = list (
+    methods = list(
         initialize = function(gui) {
             ok <- callSuper(gui,
                 title = "Rename dataset",
@@ -1560,7 +1652,9 @@ iNZRenameDataWin <- setRefClass(
                 show_code = FALSE,
                 scroll = FALSE
             )
-            if (!ok) return()
+            if (!ok) {
+                return()
+            }
             on.exit(.self$show())
             usingMethods("rename_data")
 
@@ -1624,7 +1718,9 @@ iNZConToDtWin <- setRefClass(
                 scroll = FALSE,
                 body_direction = "horizontal"
             )
-            if (!ok) return()
+            if (!ok) {
+                return()
+            }
             on.exit(.self$show())
             usingMethods("convert", "add_format", "del_format")
 
@@ -1648,8 +1744,10 @@ iNZConToDtWin <- setRefClass(
             )
             names(dt_vars) <<- "Choose variable(s)"
 
-            addHandlerSelectionChanged(dt_vars,
-                function(h, ...) select_variable())
+            addHandlerSelectionChanged(
+                dt_vars,
+                function(h, ...) select_variable()
+            )
 
             addSpace(left_panel, 5)
 
@@ -1696,12 +1794,13 @@ iNZConToDtWin <- setRefClass(
                 items = dt.formats,
                 container = left_panel,
                 editable = TRUE,
-                handler = function(h,...) convert(preview = TRUE)
+                handler = function(h, ...) convert(preview = TRUE)
             )
 
             lbl <- glabel(
                 add_lines(
-                    paste(sep = " ",
+                    paste(
+                        sep = " ",
                         "Choose a format from the dropdown above,",
                         "or click the buttons below in the order",
                         "they appear in the 'Original' column on the",
@@ -1733,7 +1832,8 @@ iNZConToDtWin <- setRefClass(
             )
 
             lbl <- glabel(
-                paste(sep = "\n",
+                paste(
+                    sep = "\n",
                     "'Delete' will remove the last added value",
                     "'Clear' will remove all values"
                 ),
@@ -1771,10 +1871,12 @@ iNZConToDtWin <- setRefClass(
             vars <- apply(
                 as.data.frame(data[svalue(dt_vars)]),
                 1,
-                paste, collapse = " "
+                paste,
+                collapse = " "
             )
             svalue(vname) <<- makeNames(
-                sprintf("%s_dt",
+                sprintf(
+                    "%s_dt",
                     paste(paste(svalue(dt_vars), collapse = "_"))
                 )
             )
@@ -1800,13 +1902,20 @@ iNZConToDtWin <- setRefClass(
             svalue(time_fmt) <<- fmt
         },
         convert = function(preview = FALSE) {
-            if (length(svalue(dt_vars)) == 0) return()
-            if (svalue(time_fmt) == "") return()
-            if (svalue(vname) == "") return()
+            if (length(svalue(dt_vars)) == 0) {
+                return()
+            }
+            if (svalue(time_fmt) == "") {
+                return()
+            }
+            if (svalue(vname) == "") {
+                return()
+            }
 
             .dataset <- GUI$get_data_object(lazy = FALSE)
-            if (preview)
+            if (preview) {
                 .dataset <- .dataset[svalue(dt_vars)]
+            }
 
             tryCatch(
                 {
@@ -1830,7 +1939,9 @@ iNZConToDtWin <- setRefClass(
                     }
                 },
                 finally = {
-                    if (!exists("res")) return()
+                    if (!exists("res")) {
+                        return()
+                    }
                     if (preview) {
                         df_conv$set_items(
                             data.frame(
@@ -1881,7 +1992,9 @@ iNZExtFromDtWin <- setRefClass(
                 scroll = FALSE,
                 body_direction = "horizontal"
             )
-            if (!ok) return()
+            if (!ok) {
+                return()
+            }
             on.exit(.self$show())
             usingMethods("extract")
 
@@ -1914,11 +2027,12 @@ iNZExtFromDtWin <- setRefClass(
                 items = dt_vars,
                 selected = 0L,
                 container = mainGroup,
-                handler = function(h,...) set_variable()
+                handler = function(h, ...) set_variable()
             )
 
             for.var <- glabel(
-                paste(sep = "\n",
+                paste(
+                    sep = "\n",
                     "Select elements to extract",
                     "(click + of lowest-level information for options)"
                 ),
@@ -1927,13 +2041,15 @@ iNZExtFromDtWin <- setRefClass(
             )
 
             offspring <- function(path = character(0), lst, ...) {
-                if (length(path))
+                if (length(path)) {
                     obj <- lst[[path]]
-                else
+                } else {
                     obj <- lst
+                }
 
                 nms <- names(obj)
-                hasOffspring <- sapply(nms,
+                hasOffspring <- sapply(
+                    nms,
                     function(i) {
                         newobj <- obj[[i]]
                         is.recursive(newobj) && !is.null(names(newobj))
@@ -1955,15 +2071,18 @@ iNZExtFromDtWin <- setRefClass(
                 container = mainGroup
             )
 
-            addHandlerClicked(element_tree,
-                function(h, ...) set_component())
+            addHandlerClicked(
+                element_tree,
+                function(h, ...) set_component()
+            )
 
             date_string <- glabel("Name for new variable",
                 container = mainGroup,
                 anchor = c(-1, 0)
             )
             vname <<- gedit("", container = mainGroup)
-            addHandlerKeystroke(vname,
+            addHandlerKeystroke(
+                vname,
                 function(h, ...) extract(preview = TRUE)
             )
 
@@ -2002,12 +2121,17 @@ iNZExtFromDtWin <- setRefClass(
             set_component()
         },
         set_component = function() {
-            if (length(svalue(dt_var)) == 0L) return()
-            if (length(svalue(element_tree)) == 0L) return()
+            if (length(svalue(dt_var)) == 0L) {
+                return()
+            }
+            if (length(svalue(element_tree)) == 0L) {
+                return()
+            }
 
             component <- svalue(element_tree)
             svalue(vname) <<- makeNames(
-                sprintf("%s%s",
+                sprintf(
+                    "%s%s",
                     svalue(dt_var),
                     iNZightTools:::get_dt_comp(component[length(component)])$suffix
                 )
@@ -2016,13 +2140,20 @@ iNZExtFromDtWin <- setRefClass(
             extract(preview = TRUE)
         },
         extract = function(preview = FALSE) {
-            if (length(svalue(dt_var)) == 0L) return()
-            if (length(svalue(element_tree)) == 0L) return()
-            if (svalue(vname) == "") return()
+            if (length(svalue(dt_var)) == 0L) {
+                return()
+            }
+            if (length(svalue(element_tree)) == 0L) {
+                return()
+            }
+            if (svalue(vname) == "") {
+                return()
+            }
 
             .dataset <- GUI$getActiveData(lazy = FALSE)
-            if (preview)
+            if (preview) {
                 .dataset <- .dataset[svalue(dt_var)]
+            }
 
             component <- svalue(element_tree)
             tryCatch(
@@ -2042,7 +2173,9 @@ iNZExtFromDtWin <- setRefClass(
                     )
                 },
                 finally = {
-                    if (!exists("res")) return()
+                    if (!exists("res")) {
+                        return()
+                    }
                     if (preview) {
                         df_prev$set_items(
                             data.frame(
@@ -2093,7 +2226,9 @@ iNZAggDtWin <- setRefClass(
                 scroll = FALSE,
                 body_direction = "horizontal"
             )
-            if (!ok) return()
+            if (!ok) {
+                return()
+            }
             on.exit(.self$show())
             usingMethods("aggregate")
 
@@ -2109,7 +2244,8 @@ iNZAggDtWin <- setRefClass(
 
             glabel("Date/time variable",
                 container = left_panel,
-                anchor = c(-1, 0))
+                anchor = c(-1, 0)
+            )
 
             cols <- names(GUI$getActiveData(lazy = TRUE))
             dt_var <<- gcombobox(cols,
@@ -2120,15 +2256,18 @@ iNZAggDtWin <- setRefClass(
 
             glabel("Aggregation interval :",
                 container = left_panel,
-                anchor = c(-1, 0))
+                anchor = c(-1, 0)
+            )
 
             format <<- gcombobox("",
                 container = left_panel,
-                handler = function(h, ...) aggregate(preview = TRUE))
+                handler = function(h, ...) aggregate(preview = TRUE)
+            )
 
             glabel("Grouping variable (optional) (hold CTRL to select many) :",
                 container = left_panel,
-                anchor = c(-1, 0))
+                anchor = c(-1, 0)
+            )
 
             group_vars <<- gtable(
                 list(Summary = GUI$getActiveData(lazy = TRUE) |> (\(.) names(.)[sapply(., is_cat)])()),
@@ -2138,11 +2277,12 @@ iNZAggDtWin <- setRefClass(
             addHandlerSelectionChanged(group_vars,
                 handler = function(h, ...) aggregate(preview = TRUE)
             )
-            
+
             glabel("Aggregation summary (hold CTRL to select many) :",
-                   container = left_panel,
-                   anchor = c(-1, 0))
-            
+                container = left_panel,
+                anchor = c(-1, 0)
+            )
+
             method <<- gtable(
                 list(Summary = c("Sum", "Mean", "Median", "Min", "Max")),
                 container = left_panel,
@@ -2159,28 +2299,34 @@ iNZAggDtWin <- setRefClass(
 
             lbl <- glabel("Original dataset",
                 container = right_panel,
-                anchor = c(-1, 0))
+                anchor = c(-1, 0)
+            )
             font(lbl) <- list(weight = "bold")
 
             df_orig <- gtable(head(GUI$getActiveData(lazy = TRUE)),
-                container = right_panel)
+                container = right_panel
+            )
             size(df_orig) <- c(450, -1)
 
             lbl <- glabel("Aggregated dataset",
                 container = right_panel,
-                anchor = c(-1, 0))
+                anchor = c(-1, 0)
+            )
             font(lbl) <- list(weight = "bold")
 
             df_prev <<- gtable(
                 data.frame(Preview = "Preview will show here"),
-                container = right_panel)
+                container = right_panel
+            )
         },
         select_variable = function() {
             var <- svalue(dt_var)
             df_prev$set_items(
                 data.frame(Preview = "Preview will show here")
             )
-            if (length(var) == 0L) return()
+            if (length(var) == 0L) {
+                return()
+            }
 
             x <- GUI$getActiveData(lazy = TRUE)[[var]]
             type <<- ""
@@ -2211,9 +2357,15 @@ iNZAggDtWin <- setRefClass(
             aggregate(preview = TRUE)
         },
         aggregate = function(preview = FALSE) {
-            if (length(svalue(dt_var)) == 0L) return()
-            if (length(svalue(format)) == 0L) return()
-            if (length(svalue(method)) == 0L) return()
+            if (length(svalue(dt_var)) == 0L) {
+                return()
+            }
+            if (length(svalue(format)) == 0L) {
+                return()
+            }
+            if (length(svalue(method)) == 0L) {
+                return()
+            }
 
             .dataset <- GUI$getActiveData(lazy = FALSE)
 
@@ -2239,7 +2391,6 @@ iNZAggDtWin <- setRefClass(
                     tolower(svalue(method)),
                     v
                 )
-
             } else {
                 v <- colnames(.dataset)[sapply(.dataset, iNZightTools::is_num) & !sapply(.dataset, iNZightTools::is_dt)]
                 dt_name <- sprintf("%s.%s", svalue(dt_var), type)
@@ -2254,8 +2405,9 @@ iNZAggDtWin <- setRefClass(
                     )
             }
             for (i in seq_along(colnames(res))) {
-                if (isTRUE(all.equal(res[[i]], rep(0, length(res[[i]])))))
+                if (isTRUE(all.equal(res[[i]], rep(0, length(res[[i]]))))) {
                     res[i] <- NULL
+                }
             }
 
             if (preview) {
@@ -2267,8 +2419,9 @@ iNZAggDtWin <- setRefClass(
         },
         updateView = function() {
             df <- aggregate()
-            if (length(df) != 0)
+            if (length(df) != 0) {
                 newview$set_items(df)
+            }
         }
     )
 )
@@ -2297,7 +2450,9 @@ iNZDataReportWin <- setRefClass(
                 show_code = FALSE,
                 scroll = FALSE
             )
-            if (!ok) return()
+            if (!ok) {
+                return()
+            }
             on.exit(.self$show())
             usingMethods("generate_report")
 

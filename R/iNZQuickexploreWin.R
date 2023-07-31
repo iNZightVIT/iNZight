@@ -8,11 +8,13 @@ iNZQuickexploreWin <- setRefClass(
     "iNZQuickexploreWin",
     fields = list(
         GUI = "ANY"
-        ),
+    ),
     methods = list(
-        initialize = function(gui=NULL) {
+        initialize = function(gui = NULL) {
             initFields(GUI = gui)
-            if (is.null(GUI)) return()
+            if (is.null(GUI)) {
+                return()
+            }
             GUI$modWin <<- gwindow(
                 visible = FALSE,
                 parent = GUI$win
@@ -29,7 +31,7 @@ iNZExploreMissing <- setRefClass(
         initialize = function(gui) {
             callSuper(gui)
             svalue(GUI$modWin) <<- "Explore Missing Values"
-            oldWd <- options(width = 1000)  # so it doesn't wrap
+            oldWd <- options(width = 1000) # so it doesn't wrap
             dd <- GUI$getActiveData(lazy = FALSE)
             g <- gtext(
                 text = paste(
@@ -59,7 +61,7 @@ iNZallSummaries <- setRefClass(
         initialize = function(gui) {
             callSuper(gui)
             svalue(GUI$modWin) <<- "Explore all 1-way Summaries"
-            oldWd <- options(width = 1000)  # so it doesn't wrap
+            oldWd <- options(width = 1000) # so it doesn't wrap
             g <- gtext(
                 text = iNZightPlots::exploreAllSummaries(GUI$getActiveData(lazy = FALSE)),
                 expand = TRUE,

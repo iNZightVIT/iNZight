@@ -19,8 +19,11 @@
 #' dispose(w)
 gimagebutton <- function(stock.id = NULL, filename, old_cursor = NULL, tooltip = NULL,
                          ...) {
-    img <- if (is.null(stock.id)) gimage(filename = filename, ...)
-           else gimage(stock.id = stock.id, ...)
+    img <- if (is.null(stock.id)) {
+        gimage(filename = filename, ...)
+    } else {
+        gimage(stock.id = stock.id, ...)
+    }
 
     tooltip(img) <- tooltip
 
