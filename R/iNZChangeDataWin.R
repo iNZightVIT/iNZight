@@ -1222,34 +1222,47 @@ iNZReshapeWin <- setRefClass(
             on.exit(.self$show())
             usingMethods("do_reshape")
 
-
             format_string <- glabel("Select reshape mode")
-            add_body(format_string)
+            add_body(format_string, anchor = c(-1, 0))
 
-            format <- gcombobox(
-                items = c("", "Wide to long", "Long to wide"),
+            g_mode <- ggroup()
+
+            format <- gradio(
+                items = c("Wide to Long", "Long to Wide"),
                 handler = function(h, ...) {
                     type <<- svalue(format)
                     newview$set_items("")
                     visible(previewbox) <- TRUE
                     enabled(ok_button) <<- TRUE
-                    if (type == "Wide to long") {
-                        visible(group1) <- TRUE
-                        visible(group2) <- FALSE
-                        check <<- "wide"
-                    } else if (type == "Long to wide") {
-                        visible(group2) <- TRUE
-                        visible(group1) <- FALSE
-                        check <<- "long"
-                    } else {
-                        visible(group1) <- FALSE
-                        visible(group2) <- FALSE
-                        visible(previewbox) <- FALSE
-                        enabled(ok_button) <<- FALSE
-                    }
-                }
+
+                    check <<- ifelse(type == "Wide to Long", "wide", "long")
+                    visible(group1) <- check == "wide"
+                    visible(group2) <- check == "long"
+
+                    mode_image$set_value(
+                        file.path(
+                            getwd(), "inst", "images",
+                            ifelse(type == "Wide to Long",
+                                "pivot_longer.png", "pivot_wider.png"
+                            )
+                        )
+                    )
+                },
+                container = g_mode
             )
-            add_body(format)
+            addSpring(g_mode)
+
+            mode_image <- gimage(
+                filename = "pivot_longer.png",
+                # dirname = system.file("images", package = "iNZight"),
+                dirname = file.path(getwd(), "inst", "images"),
+                size = "large",
+                container = g_mode
+            )
+            addSpace(g_mode, 20)
+
+            add_body(g_mode)
+            body_space(20)
 
             ## Wide to long
             group1 <- gvbox()
@@ -1332,7 +1345,6 @@ iNZReshapeWin <- setRefClass(
                     updatePreview()
                 }
             )
-            visible(group1) <- FALSE
             add_body(group1)
 
             ## Long to wide
@@ -1397,9 +1409,6 @@ iNZReshapeWin <- setRefClass(
             size(newview) <<- c(-1, 250)
 
             add_body(previewbox, expand = TRUE, fill = TRUE)
-
-            visible(previewbox) <- FALSE
-            enabled(ok_button) <<- FALSE
         },
         updatePreview = function() {
             d <- reshape()
