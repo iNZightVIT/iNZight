@@ -54,7 +54,7 @@ test_that("Data set code is applied", {
 #         "library(magrittr)",
 #         fixed = TRUE
 #     )
-})
+# })
 
 msg("Plot code is generated correctly", 2L)
 test_that("Plot code is generated correctly", {
