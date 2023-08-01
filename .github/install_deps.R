@@ -3,7 +3,7 @@ github_deps <- c(
     "tmelliott/surveyspec",
     "tmelliott/gWidgets2@patch-1",
     "iNZightVIT/gWidgets2RGtk2@inz",
-    "iNZightVIT/iNZightTools@dev",
+    "iNZightVIT/iNZightTools@2.0.0",
     "iNZightVIT/iNZightTS@1.5.10",
     "iNZightVIT/iNZightMR@2.2.7",
     "iNZightVIT/iNZightPlots@2.15.0",
