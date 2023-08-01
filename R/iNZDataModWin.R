@@ -2217,7 +2217,7 @@ iNZAggDtWin <- setRefClass(
 
             ok <- callSuper(gui,
                 title = "Aggregate date/time",
-                width = "medium",
+                width = "med",
                 height = "large",
                 help = "user_guides/variables/#dtaggregate",
                 ok = "Aggregate",
