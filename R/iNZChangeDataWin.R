@@ -1241,7 +1241,7 @@ iNZReshapeWin <- setRefClass(
 
                     mode_image$set_value(
                         file.path(
-                            getwd(), "inst", "images",
+                            system.file("images", package = "iNZight"),
                             ifelse(type == "Wide to Long",
                                 "pivot_longer.png", "pivot_wider.png"
                             )
@@ -1254,8 +1254,7 @@ iNZReshapeWin <- setRefClass(
 
             mode_image <- gimage(
                 filename = "pivot_longer.png",
-                # dirname = system.file("images", package = "iNZight"),
-                dirname = file.path(getwd(), "inst", "images"),
+                dirname = system.file("images", package = "iNZight"),
                 size = "large",
                 container = g_mode
             )
