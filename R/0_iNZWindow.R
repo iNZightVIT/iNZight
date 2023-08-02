@@ -28,8 +28,8 @@ iNZWindow <- setRefClass("iNZWindow",
                               help = NULL,
                               scroll = FALSE,
                               show_code = FALSE) {
-            if (is.null(gui)) {
-                return(invisible(FALSE))
+            if (!inherits(gui, "iNZGUI")) {
+                stop("gui should be an iNZGUI object created with iNZight()")
             }
             if (!is.function(action)) stop("action should be a function")
 
