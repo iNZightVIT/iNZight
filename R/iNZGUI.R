@@ -1564,7 +1564,11 @@ iNZGUI <- setRefClass(
             state <- .self$getState()
             dispose(.self$win)
             if (popOut) try(grDevices::dev.off(), TRUE)
-            .self$initializeGui(disposer = .self$disposer, show = FALSE)
+            .self$initializeGui(
+                disposer = .self$disposer,
+                show = FALSE,
+                ui_env = .self$ui_env
+            )
             Sys.sleep(0.5)
             while (!is_initialized) {
                 Sys.sleep(0.1)

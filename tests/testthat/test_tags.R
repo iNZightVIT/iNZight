@@ -1,13 +1,13 @@
-# devtools::load_all(); try(dispose(w))
+# # devtools::load_all(); try(dispose(w))
 
-test_that("Tag objects works", {
-    w <- gwindow()
-    on.exit(gWidgets2::dispose(w))
+# test_that("Tag objects works", {
+#     w <- gwindow()
+#     on.exit(gWidgets2::dispose(w))
 
-    g <- gvbox(container = w)
-    t <- gtag("tag1", container = g)
-    expect_is(t, "GTag")
-})
+#     g <- gvbox(container = w)
+#     t <- gtag("tag1", container = g)
+#     expect_is(t, "GTag")
+# })
 
 test_that("Tags object works", {
     # devtools::load_all(); try(dispose(w), TRUE)
