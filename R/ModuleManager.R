@@ -609,7 +609,7 @@ iNZModule <- setRefClass(
 
 new_module <- function(info, ui_env) {
     e <- new.env(parent = ui_env)
-    menu <- list(Modules = list(info$title))
+    menu <- list()
     assign("info", info, envir = e)
     assign("menu", menu, envir = e)
     e
@@ -676,13 +676,17 @@ item <- function(title, action) {
     )
 }
 
-convert_menu_items <- function(item, ...) UseMethod("convert_menu_items")
+convert_menu_items <- function(item, ...) {
+    UseMethod("convert_menu_items")
+}
 
 #' @export
 convert_menu_items.default <- function(item, ...) item
 
 #' @export
-convert_menu_items.list <- function(item, ...) lapply(item, convert_menu_items, ...)
+convert_menu_items.list <- function(item, ...) {
+    lapply(item, convert_menu_items, ...)
+}
 
 #' @export
 convert_menu_items.inzmenuitem <- function(item, gui, mod, ...) {

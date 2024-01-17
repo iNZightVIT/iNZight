@@ -1025,8 +1025,24 @@ iNZGUI <- setRefClass(
             start <- proc.time()
             activeModules <<- vector("list", nmod)
             for (i in seq_len(nmod)) {
-                activeModules[[i]] <<- load_module(mod_dirs[[i]], ui_env)
-                cli::cli_progress_update()
+                activeModules[[i]] <<- tryCatch(
+                    load_module(mod_dirs[[i]], ui_env),
+                    error = function(e) {
+                        gmessage(
+                            sprintf(
+                                "Unable to load module '%s':\n\n%s",
+                                basename(mod_dirs[[i]]),
+                                e$message
+                            ),
+                            title = "Unable to load module",
+                            icon = "error"
+                        )
+                    },
+                    finally = function() {
+                        cli::cli_progress_update()
+                    }
+                )
+                # cli::cli_progress_update()
             }
             cli::cli_progress_done()
             end <- proc.time()
