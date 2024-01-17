@@ -45,7 +45,7 @@ Suggests:
     DBI,
     forcats,
     FutureLearnData,
-    iNZightMR (>= 2.2.7),
+    iNZightMR (>= 2.3.0),
     iNZightModules (>= 2.5),
     jsonlite,
     knitr,

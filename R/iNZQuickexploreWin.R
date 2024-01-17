@@ -35,9 +35,10 @@ iNZExploreMissing <- setRefClass(
             dd <- GUI$getActiveData(lazy = FALSE)
             g <- gtext(
                 text = paste(
-                    iNZightMR::calcmissing(dd,
-                        print = FALSE,
-                        final = FALSE
+                    capture.output(
+                        print(
+                            iNZightMR::calcmissing(dd)
+                        )
                     ),
                     collapse = "\n"
                 ),
