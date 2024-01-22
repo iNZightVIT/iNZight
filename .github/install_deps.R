@@ -5,7 +5,7 @@ github_deps <- c(
     "iNZightVIT/gWidgets2RGtk2@inz",
     "iNZightVIT/iNZightTools@2.0.0",
     "iNZightVIT/iNZightTS@1.5.10",
-    "iNZightVIT/iNZightMR@2.2.7",
+    "iNZightVIT/iNZightMR@2.3.0",
     "iNZightVIT/iNZightPlots@2.15.0",
     "iNZightVIT/iNZightRegression@1.3.3",
     "iNZightVIT/iNZightModules@2.5.3"
