@@ -2,15 +2,17 @@ iNZcodeWidget <- setRefClass(
     "iNZcodeWidget",
     fields = list(
         GUI = "ANY",
-        history = "list",      ## each list is a vector of commands
+        history = "list", ## each list is a vector of commands
         keep.last = "logical", ## if FALSE, the last element of history is replaced on update
         packages = "character",
         disabled = "logical"
     ),
     methods = list(
         initialize = function(gui) {
-            initFields(GUI = gui, keep.last = TRUE,
-                       packages = c("iNZightPlots", "magrittr"), disabled = FALSE)
+            initFields(
+                GUI = gui, keep.last = TRUE,
+                packages = c("iNZightPlots"), disabled = FALSE
+            )
             history <<- list()
         },
         add = function(x, keep = TRUE, tidy = FALSE) {
@@ -24,12 +26,19 @@ iNZcodeWidget <- setRefClass(
                 xpkg <- x[grepl("::", x)]
                 m <- stringr::str_match(xpkg, "([a-zA-Z][a-zA-Z0-9]+):{2,3}")
             }
+            if (any(grepl("%>%", x)) && !"magrittr" %in% packages) {
+                packages <<- c(packages, "magrittr")
+            }
+
             if (any(grepl("library\\([a-zA-Z0-9]+\\)", x))) {
-                sapply(x[grepl("library\\([a-zA-Z0-9]+\\)", x)],
+                sapply(
+                    x[grepl("library\\([a-zA-Z0-9]+\\)", x)],
                     function(y) {
                         m <- regexpr("library\\([a-zA-Z0-9]+\\)", y)
-                        pkg <- gsub(".*library\\(|\\).*", "",
-                            substr(y, m, m + attr(m, "match.length")))
+                        pkg <- gsub(
+                            ".*library\\(|\\).*", "",
+                            substr(y, m, m + attr(m, "match.length"))
+                        )
                         if (!pkg %in% packages) packages <<- c(packages, pkg)
                     }
                 )
@@ -37,8 +46,10 @@ iNZcodeWidget <- setRefClass(
             invisible(NULL)
         },
         get = function(width = 80, indent = 4) {
-            code <- do.call(c,
-                lapply(history,
+            code <- do.call(
+                c,
+                lapply(
+                    history,
                     function(x) {
                         x <- gsub("^#", "\n#", x)
                         x <- paste(x, collapse = " ")
@@ -55,7 +66,9 @@ iNZcodeWidget <- setRefClass(
             return(c(header(), code))
         },
         update = function() {
-            if (disabled) return()
+            if (disabled) {
+                return()
+            }
             ## look at the data - has it got code? update the history with the code!
             code <- GUI$getActiveDoc()$getCode()
             if (is.null(code)) {
@@ -63,21 +76,27 @@ iNZcodeWidget <- setRefClass(
                 return()
             }
 
-            if (length(code) == 1 && code == "") return()
-            if (is.null(GUI$getActiveDoc()$getModel()$getDesign()))
+            if (length(code) == 1 && code == "") {
+                return()
+            }
+            if (is.null(GUI$getActiveDoc()$getModel()$getDesign())) {
                 dname <- attr(GUI$getActiveData(lazy = TRUE), "name", exact = TRUE)
-            else
+            } else {
                 dname <- GUI$getActiveDoc()$getModel()$dataDesignName
-            if (is.null(dname) || dname == "")
+            }
+            if (is.null(dname) || dname == "") {
                 dname <- sprintf("data%s", ifelse(GUI$activeDoc == 1, "", GUI$activeDoc))
+            }
             dname <- iNZightTools:::create_varname(dname)
 
             if (!any(grepl(".dataset", code))) {
                 code <- c(sprintf("%s <- ", dname), code)
                 add(code, keep = TRUE, tidy = TRUE)
             } else {
-                code <- gsub("\ +", " ", # one or more spaces with just one space!
-                paste(gsub(".dataset", dname, code, fixed = TRUE), collapse = ""))
+                code <- gsub(
+                    "\ +", " ", # one or more spaces with just one space!
+                    paste(gsub(".dataset", dname, code, fixed = TRUE), collapse = "")
+                )
                 code <- gsub(" %>% ", " %>% \n    ", code)
                 ## replace data %>% foo() with data %<>% foo()
                 ## before the first one, add a comment explaining what %<>% does
@@ -119,7 +138,9 @@ iNZcodeWidget <- setRefClass(
                 "",
                 sep(),
                 "",
-                "library(magrittr)  # enables the pipe (%>%) operator",
+                if ("magrittr" %in% packages) {
+                    "library(magrittr)  # enables the pipe (%>%) operator"
+                },
                 "library(iNZightPlots)",
                 ""
             )

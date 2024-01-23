@@ -22,16 +22,20 @@ iNZPlotToolbar <- setRefClass(
     ),
     methods = list(
         initialize = function(gui, cont) {
-            initFields(GUI = gui,
-                       plotWidget = gui$plotWidget,
-                       popOut = gui$preferences$popout)
+            initFields(
+                GUI = gui,
+                plotWidget = gui$plotWidget,
+                popOut = gui$preferences$popout
+            )
 
-            toolbarcont <<- ggroup(container = cont,
+            toolbarcont <<- ggroup(
+                container = cont,
                 spacing = 0,
                 fill = TRUE,
                 expand = TRUE
             )
-            iconbar <<- ggroup(horizontal = !popOut,
+            iconbar <<- ggroup(
+                horizontal = !popOut,
                 container = toolbarcont,
                 spacing = 15,
                 fill = TRUE,
@@ -39,19 +43,19 @@ iNZPlotToolbar <- setRefClass(
             )
 
             makeToolbar()
-
         },
         ## update the toolbar (as opposed to initialize it)
         update = function(btns = c("add", "rmv", "inf"),
                           refresh = NULL, export = NULL,
                           extra = NULL) {
-
             visible(iconbar) <<- FALSE
 
-            if (length(toolbarcont$children) > 1)
+            if (length(toolbarcont$children) > 1) {
                 delete(toolbarcont, toolbarcont$children[[2]])
+            }
 
-            altbar <<- ggroup(horizontal = !popOut,
+            altbar <<- ggroup(
+                horizontal = !popOut,
                 container = toolbarcont,
                 spacing = 15,
                 fill = TRUE,
@@ -74,7 +78,6 @@ iNZPlotToolbar <- setRefClass(
                                export.fn = NULL,
                                extra,
                                cont = iconbar) {
-
             ## link the menu:
             setPlotMenu(btns, refresh.fn, extra)
 
@@ -86,32 +89,33 @@ iNZPlotToolbar <- setRefClass(
 
             if (is.null(export.fn)) {
                 exportFn <- function() {
-                    try(
-                        {
-                            # Grab identification var
-                            plot.settings <- GUI$getActiveDoc()$getSettings()
+                    try({
+                        # Grab identification var
+                        plot.settings <- GUI$getActiveDoc()$getSettings()
 
-                            vars <- character()
-                            if (isTRUE(length(plot.settings$locate.id) > 0)) {
-                                if (isTRUE(plot.settings$locate.settings$txtVar != "id")) {
-                                    vars <- c(vars, plot.settings$locate.settings$txtVar)
-                                }
-
-                                if (isTRUE(plot.settings$locate.settings$matchChk)) {
-                                    vars <- c(vars, plot.settings$locate.settings$matchVar)
-                                }
+                        vars <- character()
+                        if (isTRUE(length(plot.settings$locate.id) > 0)) {
+                            if (isTRUE(plot.settings$locate.settings$txtVar != "id")) {
+                                vars <- c(vars, plot.settings$locate.settings$txtVar)
                             }
 
-                            tmpurl <- iNZightPlots::exportHTML(
-                                refreshFn,
-                                file = tempfile(fileext = ".html"),
-                                data = GUI$getActiveData(lazy = FALSE),
-                                extra.vars = vars
-                            )
-                            if (inherits(tmpurl, "htmlwidget")) print(tmpurl)
-                            else browseURL(tmpurl)
+                            if (isTRUE(plot.settings$locate.settings$matchChk)) {
+                                vars <- c(vars, plot.settings$locate.settings$matchVar)
+                            }
                         }
-                    )
+
+                        tmpurl <- iNZightPlots::exportHTML(
+                            refreshFn,
+                            file = tempfile(fileext = ".html"),
+                            data = GUI$getActiveData(lazy = FALSE),
+                            extra.vars = vars
+                        )
+                        if (inherits(tmpurl, "htmlwidget")) {
+                            print(tmpurl)
+                        } else {
+                            browseURL(tmpurl)
+                        }
+                    })
                 }
             } else {
                 exportFn <- export.fn
@@ -128,48 +132,60 @@ iNZPlotToolbar <- setRefClass(
                 name = "newplotbutton",
                 tooltip = "New Graphics Window"
             )
-            addHandlerClicked(newplotBtn,
-                function(h, ...) newPlotWindow(refreshFn))
+            addHandlerClicked(
+                newplotBtn,
+                function(h, ...) newPlotWindow(refreshFn)
+            )
 
             newtabBtn <- gimagebutton(
                 stock.id = "new",
                 size = "button",
                 tooltip = "New Plot Tab"
             )
-            addHandlerClicked(newtabBtn,
-                function(h, ...) plotWidget$addPlot())
+            addHandlerClicked(
+                newtabBtn,
+                function(h, ...) plotWidget$addPlot()
+            )
 
             refreshplotBtn <- gimagebutton(
                 stock.id = "refresh",
                 size = "button",
                 tooltip = "Redraw Plot"
             )
-            addHandlerClicked(refreshplotBtn,
-                function(h, ...) refreshFn())
+            addHandlerClicked(
+                refreshplotBtn,
+                function(h, ...) refreshFn()
+            )
 
             renametabBtn <- gimagebutton(
                 stock.id = "editor",
                 size = "button",
                 tooltip = "Rename Plot Tab"
             )
-            addHandlerClicked(renametabBtn,
-                function(h, ...) plotWidget$renamePlot())
+            addHandlerClicked(
+                renametabBtn,
+                function(h, ...) plotWidget$renamePlot()
+            )
 
             saveplotBtn <- gimagebutton(
                 stock.id = "save",
                 size = "button",
                 tooltip = "Save Plot"
             )
-            addHandlerClicked(saveplotBtn,
-                function(h, ...) plotWidget$savePlot(refreshFn))
+            addHandlerClicked(
+                saveplotBtn,
+                function(h, ...) plotWidget$savePlot(refreshFn)
+            )
 
             closetabBtn <- gimagebutton(
                 stock.id = "close",
                 size = "button",
                 tooltip = "Close Plot Tab"
             )
-            addHandlerClicked(closetabBtn,
-                function(h, ...) plotWidget$closePlot())
+            addHandlerClicked(
+                closetabBtn,
+                function(h, ...) plotWidget$closePlot()
+            )
 
             ## -- IMAGES
             addtoplotBtn <- gimagebutton(
@@ -177,31 +193,38 @@ iNZPlotToolbar <- setRefClass(
                 size = "button",
                 tooltip = "Add to Plot"
             )
-            addHandlerClicked(addtoplotBtn,
-                function(h, ...) addToPlot())
+            addHandlerClicked(
+                addtoplotBtn,
+                function(h, ...) addToPlot()
+            )
 
             removeaddBtn <- gimagebutton(
                 filename = img.rmvplot,
                 size = "button",
                 tooltip = "Remove Additions"
             )
-            addHandlerClicked(removeaddBtn,
-                function(h, ...) iNZPlotRmveModWin$new(GUI))
+            addHandlerClicked(
+                removeaddBtn,
+                function(h, ...) iNZPlotRmveModWin$new(GUI)
+            )
 
             inferenceBtn <- gimagebutton(
                 filename = img.infinfo,
                 size = "button",
                 tooltip = "Add Inference Information"
             )
-            addHandlerClicked(inferenceBtn,
-                function(h, ...) addInf())
+            addHandlerClicked(
+                inferenceBtn,
+                function(h, ...) addInf()
+            )
 
             exportplotBtn <<- gimagebutton(
                 filename = img.export,
                 size = "button",
                 tooltip = "Export Interacive Plot"
             )
-            addHandlerClicked(exportplotBtn,
+            addHandlerClicked(
+                exportplotBtn,
                 function(h, ...) {
                     if (enabled(h$obj)) exportFn()
                 }
@@ -222,17 +245,21 @@ iNZPlotToolbar <- setRefClass(
 
             addSpring(cont)
 
-            if ("add" %in% btns)
+            if ("add" %in% btns) {
                 add(cont, addtoplotBtn)
+            }
 
-            if ("rmv" %in% btns)
+            if ("rmv" %in% btns) {
                 add(cont, removeaddBtn)
+            }
 
-            if ("inf" %in% btns)
+            if ("inf" %in% btns) {
                 add(cont, inferenceBtn)
+            }
 
-            if ("export" %in% btns)
+            if ("export" %in% btns) {
                 add(cont, exportplotBtn)
+            }
 
             if (!missing(extra)) {
                 addSpace(cont, 10)
@@ -240,13 +267,11 @@ iNZPlotToolbar <- setRefClass(
             }
 
             addSpace(cont, 10)
-
         },
         ## Plot Menu
         setPlotMenu = function(btns = c("add", "rmv", "inf", "export"),
                                refresh.fn = NULL,
                                extra) {
-
             if (is.null(refresh.fn)) {
                 refreshFn <- GUI$updatePlot
             } else {
@@ -297,8 +322,9 @@ iNZPlotToolbar <- setRefClass(
                 )
             )
 
-            if (popOut)
+            if (popOut) {
                 pmenu[5:8] <- NULL
+            }
 
             pmenu[which(!c("add", "rmv", "inf", "export") %in% btns)] <- NULL
 
@@ -314,21 +340,25 @@ iNZPlotToolbar <- setRefClass(
         addToPlot = function(message = TRUE) {
             curSet <- GUI$getActiveDoc()$getSettings()
             err <- FALSE
-            if (is.null(GUI$plotType))
+            if (is.null(GUI$plotType)) {
                 err <- TRUE
-            if (GUI$plotType == "none")
+            }
+            if (GUI$plotType == "none") {
                 err <- TRUE
+            }
 
             if (err) {
-                if (message)
+                if (message) {
                     gmessage(
                         "Hmm... you'll have to create a plot before you can add to it!",
                         title = "No plot!"
                     )
+                }
             } else if (GUI$plotType == "custom") {
                 if (message) {
                     gmessage("Add to Plot only works with `inzplot` functions.",
-                        title = "Plot type not supported")
+                        title = "Plot type not supported"
+                    )
                 }
             } else {
                 iNZPlotMod$new(GUI)
@@ -354,10 +384,12 @@ iNZPlotToolbar <- setRefClass(
 
             curSet <- GUI$getActiveDoc()$getSettings()
             err <- FALSE
-            if (is.null(GUI$plotType))
+            if (is.null(GUI$plotType)) {
                 err <- TRUE
-            if (GUI$plotType == "none")
+            }
+            if (GUI$plotType == "none") {
                 err <- TRUE
+            }
 
             if (err) {
                 if (message) {
@@ -373,7 +405,8 @@ iNZPlotToolbar <- setRefClass(
             } else if (GUI$plotType == "custom") {
                 if (message) {
                     gmessage("Add Inference only works with `inzplot` functions.",
-                        title = "Plot type not supported")
+                        title = "Plot type not supported"
+                    )
                 }
             } else {
                 switch(GUI$plotType,
@@ -383,14 +416,15 @@ iNZPlotToolbar <- setRefClass(
                     "grid" = ,
                     "hex" = ,
                     "scatter" = {
-                        if (is.null(curSet$trend) && curSet$smooth == 0)
+                        if (is.null(curSet$trend) && curSet$smooth == 0) {
                             gmessage(
                                 "Use the Add to Plot menu to add a trend(s) and/or smoother.",
                                 title = "No trend or smoother",
                                 parent = GUI$win
                             )
-                        else
+                        } else {
                             iNZScatterInf$new(GUI)
+                        }
                     }
                 )
             }

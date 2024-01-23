@@ -7,6 +7,7 @@
 ^\.vscode$
 ^.github$
 ^doc$
-^.git$
 ^scripts$
 ^CITATION\.cff$
+^\.git$
+^\.better-commits.json$

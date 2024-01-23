@@ -21,7 +21,9 @@ iNZPlotInfWin <- setRefClass(
     methods = list(
         initialize = function(gui = NULL) {
             initFields(GUI = gui)
-            if (is.null(GUI)) return()
+            if (is.null(GUI)) {
+                return()
+            }
 
             modwin <- GUI$initializeModuleWindow(
                 title = "Add Inference Information",
@@ -94,8 +96,9 @@ iNZPlotInfWin <- setRefClass(
                 expand = TRUE,
                 fill = TRUE,
                 cont = btnGrp,
-                handler = function(h, ...)
+                handler = function(h, ...) {
                     help_page("user_guides/plot_options/?topic=plot_inference")
+                }
             )
             helpButton$set_icon("gw-help_topic")
 
@@ -130,10 +133,11 @@ iNZBarchartInf <- setRefClass(
             parTab[3, 1, expand = TRUE, anchor = c(-1, 0)] <<- parm
 
             ## Methods
-            if (is.survey || getOption("inzight.disable.bootstraps", FALSE))
+            if (is.survey || getOption("inzight.disable.bootstraps", FALSE)) {
                 mthd <- gradio(c("Normal"), selected = 1)
-            else
+            } else {
                 mthd <- gradio(c("Normal", "Bootstrap *"), selected = 1)
+            }
 
             metTab[3, 1] <<- mthd
 
@@ -155,15 +159,16 @@ iNZBarchartInf <- setRefClass(
             ## Add function
             addIntervals <- function() {
                 ## Inference type depends on method (normal = both; bootstrap = only confidence [for now]..)
-                if (svalue(compInt) | svalue(confInt))
+                if (svalue(compInt) | svalue(confInt)) {
                     inf.type <- c("comp", "conf")[
                         c(
                             svalue(compInt) & svalue(mthd, index = TRUE) == 1 & !is.survey,
                             svalue(confInt)
                         )
                     ]
-                else
+                } else {
                     inf.type <- NULL
+                }
 
 
                 bs.inf <- svalue(mthd, index = TRUE) == 2
@@ -184,7 +189,7 @@ iNZBarchartInf <- setRefClass(
                 } else {
                     visible(compInt) <- svalue(mthd, index = TRUE) == 1
                 }
-                #if (svalue(mthd, index = TRUE) == 2) svalue(compInt) <- FALSE
+                # if (svalue(mthd, index = TRUE) == 2) svalue(compInt) <- FALSE
 
                 enabled(ci_level) <- svalue(confInt)
 
@@ -222,19 +227,21 @@ iNZDotchartInf <- setRefClass(
             is.survey <<- !is.null(GUI$getActiveDoc()$getModel()$getDesign())
 
             ## Parameters
-            if (is.survey)
+            if (is.survey) {
                 parm <- gradio(c("Mean"), selected = 1)
-            else
+            } else {
                 parm <- gradio(c("Mean", "Median"), selected = 1)
+            }
 
             parTab[3, 1, expand = TRUE, anchor = c(-1, 0)] <<- parm
 
 
             ## Methods
-            if (is.survey || getOption("inzight.disable.bootstraps", FALSE))
+            if (is.survey || getOption("inzight.disable.bootstraps", FALSE)) {
                 mthd <- gradio(c("Normal"), selected = 1)
-            else
+            } else {
                 mthd <- gradio(c("Normal", "Bootstrap *"), selected = 1)
+            }
 
             metTab[3, 1] <<- mthd
 
@@ -304,15 +311,16 @@ iNZDotchartInf <- setRefClass(
                         items <- c("Normal")
                         mthd$set_items(c("Normal", "Bootstrap *"))
                     }
-                    if (!is.survey && !getOption("inzight.disable.bootstraps", FALSE))
+                    if (!is.survey && !getOption("inzight.disable.bootstraps", FALSE)) {
                         items <- c(items, "Bootstrap *")
+                    }
 
                     mthd$set_items(items)
                 }
 
                 visible(typTab) <<-
                     svalue(parm, index = TRUE) == 1 |
-                    svalue(mthd, index = TRUE) == 2
+                        svalue(mthd, index = TRUE) == 2
 
                 enabled(ci_level) <- svalue(confInt)
 
@@ -351,21 +359,23 @@ iNZDotchartInf <- setRefClass(
             if (is.null(g2)) {
                 pl <- pl["all"]
             } else {
-                  pl <- pl[1:(which(names(pl) == "gen") - 1)]
+                pl <- pl[1:(which(names(pl) == "gen") - 1)]
             }
 
             for (n1 in names(pl)) {
                 ## Grab the level of g2:
                 p1 <- pl[[n1]]
 
-                if (!is.null(g2))
+                if (!is.null(g2)) {
                     out <- c(out, paste0("## ", g2, " = ", n1))
+                }
 
                 for (n2 in names(p1)) {
                     p2 <- p1[[n2]]
 
-                    if (!is.null(g1))
+                    if (!is.null(g1)) {
                         out <- c(out, paste0("# ", g1, " = ", n2))
+                    }
 
                     ## If MEDIAN and NOT BOOTSTRAP, then we show Year 12 intervals (neither COMP nor
                     ## CONF)
@@ -375,23 +385,28 @@ iNZDotchartInf <- setRefClass(
                     }
 
                     y12 <- names(p2$inference)[1] == "median" & !attr(p2$inference, "bootstrap")
-                    inf <- p2$inference[[1]]  ## only take the first (mean or median)
+                    inf <- p2$inference[[1]] ## only take the first (mean or median)
 
-                    if (y12)
+                    if (y12) {
                         inf <- inf["conf"]
+                    }
 
                     inf <- inf[!sapply(inf, is.null)]
 
                     if (length(inf) == 0) {
                         out <- c(out, "No values", "")
                     } else {
-                        oo <- do.call(cbind,
-                            lapply(names(inf),
+                        oo <- do.call(
+                            cbind,
+                            lapply(
+                                names(inf),
                                 function(i) {
                                     m <- inf[[i]][, 1:2, drop = FALSE]
-                                    if (!y12)
+                                    if (!y12) {
                                         colnames(m) <- paste(i, colnames(m),
-                                            sep = ".")
+                                            sep = "."
+                                        )
+                                    }
                                     m
                                 }
                             )
@@ -404,15 +419,17 @@ iNZDotchartInf <- setRefClass(
                         mat[grep("NA", mat)] <- ""
 
                         mat <- rbind(colnames(oo), mat)
-                        if (nrow(oo) > 1)
+                        if (nrow(oo) > 1) {
                             mat <- cbind(c("", rownames(oo)), mat)
+                        }
 
                         mat <- matrix(
                             apply(mat, 2, format, justify = "right"),
                             nrow = nrow(mat)
                         )
 
-                        mat <- apply(mat, 1,
+                        mat <- apply(
+                            mat, 1,
                             function(x) paste0("   ", paste(x, collapse = "   "))
                         )
 
@@ -423,13 +440,15 @@ iNZDotchartInf <- setRefClass(
                 out <- c(out, "", "")
             }
 
-            ww <- gwindow(title = "Inference values",
+            ww <- gwindow(
+                title = "Inference values",
                 parent = GUI$win,
                 width = 700,
                 height = 400,
                 visible = FALSE
             )
-            g <- gtext(text = paste(out, collapse = "\n"),
+            g <- gtext(
+                text = paste(out, collapse = "\n"),
                 expand = TRUE,
                 cont = ww,
                 wrap = FALSE,
@@ -455,19 +474,22 @@ iNZScatterInf <- setRefClass(
             parTab[3, 1, expand = TRUE, anchor = c(-1, 0)] <<- parm
 
             ## Methods
-            if (is.survey || getOption("inzight.disable.bootstraps", FALSE))
+            if (is.survey || getOption("inzight.disable.bootstraps", FALSE)) {
                 mthd <- gradio(c("Normal"), selected = 1)
-            else
+            } else {
                 mthd <- gradio(c("Normal", "Bootstrap *"), selected = 1)
+            }
 
             enabled(mthd) <- FALSE
-            if (!is.null(curSet$trend) && length(curSet$trend))
+            if (!is.null(curSet$trend) && length(curSet$trend)) {
                 enabled(mthd) <- TRUE
+            }
             if (curSet$smooth > 0 &&
                 !curSet$trend.by &&
                 is.null(curSet$quant.smooth)
-            )
+            ) {
                 enabled(mthd) <- TRUE
+            }
 
             metTab[3, 1] <<- mthd
 

@@ -46,15 +46,15 @@ test_that("Data set code is applied", {
     )
 })
 
-msg("magrittr library call is included", 2L)
+# msg("magrittr library call is included", 2L)
 
-test_that("magrittr library call is included", {
-    expect_match(
-        gsub("\\s\\s+", " ", paste(ui$rhistory$get(), collapse = " ")),
-        "library(magrittr)",
-        fixed = TRUE
-    )
-})
+# test_that("magrittr library call is included", {
+#     expect_match(
+#         gsub("\\s\\s+", " ", paste(ui$rhistory$get(), collapse = " ")),
+#         "library(magrittr)",
+#         fixed = TRUE
+#     )
+# })
 
 msg("Plot code is generated correctly", 2L)
 test_that("Plot code is generated correctly", {

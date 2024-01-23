@@ -1,13 +1,12 @@
 {
   "ltex.disabledRules": {
-    "en-GB": [
-      "EN_QUOTES"
-    ]
+    "en-GB": ["EN_QUOTES"]
   },
   "ltex.ignoreRuleInSentence": [
     {
       "rule": "TO_TOO",
       "sentence": "^\\QThe main focus for this release is to narrow the gap between GUI and coding for users interested in learning to use R.\\E$"
     }
-  ]
+  ],
+  "githubPullRequests.ignoredPullRequestBranches": ["dev"]
 }

@@ -1,18 +1,10 @@
-Things might look a little bit different on the left-hand-side, but the functionality is still all the same!
-For a quick overview of changes, find a link to the Transition Guide in the Help menu.
+The latest release sees a full refactoring of some back-end functionality,
+but most of the interface remains the same.
 
-An overview of changes in this version:
-
-- Buttons on the right have been reorganised, but from left to right:
-  - View dataset | View variables | Dataset info | Search
-
-- You can now see the spreadsheet view for ALL datasets - even big ones!
-
-- Get Summary and Get Inference now let you adjust the size of confidence intervals
-
-- All of the windows have been updated to be more consistent
-
-- Loads of behind-the-scenes changes and bug fixes
+We are also introducing a new Module system that will slowly take over the
+modules currently in the 'Advanced' menu. For the time being, we will leave
+the old modules in place, but will no longer be developed.
+We encourage you to install and try out the new modules in the 'Modules' menu!
 
 We hope you enjoy! As always, let us know if you find issues or have suggestions
 using the contact button in the Help menu.

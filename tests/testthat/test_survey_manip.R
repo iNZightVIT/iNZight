@@ -72,7 +72,7 @@ test_that("Uniting columns works", {
     expect_silent(w$ok_button$invoke_change_handler())
     expect_equal(
         ui$getActiveData()$race_marital,
-        with(ncsr_svy$data, as.factor(paste(race, marital, sep = "_")))
+        with(ncsr_svy$data, forcats::fct_cross(race, marital, sep = "_"))
     )
     expect_true(iNZightTools::is_survey(ui$get_data_object()))
 })
@@ -84,8 +84,8 @@ test_that("Separating columns works", {
     expect_true(w$var2$set_value("_"))
     w$sep <- "_"
     expect_silent(w$updateView())
-    expect_equal(svalue(w$leftCol), "race")
-    expect_equal(svalue(w$rightCol), "marital")
+    expect_equal(svalue(w$leftCol), "race1")
+    expect_equal(svalue(w$rightCol), "marital1")
     expect_true(w$leftCol$set_value("new_race"))
     expect_true(w$rightCol$set_value("new_marital"))
     expect_silent(w$updateView())
