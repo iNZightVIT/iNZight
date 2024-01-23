@@ -10,7 +10,8 @@ iNZClipboard <- setRefClass(
     ),
     methods = list(
         initialize = function(gui, type = c("paste", "copy")) {
-            initFields(GUI = gui,
+            initFields(
+                GUI = gui,
                 delimiter = "\t"
             )
 
@@ -50,8 +51,9 @@ iNZClipboard <- setRefClass(
                 editable = TRUE,
                 handler = function(h, ...) {
                     d <- svalue(h$obj)
-                    if (d %in% delim_values)
+                    if (d %in% delim_values) {
                         d <- gsub("^.+\\(|\\)$", "", d)
+                    }
                     delimiter <<- d
                     parseData()
                 },

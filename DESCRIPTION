@@ -1,8 +1,8 @@
 Package: iNZight
 Type: Package
 Title: A GUI for Data Exploration and Visualisation
-Version: 4.3.0
-Date: 2023-01-16
+Version: 4.4
+Date: 2023-08-01
 Authors@R: c(person("Tom", "Elliott", role = c("aut", "cre"),
                     email = "tom.elliott@auckland.ac.nz"),
              person("Dineika", "Chandrananda", role = "ctb"),
@@ -45,7 +45,7 @@ Suggests:
     DBI,
     forcats,
     FutureLearnData,
-    iNZightMR (>= 2.2.7),
+    iNZightMR (>= 2.3.0),
     iNZightModules (>= 2.5),
     jsonlite,
     knitr,

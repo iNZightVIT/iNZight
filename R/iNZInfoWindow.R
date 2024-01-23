@@ -42,7 +42,8 @@ iNZInfoWindow <- setRefClass(
             curSet <<- GUI$getActiveDoc()$getSettings()
             gen_set_list()
 
-            win <<- gwindow(title = name,
+            win <<- gwindow(
+                title = name,
                 width = 900 * font_size / 10,
                 height = 600 * font_size / 10,
                 parent = GUI$win,
@@ -115,7 +116,6 @@ iNZInfoWindow <- setRefClass(
             }
             add(g, info_text, expand = TRUE)
             if (controls == "bottom") add(g, ctrl_panel)
-
         },
         gen_set_list = function() {
             "Generate the initial settings list"
@@ -210,7 +210,9 @@ iNZInfoWindow <- setRefClass(
                 }
             )
 
-            if (!exists("output")) return()
+            if (!exists("output")) {
+                return()
+            }
 
 
             if (!inherits(output, "inzight.plotsummary") && !grepl("skimr", svalue(code_box))) {
@@ -244,7 +246,9 @@ iNZDataSummary <- setRefClass(
     ),
     methods = list(
         initialize = function(gui) {
-            if (is.null(gui$getActiveData(lazy = TRUE)) || all(dim(gui$getActiveData(lazy = TRUE)) == 1L)) return()
+            if (is.null(gui$getActiveData(lazy = TRUE)) || all(dim(gui$getActiveData(lazy = TRUE)) == 1L)) {
+                return()
+            }
             if (length(gui$getActiveDoc()$getModel()$dictionary)) {
                 iNZDDView$new(gui)
                 return()
@@ -258,7 +262,8 @@ iNZDataSummary <- setRefClass(
         gen_call = function() {
             "Generate summary call"
             d <- GUI$get_data_object(lazy = FALSE)
-            sprintf("%sskimr::skim(%s%s)",
+            sprintf(
+                "%sskimr::skim(%s%s)",
                 ifelse(iNZightTools::is_survey(d),
                     sprintf("print(%s, design.summaries = TRUE)\n", designname),
                     ""
@@ -290,13 +295,15 @@ iNZDataSummary <- setRefClass(
             smry_call <- strsplit(smry_call, "\n", fixed = TRUE)[[1]]
 
             smry <- try(
-                lapply(smry_call,
+                lapply(
+                    smry_call,
                     function(c) capture.output(eval(parse(text = c), env))
                 ),
                 silent = TRUE
             )
             if (length(smry) > 1L) {
-                smry[-length(smry)] <- lapply(smry[-length(smry)],
+                smry[-length(smry)] <- lapply(
+                    smry[-length(smry)],
                     function(s) {
                         c(s, "", paste(rep("-", 100), collapse = ""), "", "")
                     }
@@ -348,7 +355,9 @@ iNZGetSummary <- setRefClass(
     ),
     methods = list(
         initialize = function(gui) {
-            if (is.null(gui$getActiveDoc()$getSettings()$x)) return()
+            if (is.null(gui$getActiveDoc()$getSettings()$x)) {
+                return()
+            }
             callSuper(gui, controls = "bottom", name = "Summary")
 
             ## Control panel
@@ -365,10 +374,11 @@ iNZGetSummary <- setRefClass(
                 x = NULL,
                 y = NULL
             )
-            if (!is.null(curSet$x))  {
+            if (!is.null(curSet$x)) {
                 vartypes$x <- iNZightTools::vartype(GUI$getActiveData(lazy = TRUE)[[curSet$x]])
-                if (!is.null(curSet$y))
+                if (!is.null(curSet$y)) {
                     vartypes$y <- iNZightTools::vartype(GUI$getActiveData(lazy = TRUE)[[curSet$y]])
+                }
             }
 
             construct_call(curSet, curMod, vartypes,
@@ -395,7 +405,9 @@ iNZGetSummary <- setRefClass(
         store_values = function(varType = c("predict", "residual")) {
             varType <- match.arg(varType)
 
-            if (is.null(curSet$y)) return()
+            if (is.null(curSet$y)) {
+                return()
+            }
 
             ds <- GUI$getActiveData(lazy = TRUE)
             xvar <- ds[[curSet$x]]
@@ -434,7 +446,8 @@ iNZGetSummary <- setRefClass(
             lbl <- glabel(
                 sprintf(
                     "Specify names for the new variable%s",
-                    ifelse(scatter && length(curSet$trend) > 1, "s", "")),
+                    ifelse(scatter && length(curSet$trend) > 1, "s", "")
+                ),
                 container = g2,
                 anchor = c(-1, -1)
             )
@@ -463,8 +476,10 @@ iNZGetSummary <- setRefClass(
                 ifelse(length(curSet$trend) > 1, "Linear :", "")
             )
             fittedName.lin <- gedit(
-                sprintf("%s.%s%s", yname, varType,
-                    ifelse(length(curSet$trend) > 1, ".linear", "")),
+                sprintf(
+                    "%s.%s%s", yname, varType,
+                    ifelse(length(curSet$trend) > 1, ".linear", "")
+                ),
                 width = 25
             )
             if (scatter && length(curSet$trend) >= 1 && "linear" %in% curSet$trend) {
@@ -478,8 +493,10 @@ iNZGetSummary <- setRefClass(
                 ifelse(length(curSet$trend) > 1, "Quadratic :", "")
             )
             fittedName.quad <- gedit(
-                sprintf("%s.%s%s", yname, varType,
-                    ifelse(length(curSet$trend) > 1, ".quadratic", "")),
+                sprintf(
+                    "%s.%s%s", yname, varType,
+                    ifelse(length(curSet$trend) > 1, ".quadratic", "")
+                ),
                 width = 25
             )
             if (scatter && length(curSet$trend) >= 1 && "quadratic" %in% curSet$trend) {
@@ -493,8 +510,10 @@ iNZGetSummary <- setRefClass(
                 ifelse(length(curSet$trend) > 1, "Cubic :", "")
             )
             fittedName.cub <- gedit(
-                sprintf("%s.%s%s", yname, varType,
-                    ifelse(length(curSet$trend) > 1, ".cubic", "")),
+                sprintf(
+                    "%s.%s%s", yname, varType,
+                    ifelse(length(curSet$trend) > 1, ".cubic", "")
+                ),
                 width = 25
             )
             if (scatter && length(curSet$trend) >= 1 && "cubic" %in% curSet$trend) {
@@ -522,12 +541,15 @@ iNZGetSummary <- setRefClass(
                 icon = "save",
                 handler = function(h, ...) {
                     FUN <-
-                        if (varType == "predict")
-                            function(object)
+                        if (varType == "predict") {
+                            function(object) {
                                 predict(object)
-                        else
-                            function(object)
+                            }
+                        } else {
+                            function(object) {
                                 residuals(object)
+                            }
+                        }
 
                     pred <- NULL
                     if (!xnum || !ynum) {
@@ -537,7 +559,8 @@ iNZGetSummary <- setRefClass(
                         colnames(pred) <- svalue(fittedName)
                     } else if (length(curSet$trend) >= 1) {
                         ## for each trend line
-                        fits <- lapply(curSet$trend,
+                        fits <- lapply(
+                            curSet$trend,
                             function(ord) {
                                 switch(ord,
                                     "linear"    = lm(yvar ~ xvar, na.action = na.exclude),
@@ -547,23 +570,26 @@ iNZGetSummary <- setRefClass(
                             }
                         )
                         pred <- sapply(fits, function(f) FUN(f))
-                        colnames(pred) <- sapply(curSet$trend,
-                             function(ord) {
+                        colnames(pred) <- sapply(
+                            curSet$trend,
+                            function(ord) {
                                 switch(ord,
                                     "linear" = svalue(fittedName.lin),
                                     "quadratic" = svalue(fittedName.quad),
-                                    "cubic" = svalue(fittedName.cub))
+                                    "cubic" = svalue(fittedName.cub)
+                                )
                             }
                         )
                     }
-                    if (!is.null(pred))
+                    if (!is.null(pred)) {
                         newdata <- data.frame(
                             GUI$getActiveData(lazy = FALSE),
                             pred,
                             stringsAsFactors = TRUE
                         )
-                    else
+                    } else {
                         newdata <- GUI$getActiveData(lazy = FALSE)
+                    }
 
 
                     if (curSet$smooth > 0 && xnum && ynum) {
@@ -638,9 +664,14 @@ iNZGetSummary <- setRefClass(
                 tableDir <<- gradio(c("Horizontal", "Vertical"),
                     container = ctrl_panel,
                     selected =
-                        if (is.null(curSet$table.direction)) 1L
-                        else switch(curSet$table.direction,
-                            horizontal = 1L, vertical = 2L),
+                        if (is.null(curSet$table.direction)) {
+                            1L
+                        } else {
+                            switch(curSet$table.direction,
+                                horizontal = 1L,
+                                vertical = 2L
+                            )
+                        },
                     horizontal = TRUE,
                     handler = function(h, ...) {
                         curSet$table.direction <<- tolower(svalue(h$obj))
@@ -748,7 +779,8 @@ iNZGetSummary <- setRefClass(
             g$set_borderwidth(5)
 
             lbl <- glabel(
-                paste(sep = "\n",
+                paste(
+                    sep = "\n",
                     "NOTE: work is still in progress on implementing these settings",
                     "in the output, so some may not display."
                 ),
@@ -918,7 +950,8 @@ iNZGetSummary <- setRefClass(
             ii <- ii + 1L
 
             roundValLbl <- glabel("Round to base ")
-            roundVal <<- gspinbutton(0, 100000, by = 1, value = 100,
+            roundVal <<- gspinbutton(0, 100000,
+                by = 1, value = 100,
                 handler = function(h, ...) {
                     setPrivacyControls()
                 }
@@ -951,13 +984,17 @@ iNZGetSummary <- setRefClass(
 
             ## --- suppression of quantiles
             suppressMedian <<- gspinbutton(0, 10000,
-                value = if (is.null(pc$suppression_quantiles)) 10L else {
+                value = if (is.null(pc$suppression_quantiles)) {
+                    10L
+                } else {
                     pc$suppression_quantiles$n[pc$suppression_quantiles$p == 0.5]
                 },
                 handler = function(h, ...) setPrivacyControls()
             )
             suppressQuartiles <<- gspinbutton(0, 10000,
-                value = if (is.null(pc$suppression_quantiles)) 20L else {
+                value = if (is.null(pc$suppression_quantiles)) {
+                    20L
+                } else {
                     pc$suppression_quantiles$n[pc$suppression_quantiles$p == 0.25]
                 },
                 handler = function(h, ...) setPrivacyControls()
@@ -997,7 +1034,8 @@ iNZGetSummary <- setRefClass(
 
 
             rseEg <- glabel(
-                paste(sep = "\n",
+                paste(
+                    sep = "\n",
                     "Example: entering '50=*,80=**,100=S' will mark values with RSE >= 50 with *,",
                     "RSE >= 80 with **, and suppress values with RSE >= 100."
                 )
@@ -1030,7 +1068,9 @@ iNZGetSummary <- setRefClass(
             add(button_g, close_button)
         },
         setPrivacyControls = function(update = FALSE) {
-            if (!update) return()
+            if (!update) {
+                return()
+            }
 
             pc <- curSet$privacy_controls
             pc$suppression <- if (enabled(suppress)) svalue(suppress) else NULL
@@ -1038,7 +1078,9 @@ iNZGetSummary <- setRefClass(
                 if (enabled(secondarySuppression)) svalue(secondarySuppression) else NULL
             pc$rounding <- if (enabled(round)) {
                 if (svalue(round) == "fixed") svalue(roundVal) else svalue(round)
-            } else NULL
+            } else {
+                NULL
+            }
 
             pc$suppression_magnitude <- if (enabled(suppressMeans)) svalue(suppressMeans) else NULL
             pc$suppression_quantiles <- if (enabled(suppressMedian)) {
@@ -1050,7 +1092,9 @@ iNZGetSummary <- setRefClass(
                         svalue(suppressQuartiles)
                     )
                 )
-            } else NULL
+            } else {
+                NULL
+            }
 
             pc$check_rse <- if (enabled(suppressRse)) {
                 x <- strsplit(svalue(suppressRse), ",")[[1]]
@@ -1060,7 +1104,9 @@ iNZGetSummary <- setRefClass(
                 x[[2]] <- ifelse(x[[2]] == "S", "suppress", x[[2]])
                 colnames(x) <- c("cut", "output")
                 as.list(x)
-            } else NULL
+            } else {
+                NULL
+            }
 
             if (length(pc) == 0L || all(sapply(pc, is.null))) pc <- NULL
 
@@ -1080,7 +1126,8 @@ iNZGetSummary <- setRefClass(
 
             }
 
-            file <- gfile(type = "save",
+            file <- gfile(
+                type = "save",
                 initial.file.name = "summary.txt",
                 filter = list("Plain text file" = list(patterns = c("*.txt")))
             )
@@ -1116,7 +1163,9 @@ iNZGetInference <- setRefClass(
     ),
     methods = list(
         initialize = function(gui) {
-            if (is.null(gui$getActiveDoc()$getSettings()$x)) return()
+            if (is.null(gui$getActiveDoc()$getSettings()$x)) {
+                return()
+            }
             callSuper(gui, controls = "top", name = "Inference")
 
             # update_inference()
@@ -1135,8 +1184,9 @@ iNZGetInference <- setRefClass(
                 x = iNZightTools::vartype(GUI$getActiveData(lazy = TRUE)[[curSet$x]]),
                 y = NULL
             )
-            if (!is.null(curSet$y))
+            if (!is.null(curSet$y)) {
                 vartypes$y <- iNZightTools::vartype(GUI$getActiveData(lazy = TRUE)[[curSet$y]])
+            }
             construct_call(curSet, curMod, vartypes,
                 data = as.name(dataname),
                 what = "inference"
@@ -1198,8 +1248,11 @@ iNZGetInference <- setRefClass(
                     INFTYPE <- "regression"
                 } else if (xnum | ynum) {
                     M <-
-                        if (xnum) length(levels(yvar))
-                        else length(levels(xvar))
+                        if (xnum) {
+                            length(levels(yvar))
+                        } else {
+                            length(levels(xvar))
+                        }
                     if (M == 2) INFTYPE <- "twosample-ttest"
                     if (M > 2) INFTYPE <- "anova"
                 } else {
@@ -1264,9 +1317,13 @@ iNZGetInference <- setRefClass(
                     "twosample-ttest" = c("t.test2", "anova"),
                     "anova" = "anova",
                     "oneway-table" =
-                        if (is_survey) "proportion"
-                        else if (length(levels(xvar)) == 2L) c("proportion", "chi2")
-                        else "chi2",
+                        if (is_survey) {
+                            "proportion"
+                        } else if (length(levels(xvar)) == 2L) {
+                            c("proportion", "chi2")
+                        } else {
+                            "chi2"
+                        },
                     "twoway-table" = "chi2"
                 )
 
@@ -1311,10 +1368,12 @@ iNZGetInference <- setRefClass(
                     # we want user typing to trigger update, not
                     # requiring them to press Enter...
                     null_timer <- NULL
-                    addHandlerKeystroke(hyp_null,
+                    addHandlerKeystroke(
+                        hyp_null,
                         function(h, ...) {
-                            if (!is.null(null_timer) && null_timer$started)
+                            if (!is.null(null_timer) && null_timer$started) {
                                 null_timer$stop_timer()
+                            }
                             null_timer <- gtimer(1000,
                                 function(...) {
                                     hyp_null$invoke_change_handler()
@@ -1330,9 +1389,10 @@ iNZGetInference <- setRefClass(
                         g_hyptbl[2, 1, anchor = c(1, 0), expand = TRUE] <<- lbl
                         hyp_alt <<- gcombobox(c("two-sided", "greater than", "less than"),
                             handler = function(h, ...) {
-                                curSet$hypothesis.alt <<- switch(
-                                    svalue(h$obj, index = TRUE),
-                                    "two.sided", "greater", "less"
+                                curSet$hypothesis.alt <<- switch(svalue(h$obj, index = TRUE),
+                                    "two.sided",
+                                    "greater",
+                                    "less"
                                 )
                                 update_inference()
                             }
@@ -1508,9 +1568,10 @@ iNZGetInference <- setRefClass(
                     visible(g_hyptbl) <<- TRUE
                     curSet$hypothesis.value <<- as.numeric(svalue(hyp_null))
                     if (!is_survey) {
-                        curSet$hypothesis.alt <<- switch(
-                            svalue(hyp_alt, index = TRUE),
-                            "two.sided", "greater", "less"
+                        curSet$hypothesis.alt <<- switch(svalue(hyp_alt, index = TRUE),
+                            "two.sided",
+                            "greater",
+                            "less"
                         )
                     }
                     if (svalue(hypothesis_test) == "Test proportion") {

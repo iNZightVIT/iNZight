@@ -7,7 +7,7 @@ iNZSaveWin <- setRefClass(
     methods = list(
         initialize = function(gui, type = c("plot", "data"), ...) {
             initFields(GUI = gui)
-            if(!(type %in% c("plot", "data"))) {
+            if (!(type %in% c("plot", "data"))) {
                 gmessage("Can't save this type of object")
                 return()
             }
@@ -32,7 +32,7 @@ iNZSaveWin <- setRefClass(
 
             fileExtensions <- l[[type]]
             pop <- function(x) x[-length(x)]
-            popchar <- function(str)
+            popchar <- function(str) {
                 paste(
                     pop(
                         unlist(
@@ -41,8 +41,10 @@ iNZSaveWin <- setRefClass(
                     ),
                     collapse = ""
                 )
+            }
 
-            filterList <- lapply(fileExtensions,
+            filterList <- lapply(
+                fileExtensions,
                 function(i) list(patterns = paste("*.", i, sep = ""))
             )
 
@@ -57,7 +59,7 @@ iNZSaveWin <- setRefClass(
                 filter = filterList,
                 quote = FALSE
             )
-            filetype = gcombobox(
+            filetype <- gcombobox(
                 c(
                     "<use file extension to determine>",
                     names(filterList[!filterList %in% ll])
@@ -86,13 +88,13 @@ iNZSaveWin <- setRefClass(
                 }
             )
             cancelButton <- gbutton("Cancel",
-                handler = function(h,...)  cancelButtonHandler()
+                handler = function(h, ...) cancelButtonHandler()
             )
             add(buttonGp, okButton)
             add(buttonGp, cancelButton)
         },
         okButtonHandler = function(type, fileBrowse, filetype,
-            fileExtensions, ...) {
+                                   fileExtensions, ...) {
             theFile <- svalue(fileBrowse)
             ext <- NULL ## the extension, figure out
 
@@ -104,31 +106,35 @@ iNZSaveWin <- setRefClass(
 
             ## list of default extensions for each type
             def.ext <- list(plot = "png", data = "csv")
-            if (theFile == "Specify a file") return()
+            if (theFile == "Specify a file") {
+                return()
+            }
 
             fileType <- svalue(filetype)
             if (fileType != "<use file extension to determine>") {
                 ext <- fileExtensions[[fileType]][1]
             } else if (is.null(ext)) {
-                tmp <- unlist(strsplit(basename(theFile), split="\\."))
+                tmp <- unlist(strsplit(basename(theFile), split = "\\."))
                 ext <- tolower(tmp[length(tmp)])
                 ## In the case where we aren't able to assign a usable
                 ## file extension, assume default
-                if (! ext %in% poss.ext[[type]])
+                if (!ext %in% poss.ext[[type]]) {
                     ext <- def.ext[[type]]
+                }
             }
             result <- iNZSaveFile(theFile, ext,
-                fileType = svalue(filetype, index=TRUE),
+                fileType = svalue(filetype, index = TRUE),
                 ...
             )
-            if (is.logical(result) && result)
+            if (is.logical(result) && result) {
                 dispose(saveFileWin)
-            else {
-                if (is.list(result))
+            } else {
+                if (is.list(result)) {
                     msg <- result$msg
-                else
+                } else {
                     msg <- "Could not save file"
-                gmessage(msg, icon="error")
+                }
+                gmessage(msg, icon = "error")
             }
         },
         cancelButtonHandler = function() {

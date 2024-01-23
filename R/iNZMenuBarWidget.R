@@ -516,7 +516,7 @@ iNZMenuBarWidget <- setRefClass(
             mods <- lapply(
                 GUI$activeModules,
                 function(m) {
-                    if (is.null(m$menu)) {
+                    if (!is.null(m$menu$Modules)) {
                         # transform menu item into menu actions
                         convert_menu_items(m$menu$Modules, GUI, m)
                     } else {
@@ -543,7 +543,6 @@ iNZMenuBarWidget <- setRefClass(
                     )
                 )
             )
-            # TODO: add module manager item
             do.call(c, mods)
         },
         AdvancedMenu = function() {

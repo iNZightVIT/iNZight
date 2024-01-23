@@ -180,7 +180,7 @@ NewModuleManager <- setRefClass(
                 author = desc::desc_get_field("Author", file = mod_desc),
                 version = desc::desc_get_version(file = mod_desc),
                 pkgs = desc::desc_get_deps(file = mod_desc),
-                github = desc::desc_get_field("Github", file = mod_desc),
+                github = desc::desc_get_field("Github", default = NULL, file = mod_desc),
                 subscribed = "stable",
                 update_available = ""
             )
@@ -189,7 +189,7 @@ NewModuleManager <- setRefClass(
             }
 
             si <- which(sapply(available_modules, function(x) x$title) == info$title)
-            if (si > 0) {
+            if (length(si) == 1L) {
                 amod <- available_modules[[si]]
                 if (info$subscribed == "stable") {
                     si <- which(sapply(available_modules, function(x) x$title) == info$title)
@@ -388,6 +388,7 @@ NewModuleManager <- setRefClass(
             deps <- deps[!deps %in% rownames(installed.packages())]
             gh_deps <- desc::desc_get_field(
                 "Github",
+                default = NULL,
                 file = file.path(mod_path, "DESCRIPTION")
             )
             if (!is.null(gh_deps)) {
@@ -608,7 +609,7 @@ iNZModule <- setRefClass(
 
 new_module <- function(info, ui_env) {
     e <- new.env(parent = ui_env)
-    menu <- list(Modules = list(info$title))
+    menu <- list()
     assign("info", info, envir = e)
     assign("menu", menu, envir = e)
     e
@@ -625,7 +626,7 @@ load_module <- function(dir, ui_env) {
         author = desc::desc_get_field("Author", file = mod_desc),
         version = desc::desc_get_version(file = mod_desc),
         pkgs = desc::desc_get_deps(file = mod_desc),
-        github = desc::desc_get_field("Github", file = mod_desc)
+        github = desc::desc_get_field("Github", default = NULL, file = mod_desc)
     )
 
     e <- new_module(info, ui_env)
@@ -675,13 +676,17 @@ item <- function(title, action) {
     )
 }
 
-convert_menu_items <- function(item, ...) UseMethod("convert_menu_items")
+convert_menu_items <- function(item, ...) {
+    UseMethod("convert_menu_items")
+}
 
 #' @export
 convert_menu_items.default <- function(item, ...) item
 
 #' @export
-convert_menu_items.list <- function(item, ...) lapply(item, convert_menu_items, ...)
+convert_menu_items.list <- function(item, ...) {
+    lapply(item, convert_menu_items, ...)
+}
 
 #' @export
 convert_menu_items.inzmenuitem <- function(item, gui, mod, ...) {
