@@ -17,8 +17,8 @@ options(
         if (OS == "Linux") RSPM <- Sys.getenv("RSPM"),
         inzight = "https://r.docker.stat.auckland.ac.nz",
         CRAN = "https://cloud.r-project.org"
-    ),
-    install.packages.compile.from.source = "never"
+    )
+    # install.packages.compile.from.source = "never"
 )
 
 if (OS == "Windows" && getRversion() < numeric_version("4")) {
