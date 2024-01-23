@@ -30,6 +30,10 @@ if (OS == "Windows" && !requireNamespace("utf8", quietly = TRUE)) {
 if (OS == "Windows" && packageVersion("Matrix") < "1.6-0") {
     install.packages("Matrix", type = "source")
 }
+# rlang >= 1.1.3
+if (OS == "Windows" && packageVersion("rlang") < "1.1.3") {
+    install.packages("rlang", type = "source")
+}
 if (OS == "Linux") {
     remotes::install_github("lawremi/RGtk2",
         subdir = "RGtk2",
