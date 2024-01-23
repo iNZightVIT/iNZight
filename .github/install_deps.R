@@ -32,7 +32,7 @@ if (OS == "Windows" && packageVersion("Matrix") < "1.6-0") {
 }
 # rlang >= 1.1.3
 if (OS == "Windows" &&
-    (requireNamespace("rlang", quietly = TRUE) ||
+    (!requireNamespace("rlang", quietly = TRUE) ||
         packageVersion("rlang") < "1.1.3")
 ) {
     install.packages("rlang", type = "source")
