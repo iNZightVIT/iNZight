@@ -36,7 +36,9 @@ iNZImportWin <- setRefClass(
                 show_code = FALSE,
                 scroll = FALSE
             )
-            if (!ok) return()
+            if (!ok) {
+                return()
+            }
             on.exit(.self$show())
             usingMethods("import")
 
@@ -55,7 +57,7 @@ iNZImportWin <- setRefClass(
                     "R Object (.rds)" = list(patterns = c("*.rds")),
                     "RData Files (.RData, .rda)" = list(patterns = c("*.RData", "*.rda")),
                     "Survey Design Files (.svydesign)" = list(patterns = "*.svydesign"),
-                    "Linked Data (.inzlnk)" = list(patterns = '*.inzlnk')
+                    "Linked Data (.inzlnk)" = list(patterns = "*.inzlnk")
                 ),
                 fColTypes = NULL,
                 rdaName = NULL,
@@ -138,16 +140,19 @@ iNZImportWin <- setRefClass(
 
 
             ## Change handlers:
-            addHandlerChanged(filetype,
+            addHandlerChanged(
+                filetype,
                 function(h, ...) {
                     ## set the file extension
-                    fext <<- gsub("[*.]", "",
+                    fext <<- gsub(
+                        "[*.]", "",
                         filetypes[[svalue(h$obj, index = TRUE) + 1]]$patterns[1]
                     )
                     generatePreview(h, ...)
                 }
             )
-            addHandlerChanged(loadURL,
+            addHandlerChanged(
+                loadURL,
                 function(h, ...) {
                     ## Switch to loading a URL
                     fileTbl[1L, 1L]$set_value(
@@ -158,7 +163,8 @@ iNZImportWin <- setRefClass(
                         delete(fileTbl, fileTbl[1L, 2L])
                         fileurl <<- gedit(text = "https://", width = 40)
                         fileTbl[1L, 2:5, expand = TRUE] <<- fileurl
-                        addHandlerChanged(fileurl,
+                        addHandlerChanged(
+                            fileurl,
                             function(h, ...) {
                                 fname <<- svalue(fileurl)
                                 setfile()
@@ -208,12 +214,14 @@ iNZImportWin <- setRefClass(
 
             blockHandlers(filetype)
             match <- which(
-                sapply(filetypes[-1],
-                    function(ft)
+                sapply(
+                    filetypes[-1],
+                    function(ft) {
                         grepl(
                             paste0(ft$patterns, "$", collapse = "|"),
                             paste0(".", fext)
                         )
+                    }
                 )
             )
             svalue(filetype, index = TRUE) <<-
@@ -227,11 +235,16 @@ iNZImportWin <- setRefClass(
             generatePreview(...)
         },
         col_types = function() {
-            if (is.null(fColTypes)) return(NULL)
-            if (all(fColTypes == "auto")) return(NULL)
+            if (is.null(fColTypes)) {
+                return(NULL)
+            }
+            if (all(fColTypes == "auto")) {
+                return(NULL)
+            }
 
             vnames <- colnames(tmpData)[fColTypes != "auto"]
-            vtypes <- sapply(fColTypes[fColTypes != "auto"],
+            vtypes <- sapply(
+                fColTypes[fColTypes != "auto"],
                 function(x) {
                     switch(x,
                         "numeric" = "n",
@@ -276,10 +289,11 @@ iNZImportWin <- setRefClass(
                     cur_val <- svalue(rdaName)
                     blockHandlers(rdaName)
                     rdaName$set_items(dnames)
-                    if (!cur_val %in% dnames)
+                    if (!cur_val %in% dnames) {
                         svalue(rdaName) <<- dnames[1]
-                    else
+                    } else {
                         svalue(rdaName) <<- cur_val
+                    }
                     unblockHandlers(rdaName)
                     tmpData <<- data_list[[svalue(rdaName)]]
                 },
@@ -327,7 +341,8 @@ iNZImportWin <- setRefClass(
                 "inzlnk" = {
                     prog <- list(
                         create = function(from, to) {
-                            w <- gwindow(title = "Loading data",
+                            w <- gwindow(
+                                title = "Loading data",
                                 width = 300,
                                 height = 80,
                                 parent = GUI$win
@@ -366,21 +381,25 @@ iNZImportWin <- setRefClass(
                 }
             )
 
-            if (is.null(tmpData)) return()
+            if (is.null(tmpData)) {
+                return()
+            }
 
             ## do a check that col classes match requested ...
-            if (is.null(fColTypes) || length(fColTypes) != ncol(tmpData))
+            if (is.null(fColTypes) || length(fColTypes) != ncol(tmpData)) {
                 fColTypes <<- rep("auto", ncol(tmpData))
+            }
 
             if (!is.null(iNZightTools::sheets(tmpData))) {
                 sheet_list <- iNZightTools::sheets(tmpData)
                 cur_val <- svalue(rdaName)
                 blockHandlers(rdaName)
                 rdaName$set_items(sheet_list)
-                if (!cur_val %in% sheet_list)
+                if (!cur_val %in% sheet_list) {
                     svalue(rdaName) <<- sheet_list[1]
-                else
+                } else {
                     svalue(rdaName) <<- cur_val
+                }
                 unblockHandlers(rdaName)
             }
             if (!is.null(rdaName)) {
@@ -418,7 +437,8 @@ iNZImportWin <- setRefClass(
                             dfinfo <- data.frame(
                                 Name = names(tmpData),
                                 Type = iNZightTools::vartypes(tmpData),
-                                Values = sapply(head(tmpData),
+                                Values = sapply(
+                                    head(tmpData),
                                     function(d) {
                                         if (is_cat(d)) {
                                             if (length(levels(d)) > 10) {
@@ -470,7 +490,8 @@ iNZImportWin <- setRefClass(
                                         "datetime"
                                     )
                                 ),
-                                Values = sapply(tmpData,
+                                Values = sapply(
+                                    tmpData,
                                     function(d) {
                                         if (is_cat(d)) {
                                             if (length(levels(d)) > 10) {
@@ -518,17 +539,17 @@ iNZImportWin <- setRefClass(
                                 )
                             # add handler to changing values in RHS column
                         } else {
-
                             ## set the preview
-                            if (can_edit_types)
+                            if (can_edit_types) {
                                 svalue(prevLbl) <<-
                                     paste(
                                         "Right-click column names to change the type",
                                         "(c = categorical, n = numeric,",
                                         "d = date, t = time)\n"
                                     )
-                            else
+                            } else {
                                 svalue(prevLbl) <<- ""
+                            }
                             prev <<- gdf(head(tmpData, 5), container = prevGp)
 
                             invisible(prev$remove_popup_menu())
@@ -545,8 +566,9 @@ iNZImportWin <- setRefClass(
                                                 "time",
                                                 "datetime"
                                             )
-                                            if (!fext %in% c("csv", "txt"))
+                                            if (!fext %in% c("csv", "txt")) {
                                                 types <- types[1:3]
+                                            }
                                             list(
                                                 gradio(types,
                                                     selected = match(fColTypes[j], types),
@@ -564,7 +586,7 @@ iNZImportWin <- setRefClass(
                             names(prev) <<- paste0(
                                 names(prev),
                                 " (",
-                                sapply(tmpData, function(x)
+                                sapply(tmpData, function(x) {
                                     switch(class(x)[1],
                                         "integer" = ,
                                         "numeric" = "n",
@@ -574,7 +596,7 @@ iNZImportWin <- setRefClass(
                                         "hms" = "t",
                                         "POSIXct" = "dt"
                                     )
-                                ),
+                                }),
                                 ")"
                             )
                         }
@@ -588,17 +610,19 @@ iNZImportWin <- setRefClass(
                 )
                 advancedOptions()
             } else {
-                if (!is.null(prev))
+                if (!is.null(prev)) {
                     delete(prevGp, prev)
+                }
                 prev <<- NULL
                 svalue(prevLbl) <<- "No file selected."
                 visible(prevLbl) <<- TRUE
             }
         },
         getTypes = function() {
-            if (is.null(fColTypes))
+            if (is.null(fColTypes)) {
                 return(NULL)
-            types <- lapply(fColTypes, function(x)
+            }
+            types <- lapply(fColTypes, function(x) {
                 switch(x,
                     "numeric" = "n",
                     "factor" = "c",
@@ -607,7 +631,7 @@ iNZImportWin <- setRefClass(
                     "datetime" = "dt",
                     NULL
                 )
-            )
+            })
             types
         },
         createDataName = function() {
@@ -631,29 +655,33 @@ iNZImportWin <- setRefClass(
         advancedOptions = function() {
             ## populate the Advanced Options panel (advGp) with extra options for various data sets.
             ## but first, delete the old one ...
-            if (length(advGp$children))
+            if (length(advGp$children)) {
                 sapply(advGp$children, function(ch) advGp$remove_child(ch))
+            }
 
             ## build it up!
             tbl <- glayout(container = advGp)
             ii <- 1L
 
             switch(fext,
-                "csv" =,
+                "csv" = ,
                 "txt" = {
                     ## ----------------- LEFT HAND SIDE
                     ## --- DELIMITER
                     lbl <- glabel("Delimiter :")
                     ## add custom choices ...
                     delimOpt <- gcombobox(names(delimiters),
-                        selected = which(sapply(delimiters,
-                            function(x) get(paste0(fext, "delim")) == x)),
+                        selected = which(sapply(
+                            delimiters,
+                            function(x) get(paste0(fext, "delim")) == x
+                        )),
                         editable = FALSE,
                         handler = function(h, ...) {
-                            if (fext == "txt")
+                            if (fext == "txt") {
                                 txtdelim <<- delimiters[[svalue(h$obj, index = TRUE)]]
-                            else
+                            } else {
                                 csvdelim <<- delimiters[[svalue(h$obj, index = TRUE)]]
+                            }
                             ## changing delimiter == changing where columns are
                             fColTypes <<- NULL
                             generatePreview(h, ...)
@@ -666,17 +694,18 @@ iNZImportWin <- setRefClass(
                     ## --- DECIMAL MARK
                     lbl <- glabel("Decimal Mark :")
                     decMarkOpt <- gcombobox(names(decimalmarks),
-                        selected = match(decMark, decimalmarks), ##which(sapply(decimalmarks, function(x) decMark == x)),
+                        selected = match(decMark, decimalmarks), ## which(sapply(decimalmarks, function(x) decMark == x)),
                         handler = function(h, ...) {
                             decMark <<- decimalmarks[[svalue(h$obj, index = TRUE)]]
                             ## Do not allow value to be same as thousands separator!
-                            if (decMark == bigMark)
+                            if (decMark == bigMark) {
                                 gmessage(
                                     "Decimal mark and thousands separator must be different.",
                                     type = "error"
                                 )
-                            else
+                            } else {
                                 generatePreview(h, ...)
+                            }
                         }
                     )
                     tbl[ii, 1L, anchor = c(1, 0), expand = TRUE] <- lbl
@@ -686,17 +715,18 @@ iNZImportWin <- setRefClass(
                     ## --- THOUSANDS SEPARATOR
                     lbl <- glabel("Thousands Separator :")
                     bigMarkOpt <- gcombobox(names(bigmarks),
-                        selected = match(bigMark, bigmarks), ##which(sapply(bigmarks, function(x) bigMark == x)),
+                        selected = match(bigMark, bigmarks), ## which(sapply(bigmarks, function(x) bigMark == x)),
                         handler = function(h, ...) {
                             bigMark <<- bigmarks[[svalue(h$obj, index = TRUE)]]
                             ## Do not allow value to be same as thousands separator!
-                            if (decMark == bigMark)
+                            if (decMark == bigMark) {
                                 gmessage(
                                     "Decimal mark and thousands separator must be different.",
                                     type = "error"
                                 )
-                            else
+                            } else {
                                 generatePreview(h, ...)
+                            }
                         }
                     )
                     tbl[ii, 1L, anchor = c(1, 0), expand = TRUE] <- lbl
@@ -724,8 +754,6 @@ iNZImportWin <- setRefClass(
                     ## this should be a drop down of some common formats (2016-01-16, 16 Jan 2016, 16/01/16, 01/16/16, ...)
                     lbl <- glabel("Date Format :")
                     # dateFmt <- gcombobox()
-
-
                 },
                 ## default case
                 {
@@ -765,14 +793,16 @@ iNZImportWin <- setRefClass(
             }
 
             ## give the dataset a name ...
-            if (is.null(attr(tmpData, "name", exact = TRUE)))
+            if (is.null(attr(tmpData, "name", exact = TRUE))) {
                 attr(tmpData, "name") <<-
-                    if (fext %in% c("RData", "rda"))
+                    if (fext %in% c("RData", "rda")) {
                         svalue(rdaName)
-                    else
+                    } else {
                         make.names(
                             tools::file_path_sans_ext(basename(fname))
                         )
+                    }
+            }
 
             ## coerce character to factor
             if (fext != "inzlnk") {
@@ -815,7 +845,8 @@ iNZImportWin <- setRefClass(
                     ## write design call
                     call <- paste(deparse(setOK$call), collapse = "\n")
 
-                    call <- sprintf("%s <- %s",
+                    call <- sprintf(
+                        "%s <- %s",
                         GUI$getActiveDoc()$getModel()$dataDesignName,
                         gsub("dataSet", GUI$getActiveDoc()$getModel()$name, call)
                     )

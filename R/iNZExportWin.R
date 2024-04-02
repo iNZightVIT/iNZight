@@ -48,10 +48,14 @@ iNZExportWin <- setRefClass(
         },
         detect_extension = function() {
             f <- svalue(file)
-            if (length(f) == 0 || f == "") return()
+            if (length(f) == 0 || f == "") {
+                return()
+            }
 
             ext <- tools::file_ext(f)
-            if (!ext %in% names(filetypes)) return()
+            if (!ext %in% names(filetypes)) {
+                return()
+            }
 
             svalue(ftype, index = TRUE) <<- which(names(filetypes) == ext)
         },
@@ -67,7 +71,9 @@ iNZExportWin <- setRefClass(
                     icon = "warning",
                     parent = GUI$modWin
                 )
-                if (!c) return(FALSE)
+                if (!c) {
+                    return(FALSE)
+                }
             }
 
             # this will be moved to iNZightTools shortly...

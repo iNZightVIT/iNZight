@@ -44,8 +44,9 @@ GPagedTable <- setRefClass(
             if (!is.null(items)) set_items(items)
         },
         set_items = function(x) {
-            if (!is.data.frame(x))
+            if (!is.data.frame(x)) {
                 x <- data.frame(X = x)
+            }
             items <<- x
             pager$nPage <<- ceiling(ncol(items) / pager$pageSize)
             pager$page <<- 1L

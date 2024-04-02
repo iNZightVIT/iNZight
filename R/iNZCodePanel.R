@@ -33,7 +33,8 @@ iNZCodePanel <- setRefClass(
             RGtk2::gtkTextViewSetLeftMargin(input$widget, 0)
             RGtk2::gtkTextViewSetRightMargin(input$widget, 0)
 
-            ctrl_pnl <- ggroup(container = panel,
+            ctrl_pnl <- ggroup(
+                container = panel,
                 expand = TRUE,
                 fill = TRUE,
                 horizontal = !GUI$popOut
@@ -131,7 +132,9 @@ iNZCodePanel <- setRefClass(
                 }
             )
 
-            if (!exists("rawpl")) return()
+            if (!exists("rawpl")) {
+                return()
+            }
 
             if (inherits(rawpl, "ggplot")) {
                 print(rawpl)
@@ -143,12 +146,14 @@ iNZCodePanel <- setRefClass(
             }
 
             curpl <- unclass(rawpl)
-            if (!is.null(attr(curpl, "dotplot.redraw")))
-                if (attr(curpl, "dotplot.redraw"))
+            if (!is.null(attr(curpl, "dotplot.redraw"))) {
+                if (attr(curpl, "dotplot.redraw")) {
                     rawpl <- eval(
                         parse(text = svalue(input)),
                         envir = GUI$code_env
                     )
+                }
+            }
 
             # update settings .....
             pcall <- as.list(as.call(parse(text = svalue(input)))[[1]])[-1]
@@ -287,21 +292,22 @@ iNZCodePanel <- setRefClass(
             ### what the user types ... if ever!!
             GUI$curPlot <<- unclass(rawpl)
 
-            if (!is.null(attr(GUI$curPlot, "dotplot.redraw")))
-                if (attr(GUI$curPlot, "dotplot.redraw"))
+            if (!is.null(attr(GUI$curPlot, "dotplot.redraw"))) {
+                if (attr(GUI$curPlot, "dotplot.redraw")) {
                     GUI$curPlot <<- unclass(
                         rawpl <- eval(
                             parse(text = svalue(input)),
                             envir = GUI$code_env
                         )
                     )
-            if ( !is.null( attr(GUI$curPlot, "code") ) ) {
+                }
+            }
+            if (!is.null(attr(GUI$curPlot, "code"))) {
                 attr(GUI$curPlot, "gg_code") <<- attr(GUI$curPlot, "code")
             }
             attr(GUI$curPlot, "code") <<- svalue(input)
             enabled(GUI$plotToolbar$exportplotBtn) <<- can.interact(rawpl)
             GUI$plotType <<- attr(GUI$curPlot, "plottype")
-
         },
         reset_code = function() {
             set_input(original_code)

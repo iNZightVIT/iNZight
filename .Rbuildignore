@@ -10,3 +10,4 @@
 ^scripts$
 ^CITATION\.cff$
 ^\.git$
+^\.better-commits.json$

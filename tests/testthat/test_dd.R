@@ -1,4 +1,3 @@
-
 # devtools::load_all(); try(ui$close(), TRUE)
 cas <- iNZightTools::smart_read("cas500_coded.csv")
 ui <- iNZight(cas)

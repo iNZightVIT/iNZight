@@ -30,8 +30,9 @@
 iNZight <- function(data = NULL, dispose_fun = NULL, ...,
                     ui_env = parent.frame()) {
     gui <- iNZGUI$new()
-    if (!is.null(data) && is.null(attr(data, "name", exact = TRUE)))
+    if (!is.null(data) && is.null(attr(data, "name", exact = TRUE))) {
         attr(data, "name") <- deparse(substitute(data))
+    }
     gui$initializeGui(data, dispose_fun, ..., ui_env = ui_env)
     invisible(gui)
 }

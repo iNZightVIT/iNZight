@@ -1,9 +1,8 @@
-
 iNZAboutWidget <- setRefClass(
     "iNZAboutWidget",
     fields = list(
         GUI = "ANY",
-	win = "ANY"
+        win = "ANY"
     ),
     methods = list(
         initialize = function(gui = list(win = NULL), title = "About iNZight", heading = "iNZight") {
@@ -26,7 +25,8 @@ iNZAboutWidget <- setRefClass(
                 size = 20
             )
             verlbl <- glabel(
-                sprintf("Version %s - Released %s",
+                sprintf(
+                    "Version %s - Released %s",
                     packageDescription("iNZight")$Version,
                     format(
                         as.POSIXct(
@@ -56,7 +56,8 @@ iNZAboutWidget <- setRefClass(
 
             ## sponsors
             sponsorlbl <- glabel("SPONSORS",
-                container = g)
+                container = g
+            )
             font(sponsorlbl) <- list(
                 weight = "bold",
                 family = "sans",
@@ -66,11 +67,12 @@ iNZAboutWidget <- setRefClass(
             g_sponsors <- gvbox(container = g)
             g_sponsors$set_borderwidth(5)
 
-            logo_path <- function(logo)
+            logo_path <- function(logo) {
                 system.file(
                     file.path("sponsors", sprintf("%s_logo50.png", logo)),
                     package = "iNZight"
                 )
+            }
             sponsors <- list(
                 uoa = "https://auckland.ac.nz",
                 statsnz = "https://stats.govt.nz",
@@ -105,8 +107,9 @@ iNZAboutWidget <- setRefClass(
                 # add image
                 gimagebutton(logo,
                     container = g_row,
-                    handler = function(h, ...)
+                    handler = function(h, ...) {
                         if (!is.null(url)) browseURL(url)
+                    }
                 )
                 addSpring(g_row)
 
@@ -117,7 +120,8 @@ iNZAboutWidget <- setRefClass(
             addSpace(g, 10)
 
             licenselbl <- glabel("LICENSE",
-                container = g)
+                container = g
+            )
             font(licenselbl) <- list(
                 weight = "bold",
                 family = "sans",
@@ -172,8 +176,9 @@ iNZAboutWidget <- setRefClass(
             visible(win) <<- TRUE
 
             # Move to center
-            if (is.null(GUI$win))
+            if (is.null(GUI$win)) {
                 center_window(win)
+            }
 
             invisible(NULL)
         }

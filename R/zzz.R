@@ -21,8 +21,9 @@ setOldClass(c("inzdf_sqlite", "inzdf_db", "inzdf"))
     lwd <- getOption("width")
     ind <- paste(rep(" ", floor(0.05 * lwd)), collapse = "")
     header <- paste(rep("=", lwd), collapse = "")
-    parwrap <- function(txt, indent = "")
+    parwrap <- function(txt, indent = "") {
         paste(strwrap(txt, prefix = ind), collapse = "\n")
+    }
 
     ## Ensure we're using RGtk2
     options("guiToolkit" = "RGtk2")
