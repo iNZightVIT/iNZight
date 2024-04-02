@@ -60,6 +60,9 @@ if (OS == "Windows") {
     if (!requireNamespace("vctrs", quietly = TRUE)) {
         install.packages("vctrs", type = "source")
     }
+    if (!requireNamespace("R.utils", quietly = TRUE)) {
+        install.packages("R.utils")
+    }
 }
 
 remotes::install_github(
