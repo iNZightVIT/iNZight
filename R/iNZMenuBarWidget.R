@@ -534,7 +534,7 @@ iNZMenuBarWidget <- setRefClass(
                 mods,
                 list(
                     gseparator(),
-                    gaction("Manage ...", handler = function(h, ...) NewModuleManager$new(GUI)),
+                    gaction("Manage ...", handler = function(h, ...) ModuleManager$new(GUI)),
                     gaction("Reload",
                         handler = function(h, ...) {
                             GUI$load_addons()
@@ -640,15 +640,6 @@ iNZMenuBarWidget <- setRefClass(
                         gaction("Maps ...",
                             icon = "plot1",
                             handler = function(h, ...) iNZightModules::iNZightMapLanding$new(GUI)
-                        ),
-                    gseparator(),
-                    manage =
-                        gaction("Manage modules ...",
-                            icon = "execute",
-                            tooltip = "Add, update, and remove add-on modules.",
-                            handler = function(h, ...) {
-                                iNZightModules::ModuleManager$new(GUI)
-                            }
                         )
                 )
             } else if (can_install) {
