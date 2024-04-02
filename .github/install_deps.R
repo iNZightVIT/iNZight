@@ -53,6 +53,10 @@ if (OS == "Linux") {
     )
 }
 
+if (OS == "Windows") {
+    remotes::install_version("estimability", version = "1.4.1")
+}
+
 remotes::install_github(
     github_deps,
     dependencies = TRUE,
