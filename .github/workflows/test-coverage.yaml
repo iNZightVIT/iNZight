@@ -12,7 +12,7 @@ jobs:
       fail-fast: false
       matrix:
         config:
-          - { os: windows-latest, r: "release" }
+          - { os: windows-latest, r: "4.1", cache-version: 1 }
           - {
               os: ubuntu-20.04,
               r: "release",
@@ -47,8 +47,8 @@ jobs:
         uses: actions/cache@v3
         with:
           path: ${{ env.R_LIBS_USER }}
-          key: ${{ matrix.config.os }}-r-${{ matrix.config.r }}-2-${{ hashFiles('.github/depends.Rds') }}
-          restore-keys: ${{ matrix.config.os }}-r-${{ matrix.config.r }}-2-
+          key: ${{ matrix.config.os }}-r-${{ matrix.config.r }}-${{ matrix.config.cache-version }}-${{ hashFiles('.github/depends.Rds') }}
+          restore-keys: ${{ matrix.config.os }}-r-${{ matrix.config.r }}-${{ matrix.config.cache-version }}-
 
       - name: Install system dependencies
         if: runner.os == 'Linux'
@@ -56,6 +56,16 @@ jobs:
           RHUB_PLATFORM: linux-x86_64-ubuntu-gcc
         run: |
           sudo apt install libgtk2.0-dev xorg-dev libxml2-dev libnlopt-dev libcurl4-openssl-dev
+
+      - name: Install RGtk2
+        if: runner.os == 'Windows'
+        shell: Rscript {0}
+        run: |
+          options(repos = "https://r.docker.stat.auckland.ac.nz")
+          if (!requireNamespace("RGtk2", quietly = TRUE))
+            install.packages("RGtk2")
+          if (!requireNamespace("cairoDevice", quietly = TRUE))
+            install.packages("cairoDevice")
 
       - name: Install RGtk2
         if: runner.os == 'Windows'
