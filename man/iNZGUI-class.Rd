@@ -72,6 +72,11 @@ Main class that builds the iNZight GUI
 \item{\code{code_panel}}{the interactive code widget at the bottom of the iNZight window}
 
 \item{\code{is_initialized}}{logical, indicates if iNZight is initialised or not}
+
+\item{\code{stop_loading}}{logical, indicates if iNZight should stop loading}
+
+\item{\code{ui_env}}{the environment in which the GUI is created. Used as a base env
+for loading modules.}
 }}
 
 \section{Methods}{
@@ -124,7 +129,8 @@ Main class that builds the iNZight GUI
   show = TRUE,
   stop_loading = FALSE,
   ...,
-  disposer = NULL
+  disposer = NULL,
+  ui_env = parent.frame()
 )}}{Initiates the GUI}
 
 \item{\code{initializeMenu(cont)}}{Initializes the menu bar at the top of iNZight}

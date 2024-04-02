@@ -33,7 +33,11 @@
 #' @field code_env the environment in which R code is executed
 #' @field code_panel the interactive code widget at the bottom of the iNZight window
 #' @field is_initialized logical, indicates if iNZight is initialised or not
+#' @field stop_loading logical, indicates if iNZight should stop loading
+#' @field ui_env the environment in which the GUI is created. Used as a base env
+#'  for loading modules.
 #'
+#' @md
 #' @import methods utils grDevices colorspace
 #' @importFrom magrittr %>%
 #' @export iNZGUI
@@ -94,13 +98,15 @@ iNZGUI <- setRefClass(
             plot_history = "ANY",
             disposer = "ANY",
             addonModuleDir = "character",
+            activeModules = "list",
             ## This will be used to store the dataset, design, etc..
             ## rather than passing around the full object.
             code_env = "ANY",
             code_panel = "ANY",
             ## loading flags
             is_initialized = "logical",
-            stop_loading = "logical"
+            stop_loading = "logical",
+            ui_env = "ANY"
         ),
         prototype = list(
             activeDoc = 1,
@@ -117,9 +123,15 @@ iNZGUI <- setRefClass(
                                  show = TRUE,
                                  stop_loading = FALSE,
                                  ...,
-                                 disposer = NULL) {
+                                 disposer = NULL,
+                                 ui_env = parent.frame()) {
             "Initiates the GUI"
-            initFields(is_initialized = FALSE, disposer = disposer)
+            initFields(
+                is_initialized = FALSE,
+                disposer = disposer,
+                activeModules = list(),
+                ui_env = ui_env
+            )
 
             if (is.null(disposer)) {
                 if (!is.null(dispose_fun) && is.function(dispose_fun)) {
@@ -147,7 +159,6 @@ iNZGUI <- setRefClass(
 
             ## Grab settings file (or try to!)
             getPreferences()
-
             if (!is.null(addonDir) && dir.exists(addonDir)) {
                 addonModuleDir <<- addonDir
             } else if (!is.null(preferences$module_dir)) {
@@ -155,6 +166,8 @@ iNZGUI <- setRefClass(
             } else {
                 addonModuleDir <<- Sys.getenv("INZIGHT_MODULES_DIR")
             }
+
+            if (dir.exists(addonModuleDir)) load_addons()
 
             popOut <<- preferences$popout
 
@@ -1004,6 +1017,38 @@ iNZGUI <- setRefClass(
                 )
             }
         },
+        load_addons = function() {
+            mod_dirs <- list.dirs(addonModuleDir, recursive = FALSE)
+            nmod <- length(mod_dirs)
+            cli::cli_progress_bar("Loading modules", total = nmod)
+
+            start <- proc.time()
+            activeModules <<- vector("list", nmod)
+            for (i in seq_len(nmod)) {
+                activeModules[[i]] <<- tryCatch(
+                    load_module(mod_dirs[[i]], ui_env),
+                    error = function(e) {
+                        gmessage(
+                            sprintf(
+                                "Unable to load module '%s':\n\n%s",
+                                basename(mod_dirs[[i]]),
+                                e$message
+                            ),
+                            title = "Unable to load module",
+                            icon = "error"
+                        )
+                    },
+                    finally = function() {
+                        cli::cli_progress_update()
+                    }
+                )
+                # cli::cli_progress_update()
+            }
+            cli::cli_progress_done()
+            end <- proc.time()
+            ptime <- end - start
+            cli::cli_alert_info("Loaded {nmod} module{?s} ({round(ptime[3], 1)}s)")
+        },
         ## create a gvbox object into the module window (ie, initialize it)
         ## NOTE: should be run every time when a new module is open
         initializeModuleWindow = function(mod, title, scroll = FALSE, border = 0,
@@ -1183,12 +1228,17 @@ iNZGUI <- setRefClass(
                     prefs$language[1]
                 }
 
-            prefs$module_dir <-
-                if (is.null(prefs$module_dir) || prefs$module_dir == "" || !dir.exists(prefs$module_dir)) {
-                    defs$module_dir
-                } else {
-                    prefs$module_dir[1]
-                }
+            prefs <- modifyList(prefs,
+                list(
+                    module_dir =
+                        if (is.null(prefs$module_dir) || prefs$module_dir == "" || !dir.exists(prefs$module_dir)) {
+                            defs$module_dir
+                        } else {
+                            prefs$module_dir[1]
+                        }
+                ),
+                keep.null = TRUE
+            )
 
             prefs$multiple_x <-
                 if (is.null(prefs$multiple_x) || !is.logical(prefs$multiple_x)) {
@@ -1197,14 +1247,20 @@ iNZGUI <- setRefClass(
                     prefs$multiple_x
                 }
 
-            prefs$gg_theme <-
-                if (is.character(prefs$gg_theme) && prefs$gg_theme %in% AVAILABLE_THEMES) {
-                    prefs$gg_theme
-                } else if (is.list(prefs$gg_theme) || inherits(prefs$gg_theme, "theme")) {
-                    prefs$gg_theme
-                } else {
-                    defs$gg_theme
-                }
+            prefs <- modifyList(prefs,
+                list(
+                    gg_theme =
+                        if (is.character(prefs$gg_theme) && prefs$gg_theme %in% AVAILABLE_THEMES) {
+                            prefs$gg_theme
+                        } else if (is.list(prefs$gg_theme) || inherits(prefs$gg_theme, "theme")) {
+                            prefs$gg_theme
+                        } else {
+                            defs$gg_theme
+                        }
+                ),
+                keep.null = TRUE
+            )
+
 
             prefs
         },
@@ -1226,6 +1282,7 @@ iNZGUI <- setRefClass(
         },
         savePreferences = function() {
             "Saves the users preferences in a file"
+            preferences <<- checkPrefs(preferences)
             if (!dir.exists(dirname(prefs.location))) {
                 if (!interactive()) {
                     return()
@@ -1523,7 +1580,11 @@ iNZGUI <- setRefClass(
             state <- .self$getState()
             dispose(.self$win)
             if (popOut) try(grDevices::dev.off(), TRUE)
-            .self$initializeGui(disposer = .self$disposer, show = FALSE)
+            .self$initializeGui(
+                disposer = .self$disposer,
+                show = FALSE,
+                ui_env = .self$ui_env
+            )
             Sys.sleep(0.5)
             while (!is_initialized) {
                 Sys.sleep(0.1)

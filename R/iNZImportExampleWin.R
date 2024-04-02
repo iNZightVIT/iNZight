@@ -21,7 +21,9 @@ iNZImportExampleWin <- setRefClass("iNZImportExampleWin",
                 show_code = FALSE,
                 scroll = FALSE
             )
-            if (!ok) return()
+            if (!ok) {
+                return()
+            }
             on.exit(.self$show())
             usingMethods("load")
 
@@ -34,7 +36,23 @@ iNZImportExampleWin <- setRefClass("iNZImportExampleWin",
                 "survey" = "Survey",
                 "FutureLearnData" = "FutureLearn"
             )
-            pkgs <<- unlist(pkgsL)  ## becomes a named vector
+
+            # TODO: modify how datasets are searched for and stored
+            # to easily include from module libraries
+
+            ## modules that have data in them:
+            if (!is.null(gui$addonModuleDir) && dir.exists(gui$addonModuleDir)) {
+                mods <- list.dirs(gui$addonModuleDir, recursive = FALSE)
+                lapply(mods, function(mod) {
+                    lib <- file.path(mod, "lib")
+                    if (!dir.exists(lib)) {
+                        return(NULL)
+                    }
+                    lib.pkgs <- list.files(lib)
+                })
+            }
+
+            pkgs <<- unlist(pkgsL) ## becomes a named vector
 
             pkgs <<- pkgs[names(pkgs) %in% rownames(installed.packages())]
 
@@ -64,17 +82,20 @@ iNZImportExampleWin <- setRefClass("iNZImportExampleWin",
             setDataMenu()
 
             ## Change Handlers:
-            addHandlerChanged(dsPkg,
+            addHandlerChanged(
+                dsPkg,
                 function(h, ...) {
                     ## set the dataset menu
                     setDataMenu()
                 }
             )
-            addHandlerChanged(dsData,
+            addHandlerChanged(
+                dsData,
                 function(h, ...) {
                     ttl <- datasets[svalue(dsData, index = TRUE), "Title"]
-                    if (ttl == "")
+                    if (ttl == "") {
                         ttl <- svalue(dsData)
+                    }
                     svalue(dsTitle) <<- ttl
                 }
             )
@@ -86,10 +107,11 @@ iNZImportExampleWin <- setRefClass("iNZImportExampleWin",
             pkgname <- names(pkgs)[svalue(dsPkg, index = TRUE)]
             ds <- data(package = pkgname)$results
             # filter out non-data.frame ones
-            dfs <- sapply(ds[, "Item"],
+            dfs <- sapply(
+                ds[, "Item"],
                 function(x) {
                     d <- x
-                    if (pkgname == "survey" && grepl('\\(.+\\)', x)) {
+                    if (pkgname == "survey" && grepl("\\(.+\\)", x)) {
                         d <- gsub(" \\(.+\\)", "", x)
                         x <- gsub("\\)", "", gsub(".+\\(", "", x))
                         x <- gsub(" \\(.+", "", x)
@@ -110,7 +132,7 @@ iNZImportExampleWin <- setRefClass("iNZImportExampleWin",
             pkgname <- names(pkgs)[svalue(dsPkg, index = TRUE)]
 
             if (pkgname == "survey") {
-                if (grepl('\\(.+\\)', dname)) {
+                if (grepl("\\(.+\\)", dname)) {
                     dataName <- gsub("\\)", "", gsub(".+\\(", "", dataName))
                     dname <- gsub(" \\(.+", "", dname)
                 }

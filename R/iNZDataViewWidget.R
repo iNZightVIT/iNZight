@@ -54,14 +54,18 @@ iNZDataViewWidget <- setRefClass(
         },
         show = function(what = c("data", "variables", "landing")) {
             what <- match.arg(what)
-            if (what == "data" && inherits(GUI$getActiveData(lazy = TRUE), "inzdf_db"))
+            if (what == "data" && inherits(GUI$getActiveData(lazy = TRUE), "inzdf_db")) {
                 what <- "variables"
-            if (current != "" && what == current) return()
+            }
+            if (current != "" && what == current) {
+                return()
+            }
 
             # delete existing:
             try(
                 invisible(
-                    sapply(dataGp$children,
+                    sapply(
+                        dataGp$children,
                         function(x) delete(dataGp, x)
                     )
                 ),
@@ -69,8 +73,7 @@ iNZDataViewWidget <- setRefClass(
             )
 
             if (nrow(GUI$getActiveData(lazy = TRUE)) == 1L &&
-                names(GUI$getActiveData(lazy = TRUE))[1] == "empty")
-            {
+                names(GUI$getActiveData(lazy = TRUE))[1] == "empty") {
                 show_landing()
                 return()
             }
@@ -81,8 +84,9 @@ iNZDataViewWidget <- setRefClass(
                 "variables" = show_variables()
             )
 
-            if (inherits(GUI$dataToolbarWidget, "iNZDataToolbar"))
+            if (inherits(GUI$dataToolbarWidget, "iNZDataToolbar")) {
                 GUI$dataToolbarWidget$updateWidget()
+            }
         },
         show_landing = function() {
             add(dataGp, landingView, expand = TRUE)
@@ -96,7 +100,7 @@ iNZDataViewWidget <- setRefClass(
             add(dataGp, varView, expand = TRUE)
             current <<- "variables"
         },
-        init_search = function () {
+        init_search = function() {
             searchGp <<- ggroup()
             addSpace(searchGp, 5)
 
@@ -120,15 +124,19 @@ iNZDataViewWidget <- setRefClass(
 
                 if (nrow(GUI$getActiveDoc()$getModel()$dict_df)) {
                     ddf <- GUI$getActiveDoc()$getModel()$dict_df
-                    dd_title <- sapply(names(GUI$getActiveData(lazy = TRUE)),
+                    dd_title <- sapply(
+                        names(GUI$getActiveData(lazy = TRUE)),
                         function(x) ifelse(x %in% ddf$name, ddf$title[ddf$name == x], "")
                     )
                     tomatch <- paste(tomatch, dd_title)
 
-                    var_table_groups <- sapply(names(GUI$getActiveData(lazy = TRUE)),
+                    var_table_groups <- sapply(
+                        names(GUI$getActiveData(lazy = TRUE)),
                         function(x) {
                             t <- attr(GUI$getActiveData(lazy = TRUE)[[x]], "table", exact = TRUE)
-                            if (is.null(t)) return("")
+                            if (is.null(t)) {
+                                return("")
+                            }
                             t
                         }
                     )
@@ -142,10 +150,11 @@ iNZDataViewWidget <- setRefClass(
 
                 matches <- which(matches)
 
-                if (length(matches) == 0)
+                if (length(matches) == 0) {
                     matches <- NA_character_
-                else
+                } else {
                     matches <- names(GUI$getActiveData(lazy = TRUE))[matches]
+                }
 
                 paginate$col <<- 1L
                 columns <<- matches
@@ -156,7 +165,8 @@ iNZDataViewWidget <- setRefClass(
                 expand = TRUE,
                 handler = function(h, ...) searchHandler(svalue(h$obj))
             )
-            addHandlerKeystroke(searchBox,
+            addHandlerKeystroke(
+                searchBox,
                 function(h, ...) {
                     enabled(searchBtn) <<- svalue(h$obj) != ""
                 }
@@ -169,7 +179,8 @@ iNZDataViewWidget <- setRefClass(
             searchBtn$set_icon("")
             enabled(searchBtn) <<- FALSE
 
-            clearBtn <- gbutton("", container = searchGp,
+            clearBtn <- gbutton("",
+                container = searchGp,
                 handler = function(h, ...) searchBox$set_value("")
             )
             clearBtn$set_icon("close")
@@ -219,7 +230,8 @@ iNZDataViewWidget <- setRefClass(
             ## delete the currently displayed views
             try(
                 invisible(
-                    sapply(dataGp$children,
+                    sapply(
+                        dataGp$children,
                         function(x) delete(dataGp, x)
                     )
                 ),
@@ -230,14 +242,18 @@ iNZDataViewWidget <- setRefClass(
             ## (re)create the views, with any changes to data
             updateDfView()
             updateVarView()
-            if (current == "") return()
+            if (current == "") {
+                return()
+            }
             showing <- current
             current <<- ""
             show(showing)
         },
         ## only update the variable view
         updateVarView = function() {
-            if (block_update) return()
+            if (block_update) {
+                return()
+            }
             if (is.null(varView)) {
                 createVarView()
                 return()
@@ -261,9 +277,12 @@ iNZDataViewWidget <- setRefClass(
                 }
 
                 if ("type" %in% colnames(ddf)) {
-                    varsList$Type <- sapply(ddf$type[vnames],
+                    varsList$Type <- sapply(
+                        ddf$type[vnames],
                         function(x) {
-                            if (is.na(x)) return(NA)
+                            if (is.na(x)) {
+                                return(NA)
+                            }
                             switch(x,
                                 "factor" = ,
                                 "cat" = "categorical",
@@ -276,22 +295,26 @@ iNZDataViewWidget <- setRefClass(
                 } else {
                     varsList$Type <- sapply(
                         iNZightTools::vartypes(GUI$getActiveData(lazy = TRUE))[vnames],
-                        function(x)
+                        function(x) {
                             switch(x,
-                                'num' = 'numeric',
-                                'cat' = 'categorical',
-                                'dt' = 'datetime'
+                                "num" = "numeric",
+                                "cat" = "categorical",
+                                "dt" = "datetime"
                             )
+                        }
                     )
                 }
 
                 if (inherits(GUI$getActiveData(lazy = TRUE), "inzdf_db")) {
                     varsList$Info <- character(length(vnames))
                 } else {
-                    varsList$Info <- sapply(vnames,
+                    varsList$Info <- sapply(
+                        vnames,
                         function(x) {
                             x <- GUI$getActiveData(lazy = TRUE)[[x]]
-                            if (all(is.na(x))) return("All missing")
+                            if (all(is.na(x))) {
+                                return("All missing")
+                            }
                             switch(iNZightTools::vartype(x),
                                 "num" = {
                                     paste(
@@ -303,7 +326,7 @@ iNZDataViewWidget <- setRefClass(
                                 "cat" = {
                                     paste(length(levels(x)), "levels")
                                 },
-                                'dt' = {
+                                "dt" = {
                                     paste(
                                         as.character(range(x, na.rm = TRUE)),
                                         collapse = " to "
@@ -315,10 +338,13 @@ iNZDataViewWidget <- setRefClass(
                     )
                 }
 
-                var_table_groups <- sapply(vnames,
+                var_table_groups <- sapply(
+                    vnames,
                     function(x) {
                         t <- attr(GUI$getActiveData(lazy = TRUE)[[x]], "table", exact = TRUE)
-                        if (is.null(t)) return("")
+                        if (is.null(t)) {
+                            return("")
+                        }
                         t
                     }
                 )
@@ -334,12 +360,13 @@ iNZDataViewWidget <- setRefClass(
                 vtypes <- stats::setNames(
                     sapply(
                         iNZightTools::vartypes(GUI$getActiveData(lazy = TRUE))[vnames],
-                        function(x)
+                        function(x) {
                             switch(x,
-                                'num' = 'numeric',
-                                'cat' = 'categorical',
-                                'dt' = 'datetime'
+                                "num" = "numeric",
+                                "cat" = "categorical",
+                                "dt" = "datetime"
                             )
+                        }
                     ),
                     vnames
                 )
@@ -351,7 +378,8 @@ iNZDataViewWidget <- setRefClass(
                 if (inherits(GUI$getActiveData(lazy = TRUE), "inzdf_db")) {
                     vmiss <- character(length(vnames))
                 } else {
-                    vmiss <- sapply(vnames,
+                    vmiss <- sapply(
+                        vnames,
                         function(x) sum(is.na(GUI$getActiveData(lazy = TRUE)[[x]]))
                     )
                 }
@@ -385,7 +413,8 @@ iNZDataViewWidget <- setRefClass(
 
             Nc <- if (length(columns)) length(columns) else length(names(GUI$getActiveData(lazy = TRUE)))
             colPageLbl$set_value(
-                sprintf("Variables %s-%s of %s",
+                sprintf(
+                    "Variables %s-%s of %s",
                     paginate$col,
                     min(Nc, paginate$col + paginate$ncol - 1L),
                     Nc
@@ -398,7 +427,8 @@ iNZDataViewWidget <- setRefClass(
             if (!is_lazy_db) {
                 Nr <- nrow(GUI$getActiveData(lazy = TRUE))
                 pageLbl$set_value(
-                    sprintf("Rows %s-%s of %s",
+                    sprintf(
+                        "Rows %s-%s of %s",
                         paginate$row,
                         min(Nr, paginate$row + paginate$nrow - 1L),
                         Nr
@@ -429,7 +459,8 @@ iNZDataViewWidget <- setRefClass(
             addSpace(landingView, 5)
 
             lbl <- glabel(
-                paste(sep = "\n",
+                paste(
+                    sep = "\n",
                     "If you have a dataset, click the 'Import data' button",
                     "above, or find it and other options in the 'File' menu.",
                     "",
@@ -449,18 +480,18 @@ iNZDataViewWidget <- setRefClass(
             addSpace(landingView, 10)
 
             lbl <- glabel(
-                paste(sep = "\n",
+                paste(
+                    sep = "\n",
                     "Not sure what to do? Check out the getting started guide!"
                 ),
                 container = landingView,
                 anchor = c(-1, 0)
             )
             guideBtn <- gbutton("Getting Started with iNZight",
-                handler = function(h, ...) help_page('user_guides/basics')
+                handler = function(h, ...) help_page("user_guides/basics")
             )
             guideBtn$set_icon("gw-help_topic")
             addCentered(landingView, guideBtn)
-
         },
         ## create the data.frame view (invisible)
         createDfView = function() {
@@ -477,7 +508,9 @@ iNZDataViewWidget <- setRefClass(
             btnColPrev <<- gbutton("",
                 container = colPageGp,
                 handler = function(h, ...) {
-                    if (paginate$col == 1L) return()
+                    if (paginate$col == 1L) {
+                        return()
+                    }
                     paginate$col <<- paginate$col - paginate$ncol
                     updateDfView()
                     updateVarView()
@@ -488,7 +521,9 @@ iNZDataViewWidget <- setRefClass(
             btnColNext <<- gbutton("",
                 container = colPageGp,
                 handler = function(h, ...) {
-                    if (paginate$col + paginate$ncol - 1L >= ncol(GUI$getActiveData(lazy = TRUE))) return()
+                    if (paginate$col + paginate$ncol - 1L >= ncol(GUI$getActiveData(lazy = TRUE))) {
+                        return()
+                    }
                     paginate$col <<- paginate$col + paginate$ncol
                     updateDfView()
                     updateVarView()
@@ -515,10 +550,12 @@ iNZDataViewWidget <- setRefClass(
                     dj <- colnames(dfWidget$get_frame())
                     same <-
                         dfWidget$get_frame() == GUI$getActiveData(lazy = FALSE)[di, dj, drop = FALSE] |
-                        # only one is NA
-                        (is.na(dfWidget$get_frame()) + is.na(GUI$getActiveData(lazy = FALSE)[di, dj, drop = FALSE])) == 2L
+                            # only one is NA
+                            (is.na(dfWidget$get_frame()) + is.na(GUI$getActiveData(lazy = FALSE)[di, dj, drop = FALSE])) == 2L
                     same <- ifelse(is.na(same), FALSE, same)
-                    if (all(same)) return()
+                    if (all(same)) {
+                        return()
+                    }
                     if (sum(!same) > 1L) {
                         gmessage("Multiple values changed somehow ... ")
                         updateDfView()
@@ -535,7 +572,8 @@ iNZDataViewWidget <- setRefClass(
                     }
 
                     .dataset <- GUI$getActiveData(lazy = FALSE)
-                    code <- sprintf(".dataset[%i, \"%s\"] <- %s",
+                    code <- sprintf(
+                        ".dataset[%i, \"%s\"] <- %s",
                         di[changed[1]],
                         dj[changed[2]],
                         ifelse(is.numeric(new), new, paste0("\"", new, "\""))
@@ -556,7 +594,8 @@ iNZDataViewWidget <- setRefClass(
             font(lbl) <- list(size = 8)
             add(pageGp, lbl)
 
-            pageSize <- gspinbutton(10L, 100L, by = 10L,
+            pageSize <- gspinbutton(10L, 100L,
+                by = 10L,
                 value = paginate$nrow,
                 container = pageGp,
                 handler = function(h, ...) {
@@ -569,32 +608,41 @@ iNZDataViewWidget <- setRefClass(
             pageLbl <<- glabel("", container = pageGp)
             font(pageLbl) <<- list(size = 8)
 
-            btnPrev <<- gbutton("", container = pageGp,
+            btnPrev <<- gbutton("",
+                container = pageGp,
                 handler = function(h, ...) {
-                    if (paginate$row == 1L) return()
+                    if (paginate$row == 1L) {
+                        return()
+                    }
                     paginate$row <<- paginate$row - paginate$nrow
                     updateDfView()
                 }
             )
             btnPrev$set_icon("go-up")
 
-            btnNext <<- gbutton("", container = pageGp,
+            btnNext <<- gbutton("",
+                container = pageGp,
                 handler = function(h, ...) {
-                    if (paginate$row + paginate$nrow - 1L >= nrow(GUI$getActiveData(lazy = TRUE))) return()
+                    if (paginate$row + paginate$nrow - 1L >= nrow(GUI$getActiveData(lazy = TRUE))) {
+                        return()
+                    }
                     paginate$row <<- paginate$row + paginate$nrow
                     updateDfView()
                 }
             )
             btnNext$set_icon("go-down")
 
-            findRowBtn <- gbutton("", container = pageGp,
+            findRowBtn <- gbutton("",
+                container = pageGp,
                 handler = function(h, ...) {
                     row_n <- ginput("Find a specific row in the dataset",
                         title = "Find row",
                         icon = "question",
                         parent = GUI$win
                     )
-                    if (is.null(row_n) || length(row_n) == 0) return()
+                    if (is.null(row_n) || length(row_n) == 0) {
+                        return()
+                    }
                     n <- as.integer(row_n)
                     if (is.na(n)) {
                         gmessage(sprintf("Invalid row number, `%s`", row_n),
@@ -606,7 +654,8 @@ iNZDataViewWidget <- setRefClass(
                     }
                     if (n < 1L || n > nrow(GUI$getActiveData(lazy = TRUE))) {
                         gmessage(
-                            sprintf("Row number should be between %i and %i",
+                            sprintf(
+                                "Row number should be between %i and %i",
                                 1L, nrow(GUI$getActiveData(lazy = TRUE))
                             ),
                             title = "Invalid row number",
@@ -634,7 +683,8 @@ iNZDataViewWidget <- setRefClass(
         ## create variable view (invisible)
         createVarView = function() {
             varView <<- gvbox(expand = TRUE)
-            varWidget <<- gtable(data.frame(), expand = TRUE,
+            varWidget <<- gtable(data.frame(),
+                expand = TRUE,
                 multiple = GUI$preferences$multiple_x
             )
             varWidget$remove_popup_menu()
@@ -649,7 +699,9 @@ iNZDataViewWidget <- setRefClass(
         },
         ## change the currently active View
         changeView = function() {
-            if (current == "") return()
+            if (current == "") {
+                return()
+            }
             if (current == "data") show("variables")
             if (current == "variables") show("data")
         },
@@ -675,10 +727,12 @@ gen_var_summary <- function(var, data) {
         nmiss <- x %>%
             dplyr::summarize(n_miss = sum(!is.na(.data[[var]]), na.rm = TRUE)) %>%
             dplyr::pull("n_miss")
-        if (nmiss == 0L) return("All missing")
+        if (nmiss == 0L) {
+            return("All missing")
+        }
 
         res <- switch(iNZightTools::vartypes(x)[[1]],
-            'num' = {
+            "num" = {
                 xr <- x %>%
                     dplyr::summarize(
                         min = min(.data[[var]], na.rm = TRUE),
@@ -691,14 +745,14 @@ gen_var_summary <- function(var, data) {
                     collapse = ", "
                 )
             },
-            'cat' = {
+            "cat" = {
                 xn <- x %>%
                     dplyr::distinct() %>%
                     dplyr::count() %>%
                     dplyr::collect()
                 paste(xn$n, "levels")
             },
-            'dt' = {
+            "dt" = {
                 xr <- x %>%
                     dplyr::summarize(
                         min = min(.data[[var]], na.rm = TRUE),
@@ -715,20 +769,22 @@ gen_var_summary <- function(var, data) {
     }
 
     x <- data[[var]]
-    if (all(is.na(x))) return("All missing")
+    if (all(is.na(x))) {
+        return("All missing")
+    }
 
     switch(iNZightTools::vartype(x),
-        'num' = {
+        "num" = {
             paste(
                 c("min", "max"),
                 signif(range(x, na.rm = TRUE), 4),
                 collapse = ", "
             )
         },
-        'cat' = {
+        "cat" = {
             paste(length(levels(x)), "levels")
         },
-        'dt' = {
+        "dt" = {
             paste(
                 as.character(range(x, na.rm = TRUE)),
                 collapse = " to "

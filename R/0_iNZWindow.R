@@ -17,20 +17,20 @@ iNZWindow <- setRefClass("iNZWindow",
         code_font = "list"
     ),
     methods = list(
-        initialize = function(
-            gui,
-            title = "Window title",
-            width = c("small", "med", "large"),
-            height = c("small", "med", "large"),
-            body_direction = c("vertical", "horizontal"),
-            ok = "OK",
-            cancel = "Cancel",
-            action,
-            help = NULL,
-            scroll = FALSE,
-            show_code = FALSE
-        ) {
-            if (is.null(gui)) return(invisible(FALSE))
+        initialize = function(gui,
+                              title = "Window title",
+                              width = c("small", "med", "large"),
+                              height = c("small", "med", "large"),
+                              body_direction = c("vertical", "horizontal"),
+                              ok = "OK",
+                              cancel = "Cancel",
+                              action,
+                              help = NULL,
+                              scroll = FALSE,
+                              show_code = FALSE) {
+            if (!inherits(gui, "iNZGUI")) {
+                stop("gui should be an iNZGUI object created with iNZight()")
+            }
             if (!is.function(action)) stop("action should be a function")
 
             initFields(
@@ -72,6 +72,11 @@ iNZWindow <- setRefClass("iNZWindow",
                 height = window_height + show_code * 80L,
                 parent = GUI$win
             )
+            GUI$moduleWindow <<- .self
+            addHandlerDestroy(GUI$modWin, function(h, ...) {
+                GUI$moduleWindow <<- NULL
+                closeHandler(h, ...)
+            })
 
             body_direction <- match.arg(body_direction)
             g <- gvbox(expand = TRUE)
@@ -89,8 +94,9 @@ iNZWindow <- setRefClass("iNZWindow",
             if (!is.null(help_url)) {
                 help_button <<- gbutton("Help",
                     container = footer,
-                    handler = function(h, ...)
+                    handler = function(h, ...) {
                         help_page(help_url)
+                    }
                 )
                 size(help_button) <<- c(120, -1)
                 help_button$set_icon("gw-help_topic")
@@ -162,12 +168,10 @@ iNZWindow <- setRefClass("iNZWindow",
 
             invisible(TRUE)
         },
-        add_heading = function(
-            ...,
-            size = 10L,
-            weight = "normal",
-            align = c("left", "center", "right")
-        ) {
+        add_heading = function(...,
+                               size = 10L,
+                               weight = "normal",
+                               align = c("left", "center", "right")) {
             # calculate line width
             nc <- floor(10L / size * window_width / 6L)
             lbl <- glabel(
@@ -177,8 +181,7 @@ iNZWindow <- setRefClass("iNZWindow",
                 )
             )
             font(lbl) <- list(size = size, weight = weight)
-            anchor <- switch(
-                match.arg(align),
+            anchor <- switch(match.arg(align),
                 "left" = c(-1, 0),
                 "center" = c(0, 0),
                 "right" = c(1, 0)
@@ -195,7 +198,9 @@ iNZWindow <- setRefClass("iNZWindow",
         body_spring = function() addSpring(body),
         body_space = function(x) addSpace(body, x),
         set_code = function(code) {
-            if (is.null(code_panel)) return()
+            if (is.null(code_panel)) {
+                return()
+            }
             svalue(code_panel) <<- ""
             code_panel$insert_text(
                 code,
@@ -210,6 +215,7 @@ iNZWindow <- setRefClass("iNZWindow",
         close = function() {
             dispose(GUI$modWin)
         },
-        window = function() invisible(GUI$modWin)
+        window = function() invisible(GUI$modWin),
+        closeHandler = function(h, ...) TRUE
     )
 )

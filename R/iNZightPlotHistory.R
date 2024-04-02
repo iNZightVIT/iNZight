@@ -50,35 +50,31 @@ iNZplothistory <- setRefClass(
             if (!is.null(attr(plot, "plottype")) &&
                 attr(plot, "plottype") == "gg_gridplot"
             ) {
-                tryCatch(
-                    {
-                        ggplot2::ggsave(
-                            file.path(temp.dir, sprintf("plot%d.png", i)),
-                            waffle::waffle(c(a = 3, b = 1), rows = 1) +
-                                ggplot2::theme_void(),
-                            width = 1.5,
-                            height = 1.5,
-                            dpi = 50
-                        )
-                    }
-                )
+                tryCatch({
+                    ggplot2::ggsave(
+                        file.path(temp.dir, sprintf("plot%d.png", i)),
+                        waffle::waffle(c(a = 3, b = 1), rows = 1) +
+                            ggplot2::theme_void(),
+                        width = 1.5,
+                        height = 1.5,
+                        dpi = 50
+                    )
+                })
             } else {
-                tryCatch(
-                    {
-                        ggplot2::ggsave(
-                            file.path(temp.dir, sprintf("plot%d.png", i)),
-                            plot +
-                                ggplot2::theme_void() +
-                                ggplot2::theme(
-                                    legend.position = "none",
-                                    title = ggplot2::element_blank()
-                                ),
-                            width = 1.5,
-                            height = 1.5,
-                            dpi = 50
-                        )
-                    }
-                )
+                tryCatch({
+                    ggplot2::ggsave(
+                        file.path(temp.dir, sprintf("plot%d.png", i)),
+                        plot +
+                            ggplot2::theme_void() +
+                            ggplot2::theme(
+                                legend.position = "none",
+                                title = ggplot2::element_blank()
+                            ),
+                        width = 1.5,
+                        height = 1.5,
+                        dpi = 50
+                    )
+                })
             }
 
             if (is.null(attr(plot, "plottype")) ||
@@ -123,7 +119,8 @@ iNZplothistory <- setRefClass(
             w <- gwindow(width = 700, height = 300, parent = GUI$win)
             g <- gvbox(expand = TRUE, fill = "x")
 
-            plot_list <<- gvbox(use.scrollwindow = TRUE,
+            plot_list <<- gvbox(
+                use.scrollwindow = TRUE,
                 expand = TRUE, fill = "xy"
             )
             code_group <- gexpandgroup("Run Code", horizontal = FALSE)
@@ -132,7 +129,8 @@ iNZplothistory <- setRefClass(
 
             code_box <<- gtext("# Copy and paste R code into this text box")
             as_chunk <- gcheckbox("Wrap copied code in Rmarkdown code chunk")
-            addHandlerChanged(as_chunk,
+            addHandlerChanged(
+                as_chunk,
                 function(h, ...) copy_chunk <<- svalue(as_chunk)
             )
 
@@ -142,13 +140,15 @@ iNZplothistory <- setRefClass(
             gWidgets2::add(g, plot_list, expand = TRUE)
             gWidgets2::add(g, code_group)
             gWidgets2::add(code_group_horizontal, code_box, expand = TRUE)
-            gWidgets2::add(code_group_horizontal,
+            gWidgets2::add(
+                code_group_horizontal,
                 gbutton("Run Code",
                     handler = function(h, ...) submitCode()
                 )
             )
             gWidgets2::add(code_group, code_group_horizontal)
-            gWidgets2::add(g,
+            gWidgets2::add(
+                g,
                 gbutton("OK",
                     handler = function(h, ...) {
                         GUI$updatePlot()
@@ -158,7 +158,8 @@ iNZplothistory <- setRefClass(
             )
 
             if (length(history) > 0) {
-                plot_items <- lapply(names(history),
+                plot_items <- lapply(
+                    names(history),
                     function(i) plot_entry(history[[i]], window = w, i = i)
                 )
 
@@ -188,7 +189,8 @@ iNZplothistory <- setRefClass(
         plot_entry = function(item, window, i) {
             plot_group <- glayout(expand = TRUE, fill = TRUE)
             plot_image <- gimage(item$img_file)
-            addHandlerClicked(plot_image,
+            addHandlerClicked(
+                plot_image,
                 function(h, ...) {
                     eval_env <- rlang::env(
                         .dataset := GUI$getActiveData(lazy = FALSE)
@@ -201,7 +203,7 @@ iNZplothistory <- setRefClass(
 
             hover <- gdkCursorNew("GDK_HAND1")
             addHandler(plot_image, "enter-notify-event",
-                handler = function(h,...) {
+                handler = function(h, ...) {
                     getToolkitWidget(plot_image)$getWindow()$setCursor(hover)
                     TRUE
                 }
@@ -209,7 +211,7 @@ iNZplothistory <- setRefClass(
 
 
             addHandler(plot_image, "leave-notify-event",
-                handler = function(h,...) {
+                handler = function(h, ...) {
                     getToolkitWidget(plot_image)$getWindow()$setCursor(gdkCursorNew("GDK_LEFT_PTR"))
                     TRUE
                 }
@@ -266,7 +268,8 @@ iNZplothistory <- setRefClass(
                 which_libraries <- gregexpr("library\\(([-_A-z0-9.])+\\)", expr)
                 lines_containing_library <- unlist(lapply(which_libraries, function(x) x > 0))
                 libraries <- unlist(
-                    lapply(regmatches(expr, which_libraries),
+                    lapply(
+                        regmatches(expr, which_libraries),
                         function(x) if (length(x) > 0 && x[1] == "library") x[2]
                     )
                 )
@@ -286,8 +289,9 @@ iNZplothistory <- setRefClass(
                 ) := GUI$getActiveData(lazy = FALSE)
             )
 
-            if (length(parsed$libraries) > 0)
+            if (length(parsed$libraries) > 0) {
                 code_text <- with_packages(parsed$libraries, parsed$expr)
+            }
 
             eval_results <- eval(code_text, envir = eval_env)
             print(eval_results)

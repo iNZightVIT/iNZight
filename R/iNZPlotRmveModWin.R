@@ -20,7 +20,8 @@ iNZPlotRmveModWin <- setRefClass(
 
             if (GUI$plotType == "custom") {
                 gmessage("Remove Additions only works with `inzplot` functions.",
-                    title = "Plot type not supported")
+                    title = "Plot type not supported"
+                )
                 return()
             }
 
@@ -28,7 +29,8 @@ iNZPlotRmveModWin <- setRefClass(
             defSet <<- c(iNZightPlots:::inzpar(), iNZightPlots:::gg_defaults)
             ptypes <- iNZightPlots:::plot_types
 
-            additions <- lapply(names(plot_modifications),
+            additions <- lapply(
+                names(plot_modifications),
                 function(name) {
                     x <- plot_modifications[[name]]
                     list(
@@ -43,18 +45,26 @@ iNZPlotRmveModWin <- setRefClass(
                                     d <- defSet[name]
                                 }
 
-                                if (all(sapply(c, is.null)) || identical(c, d)) 0L
-                                else if (is.null(x$plot_types) && !name %in% rownames(ptypes)) 2L
-                                else if (is.null(x$plot_types))
+                                if (all(sapply(c, is.null)) || identical(c, d)) {
+                                    0L
+                                } else if (is.null(x$plot_types) && !name %in% rownames(ptypes)) {
+                                    2L
+                                } else if (is.null(x$plot_types)) {
                                     grepl("p", ptypes[name, GUI$plotType]) + 1L
-                                else (GUI$plotType %in% x$plot_types) + 1L
-                            } else x$remove(curSet, GUI$curPlot),
+                                } else {
+                                    (GUI$plotType %in% x$plot_types) + 1L
+                                }
+                            } else {
+                                x$remove(curSet, GUI$curPlot)
+                            },
                         default =
-                            if (is.null(x$default))
+                            if (is.null(x$default)) {
                                 structure(list(defSet[[name]]), .Names = name)
-                            else if (is.character(x$default))
+                            } else if (is.character(x$default)) {
                                 structure(defSet[x$default], .Names = x$default)
-                            else x$default
+                            } else {
+                                x$default
+                            }
                     )
                 }
             )
@@ -79,7 +89,8 @@ iNZPlotRmveModWin <- setRefClass(
                 add(mainGrp, lbl, anchor = c(-1, 0))
                 add(mainGrp, g_cur)
 
-                sapply(add_cur,
+                sapply(
+                    add_cur,
                     function(x) {
                         gcheckbox(x$text,
                             container = g_cur,
@@ -98,7 +109,8 @@ iNZPlotRmveModWin <- setRefClass(
                 add(mainGrp, lbl, anchor = c(-1, 0))
                 add(mainGrp, g_other)
 
-                sapply(add_other,
+                sapply(
+                    add_other,
                     function(x) {
                         gcheckbox(x$text,
                             container = g_other,
@@ -153,13 +165,16 @@ iNZPlotRmveModWin <- setRefClass(
             newSet <- list()
             rmvSet <- c(add_cur, add_other)
             if (length(checked)) {
-
-                for (i in checked)
+                for (i in checked) {
                     newSet <- modifyList(newSet, rmvSet[[i]]$default, keep.null = TRUE)
+                }
             } else {
-                if (!confirm && !gconfirm("Are you sure you want to reset all plot modifications?")) return()
-                for (i in seq_along(rmvSet))
+                if (!confirm && !gconfirm("Are you sure you want to reset all plot modifications?")) {
+                    return()
+                }
+                for (i in seq_along(rmvSet)) {
                     newSet <- modifyList(newSet, rmvSet[[i]]$default, keep.null = TRUE)
+                }
             }
             GUI$getActiveDoc()$setSettings(newSet)
             iNZPlotRmveModWin$new(GUI, new = FALSE)
@@ -180,24 +195,29 @@ iNZPlotRmveModWin <- setRefClass(
 
 plot_modifications <- list(
     colby = list(
-        text = function(settings)
-            sprintf("Remove colour coding by %s", as.character(settings$colby)),
+        text = function(settings) {
+            sprintf("Remove colour coding by %s", as.character(settings$colby))
+        },
         default = list(colby = NULL, varnames = list(colby = NULL))
     ),
     sizeby = list(
-        text = function(settings)
-            sprintf("Remove resizing by %s", as.character(settings$sizeby)),
+        text = function(settings) {
+            sprintf("Remove resizing by %s", as.character(settings$sizeby))
+        },
         default = list(sizeby = NULL, varnames = list(sizeby = NULL))
     ),
     symbolby = list(
-        text = function(settings)
-            sprintf("Remove symbol coding by %s", as.character(settings$symbolby)),
+        text = function(settings) {
+            sprintf("Remove symbol coding by %s", as.character(settings$symbolby))
+        },
         default = list(symbolby = NULL, varnames = list(symbolby = NULL))
     ),
     locate = list(
         text = "Remove point labels",
-        default = c("locate", "locate.id", "locate.col", "locate.extreme",
-            "locate.same.level", "highlight")
+        default = c(
+            "locate", "locate.id", "locate.col", "locate.extreme",
+            "locate.same.level", "highlight"
+        )
     ),
     xlim = list(text = "Reset x-axis limits"),
     ylim = list(text = "Reset y-axis limits"),

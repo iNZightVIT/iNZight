@@ -43,14 +43,22 @@ GPagedTable <- setRefClass(
 
             if (!is.null(items)) set_items(items)
         },
-        set_items = function(items) {
-            items <<- items
+        set_items = function(x) {
+            if (!is.data.frame(x)) {
+                x <- data.frame(X = x)
+            }
+            items <<- x
             pager$nPage <<- ceiling(ncol(items) / pager$pageSize)
             pager$page <<- 1L
 
             update()
         },
         update = function() {
+            if (pager$nPage == 1L) {
+                table$set_items(items)
+                pageLabel$set_value("")
+                return()
+            }
             cfrom <- (pager$page - 1L) * pager$pageSize + 1L
             cto <- min(ncol(items), cfrom + pager$pageSize - 1L)
 
