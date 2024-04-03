@@ -21,9 +21,6 @@ gimagebutton(stock.id = NULL, filename, old_cursor = NULL, tooltip = NULL, ...)
 a gimage with extra effects
 }
 \description{
-An image-button
-}
-\details{
 Creates an image that works as a button, and has mouseover icon effects
 and a 'tooltip' that appears in the status bar.
 }

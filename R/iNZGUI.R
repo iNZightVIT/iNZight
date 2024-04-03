@@ -1028,26 +1028,43 @@ iNZGUI <- setRefClass(
                 activeModules[[i]] <<- tryCatch(
                     load_module(mod_dirs[[i]], ui_env),
                     error = function(e) {
-                        gmessage(
-                            sprintf(
-                                "Unable to load module '%s':\n\n%s",
-                                basename(mod_dirs[[i]]),
-                                e$message
-                            ),
-                            title = "Unable to load module",
-                            icon = "error"
-                        )
+                        if (interactive() && getOption("inzight.allow.popups", TRUE)) {
+                            gmessage(
+                                sprintf(
+                                    "Unable to load module '%s':\n\n%s",
+                                    basename(mod_dirs[[i]]),
+                                    e$message
+                                ),
+                                title = "Unable to load module",
+                                icon = "error"
+                            )
+                        } else {
+                            cli::cli_alert_warning(
+                                "Unable to load module '{basename(mod_dirs[[i]])}':\n\n{e$message}"
+                            )
+                            message(
+                                sprintf(
+                                    "Unable to load module '%s':\n\n%s",
+                                    basename(mod_dirs[[i]]),
+                                    e$message
+                                )
+                            )
+                        }
                     },
                     finally = function() {
                         cli::cli_progress_update()
                     }
                 )
-                # cli::cli_progress_update()
             }
             cli::cli_progress_done()
             end <- proc.time()
             ptime <- end - start
+            nmod <- length(activeModules[!sapply(activeModules, is.null)])
+            badmod <- length(activeModules) - nmod
             cli::cli_alert_info("Loaded {nmod} module{?s} ({round(ptime[3], 1)}s)")
+            if (badmod > 0) {
+                cli::cli_alert_warning("Failed to load {badmod} module{?s}")
+            }
         },
         ## create a gvbox object into the module window (ie, initialize it)
         ## NOTE: should be run every time when a new module is open

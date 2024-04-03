@@ -53,6 +53,18 @@ if (OS == "Linux") {
     )
 }
 
+if (OS == "Windows") {
+    if (!requireNamespace("estimability", quietly = TRUE)) {
+        remotes::install_version("estimability", version = "1.4.1")
+    }
+    if (!requireNamespace("vctrs", quietly = TRUE)) {
+        install.packages("vctrs", type = "source")
+    }
+    if (!requireNamespace("R.utils", quietly = TRUE)) {
+        install.packages("R.utils")
+    }
+}
+
 remotes::install_github(
     github_deps,
     dependencies = TRUE,
