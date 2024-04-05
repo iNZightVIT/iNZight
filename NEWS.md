@@ -1,4 +1,4 @@
-# iNZight 4.4
+# iNZight 4.4.0
 
 ## Interface changes
 
