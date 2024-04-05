@@ -42,7 +42,7 @@ jobs:
       - name: Check version number
         run: |
           desc <- read.dcf("DESCRIPTION")
-          v <- strsplit(desc[1, "Version"], ".")
+          v <- strsplit(desc[1, "Version"], ".")[[1]]
           if (length(v) < 3) {
             stop("Version number must have at least 3 components")
           }
