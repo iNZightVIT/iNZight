@@ -46,6 +46,7 @@ jobs:
           if (length(v) < 3) {
             stop("Version number must have at least 3 components")
           }
+        shell: Rscript {0}
 
       - name: Query dependencies
         run: |
