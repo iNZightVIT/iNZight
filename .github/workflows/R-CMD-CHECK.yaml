@@ -39,6 +39,14 @@ jobs:
 
       - uses: r-lib/actions/setup-pandoc@v2
 
+      - name: Check version number
+        run: |
+          desc <- read.dcf("DESCRIPTION")
+          v <- strsplit(desc[1, "Version"], ".")
+          if (length(v) < 3) {
+            stop("Version number must have at least 3 components")
+          }
+
       - name: Query dependencies
         run: |
           install.packages('remotes')
