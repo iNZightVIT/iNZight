@@ -12,8 +12,8 @@ jobs:
       fail-fast: false
       matrix:
         config:
-          - { os: windows-latest, r: "4.1", cache-version: 5 }
-          #- { os: windows-latest, r: "4.2", cache-version: 3 }
+          # - { os: windows-latest, r: "4.1", cache-version: 5 }
+          - { os: windows-latest, r: "4.2", cache-version: 3 }
           - {
               os: ubuntu-20.04,
               r: "release",
