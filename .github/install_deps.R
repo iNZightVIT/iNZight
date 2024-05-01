@@ -69,7 +69,7 @@ if (!requireNamespace("pak", quietly = TRUE)) {
     install.packages("pak", type = "source")
 }
 
-pak::pak(github_deps, dependencies = TRUE)
+pak::pak(c(github_deps, "iNZightMaps=?ignore"), dependencies = TRUE)
 pak::local_install_deps(dependencies = TRUE)
 pak::pak("rcmdcheck")
 
