@@ -19,7 +19,7 @@ options(
         CRAN = "https://cloud.r-project.org"
     )
     # install.packages.compile.from.source = "never"
-# )
+)
 
 # if (OS == "Windows" && getRversion() < numeric_version("4")) {
 #     install.packages("RODBC", type = "binary")
