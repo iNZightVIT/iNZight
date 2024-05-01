@@ -509,7 +509,7 @@ iNZGUI <- setRefClass(
                 } else if (grepl("+", as.character(curPlSet$x), fixed = TRUE)) {
                     xx <- strsplit(as.character(curPlSet$x), " + ", fixed = TRUE)[[1]]
                     varx <- iNZightTools::as_tibble(
-                        iNZightTools::select(.dataset, xx)
+                        iNZightTools::select(.dataset, dplyr::all_of(xx))
                     )
                     xtypes <- iNZightTools::vartypes(varx)
                 } else {
