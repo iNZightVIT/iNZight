@@ -76,9 +76,9 @@ jobs:
         run: |
           options(repos = "https://r.docker.stat.auckland.ac.nz")
           if (!requireNamespace("RGtk2", quietly = TRUE))
-            install.packages("RGtk2")
+            install.packages("RGtk2", type = "source")
           if (!requireNamespace("cairoDevice", quietly = TRUE))
-            install.packages("cairoDevice")
+            install.packages("cairoDevice", type = "source")
 
       - name: Install gtk binaries, and RGtk2 from source if needed
         if: runner.os == 'Windows'
