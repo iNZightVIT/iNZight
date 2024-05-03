@@ -94,7 +94,7 @@ jobs:
           gtkWindowNew()
         shell: Rscript {0}
 
-      - uses: .github/actions/setup-r-dependencies-xvfb
+      - uses: ./.github/actions/setup-r-dependencies-xvfb
         with:
           cache-version: ${{ matrix.config.cache  }}
           # extra packages based on R version
