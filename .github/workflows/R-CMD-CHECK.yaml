@@ -50,7 +50,7 @@ jobs:
           }
         shell: Rscript {0}
 
-      - uses: ./actions/install
+      - uses: ./.github/actions/install
         with:
           cache-version: ${{ matrix.config.cache  }}
           # extra packages based on R version
