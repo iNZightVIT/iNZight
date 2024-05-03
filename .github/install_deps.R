@@ -1,25 +1,37 @@
 # R script
-github_deps <- c(
-    "tmelliott/surveyspec",
-    "tmelliott/gWidgets2@patch-1",
-    "iNZightVIT/gWidgets2RGtk2@inz",
-    "iNZightVIT/iNZightTools@2.0.1",
-    "iNZightVIT/iNZightTS@1.5.10",
-    "iNZightVIT/iNZightMR@2.3.0",
-    "iNZightVIT/iNZightPlots@2.15.0",
-    "iNZightVIT/iNZightRegression@1.3.3",
-    "iNZightVIT/iNZightModules@dev"
-)
+if (!requireNamespace("pak", quietly = TRUE)) {
+    install.packages("pak", type = "source")
+}
 
-OS <- Sys.getenv("OS_TYPE")
-options(
-    repos = c(
-        if (OS == "Linux") RSPM <- Sys.getenv("RSPM"),
-        inzight = "https://r.docker.stat.auckland.ac.nz",
-        CRAN = "https://cloud.r-project.org"
-    )
-    # install.packages.compile.from.source = "never"
-)
+# read Config/Needs from DESCRIPTION
+
+pak::pak(c(github_deps, "iNZightMaps=?ignore"), dependencies = TRUE)
+pak::local_install_dev_deps(dependencies = TRUE, upgrade = FALSE)
+pak::pak("rcmdcheck")
+
+
+
+# github_deps <- c(
+#     "tmelliott/surveyspec",
+#     "tmelliott/gWidgets2@patch-1",
+#     "iNZightVIT/gWidgets2RGtk2@inz",
+#     "iNZightVIT/iNZightTools@2.0.1",
+#     "iNZightVIT/iNZightTS@1.5.10",
+#     "iNZightVIT/iNZightMR@2.3.0",
+#     "iNZightVIT/iNZightPlots@2.15.0",
+#     "iNZightVIT/iNZightRegression@1.3.3",
+#     "iNZightVIT/iNZightModules@dev"
+# )
+
+# OS <- Sys.getenv("OS_TYPE")
+# options(
+#     repos = c(
+#         if (OS == "Linux") RSPM <- Sys.getenv("RSPM"),
+#         inzight = "https://r.docker.stat.auckland.ac.nz",
+#         CRAN = "https://cloud.r-project.org"
+#     )
+#     # install.packages.compile.from.source = "never"
+# )
 
 # if (OS == "Windows" && getRversion() < numeric_version("4")) {
 #     install.packages("RODBC", type = "binary")
@@ -65,13 +77,6 @@ options(
 #     }
 # }
 
-if (!requireNamespace("pak", quietly = TRUE)) {
-    install.packages("pak", type = "source")
-}
-
-pak::pak(c(github_deps, "iNZightMaps=?ignore"), dependencies = TRUE)
-pak::local_install_dev_deps(dependencies = TRUE, upgrade = FALSE)
-pak::pak("rcmdcheck")
 
 # remotes::install_github(
 #     github_deps,

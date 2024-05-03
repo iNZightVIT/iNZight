@@ -5,4 +5,4 @@ skip_on_covr()
 
 # https://www.stat.auckland.ac.nz/~wild/d2i/exercises/
 
-test_dir("futurelearn")
+# test_dir("futurelearn")

@@ -24,8 +24,6 @@ jobs:
             }
 
     env:
-      R_REMOTES_NO_ERRORS_FROM_WARNINGS: true
-      RSPM: ${{ matrix.config.rspm }}
       GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
 
     concurrency:
@@ -38,8 +36,8 @@ jobs:
       - uses: r-lib/actions/setup-r@v2
         with:
           r-version: ${{ matrix.config.r }}
-
-      - uses: r-lib/actions/setup-pandoc@v2
+          use-public-rspm: true
+          extra-repositories: "https://r.docker.stat.auckland.ac.nz"
 
       - name: Check version number
         run: |
@@ -76,9 +74,9 @@ jobs:
         run: |
           options(repos = "https://r.docker.stat.auckland.ac.nz")
           if (!requireNamespace("RGtk2", quietly = TRUE))
-            install.packages("RGtk2", type = "source")
+            install.packages("RGtk2")
           if (!requireNamespace("cairoDevice", quietly = TRUE))
-            install.packages("cairoDevice", type = "source")
+            install.packages("cairoDevice")
 
       - name: Install gtk binaries, and RGtk2 from source if needed
         if: runner.os == 'Windows'
@@ -96,12 +94,22 @@ jobs:
           gtkWindowNew()
         shell: Rscript {0}
 
-      - name: Install dependencies
-        uses: GabrielBB/xvfb-action@v1.2
-        env:
-          OS_TYPE: ${{ runner.os }}
+      - uses: ./.github/actions/setup-r-dependencies
         with:
-          run: Rscript ./.github/install_deps.R
+          cache-version: ${{ matrix.config.cache  }}
+          # extra packages based on R version
+          extra-packages: ${{ matrix.config.r == '4.1' && 'cran/MatrixModels@0.5-0' || '' }}
+          needs: |
+            check
+            dependencies
+          install-pandoc: true
+
+      # - name: Install dependencies
+      #   uses: GabrielBB/xvfb-action@v1.2
+      #   env:
+      #     OS_TYPE: ${{ runner.os }}
+      #   with:
+      #     run: Rscript ./.github/install_deps.R
 
       - name: Create iNZightVIT directory
         if: runner.os == 'Windows'
@@ -113,7 +121,6 @@ jobs:
         env:
           _R_CHECK_CRAN_INCOMING_REMOTE_: false
         with:
-          #run: Rscript -e "rcmdcheck::rcmdcheck(args = c('--no-manual', '--as-cran', '--no-multiarch'), error_on = 'warning', check_dir = 'check')"
           run: Rscript -e "rcmdcheck::rcmdcheck(args = c('--no-manual', '--no-multiarch'), error_on = 'warning', check_dir = 'check')"
 
       - name: Upload check results
