@@ -9,7 +9,8 @@ needs <- strsplit(
     ",\n"
 )[[1]]
 
-if (Sys.getenv("OS_TYPE") == "Windows" && getRversion() < numeric_version("4.1")) {
+if (Sys.getenv("OS_TYPE") == "Windows" &&
+    getRversion() <= numeric_version("4.1")) {
     needs <- c(needs, "Matrix@1.5-0")
 }
 
