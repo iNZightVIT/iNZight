@@ -39,6 +39,8 @@ jobs:
           use-public-rspm: true
           extra-repositories: "https://r.docker.stat.auckland.ac.nz"
 
+      - uses: r-lib/actions/setup-pandoc@v2
+
       - name: Check version number
         run: |
           desc <- read.dcf("DESCRIPTION")
