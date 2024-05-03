@@ -11,10 +11,12 @@ needs <- strsplit(
 
 if (Sys.getenv("OS_TYPE") == "Windows" &&
     getRversion() <= numeric_version("4.1")) {
-    needs <- c(needs, "Matrix@1.5-0")
+    needs <- c(needs, "MatrixModels@0.5-0")
 }
 
-pak::pak(c(".", needs, "iNZightMaps=?ignore"), dependencies = TRUE)
+pak::pak(c(".", needs, "iNZightMaps=?ignore"),
+    dependencies = TRUE
+)
 pak::pak("rcmdcheck")
 
 
