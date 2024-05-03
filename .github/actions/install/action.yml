@@ -138,17 +138,17 @@ runs:
           restore-keys: ${{ steps.install.outputs.os-version }}-${{ steps.install.outputs.r-version }}-${{inputs.cache-version }}-
 
       - name: Install dependencies
-        run: |
-          # Install/Update packages
-          cat("::group::Install/update packages\n")
-          Sys.setenv("PKGCACHE_HTTP_VERSION" = "2")
-          library(pak, lib.loc = Sys.getenv("R_LIB_FOR_PAK"))
-          pak::lockfile_install(".github/pkg.lock")
-          ## Clean up lock file
-          unlink(".github/pkg.lock")
-          cat("::endgroup::\n")
-        shell: Rscript {0}
-        working-directory: ${{ inputs.working-directory }}
+        uses: coactions/setup-xvfb@v1
+        with:
+          run: Rscript -e "# Install/Update packages
+            cat("::group::Install/update packages\n")
+            Sys.setenv("PKGCACHE_HTTP_VERSION" = "2")
+            library(pak, lib.loc = Sys.getenv("R_LIB_FOR_PAK"))
+            pak::lockfile_install(".github/pkg.lock")
+            ## Clean up lock file
+            unlink(".github/pkg.lock")
+            cat("::endgroup::\n")"
+          working-directory: ${{ inputs.working-directory }}
 
       - name: Check whether pandoc needs to be installed
         id: check-pandoc
