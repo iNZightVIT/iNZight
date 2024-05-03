@@ -68,3 +68,18 @@ Encoding: UTF-8
 Language: en-GB
 RoxygenNote: 7.2.3
 VignetteBuilder: knitr
+Config/Needs/dependencies:
+    tmelliott/surveyspec@develop,
+    iNZightVIT/iNZightTools@1.13.0,
+    iNZightVIT/iNZightPlots@2.15.4,
+    iNZightVIT/iNZightMR@2.3.0,
+    iNZightVIT/iNZightRegression@1.3.3,
+    rcmdcheck,
+    curl
+Config/Needs/coverage:
+    tmelliott/surveyspec@develop,
+    iNZightVIT/iNZightTools@1.13.0,
+    iNZightVIT/iNZightPlots@2.15.4,
+    iNZightVIT/iNZightMR@2.3.0,
+    iNZightVIT/iNZightRegression@1.3.3,
+    covr
