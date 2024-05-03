@@ -94,22 +94,12 @@ jobs:
           gtkWindowNew()
         shell: Rscript {0}
 
-      - uses: ./.github/actions/setup-r-dependencies-xvfb
+      - name: Install dependencies
+        uses: GabrielBB/xvfb-action@v1.2
+        env:
+          OS_TYPE: ${{ runner.os }}
         with:
-          cache-version: ${{ matrix.config.cache  }}
-          # extra packages based on R version
-          extra-packages: ${{ matrix.config.r == '4.1' && 'cran/MatrixModels@0.5-0' || '' }}
-          needs: |
-            check
-            dependencies
-          install-pandoc: true
-
-      # - name: Install dependencies
-      #   uses: GabrielBB/xvfb-action@v1.2
-      #   env:
-      #     OS_TYPE: ${{ runner.os }}
-      #   with:
-      #     run: Rscript ./.github/install_deps.R
+          run: Rscript ./.github/install_deps.R
 
       - name: Create iNZightVIT directory
         if: runner.os == 'Windows'
