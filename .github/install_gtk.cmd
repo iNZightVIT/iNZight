@@ -6,8 +6,8 @@ md gtk
 7z x gtk.zip -ogtk > nul
 del gtk.zip
 
-@REM mv gtk D:\a\_temp\
-@REM exit 0
+mv gtk D:\a\_temp\
+exit 0
 
 if exist D:\a\_temp\Library\RGtk2\NUL (
   mv gtk D:\a\_temp\Library\RGtk2\
