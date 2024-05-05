@@ -112,6 +112,14 @@ runs:
         needs <- sprintf("Config/Needs/%s", strsplit("${{ inputs.needs }}", "[[:space:],]+")[[1]])
         deps <- strsplit("${{ inputs.packages }}", "[[:space:],]+")[[1]]
         extra_deps <- strsplit("${{ inputs.extra-packages }}", "[[:space:],]+")[[1]]
+        if (!identical("${{ inputs.binary }}", "NULL") && "${{ runner.os }}" == "Windows") {
+          deps <- c(deps,
+            paste0(
+              "url::",
+              strsplit("${{ inputs.binary }}", "[[:space:],]+")[[1]]
+            )
+          )
+        }
         dir.create(".github", showWarnings=FALSE)
         Sys.setenv("PKGCACHE_HTTP_VERSION" = "2")
         library(pak, lib.loc = Sys.getenv("R_LIB_FOR_PAK"))
@@ -129,6 +137,22 @@ runs:
       shell: Rscript {0}
       working-directory: ${{ inputs.working-directory }}
 
+    # - name: Install binaries on Windows
+    #   if: runner.os == 'Windows'
+    #   run: |
+    #     # Install binaries
+    #     cat("::group::Install binaries\n")
+    #     if (identical("${{ inputs.binary }}", "NULL")) {
+    #       cat("No binaries to install\n")
+    #     } else {
+    #       binaries <- strsplit("${{ inputs.binary }}", "[[:space:],]+")[[1]]
+    #       library(pak, lib.loc = Sys.getenv("R_LIB_FOR_PAK"))
+    #       pak::pkg_install(paste("url", binaries, sep = "::"), lib = Sys.getenv("R_LIB_FOR_PAK"))
+    #     }
+    #     cat("::endgroup::\n")
+    #   shell: Rscript {0}
+    #   working-directory: ${{ inputs.working-directory }}
+
     - name: Restore R package cache
       if: inputs.cache == 'true'
       uses: actions/cache@v4
@@ -138,22 +162,6 @@ runs:
           !${{ env.R_LIBS_USER }}/pak
         key: ${{ format('{0}-{1}-{2}-{3}', steps.install.outputs.os-version, steps.install.outputs.r-version, inputs.cache-version, hashFiles(format('{0}/.github/pkg.lock', inputs.working-directory ))) }}
         restore-keys: ${{ steps.install.outputs.os-version }}-${{ steps.install.outputs.r-version }}-${{inputs.cache-version }}-
-
-    - name: Install binaries on Windows
-      if: runner.os == 'Windows'
-      run: |
-        # Install binaries
-        cat("::group::Install binaries\n")
-        if (identical("${{ inputs.binary }}", "NULL")) {
-          cat("No binaries to install\n")
-        } else {
-          binaries <- strsplit("${{ inputs.binary }}", "[[:space:],]+")[[1]]
-          library(pak, lib.loc = Sys.getenv("R_LIB_FOR_PAK"))
-          pak::pkg_install(paste("url", binaries, sep = "::"), lib = Sys.getenv("R_LIB_FOR_PAK"))
-        }
-        cat("::endgroup::\n")
-      shell: Rscript {0}
-      working-directory: ${{ inputs.working-directory }}
 
     - name: Install dependencies
       uses: coactions/setup-xvfb@v1
