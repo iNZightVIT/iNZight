@@ -64,13 +64,23 @@ jobs:
         run: |
           sudo apt install libgtk2.0-dev xorg-dev libxml2-dev libnlopt-dev libcurl4-openssl-dev
 
+      - name: Install RGtk2 and cairoDevice
+        if: runner.os == 'Windows'
+        env:
+          GTK_PATH: D:\a\_temp\gtk
+        run: |
+          options(repos = "https://r.docker.stat.auckland.ac.nz")
+          if (!requireNamespace("RGtk2", quietly = TRUE))
+            install.packages("RGtk2")
+          if (!requireNamespace("cairoDevice", quietly = TRUE))
+            install.packages("cairoDevice")
+
       - uses: ./.github/actions/install
         with:
           cache-version: ${{ matrix.config.cache  }}
           # extra packages based on R version
           extra-packages: ${{ matrix.config.r == '4.1' && 'cran/MatrixModels@0.5-0' || '' }}
           packages: "deps::., any::sessioninfo, iNZightModules=?ignore, ."
-          binary: ${{ matrix.config.r == '4.1' && 'RGtk2, cairoDevice' || '' }}
           needs: |
             check
             dependencies

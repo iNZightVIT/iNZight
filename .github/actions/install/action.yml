@@ -37,9 +37,6 @@ inputs:
   pandoc-version:
     description: "Pandoc version to install."
     default: "3.1.11"
-  binary:
-    description: "Which packages to install as binary packages."
-    default: "NULL"
 runs:
   using: "composite"
   steps:
@@ -138,23 +135,6 @@ runs:
           !${{ env.R_LIBS_USER }}/pak
         key: ${{ format('{0}-{1}-{2}-{3}', steps.install.outputs.os-version, steps.install.outputs.r-version, inputs.cache-version, hashFiles(format('{0}/.github/pkg.lock', inputs.working-directory ))) }}
         restore-keys: ${{ steps.install.outputs.os-version }}-${{ steps.install.outputs.r-version }}-${{inputs.cache-version }}-
-
-    - name: Install binaries on Windows
-      if: runner.os == 'Windows'
-      run: |
-        # Install binaries
-        cat("::group::Install binaries\n")
-        if (identical("${{ inputs.binary }}", "NULL")) {
-          cat("No binaries to install\n")
-        } else {
-          install.packages("${{ inputs.binary }}", lib = Sys.getenv("R_LIB_FOR_PAK"), type = "binary")
-          # binaries <- strsplit("${{ inputs.binary }}", "[[:space:],]+")[[1]]
-          # library(pak, lib.loc = Sys.getenv("R_LIB_FOR_PAK"))
-          # pak::pkg_install(paste("url", binaries, sep = "::"), lib = Sys.getenv("R_LIB_FOR_PAK"))
-        }
-        cat("::endgroup::\n")
-      shell: Rscript {0}
-      working-directory: ${{ inputs.working-directory }}
 
     - name: Install dependencies
       uses: coactions/setup-xvfb@v1
