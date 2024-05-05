@@ -76,6 +76,8 @@ jobs:
             install.packages("cairoDevice")
 
       - uses: ./.github/actions/install
+        env:
+          GTK_PATH: D:\a\_temp\gtk
         with:
           cache-version: ${{ matrix.config.cache  }}
           # extra packages based on R version
