@@ -68,7 +68,7 @@ jobs:
 
       - uses: ./.github/actions/install
         env:
-          GTK_PATH: ${{ runner.os == 'Windows' && '"D:\a\_temp"'' || '' }}
+          GTK_PATH: ${{ runner.os == 'Windows' && '"D:\a\_temp"' || '' }}
           # R_LIBS_SITE: ${{env.R_LIBS_USER}}
         with:
           cache-version: ${{ matrix.config.cache  }}
