@@ -5,6 +5,7 @@ library(pak, lib.loc = Sys.getenv("R_LIB_FOR_PAK"))
 
 # install RGtk2
 if (!requireNamespace("RGtk2", quietly = TRUE)) {
+    cat("Installing RGtk2\n")
     install.packages("RGtk2",
         lib.loc = Sys.getenv("R_LIB_FOR_PAK"),
         INSTALL_opts = "--no-multiarch"
@@ -13,6 +14,7 @@ if (!requireNamespace("RGtk2", quietly = TRUE)) {
 
 # install cairoDevice
 if (!requireNamespace("cairoDevice", quietly = TRUE)) {
+    cat("Installing cairoDevice\n")
     install.packages("cairoDevice",
         lib.loc = Sys.getenv("R_LIB_FOR_PAK"),
         INSTALL_opts = "--no-multiarch"
