@@ -77,7 +77,7 @@ jobs:
             check
             dependencies
           install-pandoc: true
-          lockfile-create-lib: ${{ env.R_LIBS_USER }}
+          lockfile-create-lib: ${{ runner.os == "Windows" && env.R_LIBS_USER || "" }}
 
       # - name: Query dependencies
       #   run: |
