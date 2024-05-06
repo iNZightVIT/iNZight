@@ -87,10 +87,13 @@ jobs:
           cat("Moving GTK to RGtk2 ...\n")
           list.files("D:/a/_temp/")
           list.files(Sys.getenv("R_LIBS_USER"))
-          file.rename(
+          if (!file.rename(
             "D:/a/_temp/gtk",
             file.path(system.file(package = "RGtk2"), "gtk")
-          )
+          )) {
+            cat("::error::Failed to move GTK to RGtk2")
+            quit(status = 1)
+          }
           cat("Checking RGtk2 ...\n")
           library(RGtk2)
           w <- try(gtkWindowNew(), silent = TRUE)
@@ -99,7 +102,7 @@ jobs:
             cat("::error::RGtk2 failed to load")
             quit(status = 1)
           }
-          if (!"GdkWindow" %in% class(w)) {
+          if (!"GdkWindow" %in% class(w$window)) {
             cat("::error::RGtk2 hasn't loaded correctly")
             quit(status = 1)
           }
