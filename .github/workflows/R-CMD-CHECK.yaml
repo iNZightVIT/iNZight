@@ -58,22 +58,10 @@ jobs:
         if: runner.os == 'Windows'
         run: echo "D:\a\_temp\gtk\bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
 
-      - name: Test
-        run: echo "MY_VAR=just testing" >> $GITHUB_ENV
-
-      - name: Print MY_VAR
-        run: echo "${{ env.MY_VAR }}"
-
       - name: Set GTK_PATH
         if: runner.os == 'Windows'
         run: |
-          GTK_PATH=D:/a/_temp/gtk
-          echo "GTK_PATH=$GTK_PATH"
-          echo "GTK_PATH=$GTK_PATH" >> $GITHUB_ENV
-
-      - name: Print GTK_PATH (only win)
-        if: runner.os == 'Windows'
-        run: echo "${{ env.GTK_PATH }}"
+          echo "GTK_PATH=D:/a/_temp/gtk" >> $env.GITHUB_ENV
 
       - name: Print GTK_PATH
         run: echo "${{ env.GTK_PATH }}"
