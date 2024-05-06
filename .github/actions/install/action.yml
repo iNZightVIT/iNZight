@@ -114,6 +114,7 @@ runs:
         library(pak, lib.loc = Sys.getenv("R_LIB_FOR_PAK"))
 
         cat("GTK Path: ", Sys.getenv("GTK_PATH"), "\n")
+        cat("Path: ", Sys.getenv("PATH"), "\n")
 
         # install RGtk2
         if (!requireNamespace("RGtk2", quietly = TRUE)) {
