@@ -85,13 +85,23 @@ jobs:
           # move GTK from D:/a/_temp/gtk to ${{env.R_LIB_FOR_PAK}}/RGtk2/gtk
           cat("::group::Moving GTK and checking RGtk2\n")
           cat("Moving GTK to RGtk2 ...\n")
+          list.files("D:/a/_temp/")
+          list.files(Sys.getenv("R_LIB_FOR_PAK"))
           file.rename(
             "D:/a/_temp/gtk",
             file.path(Sys.getenv("R_LIB_FOR_PAK"), "RGtk2", "gtk")
             )
           cat("Checking RGtk2 ...\n")
           library(RGtk2)
-          gtkWindowNew()
+          w <- try(gtkWindowNew(), silent = TRUE)
+          if (inherits(w, "try-error") || is.null(w)) {
+            cat("::error::RGtk2 failed to load")
+            quit(status = 1)
+          }
+          if (!"GdkWindow" %in% class(w)) {
+            cat("::error::RGtk2 hasn't loaded correctly")
+            quit(status = 1)
+          }
           cat("::endgroup::\n")
 
       # - name: Check RGtk2
