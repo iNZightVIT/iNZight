@@ -3,8 +3,17 @@ cat("::group::Install/update packages\n")
 Sys.setenv("PKGCACHE_HTTP_VERSION" = "2")
 library(pak, lib.loc = Sys.getenv("R_LIB_FOR_PAK"))
 
+# install RGtk2
 if (!requireNamespace("RGtk2", quietly = TRUE)) {
     install.packages("RGtk2",
+        lib.loc = Sys.getenv("R_LIB_FOR_PAK"),
+        INSTALL_opts = "--no-multiarch"
+    )
+}
+
+# install cairoDevice
+if (!requireNamespace("cairoDevice", quietly = TRUE)) {
+    install.packages("cairoDevice",
         lib.loc = Sys.getenv("R_LIB_FOR_PAK"),
         INSTALL_opts = "--no-multiarch"
     )
