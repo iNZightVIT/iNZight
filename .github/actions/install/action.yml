@@ -112,30 +112,6 @@ runs:
         dir.create(".github", showWarnings=FALSE)
         Sys.setenv("PKGCACHE_HTTP_VERSION" = "2")
         library(pak, lib.loc = Sys.getenv("R_LIB_FOR_PAK"))
-
-        cat("GTK Path: ", Sys.getenv("GTK_PATH"), "\n")
-        cat("Path: ", Sys.getenv("PATH"), "\n")
-
-        # install RGtk2
-        if (!requireNamespace("RGtk2", quietly = TRUE)) {
-            cat("Installing RGtk2\n")
-            install.packages("RGtk2",
-                lib = Sys.getenv("R_LIB_FOR_PAK"),
-                INSTALL_opts = "--no-multiarch",
-                type = "source"
-            )
-        }
-
-        # install cairoDevice
-        if (!requireNamespace("cairoDevice", quietly = TRUE)) {
-            cat("Installing cairoDevice\n")
-            install.packages("cairoDevice",
-                lib = Sys.getenv("R_LIB_FOR_PAK"),
-                INSTALL_opts = "--no-multiarch",
-                type = "source"
-            )
-        }
-
         pak::lockfile_create(
           c(deps, extra_deps),
           lockfile = ".github/pkg.lock",
