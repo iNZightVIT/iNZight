@@ -59,6 +59,10 @@ jobs:
         # run: echo "${{env.R_LIBS_USER}}\RGtk2\gtk\bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
         run: echo "D:\a\_temp\gtk\bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
 
+      - name: Set GTK_PATH
+        if: runner.os == 'Windows'
+        run: echo "GTK_PATH=D:\a\_temp\gtk" >> $GITHUB_ENV
+
       - name: Install system dependencies
         if: runner.os == 'Linux'
         env:
@@ -67,9 +71,6 @@ jobs:
           sudo apt install libgtk2.0-dev xorg-dev libxml2-dev libnlopt-dev libcurl4-openssl-dev
 
       - uses: ./.github/actions/install
-        env:
-          GTK_PATH: ${{ runner.os == 'Windows' && '"D:\a\_temp"' || '' }}
-          # R_LIBS_SITE: ${{env.R_LIBS_USER}}
         with:
           cache-version: ${{ matrix.config.cache  }}
           # extra packages based on R version
@@ -79,7 +80,6 @@ jobs:
             check
             dependencies
           install-pandoc: true
-          # lockfile-create-lib: ${{ runner.os == 'Windows' && '"D:/a/_temp/Library"' || '"NULL"' }}
 
       # - name: Query dependencies
       #   run: |

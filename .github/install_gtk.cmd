@@ -9,7 +9,7 @@ md gtk
 del gtk32.zip
 del gtk64.zip
 
-mv gtk D:\a\_temp\RGtk2\
+mv gtk D:\a\_temp\
 
 @REM if not exist D:\a\_temp\Library\RGtk2\NUL (
 @REM   echo "Installing RGtk2 ..."
