@@ -86,14 +86,15 @@ jobs:
           cat("::group::Moving GTK and checking RGtk2\n")
           cat("Moving GTK to RGtk2 ...\n")
           list.files("D:/a/_temp/")
-          list.files(Sys.getenv("R_LIB_FOR_PAK"))
+          list.files(Sys.getenv("R_LIBS_USER"))
           file.rename(
             "D:/a/_temp/gtk",
-            file.path(Sys.getenv("R_LIB_FOR_PAK"), "RGtk2", "gtk")
-            )
+            file.path(system.file(package = "RGtk2"), "gtk")
+          )
           cat("Checking RGtk2 ...\n")
           library(RGtk2)
           w <- try(gtkWindowNew(), silent = TRUE)
+          print(w)
           if (inherits(w, "try-error") || is.null(w)) {
             cat("::error::RGtk2 failed to load")
             quit(status = 1)
