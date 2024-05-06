@@ -83,7 +83,7 @@ jobs:
         if: runner.os == 'Windows'
         shell: Rscript {0}
         run: |
-          # move GTK from D:/a/_temp/gtk to ${{R_LIB_FOR_PAK}}/RGtk2/gtk
+          # move GTK from D:/a/_temp/gtk to ${{env.R_LIB_FOR_PAK}}/RGtk2/gtk
           cat("::group::Moving GTK and checking RGtk2\n")
           cat("Moving GTK to RGtk2 ...\n")
           file.rename(
