@@ -118,7 +118,8 @@ runs:
             cat("Installing RGtk2\n")
             install.packages("RGtk2",
                 lib = Sys.getenv("R_LIB_FOR_PAK"),
-                INSTALL_opts = "--no-multiarch"
+                INSTALL_opts = "--no-multiarch",
+                type = "source"
             )
         }
 
@@ -127,7 +128,8 @@ runs:
             cat("Installing cairoDevice\n")
             install.packages("cairoDevice",
                 lib = Sys.getenv("R_LIB_FOR_PAK"),
-                INSTALL_opts = "--no-multiarch"
+                INSTALL_opts = "--no-multiarch",
+                type = "source"
             )
         }
 
