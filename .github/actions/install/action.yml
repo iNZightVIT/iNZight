@@ -113,6 +113,8 @@ runs:
         Sys.setenv("PKGCACHE_HTTP_VERSION" = "2")
         library(pak, lib.loc = Sys.getenv("R_LIB_FOR_PAK"))
 
+        cat("GTK Path: ", Sys.getenv("GTK_PATH"), "\n")
+
         # install RGtk2
         if (!requireNamespace("RGtk2", quietly = TRUE)) {
             cat("Installing RGtk2\n")
