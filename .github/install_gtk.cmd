@@ -9,6 +9,8 @@ md gtk
 del gtk32.zip
 del gtk64.zip
 
+mv gtk D:\a\_temp\RGtk2\
+
 @REM if not exist D:\a\_temp\Library\RGtk2\NUL (
 @REM   echo "Installing RGtk2 ..."
 @REM   Rscript -e "Sys.setenv(GTK_PATH = file.path(getwd(), 'gtk')); install.packages('RGtk2', repos = 'https://r.docker.stat.auckland.ac.nz', type = 'source', INSTALL_opts = c('--no-multiarch'))"
