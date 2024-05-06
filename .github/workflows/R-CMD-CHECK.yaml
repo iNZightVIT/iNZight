@@ -75,7 +75,7 @@ jobs:
           cache-version: ${{ matrix.config.cache  }}
           # extra packages based on R version
           extra-packages: ${{ matrix.config.r == '4.1' && 'cran/MatrixModels@0.5-0' || '' }}
-          packages: "deps::., any::sessioninfo, iNZightModules=?ignore, ."
+          packages: "deps::., any::sessioninfo, iNZightModules=?ignore, RGtk2=?ignore, cairoDevice=?ignore, ."
           needs: |
             check
             dependencies
