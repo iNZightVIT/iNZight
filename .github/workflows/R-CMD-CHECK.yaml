@@ -77,7 +77,7 @@ jobs:
 
       - uses: ./.github/actions/install
         env:
-          GTK_PATH: ${{ runner.os == "Windows" && 'D:\a\_temp\gtk' || '' }}
+          GTK_PATH: ${{ runner.os == 'Windows' && 'D:\a\_temp\gtk' || '' }}
         with:
           cache-version: ${{ matrix.config.cache  }}
           # extra packages based on R version
