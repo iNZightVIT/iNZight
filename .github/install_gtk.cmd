@@ -8,11 +8,11 @@ del gtk.zip
 
 if not exist D:\a\_temp\Library\RGtk2\NUL (
   echo "Installing RGtk2 ..."
-  Rscript -e "Sys.setenv(GTK_PATH = file.path(getwd(), 'gtk')); try(install.packages(c('RGtk2', 'cairoDevice'), repos = 'https://r.docker.stat.auckland.ac.nz', type = 'source'))"
+  Rscript -e "Sys.setenv(GTK_PATH = file.path(getwd(), 'gtk')); try(install.packages('RGtk2', repos = 'https://r.docker.stat.auckland.ac.nz', type = 'source', INSTALL_opts = c('--no-multiarch'))"
   mv gtk D:\a\_temp\Library\RGtk2\
 )
 
 echo "Installing cairoDevice ..."
 if not exist D:\a\_temp\Library\cairoDevice\NUL (
-  Rscript -e "Sys.setenv(GTK_PATH = 'D:\a\_temp\Library\RGtk2\gtk'); try(install.packages(c('cairoDevice'), repos = 'https://r.docker.stat.auckland.ac.nz', type = 'source'))"
+  Rscript -e "Sys.setenv(GTK_PATH = 'D:\a\_temp\Library\RGtk2\gtk'); try(install.packages('cairoDevice', repos = 'https://r.docker.stat.auckland.ac.nz', type = 'source', INSTALL_opts = c('--no-multiarch'))"
 )

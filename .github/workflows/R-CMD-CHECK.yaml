@@ -56,7 +56,7 @@ jobs:
 
       - name: Add GTK to PATH
         if: runner.os == 'Windows'
-        run: echo "D:\a\_temp\gtk\bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+        run: echo "${{env.R_LIBS_USER}}\RGtk2\gtk\bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
 
       - name: Install system dependencies
         if: runner.os == 'Linux'
