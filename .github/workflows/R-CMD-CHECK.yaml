@@ -62,6 +62,9 @@ jobs:
         if: runner.os == 'Windows'
         run: echo "GTK_PATH=D:\a\_temp\gtk" >> $GITHUB_ENV
 
+      - name: Print GTK_PATH
+        run: echo $GTK_PATH
+
       - name: Install system dependencies
         if: runner.os == 'Linux'
         env:
