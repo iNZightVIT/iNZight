@@ -68,7 +68,7 @@ jobs:
       - uses: ./.github/actions/install
         env:
           GTK_PATH: ${{env.R_LIBS_USER}}\RGtk2\gtk
-          R_LIBS_SITE: ${{env.R_LIBS_USER}}
+          # R_LIBS_SITE: ${{env.R_LIBS_USER}}
         with:
           cache-version: ${{ matrix.config.cache  }}
           # extra packages based on R version
