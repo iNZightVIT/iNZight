@@ -60,7 +60,11 @@ jobs:
 
       - name: Set GTK_PATH
         if: runner.os == 'Windows'
-        run: echo "GTK_PATH=D:\a\_temp\gtk" >> $GITHUB_ENV
+        run: echo "GTK_PATH=D:/a/_temp/gtk" >> $GITHUB_ENV
+
+      - name: Print GTK_PATH (only win)
+        if: runner.os == 'Windows'
+        run: echo ${{ env.GTK_PATH }}
 
       - name: Print GTK_PATH
         run: echo ${{ env.GTK_PATH }}
