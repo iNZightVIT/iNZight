@@ -54,13 +54,9 @@ jobs:
         with:
           run: ./.github/install_gtk.cmd
 
-      - name: Add GTK i386 to PATH
-        if: runner.os == 'Windows'
-        run: echo "D:\a\_temp\gtk\i386\bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
-
       - name: Add GTK x64 to PATH
         if: runner.os == 'Windows'
-        run: echo "D:\a\_temp\gtk\x64\bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+        run: echo "D:\a\_temp\gtk\bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
 
       - name: Set GTK_PATH
         if: runner.os == 'Windows'
