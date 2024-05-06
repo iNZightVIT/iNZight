@@ -69,7 +69,6 @@ jobs:
         env:
           GTK_PATH: ${{ runner.os == 'Windows' && '"D:/a/_temp/gtk"' || '' }}
         with:
-          cache: false
           cache-version: ${{ matrix.config.cache  }}
           # extra packages based on R version
           extra-packages: ${{ matrix.config.r == '4.1' && 'cran/MatrixModels@0.5-0' || '' }}
