@@ -14,5 +14,5 @@ if not exist D:\a\_temp\Library\RGtk2\NUL (
 
 echo "Installing cairoDevice ..."
 if not exist D:\a\_temp\Library\cairoDevice\NUL (
-  Rscript -e "Sys.setenv(GTK_PATH = 'D:\a\_temp\Library\RGtk2\gtk'); try(install.packages('cairoDevice', repos = 'https://r.docker.stat.auckland.ac.nz', type = 'source', INSTALL_opts = c('--no-multiarch'))"
+  Rscript -e "Sys.setenv(GTK_PATH = 'D:/a/_temp/Library/RGtk2/gtk'); try(install.packages('cairoDevice', repos = 'https://r.docker.stat.auckland.ac.nz', type = 'source', INSTALL_opts = c('--no-multiarch'))"
 )
