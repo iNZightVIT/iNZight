@@ -80,23 +80,12 @@ jobs:
 
       - name: Finalise GTK installation
         if: runner.os == 'Windows'
+        run: ./.github/finalise_gtk.cmd
+
+      - name: Check GTK and RGtk2
         shell: Rscript {0}
         run: |
-          # move GTK from D:/a/_temp/gtk to ${{env.R_LIB_FOR_PAK}}/RGtk2/gtk
-          cat("::group::Moving GTK and checking RGtk2\n")
-          cat("Moving GTK to RGtk2 ...\n")
-          cat("Write permission...\n")
-          file.access(c("D:/a/_temp/gtk", file.path(Sys.getenv("R_LIBS_USER"), "RGtk2")), mode = 2)
-          cat("Read permission...\n")
-          file.access(c("D:/a/_temp/gtk", file.path(Sys.getenv("R_LIBS_USER"), "RGtk2")), mode = 4)
-          if (!file.rename(
-            "D:/a/_temp/gtk",
-            file.path(system.file(package = "RGtk2"), "gtk")
-          )) {
-            cat("::error::Failed to move GTK to RGtk2")
-            quit(status = 1)
-          }
-          cat("Checking RGtk2 ...\n")
+          cat("::group::Checking RGtk2 ...\n")
           library(RGtk2)
           w <- try(gtkWindowNew(), silent = TRUE)
           if (inherits(w, "try-error") || is.null(w)) {
@@ -108,18 +97,6 @@ jobs:
             quit(status = 1)
           }
           cat("::endgroup::\n")
-
-      # - name: Check RGtk2
-      #   if: runner.os == 'Windows'
-      #   run: |
-      #   shell: Rscript {0}
-
-      # - name: Install dependencies
-      #   uses: coactions/setup-xvfb@v1
-      #   env:
-      #     OS_TYPE: ${{ runner.os }}
-      #   with:
-      #     run: Rscript ./.github/install_deps.R
 
       # - name: Create iNZightVIT directory
       #   if: runner.os == 'Windows'
