@@ -1,8 +1,8 @@
 ## --------------------------------------------------------------------
-CHECK_DIR <- eval(parse(text = Sys.getenv("CHECK_DIR")))
-ARGS <- eval(parse(text = Sys.getenv("ARGS")))
-BUILD_ARGS <- eval(parse(text = Sys.getenv("BUILD_ARGS")))
-ERROR_ON <- eval(parse(text = Sys.getenv("ERROR_ON")))
+CHECK_DIR <- "check"
+ARGS <- c("--no-manual", "--as-cran")
+BUILD_ARGS <- "--no-manual"
+ERROR_ON <- "warning"
 
 options(crayon.enabled = TRUE)
 cat("LOGNAME=", Sys.info()[["user"]], "\n",
@@ -19,6 +19,8 @@ cat("check-dir-path=", file.path(getwd(), CHECK_DIR), "\n",
     file = Sys.getenv("GITHUB_OUTPUT"), sep = "", append = TRUE
 )
 check_results <- rcmdcheck::rcmdcheck(
-    args = ARGS, build_args = BUILD_ARGS, error_on = ERROR_ON,
+    args = ARGS,
+    build_args = BUILD_ARGS,
+    error_on = ERROR_ON,
     check_dir = CHECK_DIR
 )

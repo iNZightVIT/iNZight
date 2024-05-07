@@ -38,11 +38,6 @@ runs:
     - name: Check
       uses: coactions/setup-xvfb@v1
       id: rcmdcheck
-      env:
-        CHECK_DIR: ${{ inputs.check-dir }}
-        ARGS: ${{ inputs.args }}
-        BUILD_ARGS: ${{ inputs.build_args }}
-        ERROR_ON: ${{ inputs.error-on }}
       with:
         run: Rscript ./.github/pkg_check.R
         working-directory: ${{ inputs.working-directory }}
