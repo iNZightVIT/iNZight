@@ -66,6 +66,7 @@ jobs:
           sudo apt install libgtk2.0-dev xorg-dev libxml2-dev libnlopt-dev libcurl4-openssl-dev
 
       - uses: ./.github/actions/install
+        name: Install package and dependencies
         env:
           GTK_PATH: ${{ runner.os == 'Windows' && '"D:/a/_temp/gtk"' || '' }}
         with:
@@ -94,6 +95,7 @@ jobs:
         shell: Rscript {0}
 
       - uses: ./.github/actions/check
+        name: Check package
 
       # - name: Check
       #   uses: coactions/setup-xvfb@v1
