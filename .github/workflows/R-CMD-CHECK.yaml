@@ -82,21 +82,11 @@ jobs:
         if: runner.os == 'Windows'
         run: ./.github/finalise_gtk.cmd
 
-      - name: Check GTK and RGtk2
-        shell: Rscript {0}
-        run: |
-          cat("::group::Checking RGtk2 ...\n")
-          library(RGtk2)
-          w <- try(gtkWindowNew(), silent = TRUE)
-          if (inherits(w, "try-error") || is.null(w)) {
-            cat("::error::RGtk2 failed to load")
-            quit(status = 1)
-          }
-          if (!"GdkWindow" %in% class(w$window)) {
-            cat("::error::RGtk2 hasn't loaded correctly")
-            quit(status = 1)
-          }
-          cat("::endgroup::\n")
+      - name: Check RGtk2
+        uses: coactions/setup-xvfb@v1
+        with:
+          shell: Rscript {0}
+          run: Rscript ./github/check_rgtk2.R
 
       # - name: Create iNZightVIT directory
       #   if: runner.os == 'Windows'
