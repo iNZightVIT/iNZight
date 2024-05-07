@@ -86,9 +86,9 @@ jobs:
           cat("::group::Moving GTK and checking RGtk2\n")
           cat("Moving GTK to RGtk2 ...\n")
           cat("Write permission...\n")
-          file.access(c("D:/a/_temp/", file.path(Sys.getenv("R_LIBS_USER"), "RGtk2")), mode = 2)
+          file.access(c("D:/a/_temp/gtk", file.path(Sys.getenv("R_LIBS_USER"), "RGtk2")), mode = 2)
           cat("Read permission...\n")
-          file.access(c("D:/a/_temp/", file.path(Sys.getenv("R_LIBS_USER"), "RGtk2")), mode = 4)
+          file.access(c("D:/a/_temp/gtk", file.path(Sys.getenv("R_LIBS_USER"), "RGtk2")), mode = 4)
           if (!file.rename(
             "D:/a/_temp/gtk",
             file.path(system.file(package = "RGtk2"), "gtk")
