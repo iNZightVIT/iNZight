@@ -88,10 +88,12 @@ jobs:
           shell: Rscript {0}
           run: Rscript ./.github/check_rgtk2.R
 
-      # - name: Create iNZightVIT directory
-      #   if: runner.os == 'Windows'
-      #   run: try(dir.create(file.path("~", "Documents", "iNZightVIT"), recursive = TRUE))
-      #   shell: Rscript {0}
+      - name: Create iNZightVIT directory
+        if: runner.os == 'Windows'
+        run: try(dir.create(file.path("~", "Documents", "iNZightVIT"), recursive = TRUE))
+        shell: Rscript {0}
+
+      - uses: ./.github/actions/check
 
       # - name: Check
       #   uses: coactions/setup-xvfb@v1
