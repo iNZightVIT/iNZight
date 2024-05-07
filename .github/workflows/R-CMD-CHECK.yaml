@@ -86,7 +86,7 @@ jobs:
         uses: coactions/setup-xvfb@v1
         with:
           shell: Rscript {0}
-          run: Rscript ./github/check_rgtk2.R
+          run: Rscript ./.github/check_rgtk2.R
 
       # - name: Create iNZightVIT directory
       #   if: runner.os == 'Windows'
