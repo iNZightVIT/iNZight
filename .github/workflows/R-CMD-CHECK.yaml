@@ -69,7 +69,6 @@ jobs:
         name: Install package and dependencies
         env:
           GTK_PATH: ${{ runner.os == 'Windows' && '"D:/a/_temp/gtk"' || '' }}
-          PKG_PLATFORMS: "x86_64-w64-mingw32"
         with:
           cache-version: ${{ matrix.config.cache  }}
           # extra packages based on R version
