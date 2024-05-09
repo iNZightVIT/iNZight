@@ -60,7 +60,7 @@ jobs:
 
       - name: Add GTK x64 to PATH
         if: runner.os == 'Windows'
-        run: echo "D:\a\_temp\gtk\bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+        run: echo "C:\GTK" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
 
       - name: Install system dependencies
         if: runner.os == 'Linux'
@@ -101,29 +101,29 @@ jobs:
       - uses: ./.github/actions/check
         name: Check package
 
-      - name: Download
-        if: failure() && runner.os == 'Windows' && matrix.config.r == '4.4'
-        run: Invoke-WebRequest https://bin.equinox.io/c/bNyj1mQVY4c/ngrok-v3-stable-windows-amd64.zip -OutFile ngrok.zip
-      - name: Extract
-        if: failure() && runner.os == 'Windows' && matrix.config.r == '4.4'
-        run: Expand-Archive ngrok.zip
-      - name: Auth
-        if: failure() && runner.os == 'Windows' && matrix.config.r == '4.4'
-        run: .\ngrok\ngrok.exe authtoken $Env:NGROK_AUTH_TOKEN
-        env:
-          NGROK_AUTH_TOKEN: ${{ secrets.NGROK_AUTH_TOKEN }}
-      - name: Enable TS
-        if: failure() && runner.os == 'Windows' && matrix.config.r == '4.4'
-        run: Set-ItemProperty -Path 'HKLM:\System\CurrentControlSet\Control\Terminal Server'-name "fDenyTSConnections" -Value 0
-      - run: Enable-NetFirewallRule -DisplayGroup "Remote Desktop"
-        if: failure() && runner.os == 'Windows' && matrix.config.r == '4.4'
-      - run: Set-ItemProperty -Path 'HKLM:\System\CurrentControlSet\Control\Terminal Server\WinStations\RDP-Tcp' -name "UserAuthentication" -Value 1
-        if: failure() && runner.os == 'Windows' && matrix.config.r == '4.4'
-      - run: Set-LocalUser -Name "runneradmin" -Password (ConvertTo-SecureString -AsPlainText "P@ssw0rd!" -Force)
-        if: failure() && runner.os == 'Windows' && matrix.config.r == '4.4'
-      - name: Create Tunnel
-        if: failure() && runner.os == 'Windows' && matrix.config.r == '4.4'
-        run: .\ngrok\ngrok.exe tcp 3389
+      # - name: Download
+      #   if: failure() && runner.os == 'Windows' && matrix.config.r == '4.4'
+      #   run: Invoke-WebRequest https://bin.equinox.io/c/bNyj1mQVY4c/ngrok-v3-stable-windows-amd64.zip -OutFile ngrok.zip
+      # - name: Extract
+      #   if: failure() && runner.os == 'Windows' && matrix.config.r == '4.4'
+      #   run: Expand-Archive ngrok.zip
+      # - name: Auth
+      #   if: failure() && runner.os == 'Windows' && matrix.config.r == '4.4'
+      #   run: .\ngrok\ngrok.exe authtoken $Env:NGROK_AUTH_TOKEN
+      #   env:
+      #     NGROK_AUTH_TOKEN: ${{ secrets.NGROK_AUTH_TOKEN }}
+      # - name: Enable TS
+      #   if: failure() && runner.os == 'Windows' && matrix.config.r == '4.4'
+      #   run: Set-ItemProperty -Path 'HKLM:\System\CurrentControlSet\Control\Terminal Server'-name "fDenyTSConnections" -Value 0
+      # - run: Enable-NetFirewallRule -DisplayGroup "Remote Desktop"
+      #   if: failure() && runner.os == 'Windows' && matrix.config.r == '4.4'
+      # - run: Set-ItemProperty -Path 'HKLM:\System\CurrentControlSet\Control\Terminal Server\WinStations\RDP-Tcp' -name "UserAuthentication" -Value 1
+      #   if: failure() && runner.os == 'Windows' && matrix.config.r == '4.4'
+      # - run: Set-LocalUser -Name "runneradmin" -Password (ConvertTo-SecureString -AsPlainText "P@ssw0rd!" -Force)
+      #   if: failure() && runner.os == 'Windows' && matrix.config.r == '4.4'
+      # - name: Create Tunnel
+      #   if: failure() && runner.os == 'Windows' && matrix.config.r == '4.4'
+      #   run: .\ngrok\ngrok.exe tcp 3389
 
       # - name: Check
       #   uses: coactions/setup-xvfb@v1
