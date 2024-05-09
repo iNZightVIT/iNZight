@@ -57,6 +57,8 @@ jobs:
       - name: Install GTK
         if: runner.os == 'Windows'
         uses: tmelliott/install-gtk2@main
+        with:
+          arch: ${{ matrix.config.r == '4.1' && '32,64' || '64' }}
 
       - name: Add GTK x64 to PATH
         if: runner.os == 'Windows'
