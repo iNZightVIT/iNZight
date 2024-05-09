@@ -48,11 +48,15 @@ jobs:
           }
         shell: Rscript {0}
 
-      - name: Install gtk binaries, and RGtk2 from source if needed
+      # - name: Install gtk binaries, and RGtk2 from source if needed
+      #   if: runner.os == 'Windows'
+      #   uses: coactions/setup-xvfb@v1
+      #   with:
+      #     run: ./.github/install_gtk.cmd
+
+      - name: Install GTK
         if: runner.os == 'Windows'
-        uses: coactions/setup-xvfb@v1
-        with:
-          run: ./.github/install_gtk.cmd
+        uses: tmelliott/install-gtk2@main
 
       - name: Add GTK x64 to PATH
         if: runner.os == 'Windows'
@@ -67,8 +71,8 @@ jobs:
 
       - uses: ./.github/actions/install
         name: Install package and dependencies
-        env:
-          GTK_PATH: ${{ runner.os == 'Windows' && '"D:/a/_temp/gtk"' || '' }}
+        # env:
+        #   GTK_PATH: ${{ runner.os == 'Windows' && '"D:/a/_temp/gtk"' || '' }}
         with:
           cache-version: ${{ matrix.config.cache  }}
           # extra packages based on R version
