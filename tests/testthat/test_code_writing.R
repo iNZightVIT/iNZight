@@ -1,5 +1,5 @@
 context("Code writing")
-skip()
+
 skip_on_cran()
 
 # load_all("../iNZightPlots")
