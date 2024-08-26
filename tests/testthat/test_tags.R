@@ -8,7 +8,7 @@
 #     t <- gtag("tag1", container = g)
 #     expect_is(t, "GTag")
 # })
-skip()
+
 test_that("Tags object works", {
     # devtools::load_all(); try(dispose(w), TRUE)
     w <- gwindow()

@@ -1,5 +1,5 @@
 context("Data is exported from the UI")
-skip()
+
 # skip_on_cran()
 
 # try(ui$close())

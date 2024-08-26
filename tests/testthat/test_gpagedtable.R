@@ -1,4 +1,3 @@
-skip()
 test_that("Paged table has correct class", {
     w <- gwindow()
     on.exit(dispose(w))

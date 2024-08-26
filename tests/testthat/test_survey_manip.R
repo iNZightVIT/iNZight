@@ -1,5 +1,5 @@
 context("Data wrangling with survey designs")
-skip()
+
 skip_on_cran()
 
 # devtools::load_all("../iNZightTools")

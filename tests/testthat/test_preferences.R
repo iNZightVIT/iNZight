@@ -1,5 +1,5 @@
 context("iNZight User Preferences")
-skip()
+
 # skip_on_cran()
 
 # try(ui$close(), TRUE); devtools::load_all()

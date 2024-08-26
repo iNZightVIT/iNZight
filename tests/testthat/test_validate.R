@@ -1,5 +1,5 @@
 context("Validation menu")
-skip()
+
 skip_on_cran()
 skip_if_not_installed("validate")
 

@@ -1,5 +1,5 @@
 context("Get Summary window")
-skip()
+
 skip_on_cran()
 
 # try(ui$close(), TRUE); devtools::load_all()
