@@ -9,9 +9,20 @@ needs <- strsplit(
     ",\n"
 )[[1]]
 
+options(
+    repos = c(
+        inzight = "https://r.docker.stat.auckland.ac.nz",
+        CRAN = "https://cloud.r-project.org"
+    )
+)
+
 if (Sys.getenv("OS_TYPE") == "Windows" &&
-    getRversion() <= numeric_version("4.1")) {
-    needs <- c(needs, "MatrixModels@0.5-0")
+    getRversion() < numeric_version("4.4")) {
+    needs <- c(
+        needs,
+        "Matrix@1.6-5",
+        "MatrixModels@0.5-2"
+    )
 }
 
 pak::pak(c(".", needs, "iNZightMaps=?ignore"),
