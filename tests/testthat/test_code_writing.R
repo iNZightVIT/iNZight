@@ -70,6 +70,7 @@ test_that("Plot code is generated correctly", {
     # system("import -window root screen.jpeg")
     svalue(ui$ctrlWidget$V2box) <- "travel"
     msg("now checking the code ...", 3L)
+    Sys.sleep(0.1)
     expect_equal(
         attr(ui$curPlot, "code"),
         "inzplot(height ~ travel, data = cas)"
@@ -77,6 +78,7 @@ test_that("Plot code is generated correctly", {
 
     msg("height ~ travel | gender", 3L)
     svalue(ui$ctrlWidget$G1box) <- "gender"
+    Sys.sleep(0.1)
     cat("Actual result:", attr(ui$curPlot, "code"))
     expect_equal(
         attr(ui$curPlot, "code"),
@@ -85,12 +87,14 @@ test_that("Plot code is generated correctly", {
 
     msg("height ~ travel | gender + age", 3L)
     svalue(ui$ctrlWidget$G2box) <- "age"
+    Sys.sleep(0.1)
     expect_equal(
         attr(ui$curPlot, "code"),
         "inzplot(height ~ travel | gender, data = cas)"
     )
 
     ui$ctrlWidget$ctrlGp$children[[1]][8L, 1L]$set_index(2L)
+    Sys.sleep(0.1)
     expect_equal(
         attr(ui$curPlot, "code"),
         "inzplot(height ~ travel | gender + age, g2.level = \"[7 - 11]\", data = cas)"
