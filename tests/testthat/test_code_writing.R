@@ -71,6 +71,7 @@ test_that("Plot code is generated correctly", {
     svalue(ui$ctrlWidget$V2box) <- "travel"
     msg("now checking the code ...", 3L)
     Sys.sleep(0.1)
+    cat("Actual result:", attr(ui$curPlot, "code"))
     expect_equal(
         attr(ui$curPlot, "code"),
         "inzplot(height ~ travel, data = cas)"
