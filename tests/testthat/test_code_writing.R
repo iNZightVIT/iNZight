@@ -77,6 +77,7 @@ test_that("Plot code is generated correctly", {
 
     msg("height ~ travel | gender", 3L)
     svalue(ui$ctrlWidget$G1box) <- "gender"
+    cat("Actual result:", attr(ui$curPlot, "code"))
     expect_equal(
         attr(ui$curPlot, "code"),
         "inzplot(height ~ travel | gender, data = cas)"
