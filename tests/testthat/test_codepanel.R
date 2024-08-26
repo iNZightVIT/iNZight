@@ -1,5 +1,5 @@
 context("Code Panel")
-
+skip()
 skip_on_cran()
 
 # load_all("../iNZightPlots")

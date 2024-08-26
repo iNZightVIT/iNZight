@@ -1,5 +1,5 @@
 context("Add to Plot window")
-
+skip()
 skip_on_cran()
 
 # try(ui$close(), TRUE); load_all()

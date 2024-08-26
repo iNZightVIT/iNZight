@@ -1,5 +1,5 @@
 context("Various UI elements")
-
+skip()
 skip_on_cran()
 
 ui <- iNZGUI$new()

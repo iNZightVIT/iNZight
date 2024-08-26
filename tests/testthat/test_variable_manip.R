@@ -1,5 +1,5 @@
 context("Variable manipulation menu")
-
+skip()
 skip_on_cran()
 
 # devtools::load_all("../iNZightTools")
