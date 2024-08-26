@@ -67,7 +67,7 @@ test_that("Plot code is generated correctly", {
     )
 
     msg("height ~ travel", 3L)
-    system("import -window root screen.jpeg")
+    # system("import -window root screen.jpeg")
     svalue(ui$ctrlWidget$V2box) <- "travel"
     msg("now checking the code ...", 3L)
     expect_equal(
