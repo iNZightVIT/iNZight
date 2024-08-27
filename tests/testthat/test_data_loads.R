@@ -21,47 +21,47 @@ test_that("New document is created correctly when data loaded", {
     expect_equal(doc$dataModel$name, "testdata")
 })
 
-# test_that("UI correctly displays the data", {
-#     expect_silent(ui$setDocument(doc, reset = TRUE))
-#     expect_equal(ui$getActiveData()$A, 1:10)
-#     expect_equal(ui$getActiveData()$B, factor(LETTERS[1:10]))
-#     expect_equal(attr(ui$getActiveData(), "name"), "testdata")
-#     expect_equal(attr(ui$getActiveData(), "code"), "")
+test_that("UI correctly displays the data", {
+    expect_silent(ui$setDocument(doc, reset = TRUE))
+    expect_equal(ui$getActiveData()$A, 1:10)
+    expect_equal(ui$getActiveData()$B, factor(LETTERS[1:10]))
+    expect_equal(attr(ui$getActiveData(), "name"), "testdata")
+    expect_equal(attr(ui$getActiveData(), "code"), "")
 
-#     ## data name is being displayed
-#     expect_equal(ui$dataNameWidget$datName, "testdata")
-#     expect_equal(svalue(ui$dataNameWidget$nameLabel), "testdata")
+    ## data name is being displayed
+    expect_equal(ui$dataNameWidget$datName, "testdata")
+    expect_equal(svalue(ui$dataNameWidget$nameLabel), "testdata")
 
 
-#     ## data view disabled; list view enabled
-#     expect_false(enabled(ui$dataToolbarWidget$dataBtn))
-#     expect_true(enabled(ui$dataToolbarWidget$listBtn))
-#     expect_equal(ui$dataViewWidget$current, "data")
+    ## data view disabled; list view enabled
+    expect_false(enabled(ui$dataToolbarWidget$dataBtn))
+    expect_true(enabled(ui$dataToolbarWidget$listBtn))
+    expect_equal(ui$dataViewWidget$current, "data")
 
-#     ## clicking list view chanes the data view
-#     expect_silent(ui$dataToolbarWidget$listBtn$invoke_change_handler())
-#     expect_equal(ui$dataViewWidget$current, "variables")
+    ## clicking list view chanes the data view
+    expect_silent(ui$dataToolbarWidget$listBtn$invoke_change_handler())
+    expect_equal(ui$dataViewWidget$current, "variables")
 
-#     expect_equal(
-#         ui$dataViewWidget$varView$children[[1]]$get_names(),
-#         c("Name", "Type", "Info", "Missing")
-#     )
-#     expect_equivalent(
-#         ui$dataViewWidget$varView$children[[1]]$get_items(),
-#         data.frame(
-#             Name = c("A", "B"),
-#             Type = c("numeric", "categorical"),
-#             Info = c("min 1, max 10", "10 levels"),
-#             Missing = c(0, 0)
-#         )
-#     )
+    expect_equal(
+        ui$dataViewWidget$varView$children[[1]]$get_names(),
+        c("Name", "Type", "Info", "Missing")
+    )
+    expect_equivalent(
+        ui$dataViewWidget$varView$children[[1]]$get_items(),
+        data.frame(
+            Name = c("A", "B"),
+            Type = c("numeric", "categorical"),
+            Info = c("min 1, max 10", "10 levels"),
+            Missing = c(0, 0)
+        )
+    )
 
-#     ## variable options are correct
-#     expect_equal(ui$ctrlWidget$V1box$get_items()[-1], c("A", "B"))
-#     expect_equal(ui$ctrlWidget$V2box$get_items()[-1], c("A", "B"))
-#     expect_equal(ui$ctrlWidget$G1box$get_items()[-1], c("A", "B"))
-#     expect_equal(ui$ctrlWidget$G2box$get_items()[-1], c("A", "B"))
-# })
+    ## variable options are correct
+    expect_equal(ui$ctrlWidget$V1box$get_items()[-1], c("A", "B"))
+    expect_equal(ui$ctrlWidget$V2box$get_items()[-1], c("A", "B"))
+    expect_equal(ui$ctrlWidget$G1box$get_items()[-1], c("A", "B"))
+    expect_equal(ui$ctrlWidget$G2box$get_items()[-1], c("A", "B"))
+})
 
 # test_that("Example data menus work correctly", {
 #     skip_if_not_installed("iNZightModules")
