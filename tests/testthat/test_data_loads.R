@@ -151,24 +151,34 @@ test_that("SAS (.sas7bdat) files load", {
 })
 
 test_that("SAS Xport (.xpt) files load", {
+    cat("Line 1\n")
     imp <- iNZImportWin$new(ui)
+    cat("Line 2\n")
     imp$fname <- "cars.xpt"
+    cat("Line 3\n")
     imp$setfile()
+    cat("Line 4\n")
     skip_if(length(imp$prevGp$children) == 1,
         message = "Preview did not load."
     )
+    cat("Line 5\n")
     expect_is(imp$prevGp$children[[2]], "GDf")
+    cat("Line 6\n")
     expect_equal(imp$prevGp$children[[2]]$get_dim(), c(rows = 5, cols = 5))
+    cat("Line 7\n")
     imp$ok_button$invoke_change_handler()
+    cat("Line 8\n")
     # expect_silent(imp$okBtn$invoke_change_handler())
     expect_equal(
         names(ui$getActiveData()),
         c("MAKE", "PRICE", "MPG", "REP78", "FOREIGN")
     )
+    cat("Line 9\n")
     expect_equal(
         dim(ui$getActiveData()),
         c(26, 5)
     )
+    cat("fin...\n")
 })
 
 # test_that("Switching variable types works (csv)", {
