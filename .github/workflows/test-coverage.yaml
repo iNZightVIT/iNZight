@@ -97,13 +97,16 @@ jobs:
         run: try(dir.create(file.path("~", "Documents", "iNZightVIT"), recursive = TRUE))
         shell: Rscript {0}
 
-      - name: Install XVFB
-        if: runner.os == 'Linux'
-        run: sudo apt-get install xvfb
-
       - name: Test coverage
-        run: Rscript -e "covr::codecov()"
-        shell: Rscript {0}
+        uses: coactions/setup-xvfb@v1
+        env:
+          _R_CHECK_CRAN_INCOMING_REMOTE_: false
+        with:
+          run: Rscript -e "covr::codecov()""
+
+      # - name: Install XVFB
+      #   if: runner.os == 'Linux'
+      #   run: sudo apt-get install xvfb
 
       # - name: Test coverage [linux]
       #   continue-on-error: true
@@ -123,16 +126,16 @@ jobs:
       #     max_attempts: 5
       #     command: Rscript -e "covr::codecov()"
 
-      - name: Clean up XVFB
-        if: runner.os == 'Linux'
-        run: |
-          kill_xvfb () {
-            local xvfb_pids=`ps aux | grep tmp/xvfb-run | grep -v grep | awk '{print $2}'`
-            if [ "$xvfb_pids" != "" ]; then
-              echo "Killing the following xvfb processes: $xvfb_pids"
-              sudo kill $xvfb_pids
-            else
-              echo "No xvfb processes to kill"
-            fi
-          }
-          kill_xvfb
+      # - name: Clean up XVFB
+      #   if: runner.os == 'Linux'
+      #   run: |
+      #     kill_xvfb () {
+      #       local xvfb_pids=`ps aux | grep tmp/xvfb-run | grep -v grep | awk '{print $2}'`
+      #       if [ "$xvfb_pids" != "" ]; then
+      #         echo "Killing the following xvfb processes: $xvfb_pids"
+      #         sudo kill $xvfb_pids
+      #       else
+      #         echo "No xvfb processes to kill"
+      #       fi
+      #     }
+      #     kill_xvfb
