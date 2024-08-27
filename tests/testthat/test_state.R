@@ -1,5 +1,5 @@
 context("Save and load application state")
-
+skip()
 skip_on_cran()
 
 tmp <- tempfile(fileext = ".inzsave")

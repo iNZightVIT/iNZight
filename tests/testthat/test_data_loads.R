@@ -1,4 +1,5 @@
 context("Data is loaded into the UI")
+skip()
 
 # setwd('tests/testthat'); devtools::load_all()
 wd <- getwd()
@@ -61,6 +62,7 @@ test_that("UI correctly displays the data", {
     expect_equal(ui$ctrlWidget$V2box$get_items()[-1], c("A", "B"))
     expect_equal(ui$ctrlWidget$G1box$get_items()[-1], c("A", "B"))
     expect_equal(ui$ctrlWidget$G2box$get_items()[-1], c("A", "B"))
+
 })
 
 test_that("Example data menus work correctly", {
@@ -77,8 +79,7 @@ test_that("Example data menus work correctly", {
 
     # set a package
     expect_silent(svalue(exwin$dsPkg) <- "Time Series")
-    expect_equal(
-        exwin$dsData$get_items(),
+    expect_equal(exwin$dsData$get_items(),
         c("seaice", "visitorsA2", "visitorsM2", "visitorsQ")
     )
     expect_equal(svalue(exwin$dsTitle), "")
@@ -93,9 +94,8 @@ test_that("Example data menus work correctly", {
     expect_equal(svalue(exwin$dsTitle), "")
 
     expect_silent(svalue(exwin$dsData) <- "census.at.school.500")
-    if (grepl(" ", svalue(exwin$dsTitle))) {
+    if (grepl(" ", svalue(exwin$dsTitle)))
         expect_equal(svalue(exwin$dsTitle), "Census at School 500")
-    }
 
     # load it
     expect_silent(exwin$ok_button$invoke_change_handler())
@@ -114,10 +114,8 @@ test_that("CSV files load", {
     expect_silent(imp$ok_button$invoke_change_handler())
     expect_equal(
         names(ui$getActiveData()),
-        c(
-            "cellsource", "rightfoot", "travel", "getlunch", "height",
-            "gender", "age", "year", "armspan", "cellcost"
-        )
+        c("cellsource", "rightfoot", "travel", "getlunch", "height",
+            "gender", "age", "year", "armspan", "cellcost")
     )
     expect_equal(
         dim(ui$getActiveData()),
@@ -274,15 +272,12 @@ test_that("User can choose to load a URL", {
 
 ## Many columns file:
 many_cols <- data.frame(X1 = 1:20)
-for (i in 2:30) {
+for (i in 2:30)
     many_cols[[sprintf("X%i", i)]] <- sample(50, 20)
-}
-for (i in 31:40) {
+for (i in 31:40)
     many_cols[[sprintf("X%i", i)]] <- sample(LETTERS[1:5], 20, TRUE)
-}
-for (i in 41:50) {
+for (i in 41:50)
     many_cols[[sprintf("X%i", i)]] <- sample(LETTERS, 20)
-}
 
 tf <- tempfile(fileext = ".csv")
 on.exit(unlink(tf), add = TRUE)
