@@ -374,7 +374,6 @@ iNZPlotSettings <- setRefClass(
     )
 )
 
-#' @export
 iNZDocument <- setRefClass(
     "iNZDocument",
     fields = list(

@@ -70,15 +70,15 @@ jobs:
         run: |
           sudo apt install libgtk2.0-dev xorg-dev libxml2-dev libnlopt-dev libcurl4-openssl-dev
 
-      - name: Install RGtk2
-        if: runner.os == 'Windows'
-        shell: Rscript {0}
-        run: |
-          options(repos = "https://r.docker.stat.auckland.ac.nz")
-          if (!requireNamespace("RGtk2", quietly = TRUE))
-            install.packages("RGtk2")
-          if (!requireNamespace("cairoDevice", quietly = TRUE))
-            install.packages("cairoDevice")
+      # - name: Install RGtk2
+      #   if: runner.os == 'Windows'
+      #   shell: Rscript {0}
+      #   run: |
+      #     options(repos = "https://r.docker.stat.auckland.ac.nz")
+      #     if (!requireNamespace("RGtk2", quietly = TRUE))
+      #       install.packages("RGtk2")
+      #     if (!requireNamespace("cairoDevice", quietly = TRUE))
+      #       install.packages("cairoDevice")
 
       - name: Install gtk binaries, and RGtk2 from source if needed
         if: runner.os == 'Windows'
