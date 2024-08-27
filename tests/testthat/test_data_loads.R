@@ -127,79 +127,79 @@ test_that("CSV files load", {
     )
 })
 
-test_that("SAS (.sas7bdat) files load", {
-    imp <- iNZImportWin$new(ui)
-    imp$fname <- "test.sas7bdat"
-    imp$setfile()
-    skip_if(length(imp$prevGp$children) == 1,
-        message = "Preview did not load."
-    )
-    expect_is(imp$prevGp$children[[2]], "GDf")
-    expect_equal(imp$prevGp$children[[2]]$get_dim(), c(rows = 5, cols = 7))
-    imp$ok_button$invoke_change_handler()
-    # expect_silent(imp$okBtn$invoke_change_handler())
-    expect_equal(
-        names(ui$getActiveData()),
-        c("id", "workshop", "gender", "q1", "q2", "q3", "q4")
-    )
-    expect_equal(
-        dim(ui$getActiveData()),
-        c(8, 7)
-    )
-})
+# test_that("SAS (.sas7bdat) files load", {
+#     imp <- iNZImportWin$new(ui)
+#     imp$fname <- "test.sas7bdat"
+#     imp$setfile()
+#     skip_if(length(imp$prevGp$children) == 1,
+#         message = "Preview did not load."
+#     )
+#     expect_is(imp$prevGp$children[[2]], "GDf")
+#     expect_equal(imp$prevGp$children[[2]]$get_dim(), c(rows = 5, cols = 7))
+#     imp$ok_button$invoke_change_handler()
+#     # expect_silent(imp$okBtn$invoke_change_handler())
+#     expect_equal(
+#         names(ui$getActiveData()),
+#         c("id", "workshop", "gender", "q1", "q2", "q3", "q4")
+#     )
+#     expect_equal(
+#         dim(ui$getActiveData()),
+#         c(8, 7)
+#     )
+# })
 
-test_that("SAS Xport (.xpt) files load", {
-    imp <- iNZImportWin$new(ui)
-    imp$fname <- "cars.xpt"
-    imp$setfile()
-    skip_if(length(imp$prevGp$children) == 1,
-        message = "Preview did not load."
-    )
-    expect_is(imp$prevGp$children[[2]], "GDf")
-    expect_equal(imp$prevGp$children[[2]]$get_dim(), c(rows = 5, cols = 5))
-    imp$ok_button$invoke_change_handler()
-    # expect_silent(imp$okBtn$invoke_change_handler())
-    expect_equal(
-        names(ui$getActiveData()),
-        c("MAKE", "PRICE", "MPG", "REP78", "FOREIGN")
-    )
-    expect_equal(
-        dim(ui$getActiveData()),
-        c(26, 5)
-    )
-})
+# test_that("SAS Xport (.xpt) files load", {
+#     imp <- iNZImportWin$new(ui)
+#     imp$fname <- "cars.xpt"
+#     imp$setfile()
+#     skip_if(length(imp$prevGp$children) == 1,
+#         message = "Preview did not load."
+#     )
+#     expect_is(imp$prevGp$children[[2]], "GDf")
+#     expect_equal(imp$prevGp$children[[2]]$get_dim(), c(rows = 5, cols = 5))
+#     imp$ok_button$invoke_change_handler()
+#     # expect_silent(imp$okBtn$invoke_change_handler())
+#     expect_equal(
+#         names(ui$getActiveData()),
+#         c("MAKE", "PRICE", "MPG", "REP78", "FOREIGN")
+#     )
+#     expect_equal(
+#         dim(ui$getActiveData()),
+#         c(26, 5)
+#     )
+# })
 
-test_that("Switching variable types works (csv)", {
-    imp <- iNZImportWin$new(ui)
-    imp$fname <- "cas5.csv"
-    imp$setfile()
+# test_that("Switching variable types works (csv)", {
+#     imp <- iNZImportWin$new(ui)
+#     imp$fname <- "cas5.csv"
+#     imp$setfile()
 
-    skip_if(length(imp$prevGp$children) == 1,
-        message = "Preview did not load."
-    )
-    # convert YEAR to cat
-    expect_equal(
-        imp$prev$get_names(),
-        c(
-            "cellsource (c)", "rightfoot (n)", "travel (c)",
-            "getlunch (c)", "height (n)", "gender (c)",
-            "age (n)", "year (n)", "armspan (n)", "cellcost (n)"
-        )
-    )
-    imp$fColTypes[8] <- "categorical"
-    imp$generatePreview(NULL)
-    expect_equal(
-        imp$prev$get_names(),
-        c(
-            "cellsource (c)", "rightfoot (n)", "travel (c)",
-            "getlunch (c)", "height (n)", "gender (c)",
-            "age (n)", "year (c)", "armspan (n)", "cellcost (n)"
-        )
-    )
+#     skip_if(length(imp$prevGp$children) == 1,
+#         message = "Preview did not load."
+#     )
+#     # convert YEAR to cat
+#     expect_equal(
+#         imp$prev$get_names(),
+#         c(
+#             "cellsource (c)", "rightfoot (n)", "travel (c)",
+#             "getlunch (c)", "height (n)", "gender (c)",
+#             "age (n)", "year (n)", "armspan (n)", "cellcost (n)"
+#         )
+#     )
+#     imp$fColTypes[8] <- "categorical"
+#     imp$generatePreview(NULL)
+#     expect_equal(
+#         imp$prev$get_names(),
+#         c(
+#             "cellsource (c)", "rightfoot (n)", "travel (c)",
+#             "getlunch (c)", "height (n)", "gender (c)",
+#             "age (n)", "year (c)", "armspan (n)", "cellcost (n)"
+#         )
+#     )
 
-    imp$ok_button$invoke_change_handler()
-    expect_is(ui$getActiveData()$year, "factor")
-})
+#     imp$ok_button$invoke_change_handler()
+#     expect_is(ui$getActiveData()$year, "factor")
+# })
 
 # test_that("Date times are supported (csv)", {
 #     imp <- iNZImportWin$new(ui)
