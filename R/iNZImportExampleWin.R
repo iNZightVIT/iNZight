@@ -1,3 +1,4 @@
+#' @export
 iNZImportExampleWin <- setRefClass("iNZImportExampleWin",
     fields = list(
         GUI = "ANY",

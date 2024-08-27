@@ -1,3 +1,4 @@
+#' @export
 iNZImportWin <- setRefClass(
     "iNZImportWin",
     contains = "iNZWindow",
