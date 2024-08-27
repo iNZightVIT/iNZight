@@ -101,23 +101,27 @@ jobs:
         if: runner.os == 'Linux'
         run: sudo apt-get install xvfb
 
-      - name: Test coverage [linux]
-        continue-on-error: true
-        if: runner.os == 'Linux'
-        uses: nick-fields/retry@v3
-        with:
-          timeout_minutes: 10
-          max_attempts: 3
-          command: xvfb-run --auto-servernum Rscript -e "covr::codecov()"
+      - name: Test coverage
+        run: Rscript -e "covr::codecov()"
+        shell: Rscript {0}
 
-      - name: Test coverage [win]
-        continue-on-error: true
-        if: runner.os != 'Linux'
-        uses: nick-fields/retry@v3
-        with:
-          timeout_minutes: 10
-          max_attempts: 5
-          command: Rscript -e "covr::codecov()"
+      # - name: Test coverage [linux]
+      #   continue-on-error: true
+      #   if: runner.os == 'Linux'
+      #   uses: nick-fields/retry@v3
+      #   with:
+      #     timeout_minutes: 10
+      #     max_attempts: 3
+      #     command: xvfb-run --auto-servernum Rscript -e "covr::codecov()"
+
+      # - name: Test coverage [win]
+      #   continue-on-error: true
+      #   if: runner.os != 'Linux'
+      #   uses: nick-fields/retry@v3
+      #   with:
+      #     timeout_minutes: 10
+      #     max_attempts: 5
+      #     command: Rscript -e "covr::codecov()"
 
       - name: Clean up XVFB
         if: runner.os == 'Linux'
