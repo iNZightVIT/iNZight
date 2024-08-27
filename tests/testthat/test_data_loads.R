@@ -127,26 +127,28 @@ test_that("CSV files load", {
     )
 })
 
-# test_that("SAS (.sas7bdat) files load", {
-#     imp <- iNZImportWin$new(ui)
-#     imp$fname <- "test.sas7bdat"
-#     imp$setfile()
-#     skip_if(length(imp$prevGp$children) == 1,
-#         message = "Preview did not load."
-#     )
-#     expect_is(imp$prevGp$children[[2]], "GDf")
-#     expect_equal(imp$prevGp$children[[2]]$get_dim(), c(rows = 5, cols = 7))
-#     imp$ok_button$invoke_change_handler()
-#     # expect_silent(imp$okBtn$invoke_change_handler())
-#     expect_equal(
-#         names(ui$getActiveData()),
-#         c("id", "workshop", "gender", "q1", "q2", "q3", "q4")
-#     )
-#     expect_equal(
-#         dim(ui$getActiveData()),
-#         c(8, 7)
-#     )
-# })
+## good to here ----
+
+test_that("SAS (.sas7bdat) files load", {
+    imp <- iNZImportWin$new(ui)
+    imp$fname <- "test.sas7bdat"
+    imp$setfile()
+    skip_if(length(imp$prevGp$children) == 1,
+        message = "Preview did not load."
+    )
+    expect_is(imp$prevGp$children[[2]], "GDf")
+    expect_equal(imp$prevGp$children[[2]]$get_dim(), c(rows = 5, cols = 7))
+    imp$ok_button$invoke_change_handler()
+    # expect_silent(imp$okBtn$invoke_change_handler())
+    expect_equal(
+        names(ui$getActiveData()),
+        c("id", "workshop", "gender", "q1", "q2", "q3", "q4")
+    )
+    expect_equal(
+        dim(ui$getActiveData()),
+        c(8, 7)
+    )
+})
 
 # test_that("SAS Xport (.xpt) files load", {
 #     imp <- iNZImportWin$new(ui)
@@ -200,6 +202,8 @@ test_that("CSV files load", {
 #     imp$ok_button$invoke_change_handler()
 #     expect_is(ui$getActiveData()$year, "factor")
 # })
+
+#### somewhere up there??? ^^^
 
 # test_that("Date times are supported (csv)", {
 #     imp <- iNZImportWin$new(ui)
