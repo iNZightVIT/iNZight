@@ -49,7 +49,7 @@ test_that("Exercise 1.15: Import data into iNZight", {
     url <- "https://www.stat.auckland.ac.nz/~wild/data/FutureLearn/olympics100m.csv"
     f <- tempfile(fileext = ".csv")
     on.exit(unlink(f), add = TRUE)
-    download.file(url, f, quiet = TRUE)
+    download.file(url, f, quiet = TRUE, mode = "wb")
 
     # File > Import Data
     expect_silent(imp <- iNZight:::iNZImportWin$new(ui))

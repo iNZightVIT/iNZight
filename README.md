@@ -1,4 +1,5 @@
 # iNZight <img src="inst/images/inzight_hex.png" align="right" />
+
 ![R-CMD-check](https://github.com/iNZightVIT/iNZight/workflows/R-CMD-check/badge.svg)
 [![codecov](https://codecov.io/gh/iNZightVIT/iNZight/branch/dev/graph/badge.svg)](https://codecov.io/gh/iNZightVIT/iNZight)
 [![License: GPL v3](https://img.shields.io/badge/License-GPL%20v3-blue.svg)](http://www.gnu.org/licenses/gpl-3.0)
@@ -7,9 +8,7 @@ iNZight as a whole is a simple data analysis system which encourages exploring w
 
 The `R` package that can be found here represents the graphical user interface (GUI) of the system and at least the accompanying packages `iNZightPlots` and `iNZightTools` are necessary to make use of this GUI. Further packages such as `iNZightRegression`, `iNZightTS` and `iNZightMR` exist to provide additional functionality.
 
-
-Installation
-=======
+# Installation
 
 The easiest way to install `iNZight` is through the stand-alone version that can be found on the official website https://inzight.nz.
 

@@ -1,14 +1,98 @@
-- NEW: translations available for iNZight; currently in progress: Te Reo Māori
+# iNZight 4.4
 
-* catches loading failure caused by missing/inaccessible Cairo installation, reloading iNZight in dual-window mode (#309, @tmelliott)
-* fix bug in Get Summary/Inference windows preventing font size preferences from being respected
-* fix bug in Filter data window where cancel button did not work
-* fix typo in 'Expand Table' information prompt
-* create new `iNZWindow` 'superclass' to make it easier to create consistent pop-up windows (#375, @tmelliott). The following windows now inherit from `iNZWindow`: `iNZFilterWin`, `iNZSortWin`, `iNZAggregateWin`, `iNZStackWin`, `iNZReorderWin`, `iNZReshapeWin`, `iNZSeparateWin`, `iNZUniteWin`, `iNZJoinWin`, `iNZAppendRowsWin`, `iNZDataReportWin`, `iNZValidateWin`, `iNZRenameDataWin`, `iNZConToCatWin`, `iNZTransformWin`, `iNZStandardiseWin`, `iNZFormClassIntervalsWin`, `iNZRankWin`, `iNZConToCatMultiWin`, `iNZReorderWin`, `iNZRenameFactorLevelsWin`, `iNZCombineWin`, `iNZConToDtWin`, `iNZExtFromDtWin`, `iNZAggDtWin`, `iNZCreateVarWin`, `iNZMissToCatWin`, `iNZDeleteVarWin`
+## Interface changes
+
+- aggregation by date-time can now involve additional grouping variables
+- uniting columns and combining categorical variables now share the same window, and added options to remove empty combinations and treat missing values as a category
+- added an option to rank variables with proportional method (by percentile)
+- added more methods for reordering levels of categorical variables
+- added an option to specify time zone for date-time variable conversion
+- added "right-join" as an option for joining data frames
+- move 'paste from' to 'clipboard' menu and add 'copy to' option (to copy to clipboard) (#402)
+
+## Structural behind-the-scenes changes
+
+Changed all data and variable-related functions to `iNZightTools` 2.0.0.
+
+## Modules redesigned
+
+Mdules are now more modular, and accessed from a separate menu item 'Modules'. The modules in the 'Advanced' menu will slowly be deprecated as they are ported to the new API.
+
+For developers, modules are now easier to maintain independently (as git submodules), and the `iNZModule` class supports installation of dependencies, plus some other methods.
+
+# iNZight 4.3
+
+## Interface changes
+
+- new preference to switch between single (normal) and multiple primary variables
+
+## Data dictionaries
+
+- add capability to import a data dictionary (and apply to the active data, where possible)
+- View Data Dictionary window to view and explore data dictionary definitions, etc
+
+## Other changes
+
+- enable automatic detection of delimited file separator (using `readr::read_delim`) (#401)
+- Paginate dataset summary to prevent `skimr::skim()` freezing GUI when number of variables in the dataset is large
+- New 'GTag' and 'GTags' classes for labels with a background and a collection of droppable labels, respectively
+- add search button/clear button to search group (in data view widget)
+- iNZDocument class uses global option `inzight.default.par` to override the default values for any `iNZightPlots::inzpar()` settings
+
+## New Features
+
+### Modules
+
+Redesigned from the original prototype, the new modules functionality is built directly into 'iNZight', and will eventually lead to the deprecation of 'iNZightModules'. Modules can be installed at specific versions, including dependencies, and include capablity to add new menu items to 'iNZight'. Each module has its own library, which should reduce clashes where packages depend on different versions of a package.
+
+# iNZight 4.2
+
+## Major changes
+
+A major change in this release is the landing screen, with a tidied interface. We have also gone through and adjusted all of the module windows to be more consistent (particularly for the button order).
+
+- data view/switch widget updated/refactored
+  - `iNZViewSwitcherWidget` -> `iNZDataToolbar`
+  - "View dataset" and "View variables" buttons replaced by icons
+  - add 'Dataset info' button to view data summary (using `skimr::skim()`)
+  - spreadsheet view is paginated, so even large datasets can now be viewed (rows and columns)
+  - variable view shows additional information, including range (for numeric) or number of levels (for factors), and number of missing values
+- Control Widget:
+  - enable/disable buttons and dropdowns based on what application state
+  - refactor layout of Get Summary / Get Inference buttons (added to `iNZCtrlWidget`)
+  - add Subset-filter button to quickly subset the dataset based on slider values
+  - change icon for 'variable switch' buttons (to differentiate from pagination arrows)
+- Get Summary and Get Inference
+  - add CI level control to Get Inference window (#74, @tmelliott) and Plot Inference panel
+  - add horizontal/vertical toggle in table summaries
+
+## Minor changes
+
+- create new `iNZExportWin` to replace broken `iNZSaveWin` (#374, @tmelliott)
+- `iNZTransformWin` redesigned with dropdown to select boxes and buttons to apply transforms - drag-and-drop still works
+- `iNZCollapseWin` uses `_` instead of `.` in new variable name
+- `iNZRenameFactorLevelsWin` window modified slightly to be a little more intuitive
+- `iNZConToDtWin`, `iNZExtFromDtWin`, `iNZAggregatedtWin` redesigned to have previews on the right-hand-side (rather than below)
+- menu items disabled/hidden when specifying/removing survey design
+- improved accuracy of estimated population size display in survey specification window
+- get Summary and Get Inference now scroll output window to the top (rather than the bottom)
+- change in wording of "Delete dataset" dialog to clarify what's happening
+- changing values in the data view updates R Code History
+- add some extra space around plot toolbar in pop-out mode
+- 'Simulate P-value' checkbox removed for survey chi-square test
+- Combine categorical variables allows custom separator (#389)
+- add 'min' and 'max' options for date-time aggregation
+
+## Structural behind-the-scenes changes
+
+Many of the user-visible changes are aesthetic, and part of this change included adding a new
+'superclass' for all module windows within 'iNZight'. This involved refactoring all of these
+modules to inherit from `iNZWindow`. Additionally, class names where changed as listed below.
+
+- create new `iNZWindow` 'superclass' to make it easier to create consistent pop-up windows (#375, @tmelliott). The following windows now inherit from `iNZWindow`: `iNZFilterWin`, `iNZSortWin`, `iNZAggregateWin`, `iNZStackWin`, `iNZReorderVarsWin`, `iNZReshapeWin`, `iNZSeparateWin`, `iNZUniteWin`, `iNZJoinWin`, `iNZAppendRowsWin`, `iNZDataReportWin`, `iNZValidateWin`, `iNZRenameDataWin`, `iNZConToCatWin`, `iNZTransformWin`, `iNZStandardiseWin`, `iNZFormClassIntervalsWin`, `iNZRankWin`, `iNZConToCatMultiWin`, `iNZReorderLevelsWin`, `iNZRenameFactorLevelsWin`, `iNZCombineWin`, `iNZConToDtWin`, `iNZExtFromDtWin`, `iNZAggDtWin`, `iNZCreateVarWin`, `iNZMissToCatWin`, `iNZDeleteVarWin`
   - code only displayed when user preference specified (`iNZFilterWin`)
   - renamed `iNZSortbyDataWin` to `iNZSortWin`
   - renamed `iNZstackVarWin` to `iNZStackWin`
-  - renamed `iNZReorderVarsWin` to `iNZReorderWin`
   - renamed `iNZReshapeDataWin` to `iNZReshapeWin`
   - renamed `iNZSeparateDataWin` to `iNZSeparateWin`
   - renamed `iNZUniteDataWin` to `iNZUniteWin`
@@ -21,7 +105,7 @@
   - renamed `iNZformClassIntervals` to `iNZFormClassIntervalsWin`
   - renamed `iNZrankNumWin` to `iNZRankWin`
   - renamed `iNZctocatmulWin` to `iNZConToCatMultiWin`
-  - renamed `iNZreorderWin` to `iNZReorderWin`
+  - renamed `iNZreorderWin` to `iNZReorderLevelsWin`
   - renamed `iNZcllpsWin` to `iNZCollapseWin`
   - renamed `iNZrenameWin` to `iNZRenameFactorLevelsWin`
   - renamed `iNZcmbCatWin` to `iNZCombineWin`
@@ -32,37 +116,26 @@
   - renamed `iNZcrteVarWin` to `iNZCreateVarWin`
   - renamed `iNZmissCatWin` to `iNZMissToCatWin`
   - renamed `iNZdeleteVarWin` to `iNZDeleteVarWin`
-* create new `iNZExportWin` to replace broken `iNZSaveWin` (#374, @tmelliott)
-* `iNZexpandTblWin` uses new `update_document()` method
-* `iNZTransformWin` redesigned with dropdown to select boxes and buttons to apply transforms - drag-and-drop still works
-* `iNZCollapseWin` uses `_` instead of `.` in new variable name
-* `iNZRenameFactorLevelsWin` window modified slightly to be a little more intuitive
-* `iNZConToDtWin`, `iNZExtFromDtWin`, `iNZAggregatedtWin` redesigned to have previews on the right-hand-side (rather than below)
-* Reading a survey specification file imports calibration information correctly (so it can be adjusted by the user)
-* Ensure reading survey spec file addes 'survey design' label to data name (#365)
-* Menu items disabled/hidden when specifying/removing survey design
-* `iNZSurveyDesign` and `iNZSurveyPostStrat` specification windows using new `iNZWindow` class, and improved accuracy of estimated population size display
-* Fix bug in R code history formatting
-* add CI level control to Get Inference window (#74, @tmelliott) and Plot Inference panel
-* Get Summary and Get Inference now scroll output window to the top (rather than the bottom)
-* Data view/switch widget updated/refactored
-  - `iNZViewSwitcherWidget` -> `iNZDataToolbar`
-  - "View dataset" and "View variables" buttons replaced by icons
-  - Add 'Dataset info' button to view data summary (using `skimr::skim()`)
-  - Spreadsheet view is paginated, so even large datasets can now be viewed (rows and columns)
-  - Variable view shows additional information, including range (for numeric) or number of levels (for factors), and number of missing values
-* Fix Gtk-critcal error (#141)
-* Control Widget:
-  - Enable/disable buttons and dropdowns based on what application state
-  - Refactor layout of Get Summary / Get Inference buttons (added to `iNZCtrlWidget`)
-  - Add Subset-filter button to quickly subset the dataset based on slider values
-* Change in wording of "Delete dataset" dialog to clarify what's happening
-* Changing values in the data view updates R Code History
-* Change icon for 'variable switch' buttons (to differentiate from pagination arrows)
-* Add horizontal/vertical toggle in table summaries
-* Add some extra space around plot toolbar in pop-out mode
-* Fix tooltip for 'Refresh Plot' icon
-* Simulate P-value checkbox removed for survey chi-square test
+- `iNZSurveyDesign` and `iNZSurveyPostStrat` specification windows using new `iNZWindow` class
+
+Also we have added a new `update_document()` method for more modular control of the GUI document.
+
+- `iNZexpandTblWin` uses new `update_document()` method
+
+## Bug fixes
+
+- catches loading failure caused by missing/inaccessible Cairo installation, reloading iNZight in dual-window mode (#309, @tmelliott)
+- fix bug in Get Summary/Inference windows preventing font size preferences from being respected
+- fix bug in Filter data window where cancel button did not work
+- fix typo in 'Expand Table' information prompt
+- reading a survey specification file imports calibration information correctly (so it can be adjusted by the user)
+- ensure reading survey spec file addes 'survey design' label to data name (#365)
+- fix bug in R code history formatting
+- fix Gtk-critcal error (#141)
+- fix tooltip for 'Refresh Plot' icon
+- fix bug in disabling of log axes in scatter plots
+- fix bug preventing Aggregate Data quantile summary from working (#397)
+- fix bug in preventing `dispose_fun` from being called when iNZight closed after reloading
 
 ## iNZight 4.1.4
 
@@ -126,7 +199,6 @@
 ## iNZight 4.0.3
 
 - fix bug preventing `Add to Plot > Axes` from displaying correctly if dot plot variable 1 was the factor (instead of Var2) (#348, @tmelliott)
-  > > > > > > > dev
 
 ## iNZight 4.0.2
 

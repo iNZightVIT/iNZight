@@ -1,9 +1,8 @@
-
 iNZValidateWin <- setRefClass(
     "iNZValidateWin",
     fields = list(
-      vali   = "ANY",
-      cf     = "ANY"
+        vali   = "ANY",
+        cf     = "ANY"
     ),
     contains = "iNZWindow",
     methods = list(
@@ -19,7 +18,9 @@ iNZValidateWin <- setRefClass(
                 scroll = FALSE,
                 body_direction = "horizontal"
             )
-            if (!ok) return()
+            if (!ok) {
+                return()
+            }
             on.exit(.self$show())
 
             # add_body(gv, expand = TRUE, fill = TRUE)
@@ -36,7 +37,8 @@ iNZValidateWin <- setRefClass(
                 fill = TRUE
             )
 
-            details.default <- paste(sep = "\n",
+            details.default <- paste(
+                sep = "\n",
                 "Double click on the results of a",
                 "validation rule in the bottom-left",
                 "table to display a detailed summary",
@@ -46,7 +48,8 @@ iNZValidateWin <- setRefClass(
             details.box <- gtext(text = details.default, wrap = FALSE)
             font(details.box) <- c(family = "monospace")
 
-            rules.box <- gtext(text = "",
+            rules.box <- gtext(
+                text = "",
                 font.attr = list(family = "monospace")
             )
             results.box <- gtable(data.frame())
@@ -60,7 +63,8 @@ iNZValidateWin <- setRefClass(
             font(lbl.rulesbox) <- list(weight = "bold")
             font(lbl.results) <- list(weight = "bold")
             font(lbl.details) <- list(weight = "bold")
-            helpbtn <- gimagebutton(stock.id = "gw-help",
+            helpbtn <- gimagebutton(
+                stock.id = "gw-help",
                 handler = function(h, ...) {
                     help_page("user_guides/data_options/#validate")
                 }
@@ -75,7 +79,7 @@ iNZValidateWin <- setRefClass(
             group.identifier <- ggroup()
             add(group.identifier, glabel("Unique Identifier: "))
             dropdown.identifier <- gcombobox(
-                c("Row Number", colnames(GUI$getActiveData())),
+                c("Row Number", names(GUI$getActiveData(lazy = TRUE))),
                 container = group.identifier,
                 expand = TRUE
             )
@@ -92,7 +96,7 @@ iNZValidateWin <- setRefClass(
                     save.dialog <- gfile("Save Rules...",
                         type = "save",
                         initial.filename = paste0(
-                            attr(GUI$getActiveData(), "name", exact = TRUE),
+                            attr(GUI$getActiveData(lazy = TRUE), "name", exact = TRUE),
                             "_rules.txt"
                         )
                     )
@@ -118,12 +122,13 @@ iNZValidateWin <- setRefClass(
                                 stringsAsFactors = TRUE
                             )
                             vali <<- validate::validator(.data = rules.df)
-                            cf <<- validate::confront(GUI$getActiveData(), vali)
+                            cf <<- validate::confront(GUI$getActiveData(lazy = FALSE), vali)
 
                             results.df <- iNZightTools::validation_summary(cf)
 
                             res.ord <- order(results.df[["Fails"]] / results.df[["Total"]],
-                                decreasing = TRUE)
+                                decreasing = TRUE
+                            )
                             results.df <- results.df[res.ord, ]
 
                             results.box[] <- results.df
@@ -189,7 +194,7 @@ iNZValidateWin <- setRefClass(
                     vali,
                     paste0("V", i),
                     id.var,
-                    GUI$getActiveData()
+                    GUI$getActiveData(lazy = FALSE)
                 )
                 font(details.box) <- c(family = "monospace")
             }
@@ -239,7 +244,8 @@ iNZValidateWin <- setRefClass(
         },
         open.file = function(file, rules.box) {
             file.vali <- validate::validator(.file = file)
-            svalue(rules.box) <- sub("^ V[0-9]+: ", "",
+            svalue(rules.box) <- sub(
+                "^ V[0-9]+: ", "",
                 capture.output(print(file.vali))[-1]
             )
         },

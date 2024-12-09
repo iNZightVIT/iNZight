@@ -27,7 +27,7 @@ iNZPlotWidget <- setRefClass(
             tabDevLink <<- c(tabDevLink, dev.cur())
         },
         closePlot = function() {
-            if(length(plotNb$children) > 1) {
+            if (length(plotNb$children) > 1) {
                 tabDevLink <<- tabDevLink[-svalue(plotNb)]
                 dispose(plotNb)
             }
@@ -39,8 +39,9 @@ iNZPlotWidget <- setRefClass(
                 icon = "question",
                 parent = GUI$win
             )
-            if (length(input) > 0)
+            if (length(input) > 0) {
                 names(plotNb)[svalue(plotNb)] <<- input
+            }
         },
         savePlot = function(fun = GUI$updatePlot) {
             w <- gwindow("Save plot",
@@ -87,8 +88,9 @@ iNZPlotWidget <- setRefClass(
                         type = "selectdir",
                         initial.dir = svalue(fLoc)
                     )
-                    if (length(ff) == 1)
+                    if (length(ff) == 1) {
                         svalue(fLoc) <- ff
+                    }
                 }
             )
             tbl[ii, 1, anchor = c(1, 0), expand = TRUE] <- lbl
@@ -123,21 +125,24 @@ iNZPlotWidget <- setRefClass(
                 )
             ) {
                 labHTML <- glabel("Select additional variables to export",
-                    container = gHTML)
+                    container = gHTML
+                )
                 font(labHTML) <- list(size = 12, weight = "bold")
 
                 tabHTML <- gtable(
                     data.frame(
-                        Variable = colnames(GUI$getActiveData()),
+                        Variable = names(GUI$getActiveData(lazy = TRUE)),
                         stringsAsFactors = TRUE
                     ),
                     container = gHTML, multiple = TRUE
                 )
                 size(tabHTML) <- c(-1, 160)
                 subHTML <- glabel("Hold CTRL to select multiple",
-                    container = gHTML)
+                    container = gHTML
+                )
                 font(subHTML) <- list(size = 9)
-                addHandlerChanged(fileType,
+                addHandlerChanged(
+                    fileType,
                     function(h, ...) {
                         visible(gHTML) <- grepl("html", svalue(h$obj))
                     }
@@ -200,27 +205,32 @@ iNZPlotWidget <- setRefClass(
                         fp <- ""
                         tryCatch(
                             {
+                                dat <- NULL
+                                vars <- character()
+
                                 if (visible(gHTML) && length(svalue(tabHTML)) > 0) {
-                                    dat <- GUI$getActiveData()
+                                    dat <- TRUE
                                     vars <- as.character(svalue(tabHTML))
-                                } else {
-                                    dat <- NULL
-                                    vars <- NULL
                                 }
 
                                 plot.settings <- GUI$getActiveDoc()$getSettings()
 
                                 if (isTRUE(length(plot.settings$locate.id) > 0)) {
                                     if (isTRUE(plot.settings$locate.settings$txtVar != "id")) {
-                                        dat <- GUI$getActiveData()
+                                        dat <- TRUE
                                         vars <- c(vars, plot.settings$locate.settings$txtVar)
                                     }
 
                                     if (isTRUE(plot.settings$locate.settings$matchChk)) {
-                                        dat <- GUI$getActiveData()
+                                        dat <- TRUE
                                         vars <- c(vars, plot.settings$locate.settings$matchVar)
                                     }
                                 }
+                                if (!is.null(dat) && isTRUE(dat)) {
+                                    dat <- GUI$getActiveData(lazy = FALSE)
+                                }
+
+                                if (length(vars) == 0L) vars <- NULL
                                 args <- list(fun, f, data = dat, extra.vars = vars)
                                 if (visible(gHTML)) {
                                     args$dir <- dir
@@ -252,7 +262,7 @@ iNZPlotWidget <- setRefClass(
                                         addSpace(gg, 10)
                                         ggg <- ggroup(spacing = 15, container = gg)
                                         addSpace(ggg, 0)
-                                        gimage(stock.id = "gtk-info", size="dialog", cont=ggg)
+                                        gimage(stock.id = "gtk-info", size = "dialog", cont = ggg)
                                         glabel(
                                             "Please wait while packages are installed...",
                                             container = ggg,
@@ -284,22 +294,26 @@ iNZPlotWidget <- setRefClass(
                                 }
                             },
                             finally = {
-                                #do.nothing
+                                # do.nothing
                             }
                         )
 
-                        if (fp == "") return()
+                        if (fp == "") {
+                            return()
+                        }
                         ## `fp` is of class `inzHTML` and has a print method that'll open it in a browser
                         print(fp)
                     } else {
                         switch(svalue(fileType),
                             "PDF (.pdf)" = {
                                 dim <- grDevices::dev.size("in")
-                                grDevices::pdf(file = f,
+                                grDevices::pdf(
+                                    file = f,
                                     width = dim[1],
                                     height = dim[2],
                                     useDingbats = FALSE,
-                                    onefile = FALSE)
+                                    onefile = FALSE
+                                )
                             },
                             {
                                 dim <- grDevices::dev.size("px")
@@ -318,7 +332,8 @@ iNZPlotWidget <- setRefClass(
                 }
             )
 
-            addHandlerChanged(fileType,
+            addHandlerChanged(
+                fileType,
                 function(h, ...) {
                     svalue(fExt) <- gsub(".+\\(|\\)", "", svalue(fileType))
                 }

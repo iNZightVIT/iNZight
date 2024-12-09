@@ -4,7 +4,7 @@
 \alias{iNZight}
 \title{iNZight GUI}
 \usage{
-iNZight(data = NULL, dispose_fun = NULL, ...)
+iNZight(data = NULL, dispose_fun = NULL, ..., ui_env = parent.frame())
 }
 \arguments{
 \item{data}{a data frame}
@@ -12,6 +12,9 @@ iNZight(data = NULL, dispose_fun = NULL, ...)
 \item{dispose_fun}{called when the iNZight GUI is closed}
 
 \item{...}{arguments passed to \code{dispose_fun}}
+
+\item{ui_env}{pass parent environment to the GUI to used as a base
+envirionment for loading modules}
 }
 \value{
 invisibly returns the \code{iNZGUI} object
@@ -21,6 +24,15 @@ Starts iNZight, optionally with data and a dispose function.
 For example, a script called to open iNZight can automatically
 exit R once the iNZight session is complete using \code{q()} (see examples).
 }
+\section{Addon modules}{
+
+
+By default, iNZight uses the iNZightVIT install path to locate the modules directory ('modules'). However, you can override this by specifying the \code{addonDir} argument:
+
+\if{html}{\out{<div class="sourceCode">}}\preformatted{iNZight(addonDir = '/path/to/modules')
+}\if{html}{\out{</div>}}
+}
+
 \examples{
 \dontrun{
 # to have iNZight quit R without saving after the session is over,

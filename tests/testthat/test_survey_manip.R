@@ -3,8 +3,8 @@ context("Data wrangling with survey designs")
 skip_on_cran()
 
 # devtools::load_all("../iNZightTools")
-ncsr_svy <- iNZightTools::import_survey('ncsr.svydesign')
-# ncsr_svy <- iNZightTools::import_survey('tests/testthat/ncsr.svydesign')
+ncsr_svy <- surveyspec::import_survey("ncsr.svydesign")
+# ncsr_svy <- surveyspec::import_survey('tests/testthat/ncsr.svydesign')
 
 # try(ui$close(), TRUE); devtools::load_all()
 ui <- iNZGUI$new()
@@ -51,7 +51,7 @@ test_that("Aggregating survey data is valid", {
     w$aggvars$set_items(data.frame(Selected = c("race", "education")))
     svalue(w$smryvars) <- c("HHincome", "height")
     w$smryvars$invoke_change_handler()
-    w$gsmry$children[[1]][3,1]$set_value(TRUE)
+    w$gsmry$children[[1]][3, 1]$set_value(TRUE)
     w$ok_button$invoke_change_handler()
     expect_null(ui$getActiveDoc()$getModel()$getDesign())
 })
@@ -72,7 +72,7 @@ test_that("Uniting columns works", {
     expect_silent(w$ok_button$invoke_change_handler())
     expect_equal(
         ui$getActiveData()$race_marital,
-        with(ncsr_svy$data, as.factor(paste(race, marital, sep = "_")))
+        with(ncsr_svy$data, forcats::fct_cross(race, marital, sep = "_"))
     )
     expect_true(iNZightTools::is_survey(ui$get_data_object()))
 })
@@ -84,8 +84,8 @@ test_that("Separating columns works", {
     expect_true(w$var2$set_value("_"))
     w$sep <- "_"
     expect_silent(w$updateView())
-    expect_equal(svalue(w$leftCol), "race")
-    expect_equal(svalue(w$rightCol), "marital")
+    expect_equal(svalue(w$leftCol), "race1")
+    expect_equal(svalue(w$rightCol), "marital1")
     expect_true(w$leftCol$set_value("new_race"))
     expect_true(w$rightCol$set_value("new_marital"))
     expect_silent(w$updateView())

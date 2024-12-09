@@ -1,17 +1,10 @@
-We've gone ahead and made a few improvements ...
+The latest release sees a full refactoring of some back-end functionality,
+but most of the interface remains the same.
 
-- Code writing for plots, summaries, and inference!
-  It's not enabled by default, but the biggest change in this release
-  is the implementation of interactive code snippets, enabled from
-  File > Preferences. You can see the R code for the current plot,
-  and edit it to see what happens. Learning R just got easier!
+We are also introducing a new Module system that will slowly take over the
+modules currently in the 'Advanced' menu. For the time being, we will leave
+the old modules in place, but will no longer be developed.
+We encourage you to install and try out the new modules in the 'Modules' menu!
 
-- Get Summary and Get Inference have been redesigned
-  Now more consistent with the rest of iNZight, you can quickly add and
-  remove inference information, adjust your hypothesis, and see the
-  results instantly.
-
-- Survey designs are now completely supported: plots, summaries,
-  and data wrangling! 
-
-- Plus other bug fixes and improvements.
+We hope you enjoy! As always, let us know if you find issues or have suggestions
+using the contact button in the Help menu.

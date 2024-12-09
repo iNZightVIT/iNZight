@@ -244,18 +244,16 @@ test_that("Existing trend lines are kept when opening inference panel", {
 })
 
 cas <- census.at.school.500
-library(dplyr)
-library(magrittr)
 suppressWarnings({
     cas2 <- cas %>%
-        select("gender", "getlunch", "travel") %>%
-        mutate(
+        dplyr::select("gender", "getlunch", "travel") %>%
+        dplyr::mutate(
             getlunch = forcats::fct_explicit_na(getlunch)
         ) %>%
-        group_by(gender, getlunch, travel) %>%
-        tally(name = "frequency") %>%
-        ungroup() %>%
-        mutate(height = sample(cas$height, nrow(.))) %>%
+        dplyr::group_by(gender, getlunch, travel) %>%
+        dplyr::tally(name = "frequency") %>%
+        dplyr::ungroup() %>%
+        dplyr::mutate(height = sample(cas$height, nrow(.))) %>%
         as.data.frame()
 })
 

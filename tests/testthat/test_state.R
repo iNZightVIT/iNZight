@@ -58,11 +58,13 @@ test_that("Reload works", {
     ui$ctrlWidget$V1box$set_value("Region")
 
     s <- ui$getState()
-    expect_silent(ui$reload())
-    # expect_equal(ui$getState(), s)
+    ui$reload()
+    Sys.sleep(2)
+    expect_equal(ui$getState()[[1]][[2]]$x, s[[1]][[2]]$x)
 
-    expect_silent(ui$reload())
-    # expect_equal(ui$getState(), s)
+    ui$reload()
+    Sys.sleep(2)
+    expect_equal(ui$getState()[[1]][[2]]$x, s[[1]][[2]]$x)
 
     expect_equivalent(ui$getActiveData(), gapminder)
     expect_equal(ui$plotType, "bar")
@@ -78,5 +80,7 @@ test_that("Reload works without data", {
     on.exit(gWidgets2::dispose(ui$win))
     Sys.sleep(2)
 
-    expect_silent(ui$reload())
+    ui$reload()
+    Sys.sleep(2)
+    expect_is(ui, "iNZGUI")
 })

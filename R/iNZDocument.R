@@ -1,33 +1,44 @@
+#' @importFrom iNZightTools inzdf
 iNZDataModel <- setRefClass(
     "iNZDataModel",
     properties(
         fields = list(
             dataSet = "ANY",
             origDataSet = "ANY",
-            rowDataSet = "ANY",
             dataDesign = "ANY",
             dataDesignName = "character",
             name = "character",
             oldname = "character",
             freqtables = "list",
             currentDesign = "list",
-            design_only = "logical"
+            design_only = "logical",
+            dictionary = "list",
+            dict_df = "data.frame"
         ),
         prototype = list(
-            dataSet = data.frame(empty = " ", stringsAsFactors = TRUE),
-            origDataSet = data.frame(empty = " ", stringsAsFactors = TRUE),
-            rowDataSet = data.frame(Row.names = 1, empty = " ", stringsAsFactors = TRUE),
+            dataSet = iNZightTools::inzdf(
+                data.frame(empty = " ", stringsAsFactors = TRUE),
+                name = "(empty)"
+            ),
+            origDataSet = iNZightTools::inzdf(
+                data.frame(empty = " ", stringsAsFactors = TRUE),
+                name = "(empty)"
+            ),
             dataDesign = NULL,
             name = "data", oldname = "",
             freqtables = list(),
             currentDesign = list(),
-            design_only = FALSE
+            design_only = FALSE,
+            dictionary = list(),
+            dict_df = data.frame()
         )
     ),
     contains = "PropertySet", ## need this to add observer to object
     methods = list(
         initialize = function(data = NULL) {
-            if (is.null(data)) return()
+            if (is.null(data)) {
+                return()
+            }
 
             if (inherits(data, "inzsvyspec")) {
                 .self$setData(data$data)
@@ -43,20 +54,22 @@ iNZDataModel <- setRefClass(
             attr(data, "names") <- make.names(colnames(data), unique = TRUE)
 
             ## set data name (default = "data")
-            if (is.null(attr(data, "name", exact = TRUE)))
+            if (is.null(attr(data, "name", exact = TRUE))) {
                 attr(data, "name") <- "data"
+            }
+
+            if (!inherits(data, "inzdf")) {
+                data <- iNZightTools::inzdf(data)
+            }
 
             dataSet <<- data
             origDataSet <<- data
-            rowData <- data.frame(
-                Row.names = 1:nrow(data),
-                data,
-                check.names = TRUE,
-                stringsAsFactors = TRUE
-            )
-            rowDataSet <<- rowData
             name <<- attr(data, "name", exact = TRUE)
             oldname <<- ""
+
+            if (!is.null(attr(data, "dictionary", exact = TRUE))) {
+                setDictionary(attr(data, "dictionary", exact = TRUE))
+            }
         },
         updateData = function(data) {
             if (inherits(data, "inzsvyspec")) {
@@ -66,9 +79,10 @@ iNZDataModel <- setRefClass(
                 design_only <<- TRUE
             }
 
-            if (is.null(attr(data, "name", exact = TRUE)))
+            if (is.null(attr(data, "name", exact = TRUE))) {
                 attr(data, "name") <- "data"
-            dataSet <<- data
+            }
+            dataSet <<- inzdf(data)
             name <<- attr(data, "name", exact = TRUE)
             if (!is.null(dataDesign)) createSurveyObject(TRUE)
         },
@@ -76,11 +90,11 @@ iNZDataModel <- setRefClass(
             newNames <- make.names(newNames, unique = TRUE)
             names(dataSet) <<- newNames
         },
-        getData = function() {
-            dataSet
-        },
-        getRowData = function() {
-            rowDataSet
+        getData = function(lazy = FALSE) {
+            if (lazy) {
+                return(dataSet)
+            }
+            as.data.frame(dataSet)
         },
         addDataObserver = function(FUN, ...) {
             .self$dataSetChanged$connect(FUN, ...)
@@ -92,12 +106,15 @@ iNZDataModel <- setRefClass(
             .self$changed$connect(FUN, ...)
         },
         removeSignals = function() {
-            for (i in seq_along(listeners(dataSetChanged)))
+            for (i in seq_along(listeners(dataSetChanged))) {
                 dataSetChanged$disconnect(1)
-            for (i in seq_along(listeners(nameChanged)))
+            }
+            for (i in seq_along(listeners(nameChanged))) {
                 nameChanged$disconnect(1)
-            for (i in seq_along(listeners(.changed)))
+            }
+            for (i in seq_along(listeners(.changed))) {
                 .changed$disconnect(1)
+            }
         },
         setFrequencies = function(freq, gui) {
             if (is.null(freq) || freq == "") {
@@ -105,18 +122,20 @@ iNZDataModel <- setRefClass(
             }
             gui$getActiveDoc()$setSettings(
                 list(
-                    freq = as.name(freq) # gui$getActiveData()[[freq]]
+                    freq = as.name(freq)
                 )
             )
             # remove any non-categorical variables
-            newdata <- gui$getActiveData()
-            catvars <- c(names(newdata)[sapply(newdata, is_cat)], freq)
-            newdata <- newdata[, catvars]
-            attr(newdata, "name") <- paste(sep = ".",
-                attr(gui$getActiveData(), "name", exact = TRUE),
+            newdata <- gui$getActiveData(lazy = TRUE)
+            vcat <- iNZightTools::vartypes(newdata) == "cat"
+            catvars <- c(names(newdata)[vcat], freq)
+            newdata <- as.data.frame(newdata[, catvars])
+            attr(newdata, "name") <- paste(
+                sep = ".",
+                attr(gui$getActiveData(lazy = TRUE), "name", exact = TRUE),
                 "freq"
             )
-            gui$setDocument(iNZDocument$new(data = newdata))
+            gui$setDocument(iNZDocument$new(data = newdata, preferences = gui$preferences))
         },
         setDesign = function(x, gui) {
             if (missing(x)) {
@@ -128,10 +147,26 @@ iNZDataModel <- setRefClass(
                 }
                 return()
             }
+            if (!requireNamespace("surveyspec", quietly = TRUE)) {
+                p <- gconfirm("You need to install additional packages. Do it now?",
+                    "Install required packages?",
+                    icon = "question",
+                    parent = if (!missing(gui)) gui$win else NULL
+                )
+                if (!p) {
+                    gmessage("Unable to set survey design.",
+                        parent = if (!missing(gui)) gui$win else NULL
+                    )
+                    return()
+                }
+                install.packages("surveyspec")
+            }
+
             if (inherits(x, "inzsvyspec")) {
                 spec <- x
-                if (is.null(x$design))
-                    x <- iNZightTools::make_survey(dataSet, x)
+                if (is.null(x$design)) {
+                    x <- surveyspec::make_survey(getData(), x)
+                }
             } else {
                 spec <- structure(
                     list(
@@ -142,20 +177,22 @@ iNZDataModel <- setRefClass(
                             fpc = x$fpc,
                             nest = as.logical(x$nest),
                             weights = x$weights,
-                            type = x$type,
+                            survey_type = x$survey_type,
                             repweights = x$repweights,
                             scale = x$scale,
                             rscales = x$rscales,
-                            reptype = x$reptype,
-                            calibrate = x$calibrate
+                            type = x$type,
+                            calibrate = x$calibrate,
+                            calfun = if (is.null(x$calibrate)) NULL else "linear"
                         )
                     ),
                     class = "inzsvyspec"
                 )
-                x <- iNZightTools::make_survey(dataSet, spec)
+                x <- surveyspec::make_survey(getData(), spec)
             }
             if (!is.null(spec$spec$calibrate)) {
-                cal <- lapply(names(spec$spec$calibrate),
+                cal <- lapply(
+                    names(spec$spec$calibrate),
                     function(v) {
                         c <- spec$spec$calibrate[[v]]
                         d <- data.frame(x = names(c), Freq = as.numeric(c))
@@ -167,9 +204,10 @@ iNZDataModel <- setRefClass(
                 storeFreqTables(cal)
             }
             dataDesign <<- unclass(x)
-            dataDesignName <<- sprintf("%s.%s",
+            dataDesignName <<- sprintf(
+                "%s.%s",
                 name,
-                switch(x$spec$type,
+                switch(x$spec$survey_type,
                     "survey" = "svy",
                     "replicate" = "repsvy"
                 )
@@ -182,8 +220,9 @@ iNZDataModel <- setRefClass(
             }
         },
         createSurveyObject = function(reload = FALSE) {
-            if (!is.null(currentDesign$design) && !reload)
+            if (!is.null(currentDesign$design) && !reload) {
                 return(currentDesign$design)
+            }
             currentDesign <<- getDesign()
             currentDesign$design
         },
@@ -206,20 +245,43 @@ iNZDataModel <- setRefClass(
             code
         },
         setName = function(x) {
-            if (x == "") return()
+            if (x == "") {
+                return()
+            }
 
             oldname <<- name
             ## set the dataset's name
             .dataSetChanged$block()
             attr(dataSet, "name") <<- x
-            if (oldname != "")
+            if (oldname != "") {
                 attr(dataSet, "code") <<- sprintf(".dataset <- %s", oldname)
+            }
             .dataSetChanged$unblock()
 
             name <<- x
         },
         getName = function() {
             name
+        },
+        setDictionary = function(dict, apply = FALSE) {
+            # do this once, so it's easily available:
+            cn <- tolower(colnames(getData()))
+            # cn <- cn[cn %in% names(dict)]
+            dict <- dict[tolower(names(dict)) %in% cn]
+            dict_df <<- iNZightTools::as_tibble(dict, code_sep = "\n")
+            dictionary <<- unclass(dict)
+            if (!apply) {
+                return()
+            }
+            newdat <- try(
+                iNZightTools::apply_dictionary(getData(), dict),
+                silent = TRUE
+            )
+            if (inherits(newdat, "try-error")) {
+                return()
+            }
+            attr(newdat, "name") <- name
+            setData(newdat)
         }
     )
 )
@@ -238,12 +300,26 @@ iNZPlotSettings <- setRefClass(
     ),
     contains = "PropertySet", ## need this to add observer to object
     methods = list(
-        initialize = function(settings = NULL) {
-            if(!is.null(settings))
+        initialize = function(settings = NULL, preferences = list()) {
+            defaultSettings <<- unclass(
+                getOption(
+                    "inzight.default.par",
+                    default = iNZightPlots:::inzpar()
+                )
+            )
+
+            pref_names <- c("gg_theme")
+            if (any(pref_names %in% names(preferences))) {
+                prefs <- preferences[names(preferences) %in% pref_names]
+                if (length(prefs)) {
+                    defaultSettings <<- modifyList(defaultSettings, prefs, keep.null = TRUE)
+                }
+            }
+            if (!is.null(settings)) {
                 settings <<- settings
-            else
-                settings <<- unclass(iNZightPlots:::inzpar())
-            defaultSettings <<- unclass(iNZightPlots:::inzpar())
+            } else {
+                settings <<- defaultSettings
+            }
         },
         getSettings = function() {
             settings
@@ -258,8 +334,9 @@ iNZPlotSettings <- setRefClass(
                 settings$ylim <<- NULL
             }
 
-            if (reset)
+            if (reset) {
                 setList <- modifyList(setList, defaultSettings, keep.null = TRUE)
+            }
 
             settings <<- modifyList(settings, setList, keep.null = TRUE)
             defaultSettings <<- modifyList(
@@ -276,7 +353,7 @@ iNZPlotSettings <- setRefClass(
         ## than can be used to merge with defaultSettings
         extractDefaults = function(theSettings) {
             defaultFields <- names(defaultSettings)
-            forget <- c('plottype', 'xlim', 'ylim')
+            forget <- c("plottype", "xlim", "ylim")
             defaultFields <- defaultFields[!defaultFields %in% forget]
             theSettings[defaultFields]
         },
@@ -287,10 +364,12 @@ iNZPlotSettings <- setRefClass(
             .self$changed$connect(FUN, ...)
         },
         removeSignals = function() {
-            for (i in seq_along(listeners(settingsChanged)))
+            for (i in seq_along(listeners(settingsChanged))) {
                 settingsChanged$disconnect(1)
-            for (i in seq_along(listeners(.changed)))
+            }
+            for (i in seq_along(listeners(.changed))) {
                 .changed$disconnect(1)
+            }
         }
     )
 )
@@ -302,13 +381,14 @@ iNZDocument <- setRefClass(
         plotSettings = "iNZPlotSettings"
     ),
     methods = list(
-        initialize = function(data = NULL, settings = NULL) {
+        initialize = function(data = NULL, settings = NULL, preferences = list()) {
             ## set data name (default = "data")
-            if (!is.null(data) && is.null(attr(data, "name", exact = TRUE)))
+            if (!is.null(data) && is.null(attr(data, "name", exact = TRUE))) {
                 attr(data, "name") <- deparse(substitute(data))
+            }
             initFields(
                 dataModel = iNZDataModel$new(data),
-                plotSettings = iNZPlotSettings$new(settings)
+                plotSettings = iNZPlotSettings$new(settings, preferences)
             )
         },
         getModel = function() {
@@ -317,17 +397,17 @@ iNZDocument <- setRefClass(
         getPlotSettings = function() {
             plotSettings
         },
-        getData = function() {
-            dataModel$getData()
+        getData = function(lazy = FALSE) {
+            dataModel$getData(lazy)
         },
         getSettings = function() {
             plotSettings$getSettings()
         },
-        getRowData = function() {
-            dataModel$getRowData()
-        },
         setSettings = function(setList, reset = FALSE) {
             plotSettings$setSettings(setList, reset)
+        },
+        setDictionary = function(dict, apply = TRUE) {
+            dataModel$setDictionary(dict, apply = apply)
         },
         ## update the settings to take in current x,y values
         ## from the dataset
@@ -367,7 +447,7 @@ iNZDocument <- setRefClass(
 iNZDataNameWidget <- setRefClass(
     "iNZDataNameWidget",
     fields = list(
-        GUI = "ANY",  ## the iNZight GUI object
+        GUI = "ANY", ## the iNZight GUI object
         import_button = "ANY",
         datName = "ANY", ## the string for the data set name
         widget = "ANY",
@@ -408,8 +488,8 @@ iNZDataNameWidget <- setRefClass(
             updateWidget()
         },
         updateWidget = function() {
-            dataSet <- GUI$getActiveData()
-            if (is.null(dataSet) || names(dataSet)[1] == "empty"){
+            dataSet <- GUI$getActiveData(lazy = TRUE)
+            if (is.null(dataSet) || names(dataSet)[1] == "empty") {
                 datName <<- "No data loaded"
                 if (identical(widget$children[[2]], nameLabel)) {
                     widget$remove_child(nameLabel)
@@ -422,13 +502,16 @@ iNZDataNameWidget <- setRefClass(
                     add(widget, nameLabel, expand = TRUE)
                 }
             }
-            names <- sapply(GUI$iNZDocuments,
+            names <- sapply(
+                GUI$iNZDocuments,
                 function(d) {
                     n <- d$getModel()$getName()
-                    if (!is.null(d$getModel()$getDesign()))
-                        n <- sprintf("%s (survey design)",
+                    if (!is.null(d$getModel()$getDesign())) {
+                        n <- sprintf(
+                            "%s (survey design)",
                             d$getModel()$dataDesignName
                         )
+                    }
                     n
                 }
             )
