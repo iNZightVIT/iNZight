@@ -73,7 +73,7 @@ iNZMenuBarWidget <- setRefClass(
                 gseparator(),
                 Clipboard = list(
                     paste =
-                        gaction("Paste from ...",
+                        gaction(paste(tr("Paste from ...")),
                             icon = "paste",
                             tooltip = "Import data by pasting/clipboard",
                             handler = function(h, ...) {
@@ -81,7 +81,7 @@ iNZMenuBarWidget <- setRefClass(
                             }
                         ),
                     copy =
-                        gaction("Copy to ...",
+                        gaction(paste(tr("Copy to ...")),
                             icon = "copy",
                             tooltip = "Copy data to clipboard",
                             handler = function(h, ...) {
