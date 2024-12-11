@@ -246,7 +246,7 @@ iNZMenuBarWidget <- setRefClass(
                     ),
                 gseparator(),
                 view =
-                    gaction(tr("menu_data_view"),
+                    gaction(paste(tr("menu_data_view"), "..."),
                         icon = "datasheet",
                         handler = function(h, ...) GUI$view_dataset()
                     ),
@@ -256,12 +256,12 @@ iNZMenuBarWidget <- setRefClass(
                         handler = function(h, ...) iNZRenameDataWin$new(GUI)
                     ),
                 restore =
-                    gaction(tr("menu_data_restore"),
+                    gaction(paste(tr("menu_data_restore"), "..."),
                         icon = "revert-to-saved",
                         handler = function(h, ...) GUI$restoreDataset()
                     ),
                 delete =
-                    gaction(tr("menu_data_delete"),
+                    gaction(paste(tr("menu_data_delete"), "..."),
                         icon = "delete",
                         handler = function(h, ...) GUI$deleteDataset()
                     ),
@@ -300,7 +300,7 @@ iNZMenuBarWidget <- setRefClass(
                             handler = function(h, ...) iNZSurveyPostStrat$new(GUI)
                         ),
                     removedesign =
-                        gaction(tr("menu_data_svyremove"),
+                        gaction(paste(tr("menu_data_svyremove"), "..."),
                             tooltip = "Remove survey design from data",
                             icon = "delete",
                             handler = function(h, ...) GUI$removeDesign()
@@ -308,7 +308,7 @@ iNZMenuBarWidget <- setRefClass(
                 ),
                 FREQS = list(
                     expandtable =
-                        gaction(tr("menu_data_expandtbl"),
+                        gaction(paste(tr("menu_data_expandtbl"), "..."),
                             icon = "datasheet",
                             handler = function(h, ...) iNZexpandTblWin$new(GUI)
                         ),
@@ -320,7 +320,7 @@ iNZMenuBarWidget <- setRefClass(
                             }
                         ),
                     dropfrequency =
-                        gaction(tr("menu_data_dropfreq"),
+                        gaction(paste(tr("menu_data_dropfreq"), "..."),
                             icon = "delete",
                             handler = function(h, ...) {
                                 GUI$getActiveDoc()$setSettings(list(freq = NULL))
@@ -330,12 +330,12 @@ iNZMenuBarWidget <- setRefClass(
                 gseparator(),
                 "Data Dictionary" = list(
                     load_dd =
-                        gaction("Load ...",
+                        gaction(paste(tr("menu_file_load"), "..."), 
                             icon = "datasheet",
                             handler = function(h, ...) iNZDataDict$new(GUI)
                         ),
                     view_dd =
-                        gaction("View",
+                        gaction(paste(tr("menu_view"), "..."),
                             icont = "datasheet",
                             handler = function(h, ...) iNZDDView$new(GUI)
                         )
@@ -371,15 +371,15 @@ iNZMenuBarWidget <- setRefClass(
                 menu <- modifyList(menu, mods, keep.null = TRUE)
             }
 
-            names(menu)[names(menu) == "DATAOP"] <- tr("menu_data_operation")
-            names(menu)[names(menu) == "MERGEJOIN"] <- tr("menu_data_mergejoin")
-            names(menu)[names(menu) == "SURVEY"] <- tr("menu_data_svy")
-            names(menu)[names(menu) == "FREQS"] <- tr("menu_data_freq")
+            names(menu)[names(menu) == "DATAOP"] <- paste(tr("menu_data_operation"), "...")
+            names(menu)[names(menu) == "MERGEJOIN"] <- paste(tr("menu_data_mergejoin"), "...")
+            names(menu)[names(menu) == "SURVEY"] <- paste(tr("menu_data_svy"), "...")
+            names(menu)[names(menu) == "FREQS"] <- paste(tr("menu_data_freq"), "...")
             menu
         },
         VariablesMenu = function() {
             if (!hasData()) {
-                return(placeholder("menu_vars"))
+                return(placeholder(paste(tr("menu_vars"), "...")))
             }
             menu <- list(
                 cont2cat =
@@ -494,12 +494,12 @@ iNZMenuBarWidget <- setRefClass(
             if (!is.null(GUI$getActiveDoc()$getModel()$getDesign())) {
                 # disable some items for surveys
                 # enabled(menu$NUMVARS$class) <- FALSE
-                menu$DATES <- gaction(tr("menu_vars_dates"), enabled = FALSE)
+                menu$DATES <- gaction(paste(tr("menu_vars_dates"), "..."), enabled = FALSE)
                 enabled(menu$DATES) <- FALSE
             }
-            names(menu)[names(menu) == "NUMVARS"] <- tr("menu_vars_numvars")
-            names(menu)[names(menu) == "CATVARS"] <- tr("menu_vars_catvars")
-            names(menu)[names(menu) == "DATES"] <- tr("menu_vars_dates")
+            names(menu)[names(menu) == "NUMVARS"] <- gaction(paste(tr("menu_vars_numvars"), "..."))
+            names(menu)[names(menu) == "CATVARS"] <- gaction(paste(tr("menu_vars_catvars"), "..."))
+            names(menu)[names(menu) == "DATES"] <- gaction(paste(tr("menu_vars_dates"), "..."))
             menu
         },
         PlotMenu = function() {
@@ -539,8 +539,8 @@ iNZMenuBarWidget <- setRefClass(
                 mods,
                 list(
                     gseparator(),
-                    gaction("Manage ...", handler = function(h, ...) NewModuleManager$new(GUI)),
-                    gaction("Reload",
+                    gaction(paste(tr("menu_manage"), "..."), handler = function(h, ...) NewModuleManager$new(GUI)),
+                    gaction(paste(tr("menu_reload"), "..."),
                         handler = function(h, ...) {
                             GUI$load_addons()
                             defaultMenu()
@@ -572,8 +572,8 @@ iNZMenuBarWidget <- setRefClass(
                 mods,
                 list(
                     gseparator(),
-                    gaction("Manage ...", handler = function(h, ...) NewModuleManager$new(GUI)),
-                    gaction("Reload",
+                    gaction(paste(tr("menu_manage"), "..."), handler = function(h, ...) NewModuleManager$new(GUI)),
+                    gaction(paste(tr("menu_reload"), "..."),
                         handler = function(h, ...) {
                             GUI$load_addons()
                             defaultMenu()
