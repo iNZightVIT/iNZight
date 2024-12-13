@@ -1,4 +1,5 @@
 {
+  "menu_copy": "Copy to",
   "menu_file": "File",
   "menu_file_save": "Save (beta)",
   "menu_file_load": "Load (beta)",
@@ -38,6 +39,8 @@
   "menu_data_setfreq": "Specify frequency column",
   "menu_data_dropfreq": "Remove frequency column",
   "menu_manage": "Manage",
+  "menu_manage_modules": "Manage modules",
+  "menu_maps_package": "The maps package is already installed!",
   "menu_reload": "Reload",
   "menu_vars": "Variables",
   "menu_vars_convert2cat": "Convert to categorical",
@@ -98,5 +101,6 @@
   "menu_help_guide_advanced": "Advanced",
   "menu_help_history": "Change history",
   "menu_help_faq": "FAQ",
-  "menu_help_contact": "Contact us or report a bug"
+  "menu_help_contact": "Contact us or report a bug",
+  "menu_help_transition_guide": "Version 4.2 Transition Guide"
 }
