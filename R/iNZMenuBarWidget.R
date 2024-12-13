@@ -73,7 +73,7 @@ iNZMenuBarWidget <- setRefClass(
                 gseparator(),
                 Clipboard = list(
                     paste =
-                        gaction(paste(tr("Paste from ...")),
+                        gaction(paste(tr("menu_file_paste")," ..."),
                             icon = "paste",
                             tooltip = "Import data by pasting/clipboard",
                             handler = function(h, ...) {
@@ -81,7 +81,7 @@ iNZMenuBarWidget <- setRefClass(
                             }
                         ),
                     copy =
-                        gaction(paste(tr("Copy to ...")),
+                        gaction(paste(tr("menu_copy"), "..."),
                             icon = "copy",
                             tooltip = "Copy data to clipboard",
                             handler = function(h, ...) {
@@ -246,7 +246,7 @@ iNZMenuBarWidget <- setRefClass(
                     ),
                 gseparator(),
                 view =
-                    gaction(paste(tr("menu_data_view"), "..."),
+                    gaction(tr("menu_data_view"),
                         icon = "datasheet",
                         handler = function(h, ...) GUI$view_dataset()
                     ),
@@ -256,12 +256,12 @@ iNZMenuBarWidget <- setRefClass(
                         handler = function(h, ...) iNZRenameDataWin$new(GUI)
                     ),
                 restore =
-                    gaction(paste(tr("menu_data_restore"), "..."),
+                    gaction(tr("menu_data_restore"),
                         icon = "revert-to-saved",
                         handler = function(h, ...) GUI$restoreDataset()
                     ),
                 delete =
-                    gaction(paste(tr("menu_data_delete"), "..."),
+                    gaction(tr("menu_data_delete"),
                         icon = "delete",
                         handler = function(h, ...) GUI$deleteDataset()
                     ),
@@ -300,7 +300,7 @@ iNZMenuBarWidget <- setRefClass(
                             handler = function(h, ...) iNZSurveyPostStrat$new(GUI)
                         ),
                     removedesign =
-                        gaction(paste(tr("menu_data_svyremove"), "..."),
+                        gaction(tr("menu_data_svyremove"),
                             tooltip = "Remove survey design from data",
                             icon = "delete",
                             handler = function(h, ...) GUI$removeDesign()
@@ -308,7 +308,7 @@ iNZMenuBarWidget <- setRefClass(
                 ),
                 FREQS = list(
                     expandtable =
-                        gaction(paste(tr("menu_data_expandtbl"), "..."),
+                        gaction(tr("menu_data_expandtbl"),
                             icon = "datasheet",
                             handler = function(h, ...) iNZexpandTblWin$new(GUI)
                         ),
@@ -320,7 +320,7 @@ iNZMenuBarWidget <- setRefClass(
                             }
                         ),
                     dropfrequency =
-                        gaction(paste(tr("menu_data_dropfreq"), "..."),
+                        gaction(tr("menu_data_dropfreq"),
                             icon = "delete",
                             handler = function(h, ...) {
                                 GUI$getActiveDoc()$setSettings(list(freq = NULL))
@@ -335,7 +335,7 @@ iNZMenuBarWidget <- setRefClass(
                             handler = function(h, ...) iNZDataDict$new(GUI)
                         ),
                     view_dd =
-                        gaction(paste(tr("menu_view"), "..."),
+                        gaction(tr("menu_view"),
                             icont = "datasheet",
                             handler = function(h, ...) iNZDDView$new(GUI)
                         )
@@ -371,15 +371,15 @@ iNZMenuBarWidget <- setRefClass(
                 menu <- modifyList(menu, mods, keep.null = TRUE)
             }
 
-            names(menu)[names(menu) == "DATAOP"] <- paste(tr("menu_data_operation"), "...")
-            names(menu)[names(menu) == "MERGEJOIN"] <- paste(tr("menu_data_mergejoin"), "...")
-            names(menu)[names(menu) == "SURVEY"] <- paste(tr("menu_data_svy"), "...")
-            names(menu)[names(menu) == "FREQS"] <- paste(tr("menu_data_freq"), "...")
+            names(menu)[names(menu) == "DATAOP"] <- tr("menu_data_operation")
+            names(menu)[names(menu) == "MERGEJOIN"] <- tr("menu_data_mergejoin")
+            names(menu)[names(menu) == "SURVEY"] <- tr("menu_data_svy")
+            names(menu)[names(menu) == "FREQS"] <- tr("menu_data_freq")
             menu
         },
         VariablesMenu = function() {
             if (!hasData()) {
-                return(placeholder(paste(tr("menu_vars"), "...")))
+                return(placeholder(tr("menu_vars")))
             }
             menu <- list(
                 cont2cat =
@@ -494,12 +494,12 @@ iNZMenuBarWidget <- setRefClass(
             if (!is.null(GUI$getActiveDoc()$getModel()$getDesign())) {
                 # disable some items for surveys
                 # enabled(menu$NUMVARS$class) <- FALSE
-                menu$DATES <- gaction(paste(tr("menu_vars_dates"), "..."), enabled = FALSE)
+                menu$DATES <- gaction(tr("menu_vars_dates"), enabled = FALSE)
                 enabled(menu$DATES) <- FALSE
             }
-            names(menu)[names(menu) == "NUMVARS"] <- gaction(paste(tr("menu_vars_numvars"), "..."))
-            names(menu)[names(menu) == "CATVARS"] <- gaction(paste(tr("menu_vars_catvars"), "..."))
-            names(menu)[names(menu) == "DATES"] <- gaction(paste(tr("menu_vars_dates"), "..."))
+            names(menu)[names(menu) == "NUMVARS"] <- gaction(tr("menu_vars_numvars"))
+            names(menu)[names(menu) == "CATVARS"] <- gaction(tr("menu_vars_catvars"))
+            names(menu)[names(menu) == "DATES"] <- gaction(tr("menu_vars_dates"))
             menu
         },
         PlotMenu = function() {
@@ -540,7 +540,7 @@ iNZMenuBarWidget <- setRefClass(
                 list(
                     gseparator(),
                     gaction(paste(tr("menu_manage"), "..."), handler = function(h, ...) NewModuleManager$new(GUI)),
-                    gaction(paste(tr("menu_reload"), "..."),
+                    gaction(tr("menu_reload"),
                         handler = function(h, ...) {
                             GUI$load_addons()
                             defaultMenu()
@@ -573,7 +573,7 @@ iNZMenuBarWidget <- setRefClass(
                 list(
                     gseparator(),
                     gaction(paste(tr("menu_manage"), "..."), handler = function(h, ...) NewModuleManager$new(GUI)),
-                    gaction(paste(tr("menu_reload"), "..."),
+                    gaction(tr("menu_reload"),
                         handler = function(h, ...) {
                             GUI$load_addons()
                             defaultMenu()
@@ -595,7 +595,7 @@ iNZMenuBarWidget <- setRefClass(
                                 handler = function(h, ...) InstallMaps(GUI)
                             ),
                         manage =
-                            gaction("Manage modules ...",
+                            gaction(paste(tr("menu_manage_modules"), "..."),
                                 icon = "execute",
                                 tooltip = "Add, update, and remove add-on modules.",
                                 handler = function(h, ...) {
@@ -825,7 +825,7 @@ iNZMenuBarWidget <- setRefClass(
                     }
                 ),
                 transition =
-                    gaction("Version 4.2 Transition Guide",
+                    gaction(tr("menu_help_transition_guide"),
                         icon = "file",
                         tooltip = "",
                         handler = function(h, ...) {
@@ -877,7 +877,7 @@ iNZMenuBarWidget <- setRefClass(
 InstallMaps <- function(gui) {
     check.maps <- 'requireNamespace("iNZightMaps", quietly = TRUE)'
     if (eval(parse(text = check.maps))) {
-        gmessage("The maps package is already installed!",
+        gmessage(tr("menu_maps_package"),
             parent = gui$win
         )
         return()
