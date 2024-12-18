@@ -497,9 +497,9 @@ iNZMenuBarWidget <- setRefClass(
                 menu$DATES <- gaction(tr("menu_vars_dates"), enabled = FALSE)
                 enabled(menu$DATES) <- FALSE
             }
-            names(menu)[names(menu) == "NUMVARS"] <- gaction(tr("menu_vars_numvars"))
-            names(menu)[names(menu) == "CATVARS"] <- gaction(tr("menu_vars_catvars"))
-            names(menu)[names(menu) == "DATES"] <- gaction(tr("menu_vars_dates"))
+            names(menu)[names(menu) == "NUMVARS"] <- tr("menu_vars_numvars")
+            names(menu)[names(menu) == "CATVARS"] <- tr("menu_vars_catvars")
+            names(menu)[names(menu) == "DATES"] <- tr("menu_vars_dates")
             menu
         },
         PlotMenu = function() {
