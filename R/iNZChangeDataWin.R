@@ -2405,7 +2405,7 @@ iNZDataDict <- setRefClass(
             ii <- ii + 1L
 
             dict_type <<- gcombobox("", handler = function(h, ...) update_preview())
-            tbl[ii, 1L, anchor = c(1, 0), expand = TRUE] <- glabel(paster(tr("data_vars_type"), " :"))
+            tbl[ii, 1L, anchor = c(1, 0), expand = TRUE] <- glabel(paste(tr("data_vars_type"), " :"))
             tbl[ii, 2L, expand = TRUE] <- dict_type
             ii <- ii + 1L
 
