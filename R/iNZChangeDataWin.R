@@ -1889,12 +1889,12 @@ iNZJoinWin <- setRefClass(
             )
             string2 <- glabel(tr("data_join_method"))
             jointypes <- list(
-                tr("data_inner") = "inner_join",
-                tr("data_left") = "left_join",
-                tr("data_right") = "right_join",
-                tr("data_full") = "full_join",
-                tr("data_semi") = "semi_join",
-                tr("data_anti") = "anti_join"
+                "Inner Join" = "inner_join",
+                "Left Join" = "left_join",
+                "Right Join" = "right_join",
+                "Full Join" = "full_join",
+                "Semi Join" = "semi_join",
+                "Anti Join" = "anti_join"
             )
             var1 <- gcombobox(
                 items = names(jointypes),
