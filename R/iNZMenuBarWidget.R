@@ -153,7 +153,7 @@ iNZMenuBarWidget <- setRefClass(
                                     f <- paste(f, "inzsave", sep = ".")
                                 }
                                 GUI$saveState(f)
-                                gmessage("Your session has been saved.",
+                                gmessage(tr("menu_session_saved"),
                                     title = "Session saved",
                                     icon = "info"
                                 )
@@ -744,7 +744,7 @@ iNZMenuBarWidget <- setRefClass(
                                 Sys.sleep(0.1)
                                 dispose(w)
 
-                                gmessage("Install complete.",
+                                gmessage(tr("menu_install_complete"),
                                     title = "Installing packages complete",
                                     parent = GUI$win
                                 )
@@ -895,8 +895,7 @@ InstallMaps <- function(gui) {
 
     if (!eval(parse(text = check.maps))) {
         svalue(gui$statusbar) <- "Error installing the maps module"
-        gmessage(
-            "Unable to install package. Please check the website.",
+        gmessage(tr("menu_no_install"),
             parent = gui$win
         )
         return()
@@ -905,7 +904,7 @@ InstallMaps <- function(gui) {
     ## reload the menu ...?
     svalue(gui$statusbar) <- "Maps module installed successfully"
     gui$menuBarWidget$defaultMenu()
-    gmessage("The Maps package has been installed.",
+    gmessage(tr("maps_install"),
         parent = gui$win
     )
 }
