@@ -285,7 +285,7 @@ iNZPlotModWin <- setRefClass(
             mainGrp <- modwin$body
 
             topGrp <- modwin$header
-            lbl <- glabel("Add to Plot :")
+            lbl <- glabel(tr("pmod_add_plot"))
             font(lbl) <- list(
                 weight = "bold",
                 family = "sans",
@@ -310,11 +310,11 @@ iNZPlotModWin <- setRefClass(
             auto <<- nrow(GUI$getActiveData(lazy = TRUE)) < 100000
             autoGrp <- ggroup(horizontal = TRUE, fill = TRUE)
             addSpring(autoGrp)
-            autoChk <- gcheckbox("Update automatically",
+            autoChk <- gcheckbox(tr("pmod_auto_update"),
                 checked = auto,
                 cont = autoGrp
             )
-            updateBtn <- gbutton("Update Plot",
+            updateBtn <- gbutton(tr("pmod_plot_update"),
                 fill = TRUE,
                 cont = autoGrp,
                 handler = function(h, ...) updateEverything(TRUE)
@@ -330,7 +330,7 @@ iNZPlotModWin <- setRefClass(
 
             btnGrp <- modwin$footer
 
-            helpButton <- gbutton("Help",
+            helpButton <- gbutton(tr("pmod_help"),
                 expand = TRUE,
                 fill = TRUE,
                 cont = btnGrp,
@@ -340,7 +340,7 @@ iNZPlotModWin <- setRefClass(
             )
             helpButton$set_icon("gw-help_topic")
 
-            okButton <<- gbutton("Home",
+            okButton <<- gbutton(tr("pmod_home"),
                 expand = TRUE,
                 fill = TRUE,
                 cont = btnGrp,
@@ -355,7 +355,7 @@ iNZPlotModWin <- setRefClass(
             ## Do checking first
             ## If g1 or g2 = _MULTI, then we can't identify points (yet ...)
             cantDo <- function(msg = "using subsetting variables.") {
-                gmessage(paste("Cannot identify points when", msg),
+                gmessage(paste(tr("pmod_no_identity"), msg),
                     icon = "error",
                     title = "Unable to identify",
                     parent = modWin
@@ -450,7 +450,7 @@ iNZPlotModWin <- setRefClass(
             tbl <- glayout()
             ii <- 3
 
-            lbl <- glabel("How do you want to label points?")
+            lbl <- glabel(tr("pmod_label_points"))
             font(lbl) <- list(weight = "bold", family = "sans")
             tbl[ii, 1:2, expand = TRUE, anchor = c(-1, 0)] <- lbl
             ii <- ii + 1
@@ -470,7 +470,7 @@ iNZPlotModWin <- setRefClass(
                 }
             }
 
-            colLabs <- gcheckbox("Colour Points", checked = FALSE)
+            colLabs <- gcheckbox(tr("pmod_colour"), checked = FALSE)
             colmenu <- gcombobox(c("red", "blue", "green4"),
                 selected = 1,
                 editable = TRUE,
@@ -529,7 +529,7 @@ iNZPlotModWin <- setRefClass(
                 }
             )
 
-            matchChk <- gcheckbox("With the same level of")
+            matchChk <- gcheckbox(tr("pmod_same_level"))
             tbl[ii, 1] <- matchChk
 
             if (!is.null(locSet$matchChk)) {
@@ -567,7 +567,7 @@ iNZPlotModWin <- setRefClass(
 
             ii <- ii + 1
 
-            lbl <- glabel("How do you want to select points?")
+            lbl <- glabel(tr("pmod_select_points"))
             font(lbl) <- list(weight = "bold", family = "sans")
             tbl[ii, 1:2, expand = TRUE, anchor = c(-1, 0)] <- lbl
             ii <- ii + 1
@@ -737,18 +737,18 @@ iNZPlotModWin <- setRefClass(
 
             if (attr(GUI$curPlot, "nplots") > 1) {
                 locateButton <-
-                    glabel("Cannot locate using mouse for multiple graphs.",
+                    glabel(tr("pmod_no_mouse"),
                         cont = selectGrp
                     )
                 svalue(selectMthd, TRUE) <- 2
             } else if (dot & is.factor(curSet$y)) {
                 locateButton <-
-                    glabel("Cannot locate when Variable 2 is a factor.",
+                    glabel(tr("pmod_no_vars"),
                         cont = selectGrp
                     )
                 svalue(selectMthd, TRUE) <- 2
             } else {
-                locateButton <- gbutton("Click to Locate ...",
+                locateButton <- gbutton(paste(tr("pmod_click"), "..."),
                     cont = selectGrp
                 )
                 addHandlerClicked(
@@ -770,7 +770,7 @@ iNZPlotModWin <- setRefClass(
                 expand = TRUE,
                 fill = TRUE
             )
-            selectLab <- glabel("Variable: ", cont = selectList)
+            selectLab <- glabel(tr("pmod_var"), cont = selectList)
             selectVar <- gcombobox(names(GUI$getActiveData(lazy = TRUE)),
                 selected = 0,
                 cont = selectList,
@@ -782,7 +782,7 @@ iNZPlotModWin <- setRefClass(
                 expand = FALSE,
                 fill = TRUE
             )
-            selectGo <- gbutton("Select values ...", cont = selectList)
+            selectGo <- gbutton(paste(tr("pmod_select_vals"), "..."), cont = selectList)
 
             enabled(selectGo) <- svalue(selectVar, TRUE) > 0
             addHandlerChanged(
@@ -855,7 +855,7 @@ iNZPlotModWin <- setRefClass(
                     expand = TRUE,
                     fill = TRUE
                 )
-                lowerLab <- glabel("N Lower: ", cont = lowerG)
+                lowerLab <- glabel(tr("pmod_n_lower"), cont = lowerG)
                 nlowerSld <- gslider(0, 20,
                     expand = TRUE,
                     fill = TRUE,
@@ -867,7 +867,7 @@ iNZPlotModWin <- setRefClass(
                     expand = TRUE,
                     fill = TRUE
                 )
-                upperLab <- glabel("N Upper: ", cont = upperG)
+                upperLab <- glabel(tr("pmod_n_upper"), cont = upperG)
                 nupperSld <- gslider(0, 20,
                     expand = TRUE,
                     fill = TRUE,
@@ -895,7 +895,7 @@ iNZPlotModWin <- setRefClass(
                     expand = TRUE,
                     fill = TRUE
                 )
-                extLab <- glabel("Number of points: ", cont = extremePts)
+                extLab <- glabel(tr("pmod_num_points"), cont = extremePts)
                 extN <- gslider(0, 20, cont = extremePts, expand = TRUE)
                 if (!is.null(curSet$locate.extreme)) {
                     svalue(extN) <- curSet$locate.extreme
@@ -915,7 +915,7 @@ iNZPlotModWin <- setRefClass(
                     }
                 )
             }
-            addPts <- gbutton("Save these points ...",
+            addPts <- gbutton(paste(tr("pmod_save_points"), "..."),
                 cont = extremeGrp,
                 expand = FALSE,
                 anchor = c(0, 1)
