@@ -242,7 +242,7 @@
   "pmod_select_points": "How do you want to select points?",
   "pmod_select_vals": "Select values",
   "pmod_style": "Style :",
-  "pmod_symbol" "Symbol :",
+  "pmod_symbol": "Symbol :",
   "pmod_symbol_by": "Symbol by :",
   "pmod_symbol_fill": "Fill symbols",
   "pmod_symbol_line": "Symbol line width :",
