@@ -2038,7 +2038,7 @@ iNZPlotMod <- setRefClass(
                     )
                 }
 
-                tbl[ii, 1:2, anchor = c(1, 0), expand = TRUE] <- glabel("Theme :")
+                tbl[ii, 1:2, anchor = c(1, 0), expand = TRUE] <- glabel(tr("pmod_theme"))
                 themeCombobox <- gcombobox(
                     theme.options,
                     selected =
@@ -2056,7 +2056,7 @@ iNZPlotMod <- setRefClass(
                         if (svalue(themeCombobox) == "Install additional themes...") {
                             tryCatch(
                                 {
-                                    if (gconfirm("Install ggthemes package?")) {
+                                    if (gconfirm(tr("pmod_install_pac"))) {
                                         install.packages(
                                             "ggthemes",
                                             repos = c(
@@ -2087,9 +2087,9 @@ iNZPlotMod <- setRefClass(
                 !(PLOTTYPE %in% c("gg_pie", "gg_donut", "gg_barcode"))
             ) {
                 tbl[ii, 1:2, anchor = c(1, 0), expand = TRUE] <-
-                    glabel("Rotate :")
+                    glabel(tr("pmod_rotate"))
 
-                rotateCheck <- gcheckbox("Plot")
+                rotateCheck <- gcheckbox(tr("pmod_plot"))
                 if (isTRUE(!is.null(curSet$rotation))) {
                     svalue(rotateCheck) <- curSet$rotation
                 }
@@ -2102,7 +2102,7 @@ iNZPlotMod <- setRefClass(
 
                 ii <- ii + 1
 
-                rotateLabelsX <- gcheckbox("x-axis Labels")
+                rotateLabelsX <- gcheckbox(tr("pmod_x_label"))
                 tbl[ii, 3:6, expand = TRUE] <- rotateLabelsX
                 if (isTRUE(!is.null(curSet$rotate_labels$x))) {
                     svalue(rotateLabelsX) <- curSet$rotate_labels$x
@@ -2110,7 +2110,7 @@ iNZPlotMod <- setRefClass(
 
                 ii <- ii + 1
 
-                rotateLabelsY <- gcheckbox("y-axis Labels")
+                rotateLabelsY <- gcheckbox(tr("pmod_y_label"))
                 tbl[ii, 3:6, expand = TRUE] <- rotateLabelsY
                 if (isTRUE(!is.null(curSet$rotate_labels$y))) {
                     svalue(rotateLabelsY) <- curSet$rotate_labels$y
@@ -2133,7 +2133,7 @@ iNZPlotMod <- setRefClass(
                 ii <- ii + 1
 
                 tbl[ii, 1:2, anchor = c(1, 0), expand = TRUE] <-
-                    glabel("Smoothing :")
+                    glabel(tr("pmod_smoothing"))
 
                 smoothSlider <- gslider(0.25, 4, 0.25,
                     value = ifelse(is.null(curSet$adjust), 1, curSet$adjust),
@@ -2154,7 +2154,7 @@ iNZPlotMod <- setRefClass(
 
             if (PLOTTYPE %in% c("gg_barcode")) {
                 tbl[ii, 1:2, anchor = c(1, 0), expand = TRUE] <-
-                    glabel("Size :")
+                    glabel(tr("pmod_size"))
                 barcodeSize <- gslider(from = 5, to = 20, by = 1, value = 16)
                 tbl[ii, 3:6, expand = TRUE] <- barcodeSize
 
@@ -2183,12 +2183,12 @@ iNZPlotMod <- setRefClass(
                 tbl[ii, 1:6, expand = TRUE] <- sectionTitle("Barcode Options")
                 ii <- ii + 1
 
-                tbl[ii, 1:2, anchor = c(1, 0), expand = TRUE] <- glabel("Width :")
+                tbl[ii, 1:2, anchor = c(1, 0), expand = TRUE] <- glabel(tr("pmod_width"))
                 barcodeWidth <- gslider(from = 0.25, to = 3, by = 0.25, value = 1)
                 tbl[ii, 3:6, expand = TRUE] <- barcodeWidth
                 ii <- ii + 1
 
-                tbl[ii, 1:2, anchor = c(1, 0), expand = TRUE] <- glabel("Height :")
+                tbl[ii, 1:2, anchor = c(1, 0), expand = TRUE] <- glabel(tr("pmod_height"))
                 barcodeHeight <- gslider(from = 0.1, to = 1, by = 0.1, value = 0.5)
                 tbl[ii, 3:6, expand = TRUE] <- barcodeHeight
                 ii <- ii + 1
@@ -2235,7 +2235,7 @@ iNZPlotMod <- setRefClass(
                 ii <- ii + 1
 
                 tbl[ii, 1:2, anchor = c(1, 0), expand = TRUE] <-
-                    glabel("Cut-point :")
+                    glabel(tr("pmod_cut_point"))
                 stackedCutPoint <- gcombobox(
                     c("Default", 1:(attr(PLOTTYPES, "cat.levels") - 1))
                 )
@@ -2260,7 +2260,7 @@ iNZPlotMod <- setRefClass(
                 tbl[ii, 1:6, expand = TRUE] <- sectionTitle("Point Options")
                 ii <- ii + 1
 
-                tbl[ii, 1:2, anchor = c(1, 0), expand = TRUE] <- glabel("Size :")
+                tbl[ii, 1:2, anchor = c(1, 0), expand = TRUE] <- glabel(tr("pmod_size"))
                 pointSize <- gslider(from = 1, to = 10, by = 1)
                 tbl[ii, 3:6, expand = TRUE] <- pointSize
 
@@ -2295,7 +2295,7 @@ iNZPlotMod <- setRefClass(
                 )
             ) {
                 tbl[ii, 1:2, anchor = c(1, 0), expand = TRUE] <-
-                    glabel("Transparency :")
+                    glabel(tr("pmod_transp"))
                 transpSlider <- gslider(
                     from = 0, to = 100,
                     by = 1,
@@ -2319,7 +2319,7 @@ iNZPlotMod <- setRefClass(
             }
 
             if (PLOTTYPE %in% c("gg_density", "gg_ridgeline")) {
-                tbl[ii, 1:2, anchor = c(1, 0), expand = TRUE] <- glabel("Transparency :")
+                tbl[ii, 1:2, anchor = c(1, 0), expand = TRUE] <- glabel(tr("pmod_transp"))
                 transpSlider <- gslider(
                     from = 0, to = 100,
                     by = 1,
@@ -2354,7 +2354,7 @@ iNZPlotMod <- setRefClass(
                 ii <- ii + 1
 
                 tbl[ii, 1:2, anchor = c(1, 0), expand = TRUE] <-
-                    glabel("Number of bins :")
+                    glabel(tr("pmod_bin_num"))
                 pyramidBins <- gslider(5, 50, by = 5, value = 30)
                 tbl[ii, 3:6, expand = TRUE] <- pyramidBins
 
@@ -2475,7 +2475,7 @@ iNZPlotMod <- setRefClass(
                         )
                     )
 
-                sortCheck <- gcombobox(c("None", "Ascending", "Descending"),
+                sortCheck <- gcombobox(c(tr("pmod_none"), tr("pmod_ascend"), tr("pmod_descend")),
                     handler = function(h, ...) updateEverything()
                 )
                 tbl[ii, 3:6, expand = TRUE] <- sortCheck
@@ -2498,7 +2498,7 @@ iNZPlotMod <- setRefClass(
                 ii <- ii + 1
 
                 tbl[ii, 1:2, anchor = c(1, 0), expand = TRUE] <-
-                    glabel("N observations/square :")
+                    glabel(tr("pmod_obs_sq"))
                 n_fun <- function(n) {
                     if (n > 1000) {
                         if (n > 5 * 10^ceiling(log10(n) - 1) && n > 5 * 10^ceiling(log10(n + 1) - 1)) {
@@ -2524,9 +2524,9 @@ iNZPlotMod <- setRefClass(
                 tbl[ii, 1:6, expand = TRUE] <- sectionTitle("Beeswarm Options")
                 ii <- ii + 1
 
-                tbl[ii, 1:2, anchor = c(1, 0), expand = TRUE] <- glabel("Method :")
+                tbl[ii, 1:2, anchor = c(1, 0), expand = TRUE] <- glabel(tr("pmod_method"))
                 swarmMethod <- gcombobox(
-                    c("quasirandom", "pseudorandom", "smiley", "frowney")
+                    c(tr("pmod_quasi"), tr("pmod_pseudo"), tr("pmod_smiley"), tr("pmod_frowney"))
                 )
                 tbl[ii, 3:6, expand = TRUE] <- swarmMethod
                 addHandlerChanged(swarmMethod,
@@ -2534,7 +2534,7 @@ iNZPlotMod <- setRefClass(
                 )
                 ii <- ii + 1
 
-                tbl[ii, 1:2, anchor = c(1, 0), expand = TRUE] <- glabel("Swarm width :")
+                tbl[ii, 1:2, anchor = c(1, 0), expand = TRUE] <- glabel(tr("pmod_swarm"))
                 swarmWidth <- gslider(0, 1, 0.1,
                     value = if (!is.null(curSet$gg_swarmwidth)) curSet$gg_swarmwidth else 0.4
                 )
