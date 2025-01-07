@@ -2571,7 +2571,7 @@ iNZPlotMod <- setRefClass(
                     }
                 )
 
-                tbl[ii, 4, expand = TRUE] <- gbutton("View code",
+                tbl[ii, 4, expand = TRUE] <- gbutton(tr("pmod_view_code"),
                     handler = function(h, ...) {
                         GUI$plot_history$show()
                     }
@@ -2590,7 +2590,7 @@ iNZPlotMod <- setRefClass(
                     )
                 ) {
                     tbl[ii, 3:4, anchor = c(1, 0), expand = TRUE] <- gbutton(
-                        "Interactive Plot (via plotly)",
+                        tr("pmod_int_plot"),
                         handler = function(h, ...) {
                             suppressWarnings(
                                 print(plotly::ggplotly())
@@ -3229,7 +3229,7 @@ iNZPlotMod <- setRefClass(
             colBoxWidth <- 100
 
             trendCurves <- c("linear", "quadratic", "cubic")
-            trendLin <- gcheckbox("linear", checked = "linear" %in% curSet$trend)
+            trendLin <- gcheckbox(tr("pmod_linear"), checked = "linear" %in% curSet$trend)
             trendLinCol <- gcombobox(
                 c(
                     if (!curSet$col.trend$linear %in% lineColours) curSet$col.trend$linear,
@@ -3246,7 +3246,7 @@ iNZPlotMod <- setRefClass(
             tbl[ii, 6] <- trendLinLTY
             ii <- ii + 1
 
-            trendQuad <- gcheckbox("quadratic", checked = "quadratic" %in% curSet$trend)
+            trendQuad <- gcheckbox(tr("pmod_quad"), checked = "quadratic" %in% curSet$trend)
             trendQuadCol <- gcombobox(
                 c(
                     if (!curSet$col.trend$quadratic %in% lineColours) {
@@ -3295,7 +3295,7 @@ iNZPlotMod <- setRefClass(
                 sectionTitle("Smoother")
             ii <- ii + 1
 
-            smooth <- gcheckbox("Add smoother",
+            smooth <- gcheckbox(tr("pmod_add_smoother"),
                 checked = curSet$smooth != 0 | !is.null(curSet$quant.smooth)
             )
             smoothCol <- gcombobox(lineColours,
@@ -3312,7 +3312,7 @@ iNZPlotMod <- setRefClass(
             smoothCol$widget$setSizeRequest(colBoxWidth, -1)
             ii <- ii + 1
 
-            qsmooth <- gcheckbox("Use Quantiles",
+            qsmooth <- gcheckbox(tr("pmod_use_quant"),
                 checked = !is.null(curSet$quant.smooth)
             )
             tbl[ii, 1:3, anchor = c(-1, 0), expand = TRUE] <- qsmooth
@@ -3333,7 +3333,7 @@ iNZPlotMod <- setRefClass(
                     sectionTitle("Join Points")
                 ii <- ii + 1
 
-                joinPoints <- gcheckbox("Join points by lines",
+                joinPoints <- gcheckbox(tr("pmod_join_points"),
                     checked = curSet$join
                 )
                 joinPointsCol <- gcombobox(lineColours,
@@ -3405,13 +3405,13 @@ iNZPlotMod <- setRefClass(
             }
             activateOptions()
 
-            lbl <- glabel("Line Width Multiplier :")
+            lbl <- glabel(tr("pmod_line_width"))
             lwdSpin <- gspinbutton(1, 4, by = 1, value = curSet$lwd)
             tbl[ii, 1:4, anchor = c(1, 0), expand = TRUE] <- lbl
             tbl[ii, 5, anchor = c(-1, 0), expand = FALSE] <- lwdSpin
             ii <- ii + 1
 
-            loe <- gcheckbox("Add line of equality (x = y)",
+            loe <- gcheckbox(paste(tr("pmod_add_line"), "(x = y)"),
                 checked = curSet$LOE
             )
             tbl[ii, 1:6, anchor = c(-1, 0), expand = TRUE] <- loe
@@ -3686,7 +3686,7 @@ iNZPlotMod <- setRefClass(
                 sectionTitle("Axis Labels")
             ii <- ii + 1
 
-            lbl <- glabel("Title :")
+            lbl <- glabel(tr("pmod_title"))
             labMain <- gedit(
                 ifelse(is.null(curSet$main), "", curSet$main)
             )
