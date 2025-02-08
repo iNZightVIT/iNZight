@@ -166,8 +166,7 @@ iNZSurveyDesign <- setRefClass(
             }
 
             if (!requireNamespace("survey", quietly = TRUE)) {
-                p <- gconfirm(paste(tr("survey_install_package"), 
-                                    tr("survey_install_required")),
+                p <- gconfirm(paste(tr("survey_install_package", "survey_install_required")),
                     icon = "question",
                     parent = GUI$win
                 )
@@ -192,8 +191,7 @@ iNZSurveyDesign <- setRefClass(
         },
         create = function(preview = FALSE) {
             if (!requireNamespace("surveyspec", quietly = TRUE)) {
-                p <- gconfirm((tr("survey_install_package"), 
-                               tr("survey_install_required")),
+                p <- gconfirm((tr("survey_install_package", "survey_install_required")),
                     icon = "question",
                     parent = GUI$win
                 )
@@ -637,8 +635,7 @@ iNZSurveyDesign <- setRefClass(
             }
 
             if (!requireNamespace("surveyspec", quietly = TRUE)) {
-                p <- gconfirm(paste(tr("survey_install_package"), 
-                                    tr("survey_install_required")),
+                p <- gconfirm(paste(tr("survey_install_package", "survey_install_required")),
                     icon = "question",
                     parent = GUI$win
                 )
