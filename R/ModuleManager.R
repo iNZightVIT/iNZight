@@ -59,7 +59,7 @@ NewModuleManager <- setRefClass(
             ## --- show user where modules are installed:
             ## TODO: add button to specify new location / link to preferences
             info_tbl <- glayout()
-            lbl <- glabel("Addon module directory:")
+            lbl <- glabel(tr("module_directory"))
             font(lbl) <- list(weight = "bold")
             info_tbl[1L, 1L, anchor = c(1, 0)] <- lbl
 
@@ -245,7 +245,7 @@ NewModuleManager <- setRefClass(
             modi <- module_table$get_selected()
             if (length(modi) == 0L) {
                 # hide everything
-                lbl <- glabel("Select a module from the list")
+                lbl <- glabel(tr("module_select"))
                 add(g_info, lbl, anchor = c(-1, 0))
                 return()
             }
@@ -305,7 +305,7 @@ NewModuleManager <- setRefClass(
             mod_info_tbl[ii, 2L, fill = TRUE] <- mod_version
 
             if (!is.null(imod)) {
-                del_btn <- gbutton("Uninstall",
+                del_btn <- gbutton(tr("module_uninstall"),
                     handler = function(h, ...) {
                         uninstall_module(amod)
                     }
@@ -466,7 +466,7 @@ iNZModule <- setRefClass(
 
             if (requires_data) {
                 if (all(colnames(GUI$getActiveData()) == "empty")) {
-                    gmessage("Load data before using this module.",
+                    gmessage(tr("module_load_data"),
                         parent = GUI$win,
                         icon = "error"
                     )
@@ -512,12 +512,12 @@ iNZModule <- setRefClass(
             mainGrp <<- modwin$body
             mainGrp$set_borderwidth(5L)
 
-            homeButton <<- gbutton("Home",
+            homeButton <<- gbutton(tr("module_home"),
                 handler = function(h, ...) close()
             )
 
             if (!is.null(help)) {
-                helpButton <<- gbutton("Help",
+                helpButton <<- gbutton(tr("module_help"),
                     handler = function(h, ...) browseURL(help)
                 )
                 add(modwin$footer, helpButton, expand = TRUE, fill = TRUE)
