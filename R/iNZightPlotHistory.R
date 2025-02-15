@@ -127,22 +127,22 @@ iNZplothistory <- setRefClass(
             visible(code_group) <- FALSE
             code_group_horizontal <- ggroup()
 
-            code_box <<- gtext("# Copy and paste R code into this text box")
-            as_chunk <- gcheckbox("Wrap copied code in Rmarkdown code chunk")
+            code_box <<- gtext(tr("plothist_copy_paste"))
+            as_chunk <- gcheckbox(tr("plothist_wrap_rmark"))
             addHandlerChanged(
                 as_chunk,
                 function(h, ...) copy_chunk <<- svalue(as_chunk)
             )
 
             gWidgets2::add(w, g)
-            gWidgets2::add(g, glabel("The following is a list of the plots you have stored"))
+            gWidgets2::add(g, glabel(tr("plothist_stored_plots")))
             gWidgets2::add(g, as_chunk)
             gWidgets2::add(g, plot_list, expand = TRUE)
             gWidgets2::add(g, code_group)
             gWidgets2::add(code_group_horizontal, code_box, expand = TRUE)
             gWidgets2::add(
                 code_group_horizontal,
-                gbutton("Run Code",
+                gbutton(tr("plothist_run_code"),
                     handler = function(h, ...) submitCode()
                 )
             )
@@ -225,7 +225,7 @@ iNZplothistory <- setRefClass(
                     }
                 )
             plot_group[1:2, 3:9, fill = "x", expand = TRUE] <- gtext(item$code)
-            plot_group[1, 10] <- gbutton("Copy",
+            plot_group[1, 10] <- gbutton(tr("plothist_copy"),
                 handler = function(h, ...) {
                     tryCatch(
                         {
@@ -234,13 +234,13 @@ iNZplothistory <- setRefClass(
                             } else {
                                 clipr::write_clip(item$code)
                             }
-                            gmessage("Successfully copied to clipboard", parent = window)
+                            gmessage(tr("plothist_clipboard"), parent = window)
                         },
                         error = function(e) gmessage(e, icon = "error", parent = window)
                     )
                 }
             )
-            plot_group[2, 10] <- gbutton("Delete",
+            plot_group[2, 10] <- gbutton(tr("plothist_delete"),
                 handler = function(h, ...) {
                     history[[i]] <<- NULL
                     delete(plot_list, plot_group)

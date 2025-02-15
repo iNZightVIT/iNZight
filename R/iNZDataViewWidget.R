@@ -450,7 +450,7 @@ iNZDataViewWidget <- setRefClass(
             # only needs to run once
             landingView <<- gvbox()
             landingView$set_borderwidth(10)
-            lbl <- glabel("To get started, Import a dataset",
+            lbl <- glabel(tr("widget_start_import"),
                 container = landingView,
                 anchor = c(-1, 0)
             )
@@ -471,7 +471,7 @@ iNZDataViewWidget <- setRefClass(
                 anchor = c(-1, 0)
             )
 
-            exBtn <- gbutton("Load Example Data",
+            exBtn <- gbutton(tr("widget_load_ex"),
                 handler = function(h, ...) iNZImportExampleWin$new(GUI)
             )
             exBtn$set_icon("gw-datasheet")
@@ -487,7 +487,7 @@ iNZDataViewWidget <- setRefClass(
                 container = landingView,
                 anchor = c(-1, 0)
             )
-            guideBtn <- gbutton("Getting Started with iNZight",
+            guideBtn <- gbutton(tr("widget_getting_started"),
                 handler = function(h, ...) help_page("user_guides/basics")
             )
             guideBtn$set_icon("gw-help_topic")
@@ -557,7 +557,7 @@ iNZDataViewWidget <- setRefClass(
                         return()
                     }
                     if (sum(!same) > 1L) {
-                        gmessage("Multiple values changed somehow ... ")
+                        gmessage(paste(tr("widget_vals_changed"), "..."))
                         updateDfView()
                         return()
                     }
@@ -566,7 +566,7 @@ iNZDataViewWidget <- setRefClass(
                     new <- dfWidget$get_frame()[changed[1], changed[2]]
 
                     if (iNZightTools::is_dt(new)) {
-                        gmessage("Editing datetimes not supported.")
+                        gmessage(tr("widget_edit_datetime"))
                         updateDfView()
                         return()
                     }
@@ -590,7 +590,7 @@ iNZDataViewWidget <- setRefClass(
             pageGp <- ggroup(container = dfView)
             addSpring(pageGp)
 
-            lbl <- glabel("Rows per page:")
+            lbl <- glabel(tr("widget_row_page"))
             font(lbl) <- list(size = 8)
             add(pageGp, lbl)
 
