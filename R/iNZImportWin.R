@@ -95,7 +95,7 @@ iNZImportWin <- setRefClass(
             # mainGp$set_borderwidth(10)
 
             ## Select file (and extension)
-            fileGp <- gframe("Select File to Import",
+            fileGp <- gframe(tr("importwin_file_import"),
                 pos = 0,
                 horizontal = FALSE
             )
@@ -103,10 +103,10 @@ iNZImportWin <- setRefClass(
             fileTbl <<- glayout(container = fileGp)
             ii <- 1L
 
-            lbl <- glabel("File Name :")
+            lbl <- glabel(tr("importwin_file_name"))
             font(lbl) <- list(weight = "bold")
             filename <<- glabel("")
-            browseBtn <<- gbutton("Browse",
+            browseBtn <<- gbutton(tr("importwin_browse"),
                 handler = function(h, ...) {
                     fname <<- gfile(
                         text = "Choose a file",
@@ -126,12 +126,12 @@ iNZImportWin <- setRefClass(
             ii <- ii + 1L
 
             ## --- URL?
-            loadURL <<- gcheckbox("Import from URL", checked = FALSE)
+            loadURL <<- gcheckbox(tr("importwin_url"), checked = FALSE)
             fileTbl[ii, 2:5, expand = TRUE, anchor = c(-1, 0)] <<- loadURL
             ii <- ii + 1L
 
             ## --- Extension
-            lbl <- glabel("File Type :")
+            lbl <- glabel(tr("importwin_file_type"))
             font(lbl) <- list(weight = "bold")
             filetype <<- gcombobox(c(names(filetypes)[-1]), selected = 0)
             fileTbl[ii, 1, anchor = c(1, 0)] <<- lbl
@@ -182,14 +182,14 @@ iNZImportWin <- setRefClass(
             add_body(fileGp)
 
             ## Preview:
-            prevGp <<- gframe("Preview",
+            prevGp <<- gframe(tr("importwin_preview"),
                 pos = 0,
                 horizontal = FALSE
             )
             size(prevGp) <<- c(100, 170)
             prevGp$set_borderwidth(10)
 
-            prevLbl <<- glabel("No file selected.",
+            prevLbl <<- glabel(tr("importwin_no_file"),
                 container = prevGp,
                 anchor = c(-1, 1),
                 fill = TRUE
@@ -201,7 +201,7 @@ iNZImportWin <- setRefClass(
 
 
             ## Advanced Import Settings
-            advGp <<- gexpandgroup("Advanced Options",
+            advGp <<- gexpandgroup(tr("importwin_adv_ops"),
                 horizontal = FALSE
             )
             visible(advGp) <<- FALSE
@@ -309,13 +309,13 @@ iNZImportWin <- setRefClass(
                 },
                 "svydesign" = {
                     if (!requireNamespace("surveyspec", quietly = TRUE)) {
-                        p <- gconfirm("You need to install additional packages. Do it now?",
+                        p <- gconfirm(tr("importwin_install_pack"),
                             "Install required packages?",
                             icon = "question",
                             parent = GUI$win
                         )
                         if (!p) {
-                            gmessage("Unable to set survey design.",
+                            gmessage(tr("importwin_no_survey_design"),
                                 parent = GUI$win
                             )
                             return()
@@ -349,7 +349,7 @@ iNZImportWin <- setRefClass(
                             )
                             g <- gvbox(container = w)
                             g$set_borderwidth(5)
-                            glabel("Please wait while data loads ...", anchor = c(-1, 0), container = g)
+                            glabel(tr("importwin_wait_load"), anchor = c(-1, 0), container = g)
                             addSpace(g, 10)
                             pb <- gprogressbar(from, container = g)
                             addSpace(g, 10)
@@ -636,7 +636,7 @@ iNZImportWin <- setRefClass(
         },
         createDataName = function() {
             if (is.null(rdaName)) {
-                rdaLabel <<- glabel("Dataset :")
+                rdaLabel <<- glabel(tr("importwin_dataset"))
                 font(rdaLabel) <<- list(weight = "bold")
                 rdaName <<- gcombobox("(none)")
                 fileTbl[4L, 1L, anchor = c(1, 0)] <<- rdaLabel
@@ -700,7 +700,7 @@ iNZImportWin <- setRefClass(
                             ## Do not allow value to be same as thousands separator!
                             if (decMark == bigMark) {
                                 gmessage(
-                                    "Decimal mark and thousands separator must be different.",
+                                    tr("importwin_decimal_mark"),
                                     type = "error"
                                 )
                             } else {
@@ -713,7 +713,7 @@ iNZImportWin <- setRefClass(
                     ii <- ii + 1L
 
                     ## --- THOUSANDS SEPARATOR
-                    lbl <- glabel("Thousands Separator :")
+                    lbl <- glabel(tr("importwin_thousand_separator"))
                     bigMarkOpt <- gcombobox(names(bigmarks),
                         selected = match(bigMark, bigmarks), ## which(sapply(bigmarks, function(x) bigMark == x)),
                         handler = function(h, ...) {
@@ -721,7 +721,7 @@ iNZImportWin <- setRefClass(
                             ## Do not allow value to be same as thousands separator!
                             if (decMark == bigMark) {
                                 gmessage(
-                                    "Decimal mark and thousands separator must be different.",
+                                    tr("importwin_decimal_mark"),
                                     type = "error"
                                 )
                             } else {
@@ -734,7 +734,7 @@ iNZImportWin <- setRefClass(
                     ii <- ii + 1L
 
                     ## --- FILE ENCODING
-                    lbl <- glabel("File Encoding :")
+                    lbl <- glabel(tr("importwin_file_encoding"))
                     encOpt <- gcombobox(encodings,
                         selected = match(encoding, encodings),
                         handler = function(h, ...) {
@@ -752,12 +752,12 @@ iNZImportWin <- setRefClass(
 
                     ## --- DATE FORMAT
                     ## this should be a drop down of some common formats (2016-01-16, 16 Jan 2016, 16/01/16, 01/16/16, ...)
-                    lbl <- glabel("Date Format :")
+                    lbl <- glabel(tr("importwin_date_format"))
                     # dateFmt <- gcombobox()
                 },
                 ## default case
                 {
-                    lbl <- glabel("No options available for this file type.")
+                    lbl <- glabel(tr("importwin_no_ops"))
                     tbl[ii, 1L, anchor = c(-1, 0), expand = TRUE] <- lbl
                 }
             ) # end switch(fext)
@@ -783,7 +783,7 @@ iNZImportWin <- setRefClass(
 
                 if (inherits(readx, "try-error")) {
                     dispose(infw)
-                    gmessage("There was an error loading the data.",
+                    gmessage(tr("importwin_error_load"),
                         icon = "error",
                         title = "Unable to load data.",
                         parent = importFileWin
