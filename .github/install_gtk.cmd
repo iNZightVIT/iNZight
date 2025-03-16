@@ -12,6 +12,7 @@ if exist D:\a\_temp\Library\RGtk2\NUL (
 )
 
 echo "Installing RGtk2 ..."
-Rscript -e "Sys.setenv(GTK_PATH = file.path(getwd(), 'gtk')); install.packages(c('RGtk2', 'cairoDevice'), repos = 'https://r.docker.stat.auckland.ac.nz', type = 'source')"
+Rscript -e "if (!requireNamespace('remotes', quietly = TRUE)) install.packages('remotes')"
+Rscript -e "Sys.setenv(GTK_PATH = file.path(getwd(), 'gtk')); remotes::install_github(c('tmelliott/RGtk2/RGtk2', 'tmelliott/cairoDevice'), type = 'source')"
 
 mv gtk D:\a\_temp\Library\RGtk2\

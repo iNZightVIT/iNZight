@@ -95,12 +95,12 @@ jobs:
         with:
           run: Rscript -e "library(RGtk2); gtkWindowNew()"
 
-      # - name: Install dependencies
-      #   uses: coactions/setup-xvfb@v1
-      #   env:
-      #     OS_TYPE: ${{ runner.os }}
-      #   with:
-      #     run: Rscript ./.github/install_deps.R
+      - name: Install dependencies
+        uses: coactions/setup-xvfb@v1
+        env:
+          OS_TYPE: ${{ runner.os }}
+        with:
+          run: Rscript ./.github/install_deps.R
 
       # - name: Create iNZightVIT directory
       #   if: runner.os == 'Windows'
