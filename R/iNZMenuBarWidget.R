@@ -608,20 +608,11 @@ iNZMenuBarWidget <- setRefClass(
                             }
                         ),
                     timeseries =
-                        gaction("Time series ...",
+                        gaction("Time series (legacy version) ...",
                             icon = "ts",
-                            tooltip = "Start the time series module",
+                            tooltip = "Start the time series module (legacy)",
                             handler = function(h, ...) {
-                                res <- gconfirm(
-                                    "This module is being deprecated. You can install the new version from the 'Modules' menu.\n\nWe will continue to support this module for the time being, but it will be removed in a future release.\n\nClick 'OK' to continue to the old Time Series module.",
-                                    title = "Deprecation Warning",
-                                    icon = "warning",
-                                    parent = GUI$win
-                                )
-                                if (!res) {
-                                    return()
-                                }
-                                iNZightModules::iNZightTSMod$new(GUI)
+                                iNZightModules::iNZightTSLegacyMod$new(GUI)
                             }
                         ),
                     modelfitting =
