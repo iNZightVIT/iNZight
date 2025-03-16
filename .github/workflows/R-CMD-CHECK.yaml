@@ -17,7 +17,7 @@ jobs:
           # - { os: windows-latest, r: "4.3", cache-version: 1 }
           - { os: windows-latest, r: "4.4", cache-version: 1 }
           - {
-              os: ubuntu-20.04,
+              os: ubuntu-latest,
               r: "release",
               rspm: "https://packagemanager.rstudio.com/cran/__linux__/focal/latest",
               cache-version: 3,
