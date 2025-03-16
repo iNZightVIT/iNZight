@@ -9,12 +9,14 @@ needs <- strsplit(
     ",\n"
 )[[1]]
 
-options(
-    repos = c(
-        inzight = "https://r.docker.stat.auckland.ac.nz",
-        CRAN = "https://cloud.r-project.org"
-    )
-)
+# options(
+#     repos = c(
+#         inzight = "https://r.docker.stat.auckland.ac.nz",
+#         CRAN = "https://cloud.r-project.org"
+#     )
+# )
+
+pak::repo_add("https://r.docker.stat.auckland.ac.nz")
 
 if (Sys.getenv("OS_TYPE") == "Windows" &&
     getRversion() < numeric_version("4.4")) {
