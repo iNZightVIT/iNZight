@@ -85,10 +85,8 @@ jobs:
       - uses: r-lib/actions/setup-r-dependencies@v2
         with:
           cache-version: ${{ matrix.config.cache-version }}
-          extra-packages: |
-            rcmdcheck
-          needs: |
-            dependencies
+          extra-packages: rcmdcheck, RGtk2=?ignore
+          needs: dependencies
 
       # - name: Install dependencies
       #   uses: coactions/setup-xvfb@v1
