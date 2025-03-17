@@ -14,12 +14,20 @@ if (.Platform$OS.type == "windows" &&
 Sys.setenv(GTK_PATH = file.path(getwd(), "gtk"))
 
 if (!requireNamespace("remotes", quietly = TRUE)) {
+    cat("Installing remotes ...\n")
     install.packages("remotes")
 }
 if (!requireNamespace("RGtk2", quietly = TRUE) ||
     packageVersion("RGtk2") < numeric_version("2.20.41")) {
+    cat("Removing existing RGtk2 installation ...")
+    remove.packages("RGtk2")
+
+    cat("Installing RGtk2 ...\n")
     remotes::install_github("tmelliott/RGtk2/RGtk2", type = "source")
 }
 if (!requireNamespace("cairoDevice", quietly = TRUE)) {
+    cat("Installing cairoDevice ...\n")
     install.packages("cairoDevice", type = "source")
 }
+
+# TODO: move gtk into RGtk2 directory once complete
