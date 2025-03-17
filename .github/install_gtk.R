@@ -39,3 +39,6 @@ if (.Platform$OS.type == "windows" &&
     cat("Moving gtk binary to RGtk2 ...\n")
     file.rename("gtk", file.path(system.file("", package = "RGtk2"), "gtk"))
 }
+
+print(list.files(system.file("", package = "RGtk2")))
+print(list.files(system.file("gtk", package = "RGtk2")))
