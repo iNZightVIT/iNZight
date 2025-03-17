@@ -19,11 +19,18 @@ if (!requireNamespace("remotes", quietly = TRUE)) {
 if (!requireNamespace("RGtk2", quietly = TRUE) ||
     packageVersion("RGtk2") < numeric_version("2.20.41")) {
     cat("Installing RGtk2 ...\n")
-    remotes::install_github("tmelliott/RGtk2/RGtk2", type = "source", build = FALSE)
+    remotes::install_github("tmelliott/RGtk2/RGtk2",
+        type = "source",
+        build = FALSE,
+        INSTALL_opts = "--no-multiarch"
+    )
 }
 if (!requireNamespace("cairoDevice", quietly = TRUE)) {
     cat("Installing cairoDevice ...\n")
-    install.packages("cairoDevice", type = "source", build = FALSE)
+    install.packages("cairoDevice",
+        type = "source",
+        build = FALSE, INSTALL_opts = "--no-multiarch"
+    )
 }
 
 if (.Platform$OS.type == "windows" &&
