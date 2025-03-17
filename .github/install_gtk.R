@@ -19,7 +19,7 @@ if (!requireNamespace("remotes", quietly = TRUE)) {
 }
 if (!requireNamespace("RGtk2", quietly = TRUE) ||
     packageVersion("RGtk2") < numeric_version("2.20.41")) {
-    cat("Removing existing RGtk2 installation ...")
+    cat("Removing existing RGtk2 installation ...\n")
     remove.packages("RGtk2")
 
     cat("Installing RGtk2 ...\n")
