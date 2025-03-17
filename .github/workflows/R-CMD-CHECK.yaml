@@ -83,8 +83,7 @@ jobs:
 
       - name: Install gtk binaries, and RGtk2 from source if needed
         if: runner.os == 'Windows'
-        run: ./.github/install_gtk_win.R
-        shell: Rscript {0}
+        run: Rscript ./.github/install_gtk_win.R
 
       - name: Add GTK to PATH
         if: runner.os == 'Windows'
