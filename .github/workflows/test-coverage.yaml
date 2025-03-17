@@ -14,7 +14,7 @@ jobs:
         config:
           - { os: windows-latest, r: "4.4", cache-version: 1 }
           - {
-              os: ubuntu-20.04,
+              os: ubuntu-latest,
               r: "release",
               rspm: "https://packagemanager.rstudio.com/cran/__linux__/focal/latest",
             }
@@ -69,28 +69,27 @@ jobs:
           if (!requireNamespace("cairoDevice", quietly = TRUE))
             install.packages("cairoDevice")
 
-      - name: Install RGtk2
-        if: runner.os == 'Windows'
-        run: ./.github/install_gtk.cmd
-        shell: bash
+      - name: Install gtk binaries, and RGtk2 from source if needed
+        run: Rscript ./.github/install_gtk.R
 
       - name: Add GTK to PATH
         if: runner.os == 'Windows'
         run: echo "${{env.R_LIBS_USER}}\RGtk2\gtk\bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
 
       - name: Check RGtk2
-        if: runner.os == 'Windows'
-        run: |
-          library(RGtk2)
-          gtkWindowNew()
-        shell: Rscript {0}
+        uses: coactions/setup-xvfb@v1
+        with:
+          run: Rscript -e "library(RGtk2); gtkWindowNew()"
 
       - name: Install dependencies
-        uses: GabrielBB/xvfb-action@v1.2
+        uses: coactions/setup-xvfb@v1
         env:
           OS_TYPE: ${{ runner.os }}
         with:
           run: Rscript ./.github/install_deps.R
+
+      - name: Install covr
+        run: Rscript -e "pak::pak('covr')"
 
       - name: Create iNZightVIT directory
         if: runner.os == 'Windows'
@@ -103,39 +102,3 @@ jobs:
           _R_CHECK_CRAN_INCOMING_REMOTE_: false
         with:
           run: Rscript -e "covr::codecov()""
-
-      # - name: Install XVFB
-      #   if: runner.os == 'Linux'
-      #   run: sudo apt-get install xvfb
-
-      # - name: Test coverage [linux]
-      #   continue-on-error: true
-      #   if: runner.os == 'Linux'
-      #   uses: nick-fields/retry@v3
-      #   with:
-      #     timeout_minutes: 10
-      #     max_attempts: 3
-      #     command: xvfb-run --auto-servernum Rscript -e "covr::codecov()"
-
-      # - name: Test coverage [win]
-      #   continue-on-error: true
-      #   if: runner.os != 'Linux'
-      #   uses: nick-fields/retry@v3
-      #   with:
-      #     timeout_minutes: 10
-      #     max_attempts: 5
-      #     command: Rscript -e "covr::codecov()"
-
-      # - name: Clean up XVFB
-      #   if: runner.os == 'Linux'
-      #   run: |
-      #     kill_xvfb () {
-      #       local xvfb_pids=`ps aux | grep tmp/xvfb-run | grep -v grep | awk '{print $2}'`
-      #       if [ "$xvfb_pids" != "" ]; then
-      #         echo "Killing the following xvfb processes: $xvfb_pids"
-      #         sudo kill $xvfb_pids
-      #       else
-      #         echo "No xvfb processes to kill"
-      #       fi
-      #     }
-      #     kill_xvfb

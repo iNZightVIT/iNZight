@@ -11,10 +11,6 @@ if (.Platform$OS.type == "windows") {
 
     on.exit({
         # delete if it doesn't get moved
-        if (dir.exists("gtk")) {
-            cat("Cleaning up gtk ...\n")
-            unlink("gtk", recursive = TRUE)
-        }
     })
 }
 
@@ -47,8 +43,11 @@ if (!requireNamespace("cairoDevice", quietly = TRUE)) {
     )
 }
 
-if (.Platform$OS.type == "windows" &&
-    !file.exists(file.path(system.file("", package = "RGtk2"), "gtk"))) {
-    cat("Moving gtk binary to RGtk2 ...\n")
-    file.rename("gtk", file.path(system.file("", package = "RGtk2"), "gtk"))
+if (.Platform$OS.type == "windows") {
+    if (!file.exists(file.path(system.file("", package = "RGtk2"), "gtk"))) {
+        cat("Moving gtk binary to RGtk2 ...\n")
+        file.rename("gtk", file.path(system.file("", package = "RGtk2"), "gtk"))
+    } else {
+        unlink("gtk", recursive = TRUE)
+    }
 }
