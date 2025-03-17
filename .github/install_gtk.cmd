@@ -6,13 +6,13 @@ md gtk
 7z x gtk.zip -ogtk > nul
 del gtk.zip
 
-if exist D:\a\_temp\Library\RGtk2\NUL (
-  mv gtk D:\a\_temp\Library\RGtk2\
-  exit 0
-)
+@REM if exist D:\a\_temp\Library\RGtk2\NUL (
+@REM   mv gtk D:\a\_temp\Library\RGtk2\
+@REM   exit 0
+@REM )
 
 echo "Installing RGtk2 ..."
-Rscript -e "if (!requireNamespace('remotes', quietly = TRUE)) install.packages('remotes')"
-Rscript -e "Sys.setenv(GTK_PATH = file.path(getwd(), 'gtk')); remotes::install_github(c('tmelliott/RGtk2/RGtk2', 'tmelliott/cairoDevice'), type = 'source')"
+Rscript install_gtk_win.R
 
+echo "Moving gtk to RGtk2 ..."
 mv gtk D:\a\_temp\Library\RGtk2\
