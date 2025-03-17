@@ -23,14 +23,14 @@ if (!requireNamespace("RGtk2", quietly = TRUE) ||
         type = "source",
         build = FALSE,
         # R session needs to be reloaded before we can test RGtk2
-        INSTALL_opts = c("--no-multiarch", "--no-test-load")
+        INSTALL_opts = c("--no-test-load")
     )
 }
 if (!requireNamespace("cairoDevice", quietly = TRUE)) {
     cat("Installing cairoDevice ...\n")
     install.packages("cairoDevice",
         type = "source",
-        build = FALSE, INSTALL_opts = "--no-multiarch"
+        build = FALSE
     )
 }
 
