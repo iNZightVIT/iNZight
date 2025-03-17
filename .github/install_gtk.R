@@ -20,12 +20,14 @@ if (!requireNamespace("RGtk2", quietly = TRUE) ||
     packageVersion("RGtk2") < numeric_version("2.20.41")) {
     cat("Installing RGtk2 ...\n")
     remotes::install_github("tmelliott/RGtk2/RGtk2", type = "source", build = FALSE)
-    if (.Platform$OS.type == "windows") {
-        cat("Moving gtk binary to RGtk2 ...\n")
-        file.rename("gtk", file.path(system.file("", package = "RGtk2"), "gtk"))
-    }
 }
 if (!requireNamespace("cairoDevice", quietly = TRUE)) {
     cat("Installing cairoDevice ...\n")
     install.packages("cairoDevice", type = "source", build = FALSE)
+}
+
+if (.Platform$OS.type == "windows" &&
+    !file.exists(file.path(system.file("", package = "RGtk2"), "gtk"))) {
+    cat("Moving gtk binary to RGtk2 ...\n")
+    file.rename("gtk", file.path(system.file("", package = "RGtk2"), "gtk"))
 }
