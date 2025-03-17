@@ -1,7 +1,6 @@
 # if windows
-if (.Platform$OS.type == "windows" &&
-    !dir.exists(system.file("gtk", package = "RGtk2"))) {
-    cat("Installing gtk ...")
+if (.Platform$OS.type == "windows") {
+    cat("Downloading gtk ...")
     gtk_url <- "https://inzight.nz/data/gtk+-bundle_2.22.1-20101229_win64.zip"
 
     # Downloading gtk
@@ -21,14 +20,12 @@ if (!requireNamespace("RGtk2", quietly = TRUE) ||
     packageVersion("RGtk2") < numeric_version("2.20.41")) {
     cat("Installing RGtk2 ...\n")
     remotes::install_github("tmelliott/RGtk2/RGtk2", type = "source", build = FALSE)
+    if (.Platform$OS.type == "windows") {
+        cat("Moving gtk binary to RGtk2 ...\n")
+        file.rename("gtk", file.path(system.file("", package = "RGtk2"), "gtk"))
+    }
 }
 if (!requireNamespace("cairoDevice", quietly = TRUE)) {
     cat("Installing cairoDevice ...\n")
     install.packages("cairoDevice", type = "source", build = FALSE)
-}
-
-if (.Platform$OS.type == "windows" &&
-    !dir.exists(system.file("gtk", package = "RGtk2"))) {
-    cat("Moving gtk binary to RGtk2 ...\n")
-    file.rename("gtk", system.file("gtk", package = "RGtk2"))
 }
