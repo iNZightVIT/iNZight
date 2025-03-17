@@ -1,6 +1,6 @@
 # if windows
 if (.Platform$OS.type == "windows") {
-    cat("Downloading gtk ...")
+    cat("Downloading gtk ...\n")
     gtk_url <- "https://inzight.nz/data/gtk+-bundle_2.22.1-20101229_win64.zip"
 
     # Downloading gtk
@@ -12,6 +12,7 @@ if (.Platform$OS.type == "windows") {
     on.exit({
         # delete if it doesn't get moved
         if (dir.exists("gtk")) {
+            cat("Cleaning up gtk ...\n")
             unlink("gtk", recursive = TRUE)
         }
     })
