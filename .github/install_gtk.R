@@ -24,7 +24,11 @@ if (!requireNamespace("RGtk2", quietly = TRUE) ||
 }
 if (!requireNamespace("cairoDevice", quietly = TRUE)) {
     cat("Installing cairoDevice ...\n")
-    install.packages("cairoDevice", type = "source")
+    install.packages("cairoDevice", type = "source", build = FALSE)
 }
 
-# TODO: move gtk into RGtk2 directory once complete
+if (.Platform$OS.type == "windows" &&
+    !dir.exists(system.file("gtk", package = "RGtk2"))) {
+    cat("Moving gtk binary to RGtk2 ...\n")
+    file.rename("gtk", system.file("gtk", package = "RGtk2"))
+}
