@@ -6,13 +6,8 @@ md gtk
 7z x gtk.zip -ogtk > nul
 del gtk.zip
 
-@REM if exist D:\a\_temp\Library\RGtk2\NUL (
-@REM   mv gtk D:\a\_temp\Library\RGtk2\
-@REM   exit 0
-@REM )
-
 echo "Installing RGtk2 ..."
-Rscript install_gtk_win.R
+Rscript .github\install_gtk_win.R
 
 echo "Moving gtk to RGtk2 ..."
 mv gtk D:\a\_temp\Library\RGtk2\
