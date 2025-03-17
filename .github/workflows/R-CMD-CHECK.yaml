@@ -70,27 +70,31 @@ jobs:
         run: |
           sudo apt install libgtk2.0-dev xorg-dev libxml2-dev libnlopt-dev libcurl4-openssl-dev
 
-      - name: Download gtk
-        if: runner.os == 'Windows'
-        run: ./.github/install_gtk.cmd
-
-      - name: Install RGtk2
-        if: runner.os != 'Windows'
-        env:
-          GTK_PATH: ${{ runner.workspace }}/gtk
-        shell: Rscript {0}
-        run: |
-          if (!requireNamespace("remotes", quietly = TRUE))
-            install.packages("remotes")
-          if (!requireNamespace("RGtk2", quietly = TRUE) ||
-              packageVersion("RGtk2") < numeric_version("2.20.41"))
-            remotes::install_github("tmelliott/RGtk2/RGtk2")
-          if (!requireNamespace("cairoDevice", quietly = TRUE))
-            install.packages("cairoDevice")
-
-      # - name: Install gtk binaries, and RGtk2 from source if needed
+      # - name: Download gtk
       #   if: runner.os == 'Windows'
-      #   run: Rscript ./.github/install_gtk_win.R
+      #   run: ./.github/install_gtk.cmd
+
+      # - name: Install RGtk2
+      #   # if: runner.os != 'Windows'
+      #   env:
+      #     GTK_PATH: ${{ runner.workspace }}/gtk
+      #   shell: Rscript {0}
+      #   run: |
+      #     if (!requireNamespace("remotes", quietly = TRUE))
+      #       install.packages("remotes")
+      #     if (!requireNamespace("RGtk2", quietly = TRUE) ||
+      #         packageVersion("RGtk2") < numeric_version("2.20.41"))
+      #       remotes::install_github("tmelliott/RGtk2/RGtk2")
+      #     if (!requireNamespace("cairoDevice", quietly = TRUE))
+      #       install.packages("cairoDevice")
+
+      - name: Install gtk binaries, and RGtk2 from source if needed
+        # if: runner.os == 'Windows'
+        run: Rscript ./.github/install_gtk.R
+
+      # - name: Move GTK into place
+      #   if: runner.os == 'Windows'
+      #   run: move .\gtk $env:R_LIBS_USER\RGtk2
 
       - name: Add GTK to PATH
         if: runner.os == 'Windows'
@@ -101,13 +105,13 @@ jobs:
         with:
           run: Rscript -e "library(RGtk2); gtkWindowNew()"
 
-      - uses: r-lib/actions/setup-r-dependencies@v2
-        with:
-          cache-version: ${{ matrix.config.cache-version }}
-          extra-packages: |
-            rcmdcheck
-          needs: |
-            dependencies
+      # - uses: r-lib/actions/setup-r-dependencies@v2
+      #   with:
+      #     cache-version: ${{ matrix.config.cache-version }}
+      #     extra-packages: |
+      #       rcmdcheck
+      #     needs: |
+      #       dependencies
 
       # - name: Install dependencies
       #   uses: coactions/setup-xvfb@v1
