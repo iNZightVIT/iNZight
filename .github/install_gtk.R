@@ -16,15 +16,18 @@ if (!requireNamespace("remotes", quietly = TRUE)) {
     cat("Installing remotes ...\n")
     install.packages("remotes")
 }
-if (!requireNamespace("RGtk2", quietly = TRUE) ||
-    packageVersion("RGtk2") < numeric_version("2.20.41")) {
+if (!requireNamespace("RGtk2", quietly = TRUE)) {
     cat("Installing RGtk2 ...\n")
-    remotes::install_github("tmelliott/RGtk2/RGtk2",
-        type = "source",
-        build = FALSE,
-        # R session needs to be reloaded before we can test RGtk2
-        INSTALL_opts = c("--no-test-load")
-    )
+    if (.Platform$OS.type == "windows") {
+        remotes::install_cran("RGtk2", INSTALL_opts = "--no-test-load")
+    } else {
+        remotes::install_github("tmelliott/RGtk2/RGtk2",
+            type = "source",
+            build = FALSE,
+            # R session needs to be reloaded before we can test RGtk2
+            INSTALL_opts = c("--no-test-load")
+        )
+    }
 }
 if (!requireNamespace("cairoDevice", quietly = TRUE)) {
     cat("Installing cairoDevice ...\n")
