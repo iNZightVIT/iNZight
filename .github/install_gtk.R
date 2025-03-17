@@ -22,7 +22,8 @@ if (!requireNamespace("RGtk2", quietly = TRUE) ||
     remotes::install_github("tmelliott/RGtk2/RGtk2",
         type = "source",
         build = FALSE,
-        INSTALL_opts = "--no-multiarch"
+        # R session needs to be reloaded before we can test RGtk2
+        INSTALL_opts = c("--no-multiarch", "--no-test-load")
     )
 }
 if (!requireNamespace("cairoDevice", quietly = TRUE)) {
