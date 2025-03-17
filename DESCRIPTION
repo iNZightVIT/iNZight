@@ -86,7 +86,7 @@ Config/Needs/dependencies:
 Config/Needs/coverage:
     tmelliott/surveyspec@develop,
     tmelliott/gWidgets2@patch-1,
-    tmelliott/gWidgets2RGtk2@inz,
+    iNZightVIT/gWidgets2RGtk2@inz,
     iNZightVIT/iNZightTools@2.0.1,
     iNZightVIT/iNZightTS@1.5.10,
     iNZightVIT/iNZightMR@2.3.0,
