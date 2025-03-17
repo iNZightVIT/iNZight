@@ -72,7 +72,6 @@ Config/Needs/dependencies:
     tmelliott/surveyspec@develop,
     tmelliott/gWidgets2@patch-1,
     iNZightVIT/gWidgets2RGtk2@inz,
-    tmelliott/RGtk2/RGtk2,
     gdemin/maditr@0.8.2,
     cran/Matrix@1.6-0,
     cran/units@0.8-5,
