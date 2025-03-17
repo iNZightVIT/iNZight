@@ -82,13 +82,13 @@ jobs:
         with:
           run: Rscript -e "library(RGtk2); gtkWindowNew()"
 
-      # - uses: r-lib/actions/setup-r-dependencies@v2
-      #   with:
-      #     cache-version: ${{ matrix.config.cache-version }}
-      #     extra-packages: |
-      #       rcmdcheck
-      #     needs: |
-      #       dependencies
+      - uses: r-lib/actions/setup-r-dependencies@v2
+        with:
+          cache-version: ${{ matrix.config.cache-version }}
+          extra-packages: |
+            rcmdcheck
+          needs: |
+            dependencies
 
       # - name: Install dependencies
       #   uses: coactions/setup-xvfb@v1
