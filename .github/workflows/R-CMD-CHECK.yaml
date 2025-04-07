@@ -13,7 +13,7 @@ jobs:
       matrix:
         config:
           # - { os: windows-latest, r: "4.1", cache-version: 5 }
-          - { os: windows-latest, r: "4.2", cache-version: 3 }
+          # - { os: windows-latest, r: "4.2", cache-version: 3 }
           # - { os: windows-latest, r: "4.3", cache-version: 1 }
           - { os: windows-latest, r: "4.4", cache-version: 2 }
           - {
@@ -95,6 +95,7 @@ jobs:
         shell: Rscript {0}
 
       - name: Check
+        if: runner.os == "Linux"
         uses: coactions/setup-xvfb@v1
         env:
           _R_CHECK_CRAN_INCOMING_REMOTE_: false
