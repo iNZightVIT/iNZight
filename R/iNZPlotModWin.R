@@ -285,7 +285,7 @@ iNZPlotModWin <- setRefClass(
             mainGrp <- modwin$body
 
             topGrp <- modwin$header
-            lbl <- glabel("Add to Plot :")
+            lbl <- glabel(tr("pmod_add_plot"))
             font(lbl) <- list(
                 weight = "bold",
                 family = "sans",
@@ -310,11 +310,11 @@ iNZPlotModWin <- setRefClass(
             auto <<- nrow(GUI$getActiveData(lazy = TRUE)) < 100000
             autoGrp <- ggroup(horizontal = TRUE, fill = TRUE)
             addSpring(autoGrp)
-            autoChk <- gcheckbox("Update automatically",
+            autoChk <- gcheckbox(tr("pmod_auto_update"),
                 checked = auto,
                 cont = autoGrp
             )
-            updateBtn <- gbutton("Update Plot",
+            updateBtn <- gbutton(tr("pmod_plot_update"),
                 fill = TRUE,
                 cont = autoGrp,
                 handler = function(h, ...) updateEverything(TRUE)
@@ -330,7 +330,7 @@ iNZPlotModWin <- setRefClass(
 
             btnGrp <- modwin$footer
 
-            helpButton <- gbutton("Help",
+            helpButton <- gbutton(tr("pmod_help"),
                 expand = TRUE,
                 fill = TRUE,
                 cont = btnGrp,
@@ -340,7 +340,7 @@ iNZPlotModWin <- setRefClass(
             )
             helpButton$set_icon("gw-help_topic")
 
-            okButton <<- gbutton("Home",
+            okButton <<- gbutton(tr("pmod_home"),
                 expand = TRUE,
                 fill = TRUE,
                 cont = btnGrp,
@@ -355,7 +355,7 @@ iNZPlotModWin <- setRefClass(
             ## Do checking first
             ## If g1 or g2 = _MULTI, then we can't identify points (yet ...)
             cantDo <- function(msg = "using subsetting variables.") {
-                gmessage(paste("Cannot identify points when", msg),
+                gmessage(paste(tr("pmod_no_identity"), msg),
                     icon = "error",
                     title = "Unable to identify",
                     parent = modWin
@@ -450,7 +450,7 @@ iNZPlotModWin <- setRefClass(
             tbl <- glayout()
             ii <- 3
 
-            lbl <- glabel("How do you want to label points?")
+            lbl <- glabel(tr("pmod_label_points"))
             font(lbl) <- list(weight = "bold", family = "sans")
             tbl[ii, 1:2, expand = TRUE, anchor = c(-1, 0)] <- lbl
             ii <- ii + 1
@@ -470,7 +470,7 @@ iNZPlotModWin <- setRefClass(
                 }
             }
 
-            colLabs <- gcheckbox("Colour Points", checked = FALSE)
+            colLabs <- gcheckbox(tr("pmod_colour"), checked = FALSE)
             colmenu <- gcombobox(c("red", "blue", "green4"),
                 selected = 1,
                 editable = TRUE,
@@ -529,7 +529,7 @@ iNZPlotModWin <- setRefClass(
                 }
             )
 
-            matchChk <- gcheckbox("With the same level of")
+            matchChk <- gcheckbox(tr("pmod_same_level"))
             tbl[ii, 1] <- matchChk
 
             if (!is.null(locSet$matchChk)) {
@@ -567,7 +567,7 @@ iNZPlotModWin <- setRefClass(
 
             ii <- ii + 1
 
-            lbl <- glabel("How do you want to select points?")
+            lbl <- glabel(tr("pmod_select_points"))
             font(lbl) <- list(weight = "bold", family = "sans")
             tbl[ii, 1:2, expand = TRUE, anchor = c(-1, 0)] <- lbl
             ii <- ii + 1
@@ -737,18 +737,18 @@ iNZPlotModWin <- setRefClass(
 
             if (attr(GUI$curPlot, "nplots") > 1) {
                 locateButton <-
-                    glabel("Cannot locate using mouse for multiple graphs.",
+                    glabel(tr("pmod_no_mouse"),
                         cont = selectGrp
                     )
                 svalue(selectMthd, TRUE) <- 2
             } else if (dot & is.factor(curSet$y)) {
                 locateButton <-
-                    glabel("Cannot locate when Variable 2 is a factor.",
+                    glabel(tr("pmod_no_vars"),
                         cont = selectGrp
                     )
                 svalue(selectMthd, TRUE) <- 2
             } else {
-                locateButton <- gbutton("Click to Locate ...",
+                locateButton <- gbutton(paste(tr("pmod_click"), "..."),
                     cont = selectGrp
                 )
                 addHandlerClicked(
@@ -770,7 +770,7 @@ iNZPlotModWin <- setRefClass(
                 expand = TRUE,
                 fill = TRUE
             )
-            selectLab <- glabel("Variable: ", cont = selectList)
+            selectLab <- glabel(tr("pmod_var"), cont = selectList)
             selectVar <- gcombobox(names(GUI$getActiveData(lazy = TRUE)),
                 selected = 0,
                 cont = selectList,
@@ -782,7 +782,7 @@ iNZPlotModWin <- setRefClass(
                 expand = FALSE,
                 fill = TRUE
             )
-            selectGo <- gbutton("Select values ...", cont = selectList)
+            selectGo <- gbutton(paste(tr("pmod_select_vals"), "..."), cont = selectList)
 
             enabled(selectGo) <- svalue(selectVar, TRUE) > 0
             addHandlerChanged(
@@ -855,7 +855,7 @@ iNZPlotModWin <- setRefClass(
                     expand = TRUE,
                     fill = TRUE
                 )
-                lowerLab <- glabel("N Lower: ", cont = lowerG)
+                lowerLab <- glabel(tr("pmod_n_lower"), cont = lowerG)
                 nlowerSld <- gslider(0, 20,
                     expand = TRUE,
                     fill = TRUE,
@@ -867,7 +867,7 @@ iNZPlotModWin <- setRefClass(
                     expand = TRUE,
                     fill = TRUE
                 )
-                upperLab <- glabel("N Upper: ", cont = upperG)
+                upperLab <- glabel(tr("pmod_n_upper"), cont = upperG)
                 nupperSld <- gslider(0, 20,
                     expand = TRUE,
                     fill = TRUE,
@@ -895,7 +895,7 @@ iNZPlotModWin <- setRefClass(
                     expand = TRUE,
                     fill = TRUE
                 )
-                extLab <- glabel("Number of points: ", cont = extremePts)
+                extLab <- glabel(tr("pmod_num_points"), cont = extremePts)
                 extN <- gslider(0, 20, cont = extremePts, expand = TRUE)
                 if (!is.null(curSet$locate.extreme)) {
                     svalue(extN) <- curSet$locate.extreme
@@ -915,7 +915,7 @@ iNZPlotModWin <- setRefClass(
                     }
                 )
             }
-            addPts <- gbutton("Save these points ...",
+            addPts <- gbutton(paste(tr("pmod_save_points"), "..."),
                 cont = extremeGrp,
                 expand = FALSE,
                 anchor = c(0, 1)
@@ -1006,7 +1006,7 @@ iNZPlotModWin <- setRefClass(
             addHandlerClicked(
                 selectGo,
                 function(h, ...) {
-                    ww <- gwindow("Select levels to label ...",
+                    ww <- gwindow(paste(tr("pmod_select_levels"), "..."),
                         visible = FALSE,
                         width = 200,
                         height = 400,
@@ -1030,7 +1030,7 @@ iNZPlotModWin <- setRefClass(
                         expand = TRUE
                     )
 
-                    wb <- gbutton("Done", cont = wg)
+                    wb <- gbutton(tr("pmod_done"), cont = wg)
                     addHandlerClicked(
                         wb,
                         function(h, ...) {
@@ -1069,7 +1069,7 @@ iNZPlotModWin <- setRefClass(
             tbl[ii, 1, expand = TRUE] <- clearBtn
 
 
-            clearBtn2 <- gbutton("Clear label ...")
+            clearBtn2 <- gbutton(paste(tr("pmod_clear_label"), "..."))
             addHandlerClicked(
                 clearBtn2,
                 function(h, ...) {
@@ -1079,7 +1079,7 @@ iNZPlotModWin <- setRefClass(
             tbl[ii, 2, expand = TRUE] <- clearBtn2
             ii <- ii + 1
 
-            clearMulti <- gcheckbox("Remove group", checked = svalue(matchChk))
+            clearMulti <- gcheckbox(tr("pmod_remove_group"), checked = svalue(matchChk))
             tbl[ii, 2, expand = TRUE] <- clearMulti
             ii <- ii + 1
 
@@ -1105,7 +1105,7 @@ iNZPlotModWin <- setRefClass(
             }
 
             lvls <- levels(var)
-            colWin <- gwindow("Select Colours",
+            colWin <- gwindow(tr("pmod_select_colours"),
                 visible = FALSE,
                 parent = GUI$win
             )
@@ -1114,7 +1114,7 @@ iNZPlotModWin <- setRefClass(
             tbl <- glayout()
             jj <- 1
 
-            lbl <- glabel("Select colours")
+            lbl <- glabel(tr("pmod_colour_select"))
             font(lbl) <- list(weight = "bold", family = "sans", size = 9)
             tbl[jj, 1:2, anchor = c(-1, -1), expand = TRUE] <- lbl
             jj <- jj + 1
@@ -1142,8 +1142,7 @@ iNZPlotModWin <- setRefClass(
                 jj <- jj + 1
             }
 
-            okBtn <- gbutton(
-                "OK",
+            okBtn <- gbutton(tr("pmod_ok"),
                 function(h, ...) {
                     ri <- (1:length(lvls)) + 1
                     newCols <- sapply(tbl[ri, 2], svalue)
@@ -1184,11 +1183,11 @@ iNZPlotModWin <- setRefClass(
             )
 
             cnclBtn <- gbutton(
-                "Cancel",
+                tr("pmod_cancel"),
                 function(h, ...) dispose(colWin)
             )
             resetBtn <- gbutton(
-                "Reset",
+                tr("pmod_reset"),
                 function(h, ...) {
                     GUI$getActiveDoc()$setSettings(
                         list(col.pt = NULL)
@@ -1322,7 +1321,7 @@ iNZPlotMod <- setRefClass(
             ii <- ii + 1
 
             ## PLOT TYPE
-            lbl <- glabel("Plot type :")
+            lbl <- glabel(tr("pmod_plot_type"))
 
             varnames <- attr(GUI$curPlot, "varnames")
             PLOTTYPES <- plot_list(
@@ -1418,7 +1417,7 @@ iNZPlotMod <- setRefClass(
                 ii <- ii + 1
 
                 ## OVERALL SIZE
-                lbl <- glabel("Overall :")
+                lbl <- glabel(tr("pmod_overall"))
                 cexPt <- gslider(
                     from = 0.05, to = 3.5,
                     by = 0.05,
@@ -1435,7 +1434,7 @@ iNZPlotMod <- setRefClass(
 
                 if (PLOTTYPE == "scatter") {
                     ## SIZE BY
-                    lbl <- glabel("Resize points by :")
+                    lbl <- glabel(tr("pmod_resize_points"))
                     numv <- iNZightTools::vartypes(GUI$getActiveData(lazy = TRUE)) %in% c("num", "dt")
                     sizeVarNames <- names(GUI$getActiveData(lazy = TRUE))[numv]
                     sizeVar <- gcombobox(c("", sizeVarNames),
@@ -1450,7 +1449,7 @@ iNZPlotMod <- setRefClass(
                     ii <- ii + 1
 
                     ## RESIZE METHOD
-                    resizeLbl <- glabel("Resize method :")
+                    resizeLbl <- glabel(tr("pmod_resize_method"))
                     sizeMethods <- c("proportional", "emphasize")
                     sizeMethod <- gcombobox(sizeMethods,
                         selected = which(sizeMethods == curSet$resize.method)
@@ -1514,7 +1513,7 @@ iNZPlotMod <- setRefClass(
             }
 
             if (PLOTTYPE == "hex") {
-                lbl <- glabel("Style :")
+                lbl <- glabel(tr("pmod_style"))
                 hexStyles <- c("size", "alpha")
                 hexStyle <- gcombobox(hexStyles,
                     selected = which(hexStyles == curSet$hex.style)
@@ -1598,7 +1597,7 @@ iNZPlotMod <- setRefClass(
 
                 if (!hist & (!bars | is.null(curSet$y))) {
                     ## Colour by
-                    lbl <- glabel("Colour by :")
+                    lbl <- glabel(tr("pmod_colour_by"))
                     if (bars) {
                         cvars <- iNZightTools::vartypes(GUI$getActiveData(lazy = TRUE)) %in% c("cat")
                         colVarNames <- names(GUI$getActiveData(lazy = TRUE))[cvars]
@@ -1618,7 +1617,7 @@ iNZPlotMod <- setRefClass(
                     ii <- ii + 1
 
                     ## rank instead of linear scale
-                    useRank <- gcheckbox("Use Percentiles",
+                    useRank <- gcheckbox(tr("pmod_use_perc"),
                         checked = curSet$col.method == "rank"
                     )
                     tbl[ii, 5:6, anchor = c(-1, 0)] <- useRank
@@ -1626,7 +1625,7 @@ iNZPlotMod <- setRefClass(
                 }
                 if (!hist) {
                     ## reverse palette direction
-                    revPal <- gcheckbox("Reverse palette",
+                    revPal <- gcheckbox(tr("pmod_rev_palette"),
                         checked = curSet$reverse.palette
                     )
                     tbl[ii - exists("useRank"), 3:4, anchor = c(-1, 0)] <- revPal
@@ -1639,7 +1638,7 @@ iNZPlotMod <- setRefClass(
                     filename = system.file("images/gear.png", package = "iNZight"),
                     size = "button",
                     handler = function(h, ...) {
-                        gmessage("Advanced colour palette options ...")
+                        gmessage(paste(tr("pmod_adv_col_palette"), "..."))
                     }
                 )
 
@@ -1677,7 +1676,7 @@ iNZPlotMod <- setRefClass(
 
                 if (!bars) {
                     ## Cycle through levels:
-                    cycleLbl <- glabel("Cycle levels :")
+                    cycleLbl <- glabel(tr("pmod_cycle_levels"))
                     cyclePanel <- ggroup()
                     addSpace(cyclePanel, 10)
                     cyclePrev <- gimagebutton(
@@ -1724,7 +1723,7 @@ iNZPlotMod <- setRefClass(
                         }
                     )
                     addSpace(cyclePanel, 20)
-                    cycleNlab <- glabel("# quantiles :", container = cyclePanel)
+                    cycleNlab <- glabel(tr("pmod_quant"), container = cyclePanel)
                     font(cycleNlab) <- list(size = 9)
                     cycleN <- gspinbutton(4, 10,
                         by = 1,
@@ -1778,7 +1777,7 @@ iNZPlotMod <- setRefClass(
                         )
                 )
             ) {
-                lbl <- glabel("Colour palette :")
+                lbl <- glabel(tr("pmod_col_palette"))
                 palette_options <- c(
                     getOption("inzight.default.palette.cat.name", "default"),
                     "greyscale",
@@ -1862,7 +1861,7 @@ iNZPlotMod <- setRefClass(
             }
 
             if (PLOTTYPE %in% c("scatter", "dot")) {
-                lbl <- glabel("Transparency :")
+                lbl <- glabel(tr("pmod_transp"))
                 transpSlider <- gslider(
                     from = 0, to = 100,
                     by = 1,
@@ -1907,7 +1906,7 @@ iNZPlotMod <- setRefClass(
                 ii <- ii + 1
 
                 pchMsg <- glabel(
-                    "(requires categorical variable with 5 or fewer levels)"
+                    tr("pmod_cat_var")
                 )
                 font(pchMsg) <- list(size = 8)
                 tbl[ii, 1:6, anchor = c(-1, 0), expand = TRUE] <- pchMsg
@@ -1926,7 +1925,7 @@ iNZPlotMod <- setRefClass(
                 symbolMatch()
 
 
-                lbl <- glabel("Symbol :")
+                lbl <- glabel(tr("pmod_symbol"))
                 symbolList <- list(
                     circle = 21L,
                     square = 22L,
@@ -1949,7 +1948,7 @@ iNZPlotMod <- setRefClass(
                 symVars <- colnames(GUI$getActiveData(lazy = TRUE))[
                     sapply(GUI$getActiveData(lazy = FALSE), function(x) length(levels(x)) %in% 1:5)
                 ]
-                lbl <- glabel("Symbol by :")
+                lbl <- glabel(tr("pmod_symbol_by"))
                 symVar <- gcombobox(c("", symVars), selected = 1)
                 if (length(symVars) >= 1) {
                     tbl[ii, 1, anchor = c(1, 0), expand = TRUE] <- lbl
@@ -1960,12 +1959,12 @@ iNZPlotMod <- setRefClass(
                 enabled(symVar) <- enabled(symPch) <- !svalue(pchMatch)
 
                 ## Fill Symbols + line width
-                lbl <- glabel("Symbol line width :")
+                lbl <- glabel(tr("pmod_symbol_line"))
                 symLwd <- gspinbutton(1, 4, by = 1, value = curSet$lwd.pt)
                 tbl[ii, 1:2, anchor = c(1, 0), expand = TRUE] <- lbl
                 tbl[ii, 3:4] <- symLwd
 
-                fillSym <- gcheckbox("Fill symbols",
+                fillSym <- gcheckbox(tr("pmod_symbol_fill"),
                     checked = curSet$fill.pt == "fill"
                 )
                 enabled(fillSym) <- svalue(transpSlider) == 0
@@ -1983,7 +1982,7 @@ iNZPlotMod <- setRefClass(
                 tbl[ii, 1:2, anchor = c(1, 0), expand = TRUE] <- glabel("Show :")
 
                 if (PLOTTYPE %in% c("dot", "hist")) {
-                    showBoxplot <- gcheckbox("Boxplot",
+                    showBoxplot <- gcheckbox(tr("pmod_boxplot"),
                         checked = curSet$boxplot,
                         handler = function(h, ...) updateEverything()
                     )
@@ -1992,7 +1991,7 @@ iNZPlotMod <- setRefClass(
 
                 meanOpts <- c("No mean", "Overall mean", "Group means")
                 if (PLOTTYPE %in% c("dot", "hist", "gg_boxplot")) {
-                    showMean <- gcheckbox("Mean indicator",
+                    showMean <- gcheckbox(tr("pmod_mean_ind"),
                         checked = ifelse(is.logical(curSet$mean_indicator),
                             curSet$mean_indicator,
                             curSet$mean_indicator %in% meanOpts[-1]
@@ -2039,7 +2038,7 @@ iNZPlotMod <- setRefClass(
                     )
                 }
 
-                tbl[ii, 1:2, anchor = c(1, 0), expand = TRUE] <- glabel("Theme :")
+                tbl[ii, 1:2, anchor = c(1, 0), expand = TRUE] <- glabel(tr("pmod_theme"))
                 themeCombobox <- gcombobox(
                     theme.options,
                     selected =
@@ -2057,7 +2056,7 @@ iNZPlotMod <- setRefClass(
                         if (svalue(themeCombobox) == "Install additional themes...") {
                             tryCatch(
                                 {
-                                    if (gconfirm("Install ggthemes package?")) {
+                                    if (gconfirm(tr("pmod_install_pac"))) {
                                         install.packages(
                                             "ggthemes",
                                             repos = c(
@@ -2088,9 +2087,9 @@ iNZPlotMod <- setRefClass(
                 !(PLOTTYPE %in% c("gg_pie", "gg_donut", "gg_barcode"))
             ) {
                 tbl[ii, 1:2, anchor = c(1, 0), expand = TRUE] <-
-                    glabel("Rotate :")
+                    glabel(tr("pmod_rotate"))
 
-                rotateCheck <- gcheckbox("Plot")
+                rotateCheck <- gcheckbox(tr("pmod_plot"))
                 if (isTRUE(!is.null(curSet$rotation))) {
                     svalue(rotateCheck) <- curSet$rotation
                 }
@@ -2103,7 +2102,7 @@ iNZPlotMod <- setRefClass(
 
                 ii <- ii + 1
 
-                rotateLabelsX <- gcheckbox("x-axis Labels")
+                rotateLabelsX <- gcheckbox(tr("pmod_x_label"))
                 tbl[ii, 3:6, expand = TRUE] <- rotateLabelsX
                 if (isTRUE(!is.null(curSet$rotate_labels$x))) {
                     svalue(rotateLabelsX) <- curSet$rotate_labels$x
@@ -2111,7 +2110,7 @@ iNZPlotMod <- setRefClass(
 
                 ii <- ii + 1
 
-                rotateLabelsY <- gcheckbox("y-axis Labels")
+                rotateLabelsY <- gcheckbox(tr("pmod_y_label"))
                 tbl[ii, 3:6, expand = TRUE] <- rotateLabelsY
                 if (isTRUE(!is.null(curSet$rotate_labels$y))) {
                     svalue(rotateLabelsY) <- curSet$rotate_labels$y
@@ -2134,7 +2133,7 @@ iNZPlotMod <- setRefClass(
                 ii <- ii + 1
 
                 tbl[ii, 1:2, anchor = c(1, 0), expand = TRUE] <-
-                    glabel("Smoothing :")
+                    glabel(tr("pmod_smoothing"))
 
                 smoothSlider <- gslider(0.25, 4, 0.25,
                     value = ifelse(is.null(curSet$adjust), 1, curSet$adjust),
@@ -2155,7 +2154,7 @@ iNZPlotMod <- setRefClass(
 
             if (PLOTTYPE %in% c("gg_barcode")) {
                 tbl[ii, 1:2, anchor = c(1, 0), expand = TRUE] <-
-                    glabel("Size :")
+                    glabel(tr("pmod_size"))
                 barcodeSize <- gslider(from = 5, to = 20, by = 1, value = 16)
                 tbl[ii, 3:6, expand = TRUE] <- barcodeSize
 
@@ -2184,12 +2183,12 @@ iNZPlotMod <- setRefClass(
                 tbl[ii, 1:6, expand = TRUE] <- sectionTitle("Barcode Options")
                 ii <- ii + 1
 
-                tbl[ii, 1:2, anchor = c(1, 0), expand = TRUE] <- glabel("Width :")
+                tbl[ii, 1:2, anchor = c(1, 0), expand = TRUE] <- glabel(tr("pmod_width"))
                 barcodeWidth <- gslider(from = 0.25, to = 3, by = 0.25, value = 1)
                 tbl[ii, 3:6, expand = TRUE] <- barcodeWidth
                 ii <- ii + 1
 
-                tbl[ii, 1:2, anchor = c(1, 0), expand = TRUE] <- glabel("Height :")
+                tbl[ii, 1:2, anchor = c(1, 0), expand = TRUE] <- glabel(tr("pmod_height"))
                 barcodeHeight <- gslider(from = 0.1, to = 1, by = 0.1, value = 0.5)
                 tbl[ii, 3:6, expand = TRUE] <- barcodeHeight
                 ii <- ii + 1
@@ -2236,7 +2235,7 @@ iNZPlotMod <- setRefClass(
                 ii <- ii + 1
 
                 tbl[ii, 1:2, anchor = c(1, 0), expand = TRUE] <-
-                    glabel("Cut-point :")
+                    glabel(tr("pmod_cut_point"))
                 stackedCutPoint <- gcombobox(
                     c("Default", 1:(attr(PLOTTYPES, "cat.levels") - 1))
                 )
@@ -2261,7 +2260,7 @@ iNZPlotMod <- setRefClass(
                 tbl[ii, 1:6, expand = TRUE] <- sectionTitle("Point Options")
                 ii <- ii + 1
 
-                tbl[ii, 1:2, anchor = c(1, 0), expand = TRUE] <- glabel("Size :")
+                tbl[ii, 1:2, anchor = c(1, 0), expand = TRUE] <- glabel(tr("pmod_size"))
                 pointSize <- gslider(from = 1, to = 10, by = 1)
                 tbl[ii, 3:6, expand = TRUE] <- pointSize
 
@@ -2296,7 +2295,7 @@ iNZPlotMod <- setRefClass(
                 )
             ) {
                 tbl[ii, 1:2, anchor = c(1, 0), expand = TRUE] <-
-                    glabel("Transparency :")
+                    glabel(tr("pmod_transp"))
                 transpSlider <- gslider(
                     from = 0, to = 100,
                     by = 1,
@@ -2320,7 +2319,7 @@ iNZPlotMod <- setRefClass(
             }
 
             if (PLOTTYPE %in% c("gg_density", "gg_ridgeline")) {
-                tbl[ii, 1:2, anchor = c(1, 0), expand = TRUE] <- glabel("Transparency :")
+                tbl[ii, 1:2, anchor = c(1, 0), expand = TRUE] <- glabel(tr("pmod_transp"))
                 transpSlider <- gslider(
                     from = 0, to = 100,
                     by = 1,
@@ -2355,7 +2354,7 @@ iNZPlotMod <- setRefClass(
                 ii <- ii + 1
 
                 tbl[ii, 1:2, anchor = c(1, 0), expand = TRUE] <-
-                    glabel("Number of bins :")
+                    glabel(tr("pmod_bin_num"))
                 pyramidBins <- gslider(5, 50, by = 5, value = 30)
                 tbl[ii, 3:6, expand = TRUE] <- pyramidBins
 
@@ -2476,7 +2475,7 @@ iNZPlotMod <- setRefClass(
                         )
                     )
 
-                sortCheck <- gcombobox(c("None", "Ascending", "Descending"),
+                sortCheck <- gcombobox(c(tr("pmod_none"), tr("pmod_ascend"), tr("pmod_descend")),
                     handler = function(h, ...) updateEverything()
                 )
                 tbl[ii, 3:6, expand = TRUE] <- sortCheck
@@ -2499,7 +2498,7 @@ iNZPlotMod <- setRefClass(
                 ii <- ii + 1
 
                 tbl[ii, 1:2, anchor = c(1, 0), expand = TRUE] <-
-                    glabel("N observations/square :")
+                    glabel(tr("pmod_obs_sq"))
                 n_fun <- function(n) {
                     if (n > 1000) {
                         if (n > 5 * 10^ceiling(log10(n) - 1) && n > 5 * 10^ceiling(log10(n + 1) - 1)) {
@@ -2525,9 +2524,9 @@ iNZPlotMod <- setRefClass(
                 tbl[ii, 1:6, expand = TRUE] <- sectionTitle("Beeswarm Options")
                 ii <- ii + 1
 
-                tbl[ii, 1:2, anchor = c(1, 0), expand = TRUE] <- glabel("Method :")
+                tbl[ii, 1:2, anchor = c(1, 0), expand = TRUE] <- glabel(tr("pmod_method"))
                 swarmMethod <- gcombobox(
-                    c("quasirandom", "pseudorandom", "smiley", "frowney")
+                    c(tr("pmod_quasi"), tr("pmod_pseudo"), tr("pmod_smiley"), tr("pmod_frowney"))
                 )
                 tbl[ii, 3:6, expand = TRUE] <- swarmMethod
                 addHandlerChanged(swarmMethod,
@@ -2535,7 +2534,7 @@ iNZPlotMod <- setRefClass(
                 )
                 ii <- ii + 1
 
-                tbl[ii, 1:2, anchor = c(1, 0), expand = TRUE] <- glabel("Swarm width :")
+                tbl[ii, 1:2, anchor = c(1, 0), expand = TRUE] <- glabel(tr("pmod_swarm"))
                 swarmWidth <- gslider(0, 1, 0.1,
                     value = if (!is.null(curSet$gg_swarmwidth)) curSet$gg_swarmwidth else 0.4
                 )
@@ -2572,7 +2571,7 @@ iNZPlotMod <- setRefClass(
                     }
                 )
 
-                tbl[ii, 4, expand = TRUE] <- gbutton("View code",
+                tbl[ii, 4, expand = TRUE] <- gbutton(tr("pmod_view_code"),
                     handler = function(h, ...) {
                         GUI$plot_history$show()
                     }
@@ -2591,7 +2590,7 @@ iNZPlotMod <- setRefClass(
                     )
                 ) {
                     tbl[ii, 3:4, anchor = c(1, 0), expand = TRUE] <- gbutton(
-                        "Interactive Plot (via plotly)",
+                        tr("pmod_int_plot"),
                         handler = function(h, ...) {
                             suppressWarnings(
                                 print(plotly::ggplotly())
@@ -3230,7 +3229,7 @@ iNZPlotMod <- setRefClass(
             colBoxWidth <- 100
 
             trendCurves <- c("linear", "quadratic", "cubic")
-            trendLin <- gcheckbox("linear", checked = "linear" %in% curSet$trend)
+            trendLin <- gcheckbox(tr("pmod_linear"), checked = "linear" %in% curSet$trend)
             trendLinCol <- gcombobox(
                 c(
                     if (!curSet$col.trend$linear %in% lineColours) curSet$col.trend$linear,
@@ -3247,7 +3246,7 @@ iNZPlotMod <- setRefClass(
             tbl[ii, 6] <- trendLinLTY
             ii <- ii + 1
 
-            trendQuad <- gcheckbox("quadratic", checked = "quadratic" %in% curSet$trend)
+            trendQuad <- gcheckbox(tr("pmod_quad"), checked = "quadratic" %in% curSet$trend)
             trendQuadCol <- gcombobox(
                 c(
                     if (!curSet$col.trend$quadratic %in% lineColours) {
@@ -3296,7 +3295,7 @@ iNZPlotMod <- setRefClass(
                 sectionTitle("Smoother")
             ii <- ii + 1
 
-            smooth <- gcheckbox("Add smoother",
+            smooth <- gcheckbox(tr("pmod_add_smoother"),
                 checked = curSet$smooth != 0 | !is.null(curSet$quant.smooth)
             )
             smoothCol <- gcombobox(lineColours,
@@ -3313,7 +3312,7 @@ iNZPlotMod <- setRefClass(
             smoothCol$widget$setSizeRequest(colBoxWidth, -1)
             ii <- ii + 1
 
-            qsmooth <- gcheckbox("Use Quantiles",
+            qsmooth <- gcheckbox(tr("pmod_use_quant"),
                 checked = !is.null(curSet$quant.smooth)
             )
             tbl[ii, 1:3, anchor = c(-1, 0), expand = TRUE] <- qsmooth
@@ -3334,7 +3333,7 @@ iNZPlotMod <- setRefClass(
                     sectionTitle("Join Points")
                 ii <- ii + 1
 
-                joinPoints <- gcheckbox("Join points by lines",
+                joinPoints <- gcheckbox(tr("pmod_join_points"),
                     checked = curSet$join
                 )
                 joinPointsCol <- gcombobox(lineColours,
@@ -3406,13 +3405,13 @@ iNZPlotMod <- setRefClass(
             }
             activateOptions()
 
-            lbl <- glabel("Line Width Multiplier :")
+            lbl <- glabel(tr("pmod_line_width"))
             lwdSpin <- gspinbutton(1, 4, by = 1, value = curSet$lwd)
             tbl[ii, 1:4, anchor = c(1, 0), expand = TRUE] <- lbl
             tbl[ii, 5, anchor = c(-1, 0), expand = FALSE] <- lwdSpin
             ii <- ii + 1
 
-            loe <- gcheckbox("Add line of equality (x = y)",
+            loe <- gcheckbox(paste(tr("pmod_add_line"), "(x = y)"),
                 checked = curSet$LOE
             )
             tbl[ii, 1:6, anchor = c(-1, 0), expand = TRUE] <- loe
@@ -3687,7 +3686,7 @@ iNZPlotMod <- setRefClass(
                 sectionTitle("Axis Labels")
             ii <- ii + 1
 
-            lbl <- glabel("Title :")
+            lbl <- glabel(tr("pmod_title"))
             labMain <- gedit(
                 ifelse(is.null(curSet$main), "", curSet$main)
             )

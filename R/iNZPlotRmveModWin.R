@@ -84,7 +84,7 @@ iNZPlotRmveModWin <- setRefClass(
             no_add <- TRUE
             if (length(add_cur)) {
                 no_add <- FALSE
-                lbl <- glabel("Active in current plot")
+                lbl <- glabel(tr("plotrmmod_active_plot"))
                 font(lbl) <- list(weight = "bold")
                 add(mainGrp, lbl, anchor = c(-1, 0))
                 add(mainGrp, g_cur)
@@ -104,7 +104,7 @@ iNZPlotRmveModWin <- setRefClass(
 
             if (length(add_other)) {
                 no_add <- FALSE
-                lbl <- glabel("Inactive in current plot")
+                lbl <- glabel(tr("plotrmmod_inactive_plot"))
                 font(lbl) <- list(weight = "bold")
                 add(mainGrp, lbl, anchor = c(-1, 0))
                 add(mainGrp, g_other)
@@ -121,7 +121,7 @@ iNZPlotRmveModWin <- setRefClass(
             }
 
             if (no_add) {
-                lbl <- glabel("No additions to remove")
+                lbl <- glabel(tr("plotrmmod_no_additions"))
                 font(lbl) <- list(weight = "bold")
                 add(mainGrp, lbl, anchor = c(-1, 0))
             }
@@ -131,7 +131,7 @@ iNZPlotRmveModWin <- setRefClass(
             mainGrp$set_borderwidth(5)
 
             # if any checkboxes ticked, rename to "Remove selected"
-            rmvBtn <<- gbutton("Remove all",
+            rmvBtn <<- gbutton(tr("plotrmmod_remove_all"),
                 container = btnGrp,
                 expand = TRUE,
                 fill = TRUE,
@@ -142,7 +142,7 @@ iNZPlotRmveModWin <- setRefClass(
             rmvBtn$set_icon("delete")
             enabled(rmvBtn) <<- !no_add
 
-            closeButton <- gbutton("Home",
+            closeButton <- gbutton(tr("plotmmod_home"),
                 container = btnGrp,
                 expand = TRUE,
                 fill = TRUE,
