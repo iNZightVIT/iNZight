@@ -534,7 +534,7 @@ iNZMenuBarWidget <- setRefClass(
                 mods,
                 list(
                     gseparator(),
-                    gaction("Manage ...", handler = function(h, ...) NewModuleManager$new(GUI)),
+                    gaction("Manage ...", handler = function(h, ...) ModuleManager$new(GUI)),
                     gaction("Reload",
                         handler = function(h, ...) {
                             GUI$load_addons()
@@ -608,20 +608,11 @@ iNZMenuBarWidget <- setRefClass(
                             }
                         ),
                     timeseries =
-                        gaction("Time series ...",
+                        gaction("Time series (legacy version) ...",
                             icon = "ts",
-                            tooltip = "Start the time series module",
+                            tooltip = "Start the time series module (legacy)",
                             handler = function(h, ...) {
-                                res <- gconfirm(
-                                    "This module is being deprecated. You can install the new version from the 'Modules' menu.\n\nWe will continue to support this module for the time being, but it will be removed in a future release.\n\nClick 'OK' to continue to the old Time Series module.",
-                                    title = "Deprecation Warning",
-                                    icon = "warning",
-                                    parent = GUI$win
-                                )
-                                if (!res) {
-                                    return()
-                                }
-                                iNZightModules::iNZightTSMod$new(GUI)
+                                iNZightModules::iNZightTSLegacyMod$new(GUI)
                             }
                         ),
                     modelfitting =
@@ -640,15 +631,6 @@ iNZMenuBarWidget <- setRefClass(
                         gaction("Maps ...",
                             icon = "plot1",
                             handler = function(h, ...) iNZightModules::iNZightMapLanding$new(GUI)
-                        ),
-                    gseparator(),
-                    manage =
-                        gaction("Manage modules ...",
-                            icon = "execute",
-                            tooltip = "Add, update, and remove add-on modules.",
-                            handler = function(h, ...) {
-                                iNZightModules::ModuleManager$new(GUI)
-                            }
                         )
                 )
             } else if (can_install) {

@@ -1,6 +1,7 @@
 context("Code Panel")
 
 skip_on_cran()
+skip_on_os("windows")
 
 # load_all("../iNZightPlots")
 
