@@ -74,6 +74,7 @@ Language: en-GB
 RoxygenNote: 7.3.1
 VignetteBuilder: knitr
 Config/Needs/dependencies:
+    tmelliott/translatr,
     tmelliott/surveyspec@develop,
     tmelliott/gWidgets2@patch-1,
     iNZightVIT/gWidgets2RGtk2@inz,
