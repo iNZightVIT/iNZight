@@ -95,7 +95,7 @@ jobs:
         shell: Rscript {0}
 
       - name: Check
-        if: runner.os == "Linux"
+        if: runner.os == 'Linux'
         uses: coactions/setup-xvfb@v1
         env:
           _R_CHECK_CRAN_INCOMING_REMOTE_: false
