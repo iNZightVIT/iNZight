@@ -42,7 +42,6 @@ iNZMenuBarWidget <- setRefClass(
                 menu_data = DataMenu(),
                 menu_vars = VariablesMenu(),
                 menu_plot = PlotMenu(),
-                menu_modules = ModuleMenu(),
                 menu_adv = AdvancedMenu(),
                 menu_help = HelpMenu()
             )
@@ -517,39 +516,6 @@ iNZMenuBarWidget <- setRefClass(
             plotmenu <<- menu
             updateMenu("menu_plot", PlotMenu())
         },
-        ModuleMenu = function() {
-            mods <- lapply(
-                GUI$activeModules,
-                function(m) {
-                    if (!is.null(m$menu$Modules)) {
-                        # transform menu item into menu actions
-                        convert_menu_items(m$menu$Modules, GUI, m)
-                    } else {
-                        list(
-                            gaction(m$info$title,
-                                handler = function(h, ...) {
-                                    run_module(GUI, m)
-                                }
-                            )
-                        )
-                    }
-                }
-            )
-            mods <- c(
-                mods,
-                list(
-                    gseparator(),
-                    gaction(paste(tr("menu_manage"), "..."), handler = function(h, ...) NewModuleManager$new(GUI)),
-                    gaction(tr("menu_reload"),
-                        handler = function(h, ...) {
-                            GUI$load_addons()
-                            defaultMenu()
-                        }
-                    )
-                )
-            )
-            do.call(c, mods)
-        },
         AdvancedMenu = function() {
             if (!hasData() && modules_installed) {
                 ## just provide the ability to install modules
@@ -708,8 +674,40 @@ iNZMenuBarWidget <- setRefClass(
                 adv <- list()
             }
 
+            mods <- lapply(
+                GUI$activeModules,
+                function(m) {
+                    if (!is.null(m$menu$Modules)) {
+                        # transform menu item into menu actions
+                        convert_menu_items(m$menu$Modules, GUI, m)
+                    } else {
+                        list(
+                            gaction(m$info$title,
+                                handler = function(h, ...) {
+                                    run_module(GUI, m)
+                                }
+                            )
+                        )
+                    }
+                }
+            )
+            mods <- c(
+                mods,
+                list(
+                    gseparator(),
+                    gaction("Manage ...", handler = function(h, ...) ModuleManager$new(GUI)),
+                    gaction("Reload",
+                        handler = function(h, ...) {
+                            GUI$load_addons()
+                            defaultMenu()
+                        }
+                    )
+                )
+            )
+
             adv <- c(
                 adv,
+                do.call(c, mods),
                 list(
                     gseparator(),
                     rcode =
