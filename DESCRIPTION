@@ -80,7 +80,6 @@ Config/Needs/dependencies:
     iNZightVIT/iNZightMR@2.3.0,
     iNZightVIT/iNZightPlots@2.15.4,
     iNZightVIT/iNZightRegression@1.3.3,
-    iNZighTIVT/iNZightModules@2.6.0,
     rcmdcheck,
     curl
 Config/Needs/coverage:
