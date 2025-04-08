@@ -1,3 +1,5 @@
+# Unreleased changes
+
 # iNZight 4.4.1
 
 - fixes a bug (notable in 'Locate Points') where plots would fail due to missing variables
