@@ -4,7 +4,6 @@ ui <- NULL
 on.exit(gWidgets2::dispose(ui$win))
 
 test_that("GUI is loaded and initialized without problems", {
-    cat("\n1 ...\n")
     ## load (and then close) the ui object
     ui <<- iNZGUI$new()
     expect_is(ui, "iNZGUI")
@@ -46,7 +45,6 @@ test_that("Primary UI widgets are loaded and displaying correctly", {
 
 # ui <<- iNZGUI$new(); ui$initializeGui()
 test_that("Data view loads", {
-    cat("\n3 ...\n")
     expect_silent(ui$setDocument(iNZDocument$new(data = iris)))
     expect_equal(
         ui$dataNameWidget$widget$children[[2]]$get_value(),
@@ -65,14 +63,12 @@ test_that("Data view loads", {
 })
 
 test_that("UI closes quietly", {
-    cat("\n4 ...\n")
     expect_silent(ui$close())
 })
 
 # load_all(); ui$close(); ui <- iNZGUI$new()
 
 test_that("Variable list can be searched", {
-    cat("\n5 ...\n")
     ui <<- iNZGUI$new()
     ui$initializeGui(gapminder)
     on.exit(ui$close())
@@ -104,7 +100,6 @@ test_that("Variable list can be searched", {
 # })
 
 test_that("Data view is enabled after changing data", {
-    cat("\n6 ...\n")
     ui <<- iNZGUI$new()
     ui$initializeGui(census.at.school.500)
     ui$dataViewWidget$listView()

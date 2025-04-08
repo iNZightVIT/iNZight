@@ -4,8 +4,8 @@
 #' @field win a `gwindow` object
 #' @field m_dir path to the user's module directory, grabbed from `GUI`
 #' @importFrom iNZightTools "%||%"
-NewModuleManager <- setRefClass(
-    "NewModuleManager",
+ModuleManager <- setRefClass(
+    "ModuleManager",
     contains = "iNZWindow",
     fields = list(
         GUI = "ANY",

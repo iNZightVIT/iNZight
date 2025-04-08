@@ -73,7 +73,7 @@ iNZMenuBarWidget <- setRefClass(
                 gseparator(),
                 Clipboard = list(
                     paste =
-                        gaction(paste(tr("menu_file_paste")," ..."),
+                        gaction(paste(tr("menu_file_paste"), " ..."),
                             icon = "paste",
                             tooltip = "Import data by pasting/clipboard",
                             handler = function(h, ...) {
@@ -330,7 +330,7 @@ iNZMenuBarWidget <- setRefClass(
                 gseparator(),
                 "Data Dictionary" = list(
                     load_dd =
-                        gaction(paste(tr("menu_file_load"), "..."), 
+                        gaction(paste(tr("menu_file_load"), "..."),
                             icon = "datasheet",
                             handler = function(h, ...) iNZDataDict$new(GUI)
                         ),
@@ -572,7 +572,7 @@ iNZMenuBarWidget <- setRefClass(
                 mods,
                 list(
                     gseparator(),
-                    gaction(paste(tr("menu_manage"), "..."), handler = function(h, ...) NewModuleManager$new(GUI)),
+                    gaction(paste(tr("menu_manage"), "..."), handler = function(h, ...) ModuleManager$new(GUI)),
                     gaction(tr("menu_reload"),
                         handler = function(h, ...) {
                             GUI$load_addons()
@@ -658,18 +658,9 @@ iNZMenuBarWidget <- setRefClass(
                     timeseries =
                         gaction(paste(tr("menu_adv_timeseries"), "..."),
                             icon = "ts",
-                            tooltip = "Start the time series module",
+                            tooltip = "Start the time series module (legacy)",
                             handler = function(h, ...) {
-                                res <- gconfirm(
-                                    "This module is being deprecated. You can install the new version from the 'Modules' menu.\n\nWe will continue to support this module for the time being, but it will be removed in a future release.\n\nClick 'OK' to continue to the old Time Series module.",
-                                    title = "Deprecation Warning",
-                                    icon = "warning",
-                                    parent = GUI$win
-                                )
-                                if (!res) {
-                                    return()
-                                }
-                                iNZightModules::iNZightTSMod$new(GUI)
+                                iNZightModules::iNZightTSLegacyMod$new(GUI)
                             }
                         ),
                     modelfitting =
@@ -688,15 +679,6 @@ iNZMenuBarWidget <- setRefClass(
                         gaction(paste(tr("menu_adv_maps"), "..."),
                             icon = "plot1",
                             handler = function(h, ...) iNZightModules::iNZightMapLanding$new(GUI)
-                        ),
-                    gseparator(),
-                    manage =
-                        gaction(paste(tr("menu_adv_manage"), "..."),
-                            icon = "execute",
-                            tooltip = "Add, update, and remove add-on modules.",
-                            handler = function(h, ...) {
-                                iNZightModules::ModuleManager$new(GUI)
-                            }
                         )
                 )
             } else if (can_install) {
@@ -771,28 +753,28 @@ iNZMenuBarWidget <- setRefClass(
                         )
                 )
             )
-            if (modules_installed && !is.null(GUI$addonModuleDir)) {
-                modules <- iNZightModules:::getModules(GUI$addonModuleDir)
-                if (length(modules)) {
-                    instindex <- which(names(adv) == "maps") + 1
-                    mods <- lapply(
-                        modules,
-                        function(mod) {
-                            gaction(mod$display_name,
-                                handler = function(h, ...) {
-                                    x <- sprintf(
-                                        "mod$%s$new(GUI, name = '%s')",
-                                        mod$name,
-                                        mod$display_name
-                                    )
-                                    eval(parse(text = x))
-                                }
-                            )
-                        }
-                    )
-                    adv <- c(adv[1:(instindex - 1)], mods, adv[instindex:length(adv)])
-                }
-            }
+            # if (modules_installed && !is.null(GUI$addonModuleDir)) {
+            #     modules <- iNZightModules:::getModules(GUI$addonModuleDir)
+            #     if (length(modules)) {
+            #         instindex <- which(names(adv) == "maps") + 1
+            #         mods <- lapply(
+            #             modules,
+            #             function(mod) {
+            #                 gaction(mod$display_name,
+            #                     handler = function(h, ...) {
+            #                         x <- sprintf(
+            #                             "mod$%s$new(GUI, name = '%s')",
+            #                             mod$name,
+            #                             mod$display_name
+            #                         )
+            #                         eval(parse(text = x))
+            #                     }
+            #                 )
+            #             }
+            #         )
+            #         adv <- c(adv[1:(instindex - 1)], mods, adv[instindex:length(adv)])
+            #     }
+            # }
             adv
         },
         HelpMenu = function() {
