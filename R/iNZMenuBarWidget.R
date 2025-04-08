@@ -73,7 +73,7 @@ iNZMenuBarWidget <- setRefClass(
                 gseparator(),
                 Clipboard = list(
                     paste =
-                        gaction(paste(tr("menu_file_paste")," ..."),
+                        gaction(paste(tr("menu_file_paste"), " ..."),
                             icon = "paste",
                             tooltip = "Import data by pasting/clipboard",
                             handler = function(h, ...) {
@@ -330,7 +330,7 @@ iNZMenuBarWidget <- setRefClass(
                 gseparator(),
                 "Data Dictionary" = list(
                     load_dd =
-                        gaction(paste(tr("menu_file_load"), "..."), 
+                        gaction(paste(tr("menu_file_load"), "..."),
                             icon = "datasheet",
                             handler = function(h, ...) iNZDataDict$new(GUI)
                         ),
@@ -753,28 +753,28 @@ iNZMenuBarWidget <- setRefClass(
                         )
                 )
             )
-            if (modules_installed && !is.null(GUI$addonModuleDir)) {
-                modules <- iNZightModules:::getModules(GUI$addonModuleDir)
-                if (length(modules)) {
-                    instindex <- which(names(adv) == "maps") + 1
-                    mods <- lapply(
-                        modules,
-                        function(mod) {
-                            gaction(mod$display_name,
-                                handler = function(h, ...) {
-                                    x <- sprintf(
-                                        "mod$%s$new(GUI, name = '%s')",
-                                        mod$name,
-                                        mod$display_name
-                                    )
-                                    eval(parse(text = x))
-                                }
-                            )
-                        }
-                    )
-                    adv <- c(adv[1:(instindex - 1)], mods, adv[instindex:length(adv)])
-                }
-            }
+            # if (modules_installed && !is.null(GUI$addonModuleDir)) {
+            #     modules <- iNZightModules:::getModules(GUI$addonModuleDir)
+            #     if (length(modules)) {
+            #         instindex <- which(names(adv) == "maps") + 1
+            #         mods <- lapply(
+            #             modules,
+            #             function(mod) {
+            #                 gaction(mod$display_name,
+            #                     handler = function(h, ...) {
+            #                         x <- sprintf(
+            #                             "mod$%s$new(GUI, name = '%s')",
+            #                             mod$name,
+            #                             mod$display_name
+            #                         )
+            #                         eval(parse(text = x))
+            #                     }
+            #                 )
+            #             }
+            #         )
+            #         adv <- c(adv[1:(instindex - 1)], mods, adv[instindex:length(adv)])
+            #     }
+            # }
             adv
         },
         HelpMenu = function() {
