@@ -550,39 +550,6 @@ iNZMenuBarWidget <- setRefClass(
             )
             do.call(c, mods)
         },
-        ModuleMenu = function() {
-            mods <- lapply(
-                GUI$activeModules,
-                function(m) {
-                    if (!is.null(m$menu$Modules)) {
-                        # transform menu item into menu actions
-                        convert_menu_items(m$menu$Modules, GUI, m)
-                    } else {
-                        list(
-                            gaction(m$info$title,
-                                handler = function(h, ...) {
-                                    run_module(GUI, m)
-                                }
-                            )
-                        )
-                    }
-                }
-            )
-            mods <- c(
-                mods,
-                list(
-                    gseparator(),
-                    gaction(paste(tr("menu_manage"), "..."), handler = function(h, ...) ModuleManager$new(GUI)),
-                    gaction(tr("menu_reload"),
-                        handler = function(h, ...) {
-                            GUI$load_addons()
-                            defaultMenu()
-                        }
-                    )
-                )
-            )
-            do.call(c, mods)
-        },
         AdvancedMenu = function() {
             if (!hasData() && modules_installed) {
                 ## just provide the ability to install modules
