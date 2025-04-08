@@ -26,4 +26,5 @@ if (Sys.getenv("OS_TYPE") == "Windows" &&
 pak::pak(c(".", needs, "iNZightMaps=?ignore", "iNZightModules=?ignore"),
     dependencies = TRUE
 )
+pak::pak("iNZightVIT/iNZightModules@2.6.0")
 pak::pak("rcmdcheck")
