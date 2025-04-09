@@ -1,8 +1,15 @@
-# Unreleased changes
+# iNZight 4.4.2
 
 ## Minor changes
 
 - move Modules to the Advanced menu
+
+## Bug fixes
+
+- additional bug fixes in other packages:
+  - iNZightPlots
+  - iNZightTS
+  - iNZightTools
 
 # iNZight 4.4.1
 
