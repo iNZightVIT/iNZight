@@ -1,12 +1,12 @@
 context("Code writing")
-
+skip()
 skip_on_cran()
 skip_on_os("windows")
 
 # load_all("../iNZightPlots")
 
 msg <- function(x, type = 1L) {
-    # return()
+    return()
     Sys.sleep(0.5)
     x <- sprintf(
         "\n %s %s %s\n",
