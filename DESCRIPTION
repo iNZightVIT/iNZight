@@ -1,14 +1,13 @@
 Package: iNZight
 Type: Package
 Title: A GUI for Data Exploration and Visualisation
-Version: 4.4.1
-Date: 2024-05-02
+Version: 4.4.2
+Date: 2025-04-14
 Authors@R: c(person("Tom", "Elliott", role = c("aut", "cre"),
                     email = "tom.elliott@auckland.ac.nz"),
              person("Dineika", "Chandrananda", role = "ctb"),
              person("Simon", "Potter", role = "ctb"),
-             person("Marco", "Kuper", role = c("aut"),
-                    email = "MarcoKuper42@gmail.com"),
+             person("Marco", "Kuper", role = c("aut")),
              person("David", "Banks", role = "ctb"),
              person("Yiwen", "He", role = "ctb"),
              person("Daniel", "Barnett", role = "aut"),
@@ -46,7 +45,7 @@ Suggests:
     forcats,
     FutureLearnData,
     iNZightMR (>= 2.3.0),
-    iNZightModules (>= 2.5),
+    iNZightModules (>= 2.6),
     jsonlite,
     knitr,
     kableExtra,
@@ -66,12 +65,16 @@ Additional_repositories: https://r.docker.stat.auckland.ac.nz
 LazyData: true
 Encoding: UTF-8
 Language: en-GB
-RoxygenNote: 7.2.3
+RoxygenNote: 7.3.1
 VignetteBuilder: knitr
 Config/Needs/dependencies:
     tmelliott/surveyspec@develop,
     tmelliott/gWidgets2@patch-1,
-    tmelliott/gWidgets2RGtk2@inz,
+    iNZightVIT/gWidgets2RGtk2@inz,
+    tmelliott/RGtk2/RGtk2,
+    gdemin/maditr@0.8.2,
+    cran/Matrix@1.6-0,
+    cran/units@0.8-5,
     iNZightVIT/iNZightTools@2.0.1,
     iNZightVIT/iNZightTS@1.5.10,
     iNZightVIT/iNZightMR@2.3.0,
@@ -80,12 +83,4 @@ Config/Needs/dependencies:
     rcmdcheck,
     curl
 Config/Needs/coverage:
-    tmelliott/surveyspec@develop,
-    tmelliott/gWidgets2@patch-1,
-    tmelliott/gWidgets2RGtk2@inz,
-    iNZightVIT/iNZightTools@2.0.1,
-    iNZightVIT/iNZightTS@1.5.10,
-    iNZightVIT/iNZightMR@2.3.0,
-    iNZightVIT/iNZightPlots@2.15.4,
-    iNZightVIT/iNZightRegression@1.3.3,
     covr

@@ -1,3 +1,16 @@
+# iNZight 4.4.2
+
+## Minor changes
+
+- move Modules to the Advanced menu
+
+## Bug fixes
+
+- additional bug fixes in other packages:
+  - iNZightPlots
+  - iNZightTS
+  - iNZightTools
+
 # iNZight 4.4.1
 
 - fixes a bug (notable in 'Locate Points') where plots would fail due to missing variables

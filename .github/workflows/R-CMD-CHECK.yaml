@@ -12,12 +12,9 @@ jobs:
       fail-fast: false
       matrix:
         config:
-          - { os: windows-latest, r: "4.1", cache-version: 5 }
-          - { os: windows-latest, r: "4.2", cache-version: 3 }
-          - { os: windows-latest, r: "4.3", cache-version: 1 }
-          - { os: windows-latest, r: "4.4", cache-version: 1 }
+          - { os: windows-latest, r: "4.4", cache-version: 2 }
           - {
-              os: ubuntu-20.04,
+              os: ubuntu-latest,
               r: "release",
               rspm: "https://packagemanager.rstudio.com/cran/__linux__/focal/latest",
               cache-version: 3,
@@ -70,31 +67,17 @@ jobs:
         run: |
           sudo apt install libgtk2.0-dev xorg-dev libxml2-dev libnlopt-dev libcurl4-openssl-dev
 
-      - name: Install RGtk2
-        if: runner.os == 'Windows'
-        shell: Rscript {0}
-        run: |
-          options(repos = "https://r.docker.stat.auckland.ac.nz")
-          if (!requireNamespace("RGtk2", quietly = TRUE))
-            install.packages("RGtk2")
-          if (!requireNamespace("cairoDevice", quietly = TRUE))
-            install.packages("cairoDevice")
-
       - name: Install gtk binaries, and RGtk2 from source if needed
-        if: runner.os == 'Windows'
-        shell: bash
-        run: ./.github/install_gtk.cmd
+        run: Rscript ./.github/install_gtk.R
 
       - name: Add GTK to PATH
         if: runner.os == 'Windows'
         run: echo "${{env.R_LIBS_USER}}\RGtk2\gtk\bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
 
       - name: Check RGtk2
-        if: runner.os == 'Windows'
-        run: |
-          library(RGtk2)
-          gtkWindowNew()
-        shell: Rscript {0}
+        uses: coactions/setup-xvfb@v1
+        with:
+          run: Rscript -e "library(RGtk2); gtkWindowNew()"
 
       - name: Install dependencies
         uses: coactions/setup-xvfb@v1
@@ -109,6 +92,7 @@ jobs:
         shell: Rscript {0}
 
       - name: Check
+        if: runner.os == 'Linux'
         uses: coactions/setup-xvfb@v1
         env:
           _R_CHECK_CRAN_INCOMING_REMOTE_: false

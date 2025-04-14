@@ -42,7 +42,7 @@ iNZMenuBarWidget <- setRefClass(
                 Dataset = DataMenu(),
                 Variables = VariablesMenu(),
                 Plot = PlotMenu(),
-                Modules = ModuleMenu(),
+                # Modules = ModuleMenu(),
                 Advanced = AdvancedMenu(),
                 Help = HelpMenu()
             )
@@ -512,39 +512,6 @@ iNZMenuBarWidget <- setRefClass(
             plotmenu <<- menu
             updateMenu("Plot", PlotMenu())
         },
-        ModuleMenu = function() {
-            mods <- lapply(
-                GUI$activeModules,
-                function(m) {
-                    if (!is.null(m$menu$Modules)) {
-                        # transform menu item into menu actions
-                        convert_menu_items(m$menu$Modules, GUI, m)
-                    } else {
-                        list(
-                            gaction(m$info$title,
-                                handler = function(h, ...) {
-                                    run_module(GUI, m)
-                                }
-                            )
-                        )
-                    }
-                }
-            )
-            mods <- c(
-                mods,
-                list(
-                    gseparator(),
-                    gaction("Manage ...", handler = function(h, ...) ModuleManager$new(GUI)),
-                    gaction("Reload",
-                        handler = function(h, ...) {
-                            GUI$load_addons()
-                            defaultMenu()
-                        }
-                    )
-                )
-            )
-            do.call(c, mods)
-        },
         AdvancedMenu = function() {
             if (!hasData() && modules_installed) {
                 ## just provide the ability to install modules
@@ -608,20 +575,11 @@ iNZMenuBarWidget <- setRefClass(
                             }
                         ),
                     timeseries =
-                        gaction("Time series ...",
+                        gaction("Time series (legacy version) ...",
                             icon = "ts",
-                            tooltip = "Start the time series module",
+                            tooltip = "Start the time series module (legacy)",
                             handler = function(h, ...) {
-                                res <- gconfirm(
-                                    "This module is being deprecated. You can install the new version from the 'Modules' menu.\n\nWe will continue to support this module for the time being, but it will be removed in a future release.\n\nClick 'OK' to continue to the old Time Series module.",
-                                    title = "Deprecation Warning",
-                                    icon = "warning",
-                                    parent = GUI$win
-                                )
-                                if (!res) {
-                                    return()
-                                }
-                                iNZightModules::iNZightTSMod$new(GUI)
+                                iNZightModules::iNZightTSLegacyMod$new(GUI)
                             }
                         ),
                     modelfitting =
@@ -702,8 +660,40 @@ iNZMenuBarWidget <- setRefClass(
                 adv <- list()
             }
 
+            mods <- lapply(
+                GUI$activeModules,
+                function(m) {
+                    if (!is.null(m$menu$Modules)) {
+                        # transform menu item into menu actions
+                        convert_menu_items(m$menu$Modules, GUI, m)
+                    } else {
+                        list(
+                            gaction(m$info$title,
+                                handler = function(h, ...) {
+                                    run_module(GUI, m)
+                                }
+                            )
+                        )
+                    }
+                }
+            )
+            mods <- c(
+                mods,
+                list(
+                    gseparator(),
+                    gaction("Manage ...", handler = function(h, ...) ModuleManager$new(GUI)),
+                    gaction("Reload",
+                        handler = function(h, ...) {
+                            GUI$load_addons()
+                            defaultMenu()
+                        }
+                    )
+                )
+            )
+
             adv <- c(
                 adv,
+                do.call(c, mods),
                 list(
                     gseparator(),
                     rcode =

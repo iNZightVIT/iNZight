@@ -1,10 +1,5 @@
 The latest release sees a full refactoring of some back-end functionality,
 but most of the interface remains the same.
 
-We are also introducing a new Module system that will slowly take over the
-modules currently in the 'Advanced' menu. For the time being, we will leave
-the old modules in place, but will no longer be developed.
-We encourage you to install and try out the new modules in the 'Modules' menu!
-
 We hope you enjoy! As always, let us know if you find issues or have suggestions
 using the contact button in the Help menu.
