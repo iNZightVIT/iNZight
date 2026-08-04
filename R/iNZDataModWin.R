@@ -39,7 +39,7 @@ iNZDataModWin <- setRefClass(
             if (any(w <- var %in% names(GUI$getActiveData(lazy = TRUE)))) {
                 if (length(var == 0)) {
                     gmessage(
-                        "A variable with that name already exists. Please choose another one.",
+                      tr("datamod_variable_same_name"),
                         title = "Variable name already exists",
                         icon = "error",
                         parent = GUI$modWin
@@ -48,7 +48,7 @@ iNZDataModWin <- setRefClass(
                     gmessage(
                         paste(
                             sep = "\n",
-                            "The follow variable names already exist:",
+                            tr("datamod_variable_exists"),
                             paste(collapse = ", ", var[w]),
                             "Please choose new names."
                         ),
@@ -102,7 +102,7 @@ iNZConToCatWin <- setRefClass(
             tbl <- glayout()
             ii <- 1L
 
-            lbl <- glabel("Select numeric variable :")
+            lbl <- glabel(tr("datamod_select_numeric"))
             tbl[ii, 1L, anchor = c(1, 0), expand = TRUE] <- lbl
 
             data <- GUI$getActiveData(lazy = TRUE)
@@ -118,7 +118,7 @@ iNZConToCatWin <- setRefClass(
             tbl[ii, 2L, expand = TRUE] <- varLbl
             ii <- ii + 1L
 
-            lbl <- glabel("Specify name for new variable :")
+            lbl <- glabel(tr("datamod_specify_name"))
             tbl[ii, 1L, anchor = c(1, 0), expand = TRUE] <- lbl
 
             varname <<- gedit("", width = 20)
@@ -129,7 +129,7 @@ iNZConToCatWin <- setRefClass(
                 handler = function(h, ...) {
                     dropData <- GUI$getActiveDoc()$getData()[h$dropdata][[1L]]
                     if (all(is_cat(dropData))) {
-                        gmessage("Already a categorical variable!",
+                        gmessage(tr("datamod_catvar"),
                             parent = GUI$win, icon = "warning"
                         )
                     } else {
@@ -144,12 +144,12 @@ iNZConToCatWin <- setRefClass(
             orgVar <- svalue(varLbl)
             name <- gsub("\\n+", "", svalue(varname), perl = TRUE)
             if (name == "" || !is.character(name)) {
-                gmessage("Please choose a non-empty name for the new variable",
+                gmessage(tr("datamod_nonempty_name"),
                     title = "Invalid variable choice",
                     parent = GUI$modWin
                 )
             } else if (length(orgVar) == 0L) {
-                gmessage("Please choose a variable to convert",
+                gmessage(tr("datamod_var_conv"),
                     title = "Invalid variable choice",
                     parent = GUI$modWin
                 )
@@ -265,7 +265,7 @@ iNZTransformWin <- setRefClass(
 
             vname <- makeNames(gsub("X", var, trans[1L]))
             if (!checkNames(vname)) {
-                gmessage("Unable to create new variable",
+                gmessage(tr("datamod_unable_newvar"),
                     title = "Error creating variable",
                     icon = "error",
                     parent = GUI$modWin
@@ -341,7 +341,7 @@ iNZCollapseWin <- setRefClass(
             )
             add_body(factor_menu)
 
-            lbl <- glabel("Hold CTRL to choose many")
+            lbl <- glabel(tr("datamod_ctrl_choose"))
             font(lbl) <- list(size = 8, weight = "bold")
             add_body(lbl, anchor = c(-1, 0))
 
@@ -440,8 +440,8 @@ iNZRenameFactorLevelsWin <- setRefClass(
             on.exit(.self$show())
             usingMethods("rename")
 
-            lbl1 <- glabel("Choose variable: ")
-            lbl2 <- glabel("New variable name: ")
+            lbl1 <- glabel(tr("datamod_choose_var"))
+            lbl2 <- glabel(tr("datamod_new_var"))
 
             ## choose a factor column from the dataset and display
             ## its levels together with their order
@@ -464,7 +464,7 @@ iNZRenameFactorLevelsWin <- setRefClass(
 
             ## Use a separate table for the levels:
             add_body(
-                glabel("Specify new level names: "),
+                glabel(tr("datamod_new_level")),
                 fill = TRUE,
                 anchor = c(-1, 0)
             )
@@ -656,7 +656,7 @@ iNZReorderLevelsWin <- setRefClass(
                     # blockHandlers(levelDown)
                     i <- svalue(levelOrder, index = TRUE)
                     if (length(i) == 0) {
-                        gmessage("Select a level, then use the arrows to shift it up/down")
+                        gmessage(tr("datamod_select_level"))
                         return()
                     }
                     lvls <- levelOrder$get_items()
@@ -681,7 +681,7 @@ iNZReorderLevelsWin <- setRefClass(
                     # blockHandlers(levelDown)
                     i <- svalue(levelOrder, index = TRUE)
                     if (length(i) == 0) {
-                        gmessage("Select a level, then use the arrows to shift it up/down")
+                        gmessage(tr("datamod_select_level"))
                         return()
                     }
                     lvls <- levelOrder$get_items()
@@ -716,7 +716,7 @@ iNZReorderLevelsWin <- setRefClass(
                     "by numeric value" ~ "seq"
                 )
                 if (auto == "seq" && all(is.na(suppressWarnings(as.numeric(levels(.dataset[[var]])))))) {
-                    gmessage("Sorting levels by numeric value only works for factors coercible to numeric.")
+                    gmessage(tr("datamod_sorting_levels_num"))
                     return()
                 }
                 data <- iNZightTools::reorder_levels(.dataset, var, auto = auto, name = varname)
@@ -769,11 +769,11 @@ iNZCreateVarWin <- setRefClass(
 
             layout <<- glayout(spacing = 2L)
 
-            lbl <- glabel("Variable name")
+            lbl <- glabel(tr("datamod_var_name"))
             font(lbl) <- list(size = 8L, weight = "bold")
             layout[1L, 1L, anchor = c(-1, -1), expand = TRUE] <<- lbl
 
-            lbl <- glabel("Expression")
+            lbl <- glabel(tr("datamod_exp"))
             font(lbl) <- list(size = 8L, weight = "bold")
             layout[1L, 3L, anchor = c(-1, -1), expand = TRUE] <<- lbl
 
@@ -999,7 +999,7 @@ iNZFormClassIntervalsWin <- setRefClass(
             tbl[ii, 2:3] <- variable
             ii <- ii + 1L
 
-            lbl <- glabel("Interval method :")
+            lbl <- glabel(tr("datamod_int_method"))
             type <<- gradio(
                 c("Equal width", "Fixed width", "Equal count", "Manual"),
                 selected = 1L,
@@ -1037,7 +1037,7 @@ iNZFormClassIntervalsWin <- setRefClass(
             visible(tbl_width) <<- FALSE
             ii <- 1L
 
-            lbl <- glabel("Number of intervals :")
+            lbl <- glabel(tr("datamod_num_int"))
             n_interval <<- gspinbutton(2L, 100L,
                 by = 1L,
                 value = 4L,
@@ -1077,15 +1077,15 @@ iNZFormClassIntervalsWin <- setRefClass(
             visible(tbl_range) <<- FALSE
             ii <- 1L
 
-            lbl <- glabel("Start point :")
-            start_point <<- glabel("Choose variable")
+            lbl <- glabel(tr("datamod_start_pt"))
+            start_point <<- glabel(tr("datamod_choose_var2"))
             size(start_point) <<- c(250, -1)
             tbl_range[ii, 1L, anchor = c(1, 0), expand = TRUE] <<- lbl
             tbl_range[ii, 2:3] <<- start_point
             ii <- ii + 1L
 
-            lbl <- glabel("End point :")
-            end_point <<- glabel("Choose variable")
+            lbl <- glabel(tr("datamod_end_pt"))
+            end_point <<- glabel(tr("datamod_choose_var2"))
             tbl_range[ii, 1L, anchor = c(1, 0), expand = TRUE] <<- lbl
             tbl_range[ii, 2:3] <<- end_point
             ii <- ii + 1L
@@ -1096,7 +1096,7 @@ iNZFormClassIntervalsWin <- setRefClass(
             visible(tbl_manual) <<- FALSE
             ii <- 1L
 
-            lbl <- glabel("Breakpoints :")
+            lbl <- glabel(tr("datamod_breakpoints"))
             breaks <<- gedit("",
                 handler = function(h, ...) create_intervals()
             )
@@ -1116,7 +1116,7 @@ iNZFormClassIntervalsWin <- setRefClass(
             ii <- 1L
             visible(tbl_format) <<- FALSE
 
-            lbl <- glabel("Label format :")
+            lbl <- glabel(tr("datamod_label_format"))
             label_format <<- gradio(
                 "",
                 horizontal = TRUE,
@@ -1131,7 +1131,7 @@ iNZFormClassIntervalsWin <- setRefClass(
 
             tbl_format_lower <<- glayout()
             visible(tbl_format_lower) <<- FALSE
-            lbl <- glabel("Format lower bound :")
+            lbl <- glabel(tr("datamod_format_lower"))
             label_lower <<- gradio("",
                 horizontal = TRUE,
                 handler = function(h, ...) create_intervals()
@@ -1143,7 +1143,7 @@ iNZFormClassIntervalsWin <- setRefClass(
 
             tbl_format_upper <<- glayout()
             visible(tbl_format_upper) <<- FALSE
-            lbl <- glabel("Format upper bound :")
+            lbl <- glabel(tr("datamod_format_upper"))
             label_upper <<- gradio("",
                 horizontal = TRUE,
                 handler = function(h, ...) create_intervals()
@@ -1156,7 +1156,7 @@ iNZFormClassIntervalsWin <- setRefClass(
             tbl <- glayout()
             ii <- 1L
 
-            lbl <- glabel("Class Interval labels :")
+            lbl <- glabel(tr("datamod_class_int_labels"))
             font(lbl) <- list(size = 9, weight = "bold")
             tbl[ii, 1L, anchor = c(-1, 0), expand = TRUE] <- lbl
             ii <- ii + 1L
@@ -1658,7 +1658,7 @@ iNZRenameDataWin <- setRefClass(
             on.exit(.self$show())
             usingMethods("rename_data")
 
-            lbl <- glabel("Enter a new name for the current dataset")
+            lbl <- glabel(tr("datamod_new_name_current_dataset"))
             font(lbl) <- list(weight = "bold", family = "sans")
 
             curname <- attr(GUI$getActiveData(lazy = TRUE), "name", exact = TRUE)
@@ -1700,7 +1700,7 @@ iNZConToDtWin <- setRefClass(
         initialize = function(gui) {
             if (iNZightTools::is_survey(gui$get_data_object(lazy = TRUE))) {
                 gmessage(
-                    "Survey designs are not handled by this action yet.",
+                    tr("datamod_survey_design_not_handled"),
                     title = "Surveys not handled",
                     icon = "error"
                 )
@@ -1751,14 +1751,14 @@ iNZConToDtWin <- setRefClass(
 
             addSpace(left_panel, 5)
 
-            name_string <- glabel("Name for the new variable",
+            name_string <- glabel(tr("datamod_name_new_var"),
                 container = left_panel,
                 anchor = c(-1, 0)
             )
             vname <<- gedit("", container = left_panel)
 
             tz <<- ""
-            tz_string <- glabel("Time zone",
+            tz_string <- glabel(tr("datamod_time_zone"),
                 container = left_panel,
                 anchor = c(-1, 0)
             )
@@ -1785,7 +1785,7 @@ iNZConToDtWin <- setRefClass(
                 "Unix timestamp (secs from 1970)"
             )
 
-            glabel("Specify date/time format",
+            glabel(tr("datamod_specify_format"),
                 container = left_panel,
                 anchor = c(-1, 0)
             )
@@ -1817,17 +1817,17 @@ iNZConToDtWin <- setRefClass(
                 container = left_panel,
                 homogeneous = TRUE
             )
-            tbl[1L, 1L] <- gbutton("year", handler = add_format)
-            tbl[1L, 2L] <- gbutton("month", handler = add_format)
-            tbl[1L, 3L] <- gbutton("day", handler = add_format)
+            tbl[1L, 1L] <- gbutton(tr("datamod_year"), handler = add_format)
+            tbl[1L, 2L] <- gbutton(tr("datamod_month"), handler = add_format)
+            tbl[1L, 3L] <- gbutton(tr("datamod_day"), handler = add_format)
             tbl[1L, 4L] <- gbutton("pm/am", handler = add_format)
-            tbl[2L, 1L] <- gbutton("Hour", handler = add_format)
-            tbl[2L, 2L] <- gbutton("Minute", handler = add_format)
-            tbl[2L, 3L] <- gbutton("Second", handler = add_format)
+            tbl[2L, 1L] <- gbutton(tr("datamod_hour"), handler = add_format)
+            tbl[2L, 2L] <- gbutton(tr("datamod_minute"), handler = add_format)
+            tbl[2L, 3L] <- gbutton(tr("datamod_sec"), handler = add_format)
 
-            tbl[1L, 5L] <- gbutton("delete", handler = del_format)
+            tbl[1L, 5L] <- gbutton(tr("datamod_delete"), handler = del_format)
 
-            tbl[2L, 5L] <- gbutton("clear",
+            tbl[2L, 5L] <- gbutton(tr("datamod_clear"),
                 handler = function(h, ...) svalue(time_fmt) <<- ""
             )
 
@@ -1974,7 +1974,7 @@ iNZExtFromDtWin <- setRefClass(
         initialize = function(gui) {
             if (iNZightTools::is_survey(gui$get_data_object(lazy = TRUE))) {
                 gmessage(
-                    "Survey designs are not handled by this action yet.",
+                    tr("datamod_survey_design_not_handled"),
                     title = "Surveys not handled",
                     icon = "error"
                 )
@@ -2003,7 +2003,7 @@ iNZExtFromDtWin <- setRefClass(
             dt_vars <- names(data)[iNZightTools::vartypes(data) == "dt"]
             if (length(dt_vars) == 0L) {
                 gmessage(
-                    "No datetime variables to extract information from",
+                    tr("datamod_no_datetime_vars"),
                     title = "No datetime variables",
                     icon = "info",
                     parent = GUI$win
@@ -2018,7 +2018,7 @@ iNZExtFromDtWin <- setRefClass(
             addSpace(mainGroup, 5)
 
             date_string <- glabel(
-                "Select variable to extract information from",
+                tr("datamod_select_var_extract"),
                 container = mainGroup,
                 anchor = c(-1, 0)
             )
@@ -2076,7 +2076,7 @@ iNZExtFromDtWin <- setRefClass(
                 function(h, ...) set_component()
             )
 
-            date_string <- glabel("Name for new variable",
+            date_string <- glabel(tr("datamod_name_new_var2"),
                 container = mainGroup,
                 anchor = c(-1, 0)
             )
@@ -2208,7 +2208,7 @@ iNZAggDtWin <- setRefClass(
         initialize = function(gui) {
             if (iNZightTools::is_survey(gui$get_data_object(lazy = TRUE))) {
                 gmessage(
-                    "Survey designs are not handled by this action yet.",
+                    tr("datamod_survey_design_not_handled"),
                     title = "Surveys not handled",
                     icon = "error"
                 )
@@ -2242,7 +2242,7 @@ iNZAggDtWin <- setRefClass(
             left_panel <- gvbox()
             add_body(left_panel, expand = TRUE)
 
-            glabel("Date/time variable",
+            glabel(tr("datamod_datetime_var"),
                 container = left_panel,
                 anchor = c(-1, 0)
             )
@@ -2254,7 +2254,7 @@ iNZAggDtWin <- setRefClass(
                 handler = function(h, ...) select_variable()
             )
 
-            glabel("Aggregation interval :",
+            glabel(tr("datamod_agg_int"),
                 container = left_panel,
                 anchor = c(-1, 0)
             )
@@ -2264,7 +2264,7 @@ iNZAggDtWin <- setRefClass(
                 handler = function(h, ...) aggregate(preview = TRUE)
             )
 
-            glabel("Grouping variable (optional) (hold CTRL to select many) :",
+            glabel(tr("datamod_group_var"),
                 container = left_panel,
                 anchor = c(-1, 0)
             )
@@ -2278,7 +2278,7 @@ iNZAggDtWin <- setRefClass(
                 handler = function(h, ...) aggregate(preview = TRUE)
             )
 
-            glabel("Aggregation summary (hold CTRL to select many) :",
+            glabel(tr("datamod_agg_sum"),
                 container = left_panel,
                 anchor = c(-1, 0)
             )
@@ -2297,7 +2297,7 @@ iNZAggDtWin <- setRefClass(
             right_panel <- gvbox()
             add_body(right_panel, expand = TRUE)
 
-            lbl <- glabel("Original dataset",
+            lbl <- glabel(tr("datamod_org_dataset"),
                 container = right_panel,
                 anchor = c(-1, 0)
             )
@@ -2308,7 +2308,7 @@ iNZAggDtWin <- setRefClass(
             )
             size(df_orig) <- c(450, -1)
 
-            lbl <- glabel("Aggregated dataset",
+            lbl <- glabel(tr("datamod_agg_dataset"),
                 container = right_panel,
                 anchor = c(-1, 0)
             )
@@ -2345,7 +2345,7 @@ iNZAggDtWin <- setRefClass(
                 type <<- "yearquarter"
                 values <- c("Yearly")
             } else {
-                gmessage("That variable does not contain date/time information.",
+                gmessage(tr("datamod_var_no_datetime"),
                     title = "Unsupported variable",
                     icon = "warning",
                     parent = GUI$modWin
@@ -2437,7 +2437,7 @@ iNZDataReportWin <- setRefClass(
     methods = list(
         initialize = function(gui) {
             if (!requireNamespace("dataMaid", quietly = TRUE)) {
-                gmessage("Unable to do that ... missing dependencies.")
+                gmessage(tr("datamod_miss_depend"))
                 return()
             }
 
@@ -2460,7 +2460,7 @@ iNZDataReportWin <- setRefClass(
             add_body(tbl)
             ii <- 1L
 
-            lbl <- glabel("Report format :")
+            lbl <- glabel(tr("datamod_report_format"))
             font(lbl) <- list(weight = "bold")
             output_format <<- gcombobox(
                 c("PDF", "Word Document", "HTML"),
@@ -2521,7 +2521,7 @@ iNZDataReportWin <- setRefClass(
                     success <- TRUE
                 },
                 error = function(e) {
-                    gmessage("Unable to generate report :(", type = "error")
+                    gmessage(tr("datamod_no_report"), type = "error")
                     print(e)
                 }
             )

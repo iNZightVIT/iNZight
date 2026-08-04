@@ -53,15 +53,15 @@ iNZCodePanel <- setRefClass(
             # add buttons for STORE, RUN, and RESET
             addSpring(ctrl_pnl)
             btn_pnl <- ggroup(container = ctrl_pnl)
-            store_btn <<- gbutton("Store",
+            store_btn <<- gbutton(tr("code_store"),
                 container = btn_pnl,
                 handler = function(h, ...) store_code()
             )
-            run_btn <<- gbutton("Run",
+            run_btn <<- gbutton(tr("code_run"),
                 container = btn_pnl,
                 handler = function(h, ...) run_code()
             )
-            reset_btn <<- gbutton("Reset",
+            reset_btn <<- gbutton(tr("code_reset"),
                 container = btn_pnl,
                 handler = function(h, ...) reset_code()
             )

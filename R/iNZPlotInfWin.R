@@ -40,21 +40,21 @@ iNZPlotInfWin <- setRefClass(
             btnTab <<- glayout()
 
             ## Labels for each option
-            parLab <- glabel("Parameter")
+            parLab <- glabel(tr("plot_param"))
             font(parLab) <- list(
                 weight = "bold",
                 family = "sans",
                 size = 9
             )
 
-            metLab <- glabel("Type of Inference")
+            metLab <- glabel(tr("plot_inf"))
             font(metLab) <- list(
                 weight = "bold",
                 family = "sans",
                 size = 9
             )
 
-            typLab <- glabel("Type of Interval")
+            typLab <- glabel(tr("plot_int"))
             font(typLab) <- list(
                 weight = "bold",
                 family = "sans",
@@ -66,7 +66,7 @@ iNZPlotInfWin <- setRefClass(
             typTab[2, 1, expand = TRUE, anchor = c(-1, 0)] <<- typLab
 
             ## Show interval values button
-            intBtn <<- gbutton("Get values",
+            intBtn <<- gbutton(tr("plot_vals"),
                 expand = FALSE,
                 handler = function(h, ...) {
                     displayValues()
@@ -92,7 +92,7 @@ iNZPlotInfWin <- setRefClass(
 
             btnGrp <- modwin$footer
 
-            helpButton <- gbutton("Help",
+            helpButton <- gbutton(tr("plot_help"),
                 expand = TRUE,
                 fill = TRUE,
                 cont = btnGrp,
@@ -102,7 +102,7 @@ iNZPlotInfWin <- setRefClass(
             )
             helpButton$set_icon("gw-help_topic")
 
-            okButton <- gbutton("Home",
+            okButton <- gbutton(tr("plot_home"),
                 expand = TRUE,
                 fill = TRUE,
                 cont = btnGrp,
@@ -129,22 +129,22 @@ iNZBarchartInf <- setRefClass(
             is.survey <- !is.null(GUI$getActiveDoc()$getModel()$getDesign())
 
             ## Parameters
-            parm <- glabel("Proportions")
+            parm <- glabel(tr("plot_prop"))
             parTab[3, 1, expand = TRUE, anchor = c(-1, 0)] <<- parm
 
             ## Methods
             if (is.survey || getOption("inzight.disable.bootstraps", FALSE)) {
-                mthd <- gradio(c("Normal"), selected = 1)
+                mthd <- gradio(c(tr("plot_norm")), selected = 1)
             } else {
-                mthd <- gradio(c("Normal", "Bootstrap *"), selected = 1)
+                mthd <- gradio(c(tr("plot_norm", "plot_boot")), selected = 1)
             }
 
             metTab[3, 1] <<- mthd
 
 
             ## Interval types
-            compInt <- gcheckbox("Comparison Intervals", checked = TRUE)
-            confInt <- gcheckbox("Confidence Intervals", checked = TRUE)
+            compInt <- gcheckbox(tr("plot_comp_int"), checked = TRUE)
+            confInt <- gcheckbox(tr("plot_conf_int"), checked = TRUE)
             typTab[3, 1] <<- confInt
             typTab[4, 1] <<- compInt
 
@@ -247,8 +247,8 @@ iNZDotchartInf <- setRefClass(
 
 
             ## Interval types
-            compInt <- gcheckbox("Comparison Intervals", checked = TRUE)
-            confInt <- gcheckbox("Confidence Intervals", checked = TRUE)
+            compInt <- gcheckbox(tr("plot_comp_int"), checked = TRUE)
+            confInt <- gcheckbox(tr("plot_conf_inf"), checked = TRUE)
             typTab[3, 1] <<- confInt
             typTab[4, 1] <<- compInt
 
@@ -475,9 +475,9 @@ iNZScatterInf <- setRefClass(
 
             ## Methods
             if (is.survey || getOption("inzight.disable.bootstraps", FALSE)) {
-                mthd <- gradio(c("Normal"), selected = 1)
+                mthd <- gradio(c(tr("plot_norm")), selected = 1)
             } else {
-                mthd <- gradio(c("Normal", "Bootstrap *"), selected = 1)
+                mthd <- gradio(c(tr("plot_norm", "plot_boot")), selected = 1)
             }
 
             enabled(mthd) <- FALSE

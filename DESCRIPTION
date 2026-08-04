@@ -11,7 +11,9 @@ Authors@R: c(person("Tom", "Elliott", role = c("aut", "cre"),
              person("David", "Banks", role = "ctb"),
              person("Yiwen", "He", role = "ctb"),
              person("Daniel", "Barnett", role = "aut"),
-             person("Zhaoming", "Su", role = "ctb"))
+             person("Zhaoming", "Su", role = "ctb"),
+             person("Eric", "Marshall", role = "ctb",
+                    email = "eric@inzight.co.nz"))
 Description: An interactive GUI for easy visual exploration of datasets.
 License: GPL-3
 Depends:
@@ -36,7 +38,10 @@ Imports:
     reshape2,
     skimr,
     stats,
+    stringi,
     stringr,
+    survey,
+    translatr,
     utils
 Suggests:
     covr,
@@ -68,6 +73,7 @@ Language: en-GB
 RoxygenNote: 7.3.1
 VignetteBuilder: knitr
 Config/Needs/dependencies:
+    tmelliott/translatr,
     tmelliott/surveyspec@develop,
     tmelliott/gWidgets2@patch-1,
     iNZightVIT/gWidgets2RGtk2@inz,

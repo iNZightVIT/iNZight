@@ -40,6 +40,7 @@
 #' @md
 #' @import methods utils grDevices colorspace
 #' @importFrom magrittr %>%
+#' @importFrom translatr tr
 #' @export iNZGUI
 #' @exportClass iNZGUI
 iNZGUI <- setRefClass(
@@ -88,6 +89,7 @@ iNZGUI <- setRefClass(
             curPlot = "ANY",
             plotType = "ANY",
             OS = "character",
+            available.languages = "character",
             prefs.location = "character",
             preferences = "list",
             statusbar = "ANY",
@@ -168,6 +170,15 @@ iNZGUI <- setRefClass(
             }
 
             if (dir.exists(addonModuleDir)) load_addons()
+
+            ## Grab settings file (or try to!)
+            tf <- system.file("i18n", package = "iNZight")
+            if (!dir.exists(tf)) stop("Cannot find translations")
+
+            available.languages <<- list.files(tf,
+                pattern = "*\\.json$"
+            ) |> tools::file_path_sans_ext()
+            getPreferences()
 
             popOut <<- preferences$popout
 
@@ -250,7 +261,7 @@ iNZGUI <- setRefClass(
 
             ## set up the drag and drop fields
             if (preferences$multiple_x) {
-                aLbl <- glabel("CTRL+1 to add selected vars to existing Variable 1 box")
+                aLbl <- glabel(tr("gui_add_select_vars"))
                 font(aLbl) <- list(size = 8)
                 add(gp1, aLbl, anchor = c(-1, 0))
             }
@@ -330,7 +341,7 @@ iNZGUI <- setRefClass(
             initializeCodeHistory()
 
             ## init statusbar
-            statusbar <<- gstatusbar("iNZight is ready") # , container = win) ## disabled
+            statusbar <<- gstatusbar(tr("gui_inzight_ready")) # , container = win) ## disabled
 
             plot_history <<- NULL
             code_env <<- new.env()
@@ -680,7 +691,7 @@ iNZGUI <- setRefClass(
             "Loads the state from a file called `file`"
             if (!file.exists(file)) {
                 if (.alert) {
-                    gmessage("File doesn't exist", icon = "error")
+                    gmessage(tr("gui_no_file"), icon = "error")
                 }
                 return()
             }
@@ -689,7 +700,7 @@ iNZGUI <- setRefClass(
             load(file, envir = e)
             if (is.null(e$state)) {
                 if (.alert) {
-                    gmessage("That file doesn't seem to be a valid iNZight save.",
+                    gmessage(tr("gui_invaled_save"),
                         icon = "error"
                     )
                 }
@@ -929,7 +940,7 @@ iNZGUI <- setRefClass(
 
             if (activeDoc == 0) {
                 gmessage(
-                    "Sorry, but you can't delete this dataset (it's the original, afterall!).",
+                    tr("gui_original_dataset"),
                     title = "Unable to delete original data set",
                     icon = "warning",
                     parent = .self$win
@@ -990,6 +1001,7 @@ iNZGUI <- setRefClass(
             }
 
             updatePlot()
+            .self$menuBarWidget$defaultMenu()
             dataNameWidget$updateWidget()
         },
         ## display warning message
@@ -1296,6 +1308,12 @@ iNZGUI <- setRefClass(
                     preferences <<- prefs
                 }
             }
+
+            options(
+                "translatr.location" = system.file("i18n", package = "iNZight"),
+                "translatr.language" = preferences$language
+                # "translatr.table" = read.csv(tf)
+            )
         },
         savePreferences = function() {
             "Saves the users preferences in a file"
@@ -1332,6 +1350,8 @@ iNZGUI <- setRefClass(
                     icon = "warning"
                 )
             }
+
+            invisible(getPreferences())
         },
         plotMessage = function(heading, message, footer, type = "error") {
             "Displays a message to the user using the plot panel"

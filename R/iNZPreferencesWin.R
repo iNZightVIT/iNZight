@@ -61,13 +61,13 @@ iNZPrefsWin <- setRefClass(
 
             ### ---------------- Language
             g_lang <- gformlayout(container = sec_general)
-            languages <- c(en = "English")
+            languages <- GUI$available.languages
             p_lang <- gcombobox(languages,
-                selected = which(names(languages) == prefs$language),
+                selected = which(prefs$language == languages),
                 label = "Language :",
                 container = g_lang,
                 handler = function(h, ...) {
-                    set_pref("language", names(languages)[h$obj$get_index()])
+                    set_pref("language", h$obj$get_value())
                 }
             )
             enabled(p_lang) <- length(languages) > 1L
@@ -297,6 +297,7 @@ iNZPrefsWin <- setRefClass(
             saveBtn <<- gbutton("Save changes",
                 container = g_buttons,
                 handler = function(h, ...) {
+                    print(prefs)
                     GUI$preferences <<- prefs
                     GUI$savePreferences()
                     dispose(GUI$modWin)

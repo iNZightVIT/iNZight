@@ -27,14 +27,14 @@ iNZSurveyDesign <- setRefClass(
     methods = list(
         initialize = function(gui, type = c("survey", "replicate", "frequency")) {
             if (is.null(gui$getActiveData(lazy = TRUE))) {
-                gerror("Please import a data set first.",
+                gerror(tr("survey_input_data"),
                     title = "No data set",
                     icon = "error"
                 )
                 return()
             }
             if (names(gui$getActiveData(lazy = TRUE))[1] == "empty") {
-                gmessage("Please import a data set first.",
+                gmessage(tr("survey_input_data"),
                     title = "No data set",
                     icon = "error"
                 )
@@ -79,7 +79,7 @@ iNZSurveyDesign <- setRefClass(
             )
             add_body(pnl)
 
-            readFileBtn <<- gbutton("Read from file",
+            readFileBtn <<- gbutton(tr("survey_read_file"),
                 handler = function(h, ...) read_file()
             )
             readFileBtn$set_icon("gw-file")
@@ -166,13 +166,12 @@ iNZSurveyDesign <- setRefClass(
             }
 
             if (!requireNamespace("survey", quietly = TRUE)) {
-                p <- gconfirm("You need to install additional packages. Do it now?",
-                    "Install required packages?",
+                p <- gconfirm(paste(tr("survey_install_package", "survey_install_required")),
                     icon = "question",
                     parent = GUI$win
                 )
                 if (!p) {
-                    gmessage("Unable to set survey design.",
+                    gmessage(tr("survey_unable_design"),
                         parent = GUI$win
                     )
                     return()
@@ -192,13 +191,12 @@ iNZSurveyDesign <- setRefClass(
         },
         create = function(preview = FALSE) {
             if (!requireNamespace("surveyspec", quietly = TRUE)) {
-                p <- gconfirm("You need to install additional packages. Do it now?",
-                    "Install required packages?",
+                p <- gconfirm((tr("survey_install_package", "survey_install_required")),
                     icon = "question",
                     parent = GUI$win
                 )
                 if (!p) {
-                    gmessage("Unable to set survey design.",
+                    gmessage(tr("survey_unable_design"),
                         parent = GUI$win
                     )
                     return()
@@ -350,19 +348,19 @@ iNZSurveyDesign <- setRefClass(
             vars <- c("", names(GUI$getActiveData(lazy = TRUE)))
 
             ii <- 2
-            lbl <- glabel("Strata variable: ")
+            lbl <- glabel(tr("survey_strata_var"))
             tbl[ii, 1, expand = TRUE, fill = FALSE, anchor = c(1, 0)] <- lbl
             stratVar <<- gcombobox(vars)
             tbl[ii, 2, expand = TRUE] <- stratVar
 
             ii <- ii + 1
-            lbl <- glabel("1st stage clustering variable: ")
+            lbl <- glabel(paste("1st", " ", tr("survey_stage_clust")))
             tbl[ii, 1, expand = TRUE, fill = FALSE, anchor = c(1, 0)] <- lbl
             clus1Var <<- gcombobox(vars)
             tbl[ii, 2, expand = TRUE] <- clus1Var
 
             ii <- ii + 1
-            lbl <- glabel("2nd stage clustering variable: ")
+            lbl <- glabel(paste("2nd", " ", tr("survey_stage_clust")))
             tbl[ii, 1, expand = TRUE, fill = FALSE, anchor = c(1, 0)] <- lbl
             clus2Var <<- gcombobox(vars)
             tbl[ii, 2, expand = TRUE] <- clus2Var
@@ -382,11 +380,11 @@ iNZSurveyDesign <- setRefClass(
             )
 
             ii <- ii + 1
-            nestChk <<- gcheckbox("Use nested sampling")
+            nestChk <<- gcheckbox(tr("survey_nested_sampling"))
             tbl[ii, 2, expand = TRUE] <- nestChk
 
             ii <- ii + 2
-            lbl <- glabel("Weighting variable: ")
+            lbl <- glabel(tr("survey_weight_var"))
             tbl[ii, 1, expand = TRUE, fill = FALSE, anchor = c(1, 0)] <- lbl
             wtVar <<- gcombobox(vars,
                 handler = function(h, ...) calculate_population_size()
@@ -394,7 +392,7 @@ iNZSurveyDesign <- setRefClass(
             tbl[ii, 2, expand = TRUE] <- wtVar
 
             ii <- ii + 1
-            lbl <- glabel("Finite population correction: ")
+            lbl <- glabel(paste(tr("survey_finite_pop"), ": "))
             tbl[ii, 1, expand = TRUE, fill = FALSE, anchor = c(1, 0)] <- lbl
             fpcVar <<- gcombobox(vars,
                 handler = function(h, ...) calculate_population_size()
@@ -402,7 +400,7 @@ iNZSurveyDesign <- setRefClass(
             tbl[ii, 2, expand = TRUE] <- fpcVar
 
             ii <- ii + 1
-            lbl <- glabel("Finite population correction (2nd stage): ")
+            lbl <- glabel(paste(tr("survey_finite_pop"), " ", "(2nd stage): "))
             tbl[ii, 1, expand = TRUE, fill = FALSE, anchor = c(1, 0)] <- lbl
             fpcVar2 <<- gcombobox(vars,
                 handler = function(h, ...) calculate_population_size()
@@ -411,7 +409,7 @@ iNZSurveyDesign <- setRefClass(
             enabled(fpcVar2) <<- FALSE
 
             ii <- ii + 1
-            lbl <- glabel("Estimated population size: ")
+            lbl <- glabel(tr("survey_est_pop_size"))
             font(lbl) <- list(size = 9)
             tbl[ii, 1, expand = TRUE, fill = FALSE, anchor = c(1, 0)] <- lbl
             popSize <<- glabel("")
@@ -432,7 +430,7 @@ iNZSurveyDesign <- setRefClass(
             ii <- 1
 
             tbl[ii, 1, expand = TRUE, anchor = c(1, 0)] <-
-                glabel("Sampling weights : ")
+                glabel(tr("survey_sampling_weights"))
             wtVar <<- gcombobox(vars,
                 handler = function(h, ...) calculate_population_size()
             )
@@ -468,7 +466,7 @@ iNZSurveyDesign <- setRefClass(
 
 
             tbl2 <- glayout(container = g1)
-            lbl <- glabel("Estimated population size: ")
+            lbl <- glabel(tr("survey_est_pop_size"))
             font(lbl) <- list(size = 9)
             tbl2[1L, 1L, expand = TRUE, fill = TRUE, anchor = c(1, 0)] <- lbl
             popSize <<- glabel("")
@@ -482,7 +480,7 @@ iNZSurveyDesign <- setRefClass(
             tbl2 <- glayout(container = g2)
             ii <- 1
 
-            lbl <- glabel("Type of replication weights: ")
+            lbl <- glabel(tr("survey_type_rep_weights"))
             repType <<- gcombobox(
                 c("BRR", "Fay", "JK1", "JKn", "bootstrap", "other"),
                 selected = 6,
@@ -499,13 +497,13 @@ iNZSurveyDesign <- setRefClass(
             ii <- 1
 
             scalesLbl <- glabel(
-                "Specify at least one of overall scale and individual replicate scales"
+              tr("survey_spec_scale")
             )
             font(scalesLbl) <- list(size = 9, weight = "bold")
             tbl3[ii, 1:2, expand = TRUE, anchor = c(0, 0)] <- scalesLbl
             ii <- ii + 1
 
-            lbl <- glabel("Overall scale: ")
+            lbl <- glabel(tr("survey_scale"))
             repScale <<- gedit("",
                 handler = function(h, ...) calculate_population_size()
             )
@@ -513,8 +511,8 @@ iNZSurveyDesign <- setRefClass(
             tbl3[ii, 2, expand = TRUE] <- repScale
             ii <- ii + 1
 
-            lbl <- glabel("Replicate scales: ")
-            repRscalesBtn <<- gbutton("Read from file ...",
+            lbl <- glabel(tr("survey_rep_scale"))
+            repRscalesBtn <<- gbutton(paste(tr("survey_read_file"), "..."),
                 handler = function(h, ...) {
                     f <- gfile(
                         type = "open",
@@ -527,7 +525,7 @@ iNZSurveyDesign <- setRefClass(
                     set_rscales(f)
                 }
             )
-            repRscalesClear <<- gbutton("Clear",
+            repRscalesClear <<- gbutton(tr("survey_clear"),
                 handler = function(h, ...) {
                     repRscales <<- data.frame(
                         rep.weight = character(),
@@ -543,7 +541,7 @@ iNZSurveyDesign <- setRefClass(
             ii <- ii + 1
 
 
-            lbl <- glabel("File should contain one replicate scale per line.")
+            lbl <- glabel(tr("survey_file_replicate"))
             font(lbl) <- list(size = 8)
             tbl3[ii, 2:3, expand = TRUE, anchor = c(-1, 0)] <- lbl
             ii <- ii + 1
@@ -592,7 +590,7 @@ iNZSurveyDesign <- setRefClass(
             file_has_header <- suppressWarnings(is.na(as.numeric(x1)))
             df <- read.csv(file, header = file_has_header, stringsAsFactors = TRUE)
             if (nrow(df) != length(svalue(repVars))) {
-                gmessage("You need to specify one scale per replicate.")
+                gmessage(tr("survey_specify_scale"))
                 return()
             }
             names(df)[1] <- "rscales"
@@ -605,7 +603,7 @@ iNZSurveyDesign <- setRefClass(
         set_frequency = function() {
             g <- gvbox()
 
-            lbl <- glabel("Choose frequency column", cont = g)
+            lbl <- glabel(tr("survey_freq_col"), cont = g)
             font(lbl) <- list(weight = "bold", size = 11)
 
             addSpace(g, 5)
@@ -619,7 +617,7 @@ iNZSurveyDesign <- setRefClass(
             freqVar <<- gcombobox(vars, selected = 0, container = g)
 
             addSpace(g, 5)
-            lbl <- glabel("WARNING: any non-categorical variables will be removed")
+            lbl <- glabel(tr("survey_warning"))
             font(lbl) <- list(weight = "bold", size = 9)
             add(g, lbl, expand = TRUE, anchor = c(-1, 0))
 
@@ -627,7 +625,7 @@ iNZSurveyDesign <- setRefClass(
         },
         read_file = function(file) {
             if (missing(file)) {
-                file <- gfile("Select survey design file",
+                file <- gfile(tr("survey_select_design_file"),
                     type = "open",
                     filter = ".svydesign"
                 )
@@ -637,13 +635,12 @@ iNZSurveyDesign <- setRefClass(
             }
 
             if (!requireNamespace("surveyspec", quietly = TRUE)) {
-                p <- gconfirm("You need to install additional packages. Do it now?",
-                    "Install required packages?",
+                p <- gconfirm(paste(tr("survey_install_package", "survey_install_required")),
                     icon = "question",
                     parent = GUI$win
                 )
                 if (!p) {
-                    gmessage("Unable to set survey design.",
+                    gmessage(tr("survey_unable_design"),
                         parent = GUI$win
                     )
                     return()
@@ -708,7 +705,7 @@ iNZSurveyPostStrat <- setRefClass(
             curDes <- gui$getActiveDoc()$getModel()$getDesign()
             if (is.null(curDes)) {
                 if (.use_ui) {
-                    gmessage("Please specify a survey design first",
+                    gmessage(tr("survey_specify_design"),
                         title = "No design specified",
                         icon = "warning"
                     )
@@ -781,7 +778,7 @@ iNZSurveyPostStrat <- setRefClass(
                 function(h, ...) update_levels()
             )
 
-            rmvBtn <<- gbutton("Remove calibration",
+            rmvBtn <<- gbutton(tr("survey_remove_calibration"),
                 handler = function(h, ...) {
                     svalue(PSvar, index = TRUE) <<- 0
                     calibrate()
@@ -862,7 +859,7 @@ iNZSurveyPostStrat <- setRefClass(
                 font(lbl) <- list(weight = "bold")
                 PSlvls[ii, 1, expand = TRUE, fill = FALSE, anchor = c(1, 0)] <<- lbl
 
-                lbl <- glabel("Frequency")
+                lbl <- glabel(tr("survey_freq"))
                 font(lbl) <- list(weight = "bold")
                 PSlvls[ii, 2, expand = TRUE, fill = FALSE, anchor = c(-1, 0)] <<- lbl
                 lbl <- glabel(v)
@@ -888,7 +885,7 @@ iNZSurveyPostStrat <- setRefClass(
                     PSlvls[ii, 4] <<- lbl
                 }
 
-                btn <- gbutton("Read from file ...",
+                btn <- gbutton(paste(tr("survey_read_file"), "..."),
                     handler = function(h, ...) {
                         f <- gfile(
                             type = "open",
@@ -916,7 +913,7 @@ iNZSurveyPostStrat <- setRefClass(
                             return()
                         }
                         if (nrow(df) != nrow(lvldf[[var]])) {
-                            gmessage("File needs to have one row for each level.")
+                            gmessage(tr("survey_file_row"))
                             return()
                         }
                         set_freqs(var, df)
@@ -925,7 +922,7 @@ iNZSurveyPostStrat <- setRefClass(
                 ## add button to second-to-last-row
                 PSlvls[ii - 1, 3, anchor = c(1, 0)] <<- btn
 
-                btn <- gbutton("Paste from clipboard ...")
+                btn <- gbutton(paste(tr("survey_paste_clip"), "..."))
 
                 ii <- ii + 2
                 PSlvls[ii, 1:3] <<- gseparator()
