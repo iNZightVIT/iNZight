@@ -3241,7 +3241,7 @@ iNZPlotMod <- setRefClass(
             tbl[ii, 1:3, anchor = c(-1, 0), expand = TRUE] <- trendLin
             tbl[ii, 4:5] <- trendLinCol
 
-            trendLinCol$widget$setSizeRequest(colBoxWidth, -1)
+            size(trendLinCol) <- c(colBoxWidth, -1)
             trendLinLTY <- gspinbutton(1, 6, by = 1, value = curSet$lty.trend[["linear"]])
             tbl[ii, 6] <- trendLinLTY
             ii <- ii + 1
@@ -3260,7 +3260,7 @@ iNZPlotMod <- setRefClass(
             tbl[ii, 1:3, anchor = c(-1, 0), expand = TRUE] <- trendQuad
             tbl[ii, 4:5] <- trendQuadCol
 
-            trendQuadCol$widget$setSizeRequest(colBoxWidth, -1)
+            size(trendQuadCol) <- c(colBoxWidth, -1)
             trendQuadLTY <- gspinbutton(1, 6,
                 by = 1,
                 value = curSet$lty.trend[["quadratic"]]
@@ -3281,7 +3281,7 @@ iNZPlotMod <- setRefClass(
             )
             tbl[ii, 1:3, anchor = c(-1, 0), expand = TRUE] <- trendCub
             tbl[ii, 4:5] <- trendCubCol
-            trendCubCol$widget$setSizeRequest(colBoxWidth, -1)
+            size(trendCubCol) <- c(colBoxWidth, -1)
             trendCubLTY <- gspinbutton(1, 6,
                 by = 1,
                 value = curSet$lty.trend[["cubic"]]
@@ -3309,7 +3309,7 @@ iNZPlotMod <- setRefClass(
             )
             tbl[ii, 1:3, anchor = c(-1, 0), expand = TRUE] <- smooth
             tbl[ii, 4:5] <- smoothCol
-            smoothCol$widget$setSizeRequest(colBoxWidth, -1)
+            size(smoothCol) <- c(colBoxWidth, -1)
             ii <- ii + 1
 
             qsmooth <- gcheckbox(tr("pmod_use_quant"),
@@ -3347,7 +3347,7 @@ iNZPlotMod <- setRefClass(
                 )
                 tbl[ii, 1:4, anchor = c(-1, 0), expand = TRUE] <- joinPoints
                 tbl[ii, 5:6] <- joinPointsCol
-                joinPointsCol$widget$setSizeRequest(colBoxWidth, -1)
+                size(joinPointsCol) <- c(colBoxWidth, -1)
                 ii <- ii + 1
 
                 if (!is.null(curSet$colby) && is_cat(.data[[curSet$colby]])) {

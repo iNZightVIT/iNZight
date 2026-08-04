@@ -1,7 +1,7 @@
 Package: iNZight
 Type: Package
 Title: A GUI for Data Exploration and Visualisation
-Version: 4.4.2
+Version: 5.0.0
 Date: 2025-04-14
 Authors@R: c(person("Tom", "Elliott", role = c("aut", "cre"),
                     email = "tom.elliott@auckland.ac.nz"),
@@ -18,11 +18,11 @@ Description: An interactive GUI for easy visual exploration of datasets.
 License: GPL-3
 Depends:
     R (>= 4.0),
-    RGtk2,
-    cairoDevice,
+    Rgtk4,
     gWidgets2,
-    gWidgets2RGtk2,
-    objectProperties
+    gWidgets2Rgtk4,
+    objectProperties,
+    unigd
 Imports:
     cli,
     colorspace,
@@ -70,14 +70,14 @@ Additional_repositories: https://r.docker.stat.auckland.ac.nz
 LazyData: true
 Encoding: UTF-8
 Language: en-GB
-RoxygenNote: 7.3.1
+RoxygenNote: 7.3.3
 VignetteBuilder: knitr
 Config/Needs/dependencies:
     tmelliott/translatr,
     tmelliott/surveyspec@develop,
-    tmelliott/gWidgets2@patch-1,
-    iNZightVIT/gWidgets2RGtk2@inz,
-    tmelliott/RGtk2/RGtk2,
+    tmelliott/gWidgets2,
+    JanMarvin/Rgtk4,
+    iNZightVIT/gWidgets2Rgtk4,
     gdemin/maditr@0.8.2,
     cran/Matrix@1.6-0,
     cran/units@0.8-5,

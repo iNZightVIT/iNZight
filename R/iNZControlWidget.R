@@ -140,19 +140,23 @@ iNZControlWidget <- setRefClass(
                     }
                 )
 
-                # add accelerators:
-                GUI$key_map$accel$connect(
-                    get("GDK_1"),
-                    "control-mask",
-                    "visible",
-                    function(...) {
+                ## Ctrl+1: add selected variable(s) into Variable 1 (multi-x)
+                act_add_v1 <- gaction(
+                    "Add selected to Variable 1",
+                    tooltip = "Add selected variables (Ctrl+1)",
+                    key.accel = "Control-1",
+                    parent = GUI$win,
+                    handler = function(h, ...) {
                         vars <- svalue(GUI$dataViewWidget$varWidget)
                         if (length(vars)) {
                             V1box$add_item(vars)
                         }
-                        TRUE
                     }
                 )
+                km <- GUI$key_map
+                if (!is.list(km)) km <- list()
+                km[["add_v1"]] <- act_add_v1
+                GUI$key_map <<- km
             } else {
                 switchV12 <- gimagebutton(
                     filename = system.file("images/icon-double-arrow.png",
@@ -792,7 +796,7 @@ iNZControlWidget <- setRefClass(
                     g$set_borderwidth(10)
 
                     g1 <- ggroup(container = g)
-                    glabel(paste(tr("control_time_delay")), " :",container = g1)
+                    glabel(paste(tr("control_time_delay")), " :", container = g1)
                     spin <- gspinbutton(
                         from = 0.1, to = 3, by = 0.1,
                         value = playdelay,

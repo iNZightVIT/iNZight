@@ -278,7 +278,7 @@ ModuleManager <- setRefClass(
             mod_info_description <- gtext(amod$description,
                 width = 500, height = 50
             )
-            RGtk2::gtkTextViewSetLeftMargin(mod_info_description$widget, 0)
+            mod_info_description$set_left_margin(0)
             enabled(mod_info_description) <- FALSE
             mod_info_tbl[ii, 1L, anchor = c(1, 1), expand = TRUE] <- "Description: "
             mod_info_tbl[ii, 2:3, anchor = c(-1, 0), expand = TRUE, fill = TRUE] <- mod_info_description

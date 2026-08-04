@@ -55,7 +55,7 @@ iNZGUI <- setRefClass(
             activeDoc = "numeric",
             ## the main GUI window
             win = "ANY",
-            ## Accelerator key map
+            ## Keyboard shortcuts (gaction objects keyed by name; keep refs alive)
             key_map = "ANY",
             ## Menu bar
             menuBarWidget = "ANY",
@@ -189,9 +189,8 @@ iNZGUI <- setRefClass(
                 height = preferences$window.size[2]
             )
 
-            ## initialize accelerator - do this first so other widgets can use it
-            key_map <<- list(accel = RGtk2::gtkAccelGroup())
-            win$widget$addAccelGroup(key_map$accel)
+            ## Shortcut actions are registered later with gaction(..., key.accel=, parent=win)
+            key_map <<- list()
 
             if (!is.null(data) && is.null(attr(data, "name", exact = TRUE))) {
                 attr(data, "name") <- deparse(substitute(data))
@@ -1583,7 +1582,7 @@ iNZGUI <- setRefClass(
         reload = function() {
             "Reloads iNZight"
             # first, get middle of iNZight window ..
-            ipos <- RGtk2::gtkWindowGetPosition(.self$win$widget)
+            ipos <- .self$win$get_position()
 
             rwin <- gwindow("Reloading iNZight ...",
                 width = 300,
@@ -1599,10 +1598,9 @@ iNZGUI <- setRefClass(
             addSpring(rg)
 
             s <- (size(.self$win) - size(rwin)) / 2
-            gtkWindowMove(
-                rwin$widget,
-                ipos$root.x + s[1],
-                ipos$root.y + s[2]
+            rwin$set_position(
+                as.integer(ipos[["x"]] + s[1]),
+                as.integer(ipos[["y"]] + s[2])
             )
 
             visible(rwin) <- TRUE
@@ -1630,7 +1628,7 @@ iNZGUI <- setRefClass(
                 res <- .self$setState(state)
             }
 
-            gtkWindowMove(.self$win$widget, ipos$root.x, ipos$root.y)
+            .self$win$set_position(ipos[["x"]], ipos[["y"]])
             .self$set_visible()
         },
         set_visible = function(visible = TRUE) {

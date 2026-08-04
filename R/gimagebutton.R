@@ -26,19 +26,10 @@ gimagebutton <- function(stock.id = NULL, filename, old_cursor = NULL, tooltip =
 
     tooltip(img) <- tooltip
 
-    hover <- gdkCursorNew("GDK_HAND1")
-    addHandler(img, "enter-notify-event",
-        handler = function(h, ...) {
-            getToolkitWidget(h$obj)$getWindow()$setCursor(hover)
-            TRUE
-        }
-    )
-    addHandler(img, "leave-notify-event",
-        handler = function(h, ...) {
-            getToolkitWidget(h$obj)$getWindow()$setCursor(old_cursor)
-            TRUE
-        }
-    )
+    ## GTK4: no enter/leave-notify + GdkCursor; use toolkit pointer cursor.
+    if (requireNamespace("gWidgets2Rgtk4", quietly = TRUE)) {
+        gWidgets2Rgtk4::setPointerCursor(img)
+    }
     img
 }
 

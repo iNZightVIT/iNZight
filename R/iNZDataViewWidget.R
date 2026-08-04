@@ -669,13 +669,11 @@ iNZDataViewWidget <- setRefClass(
                     svalue(dfWidget, index = TRUE) <<- n %% paginate$nrow + 1L
                 }
             )
-            icon <- RGtk2::gtkImage(
-                file = system.file("images/icon-search-number.png",
+            findRowBtn$set_icon(
+                system.file("images/icon-search-number.png",
                     package = "iNZight"
                 )
             )
-            findRowBtn$widget$setImage(icon)
-            findRowBtn$widget$image$show()
             tooltip(findRowBtn) <- "Jump to row number"
 
             updateDfView()
