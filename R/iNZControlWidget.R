@@ -353,7 +353,7 @@ iNZControlWidget <- setRefClass(
             tbl[9L, 1:6, expand = TRUE] <- g_btns
 
             # help button
-            help_button <<- gbutton("Help",
+            help_button <<- gbutton(tr("control_help"),
                 container = g_btns,
                 handler = function(h, ...) help_page("user_guides/interface")
             )
@@ -361,14 +361,12 @@ iNZControlWidget <- setRefClass(
             help_button$set_icon("gw-help_topic")
             tooltip(help_button) <<- "Control panel help"
 
-            summary_button <<- gbutton(
-                "Get Summary",
+            summary_button <<- gbutton(tr("control_summary"),
                 container = g_btns,
                 expand = TRUE,
                 handler = function(h, ...) iNZGetSummary$new(GUI)
             )
-            inference_button <<- gbutton(
-                "Get Inference",
+            inference_button <<- gbutton(tr("control_inference"),
                 container = g_btns,
                 expand = TRUE,
                 handler = function(h, ...) iNZGetInference$new(GUI)
@@ -426,7 +424,7 @@ iNZControlWidget <- setRefClass(
 
                     cw$body_space(10)
                     cw$add_body(
-                        glabel("Name for data subset: "),
+                        glabel(paste(tr("control_data_name")), ": "),
                         anchor = c(-1, 0)
                     )
                     cw$add_body(
@@ -519,8 +517,7 @@ iNZControlWidget <- setRefClass(
                 handler = function(h, ...) {
                     if (svalue(G1box) == svalue(G2box)) {
                         svalue(G1box, index = TRUE) <<- 1L
-                        gmessage(
-                            "You cannot use the same variable in both subsetting slots.",
+                        gmessage(tr("control_no_vars"),
                             parent = GUI$win
                         )
                     } else {
@@ -562,8 +559,7 @@ iNZControlWidget <- setRefClass(
                 handler = function(h, ...) {
                     if (svalue(G2box) == svalue(G1box)) {
                         svalue(G2box, index = TRUE) <<- 1L
-                        gmessage(
-                            "You cannot use the same variable in both subsetting slots.",
+                        gmessage(tr("control_no_vars"),
                             parent = GUI$win
                         )
                     } else {
@@ -796,17 +792,17 @@ iNZControlWidget <- setRefClass(
                     g$set_borderwidth(10)
 
                     g1 <- ggroup(container = g)
-                    glabel("Time delay between plots :", container = g1)
+                    glabel(paste(tr("control_time_delay")), " :",container = g1)
                     spin <- gspinbutton(
                         from = 0.1, to = 3, by = 0.1,
                         value = playdelay,
                         container = g1
                     )
-                    glabel("(seconds)", container = g1)
+                    glabel(tr("control_seconds"), container = g1)
 
                     g2 <- ggroup(container = g)
                     addSpring(g2)
-                    gbutton("OK",
+                    gbutton(tr("control_ok"),
                         container = g,
                         handler = function(h, ...) {
                             playdelay <<- svalue(spin)

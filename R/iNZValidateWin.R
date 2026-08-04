@@ -54,10 +54,10 @@ iNZValidateWin <- setRefClass(
             )
             results.box <- gtable(data.frame())
 
-            lbl <- glabel("Validate Dataset")
-            lbl.rulesbox <- glabel("Validation Rules:")
-            lbl.results <- glabel("Results:")
-            lbl.details <- glabel("Details:")
+            lbl <- glabel(tr("validate_dataset"))
+            lbl.rulesbox <- glabel(tr("validate_rules"))
+            lbl.results <- glabel(tr("validate_results"))
+            lbl.details <- glabel(tr("validate_details"))
 
             font(lbl) <- list(weight = "bold", size = 12, family = "sans")
             font(lbl.rulesbox) <- list(weight = "bold")
@@ -77,23 +77,23 @@ iNZValidateWin <- setRefClass(
             ] <- helpbtn
 
             group.identifier <- ggroup()
-            add(group.identifier, glabel("Unique Identifier: "))
+            add(group.identifier, glabel(tr("validate_unique_identifier")))
             dropdown.identifier <- gcombobox(
                 c("Row Number", names(GUI$getActiveData(lazy = TRUE))),
                 container = group.identifier,
                 expand = TRUE
             )
 
-            open.button <- gbutton("Open Rules",
+            open.button <- gbutton(tr("validate_open_rules"),
                 handler = function(h, ...) {
-                    open.dialog <- gfile("Open Rules...", type = "open")
+                    open.dialog <- gfile(paste(tr("validate_open_rules"), "..."), type = "open")
                     open.file(open.dialog, rules.box)
                 }
             )
 
-            save.button <- gbutton("Save Rules",
+            save.button <- gbutton(tr("validate_save_rules"),
                 handler = function(h, ...) {
-                    save.dialog <- gfile("Save Rules...",
+                    save.dialog <- gfile(paste(tr("validate_save_rules"), "..."),
                         type = "save",
                         initial.filename = paste0(
                             attr(GUI$getActiveData(lazy = TRUE), "name", exact = TRUE),
@@ -104,7 +104,7 @@ iNZValidateWin <- setRefClass(
                 }
             )
 
-            validate.button <- gbutton("Validate Dataset",
+            validate.button <- gbutton(tr("validate_dataset"),
                 handler = function(h, ...) {
                     rules <- unlist(strsplit(svalue(rules.box), "\\n"))
                     rules <- rules[rules != ""]

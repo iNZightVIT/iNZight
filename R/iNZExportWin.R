@@ -20,7 +20,7 @@ iNZExportWin <- setRefClass(
             tbl <- glayout(expand = TRUE, fill = TRUE)
             ii <- 1L
 
-            lbl <- glabel("Export to :")
+            lbl <- glabel(tr("export_ex_to"))
             font(lbl) <- list(weight = "bold")
             file <<- gfilebrowse(
                 type = "save",
@@ -30,7 +30,7 @@ iNZExportWin <- setRefClass(
             tbl[ii, 2:3, expand = TRUE] <- file
             ii <- ii + 1L
 
-            lbl <- glabel("Export format :")
+            lbl <- glabel(tr("export_format"))
             font(lbl) <- list(weight = "bold")
             filetypes <<- list(
                 csv = "Comma Separated Values (.csv)",
@@ -62,11 +62,11 @@ iNZExportWin <- setRefClass(
         export_data = function() {
             f <- svalue(file)
             if (length(f) == 0) {
-                gmessage("Please specify a file name.", parent = GUI$modWin)
+                gmessage(tr("export_spec_file_name"), parent = GUI$modWin)
                 return(FALSE)
             }
             if (file.exists(svalue(file))) {
-                c <- gconfirm("The file exists. Overwrite?",
+                c <- gconfirm(tr("export_file_exists"),
                     title = "Overwrite file?",
                     icon = "warning",
                     parent = GUI$modWin

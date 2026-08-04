@@ -60,14 +60,14 @@ iNZImportExampleWin <- setRefClass("iNZImportExampleWin",
             ii <- 1L
 
             ## select box populated with packages (defined above)
-            lbl <- glabel("Module (package) :")
+            lbl <- glabel(tr("importex_module"))
             dsPkg <<- gcombobox(pkgs, selected = 1)
             tbl[ii, 1L, anchor = c(1, 0), expand = TRUE] <- lbl
             tbl[ii, 2:4, anchor = c(-1, 0), expand = TRUE] <- dsPkg
             ii <- ii + 1L
 
             ## select box populated with datasets in chosen package
-            lbl <- glabel("Dataset :")
+            lbl <- glabel(tr("importex_dataset"))
             dsData <<- gcombobox("", selected = 0)
             tbl[ii, 1L, anchor = c(1, 0), expand = TRUE] <- lbl
             tbl[ii, 2:4, anchor = c(-1, 0), expand = TRUE] <- dsData

@@ -15,14 +15,14 @@ iNZClipboard <- setRefClass(
                 delimiter = "\t"
             )
 
-            w <- gwindow("Copy/paste data",
+            w <- gwindow(tr("clipboard_copy_paste"),
                 visible = FALSE,
                 parent = GUI$win,
                 width = 600
             )
             g <- gvbox(container = w)
 
-            lbl <- glabel("  Copy data from Excel/Google Sheets/etc and paste below:",
+            lbl <- glabel(paste(tr("clipboard_copy_data"), ":"),
                 container = g,
                 anchor = c(-1, 0)
             )
@@ -44,7 +44,7 @@ iNZClipboard <- setRefClass(
 
             btnGrp <- ggroup()
 
-            lbl <- glabel("  Choose delimiter (or type one) :", container = btnGrp)
+            lbl <- glabel(paste(tr("clipboard_delimiter"), ":"), container = btnGrp)
             delim_values <- c("tab (\t)", "comma (,)", "semicolon (;)")
             delimBox <- gcombobox(
                 delim_values,
@@ -62,12 +62,12 @@ iNZClipboard <- setRefClass(
 
             addSpring(btnGrp)
 
-            cancelBtn <- gbutton("Cancel",
+            cancelBtn <- gbutton(tr("clipboard_cancel"),
                 container = btnGrp,
                 handler = function(h, ...) dispose(w)
             )
 
-            okBtn <<- gbutton("Load",
+            okBtn <<- gbutton(tr("clipboard_load"),
                 container = btnGrp,
                 handler = function(h, ...) {
                     GUI$setDocument(
@@ -140,7 +140,7 @@ iNZCopyToClipboard <- setRefClass(
             g <- gvbox()
             add_body(g)
 
-            lbl <- glabel("  Copy the data below to paste elsewhere:",
+            lbl <- glabel(paste(tr("clipboard_copy_below"), ":"),
                 container = g,
                 anchor = c(-1, 0)
             )
@@ -165,7 +165,7 @@ iNZCopyToClipboard <- setRefClass(
             add_body(text_data, fill = TRUE, expand = TRUE)
 
             add_body(
-                glabel("Use CTRL+A to select the data, and CTRL+C to copy it.")
+                glabel(tr("clipboard_ctrl"))
             )
 
             setTextData()

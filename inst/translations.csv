@@ -1,0 +1,98 @@
+id,English,Māori,Français
+menu_file,File,Kōnae,Fichier
+menu_file_save,Save [beta],,Enregistrer
+menu_file_load,Load [beta],,Ouvrir
+menu_file_import,Import,,Importer
+menu_file_export,Export,,Exporter
+menu_file_paste,Paste from,,Coller de
+menu_file_examples,Example data,Raraunga whakatauira,Exemple de données
+menu_file_prefs,Preferences,,Préférences
+menu_file_reload,Reload iNZight,,Recharger iNZight
+menu_file_exit,Exit,Whakamutu,Sortir
+menu_data,Dataset,Raraunga,Données
+menu_data_filter,Filter,,Filtrer
+menu_data_sort,Sort by variable(s),,Trier par variables
+menu_data_agg,Aggregate,,Agréger
+menu_data_stack,Stack,,Empiler
+menu_data_operation,Dataset operation,,Opérations de données
+menu_data_reshape,Reshape dataset,,Remodeler de données
+menu_data_separate,Separate column,,Séparer une colonne
+menu_data_unite,Unite columns,,Unir les collones
+menu_data_report,Generate data report,,Générer un rapport de données
+menu_data_validate,Validate,,Valider
+menu_data_reorder,Reorder and select variables,,Réorganiser et sélectionner des variables
+menu_data_view,View full dataset,,Voir les données complètes
+menu_data_rename,Rename,,Renommer
+menu_data_restore,Restore original dataset,,Restaurer les données d'origine
+menu_data_delete,Delete current dataset,,Supprimer les données existantes
+menu_data_mergejoin,Merge/Join datasets,,Fusionner/joindre des données
+menu_data_joincols,Join by column values,,Joindre par valeurs de colonne
+menu_data_appendrows,Append new rows,,Ajouter de nouvelles lignes
+menu_data_svy,Survey design,,Le désign de l'enquête
+menu_data_svyspec,Specify design,,Spécifier le désign
+menu_data_svyrep,Specify replicate design,,Spécifier le désign répliqué
+menu_data_svypost,Post-stratify/Calibrate,,Étalonner
+menu_data_svyremove,Remove design,,Retirer le désign
+menu_data_freq,Frequency tables,,Tableaux de fréquences
+menu_data_expandtbl,Expand table,,Étendre la table
+menu_data_setfreq,Specify frequency column,,Spécifier la colonne de fréquence
+menu_data_dropfreq,Remove frequency column,,Retirer la colonne de fréquence
+menu_vars,Variables,Taurangi,Variables
+menu_vars_convert2cat,Convert to categorical,,Convertir en catégoriel
+menu_vars_catvars,Categorical Variables,,Variables catégorielles
+menu_vars_reorderlevels,Reorder levels,,Réorganiser les niveaux
+menu_vars_collapse,Collapse levels,,Réduire les niveaux
+menu_vars_renamelevels,Rename levels,,Renommer les niveaux
+menu_vars_combinecatvars,Combine categorical variables,,Combiner des variables catégorielles
+menu_vars_numvars,Numeric Variables,,Variables numériques
+menu_vars_transform,Transform,,Transformer
+menu_vars_standardise,Standardise,,Standardiser
+menu_vars_classint,Form class intervals,,Former des intervalles de classe
+menu_vars_rank,Rank variables,,Classer des variables
+menu_vars_convert2catmulti,Convert to categorical (multiple),,Convertir en catégoriel (plusieurs)
+menu_vars_dates,Dates and times,,Dates and temps
+menu_vars_convert2dt,Convert to,,Converter en
+menu_vars_extractdt,Extract from,,Extrait de
+menu_vars_aggregate2dt,Aggregate to,,Agréger à
+menu_vars_rename,Rename variables,,Renommer des variables
+menu_vars_create,Create new variables,,Créer de nouvelles variables
+menu_vars_miss2cat,Missing to categorical,,Manquant à catégorique
+menu_vars_delete,Delete variables,,Supprimer des variables
+menu_plot,Plot,Kauwhata,Graphique
+menu_plot_add,Add to plot,,Ajouter au graphique
+menu_plot_rmv,Remove additions,,Supprimer les ajouts
+menu_plot_inf,Add inference,,Ajouter des inférences
+menu_plot_newtab,New tab,,Nouvel onglet
+menu_plot_closetab,Close tab,,Fermer l'onglet
+menu_plot_renametab,Rename tab,,Renommer l'onglet
+menu_plot_newwin,New plot window,,Nouvelle fenêtre graphique
+menu_plot_redraw,Redraw plot,,Redessiner le graphique
+menu_plot_save,Save plot,,Enregistrer le graphique
+menu_adv,Advanced,Whatutoto,Avancé
+menu_adv_mapsinstall,Install Maps,,Installer 'Cartes'
+menu_adv_manage,Manage modules,,Gérer les modules
+menu_adv_quick,Quick Explore,,Explorer rapidement
+menu_adv_missing,Missing values,,Valeurs manquantes
+menu_adv_plot1var,All 1-variable plots,,Tous les graphiques à 1 variable
+menu_adv_smry1var,All 1-variable summaries,,Tous les résumés à 1 variable
+menu_adv_plot2var,Explore 2-variable plots,,Explorer les graphiques à 2 variables
+menu_adv_pairs,Pairs,,Paires
+menu_adv_plot3d,3D Plot,,Graphique 3D
+menu_adv_timeseries,Time series,,Des séries chronologiques
+menu_adv_modfit,Model fitting,,Régression
+menu_adv_multires,Multiple response,,Réponse multiple
+menu_adv_maps,Maps,,Cartes
+menu_adv_install,Install the Modules package,,Installez les pacakge 'Modules'
+menu_adv_code,R code history [beta],,Historique du code R
+menu_help,Help,Awhina,Aider
+menu_help_about,About,,A propos
+menu_help_guides,User Guides,,Guides de l'utilisateur
+menu_help_guide_basics,The Basics,,Les bases
+menu_help_guide_interface,The Inferface,,L'interface
+menu_help_guide_plot,Plot Options,,Options de graphique
+menu_help_guide_vars,Variables Menu,,Menu des variables
+menu_help_guide_data,Dataset Menu,,Menu de données
+menu_help_guide_advanced,Advanced,,Avancé
+menu_help_history,Change history,,Historiques des changements
+menu_help_faq,FAQ,,FAQ
+menu_help_contact,Contact us or report a bug,,Contactez-nous ou signalez un bug

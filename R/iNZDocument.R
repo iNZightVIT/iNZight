@@ -462,7 +462,7 @@ iNZDataNameWidget <- setRefClass(
 
             widget <<- ggroup()
             addSpace(widget, 5)
-            add(widget, glabel("Dataset: "))
+            add(widget, glabel(tr("doc_dataset")))
 
             # nameLabel <<- glabel(.self$datName, expand = TRUE, anchor = c(-1, 0))
             # font(nameLabel) <<- list(weight = "bold")
@@ -479,7 +479,7 @@ iNZDataNameWidget <- setRefClass(
             )
             # add(widget, nameLabel, expand = TRUE)
 
-            import_button <<- gbutton("Import data ...",
+            import_button <<- gbutton(tr("doc_import_data"),
                 handler = function(h, ...) iNZImportWin$new(gui)
             )
             import_button$set_icon("gw-file")
