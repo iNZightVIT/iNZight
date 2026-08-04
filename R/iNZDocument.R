@@ -183,7 +183,7 @@ iNZDataModel <- setRefClass(
                             rscales = x$rscales,
                             type = x$type,
                             calibrate = x$calibrate,
-                            calfun = if (is.null(x$calibrate)) NULL else "linear"
+                            calfun = if (is.null(x$calfun)) "linear" else x$calfun
                         )
                     ),
                     class = "inzsvyspec"
