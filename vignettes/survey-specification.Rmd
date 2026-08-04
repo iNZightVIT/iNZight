@@ -54,7 +54,7 @@ weights = "pw"
 fpc = "fpc"
 ```
 
-This should be given a `.svydesign` extension. After clicking the **Read from file** button, browse for the file and load it. Again, nothing will happen (especially if you didn't remove the previous design first!), but in the background iNZight has parsed the file (using the helper function `iNZightTools::import_survey`, see end of Vignette for R usage) and is now using the design.
+This should be given a `.svydesign` extension. After clicking the **Read from file** button, browse for the file and load it. Again, nothing will happen (especially if you didn't remove the previous design first!), but in the background iNZight has parsed the file (using the helper function `surveyspec::import_survey`, see end of Vignette for R usage) and is now using the design.
 
 ### Method 3: one-step survey loading
 
