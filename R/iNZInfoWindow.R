@@ -51,7 +51,7 @@ iNZInfoWindow <- setRefClass(
             )
 
             code_panel <<- gvbox()
-            code_panel$set_borderwidth(5)
+            code_panel$set_padding(5L)
             code_box <<- gtext("info_function(...)",
                 expand = TRUE,
                 wrap = FALSE,
@@ -101,7 +101,7 @@ iNZInfoWindow <- setRefClass(
             )
 
             ctrl_panel <<- ggroup()
-            ctrl_panel$set_borderwidth(5)
+            ctrl_panel$set_padding(5L)
 
             # Main container will consist of three components:
             #  1. code panel (can be toggled; controls info)
@@ -439,7 +439,7 @@ iNZGetSummary <- setRefClass(
             )
 
             g2 <- gvbox(container = w2)
-            g2$set_borderwidth(15)
+            g2$set_padding(15L)
 
             scatter <- xnum && ynum
 
@@ -774,7 +774,7 @@ iNZGetSummary <- setRefClass(
             )
 
             g <- gvbox(container = w)
-            g$set_borderwidth(5)
+            g$set_padding(5L)
 
             lbl <- glabel(
                 paste(
@@ -888,7 +888,7 @@ iNZGetSummary <- setRefClass(
             if (is.null(pc)) pc <- list()
 
             g <- gvbox(container = w)
-            g$set_borderwidth(5)
+            g$set_padding(5L)
 
             tbl <- glayout(container = g)
             ii <- 1L

@@ -449,7 +449,7 @@ iNZDataViewWidget <- setRefClass(
 
             # only needs to run once
             landingView <<- gvbox()
-            landingView$set_borderwidth(10)
+            landingView$set_padding(10L)
             lbl <- glabel(tr("widget_start_import"),
                 container = landingView,
                 anchor = c(-1, 0)

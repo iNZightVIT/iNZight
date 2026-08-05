@@ -1110,7 +1110,7 @@ iNZPlotModWin <- setRefClass(
                 parent = GUI$win
             )
             cgrp <- gvbox(spacing = 5, container = colWin)
-            cgrp$set_borderwidth(5)
+            cgrp$set_padding(5L)
             tbl <- glayout()
             jj <- 1
 

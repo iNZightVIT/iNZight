@@ -20,7 +20,7 @@ iNZCodePanel <- setRefClass(
                 original_code = ""
             )
             panel <<- gvbox()
-            panel$set_borderwidth(5)
+            panel$set_padding(5L)
 
             # Input text box
             input <<- gtext("",

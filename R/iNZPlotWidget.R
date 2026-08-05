@@ -51,7 +51,7 @@ iNZPlotWidget <- setRefClass(
             )
             g <- gvbox(spacing = 15, container = w)
 
-            g$set_borderwidth(15)
+            g$set_padding(15L)
 
             tbl <- glayout()
             ii <- 1

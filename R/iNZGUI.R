@@ -1105,7 +1105,7 @@ iNZGUI <- setRefClass(
                     footer =
                         ggroup(container = modContainer)
                 )
-            moduleWindow$footer$set_borderwidth(4)
+            moduleWindow$footer$set_padding(4L)
 
             if (!missing(title)) {
                 title <- glabel(title)
@@ -1113,7 +1113,7 @@ iNZGUI <- setRefClass(
                 add(moduleWindow$header, title, anchor = c(0, 0))
             }
 
-            if (border > 0) moduleWindow$body$set_borderwidth(border)
+            if (border > 0) moduleWindow$body$set_padding(border)
 
             visible(gp1) <<- FALSE
 

@@ -536,7 +536,7 @@ iNZAggregateWin <- setRefClass(
                 container = g_var
             )
             font(g_aggvars) <- list(weight = "bold")
-            g_aggvars$set_borderwidth(5)
+            g_aggvars$set_padding(5L)
 
             available_aggvars <<- gtable(
                 items = list(Available = catvars),
@@ -636,7 +636,7 @@ iNZAggregateWin <- setRefClass(
                 container = g_var
             )
             font(g_smryvars) <- list(weight = "bold")
-            g_smryvars$set_borderwidth(5)
+            g_smryvars$set_padding(5L)
 
             smryvars <<- gtable(list(Summarize = numvars),
                 multiple = TRUE,
@@ -657,14 +657,14 @@ iNZAggregateWin <- setRefClass(
 
             ### +++++++ Summary selection
             gsmry <<- gframe(paste("3. ", tr("data_ag_var3")))
-            gsmry$set_borderwidth(5)
+            gsmry$set_padding(5L)
             smry_tbl <<- NULL
 
             add_body(gsmry)
 
             ### +++++++ Preview
             gprev <- gframe(tr("data_preview"), expand = TRUE)
-            gprev$set_borderwidth(5)
+            gprev$set_padding(5L)
 
             df_preview <<- gtable(list(Variables = character()),
                 container = gprev
@@ -2186,7 +2186,7 @@ iNZJoinWin <- setRefClass(
         show_join_help = function() {
             helpwin <- gwindow(title = "Join Methods", parent = GUI$modWin)
             win <- gvbox(container = helpwin)
-            win$set_borderwidth(10)
+            win$set_padding(10L)
 
             inner_join <- glabel(tr("data_inner"), container = win, anchor = c(-1, 0))
             font(inner_join) <- list(size = 12, weight = "bold")
@@ -2559,7 +2559,7 @@ iNZDataDict <- setRefClass(
             )
             ig <- gvbox(container = iwin)
             addSpring(ig)
-            ig$set_borderwidth(10)
+            ig$set_padding(10L)
             glabel(tr("data_apply_dictionary"),
                 container = ig
             )

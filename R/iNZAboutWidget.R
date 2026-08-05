@@ -16,7 +16,7 @@ iNZAboutWidget <- setRefClass(
                 parent = GUI$win
             )
             g <- gvbox(expand = FALSE, cont = win, spacing = 5)
-            g$set_borderwidth(10)
+            g$set_padding(10L)
 
             mainlbl <- glabel(heading, container = g)
             font(mainlbl) <- list(
@@ -65,7 +65,7 @@ iNZAboutWidget <- setRefClass(
             )
 
             g_sponsors <- gvbox(container = g)
-            g_sponsors$set_borderwidth(5)
+            g_sponsors$set_padding(5L)
 
             logo_path <- function(logo) {
                 system.file(

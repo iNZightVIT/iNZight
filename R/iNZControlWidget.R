@@ -756,7 +756,7 @@ iNZControlWidget <- setRefClass(
                         parent = GUI$win
                     )
                     g <- gvbox(spacing = 10, container = w)
-                    g$set_borderwidth(10)
+                    g$set_padding(10L)
 
                     g1 <- ggroup(container = g)
                     glabel(paste(tr("control_time_delay")), " :", container = g1)
