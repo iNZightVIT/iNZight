@@ -15,7 +15,7 @@ Previously blocked on gWidgets2Rgtk4:
 
 ## P1 — Recorded test failures (re-check)
 
-### Add to Plot — `tests/testthat/test_addtoplot.R`
+### Add to Plot — `tests/testthat/test_D2_addtoplot.R`
 
 - [ ] **Axes and Labels - bar plots** (`:230`)
   - Error: `ui$moduleWindow$body$children[[1]]$children[[1]]` subscript out of bounds
@@ -34,7 +34,8 @@ Former G1/G2 / size-by / symbol-by failures cleared after toolkit P0 + sizeMetho
 ## P2 — After focused green
 
 - [ ] Full `make test`; extend this list with anything past the previous max-fail cutoff (surveys, import, …)
-- [ ] Commit UI test renames if desired (`test_ui_*.R` → `test_aaa_ui_loads.R` / `test_aab_ui_features.R` — currently unstaged)
+
+Test files use letter-group prefixes (`A0`–`G1`) so foundational GUI tests run first; see `tests/testthat.R`.
 
 ---
 
