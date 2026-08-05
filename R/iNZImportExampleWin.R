@@ -92,8 +92,13 @@ iNZImportExampleWin <- setRefClass("iNZImportExampleWin",
             addHandlerChanged(
                 dsData,
                 function(h, ...) {
-                    ttl <- datasets[svalue(dsData, index = TRUE), "Title"]
-                    if (ttl == "") {
+                    idx <- svalue(dsData, index = TRUE)
+                    if (length(idx) != 1L || is.na(idx) || idx < 1L) {
+                        svalue(dsTitle) <<- ""
+                        return()
+                    }
+                    ttl <- datasets[idx, "Title"]
+                    if (length(ttl) != 1L || is.na(ttl) || ttl == "") {
                         ttl <- svalue(dsData)
                     }
                     svalue(dsTitle) <<- ttl

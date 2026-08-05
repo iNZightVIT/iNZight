@@ -3,7 +3,7 @@ iNZControlWidget <- setRefClass(
     fields = list(
         GUI = "ANY",
         ctrlGp = "ANY",
-        V1box = "ANY", multi_v1 = "logical",
+        V1box = "ANY",
         V2box = "ANY",
         G1box = "ANY",
         G2box = "ANY",
@@ -22,11 +22,10 @@ iNZControlWidget <- setRefClass(
     methods = list(
         initialize = function(gui) {
             ctrlGp <<- gvbox()
-            ctrlGp$set_borderwidth(5L)
+            ctrlGp$set_padding(5L)
 
             initFields(
-                GUI = gui, playdelay = 0.6, newname = "",
-                multi_v1 = gui$preferences$dev.features && gui$preferences$multiple_x
+                GUI = gui, playdelay = 0.6, newname = ""
             )
 
             ## set up glayout
@@ -35,16 +34,10 @@ iNZControlWidget <- setRefClass(
             clear_icon <- "clear"
 
             ### DRAG/DROP MENUS
-            if (multi_v1) {
-                V1box <<- gmultilabel(
-                    placeholder = "Select outcome variables and click the '+' button ...",
-                    removeOnClick = TRUE
-                )
-            } else {
-                V1box <<- gcombobox(
-                    c("Select/Drag-drop Variable 1", names(GUI$getActiveData(lazy = TRUE)))
-                )
-            }
+            ## multiple_x / gmultilabel deferred until gWidgets2Rgtk4 gmultiselect
+            V1box <<- gcombobox(
+                c("Select/Drag-drop Variable 1", names(GUI$getActiveData(lazy = TRUE)))
+            )
             V2box <<- gcombobox(
                 c("Select/Drag-drop Variable 2", names(GUI$getActiveData(lazy = TRUE)))
             )
@@ -72,11 +65,7 @@ iNZControlWidget <- setRefClass(
                 stock.id = "clear",
                 tooltip = "Clear Variable",
                 handler = function(h, ...) {
-                    if (multi_v1) {
-                        V1box$clear()
-                    } else {
-                        svalue(V1box, index = TRUE) <<- 1L
-                    }
+                    svalue(V1box, index = TRUE) <<- 1L
                     changePlotSettings(list(x = NULL))
                 }
             )
@@ -127,84 +116,51 @@ iNZControlWidget <- setRefClass(
 
 
             ## "SWITCH" buttons:
-            if (multi_v1) {
-                addV1 <- gimagebutton(
-                    system.file("images/add-multiple.png", package = "iNZight"),
-                    tooltip = "Add selected variables"
-                )
-                addHandlerClicked(
-                    addV1,
-                    function(h, ...) {
-                        vars <- svalue(GUI$dataViewWidget$varWidget)
-                        V1box$set_value(vars)
+            switchV12 <- gimagebutton(
+                filename = system.file("images/icon-double-arrow.png",
+                    package = "iNZight"
+                ),
+                tooltip = "Switch with Variable 2"
+            )
+            addHandlerClicked(
+                switchV12,
+                function(h, ...) {
+                    if (!isTRUE(svalue(V1box, TRUE) > 1L) || !isTRUE(svalue(V2box, TRUE) > 1L)) {
+                        return()
                     }
-                )
 
-                ## Ctrl+1: add selected variable(s) into Variable 1 (multi-x)
-                act_add_v1 <- gaction(
-                    "Add selected to Variable 1",
-                    tooltip = "Add selected variables (Ctrl+1)",
-                    key.accel = "Control-1",
-                    parent = GUI$win,
-                    handler = function(h, ...) {
-                        vars <- svalue(GUI$dataViewWidget$varWidget)
-                        if (length(vars)) {
-                            V1box$add_item(vars)
-                        }
-                    }
-                )
-                km <- GUI$key_map
-                if (!is.list(km)) km <- list()
-                km[["add_v1"]] <- act_add_v1
-                GUI$key_map <<- km
-            } else {
-                switchV12 <- gimagebutton(
-                    filename = system.file("images/icon-double-arrow.png",
-                        package = "iNZight"
-                    ),
-                    tooltip = "Switch with Variable 2"
-                )
-                addHandlerClicked(
-                    switchV12,
-                    function(h, ...) {
-                        if (svalue(V1box, TRUE) == 1L || svalue(V2box, TRUE) == 1L) {
-                            return()
-                        }
+                    V1 <- svalue(V1box)
+                    V2 <- svalue(V2box)
 
-                        V1 <- svalue(V1box)
-                        V2 <- svalue(V2box)
+                    blockHandlers(V1box)
+                    blockHandlers(V2box)
 
-                        blockHandlers(V1box)
-                        blockHandlers(V2box)
+                    svalue(V1box) <<- V2
+                    svalue(V2box) <<- V1
 
-                        svalue(V1box) <<- V2
-                        svalue(V2box) <<- V1
+                    valX <- svalue(V1box)
+                    newX <- as.name(valX)
+                    newXname <- valX
 
-                        valX <- svalue(V1box)
-                        newX <- as.name(valX)
-                        newXname <- valX
+                    valY <- svalue(V2box)
+                    newY <- as.name(valY)
+                    newYname <- valY
 
-                        valY <- svalue(V2box)
-                        newY <- as.name(valY)
-                        newYname <- valY
-
-                        changePlotSettings(
-                            list(
-                                x = newX,
-                                y = newY,
-                                xlab = NULL,
-                                ylab = NULL,
-                                main = NULL,
-                                varnames = list(x = newXname, y = newYname)
-                            ),
-                            reset = TRUE
-                        )
-                        unblockHandlers(V1box)
-
-                        unblockHandlers(V2box)
-                    }
-                )
-            }
+                    changePlotSettings(
+                        list(
+                            x = newX,
+                            y = newY,
+                            xlab = NULL,
+                            ylab = NULL,
+                            main = NULL,
+                            varnames = list(x = newXname, y = newYname)
+                        ),
+                        reset = TRUE
+                    )
+                    unblockHandlers(V1box)
+                    unblockHandlers(V2box)
+                }
+            )
             switchV23 <- gimagebutton(
                 filename = system.file("images/icon-double-arrow.png", package = "iNZight"),
                 tooltip = "Switch with Variable 3"
@@ -212,7 +168,7 @@ iNZControlWidget <- setRefClass(
             addHandlerClicked(
                 switchV23,
                 function(h, ...) {
-                    if (svalue(V2box, TRUE) == 1L && svalue(G1box, TRUE) == 1L) {
+                    if (!isTRUE(svalue(V2box, TRUE) > 1L) && !isTRUE(svalue(G1box, TRUE) > 1L)) {
                         return()
                     }
 
@@ -226,7 +182,7 @@ iNZControlWidget <- setRefClass(
                     svalue(V2box, TRUE) <<- G1
                     svalue(G1box, TRUE) <<- V2
 
-                    if (svalue(V2box, TRUE) == 1L) {
+                    if (!isTRUE(svalue(V2box, TRUE) > 1L)) {
                         valY <- NULL
                         newY <- NULL
                     } else {
@@ -235,7 +191,7 @@ iNZControlWidget <- setRefClass(
                     }
                     newYname <- valY
 
-                    if (svalue(G1box, TRUE) == 1L) {
+                    if (!isTRUE(svalue(G1box, TRUE) > 1L)) {
                         changePlotSettings(
                             list(
                                 y = newY,
@@ -284,7 +240,7 @@ iNZControlWidget <- setRefClass(
             addHandlerClicked(
                 switchV34,
                 function(h, ...) {
-                    if (svalue(G1box, TRUE) == 1L && svalue(G2box, TRUE) == 1L) {
+                    if (!isTRUE(svalue(G1box, TRUE) > 1L) && !isTRUE(svalue(G2box, TRUE) > 1L)) {
                         return()
                     }
 
@@ -299,7 +255,7 @@ iNZControlWidget <- setRefClass(
                     svalue(G2box, TRUE) <<- G1
                     svalue(G1box, TRUE) <<- G2
 
-                    if (svalue(G1box, TRUE) == 1L) {
+                    if (!isTRUE(svalue(G1box, TRUE) > 1L)) {
                         varG1 <- NULL
                         newG1 <- NULL
                         newG1name <- NULL
@@ -311,7 +267,7 @@ iNZControlWidget <- setRefClass(
                         newG1level <- "_MULTI"
                         createSlider(pos = 6L, valG1)
                     }
-                    if (svalue(G2box, TRUE) == 1L) {
+                    if (!isTRUE(svalue(G2box, TRUE) > 1L)) {
                         varG2 <- NULL
                         newG2 <- NULL
                         newG2name <- NULL
@@ -343,11 +299,7 @@ iNZControlWidget <- setRefClass(
                 }
             )
 
-            if (multi_v1) {
-                tbl[1L, 7L] <- addV1
-            } else {
-                tbl[1L, 7L] <- switchV12
-            }
+            tbl[1L, 7L] <- switchV12
             tbl[3L, 7L] <- switchV23
             tbl[5L, 7L] <- switchV34
 
@@ -448,31 +400,21 @@ iNZControlWidget <- setRefClass(
             ## -- Variable 1
             addDropTarget(V1box,
                 handler = function(h, ...) {
-                    if (multi_v1) {
-                        h$obj$add_item(h$dropdata)
-                    } else {
-                        svalue(h$obj) <- h$dropdata
-                    }
+                    svalue(h$obj) <- h$dropdata
                 }
             )
             addHandlerChanged(V1box,
                 handler = function(h, ...) {
-                    # TODO: merge into a single conditional:
-                    if (multi_v1) {
-                        if (length(svalue(V1box)) == 0L) {
-                            newX <- NULL
-                            newXname <- NULL
-                        } else {
-                            val <- paste(svalue(V1box), collapse = " + ")
-                            newX <- as.name(val)
-                            newXname <- val
-                        }
+                    idx <- svalue(V1box, TRUE)
+                    if (!isTRUE(idx > 1L)) {
+                        newX <- NULL
+                        newXname <- NULL
                     } else {
-                        if (svalue(V1box, TRUE) == 1L) {
+                        val <- svalue(V1box)
+                        if (!nzchar(val)) {
                             newX <- NULL
                             newXname <- NULL
                         } else {
-                            val <- svalue(V1box)
                             newX <- as.name(val)
                             newXname <- val
                         }
@@ -495,13 +437,19 @@ iNZControlWidget <- setRefClass(
             )
             addHandlerChanged(V2box,
                 handler = function(h, ...) {
-                    if (svalue(V2box, TRUE) == 1L) {
+                    idx <- svalue(V2box, TRUE)
+                    if (!isTRUE(idx > 1L)) {
                         newY <- NULL
                         newYname <- NULL
                     } else {
                         val <- svalue(V2box)
-                        newYname <- val
-                        newY <- as.name(val)
+                        if (!nzchar(val)) {
+                            newY <- NULL
+                            newYname <- NULL
+                        } else {
+                            newYname <- val
+                            newY <- as.name(val)
+                        }
                     }
 
                     changePlotSettings(list(
@@ -526,19 +474,30 @@ iNZControlWidget <- setRefClass(
                         )
                     } else {
                         deleteSlider(pos = 6L)
-                        if (svalue(G1box, index = TRUE) > 1L) {
+                        if (isTRUE(svalue(G1box, index = TRUE) > 1L)) {
                             val <- svalue(G1box)
-                            createSlider(pos = 6L, val)
-                            changePlotSettings(
-                                list(
-                                    g1 = as.name(val),
-                                    g1.level = "_MULTI",
-                                    main = NULL,
-                                    varnames = list(
-                                        g1 = val
+                            if (!nzchar(val)) {
+                                changePlotSettings(
+                                    list(
+                                        g1 = NULL,
+                                        g1.level = NULL,
+                                        varnames = list(g1 = NULL)
+                                    ),
+                                    reset = TRUE
+                                )
+                            } else {
+                                createSlider(pos = 6L, val)
+                                changePlotSettings(
+                                    list(
+                                        g1 = as.name(val),
+                                        g1.level = "_MULTI",
+                                        main = NULL,
+                                        varnames = list(
+                                            g1 = val
+                                        )
                                     )
                                 )
-                            )
+                            }
                         } else {
                             changePlotSettings(
                                 list(
@@ -568,19 +527,30 @@ iNZControlWidget <- setRefClass(
                         )
                     } else {
                         deleteSlider(pos = 8L)
-                        if (svalue(G2box, index = TRUE) > 1L) {
+                        if (isTRUE(svalue(G2box, index = TRUE) > 1L)) {
                             val <- svalue(G2box)
-                            createSlider(pos = 8L, val)
-                            changePlotSettings(
-                                list(
-                                    g2 = as.name(val),
-                                    g2.level = "_ALL",
-                                    main = NULL,
-                                    varnames = list(
-                                        g2 = val
+                            if (!nzchar(val)) {
+                                changePlotSettings(
+                                    list(
+                                        g2 = NULL,
+                                        g2.level = NULL,
+                                        varnames = list(g2 = NULL)
+                                    ),
+                                    reset = TRUE
+                                )
+                            } else {
+                                createSlider(pos = 8L, val)
+                                changePlotSettings(
+                                    list(
+                                        g2 = as.name(val),
+                                        g2.level = "_ALL",
+                                        main = NULL,
+                                        varnames = list(
+                                            g2 = val
+                                        )
                                     )
                                 )
-                            )
+                            }
                         } else {
                             changePlotSettings(
                                 list(
@@ -603,13 +573,9 @@ iNZControlWidget <- setRefClass(
 
             set <- GUI$getActiveDoc()$getSettings()
 
-            enabled(V2box) <<- ifelse(multi_v1, V1box$get_length() == 1L, V1box$get_index() > 1L)
-            enabled(G1box) <<- ifelse(
-                multi_v1, V1box$get_length() > 0L, V1box$get_index() > 1L
-            )
-            enabled(G2box) <<- ifelse(
-                multi_v1, FALSE, V1box$get_index() > 1L
-            )
+            enabled(V2box) <<- isTRUE(V1box$get_index() > 1L)
+            enabled(G1box) <<- isTRUE(V1box$get_index() > 1L)
+            enabled(G2box) <<- isTRUE(V1box$get_index() > 1L)
 
             enabled(summary_button) <<- enabled(inference_button) <<- GUI$plotType != "none"
 
@@ -628,55 +594,52 @@ iNZControlWidget <- setRefClass(
             data <- GUI$getActiveData(lazy = TRUE)
             if (is.null(data) || all(dim(data) == 1L)) {
                 enabled(V1box) <<- enabled(V2box) <<- enabled(G1box) <<- enabled(G2box) <<- FALSE
-            } else if (multi_v1) {
-                enabled(V1box) <<- TRUE
-                enabled(V2box) <<- V1box$get_length() == 1L
-                enabled(G1box) <<- ifelse(
-                    multi_v1, V1box$get_length() > 0L, V1box$get_index() > 1L
-                )
-                enabled(G2box) <<- ifelse(multi_v1, FALSE, V1box$get_index() > 1L)
             } else {
                 enabled(V1box) <<- TRUE
-                enabled(V2box) <<- enabled(G1box) <<- enabled(G2box) <<- V1box$get_index() > 1L
+                enabled(V2box) <<- enabled(G1box) <<- enabled(G2box) <<- isTRUE(V1box$get_index() > 1L)
             }
 
             datavars <- names(data)
 
-            if (multi_v1) {
-                V1box$set_items(NULL)
+            v1 <- if (svalue(V1box) %in% datavars) {
+                which(datavars == svalue(V1box)) + 1L
             } else {
-                v1 <- if (svalue(V1box) %in% datavars) {
-                    which(datavars == svalue(V1box)) + 1L
-                } else {
-                    1L
-                }
-                V1box$set_items(c(V1box$get_items()[1L], datavars))
-                V1box$set_value(GUI$ctrlWidget$V1box$get_items()[v1])
+                1L
             }
+            blockHandlers(V1box)
+            V1box$set_items(c(V1box$get_items()[1L], datavars))
+            V1box$set_value(GUI$ctrlWidget$V1box$get_items()[v1])
+            unblockHandlers(V1box)
 
             v2 <- if (svalue(V2box) %in% datavars) {
                 which(datavars == svalue(V2box)) + 1L
             } else {
                 1L
             }
+            blockHandlers(V2box)
             V2box$set_items(c(V2box$get_items()[1L], datavars))
             V2box$set_value(GUI$ctrlWidget$V2box$get_items()[v2])
+            unblockHandlers(V2box)
 
             g1 <- if (svalue(G1box) %in% datavars) {
                 which(datavars == svalue(G1box)) + 1L
             } else {
                 1L
             }
+            blockHandlers(G1box)
             G1box$set_items(c(G1box$get_items()[1L], datavars))
             G1box$set_value(GUI$ctrlWidget$G1box$get_items()[g1])
+            unblockHandlers(G1box)
 
             g2 <- if (svalue(G2box) %in% datavars) {
                 which(datavars == svalue(G2box)) + 1L
             } else {
                 1L
             }
+            blockHandlers(G2box)
             G2box$set_items(c(G2box$get_items()[1L], datavars))
             G2box$set_value(GUI$ctrlWidget$G2box$get_items()[g2])
+            unblockHandlers(G2box)
         },
         createSlider = function(pos, dropdata, index = 1L) {
             ## make sure there is no slider at the pos
