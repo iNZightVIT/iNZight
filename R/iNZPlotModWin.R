@@ -1451,8 +1451,9 @@ iNZPlotMod <- setRefClass(
                     ## RESIZE METHOD
                     resizeLbl <- glabel(tr("pmod_resize_method"))
                     sizeMethods <- c("proportional", "emphasize")
+                    sm_sel <- which(sizeMethods == curSet$resize.method)
                     sizeMethod <- gcombobox(sizeMethods,
-                        selected = which(sizeMethods == curSet$resize.method)
+                        selected = if (length(sm_sel)) sm_sel[1L] else 1L
                     )
                     tbl[ii, 1:2, anchor = c(1, 0), expand = TRUE] <- resizeLbl
                     tbl[ii, 3:6, expand = TRUE] <- sizeMethod
@@ -1469,7 +1470,9 @@ iNZPlotMod <- setRefClass(
                                 "Good for exaggerating trends."
                             )
                     )
-                    sizeDesc <- glabel(paste(sizeDescs[[svalue(sizeMethod, index = TRUE)]]))
+                    sm_i <- svalue(sizeMethod, index = TRUE)
+                    if (length(sm_i) < 1L || is.na(sm_i)) sm_i <- 1L
+                    sizeDesc <- glabel(paste(sizeDescs[[sm_i]]))
                     tbl[ii, 1:6, anchor = c(1, 0), expand = TRUE] <- sizeDesc
                     visible(sizeDesc) <- visible(resizeLbl)
                     ii <- ii + 1
@@ -2643,7 +2646,10 @@ iNZPlotMod <- setRefClass(
                             newSet$varnames,
                             list(sizeby = svalue(sizeVar))
                         )
-                        newSet$resize.method <- svalue(sizeMethod)
+                        newSet$resize.method <- {
+                            rm <- svalue(sizeMethod)
+                            if (!nzchar(as.character(rm)[1])) "proportional" else rm
+                        }
                     } else {
                         newSet <- c(newSet, list(sizeby = NULL))
                         newSet$varnames <- c(newSet$varnames, list(sizeby = NULL))
@@ -3038,8 +3044,9 @@ iNZPlotMod <- setRefClass(
                 )
                 addHandlerChanged(sizeMethod,
                     handler = function(h, ...) {
-                        svalue(sizeDesc) <-
-                            paste(sizeDescs[[svalue(sizeMethod, index = TRUE)]])
+                        sm_i <- svalue(sizeMethod, index = TRUE)
+                        if (length(sm_i) < 1L || is.na(sm_i)) sm_i <- 1L
+                        svalue(sizeDesc) <- paste(sizeDescs[[sm_i]])
                         updateEverything()
                     }
                 )
