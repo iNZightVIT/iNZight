@@ -4,15 +4,21 @@ App-side follow-ups for the gWidgets2Rgtk4 port. Toolkit blockers live in [`gWid
 
 ## P0 — Import preview / `gdf` API — done
 
-`GDf$get_column_index` added in gWidgets2Rgtk4 (integer identity + column-object lookup). `make test FILTER="'data_loads'"` green 2026-08-06 (**FAIL 0 | SKIP 1 | PASS 73**).
+`GDf$get_column_index` added in gWidgets2Rgtk4. `make test FILTER="'data_loads'"` green 2026-08-06 (**FAIL 0 | SKIP 1 | PASS 73**).
 
 ---
 
-## P1 — Process hang after test suite
+## P1 — Post-suite exit
 
-- [ ] **GUI / R session freezes after `make test` finishes**
-  - Suite printed final summary then hung; required force-close / `^C`
-  - Investigate leftover windows, main-loop / idle handlers, or missing dispose after UI tests
+**Fixed**
+
+- Survey window leak: `GAction$set_value` no longer activates (RGtk2-compatible)
+- ANR after suite: do not `gtkStopEventLoop()` in-session teardown
+- `ggraphics`: `dispose(window)` synchronously closes `unigd` (destroy R callbacks are deferred)
+
+**Still open**
+
+- [ ] Slow R exit after a full GUI suite (`make test` and interactive `q()`). **Drill-down plan (start here):** [`slow-exit-drilldown.md`](../../slow-exit-drilldown.md). Rgtk4 harness notes: [`Rgtk4/docs/slow-exit.md`](../../Rgtk4/docs/slow-exit.md).
 
 ---
 

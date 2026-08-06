@@ -470,6 +470,7 @@ iNZGUI <- setRefClass(
             addHandlerDestroy(
                 win,
                 function(h, ...) {
+                    try(dispose(modWin), silent = TRUE)
                     # clean up GDF in dataViewWidget
                     if (!is.null(.self$dataViewWidget$dfWidget)) {
                         .self$dataViewWidget$dfView$remove_child(
@@ -1576,6 +1577,7 @@ iNZGUI <- setRefClass(
         },
         close = function() {
             "Closes the iNZight window, calling the user-supplied disposer function"
+            try(dispose(modWin), silent = TRUE)
             dispose(win)
             disposer()
         },
