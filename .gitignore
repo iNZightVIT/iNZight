@@ -10,6 +10,9 @@ revdep
 inst/doc
 doc
 Meta
-scripts
+scripts/*
+!scripts/
+docs/phase*.out
+docs/phase*.log
 .vscode
 *.log

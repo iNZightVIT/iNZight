@@ -10,15 +10,13 @@ App-side follow-ups for the gWidgets2Rgtk4 port. Toolkit blockers live in [`gWid
 
 ## P1 — Post-suite exit
 
-**Fixed**
+**Fixed (app-side)**
 
 - Survey window leak: `GAction$set_value` no longer activates (RGtk2-compatible)
 - ANR after suite: do not `gtkStopEventLoop()` in-session teardown
 - `ggraphics`: `dispose(window)` synchronously closes `unigd` (destroy R callbacks are deferred)
 
-**Still open**
-
-- [ ] Slow R exit after a full GUI suite (`make test` and interactive `q()`). **Drill-down plan (start here):** [`slow-exit-drilldown.md`](../../slow-exit-drilldown.md). Rgtk4 harness notes: [`Rgtk4/docs/slow-exit.md`](../../Rgtk4/docs/slow-exit.md).
+**Slow exit after GUI churn** — not an iNZight bug. Reproduced with gWidgets2Rgtk4 `gdf` alone ([`slow_exit_gdf.R`](../../gWidgets2Rgtk4/scripts/slow_exit_gdf.R)); plan [`slow-exit-drilldown.md`](../../slow-exit-drilldown.md). Track / fix in toolkit (gWidgets2Rgtk4 → Rgtk4).
 
 ---
 
