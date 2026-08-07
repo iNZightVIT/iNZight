@@ -16,7 +16,7 @@ App-side follow-ups for the gWidgets2Rgtk4 port. Toolkit blockers live in [`gWid
 - ANR after suite: do not `gtkStopEventLoop()` in-session teardown
 - `ggraphics`: `dispose(window)` synchronously closes `unigd` (destroy R callbacks are deferred)
 
-**Slow exit after GUI churn** — not an iNZight bug. Reproduced with gWidgets2Rgtk4 `gdf` alone ([`slow_exit_gdf.R`](../../gWidgets2Rgtk4/scripts/slow_exit_gdf.R)); plan [`slow-exit-drilldown.md`](../../slow-exit-drilldown.md). Track / fix in toolkit (gWidgets2Rgtk4 → Rgtk4).
+**Slow exit after GUI churn** — not an iNZight bug. Reproduced with gWidgets2Rgtk4 `gdf` alone ([`slow-exit/slow_exit_gdf.R`](../../slow-exit/slow_exit_gdf.R)); Rgtk4 ColumnView MRE owns the layer ([`slow-exit/`](../../slow-exit/)). Plan [`slow-exit-drilldown.md`](../../slow-exit-drilldown.md). Fix in Rgtk4.
 
 ---
 
