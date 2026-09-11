@@ -201,21 +201,9 @@ iNZplothistory <- setRefClass(
                 }
             )
 
-            hover <- gdkCursorNew("GDK_HAND1")
-            addHandler(plot_image, "enter-notify-event",
-                handler = function(h, ...) {
-                    getToolkitWidget(plot_image)$getWindow()$setCursor(hover)
-                    TRUE
-                }
-            )
-
-
-            addHandler(plot_image, "leave-notify-event",
-                handler = function(h, ...) {
-                    getToolkitWidget(plot_image)$getWindow()$setCursor(gdkCursorNew("GDK_LEFT_PTR"))
-                    TRUE
-                }
-            )
+            if (requireNamespace("gWidgets2Rgtk4", quietly = TRUE)) {
+                gWidgets2Rgtk4::setPointerCursor(plot_image)
+            }
 
             plot_group[1:2, 1L] <- plot_image
             plot_group[1:2, 2L, fill = "x", anchor = c(-1, 0)] <-

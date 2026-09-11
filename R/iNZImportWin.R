@@ -92,14 +92,14 @@ iNZImportWin <- setRefClass(
             #     expand = TRUE,
             #     fill = TRUE
             # )
-            # mainGp$set_borderwidth(10)
+            # mainGp$set_padding(10L)
 
             ## Select file (and extension)
             fileGp <- gframe(tr("importwin_file_import"),
                 pos = 0,
                 horizontal = FALSE
             )
-            fileGp$set_borderwidth(10)
+            fileGp$set_padding(10L)
             fileTbl <<- glayout(container = fileGp)
             ii <- 1L
 
@@ -187,7 +187,7 @@ iNZImportWin <- setRefClass(
                 horizontal = FALSE
             )
             size(prevGp) <<- c(100, 170)
-            prevGp$set_borderwidth(10)
+            prevGp$set_padding(10L)
 
             prevLbl <<- glabel(tr("importwin_no_file"),
                 container = prevGp,
@@ -348,7 +348,7 @@ iNZImportWin <- setRefClass(
                                 parent = GUI$win
                             )
                             g <- gvbox(container = w)
-                            g$set_borderwidth(5)
+                            g$set_padding(5L)
                             glabel(tr("importwin_wait_load"), anchor = c(-1, 0), container = g)
                             addSpace(g, 10)
                             pb <- gprogressbar(from, container = g)

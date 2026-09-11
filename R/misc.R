@@ -11,12 +11,10 @@ check_return_class <- function(obj, ret_class) {
     }
 }
 
-# Copied from 'gWidgets2RGtk2' by J Verzani
-TARGET.TYPE.TEXT <- 80L
-TARGET.TYPE.OBJECT <- 81L
-widgetTargetTypes <- list(
-    text = gtkTargetEntry("text/plain", 0, TARGET.TYPE.TEXT),
-    object = gtkTargetEntry("text/plain", 0, TARGET.TYPE.OBJECT)
-)
-
-GWidget <- gWidgets2RGtk2:::GWidget
+# # Copied from 'gWidgets2RGtk2' by J Verzani
+# TARGET.TYPE.TEXT <- 80L
+# TARGET.TYPE.OBJECT <- 81L
+# widgetTargetTypes <- list(
+#     text = gtkTargetEntry("text/plain", 0, TARGET.TYPE.TEXT),
+#     object = gtkTargetEntry("text/plain", 0, TARGET.TYPE.OBJECT)
+# )

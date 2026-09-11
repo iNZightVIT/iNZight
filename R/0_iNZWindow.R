@@ -79,8 +79,11 @@ iNZWindow <- setRefClass("iNZWindow",
             })
 
             body_direction <- match.arg(body_direction)
-            g <- gvbox(expand = TRUE)
-            g$set_borderwidth(10L)
+            g <- gvbox(
+                expand = TRUE,
+                use.scrollwindow = if (scroll) "y" else FALSE
+            )
+            g$set_padding(10L)
 
             header <<- gvbox(container = g)
             body <<- switch(body_direction,
@@ -149,22 +152,7 @@ iNZWindow <- setRefClass("iNZWindow",
                 enabled(code_panel) <<- FALSE
             }
 
-            if (scroll) {
-                # add scrollbars
-                scrolledWindow <- gtkScrolledWindow()
-                scrolledWindow$setPolicy(
-                    "GTK_POLICY_NEVER",
-                    "GTK_POLICY_AUTOMATIC"
-                )
-                scrolledWindow$addWithViewport(
-                    g$widget
-                )
-                add(GUI$modWin, scrolledWindow,
-                    expand = TRUE, fill = TRUE
-                )
-            } else {
-                add(GUI$modWin, g)
-            }
+            add(GUI$modWin, g)
 
             invisible(TRUE)
         },

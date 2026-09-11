@@ -20,7 +20,7 @@ iNZCodePanel <- setRefClass(
                 original_code = ""
             )
             panel <<- gvbox()
-            panel$set_borderwidth(5)
+            panel$set_padding(5L)
 
             # Input text box
             input <<- gtext("",
@@ -29,9 +29,8 @@ iNZCodePanel <- setRefClass(
                 font.attr = code_font
             )
             # the default indent is 10, which doesn't look too nice.
-            # no direct access to these methods, so must access directly from RGtk2:
-            RGtk2::gtkTextViewSetLeftMargin(input$widget, 0)
-            RGtk2::gtkTextViewSetRightMargin(input$widget, 0)
+            input$set_left_margin(0)
+            input$set_right_margin(0)
 
             ctrl_pnl <- ggroup(
                 container = panel,

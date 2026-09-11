@@ -27,7 +27,7 @@ iNZPrefsWin <- setRefClass(
             )
 
             g_main <- gvbox(container = GUI$modWin)
-            g_main$set_borderwidth(5L)
+            g_main$set_padding(5L)
 
             sections <<- gnotebook(
                 tab.pos = 3L,
@@ -37,7 +37,7 @@ iNZPrefsWin <- setRefClass(
 
             ## --------------------------- GENERAL
             sec_general <- gvbox(label = "General", container = sections)
-            sec_general$set_borderwidth(5L)
+            sec_general$set_padding(5L)
 
             ### ---------------- Check for updates
             p_check.updates <- gcheckbox(
@@ -77,7 +77,7 @@ iNZPrefsWin <- setRefClass(
 
             ## --------------------------- APPEARANCE
             sec_appearance <- gvbox(label = "Appearance", container = sections)
-            sec_appearance$set_borderwidth(5L)
+            sec_appearance$set_padding(5L)
 
             tbl_appearance <- glayout(container = sec_appearance)
             ii <- 1L
@@ -177,7 +177,7 @@ iNZPrefsWin <- setRefClass(
 
             ## --------------------------- PLOT SETTINGS
             plot_settings <- gvbox(label = "Plot Defaults", container = sections)
-            plot_settings$set_borderwidth(5L)
+            plot_settings$set_padding(5L)
 
             tbl_plot <- glayout(container = plot_settings)
             ii <- 1L
@@ -210,7 +210,7 @@ iNZPrefsWin <- setRefClass(
 
             ## --------------------------- DEV FEATURES
             sec_dev <- gvbox(label = "Developmental Features", container = sections)
-            sec_dev$set_borderwidth(5L)
+            sec_dev$set_padding(5L)
             lbl <- glabel(
                 paste(
                     "We may occasionally include developmental features in our",

@@ -115,7 +115,7 @@ ModuleManager <- setRefClass(
             )
 
             g_mod_info <<- gvbox()
-            g_mod_info$set_borderwidth(5L)
+            g_mod_info$set_padding(5L)
             size(g_mod_info) <<- c(700, -1)
 
             add(g_mods, g_mod_info)
@@ -278,7 +278,7 @@ ModuleManager <- setRefClass(
             mod_info_description <- gtext(amod$description,
                 width = 500, height = 50
             )
-            RGtk2::gtkTextViewSetLeftMargin(mod_info_description$widget, 0)
+            mod_info_description$set_left_margin(0)
             enabled(mod_info_description) <- FALSE
             mod_info_tbl[ii, 1L, anchor = c(1, 1), expand = TRUE] <- "Description: "
             mod_info_tbl[ii, 2:3, anchor = c(-1, 0), expand = TRUE, fill = TRUE] <- mod_info_description
@@ -510,7 +510,7 @@ iNZModule <- setRefClass(
                 scroll = TRUE
             )
             mainGrp <<- modwin$body
-            mainGrp$set_borderwidth(5L)
+            mainGrp$set_padding(5L)
 
             homeButton <<- gbutton(tr("module_home"),
                 handler = function(h, ...) close()

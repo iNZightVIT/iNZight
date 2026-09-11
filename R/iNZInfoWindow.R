@@ -51,15 +51,15 @@ iNZInfoWindow <- setRefClass(
             )
 
             code_panel <<- gvbox()
-            code_panel$set_borderwidth(5)
+            code_panel$set_padding(5L)
             code_box <<- gtext("info_function(...)",
                 expand = TRUE,
                 wrap = FALSE,
                 font.attr = code_font,
                 container = code_panel
             )
-            RGtk2::gtkTextViewSetLeftMargin(code_box$widget, 0)
-            RGtk2::gtkTextViewSetRightMargin(code_box$widget, 0)
+            code_box$set_left_margin(0)
+            code_box$set_right_margin(0)
 
             code_btns <- ggroup(container = code_panel)
             lbl <- glabel("R code is shown above, which can be edited and run.")
@@ -101,7 +101,7 @@ iNZInfoWindow <- setRefClass(
             )
 
             ctrl_panel <<- ggroup()
-            ctrl_panel$set_borderwidth(5)
+            ctrl_panel$set_padding(5L)
 
             # Main container will consist of three components:
             #  1. code panel (can be toggled; controls info)
@@ -439,7 +439,7 @@ iNZGetSummary <- setRefClass(
             )
 
             g2 <- gvbox(container = w2)
-            g2$set_borderwidth(15)
+            g2$set_padding(15L)
 
             scatter <- xnum && ynum
 
@@ -621,7 +621,7 @@ iNZGetSummary <- setRefClass(
             xnum <- is_num(xvar)
             ynum <- is_num(yvar)
 
-            trend[[tolower(h$obj$widget$label)]] <<- svalue(h$obj)
+            trend[[tolower(h$obj[])]] <<- svalue(h$obj)
             curSet$trend <<- names(trend)[unlist(trend)]
             if ((is.null(curSet$trend) || length(curSet$trend) == 0) &&
                 curSet$smooth == 0) {
@@ -749,13 +749,11 @@ iNZGetSummary <- setRefClass(
                 container = ctrl_panel,
                 handler = function(h, ...) editPrivacyRules()
             )
-            icon <- RGtk2::gtkImage(
-                file = system.file("images/icon-privacy.png",
+            privacy_button$set_icon(
+                system.file("images/icon-privacy.png",
                     package = "iNZight"
                 )
             )
-            privacy_button$widget$setImage(icon)
-            privacy_button$widget$image$show()
             tooltip(privacy_button) <- "Set or change privacy and confidentiality output controls"
 
             # button to save output to file
@@ -776,7 +774,7 @@ iNZGetSummary <- setRefClass(
             )
 
             g <- gvbox(container = w)
-            g$set_borderwidth(5)
+            g$set_padding(5L)
 
             lbl <- glabel(
                 paste(
@@ -890,7 +888,7 @@ iNZGetSummary <- setRefClass(
             if (is.null(pc)) pc <- list()
 
             g <- gvbox(container = w)
-            g$set_borderwidth(5)
+            g$set_padding(5L)
 
             tbl <- glayout(container = g)
             ii <- 1L

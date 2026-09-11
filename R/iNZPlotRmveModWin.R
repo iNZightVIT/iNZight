@@ -128,7 +128,7 @@ iNZPlotRmveModWin <- setRefClass(
 
             # footer group
             btnGrp <- modWin$footer
-            mainGrp$set_borderwidth(5)
+            mainGrp$set_padding(5L)
 
             # if any checkboxes ticked, rename to "Remove selected"
             rmvBtn <<- gbutton(tr("plotrmmod_remove_all"),

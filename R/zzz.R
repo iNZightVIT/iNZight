@@ -25,8 +25,8 @@ setOldClass(c("inzdf_sqlite", "inzdf_db", "inzdf"))
         paste(strwrap(txt, prefix = ind), collapse = "\n")
     }
 
-    ## Ensure we're using RGtk2
-    options("guiToolkit" = "RGtk2")
+    ## Ensure we're using the GTK4 toolkit
+    options("guiToolkit" = "Rgtk4")
 
     packageStartupMessage(header)
     packageStartupMessage("")
